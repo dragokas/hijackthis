@@ -1,0 +1,46 @@
+Logfile of Trend Micro HijackThis v2.0.4
+Scan saved at 2:38:00 PM, on 6/22/2010
+Platform: Windows 7  (WinNT 6.00.3504)
+MSIE: Internet Explorer v8.00 (8.00.7600.16385)
+CHROME: 5.0.375.70
+FIREFOX: 3.6.3 (en-US)
+Boot mode: Normal
+
+Running processes:
+C:\Windows\system32\taskhost.exe
+C:\Windows\system32\Dwm.exe
+C:\Windows\Explorer.EXE
+C:\Program Files\Java\jre7\bin\jusched.exe
+C:\Program Files\VMware\VMware Tools\VMwareTray.exe
+C:\Program Files\VMware\VMware Tools\VMwareUser.exe
+C:\Users\HJT\AppData\Local\Google\Update\1.2.183.23\GoogleCrashHandler.exe
+C:\Windows\regedit.exe
+C:\Program Files\Microsoft Visual Studio\VB98\vb6.exe
+
+R1 - HKCU\Software\Microsoft\Internet Explorer\Main,Search Page = http://go.microsoft.com/fwlink/?LinkId=54896
+R0 - HKCU\Software\Microsoft\Internet Explorer\Main,Start Page = http://google.com/
+R1 - HKLM\Software\Microsoft\Internet Explorer\Main,Default_Page_URL = http://go.microsoft.com/fwlink/?LinkId=69157
+R1 - HKLM\Software\Microsoft\Internet Explorer\Main,Default_Search_URL = http://go.microsoft.com/fwlink/?LinkId=54896
+R1 - HKLM\Software\Microsoft\Internet Explorer\Main,Search Page = http://go.microsoft.com/fwlink/?LinkId=54896
+R0 - HKLM\Software\Microsoft\Internet Explorer\Main,Start Page = http://go.microsoft.com/fwlink/?LinkId=69157
+R0 - HKLM\Software\Microsoft\Internet Explorer\Search,SearchAssistant = 
+R0 - HKLM\Software\Microsoft\Internet Explorer\Search,CustomizeSearch = 
+R1 - HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings,ProxyServer = proxy.trendmicro.com:8080
+R0 - HKCU\Software\Microsoft\Internet Explorer\Toolbar,LinksFolderName = 
+O2 - BHO: AcroIEHelperStub - {18DF081C-E8AD-4283-A596-FA578C2EBDC3} - C:\Program Files\Common Files\Adobe\Acrobat\ActiveX\AcroIEHelperShim.dll
+O2 - BHO: Java(tm) Plug-In 2 SSV Helper - {DBC80044-A445-435b-BC74-9C25C1C588A9} - C:\Program Files\Java\jre7\bin\jp2ssv.dll
+O4 - HKLM\..\Run: [SunJavaUpdateSched] "C:\Program Files\Java\jre7\bin\jusched.exe"
+O4 - HKLM\..\Run: [Adobe Reader Speed Launcher] "C:\Program Files\Adobe\Reader 9.0\Reader\Reader_sl.exe"
+O4 - HKLM\..\Run: [VMware Tools] C:\Program Files\VMware\VMware Tools\VMwareTray.exe
+O4 - HKLM\..\Run: [VMware User Process] C:\Program Files\VMware\VMware Tools\VMwareUser.exe
+O4 - HKLM\..\RunOnce: [NCPGINA] "C:\Windows\delrws.bat"
+O4 - HKCU\..\Run: [Google Update] "C:\Users\HJT\AppData\Local\Google\Update\GoogleUpdate.exe" /c
+O4 - HKCU\..\RunOnce: [FlashPlayerUpdate] C:\Windows\system32\Macromed\Flash\NPSWF32_FlashUtil.exe -p
+O4 - HKUS\S-1-5-19\..\Run: [Sidebar] %ProgramFiles%\Windows Sidebar\Sidebar.exe /autoRun (User 'LOCAL SERVICE')
+O4 - HKUS\S-1-5-19\..\RunOnce: [mctadmin] C:\Windows\System32\mctadmin.exe (User 'LOCAL SERVICE')
+O4 - HKUS\S-1-5-20\..\Run: [Sidebar] %ProgramFiles%\Windows Sidebar\Sidebar.exe /autoRun (User 'NETWORK SERVICE')
+O4 - HKUS\S-1-5-20\..\RunOnce: [mctadmin] C:\Windows\System32\mctadmin.exe (User 'NETWORK SERVICE')
+O23 - Service: VMware Tools Service (VMTools) - VMware, Inc. - C:\Program Files\VMware\VMware Tools\VMwareService.exe
+
+--
+End of file - 3117 bytes
