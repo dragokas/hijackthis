@@ -1,0 +1,463 @@
+[Root]
+Most Recent Package=hjt
+
+
+[Package|HijackThis|Root]
+SubWizProgID=PDWizard.SetupPkgSubWiz
+BuildFolder=C:\HJT\Package
+
+[Package|HijackThis|Configure DAO ISAMs]
+Applicable=No
+
+[Package|HijackThis|Configure DAO ODBC]
+JetWorkspace=
+ODBCDirect=
+
+[Package|HijackThis|Files Found]
+
+[Package|HijackThis|Files Released]
+2=
+
+[Package|HijackThis|Missing Dependency Information]
+C:\WINDOWS\system32\psapi.dll=
+C:\WINDOWS\system32\wininet.dll=
+C:\WINDOWS\system32\shlwapi.dll=
+
+[Package|HijackThis|Out-of-Date Dependency Information]
+
+[Package|HijackThis|Files Added]
+
+[Package|HijackThis|Files Removed]
+
+[Package|HijackThis|Files In Project]
+C:\Documents and Settings\Administrator\Desktop\HijackThis.exe=Yes
+C:\WINDOWS\system32\msvbvm60.dll=Yes
+C:\WINDOWS\system32\oleaut32.dll=Yes
+C:\WINDOWS\system32\olepro32.dll=Yes
+C:\WINDOWS\system32\asycfilt.dll=Yes
+C:\WINDOWS\system32\stdole2.tlb=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=Yes
+C:\WINDOWS\system32\shlwapi.dll=Yes
+C:\WINDOWS\system32\wininet.dll=Yes
+C:\WINDOWS\system32\psapi.dll=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP.EXE=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP1.EXE=Yes
+C:\WINDOWS\system32\VB6STKIT.DLL=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\ST6UNST.EXE=Yes
+
+[Package|HijackThis|Configure Registry Files]
+Applicable=No
+
+[Package|HijackThis|Configure Remote Servers]
+Applicable=No
+
+[Package|HijackThis|Install Locations]
+C:\Documents and Settings\Administrator\Desktop\HijackThis.exe=$(AppPath)
+C:\WINDOWS\system32\msvbvm60.dll=$(WinSysPathSysFile)
+C:\WINDOWS\system32\oleaut32.dll=$(WinSysPathSysFile)
+C:\WINDOWS\system32\olepro32.dll=$(WinSysPathSysFile)
+C:\WINDOWS\system32\asycfilt.dll=$(WinSysPathSysFile)
+C:\WINDOWS\system32\stdole2.tlb=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\system32\shlwapi.dll=$(WinSysPath)
+C:\WINDOWS\system32\wininet.dll=$(WinSysPath)
+C:\WINDOWS\system32\psapi.dll=$(WinSysPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP.EXE=$(AppPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP1.EXE=$(WinPath)
+C:\WINDOWS\system32\VB6STKIT.DLL=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\ST6UNST.EXE=$(WinPath)
+
+[Package|HijackThis|Configure Shared Files]
+Applicable=Yes
+C:\Documents and Settings\Administrator\Desktop\HijackThis.exe=No
+
+[Package|HijackThis|Distribution]
+Type=single
+Size=
+Title=HijackThis
+
+[Package|HijackThis|IconGroups]
+Group0=HijackThis
+PrivateGroup0=True
+Parent0=$(Programs)
+
+[Package|HijackThis|HijackThis]
+Icon1=HijackThis.exe
+Title1=HijackThis
+StartIn1=$(AppPath)
+Key1=Icon1
+
+[Package|HijackThis|Package]
+PackageFolder=C:\HJT\Package
+ProjectFolder=C:\HJT
+ServerSideCab=
+File1=C:\HJT\Package\setup.exe
+File2=C:\HJT\Package\Setup.Lst
+File3=C:\HJT\Package\HijackThis.CAB
+Handler1=PDWizard.FolderDplySubWiz
+Handler2=PDWizard.WebPostDplySubWiz
+
+
+[Package|Dep File 1|Root]
+SubWizProgID=PDWizard.DepPkgSubWiz
+BuildFolder=C:\HJT\Package
+
+[Package|Dep File 1|Configure DAO ISAMs]
+Applicable=No
+
+[Package|Dep File 1|Configure DAO ODBC]
+JetWorkspace=
+ODBCDirect=
+
+[Package|Dep File 1|Files Found]
+
+[Package|Dep File 1|Files Released]
+2=
+
+[Package|Dep File 1|Missing Dependency Information]
+C:\WINDOWS\system32\psapi.dll=
+C:\WINDOWS\system32\wininet.dll=
+C:\WINDOWS\system32\shlwapi.dll=
+
+[Package|Dep File 1|Out-of-Date Dependency Information]
+
+[Package|Dep File 1|Files Added]
+
+[Package|Dep File 1|Files Removed]
+
+[Package|Dep File 1|Files In Project]
+C:\Documents and Settings\Administrator\Desktop\HijackThis.exe=Yes
+C:\WINDOWS\system32\msvbvm60.dll=Yes
+C:\WINDOWS\system32\oleaut32.dll=Yes
+C:\WINDOWS\system32\olepro32.dll=Yes
+C:\WINDOWS\system32\asycfilt.dll=Yes
+C:\WINDOWS\system32\stdole2.tlb=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=Yes
+C:\WINDOWS\system32\shlwapi.dll=Yes
+C:\WINDOWS\system32\wininet.dll=Yes
+C:\WINDOWS\system32\psapi.dll=Yes
+
+[Package|Dep File 1|Configure Registry Files]
+Applicable=No
+
+[Package|Dep File 1|Configure Remote Servers]
+Applicable=No
+
+[Package|Dep File 1|Install Locations]
+C:\Documents and Settings\Administrator\Desktop\HijackThis.exe=$(AppPath)
+C:\WINDOWS\system32\msvbvm60.dll=$(WinSysPathSysFile)
+C:\WINDOWS\system32\oleaut32.dll=$(WinSysPathSysFile)
+C:\WINDOWS\system32\olepro32.dll=$(WinSysPathSysFile)
+C:\WINDOWS\system32\asycfilt.dll=$(WinSysPathSysFile)
+C:\WINDOWS\system32\stdole2.tlb=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\system32\shlwapi.dll=$(WinSysPath)
+C:\WINDOWS\system32\wininet.dll=$(WinSysPath)
+C:\WINDOWS\system32\psapi.dll=$(WinSysPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP.EXE=$(AppPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP1.EXE=$(WinPath)
+C:\WINDOWS\system32\VB6STKIT.DLL=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\ST6UNST.EXE=$(WinPath)
+
+[Package|Dep File 1|Configure Shared Files]
+Applicable=Yes
+C:\Documents and Settings\Administrator\Desktop\HijackThis.exe=No
+
+[Package|Dep File 1|Distribution]
+Type=single
+Size=
+Title=HijackThis
+
+[Package|Dep File 1|IconGroups]
+Group0=HijackThis
+PrivateGroup0=True
+Parent0=$(Programs)
+
+[Package|Dep File 1|HijackThis]
+Icon1=HijackThis.exe
+Title1=HijackThis
+StartIn1=$(AppPath)
+Key1=Icon1
+
+[Package|Dep File 1|DepFile]
+DepCabFile=HijackThis.CAB
+DepCabRun=HijackThis.INF
+
+[Package|Dep File 1|Package]
+PackageFolder=C:\HJT\Package
+ProjectFolder=C:\HJT
+ServerSideCab=
+File1=C:\HJT\Package\HijackThis.DEP
+Handler1=PDWizard.FolderDplySubWiz
+Handler2=PDWizard.WebPostDplySubWiz
+
+
+[Package|Dep File 2|Root]
+SubWizProgID=PDWizard.DepPkgSubWiz
+BuildFolder=C:\Documents and Settings\Administrator\Desktop
+
+[Package|Dep File 2|Configure DAO ISAMs]
+Applicable=No
+
+[Package|Dep File 2|Configure DAO ODBC]
+JetWorkspace=
+ODBCDirect=
+
+[Package|Dep File 2|Files Found]
+
+[Package|Dep File 2|Files Released]
+2=
+
+[Package|Dep File 2|Missing Dependency Information]
+C:\WINDOWS\system32\psapi.dll=
+C:\WINDOWS\system32\wininet.dll=
+C:\WINDOWS\system32\shlwapi.dll=
+
+[Package|Dep File 2|Out-of-Date Dependency Information]
+
+[Package|Dep File 2|Files Added]
+
+[Package|Dep File 2|Files Removed]
+
+[Package|Dep File 2|Files In Project]
+C:\Documents and Settings\Administrator\Desktop\HijackThis.exe=Yes
+C:\WINDOWS\system32\msvbvm60.dll=Yes
+C:\WINDOWS\system32\oleaut32.dll=Yes
+C:\WINDOWS\system32\olepro32.dll=Yes
+C:\WINDOWS\system32\asycfilt.dll=Yes
+C:\WINDOWS\system32\stdole2.tlb=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=Yes
+C:\WINDOWS\system32\shlwapi.dll=Yes
+C:\WINDOWS\system32\wininet.dll=Yes
+C:\WINDOWS\system32\psapi.dll=Yes
+
+[Package|Dep File 2|Configure Registry Files]
+Applicable=
+
+[Package|Dep File 2|Configure Remote Servers]
+Applicable=
+
+[Package|Dep File 2|Install Locations]
+C:\Documents and Settings\Administrator\Desktop\HijackThis.exe=$(AppPath)
+C:\WINDOWS\system32\msvbvm60.dll=$(WinSysPathSysFile)
+C:\WINDOWS\system32\oleaut32.dll=$(WinSysPathSysFile)
+C:\WINDOWS\system32\olepro32.dll=$(WinSysPathSysFile)
+C:\WINDOWS\system32\asycfilt.dll=$(WinSysPathSysFile)
+C:\WINDOWS\system32\stdole2.tlb=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\system32\shlwapi.dll=$(WinSysPath)
+C:\WINDOWS\system32\wininet.dll=$(WinSysPath)
+C:\WINDOWS\system32\psapi.dll=$(WinSysPath)
+
+[Package|Dep File 2|Configure Shared Files]
+Applicable=
+
+[Package|Dep File 2|DepFile]
+DepCabFile=HijackThis.CAB
+DepCabRun=HijackThis.INF
+
+[Package|Dep File 2|Package]
+PackageFolder=C:\Documents and Settings\Administrator\Desktop
+ProjectFolder=C:\HJT
+ServerSideCab=
+File1=C:\Documents and Settings\Administrator\Desktop\HijackThis.DEP
+Handler1=PDWizard.FolderDplySubWiz
+Handler2=PDWizard.WebPostDplySubWiz
+
+
+[Package|Dep File 3|Root]
+SubWizProgID=PDWizard.DepPkgSubWiz
+BuildFolder=C:\HJT\Package
+
+[Package|Dep File 3|Configure DAO ISAMs]
+Applicable=No
+
+[Package|Dep File 3|Configure DAO ODBC]
+JetWorkspace=
+ODBCDirect=
+
+[Package|Dep File 3|Files Found]
+
+[Package|Dep File 3|Files Released]
+2=
+
+[Package|Dep File 3|Missing Dependency Information]
+C:\WINDOWS\system32\psapi.dll=
+C:\WINDOWS\system32\wininet.dll=
+C:\WINDOWS\system32\shlwapi.dll=
+
+[Package|Dep File 3|Out-of-Date Dependency Information]
+
+[Package|Dep File 3|Files Added]
+
+[Package|Dep File 3|Files Removed]
+
+[Package|Dep File 3|Files In Project]
+C:\Documents and Settings\Administrator\Desktop\HijackThis.exe=Yes
+C:\WINDOWS\system32\msvbvm60.dll=Yes
+C:\WINDOWS\system32\oleaut32.dll=Yes
+C:\WINDOWS\system32\olepro32.dll=Yes
+C:\WINDOWS\system32\asycfilt.dll=Yes
+C:\WINDOWS\system32\stdole2.tlb=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=Yes
+C:\WINDOWS\system32\shlwapi.dll=Yes
+C:\WINDOWS\system32\wininet.dll=Yes
+C:\WINDOWS\system32\psapi.dll=Yes
+
+[Package|Dep File 3|Configure Registry Files]
+Applicable=No
+
+[Package|Dep File 3|Configure Remote Servers]
+Applicable=No
+
+[Package|Dep File 3|Install Locations]
+C:\Documents and Settings\Administrator\Desktop\HijackThis.exe=$(AppPath)
+C:\WINDOWS\system32\msvbvm60.dll=$(WinSysPathSysFile)
+C:\WINDOWS\system32\oleaut32.dll=$(WinSysPathSysFile)
+C:\WINDOWS\system32\olepro32.dll=$(WinSysPathSysFile)
+C:\WINDOWS\system32\asycfilt.dll=$(WinSysPathSysFile)
+C:\WINDOWS\system32\stdole2.tlb=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\system32\shlwapi.dll=$(WinSysPath)
+C:\WINDOWS\system32\wininet.dll=$(WinSysPath)
+C:\WINDOWS\system32\psapi.dll=$(WinSysPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP.EXE=$(AppPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP1.EXE=$(WinPath)
+C:\WINDOWS\system32\VB6STKIT.DLL=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\ST6UNST.EXE=$(WinPath)
+
+[Package|Dep File 3|Configure Shared Files]
+Applicable=Yes
+C:\Documents and Settings\Administrator\Desktop\HijackThis.exe=No
+
+[Package|Dep File 3|Distribution]
+Type=single
+Size=
+Title=HijackThis
+
+[Package|Dep File 3|IconGroups]
+Group0=HijackThis
+PrivateGroup0=True
+Parent0=$(Programs)
+
+[Package|Dep File 3|HijackThis]
+Icon1=HijackThis.exe
+Title1=HijackThis
+StartIn1=$(AppPath)
+Key1=Icon1
+
+[Package|Dep File 3|DepFile]
+DepCabFile=HijackThis.CAB
+DepCabRun=HijackThis.INF
+
+[Package|Dep File 3|Package]
+PackageFolder=C:\HJT\Package
+ProjectFolder=C:\HJT
+ServerSideCab=
+File1=C:\HJT\Package\HijackThis.DEP
+Handler1=PDWizard.FolderDplySubWiz
+Handler2=PDWizard.WebPostDplySubWiz
+
+
+[Package|hjt|Root]
+SubWizProgID=PDWizard.SetupPkgSubWiz
+BuildFolder=C:\HJT\Package
+
+[Package|hjt|Configure DAO ISAMs]
+Applicable=No
+
+[Package|hjt|Configure DAO ODBC]
+JetWorkspace=
+ODBCDirect=
+
+[Package|hjt|Files Found]
+
+[Package|hjt|Files Released]
+2=
+
+[Package|hjt|Missing Dependency Information]
+C:\WINDOWS\system32\psapi.dll=
+C:\WINDOWS\system32\wininet.dll=
+C:\WINDOWS\system32\shlwapi.dll=
+
+[Package|hjt|Out-of-Date Dependency Information]
+
+[Package|hjt|Files Added]
+
+[Package|hjt|Files Removed]
+
+[Package|hjt|Files In Project]
+C:\Documents and Settings\Administrator\Desktop\HijackThis.exe=Yes
+C:\WINDOWS\system32\msvbvm60.dll=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=Yes
+C:\WINDOWS\system32\shlwapi.dll=Yes
+C:\WINDOWS\system32\wininet.dll=Yes
+C:\WINDOWS\system32\psapi.dll=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP.EXE=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP1.EXE=Yes
+C:\WINDOWS\system32\VB6STKIT.DLL=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\ST6UNST.EXE=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\OLEAUT32.DLL=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\OLEPRO32.DLL=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\ASYCFILT.DLL=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\STDOLE2.TLB=Yes
+
+[Package|hjt|Configure Registry Files]
+Applicable=No
+
+[Package|hjt|Configure Remote Servers]
+Applicable=No
+
+[Package|hjt|Install Locations]
+C:\Documents and Settings\Administrator\Desktop\HijackThis.exe=$(AppPath)
+C:\WINDOWS\system32\msvbvm60.dll=$(WinSysPathSysFile)
+C:\WINDOWS\system32\oleaut32.dll=$(WinSysPathSysFile)
+C:\WINDOWS\system32\olepro32.dll=$(WinSysPathSysFile)
+C:\WINDOWS\system32\asycfilt.dll=$(WinSysPathSysFile)
+C:\WINDOWS\system32\stdole2.tlb=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\system32\shlwapi.dll=$(WinSysPath)
+C:\WINDOWS\system32\wininet.dll=$(WinSysPath)
+C:\WINDOWS\system32\psapi.dll=$(WinSysPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP.EXE=$(AppPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP1.EXE=$(WinPath)
+C:\WINDOWS\system32\VB6STKIT.DLL=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\ST6UNST.EXE=$(WinPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\OLEAUT32.DLL=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\OLEPRO32.DLL=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\ASYCFILT.DLL=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\STDOLE2.TLB=$(WinSysPathSysFile)
+
+[Package|hjt|Configure Shared Files]
+Applicable=Yes
+C:\Documents and Settings\Administrator\Desktop\HijackThis.exe=No
+
+[Package|hjt|Distribution]
+Type=single
+Size=
+Title=HijackThis
+
+[Package|hjt|DepFile]
+DepCabFile=HijackThis.CAB
+DepCabRun=HijackThis.INF
+
+[Package|hjt|Package]
+PackageFolder=C:\HJT\Package
+ProjectFolder=C:\HJT
+ServerSideCab=
+File1=C:\HJT\Package\setup.exe
+File2=C:\HJT\Package\Setup.Lst
+File3=C:\HJT\Package\HijackThis.CAB
+Handler1=PDWizard.FolderDplySubWiz
+Handler2=PDWizard.WebPostDplySubWiz
+
+[Package|hjt|IconGroups]
+Group0=HijackThis
+PrivateGroup0=-1
+Parent0=$(Programs)
+
+[Package|hjt|HijackThis]
+Icon1=HijackThis.exe
+Title1=HijackThis
+StartIn1=$(AppPath)
+Key1=Icon1
