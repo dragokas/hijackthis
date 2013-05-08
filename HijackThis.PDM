@@ -1,5 +1,5 @@
 [Root]
-Most Recent Package=hjt
+Most Recent Package=hjttr
 
 
 [Package|HijackThis|Root]
@@ -461,3 +461,113 @@ Icon1=HijackThis.exe
 Title1=HijackThis
 StartIn1=$(AppPath)
 Key1=Icon1
+
+
+[Package|hjttr|Root]
+SubWizProgID=PDWizard.SetupPkgSubWiz
+BuildFolder=C:\HJT\Package
+
+[Package|hjttr|Configure DAO ISAMs]
+Applicable=No
+
+[Package|hjttr|Configure DAO ODBC]
+JetWorkspace=
+ODBCDirect=
+
+[Package|hjttr|Files Found]
+
+[Package|hjttr|Files Released]
+2=
+
+[Package|hjttr|Missing Dependency Information]
+C:\WINDOWS\system32\psapi.dll=
+C:\WINDOWS\system32\wininet.dll=
+C:\WINDOWS\system32\shlwapi.dll=
+
+[Package|hjttr|Out-of-Date Dependency Information]
+
+[Package|hjttr|Files Added]
+
+[Package|hjttr|Files Removed]
+
+[Package|hjttr|Files In Project]
+C:\WINDOWS\system32\msvbvm60.dll=Yes
+C:\WINDOWS\system32\shlwapi.dll=Yes
+C:\WINDOWS\system32\wininet.dll=Yes
+C:\WINDOWS\system32\psapi.dll=Yes
+C:\WINDOWS\system32\VB6STKIT.DLL=Yes
+C:\Users\Loucif Kharouni\Documents\HiJackThis-2.4.0\HiJackThis\src\src_204\HijackThis.exe=Yes
+C:\Windows\System32\oleaut32.dll=Yes
+C:\Windows\System32\olepro32.dll=Yes
+C:\Windows\System32\asycfilt.dll=Yes
+C:\Windows\System32\stdole2.tlb=Yes
+C:\Program Files (x86)\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=Yes
+C:\Program Files (x86)\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP.EXE=Yes
+C:\Program Files (x86)\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP1.EXE=Yes
+C:\Program Files (x86)\Microsoft Visual Studio\VB98\Wizards\PDWizard\ST6UNST.EXE=Yes
+
+[Package|hjttr|Configure Registry Files]
+Applicable=No
+
+[Package|hjttr|Configure Remote Servers]
+Applicable=No
+
+[Package|hjttr|Install Locations]
+C:\Documents and Settings\Administrator\Desktop\HijackThis.exe=$(AppPath)
+C:\WINDOWS\system32\msvbvm60.dll=$(WinSysPathSysFile)
+C:\WINDOWS\system32\oleaut32.dll=$(WinSysPathSysFile)
+C:\WINDOWS\system32\olepro32.dll=$(WinSysPathSysFile)
+C:\WINDOWS\system32\asycfilt.dll=$(WinSysPathSysFile)
+C:\WINDOWS\system32\stdole2.tlb=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\system32\shlwapi.dll=$(WinSysPath)
+C:\WINDOWS\system32\wininet.dll=$(WinSysPath)
+C:\WINDOWS\system32\psapi.dll=$(WinSysPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP.EXE=$(AppPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP1.EXE=$(WinPath)
+C:\WINDOWS\system32\VB6STKIT.DLL=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\ST6UNST.EXE=$(WinPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\OLEAUT32.DLL=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\OLEPRO32.DLL=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\ASYCFILT.DLL=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\STDOLE2.TLB=$(WinSysPathSysFile)
+C:\Users\Loucif Kharouni\Documents\HiJackThis-2.4.0\HiJackThis\src\src_204\HijackThis.exe=$(AppPath)
+C:\Program Files (x86)\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=$(WinSysPathSysFile)
+C:\Program Files (x86)\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP.EXE=$(AppPath)
+C:\Program Files (x86)\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP1.EXE=$(WinPath)
+C:\Program Files (x86)\Microsoft Visual Studio\VB98\Wizards\PDWizard\ST6UNST.EXE=$(WinPath)
+
+[Package|hjttr|Configure Shared Files]
+Applicable=Yes
+C:\Documents and Settings\Administrator\Desktop\HijackThis.exe=No
+C:\Users\Loucif Kharouni\Documents\HiJackThis-2.4.0\HiJackThis\src\src_204\HijackThis.exe=No
+
+[Package|hjttr|Distribution]
+Type=single
+Size=
+Title=HijackThis
+
+[Package|hjttr|DepFile]
+DepCabFile=HijackThis.CAB
+DepCabRun=HijackThis.INF
+
+[Package|hjttr|IconGroups]
+Group0=HijackThis
+PrivateGroup0=False
+Parent0=$(Programs)
+
+[Package|hjttr|HijackThis]
+Icon1=HijackThis.exe
+Title1=HijackThis
+StartIn1=$(AppPath)
+Key1=Icon1
+
+[Package|hjttr|Package]
+PackageFolder=C:\HJT\Package
+ProjectFolder=C:\Users\Loucif Kharouni\Documents\HiJackThis-2.4.0\HiJackThis\src\src_204
+ServerSideCab=
+File1=C:\HJT\Package\setup.exe
+File2=C:\HJT\Package\Setup.Lst
+File3=C:\HJT\Package\HijackThis.CAB
+Handler1=PDWizard.FolderDplySubWiz
+Handler2=PDWizard.WebPostDplySubWiz
