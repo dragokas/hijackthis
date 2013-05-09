@@ -1,0 +1,16 @@
+frmMain = -2, 60, 1034, 795, Z, 60, 138, 706, 722, C
+modRegistry = 41, 27, 934, 762, C
+modMain = -26, 47, 1010, 782, 
+modInfo = 58, 80, 710, 626, 
+modLSP = 12, 31, 641, 601, 
+modInternet = 90, 25, 1126, 760, 
+modBackup = 32, 15, 670, 591, 
+modStartupList = 17, 13, 939, 748, 
+modEncrypt = 66, 66, 704, 648, 
+modProcMan = 51, 15, 721, 615, C
+modHosts = 25, 119, 682, 626, 
+modMD5_2 = 96, 88, 987, 706, 
+modADSSpy = 86, 80, 693, 646, 
+modLanguage = 118, -10, 1064, 725, 
+frmEULA = 83, -12, 763, 562, , 189, 6, 869, 580, C
+modUtils = 62, 88, 653, 489, C
