@@ -42,35 +42,35 @@ Option Explicit
 'Private Declare Function GetPrivateProfileString Lib "kernel32" Alias "GetPrivateProfileStringA" (ByVal lpApplicationName As String, ByVal lpKeyName As Any, ByVal lpDefault As String, ByVal lpReturnedString As String, ByVal nSize As Long, ByVal lpFileName As String) As Long
 'Private Declare Function GetPrivateProfileInt Lib "kernel32" Alias "GetPrivateProfileIntA" (ByVal lpApplicationName As String, ByVal lpKeyName As String, ByVal nDefault As Long, ByVal lpFileName As String) As Long
 'Public Declare Function WritePrivateProfileString Lib "kernel32" Alias "WritePrivateProfileStringA" (ByVal lpApplicationName As String, ByVal lpKeyName As Any, ByVal lpString As Any, ByVal lpFileName As String) As Long
-Private Declare Function GetVersionEx Lib "Kernel32" Alias "GetVersionExA" (lpVersionInformation As OSVERSIONINFO) As Long
-Private Declare Function GetWindowsDirectory Lib "Kernel32" Alias "GetWindowsDirectoryA" (ByVal lpBuffer As String, ByVal nSize As Long) As Long
+Private Declare Function GetVersionEx Lib "kernel32" Alias "GetVersionExA" (lpVersionInformation As OSVERSIONINFO) As Long
+Private Declare Function GetWindowsDirectory Lib "kernel32" Alias "GetWindowsDirectoryA" (ByVal lpBuffer As String, ByVal nSize As Long) As Long
 
 Private Declare Function GetOpenFileName Lib "comdlg32.dll" Alias "GetOpenFileNameA" (pOpenfilename As OPENFILENAME) As Long
 Private Declare Function GetSaveFileName Lib "comdlg32.dll" Alias "GetSaveFileNameA" (pOpenfilename As OPENFILENAME) As Long
 
 Public Declare Function SHRestartSystemMB Lib "shell32" Alias "#59" (ByVal hOwner As Long, ByVal sExtraPrompt As String, ByVal uFlags As Long) As Long
 Public Declare Function SHFileExists Lib "shell32" Alias "#45" (ByVal szPath As String) As Long
-Private Declare Function MoveFileEx Lib "Kernel32" Alias "MoveFileExA" (ByVal lpExistingFileName As String, ByVal lpNewFileName As String, ByVal dwFlags As Long) As Long
+Private Declare Function MoveFileEx Lib "kernel32" Alias "MoveFileExA" (ByVal lpExistingFileName As String, ByVal lpNewFileName As String, ByVal dwFlags As Long) As Long
 
 Private Declare Function GetUserName Lib "advapi32.dll" Alias "GetUserNameA" (ByVal lpBuffer As String, nSize As Long) As Long
-Private Declare Function GetComputerName Lib "Kernel32" Alias "GetComputerNameA" (ByVal lpBuffer As String, nSize As Long) As Long
+Private Declare Function GetComputerName Lib "kernel32" Alias "GetComputerNameA" (ByVal lpBuffer As String, nSize As Long) As Long
 
-Private Declare Function GetDateFormat Lib "Kernel32" Alias "GetDateFormatA" (ByVal Locale As Long, ByVal dwFlags As Long, lpDate As SYSTEMTIME, ByVal lpFormat As String, ByVal lpDateStr As String, ByVal cchDate As Long) As Long
+Private Declare Function GetDateFormat Lib "kernel32" Alias "GetDateFormatA" (ByVal Locale As Long, ByVal dwFlags As Long, lpDate As SYSTEMTIME, ByVal lpFormat As String, ByVal lpDateStr As String, ByVal cchDate As Long) As Long
 
-Private Declare Function lstrlen Lib "Kernel32" Alias "lstrlenA" (ByVal lpString As String) As Long
+Private Declare Function lstrlen Lib "kernel32" Alias "lstrlenA" (ByVal lpString As String) As Long
 
-Public Declare Sub Sleep Lib "Kernel32" (ByVal dwMilliseconds As Long)
+Public Declare Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
 
-Private Declare Function GetUserDefaultLCID Lib "Kernel32" () As Long
+Private Declare Function GetUserDefaultLCID Lib "kernel32" () As Long
 
 Private Declare Function ShellExecuteEx Lib "shell32.dll" (SEI As SHELLEXECUTEINFO) As Long
 
 Private Declare Function inet_addr Lib "wsock32.dll" (ByVal cp As String) As Long
 
-Private Declare Function GetShortPathName Lib "Kernel32" Alias "GetShortPathNameA" (ByVal lpszLongPath As String, ByVal lpszShortPath As String, ByVal lBuffer As Long) As Long
-Private Declare Function FindFirstFile Lib "Kernel32" Alias "FindFirstFileA" (ByVal lpFileName As String, lpFindFileData As WIN32_FIND_DATA) As Long
-Private Declare Function FindNextFile Lib "Kernel32" Alias "FindNextFileA" (ByVal hFindFile As Long, lpFindFileData As WIN32_FIND_DATA) As Long
-Private Declare Function FindClose Lib "Kernel32" (ByVal hFindFile As Long) As Long
+Private Declare Function GetShortPathName Lib "kernel32" Alias "GetShortPathNameA" (ByVal lpszLongPath As String, ByVal lpszShortPath As String, ByVal lBuffer As Long) As Long
+Private Declare Function FindFirstFile Lib "kernel32" Alias "FindFirstFileA" (ByVal lpFileName As String, lpFindFileData As WIN32_FIND_DATA) As Long
+Private Declare Function FindNextFile Lib "kernel32" Alias "FindNextFileA" (ByVal hFindFile As Long, lpFindFileData As WIN32_FIND_DATA) As Long
+Private Declare Function FindClose Lib "kernel32" (ByVal hFindFile As Long) As Long
 
 Private Declare Function OpenSCManager Lib "advapi32.dll" Alias "OpenSCManagerA" (ByVal lpMachineName As String, ByVal lpDatabaseName As String, ByVal dwDesiredAccess As Long) As Long
 Private Declare Function OpenService Lib "advapi32.dll" Alias "OpenServiceA" (ByVal hSCManager As Long, ByVal lpServiceName As String, ByVal dwDesiredAccess As Long) As Long
@@ -81,26 +81,26 @@ Private Declare Function GetSystemMetrics Lib "user32" (ByVal nIndex As Long) As
 
 Private Declare Function SHFileOperation Lib "shell32.dll" Alias "SHFileOperationA" (lpFileOp As SHFILEOPSTRUCT) As Long
 
-Private Declare Function ExpandEnvironmentStrings Lib "Kernel32" Alias "ExpandEnvironmentStringsA" (ByVal lpSrc As String, ByVal lpDst As String, ByVal nSize As Long) As Long
+Private Declare Function ExpandEnvironmentStrings Lib "kernel32" Alias "ExpandEnvironmentStringsA" (ByVal lpSrc As String, ByVal lpDst As String, ByVal nSize As Long) As Long
 
-Private Declare Sub CopyMemory Lib "Kernel32" Alias "RtlMoveMemory" (Dest As Any, Source As Any, ByVal lSize As Long)
+Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Dest As Any, Source As Any, ByVal lSize As Long)
 Private Declare Function OpenProcessToken Lib "Advapi32" (ByVal ProcessHandle As Long, ByVal DesiredAccess As Long, TokenHandle As Long) As Long
 Private Declare Function OpenThreadToken Lib "Advapi32" (ByVal ThreadHandle As Long, ByVal DesiredAccess As Long, ByVal OpenAsSelf As Long, TokenHandle As Long) As Long
-Private Declare Function GetCurrentProcess Lib "Kernel32" () As Long
-Private Declare Function GetCurrentThread Lib "Kernel32" () As Long
+Private Declare Function GetCurrentProcess Lib "kernel32" () As Long
+Private Declare Function GetCurrentThread Lib "kernel32" () As Long
 Private Declare Function GetTokenInformation Lib "Advapi32" (ByVal TokenHandle As Long, TokenInformationClass As Integer, TokenInformation As Any, ByVal TokenInformationLength As Long, ReturnLength As Long) As Long
 Private Declare Function AllocateAndInitializeSid Lib "Advapi32" (pIdentifierAuthority As SID_IDENTIFIER_AUTHORITY, ByVal nSubAuthorityCount As Byte, ByVal nSubAuthority0 As Long, ByVal nSubAuthority1 As Long, ByVal nSubAuthority2 As Long, ByVal nSubAuthority3 As Long, ByVal nSubAuthority4 As Long, ByVal nSubAuthority5 As Long, ByVal nSubAuthority6 As Long, ByVal nSubAuthority7 As Long, lpPSid As Long) As Long
 Private Declare Function IsValidSid Lib "Advapi32" (ByVal pSid As Long) As Long
 Private Declare Function EqualSid Lib "Advapi32" (pSid1 As Any, pSid2 As Any) As Long
 Private Declare Sub FreeSid Lib "Advapi32" (pSid As Any)
 
-Private Declare Function IsWow64Process Lib "Kernel32" (ByVal hProcess As Long, ByRef Wow64Process As Long) As Long
-Private Declare Function Wow64DisableWow64FsRedirection Lib "Kernel32.dll" (ByRef OldValue As Long) As Long
-Private Declare Function Wow64RevertWow64FsRedirection Lib "Kernel32.dll" (ByRef OldValue As Long) As Long
+Private Declare Function IsWow64Process Lib "kernel32" (ByVal hProcess As Long, ByRef Wow64Process As Long) As Long
+Private Declare Function Wow64DisableWow64FsRedirection Lib "kernel32.dll" (ByRef OldValue As Long) As Long
+Private Declare Function Wow64RevertWow64FsRedirection Lib "kernel32.dll" (ByRef OldValue As Long) As Long
 
-Private Declare Function LoadLibrary Lib "Kernel32" Alias "LoadLibraryA" (ByVal lpLibFileName As String) As Long
-Private Declare Function GetProcAddress Lib "Kernel32" (ByVal hModule As Long, ByVal lpProcName As String) As Long
-Private Declare Function FreeLibrary Lib "Kernel32" (ByVal hLibModule As Long) As Long
+Private Declare Function LoadLibrary Lib "kernel32" Alias "LoadLibraryA" (ByVal lpLibFileName As String) As Long
+Private Declare Function GetProcAddress Lib "kernel32" (ByVal hModule As Long, ByVal lpProcName As String) As Long
+Private Declare Function FreeLibrary Lib "kernel32" (ByVal hLibModule As Long) As Long
 
 'For O24
 Public Declare Function SystemParametersInfo Lib "user32" Alias "SystemParametersInfoA" (ByVal uAction As Long, ByVal uParam As Long, ByRef lpvParam As Any, ByVal fuWinIni As Long) As Long
@@ -5744,7 +5744,7 @@ Public Sub ToggleWow64FSRedirection(bEnable As Boolean)
 End Sub
 
 Public Sub SilentDeleteOnReboot(sCmd$)
-    Dim sDummy$, sFilename$
+    Dim sDummy$, sFileName$
     'sCmd is all command-line parameters, like this
     '/param1 /deleteonreboot c:\progra~1\bla\bla.exe /param3
     '/param1 /deleteonreboot "c:\program files\bla\bla.exe" /param3
@@ -5752,17 +5752,17 @@ Public Sub SilentDeleteOnReboot(sCmd$)
     sDummy = Mid(sCmd, InStr(sCmd, "/deleteonreboot") + Len("/deleteonreboot") + 1)
     If InStr(sDummy, """") = 1 Then
         'enclosed in quotes, chop off at next quote
-        sFilename = Mid(sDummy, 2)
-        sFilename = Left(sFilename, InStr(sFilename, """") - 1)
+        sFileName = Mid(sDummy, 2)
+        sFileName = Left(sFileName, InStr(sFileName, """") - 1)
     Else
         'no quotes, chop off at next space if present
         If InStr(sDummy, " ") > 0 Then
-            sFilename = Left(sDummy, InStr(sDummy, " ") - 1)
+            sFileName = Left(sDummy, InStr(sDummy, " ") - 1)
         Else
-            sFilename = sDummy
+            sFileName = sDummy
         End If
     End If
-    DeleteFileOnReboot sFilename, True
+    DeleteFileOnReboot sFileName, True
 End Sub
 
 Public Sub DeleteFile(sFile$)
