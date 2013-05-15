@@ -398,7 +398,7 @@ Public Sub LoadDefaultLanguage()
     "256=Scan completed!" & vbCrLf & _
     "257=O24 - ActiveX Desktop Components" & vbCrLf & _
     "// msgbox'es and stuff in scan methods" & vbCrLf & _
-    "300=For some reason your system denied write access to the Hosts file. If any hijacked domains are in this file, HijackThis may NOT be able to fix this.\n\nIf that happens, you need to edit the file yourself. To do this, click Start, Run and type:\n\n   notepad []\n\nand press Enter. Find the line(s) HijackThis reports and delete them. Save the file as 'hosts.' (with quotes), and reboot.\n\nFor Vista: simply, exit HijackThis, right click on the HijackThis icon, choose 'Run as administrator'." & vbCrLf & _
+    "300=For some reason your system denied write access to the Hosts file. If any hijacked domains are in this file, HijackThis may NOT be able to fix this.\n\nIf that happens, you need to edit the file yourself. To do this, click Start, Run and type:\n\n   notepad []\n\nand press Enter. Find the line(s) HijackThis reports and delete them. Save the file as 'hosts.' (with quotes), and reboot.\n\nFor Vista and above: simply, exit HijackThis, right click on the HijackThis icon, choose 'Run as administrator'." & vbCrLf & _
     "301=Your hosts file has invalid linebreaks and HijackThis is unable to fix this. O1 items will not be displayed.\n\nClick OK to continue the rest of the scan." & vbCrLf & _
     "302=You have an particularly large amount of hijacked domains. It's probably better to delete the file itself then to fix each item (and create a backup).\n\nIf you see the same IP address in all the reported O1 items, consider deleting your Hosts file, which is located at []." & vbCrLf & _
     "303=HijackThis could not write the selected changes to your hosts file. The probably cause is that some program is denying access to it, or that your user account doesn't have the rights to write to it." & vbCrLf & _
@@ -415,7 +415,7 @@ Public Sub LoadDefaultLanguage()
     "344=Unable to delete the service '[]'. Make sure the name is correct and the service is not running." & vbCrLf & _
     "// = misc stuff =" & vbCrLf & _
     "// HJT quickstart URL" & vbCrLf & _
-    "360=http://www.trendmicro.com/go/hjt/quickstart/"
+    "http://sourceforge.net/projects/hjt/files/2.0.4/"
     
     sLines = Split(s, vbCrLf)
     ReloadLanguage

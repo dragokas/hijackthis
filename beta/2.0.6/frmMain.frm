@@ -143,14 +143,14 @@ Begin VB.Form frmMain
          Strikethrough   =   0   'False
       EndProperty
       Height          =   4095
-      Left            =   120
+      Left            =   3480
       TabIndex        =   29
       Top             =   840
       Visible         =   0   'False
       Width           =   6135
       Begin VB.TextBox txtHelp 
          Height          =   3735
-         Left            =   120
+         Left            =   3120
          Locked          =   -1  'True
          MultiLine       =   -1  'True
          ScrollBars      =   2  'Vertical
@@ -1654,9 +1654,9 @@ Begin VB.Form frmMain
       Caption         =   "Calculating MD5 checksum of [file]..."
       ForeColor       =   &H000000FF&
       Height          =   195
-      Left            =   120
+      Left            =   2040
       TabIndex        =   46
-      Top             =   330
+      Top             =   240
       Visible         =   0   'False
       Width           =   5595
    End
@@ -1672,8 +1672,8 @@ Begin VB.Form frmMain
    Begin VB.Shape shpBackground 
       BackStyle       =   1  'Opaque
       Height          =   375
-      Left            =   120
-      Top             =   240
+      Left            =   3240
+      Top             =   120
       Visible         =   0   'False
       Width           =   5655
    End
@@ -1721,106 +1721,6 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
-'TODO
-'1.99.2
-'? language files support
-'  TODO: multi-byte fix for Japanese - WHY DOES THIS NOT WORK
-'V O15 EscDomains / EscRanges
-'V Add/ensure Vista compatibility
-'  V CheckOther1Item path/file access error / access denied to hosts file
-'  x save log crash? - can't reproduce, seems one-time issue
-'  V uninstall manager : invalid property value
-'  ? Registry writing and reading from system sections = access denied?
-'V voor O4 ook andere keys in HKEY_USERS scannen, zie MapSIDToUsername
-'X /cleanitem or /cleanline for automation - not doing this, too complex
-'X crss.exe e.a. processen wel listen (CreateLogFile en RefreshProcessListNT)
-'  -> http://malware-research.co.uk/index.php?topic=57.new#new
-'  - can't do this, only way is to combine CreateToolhelpSnapshot with
-'    standard EnumProcesses to get full path - too complex!
-'V Add O24 Activex desktop components
-'V Vista version string: WinNT 6.00.1288
-'V detect of OS 64-bit is of niet - zie ook Wow64EnableWow64FsRedirection()
-'V /deleteonreboot for automation
-'V included boot mode in logfile
-'V see API-Guide IsAdmin example at OpenProcessToken
-'V Broke ADS Spy
-'V fix O23 bug with service filename e.g. "c:\file.exe" -run
-'V fix O23 bug with service filename with funky aliases (ask Windows to expand?)
-'V SharedTaskScheduler key op verkeerde plaats gecheckt :/
-'V fix bug with Uninstall Manager/ADS Spy config back & forth
-'V ADS Spy 'select all' etc options
-'V Detect installed antispyware programs + versions?
-'  Ad-Aware Personal + Professional , SE or 6
-'V Fix O15 bug with retarded hijackers like *.frame.crazywinnings.com
-'V _finally_ fixed stupid O10 'file missing' bug :P
-'V use lists from CC to expand whitelists >_<
-'V added EOF note at end of log
-'V Policies trucjes - http://www.geekstogo.com/forum/Trojan_SpyHTMLSmitfraudc-t17436.html
-'  zie ook de softloader van Grinler
-'V /silentautolog parameter
-'V add button in n00b frame to pick language
-'V when C: is not NTFS, make ADS spy work properly
-'V HJT/SL Startup groups: subfolders are not detected
-'V SuspendThread/ResumeThread in IBProcMan voor 'freeze process'?
-'V whitelist bug bij Winlogon\Notify
-'V RegEnumValue buffers vergroten tot lEnumBufSize!
-'V geen CreateUninstallKey van read-only media
-
-'1.99.1
-'V infinite loop on autoscan when nothing is found
-'V bugfix in O15 check, HKLM domains weren't shown
-'V bugfix in handling attributes on hosts file
-'V O23 should also show internal service name (if different from full name)
-'V made ADS Spy more spiffy
-'V made 'delete file on reboot' work for win9x/me too (wininit.ini)
-'V 'delete nt service' button (API approach)
-'V fixed bug where O15 *.sub.domain.com wasn't deleted (stupid IE)
-'V fixed bug in restoring O15 items (it didn't work)
-'V fixed O15 displaying empty IP ranges
-'V disable scan button during scan :P
-'V show ProtocolDefaults in O15? (CC thread, Grinler)
-'V added 8.3->Long conversion in GetDOSFilename() function (I'm leet)
-'V hopefully fixed 'Input past end of file' in MakeBackup /w O21+O22
-'V fixed a lot of 'input past end of file' errors
-'V hopefully fixed 'path/file access' error when fixing O1 items
-'X fix 'permission denied' error when fixing O1 items (look2me parasite)
-'V fix 'file missing' for O23 services where file is ok (no path)
-'V fixed bug in MD5 hashing (it didn't work at all)
-'V fixed 'bug' IE not handling some double TLDs as such (i.e. fixed IE bug)
-'V fixed O4 items with ']' in value name not being fixed
-'V Fixed uninstall entry not being updated/created when updating versions
-'-- beta 1 (07/01/05)
-'V Fixed O15 bug where trusted subdomains weren't shown when entire domain was already trusted
-'V Removed debug error msg in FixUNIXHostsFile :/
-'V Fixed O23 crashing bug!
-'-- beta 2 (11/01/05)
-'V tabstops in procman listbox so we can add PIDs
-'V Add/Remove Software Manager
-'-- beta 3 (16/01/05)
-'V OptOut-like startup scan
-'V fix 'file missing' for O23 services where file is ok (multiple files)
-'V Add WinLogon\Notify subkeys to O20
-'V Improved /autolog
-'V Added text for command-line parameters in help text
-'V Kill process before deleting O4 items
-'-- beta 4 (23/01/05)
-'V O20 safelist: ctu33.dll (Euroglot translation prog) and a few others
-'* Jap systems not showing O4 Startup items (Gun)
-'===
-'1.99
-'V check if O23 check/fix/backup/restore actually works
-'V integrate ADS Spy (still needs to be able to scan entire system)
-'V n00b window, checkmark in options
-'V /autolog cmdline optie om meteen log te maken
-'V bugfix voor IP in Trusted Zone (wtf?)
-'V Paypal button! :)
-'X fix voor O23 crash bij stomme Ms4Hd parasiet (CC)
-'V multiple process killer
-'V bugfix for FixUNIXHostsFile when only a few lines were UNIX-style
-'V O15 extended to also check HKLM as well as IP Ranges
-'V backup list + ignore list moet ook multi-select worden
-'V Annie O9 bug
-
 Option Explicit
 Private bSwitchingTabs As Boolean
 Private bIsBeta As Boolean
@@ -2050,33 +1950,33 @@ Private Sub cmdAnalyze_Click()
         'sThisVersion = CStr(App.Major) & "." & CStr(App.Minor) & "." & CStr(2)
         
         'ParseHTTPResponse GetUrl("http://im5.intermute.com/hjt/get_submit_url.php")
-        szBuf = GetUrl("http://www.trendmicro.com/go/hjt/submit/?hjtver=" & sThisVersion)
+        szBuf = GetUrl("http://sourceforge.net/p/hjt/support-requests/" & sThisVersion)
         If "HJT_NOT_SUPPORTED" = szBuf Then
         'MsgBox "Not Supported"
         cmdAnalyze.Caption = "AnalyzeThis"
-        ShellExecute Me.hwnd, "open", "http://www.trendmicro.com/go/hjt/win9x/" & "/?hjtver=" & sThisVersion & "&winver=" & sWinVersion & "&iever=" & sMSIEVersion, "", "", 1
+        ShellExecute Me.hwnd, "open", "http://sourceforge.net/p/hjt/support-requests/", "", "", 1
         Exit Sub
         End If
         
         ParseHTTPResponse szBuf
         If 7 < Len(szSubmitUrl) Then
             'SendData "http://im5.intermute.com/hjt/test.php", szLogData
-            'szSubmitUrl = "http://199.232.43.137/hjt/hjt_submit.php"
-            szSubmitUrl = szSubmitUrl & "/?hjtver=" & sThisVersion & "&winver=" & sWinVersion & "&iever=" & sMSIEVersion
-            SendData szSubmitUrl, szLogData
-            'SendData "http:/hijack1.intermute.com/submit/", szLogData
+            'szSubmitUrl = "http://sourceforge.net/p/hjt/support-requests/"
+            'szSubmitUrl = szSubmitUrl & "/?hjtver=" & sThisVersion & "&winver=" & sWinVersion & "&iever=" & sMSIEVersion
+            'SendData szSubmitUrl, szLogData
+            'SendData "http://sourceforge.net/p/hjt/support-requests/", szLogData
            
         '    ShellExecute Me.hwnd, "open", "http://im5.intermute.com/hjt/showstats.php?report=" & szResponse, "", "", 1
-           ' ShellExecute Me.hwnd, "open", "http://10.2.168.86/log_results.php?report=" & szResponse, "", "", 1
+            ShellExecute Me.hwnd, "open", "http://sourceforge.net/p/hjt/support-requests/" & szResponse, "", "", 1
             ParseHTTPResponse szResponse
             
-            'cmdAnalyze.Enabled = True
+            cmdAnalyze.Enabled = True
             FinishTime = Now
             ElapsedTime = DateDiff("s", BeginTime, FinishTime)
-        Else: MsgBox "No Internet Connection Available"
+        Else: MsgBox "Please go to http://sourceforge.net/p/hjt/support-requests/"
         End If
     Else
-        MsgBox "No Internet Connection Available"
+        MsgBox "Please go to http://sourceforge.net/p/hjt/support-requests/"
     End If
     
     cmdAnalyze.Caption = "AnalyzeThis"
@@ -2787,6 +2687,10 @@ Private Sub Form_Load()
      "* /silentautuolog - the same as /autolog, except with no required user intervention" & vbCrLf
           
     txtHelp.Text = txtHelp.Text & vbCrLf & "* Version history *" & vbCrLf & vbCrLf & _
+     "[v2.0.5 Beta]" & vbCrLf & _
+     "* Fixed No internet connection available when pressing the button Analyze This" & vbCrLf & _
+     "* Fixed the link of update website, now send you to sourceforge.net projects" & vbCrLf & _
+     "* Fixed left-right scrollbar when in safe mode or low screen resolution" & vbCrLf & _
      "[v2.0.4]" & vbCrLf & _
      "* Fixed parser issues on winlogon notify" & vbCrLf & _
      "* Fixed issues to handle certain environment variables" & vbCrLf & _
@@ -3951,9 +3855,9 @@ Private Sub lstProcManDLLs_DblClick()
     ShowFileProperties s
 End Sub
 
+Private Sub lstResults_Click()
 
-
-
+End Sub
 
 Private Sub lstUninstMan_Click()
     Dim sName$, sUninst$, sItems$(), i&

@@ -3498,7 +3498,7 @@ Public Sub CheckNetscapeMozilla()
     'ns6 uses \netscape\netscape 6\currentversion
     'ns7 uses \netscape\currentversion or \netscape\netscape 6\currentversion
     'they all use the same place to store PREFS.JS though
-    sDummy = RegGetString(HKEY_CURRENT_USER, "Software\Mozilla", "CurrentVersion")
+    sDummy = RegGetString(HKEY_CURRENT_USER, "Software\Mozilla\Mozilla Firefox", "CurrentVersion")
     If sDummy = vbNullString Then sDummy = RegGetString(HKEY_CURRENT_USER, "Software\Netscape\Netscape 6", "CurrentVersion")
     If sDummy = vbNullString Then sDummy = RegGetString(HKEY_CURRENT_USER, "Software\Netscape\Netscape", "CurrentVersion")
     If sDummy <> vbNullString Then
