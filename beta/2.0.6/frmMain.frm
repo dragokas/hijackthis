@@ -1722,6 +1722,13 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
+
+'Make the "results" list have a horizontal scrollbar
+'DECLARATIONS: begin
+Private Declare Function SendMessageByNum Lib "user32" Alias "SendMessageA" (ByVal hwnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Const LB_SETHORIZONTALEXTENT = &H194
+'DECLARATIONS: end
+
 Private bSwitchingTabs As Boolean
 Private bIsBeta As Boolean
 Private Const sKeyUninstall As String = "Software\Microsoft\Windows\CurrentVersion\Uninstall"
@@ -1864,7 +1871,7 @@ End Sub
 
 Private Sub cmdAnalyze_Click()
     
-     Dim sLog$, i%, sProcessList$
+    Dim sLog$, i%, sProcessList$
     Dim hSnap&, uProcess As PROCESSENTRY32, sDummy$ '9x
     Dim lProcesses&(1 To 1024), lNeeded&, lNumProcesses&
     Dim hProc&, sProcessName$, lModules&(1 To 1024) 'NT
@@ -1947,12 +1954,6 @@ Private Sub cmdAnalyze_Click()
         
         Dim sThisVersion, szBuf As String
         sThisVersion = CStr(App.Major) & "." & CStr(App.Minor) & "." & CStr(App.Revision)
-        'sThisVersion = CStr(App.Major) & "." & CStr(App.Minor) & "." & CStr(2)
-        
-        'ParseHTTPResponse GetUrl("http://im5.intermute.com/hjt/get_submit_url.php")
-        szBuf = GetUrl("http://sourceforge.net/p/hjt/support-requests/" & sThisVersion)
-        If "HJT_NOT_SUPPORTED" = szBuf Then
-        'MsgBox "Not Supported"
         cmdAnalyze.Caption = "AnalyzeThis"
         ShellExecute Me.hwnd, "open", "http://sourceforge.net/p/hjt/support-requests/", "", "", 1
         Exit Sub
@@ -1960,13 +1961,6 @@ Private Sub cmdAnalyze_Click()
         
         ParseHTTPResponse szBuf
         If 7 < Len(szSubmitUrl) Then
-            'SendData "http://im5.intermute.com/hjt/test.php", szLogData
-            'szSubmitUrl = "http://sourceforge.net/p/hjt/support-requests/"
-            'szSubmitUrl = szSubmitUrl & "/?hjtver=" & sThisVersion & "&winver=" & sWinVersion & "&iever=" & sMSIEVersion
-            'SendData szSubmitUrl, szLogData
-            'SendData "http://sourceforge.net/p/hjt/support-requests/", szLogData
-           
-        '    ShellExecute Me.hwnd, "open", "http://im5.intermute.com/hjt/showstats.php?report=" & szResponse, "", "", 1
             ShellExecute Me.hwnd, "open", "http://sourceforge.net/p/hjt/support-requests/" & szResponse, "", "", 1
             ParseHTTPResponse szResponse
             
@@ -1975,14 +1969,9 @@ Private Sub cmdAnalyze_Click()
             ElapsedTime = DateDiff("s", BeginTime, FinishTime)
         Else: MsgBox "Please go to http://sourceforge.net/p/hjt/support-requests/"
         End If
-    Else
-        MsgBox "Please go to http://sourceforge.net/p/hjt/support-requests/"
-    End If
     
     cmdAnalyze.Caption = "AnalyzeThis"
 
-    'MsgBox ElapsedTime
-    
 End Sub
 Function ObfuscateData(szDataIn As String) As String
 
@@ -2103,10 +2092,10 @@ Private Sub cmdDeleteService_Click()
 End Sub
 
 Private Sub cmdDelOnReboot_Click()
-    Dim sFileName$
-    sFileName = CmnDlgOpenFile("Enter file to delete on reboot...", "All files (*.*)|*.*|DLL libraries (*.dll)|*.dll|Program files (*.exe)|*.exe")
-    If sFileName = vbNullString Then Exit Sub
-    DeleteFileOnReboot sFileName, True
+    Dim sFilename$
+    sFilename = CmnDlgOpenFile("Enter file to delete on reboot...", "All files (*.*)|*.*|DLL libraries (*.dll)|*.dll|Program files (*.exe)|*.exe")
+    If sFilename = vbNullString Then Exit Sub
+    DeleteFileOnReboot sFilename, True
 End Sub
 
 Private Sub cmdHostsManager_Click()
@@ -3305,6 +3294,24 @@ Error:
     ErrorMsg "cmdSaveDef_Click", Err.Number, Err.Description
 End Sub
 
+Private Sub AddHorizontalScrollBarToResults()
+'Adds a horizontal scrollbar to the results display if it is needed.
+
+        'add horizontal scrollbar (after the scan)
+        Dim x As Long
+        Dim listLength As Integer
+        With lstResults
+        For listLength = 0 To .ListCount - 1
+        If lstResults.Width < TextWidth(.List(listLength)) And x < TextWidth(.List(listLength)) Then
+            x = TextWidth(.List(listLength))
+        End If
+        Next
+        End With
+        If ScaleMode = vbTwips Then x = x / Screen.TwipsPerPixelX + 50  ' if twips change to pixels (+50 to account for the width of the vertical scrollbar
+        SendMessageByNum lstResults.hwnd, LB_SETHORIZONTALEXTENT, x, 0
+        'end add horizontal scrollbar (after the scan)
+End Sub
+
 Private Sub cmdScan_Click()
     On Error GoTo Error:
     'If cmdScan.Caption = "Scan" Then
@@ -3323,7 +3330,9 @@ Private Sub cmdScan_Click()
     
         StartScan
         
-      
+        'add the horizontal scrollbar if needed
+        AddHorizontalScrollBarToResults
+        
         cmdScan.Enabled = True
         cmdAnalyze.Enabled = True
         
@@ -3572,6 +3581,9 @@ Private Sub Form_Resize()
         'imgMiscToolsDown2.Visible = False
         vscMiscTools.Visible = False
     End If
+    
+    'add the horizontal scrollbar to the results display if needed
+    AddHorizontalScrollBarToResults
 End Sub
 
 Private Sub LoadSettings()
@@ -3853,10 +3865,6 @@ Private Sub lstProcManDLLs_DblClick()
     s = lstProcManDLLs.List(lstProcManDLLs.ListIndex)
     s = Mid(s, InStr(s, vbTab) + 1)
     ShowFileProperties s
-End Sub
-
-Private Sub lstResults_Click()
-
 End Sub
 
 Private Sub lstUninstMan_Click()

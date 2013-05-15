@@ -1,5 +1,5 @@
 Type=Exe
-Reference=*\G{3F4DACA7-160D-11D2-A8E9-00104B365C9F}#1.0#0#..\..\..\..\..\..\..\Windows\system32\vbscript.dll\2#Microsoft VBScript Regular Expressions 1.0
+Reference=*\G{3F4DACA7-160D-11D2-A8E9-00104B365C9F}#1.0#0#..\..\..\..\..\..\..\..\Windows\system32\vbscript.dll\2#Microsoft VBScript Regular Expressions 1.0
 Form=frmMain.frm
 Module=modRegistry; modRegistry.bas
 Module=modMain; modMain.bas

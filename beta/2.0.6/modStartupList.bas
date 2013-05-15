@@ -1,8 +1,8 @@
 Attribute VB_Name = "modStartupList"
 Option Explicit
 Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" (ByVal hwnd As Long, ByVal lpOperation As String, ByVal lpFile As String, ByVal lpParameters As String, ByVal lpDirectory As String, ByVal nShowCmd As Long) As Long
-Private Declare Function GetWindowsDirectory Lib "Kernel32" Alias "GetWindowsDirectoryA" (ByVal lpBuffer As String, ByVal nSize As Long) As Long
-Private Declare Function GetPrivateProfileString Lib "Kernel32" Alias "GetPrivateProfileStringA" (ByVal lpApplicationName As String, ByVal lpKeyName As Any, ByVal lpDefault As String, ByVal lpReturnedString As String, ByVal nSize As Long, ByVal lpFileName As String) As Long
+Private Declare Function GetWindowsDirectory Lib "kernel32" Alias "GetWindowsDirectoryA" (ByVal lpBuffer As String, ByVal nSize As Long) As Long
+Private Declare Function GetPrivateProfileString Lib "kernel32" Alias "GetPrivateProfileStringA" (ByVal lpApplicationName As String, ByVal lpKeyName As Any, ByVal lpDefault As String, ByVal lpReturnedString As String, ByVal nSize As Long, ByVal lpFileName As String) As Long
 
 Private Declare Function RegOpenKeyEx Lib "advapi32.dll" Alias "RegOpenKeyExA" (ByVal hKey As Long, ByVal lpSubKey As String, ByVal ulOptions As Long, ByVal samDesired As Long, phkResult As Long) As Long
 Private Declare Function RegCloseKey Lib "advapi32.dll" (ByVal hKey As Long) As Long
@@ -10,31 +10,31 @@ Private Declare Function RegEnumKey Lib "advapi32.dll" Alias "RegEnumKeyA" (ByVa
 Private Declare Function RegEnumValue Lib "advapi32.dll" Alias "RegEnumValueA" (ByVal hKey As Long, ByVal dwIndex As Long, ByVal lpValueName As String, lpcbValueName As Long, ByVal lpReserved As Long, lpType As Long, lpData As Any, lpcbData As Long) As Long
 Private Declare Function RegQueryValueEx Lib "advapi32.dll" Alias "RegQueryValueExA" (ByVal hKey As Long, ByVal lpValueName As String, ByVal lpReserved As Long, lpType As Long, lpData As Any, lpcbData As Long) As Long
 
-Private Declare Function CreateToolhelpSnapshot Lib "Kernel32" Alias "CreateToolhelp32Snapshot" (ByVal lFlags As Long, ByVal lProcessID As Long) As Long
-Private Declare Function ProcessFirst32 Lib "Kernel32" Alias "Process32First" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
-Private Declare Function ProcessNext32 Lib "Kernel32" Alias "Process32Next" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
-Private Declare Sub CloseHandle Lib "Kernel32" (ByVal hPass As Long)
+Private Declare Function CreateToolhelpSnapshot Lib "kernel32" Alias "CreateToolhelp32Snapshot" (ByVal lFlags As Long, ByVal lProcessID As Long) As Long
+Private Declare Function ProcessFirst32 Lib "kernel32" Alias "Process32First" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
+Private Declare Function ProcessNext32 Lib "kernel32" Alias "Process32Next" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
+Private Declare Sub CloseHandle Lib "kernel32" (ByVal hPass As Long)
 
-Private Declare Function GetVersionEx Lib "Kernel32" Alias "GetVersionExA" (lpVersionInformation As OSVERSIONINFO) As Long
+Private Declare Function GetVersionEx Lib "kernel32" Alias "GetVersionExA" (lpVersionInformation As OSVERSIONINFO) As Long
 Private Declare Function SHFileExists Lib "shell32" Alias "#45" (ByVal szPath As String) As Long
 
-Private Declare Function GetTickCount Lib "Kernel32" () As Long
+Private Declare Function GetTickCount Lib "kernel32" () As Long
 
-Private Declare Function CreateFile Lib "Kernel32" Alias "CreateFileA" (ByVal lpFileName As String, ByVal dwDesiredAccess As Long, ByVal dwShareMode As Long, lpSecurityAttributes As Long, ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, ByVal hTemplateFile As Long) As Long
-Private Declare Function GetFileTime Lib "Kernel32" (ByVal hFile As Long, lpCreationTime As Any, lpLastAccessTime As Any, lpLastWriteTime As FILETIME) As Long
-Private Declare Function FileTimeToSystemTime Lib "Kernel32" (lpFileTime As FILETIME, lpSystemTime As SYSTEMTIME) As Long
-Private Declare Function FileTimeToLocalFileTime Lib "Kernel32" (lpFileTime As FILETIME, lpLocalFileTime As FILETIME) As Long
+Private Declare Function CreateFile Lib "kernel32" Alias "CreateFileA" (ByVal lpFileName As String, ByVal dwDesiredAccess As Long, ByVal dwShareMode As Long, lpSecurityAttributes As Long, ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, ByVal hTemplateFile As Long) As Long
+Private Declare Function GetFileTime Lib "kernel32" (ByVal hFile As Long, lpCreationTime As Any, lpLastAccessTime As Any, lpLastWriteTime As FILETIME) As Long
+Private Declare Function FileTimeToSystemTime Lib "kernel32" (lpFileTime As FILETIME, lpSystemTime As SYSTEMTIME) As Long
+Private Declare Function FileTimeToLocalFileTime Lib "kernel32" (lpFileTime As FILETIME, lpLocalFileTime As FILETIME) As Long
 
 Private Declare Function EnumProcesses Lib "PSAPI.DLL" (ByRef lpidProcess As Long, ByVal cb As Long, ByRef cbNeeded As Long) As Long
 Private Declare Function GetModuleFileNameExA Lib "PSAPI.DLL" (ByVal hProcess As Long, ByVal hModule As Long, ByVal ModuleName As String, ByVal nSize As Long) As Long
-Private Declare Function OpenProcess Lib "Kernel32.dll" (ByVal dwDesiredAccessas As Long, ByVal bInheritHandle As Long, ByVal dwProcId As Long) As Long
+Private Declare Function OpenProcess Lib "kernel32.dll" (ByVal dwDesiredAccessas As Long, ByVal bInheritHandle As Long, ByVal dwProcId As Long) As Long
 Private Declare Function EnumProcessModules Lib "PSAPI.DLL" (ByVal hProcess As Long, ByRef lphModule As Long, ByVal cb As Long, ByRef cbNeeded As Long) As Long
 
 Private Declare Function GetFileVersionInfo Lib "version.dll" Alias "GetFileVersionInfoA" (ByVal lptstrFilename As String, ByVal dwHandle As Long, ByVal dwLen As Long, lpData As Any) As Long
 Private Declare Function GetFileVersionInfoSize Lib "version.dll" Alias "GetFileVersionInfoSizeA" (ByVal lptstrFilename As String, lpdwHandle As Long) As Long
 Private Declare Function VerQueryValue Lib "version.dll" Alias "VerQueryValueA" (pBlock As Any, ByVal lpSubBlock As String, lplpBuffer As Long, puLen As Long) As Long
-Private Declare Function lstrcpy Lib "Kernel32.dll" Alias "lstrcpyA" (ByVal lpString1 As Any, ByVal lpString2 As Any) As Long
-Private Declare Sub CopyMemory Lib "Kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, ByVal Source As Any, ByVal Length As Long)
+Private Declare Function lstrcpy Lib "kernel32.dll" Alias "lstrcpyA" (ByVal lpString1 As Any, ByVal lpString2 As Any) As Long
+Private Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, ByVal Source As Any, ByVal Length As Long)
 
 Private Type VS_FIXEDFILEINFO
    dwSignature As Long
@@ -2444,18 +2444,24 @@ Public Function GetWindowsVersion$()
                         Case 0 'Windows 2000
                             sWinVer = "Windows 2000 " & _
                                      sCSD & " " & _
-                                     "(WinNT 5.00." & _
-                                     Format(.dwBuildNumber And &HFFF, "0000") & ")"
+                                     "(Windows 5." & .dwMinorVersion & "." & .dwBuildNumber & ")"
+                                     '"(WinNT 5.00." & _
+                                     'Format(.dwBuildNumber And &HFFF, "0000") & ")"
+                                     
                         Case 1 'Windows XP
                             sWinVer = "Windows XP " & _
                                     sCSD & " " & _
-                                    "(WinNT 5.01." & _
-                                    Format(.dwBuildNumber And &HFFF, "0000") & ")"
+                                    "(Windows 5." & .dwMinorVersion & "." & .dwBuildNumber & ")"
+                                    '"(WinNT 5.01." & _
+                                    'Format(.dwBuildNumber And &HFFF, "0000") & ")"
+                                    
                         Case 2 'Windows 2003
                             sWinVer = "Windows 2003 " & _
                                     sCSD & " " & _
-                                    "(WinNT 5.02." & _
-                                    Format(.dwBuildNumber And &HFFF, "0000") & ")"
+                                    "(Windows 5." & .dwMinorVersion & "." & .dwBuildNumber & ")"
+                                    '"(WinNT 5.02." & _
+                                    'Format(.dwBuildNumber And &HFFF, "0000") & ")"
+                                    
                         Case Else 'WTF?
                             sWinVer = "Unknown Windows " & _
                                     "(WinNT " & _
@@ -2469,13 +2475,27 @@ Public Function GetWindowsVersion$()
                         Case 0 'Windows Vista
                             sWinVer = "Windows Vista " & _
                                     sCSD & " " & _
-                                    "(WinNT 6.00." & _
-                                    Format(.dwBuildNumber And &HFFF, "0000") & ")"
+                                    "(Windows 6." & .dwMinorVersion & "." & .dwBuildNumber & ")"
+                                    
                         Case 1 'Windows 7
                             sWinVer = "Windows 7 " & _
                                     sCSD & " " & _
-                                    "(Windows 6." & _
-                                    Format(.dwBuildNumber And &HFFF, "0000") & ")"
+                                    "(Windows 6." & .dwMinorVersion & "." & .dwBuildNumber & ")"
+                                                                        
+                        Case 2 'Windows 8
+                            sWinVer = "Windows 8 " & _
+                                    sCSD & " " & _
+                                    "(Windows 6." & .dwMinorVersion & "." & .dwBuildNumber & ")"
+                                    
+                        Case 3 'Windows 2008
+                            sWinVer = "Windows 2008 " & _
+                                    sCSD & " " & _
+                                    "(Windows 6." & .dwMinorVersion & "." & .dwBuildNumber & ")"
+                                    
+                        Case 4 'Windows 2012
+                            sWinVer = "Windows 2012 " & _
+                                    sCSD & " " & _
+                                    "(Windows 6." & .dwMinorVersion & "." & .dwBuildNumber & ")"
                         Case Else
                             sWinVer = "Unknown Windows " & _
                                     "(WinNT " & _
@@ -2501,6 +2521,7 @@ EndOfFun:
 Error:
     ErrorMsg Err.Number, Err.Description, "GetWindowsVersion"
 End Function
+
 
 Public Function GetMSIEVersion$()
     Dim sMSIEPath$, sMSIEVer$, sMSIEHotfixes$, sMSIEFriendlyVer$
