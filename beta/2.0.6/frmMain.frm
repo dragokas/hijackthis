@@ -143,14 +143,14 @@ Begin VB.Form frmMain
          Strikethrough   =   0   'False
       EndProperty
       Height          =   4095
-      Left            =   3480
+      Left            =   120
       TabIndex        =   29
       Top             =   840
       Visible         =   0   'False
       Width           =   6135
       Begin VB.TextBox txtHelp 
          Height          =   3735
-         Left            =   3120
+         Left            =   120
          Locked          =   -1  'True
          MultiLine       =   -1  'True
          ScrollBars      =   2  'Vertical
@@ -1654,9 +1654,9 @@ Begin VB.Form frmMain
       Caption         =   "Calculating MD5 checksum of [file]..."
       ForeColor       =   &H000000FF&
       Height          =   195
-      Left            =   2040
+      Left            =   480
       TabIndex        =   46
-      Top             =   240
+      Top             =   360
       Visible         =   0   'False
       Width           =   5595
    End
@@ -1672,8 +1672,8 @@ Begin VB.Form frmMain
    Begin VB.Shape shpBackground 
       BackStyle       =   1  'Opaque
       Height          =   375
-      Left            =   3240
-      Top             =   120
+      Left            =   360
+      Top             =   240
       Visible         =   0   'False
       Width           =   5655
    End
