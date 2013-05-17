@@ -72,22 +72,27 @@ Public Function NormalizePath$(sFile$)
 End Function
 
 Public Function GetChromeVersion$()
-    Dim sItems$(), sName$, sVer$, ChromeVer$
+    Dim sVer$, ChromeVer$
     Dim i&
     
-    sItems = Split(RegEnumSubkeys(HKEY_CURRENT_USER, "Software\Google\Update\Clients"), "|")
-    If UBound(sItems) <> -1 Then
-        For i = 0 To UBound(sItems)
-            sName = RegGetString(HKEY_CURRENT_USER, "Software\Google\Update\Clients\" & sItems(i), "name")
-            sVer = RegGetString(HKEY_CURRENT_USER, "Software\Google\Update\Clients\" & sItems(i), "pv")
-            If sName Like "*Chrome*" And sVer <> vbNullString Then
-                ChromeVer = "CHROME: " & sVer
-                Exit For
-            End If
-        Next i
+    sVer = RegGetString(HKEY_LOCAL_MACHINE, "Software\Google\Update\Clients\{8A69D345-D564-463c-AFF1-A69D9E530F96}", "pv")
+    If sVer <> vbNullString Then
+        ChromeVer = "CHROME: " & sVer
     End If
-
+    
     GetChromeVersion = ChromeVer
+End Function
+
+Public Function GetChromeVersion64$()
+    Dim sVer$, ChromeVer$
+    Dim i&
+    
+    sVer = RegGetString(HKEY_LOCAL_MACHINE, "Software\Wow6432Node\Google\Update\Clients\{8A69D345-D564-463c-AFF1-A69D9E530F96}", "pv")
+    If sVer <> vbNullString Then
+        ChromeVer = "CHROME: " & sVer
+    End If
+    
+    GetChromeVersion64 = ChromeVer
 End Function
 
 Public Function GetFirefoxVersion$()

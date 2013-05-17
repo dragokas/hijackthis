@@ -3774,6 +3774,7 @@ MakeLog:
     sLog = sLog & "MSIE: " & GetMSIEVersion & vbCrLf
     'GetChromeVersion
     sLog = sLog & GetChromeVersion() & vbCrLf
+    sLog = sLog & GetChromeVersion64() & vbCrLf
     sLog = sLog & GetFirefoxVersion() & vbCrLf
    
     'sLog = sLog & "Spybot S&D version: " & GetSpybotVersion & vbCrLf
