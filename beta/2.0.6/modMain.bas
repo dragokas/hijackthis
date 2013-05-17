@@ -4937,7 +4937,7 @@ Public Sub ErrorMsg(sProcedure$, iErrNum%, sErrDesc$, Optional sParameters$)
     If vbYes = MsgBox(sMsg, vbCritical + vbYesNo) Then
     Dim szParams As String
     Dim szCrashUrl As String
-    szCrashUrl = "http://www.trendmicro.com/go/hjt/error/?"
+    szCrashUrl = "https://sourceforge.net/p/hjt/_list/tickets"
     szParams = "function=" & sProcedure
     szParams = szParams & "&params=" & sParameters
     szParams = szParams & "&errorno=" & CStr(iErrNum)
@@ -5744,7 +5744,7 @@ Public Sub ToggleWow64FSRedirection(bEnable As Boolean)
 End Sub
 
 Public Sub SilentDeleteOnReboot(sCmd$)
-    Dim sDummy$, sFileName$
+    Dim sDummy$, sFilename$
     'sCmd is all command-line parameters, like this
     '/param1 /deleteonreboot c:\progra~1\bla\bla.exe /param3
     '/param1 /deleteonreboot "c:\program files\bla\bla.exe" /param3
@@ -5752,17 +5752,17 @@ Public Sub SilentDeleteOnReboot(sCmd$)
     sDummy = Mid(sCmd, InStr(sCmd, "/deleteonreboot") + Len("/deleteonreboot") + 1)
     If InStr(sDummy, """") = 1 Then
         'enclosed in quotes, chop off at next quote
-        sFileName = Mid(sDummy, 2)
-        sFileName = Left(sFileName, InStr(sFileName, """") - 1)
+        sFilename = Mid(sDummy, 2)
+        sFilename = Left(sFilename, InStr(sFilename, """") - 1)
     Else
         'no quotes, chop off at next space if present
         If InStr(sDummy, " ") > 0 Then
-            sFileName = Left(sDummy, InStr(sDummy, " ") - 1)
+            sFilename = Left(sDummy, InStr(sDummy, " ") - 1)
         Else
-            sFileName = sDummy
+            sFilename = sDummy
         End If
     End If
-    DeleteFileOnReboot sFileName, True
+    DeleteFileOnReboot sFilename, True
 End Sub
 
 Public Sub DeleteFile(sFile$)

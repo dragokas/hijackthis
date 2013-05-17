@@ -2513,7 +2513,7 @@ Private Sub Form_Load()
     If InStr(1, Command$, "/ihatewhitelists") > 0 Then bIgnoreAllWhitelists = True
     
     'set encryption string - THOU SHALT NOT STEAL
-    sProgramVersion = Chr(&H54) & Chr(&H48) & Chr(&H4F) & _
+     sProgramVersion = Chr(&H54) & Chr(&H48) & Chr(&H4F) & _
       Chr(&H55) & Chr(&H20) & Chr(&H53) & Chr(&H48) & _
       Chr(&H41) & Chr(&H4C) & Chr(&H54) & Chr(&H20) & _
       Chr(&H4E) & Chr(&H4F) & Chr(&H54) & Chr(&H20) & _
