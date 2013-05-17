@@ -1,5 +1,5 @@
 frmMain = -7, -17, 1029, 718, , 40, -4, 694, 580, C
-modRegistry = 41, 27, 934, 762, 
+modRegistry = 41, 27, 934, 762, Z
 modMain = -26, 47, 1010, 782, 
 modInfo = 58, 80, 710, 626, 
 modLSP = 12, 31, 641, 601, C
@@ -10,7 +10,7 @@ modEncrypt = 66, 66, 704, 648,
 modProcMan = 51, 15, 721, 615, 
 modHosts = 25, 119, 682, 626, 
 modMD5_2 = 96, 88, 987, 706, C
-modADSSpy = 86, 80, 693, 646, Z
+modADSSpy = 86, 80, 693, 646, 
 modLanguage = 118, -10, 1064, 725, 
 frmEULA = 83, -12, 763, 562, , 189, 6, 869, 580, C
 modUtils = 62, 88, 653, 489, C

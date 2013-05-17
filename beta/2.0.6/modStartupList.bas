@@ -2355,7 +2355,7 @@ Dim sMsg$
     If vbYes = MsgBox(sMsg, vbCritical + vbYesNo) Then
         Dim szParams As String
         Dim szCrashUrl As String
-        szCrashUrl = "http://www.trendmicro.com/go/hjt/error/?"
+        szCrashUrl = "https://sourceforge.net/p/hjt/_list/tickets"
         szParams = "function=" & sSub$
         szParams = szParams & "&params=" & sArgs$
         szParams = szParams & "&errorno=" & CStr(iErrNum)

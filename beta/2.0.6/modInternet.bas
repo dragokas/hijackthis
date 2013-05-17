@@ -62,8 +62,7 @@ Public Sub CheckForUpdate()
     
     sThisVersion = CStr(App.Major) & "." & CStr(App.Minor) & "." & CStr(App.Revision)
     
-    'Dim szUpdateUrl As String
-    'szUpdateUrl = "http://www.trendmicro.com/go/hjt/check_for_updates/?hjtver=" & sThisVersion
+    
     Dim szUpdateUrl As String
     szUpdateUrl = "http://sourceforge.net/projects/hjt/"
         
@@ -72,102 +71,6 @@ Public Sub CheckForUpdate()
     Else
         MsgBox "No Internet Connection Available"
     End If
-    
-    'sThisVersion = "1.97.4"
-    
-'    If MsgBox("HijackThis will now 'phone home' to www." & _
-'       "spywareinfo.com and download a text" & _
-'       "file with the latest version info.", vbInformation + vbOKCancel) = vbCancel Then
-'        Exit Sub
-'    End If
-'
-'    sUserAgent = "HijackThis v" & sThisVersion
-'    sProxy = frmMain.txtCheckUpdateProxy.Text
-'
-'    hInternet = InternetOpen(sUserAgent, INTERNET_OPEN_TYPE_DIRECT, IIf(sProxy = vbNullString, vbNullString, sProxy), vbNullString, 0)
-'    If hInternet = 0 Then
-'        MsgBox "Unable to start WinSock.", vbCritical
-'        Exit Sub
-'    End If
-'
-'    hFile = InternetOpenUrl(hInternet, sURLUpdate, vbNullString, ByVal 0, INTERNET_FLAG_RELOAD, ByVal 0)
-'    If hFile = 0 Then
-'        MsgBox "Unable to connect to server (www.spywareinfo.com). Either you have no Internet connection open or the server is down.", vbCritical
-'        InternetCloseHandle hInternet
-'        Exit Sub
-'    End If
-'
-'    sBuffer = Space(1024)
-'    InternetReadFile hFile, sBuffer, 1024, lBufferLen
-'    sBuffer = Left(sBuffer, lBufferLen)
-'    InternetCloseHandle hFile
-'
-'    If Not IsNumeric(Left(sBuffer, 1)) Then
-'        'oops. 404 or something?
-'        MsgBox "The website is unavailable. Either it" & _
-'               " is down, or " & _
-'               "I moved or deleted it by accident. Try again" & _
-'               " in a few days, or email me at www.merijn.org/contact.html.", vbCritical
-'        InternetCloseHandle hInternet
-'        Exit Sub
-'    End If
-'
-'    sVer = Left(sBuffer, InStr(sBuffer, "|") - 1)
-'    sUpdate = Mid(sBuffer, InStr(sBuffer, "|") + 1)
-'
-'    If CLng(Replace(sVer, ".", "")) > CLng(Replace(sThisVersion, ".", "")) Then
-'        If MsgBox("You have: HijackThis v" & sThisVersion & vbCrLf & _
-'               "The latest version is: HijackThis v" & sVer & vbCrLf & vbCrLf & _
-'               "New in " & sVer & ": " & vbCrLf & sUpdate & vbCrLf & vbCrLf & _
-'               "Do you want to download the new version?", vbQuestion + vbYesNo) = vbNo Then
-'            Exit Sub
-'        End If
-'    Else
-'        MsgBox "You have the latest version of HijackThis: " & sVer, vbInformation
-'        InternetCloseHandle hInternet
-'        Exit Sub
-'    End If
-'
-'    hFile = InternetOpenUrl(hInternet, sURLDownload, vbNullString, ByVal 0, INTERNET_FLAG_RELOAD, ByVal 0)
-'    If hFile = 0 Then
-'        MsgBox "Unable to connect to server (www.spywareinfo.com). Either you have no Internet connection open or the server is down.", vbCritical
-'        InternetCloseHandle hInternet
-'        Exit Sub
-'    End If
-'
-'    'improved sub for downloading hijackthis.zip
-'    'it might not come in into one piece
-'    sZipFile = vbNullString
-'    Do
-'        sBuffer = Space(32768)
-'        InternetReadFile hFile, sBuffer, Len(sBuffer), lBufferLen
-'        sZipFile = sZipFile & Left(sBuffer, lBufferLen)
-'    Loop Until lBufferLen = 0
-'
-'    InternetCloseHandle hFile
-'    InternetCloseHandle hInternet
-'
-'    sFileName$ = CmnDlgSaveFile("Save downloaded file to...", "All files (*.*)|*.*", "hijackthis.zip")
-'    If sFileName = vbNullString Then
-'        Exit Sub
-'    End If
-'
-'    Open sFileName For Output As #1
-'        Print #1, sZipFile
-'    Close #1
-'
-'    If MsgBox("Newest version of HijackThis downloaded to" & vbCrLf & sFileName & vbCrLf & vbCrLf & "Open the file?", vbQuestion + vbYesNo) = vbNo Then
-'        Exit Sub
-'    End If
-'
-'    hFile = ShellExecute(0, "open", sFileName, vbNullString, vbNullString, 1)
-'
-'EndOfSub:
-'    Exit Sub
-'
-'Error:
-'    Close #1
-'    ErrorMsg "modInternet_CheckForUpdate", Err.Number, Err.Description
 End Sub
 
 Public Sub SendData(szUrl As String, szData As String)
