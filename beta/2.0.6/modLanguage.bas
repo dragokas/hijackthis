@@ -110,10 +110,9 @@ Private Sub ReloadLanguage()
                     Case "106": .lblInfo(2).Caption = Mid(sLines(i), 5)
                     Case "107": .cmdDeleteService.Caption = Mid(sLines(i), 5)
                     Case "108": .lblInfo(6).Caption = Mid(sLines(i), 5)
-                    Case "109": .cmdADSSpy.Caption = Mid(sLines(i), 5)
-                    Case "110": .lblInfo(3).Caption = Mid(sLines(i), 5)
-                    Case "111": .cmdARSMan.Caption = Mid(sLines(i), 5)
-                    Case "112": .lblInfo(7).Caption = Mid(sLines(i), 5)
+                    'Case "109": .lblInfo(3).Caption = Mid(sLines(i), 5)
+                    'Case "110": .cmdARSMan.Caption = Mid(sLines(i), 5)
+                    Case "111": .lblInfo(7).Caption = Mid(sLines(i), 5)
                     
                     Case "120": .lblConfigInfo(17).Caption = Mid(sLines(i), 5)
                     Case "121": .chkDoMD5.Caption = Mid(sLines(i), 5)
@@ -139,7 +138,7 @@ Private Sub ReloadLanguage()
                     Case "164": .cmdN00bBackups.Caption = Mid(sLines(i), 5)
                     Case "165": .cmdN00bTools.Caption = Mid(sLines(i), 5)
                     Case "166": .cmdN00bHJTQuickStart.Caption = Mid(sLines(i), 5)
-                    Case "167": .lblInfo(5).Caption = Mid(sLines(i), 5)
+                    'Case "167": .lblInfo(5).Caption = Mid(sLines(i), 5)
                     Case "168": .cmdN00bClose.Caption = Mid(sLines(i), 5)
                     Case "169": .chkShowN00b.Caption = Mid(sLines(i), 5)
                     Case "183": .lblInfo(9).Caption = Mid(sLines(i), 5)
@@ -153,18 +152,7 @@ Private Sub ReloadLanguage()
                     Case "176": .cmdProcManBack.Caption = Mid(sLines(i), 5)
                     Case "177": .lblProcManDblClick.Caption = Mid(sLines(i), 5)
                     
-                    
-                    Case "190": .fraADSSpy.Caption = Mid(sLines(i), 5)
-                    Case "191": .chkADSSpyQuick.Caption = Mid(sLines(i), 5)
-                    Case "192": .chkADSSpyIgnoreSystem.Caption = Mid(sLines(i), 5)
-                    Case "193": .chkADSSpyCalcMD5.Caption = Mid(sLines(i), 5)
-                    Case "194": .cmdADSSpyWhatsThis.Caption = Mid(sLines(i), 5)
-                    Case "195": .cmdADSSpyHelp.Caption = Mid(sLines(i), 5)
-                    Case "196": .cmdADSSpyScan.Caption = Mid(sLines(i), 5)
-                    Case "197": .cmdADSSpySaveLog.Caption = Mid(sLines(i), 5)
-                    Case "198": .cmdADSSpyRemove.Caption = Mid(sLines(i), 5)
-                    Case "199": .cmdADSSpyBack.Caption = Mid(sLines(i), 5)
-                    
+                                      
                     Case "210": .fraUninstMan.Caption = Mid(sLines(i), 5)
                     Case "211": .lblInfo(11).Caption = Mid(sLines(i), 5)
                     Case "212": .lblInfo(8).Caption = Mid(sLines(i), 5)
@@ -277,8 +265,8 @@ Public Sub LoadDefaultLanguage()
     "104=Opens an editor for the 'hosts' file." & vbCrLf & _
     "105=Delete a file on reboot..." & vbCrLf & _
     "106=If a file cannot be removed from memory, Windows can be setup to delete it when the system is restarted." & vbCrLf & _
-    "107=Delete an NT service..." & vbCrLf & _
-    "108=Delete a Windows NT Service (O23). USE WITH CAUTION! (WinNT4/2k/XP only)" & vbCrLf & _
+    "107=Delete an Windows service..." & vbCrLf & _
+    "108=Delete a Windows Service (O23). USE WITH CAUTION! (WinNT4/2k/XP only)" & vbCrLf & _
     "109=Open ADS Spy..." & vbCrLf & _
     "110=Open the integrated ADS Spy utility to scan for hidden data streams." & vbCrLf & _
     "111=Open Uninstall Manager..." & vbCrLf

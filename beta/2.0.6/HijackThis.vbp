@@ -12,7 +12,6 @@ Module=modEncrypt; modEncrypt.bas
 Module=modProcMan; modProcMan.bas
 Module=modHosts; modHosts.bas
 Module=modMD5_2; modMD5_2.bas
-Module=modADSSpy; modADSSpy.bas
 Module=modLanguage; modLanguage.bas
 Form=frmEULA.frm
 Module=modUtils; modUtils.bas

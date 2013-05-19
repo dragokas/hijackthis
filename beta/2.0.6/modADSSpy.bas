@@ -102,65 +102,10 @@ Private Const FILE_FLAG_BACKUP_SEMANTICS = &H2000000
 
 Private Const OpenExisting As Long = 3
 
-Public bADSSpyAbortScanNow As Boolean
+'Public bADSSpyAbortScanNow As Boolean
 Private bQuickScan As Boolean, bIgnoreSystem As Boolean, bCalcMD5 As Boolean
 
-Public Sub ADSSpyScan(bArgQuickScan As Boolean, bArgIgnoreSystem As Boolean, bArgCalcMD5 As Boolean)
-    bQuickScan = bArgQuickScan
-    bIgnoreSystem = bArgIgnoreSystem
-    bCalcMD5 = bArgCalcMD5
-    
-    If bQuickScan Then
-        EnumADSInAllFiles sWinDir
-    Else
-        'changed this from scanning only C: to scanning
-        'all non-removable local drives.
-        Dim lDrives&, lType&, sDrive$, i%
-        lDrives = GetLogicalDrives()
-        For i = 0 To 25
-            If (lDrives And 2 ^ i) Then
-                sDrive = Chr(i + 65) & ":"
-                If GetDriveType(sDrive & "\") = DRIVE_FIXED Or _
-                   GetDriveType(sDrive & "\") = DRIVE_RAMDISK Then
-                    EnumADSInAllFiles sDrive
-                    DoEvents
-                End If
-            End If
-        Next i
-        'EnumADSInAllFiles Left(sWinDir, 2)
-    End If
-End Sub
 
-Public Sub ADSSpyRemove(lstADSSpyResults As ListBox)
-    If lstADSSpyResults.ListCount = 0 Then Exit Sub
-    If lstADSSpyResults.SelCount = 0 Then Exit Sub
-    
-    Dim i%, sStream$, sLockedStreams$
-    If MsgBox(Translate(206), vbQuestion + vbYesNo) = vbNo Then Exit Sub
-    'If MsgBox("Are you sure you want to remove the selected ADS's from your system? They will be deleted permanently!", vbQuestion + vbYesNo) = vbNo Then Exit Sub
-    Status "Removing selected streams..."
-    For i = lstADSSpyResults.ListCount - 1 To 0 Step -1
-        If lstADSSpyResults.Selected(i) Then
-            sStream = lstADSSpyResults.List(i)
-            sStream = Replace(sStream, " : ", ":")
-            sStream = Left(sStream, InStr(sStream, "  (") - 1)
-            DeleteFile sStream
-            Sleep 100
-            If Not FileExists(sStream) Then
-                lstADSSpyResults.RemoveItem i
-            Else
-                sLockedStreams = sLockedStreams & lstADSSpyResults.List(i) & vbCrLf
-            End If
-        End If
-    Next i
-    
-    lstADSSpyResults.Clear
-    If sLockedStreams <> vbNullString Then
-        MsgBox "The following ADS streams could not be deleted. They may be locked by another program:" & _
-               vbCrLf & vbCrLf & Left(sLockedStreams, Len(sLockedStreams) - 2), vbExclamation
-    End If
-    Status "Ready."
-End Sub
 
 Public Function CheckIfSystemIsNTFS() As Boolean
     Dim lFlags&, sVolName$, lVolSN&, lMaxCompLen&, sVolFileSys$
@@ -194,7 +139,7 @@ Public Function CheckIfSystemIsNTFS() As Boolean
 End Function
 
 Private Sub EnumADSInAllFiles(sFolder$)
-    Dim hFind, uWFD As WIN32_FIND_DATA, sFileName$
+    Dim hFind, uWFD As WIN32_FIND_DATA, sFilename$
     
     Status sFolder
     EnumADSInFile sFolder, True
@@ -205,14 +150,14 @@ Private Sub EnumADSInAllFiles(sFolder$)
     End If
     
     Do
-        sFileName = TrimNull(uWFD.cFileName)
+        sFilename = TrimNull(uWFD.cFileName)
         If Not ((uWFD.dwFileAttributes And FILE_ATTRIBUTE_DIRECTORY) = 16) Then
             'Status sFolder & "\" & sFileName
-            EnumADSInFile sFolder & "\" & sFileName
+            EnumADSInFile sFolder & "\" & sFilename
         Else
-            If sFileName <> "." And sFileName <> ".." And Not bQuickScan Then
-                EnumADSInFile sFolder & "\" & sFileName, True
-                EnumADSInAllFiles sFolder & "\" & sFileName
+            If sFilename <> "." And sFilename <> ".." And Not bQuickScan Then
+                EnumADSInFile sFolder & "\" & sFilename, True
+                EnumADSInAllFiles sFolder & "\" & sFilename
             End If
         End If
         If bADSSpyAbortScanNow Then Exit Do

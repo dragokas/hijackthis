@@ -952,6 +952,7 @@ Public Sub StartScan()
     CheckOther3Item
     UpdateProgressBar
     CheckOther4Item
+    CheckOther4ItemX64
     UpdateProgressBar
     CheckOther5Item
     UpdateProgressBar
@@ -1067,37 +1068,7 @@ Public Sub UpdateProgressBar()
             Case 136: frmMain.lblStatus.Caption = Translate(257) & "..."
             
             Case Else: frmMain.lblStatus.Caption = Translate(256)
-'            Case 1 To 103: frmMain.lblStatus.Caption = "IE Registry values... (" & Val(.shpProgress.Tag) - 0 & "/" & UBound(sRegVals) + 1 & ")"
-'            Case 104 To 111: frmMain.lblStatus.Caption = "INI file values... (" & Val(.shpProgress.Tag) - 103 & "/" & UBound(sFileVals) + 1 & ")"
-'            Case 112: frmMain.lblStatus.Caption = "Netscape/Mozilla homepage..."
-'            Case 113: frmMain.lblStatus.Caption = "O1 - Hosts file redirection..."
-'            Case 114: frmMain.lblStatus.Caption = "O2 - BHO enumeration..."
-'            Case 115: frmMain.lblStatus.Caption = "O3 - Toolbar enumeration..."
-'            Case 116: frmMain.lblStatus.Caption = "O4 - Registry && Start Menu autoruns..."
-'            Case 117: frmMain.lblStatus.Caption = "O5 - Control Panel: IE Options..."
-'            Case 118: frmMain.lblStatus.Caption = "O6 - Policies: IE Options menuitem..."
-'            Case 119: frmMain.lblStatus.Caption = "O7 - Policies: Regedit..."
-'            Case 120: frmMain.lblStatus.Caption = "O8 - IE contextmenu items enumeration..."
-'            Case 121: frmMain.lblStatus.Caption = "O9 - IE 'Tools' menuitems and buttons enumeration..."
-'            Case 122: frmMain.lblStatus.Caption = "O10 - Winsock LSP hijackers..."
-'            Case 123: frmMain.lblStatus.Caption = "O11 - Extra options groups in IE Advanced Options..."
-'            Case 124: frmMain.lblStatus.Caption = "O12 - IE plugins enumeration..."
-'            Case 125: frmMain.lblStatus.Caption = "O13 - DefaultPrefix hijack..."
-'            Case 126: frmMain.lblStatus.Caption = "O14 - IERESET.INF hijack..."
-'            Case 127: frmMain.lblStatus.Caption = "O15 - Trusted Zone enumeration..."
-'            Case 128: frmMain.lblStatus.Caption = "O16 - DPF object enumeration..."
-'            Case 129: frmMain.lblStatus.Caption = "O17 - DNS && DNS Suffix settings..."
-'            Case 130: frmMain.lblStatus.Caption = "O18 - Protocol && Filter enumeration..."
-'            Case 131: frmMain.lblStatus.Caption = "O19 - User stylesheet hijack..."
-'            Case 132: frmMain.lblStatus.Caption = "O20 - AppInit_DLLs Registry value..."
-'            Case 133: frmMain.lblStatus.Caption = "O21 - ShellServiceObjectDelayLoad Registry key..."
-'            Case 134: frmMain.lblStatus.Caption = "O22 - SharedTaskScheduler Registry key..."
-'            Case 135: frmMain.lblStatus.Caption = "O23 - NT Services..."
-'            Case 136: frmMain.lblStatus.Caption = "O24 - ActiveX Desktop Components..."
-'
-'            Case Else: frmMain.lblStatus.Caption = "Scan completed!"
         End Select
-        'Sleep 100
     End With
     DoEvents
     Exit Sub
@@ -2367,12 +2338,145 @@ Error:
     ErrorMsg "modMain_FixOther9Item", Err.Number, Err.Description, "sItem=" & sItem
 End Sub
 
-Public Sub CheckOther4Item()
+Public Sub CheckOther4ItemX64()
+    '@MVT: added support for reading the X64 part of the registry for type 04, partly completed
+    Const KEY_WOW64_64KEY As Long = &H100& '32 bit app to access 64 bit hive
+    Const KEY_WOW64_32KEY As Long = &H200& '64 bit app to access 32 bit hive
+    
     Dim i%, j%, k%, hKey&, sName$, uData() As Byte, sMD5$
     Dim lHive&, sKey$, sRegRuns$(1 To 10), sData$, sHit$
     On Error GoTo Error:
     
-    sRegRuns(1) = "HKLM\Software\Microsoft\Windows\CurrentVersion\Run"
+    sRegRuns(1) = "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
+    sRegRuns(2) = "HKLM\Software\Microsoft\Windows\CurrentVersion\RunServices"
+    sRegRuns(3) = "HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce"
+    sRegRuns(4) = "HKLM\Software\Microsoft\Windows\CurrentVersion\RunServicesOnce"
+    sRegRuns(5) = "HKCU\Software\Microsoft\Windows\CurrentVersion\Run"
+    sRegRuns(6) = "HKCU\Software\Microsoft\Windows\CurrentVersion\RunServices"
+    sRegRuns(7) = "HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce"
+    sRegRuns(8) = "HKCU\Software\Microsoft\Windows\CurrentVersion\RunServicesOnce"
+    'added in 1.99.2
+    sRegRuns(9) = "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run"
+    sRegRuns(10) = "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run"
+    '2.06 -W7/W8
+    'also see CheckOther4ItemUsers()
+    
+    For k = 1 To UBound(sRegRuns)
+        If Left(sRegRuns(k), 4) = "HKLM" Then
+            lHive = HKEY_LOCAL_MACHINE
+        ElseIf Left(sRegRuns(k), 4) = "HKCU" Then
+            lHive = HKEY_CURRENT_USER
+        End If
+        sKey = Mid(sRegRuns(k), 6)
+    
+        RegOpenKeyEx lHive, sKey, 0, KEY_QUERY_VALUE Or KEY_WOW64_64KEY, hKey
+        If hKey <> 0 Then
+            Do
+                sName = String(lEnumBufSize, 0)
+                ReDim uData(lEnumBufSize)
+                If RegEnumValue(hKey, i, sName, Len(sName), 0, ByVal 0, uData(0), UBound(uData)) = 0 Then
+                    sName = TrimNull(sName)
+                    'sData = ""
+                    'For j = 0 To 510
+                    '    If uData(j) = 0 Then Exit For
+                    '    sData = sData & Chr(uData(j))
+                    'Next j
+                    sData = StrConv(uData, vbUnicode)
+                    sData = TrimNull(sData)
+                    
+                    If sData <> vbNullString Then
+                        Select Case k
+                            Case 1: sHit = "O4-64 - HKLM\..\Run: "
+                            Case 2: sHit = "O4-64 - HKLM\..\RunServices: "
+                            Case 3: sHit = "O4-64 - HKLM\..\RunOnce: "
+                            Case 4: sHit = "O4-64 - HKLM\..\RunServicesOnce: "
+                            Case 5: sHit = "O4-64 - HKCU\..\Run: "
+                            Case 6: sHit = "O4-64 - HKCU\..\RunServices: "
+                            Case 7: sHit = "O4-64 - HKCU\..\RunOnce: "
+                            Case 8: sHit = "O4-64 - HKCU\..\RunServicesOnce: "
+                            Case 9: sHit = "O4-64 - HKLM\..\Policies\Explorer\Run: "
+                            Case 10: sHit = "O4-64 - HKCU\..\Policies\Explorer\Run: "
+                        End Select
+                        sHit = sHit & "[" & sName & "] " & sData
+                        If Not IsOnIgnoreList(sHit) Then
+                            If bMD5 Then sMD5 = GetFileFromAutostart(sData)
+                            sHit = sHit & sMD5
+                            frmMain.lstResults.AddItem sHit
+                        End If
+                    End If
+                Else
+                    Exit Do
+                End If
+                i = i + 1
+            Loop
+            'this last one makes some registry problems
+            'and I can't figure out why
+            RegCloseKey hKey
+        End If
+        i = 0
+    Next k
+'    'added in HJT 1.99.2
+'    CheckOther4ItemUsers
+'
+'    Dim sAutostartFolder$(1 To 8), sFile$, sShortCut$
+'    sAutostartFolder(1) = RegGetString(HKEY_CURRENT_USER, "Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders", "Startup")
+'    sAutostartFolder(2) = RegGetString(HKEY_CURRENT_USER, "Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders", "AltStartup")
+'    sAutostartFolder(3) = RegGetString(HKEY_CURRENT_USER, "Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders", "Startup")
+'    sAutostartFolder(4) = RegGetString(HKEY_CURRENT_USER, "Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders", "AltStartup")
+'    sAutostartFolder(5) = RegGetString(HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders", "Common Startup")
+'    sAutostartFolder(6) = RegGetString(HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders", "Common AltStartup")
+'    sAutostartFolder(7) = RegGetString(HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders", "Common Startup")
+'    sAutostartFolder(8) = RegGetString(HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders", "Common AltStartup")
+'
+'     For k = 1 To UBound(sAutostartFolder)
+'        If sAutostartFolder(k) <> vbNullString And _
+'           FolderExists(sAutostartFolder(k)) Then
+'            sShortCut = Dir(sAutostartFolder(k) & "\*.*", vbArchive + vbHidden + vbReadOnly + vbSystem + vbDirectory)
+'            If sShortCut <> vbNullString Then
+'                Do
+'                    Select Case k
+'                        Case 1: sHit = "O4 - Startup: "
+'                        Case 2: sHit = "O4 - AltStartup: "
+'                        Case 3: sHit = "O4 - User Startup: "
+'                        Case 4: sHit = "O4 - User AltStartup: "
+'                        Case 5: sHit = "O4 - Global Startup: "
+'                        Case 6: sHit = "O4 - Global AltStartup: "
+'                        Case 7: sHit = "O4 - Global User Startup: "
+'                        Case 8: sHit = "O4 - Global User AltStartup: "
+'                    End Select
+'                    sFile = GetFileFromShortCut(sAutostartFolder(k) & "\" & sShortCut)
+'                    sHit = sHit & sShortCut & sFile
+'                    If LCase(sShortCut) <> "desktop.ini" And _
+'                       sShortCut <> "." And sShortCut <> ".." And _
+'                       Not IsOnIgnoreList(sHit) Then
+'                        If bMD5 And sFile <> vbNullString And sFile <> " = ?" Then
+'                            sHit = sHit & GetFileMD5(Mid(sFile, 4))
+'                        End If
+'                        frmMain.lstResults.AddItem sHit
+'                    End If
+'
+'                    sShortCut = Dir
+'                Loop Until sShortCut = vbNullString
+'            End If
+'        End If
+'    Next k
+'    Exit Sub
+'
+Error:
+    ErrorMsg "modMain_CheckOther4ItemX64", Err.Number, Err.Description
+'
+End Sub
+
+Public Sub CheckOther4Item()
+    
+    Const KEY_WOW64_64KEY As Long = &H100& '32 bit app to access 64 bit hive
+    Const KEY_WOW64_32KEY As Long = &H200& '64 bit app to access 32 bit hive
+    
+    Dim i%, j%, k%, hKey&, sName$, uData() As Byte, sMD5$
+    Dim lHive&, sKey$, sRegRuns$(1 To 10), sData$, sHit$
+    On Error GoTo Error:
+    
+    sRegRuns(1) = "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
     sRegRuns(2) = "HKLM\Software\Microsoft\Windows\CurrentVersion\RunServices"
     sRegRuns(3) = "HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce"
     sRegRuns(4) = "HKLM\Software\Microsoft\Windows\CurrentVersion\RunServicesOnce"
@@ -2393,7 +2497,7 @@ Public Sub CheckOther4Item()
         End If
         sKey = Mid(sRegRuns(k), 6)
     
-        RegOpenKeyEx lHive, sKey, 0, KEY_QUERY_VALUE, hKey
+        RegOpenKeyEx lHive, sKey, 0, KEY_QUERY_VALUE Or KEY_WOW64_32KEY, hKey
         If hKey <> 0 Then
             Do
                 sName = String(lEnumBufSize, 0)
