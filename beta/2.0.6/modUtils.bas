@@ -76,6 +76,14 @@ Public Function GetChromeVersion$()
     Dim i&
     
     sVer = RegGetString(HKEY_LOCAL_MACHINE, "Software\Google\Update\Clients\{8A69D345-D564-463c-AFF1-A69D9E530F96}", "pv")
+    'not found try current user - win7(x86)
+    If sVer = vbNullString Then
+        sVer = RegGetString(HKEY_CURRENT_USER, "Software\Google\Update\Clients\{8A69D345-D564-463c-AFF1-A69D9E530F96}", "pv")
+    End If
+    If sVer = vbNullString Then
+        sVer = RegGetString(HKEY_LOCAL_MACHINE, "Software\Wow6432Node\Google\Update\Clients\{8A69D345-D564-463c-AFF1-A69D9E530F96}", "pv")
+    End If
+    
     If sVer <> vbNullString Then
         ChromeVer = "CHROME: " & sVer
     End If
@@ -83,17 +91,6 @@ Public Function GetChromeVersion$()
     GetChromeVersion = ChromeVer
 End Function
 
-Public Function GetChromeVersion64$()
-    Dim sVer$, ChromeVer$
-    Dim i&
-    
-    sVer = RegGetString(HKEY_LOCAL_MACHINE, "Software\Wow6432Node\Google\Update\Clients\{8A69D345-D564-463c-AFF1-A69D9E530F96}", "pv")
-    If sVer <> vbNullString Then
-        ChromeVer = "CHROME: " & sVer
-    End If
-    
-    GetChromeVersion64 = ChromeVer
-End Function
 
 Public Function GetFirefoxVersion$()
     Dim sVer$, FirefoxVer$

@@ -3642,13 +3642,9 @@ MakeLog:
     sLog = sLog & "Platform: " & GetWindowsVersion & vbCrLf
     'sLog = sLog & "Logged on as " & GetUser(bIsWinNT) & " to " & GetComputer & IIf(bIsWinNT, " (user is " & GetUserType & ")", vbNullString) & vbCrLf
     sLog = sLog & "MSIE: " & GetMSIEVersion & vbCrLf
-    'GetChromeVersion
     sLog = sLog & GetChromeVersion() & vbCrLf
-    sLog = sLog & GetChromeVersion64() & vbCrLf
     sLog = sLog & GetFirefoxVersion() & vbCrLf
    
-    'sLog = sLog & "Spybot S&D version: " & GetSpybotVersion & vbCrLf
-    'sLog = sLog & "Ad-Aware version: " & GetAdAwareVersion & vbCrLf
     sLog = sLog & "Boot mode: " & GetBootMode & vbCrLf
 
     If bLogEnvVars Then
