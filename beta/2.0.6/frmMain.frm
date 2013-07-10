@@ -3485,6 +3485,7 @@ MakeLog:
     sLog = sLog & "Platform: " & GetWindowsVersion & vbCrLf
     'sLog = sLog & "Logged on as " & GetUser(bIsWinNT) & " to " & GetComputer & IIf(bIsWinNT, " (user is " & GetUserType & ")", vbNullString) & vbCrLf
     sLog = sLog & "MSIE: " & GetMSIEVersion & vbCrLf
+    sLog = sLog & GetOperaVersion() & vbCrLf
     sLog = sLog & GetChromeVersion() & vbCrLf
     sLog = sLog & GetFirefoxVersion() & vbCrLf
    

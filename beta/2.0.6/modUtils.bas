@@ -103,3 +103,68 @@ Public Function GetFirefoxVersion$()
 
     GetFirefoxVersion = FirefoxVer
 End Function
+
+'---------------------------------------------------------------------------------------
+' Procedure : GetOperaVersion
+' Purpose   : Gets the version of the installed Opera program
+' Return    : The version as a string or an error message if it cannot be found
+' Notes     : Required Project Reference: Microsoft Scripting Runtime
+'---------------------------------------------------------------------------------------
+' Revision History:
+' Date       Author        Purpose
+' ---------  ------------  -------------------------------------------------------------
+' 02Jul2013  Claire Streb  Original
+'
+Public Function GetOperaVersion() As String
+
+    Const MyProcName = "GetOperaVersion"
+    Const DoubleQuote = """"
+    
+    Dim sResult As String: sResult = "Unable to get Opera version!"
+    
+    Dim sOperaPath As String, sOperaVer As String, sOperaFriendlyVer As String
+
+    On Error GoTo ErrorHandler
+
+    sOperaFriendlyVer = "0"
+
+    sOperaPath = RegGetString(HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\App Paths\Opera.exe", vbNullString)
+
+    If Len(sOperaPath) > 0 Then
+        
+        If Left$(sOperaPath, 1) = DoubleQuote Then sOperaPath = Mid$(sOperaPath, 2)
+        If Right$(sOperaPath, 1) = DoubleQuote Then sOperaPath = Left$(sOperaPath, Len(sOperaPath) - 1)
+        
+        If DoesFileExist(sOperaPath) Then
+            Dim Fso As Scripting.FileSystemObject
+            Set Fso = New Scripting.FileSystemObject
+            sResult = "OPERA: " & Fso.GetFileVersion(sOperaPath)
+        End If
+        
+    End If
+    GoTo EndProcedure
+    
+ErrorHandler:
+    ErrorMsg Err.Number, Err.Description, MyProcName
+    
+EndProcedure:
+    GetOperaVersion = sResult
+    On Error GoTo 0
+
+End Function
+
+'---------------------------------------------------------------------------------------
+' Procedure : DoesFileExist
+' Purpose   : Determines whether a file exists
+' Return    : True if it exists, False if it doesn't
+'---------------------------------------------------------------------------------------
+' Revision History:
+' Date       Author        Purpose
+' ---------  ------------  -------------------------------------------------------------
+' 02Jul2013  Claire Streb  Original
+'
+Public Function DoesFileExist(ByVal sFilename As String) As Boolean
+    On Error Resume Next
+    DoesFileExist = (GetAttr(sFilename) And vbDirectory) <> vbDirectory
+    On Error GoTo 0
+End Function

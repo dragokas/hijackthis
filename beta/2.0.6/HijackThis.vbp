@@ -1,5 +1,6 @@
 Type=Exe
-Reference=*\G{3F4DACA7-160D-11D2-A8E9-00104B365C9F}#1.0#0#..\..\..\..\..\..\..\..\Windows\system32\vbscript.dll\2#Microsoft VBScript Regular Expressions 1.0
+Reference=*\G{3F4DACA7-160D-11D2-A8E9-00104B365C9F}#1.0#0#..\..\..\..\..\..\..\..\Windows\SysWOW64\vbscript.dll\2#Microsoft VBScript Regular Expressions 1.0
+Reference=*\G{420B2830-E718-11CF-893D-00A0C9054228}#1.0#0#..\..\..\..\..\..\..\..\Windows\SysWOW64\scrrun.dll#Microsoft Scripting Runtime
 Form=frmMain.frm
 Module=modRegistry; modRegistry.bas
 Module=modMain; modMain.bas

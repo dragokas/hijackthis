@@ -5425,34 +5425,6 @@ Public Function RunningInIDE() As Boolean
     If Err Then RunningInIDE = True
 End Function
 
-Public Function GetSpybotVersion$()
-    If RegKeyExists(HKEY_CURRENT_USER, "Software\PepiMK Software\SpybotSnD") Then
-        GetSpybotVersion = RegGetString(HKEY_CURRENT_USER, "Software\PepiMK Software\SpybotSnD", "Version")
-    Else
-        GetSpybotVersion = "not installed"
-    End If
-End Function
-
-Public Function GetAdAwareVersion$()
-    If RegKeyExists(HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Ad-Aware SE Personal") Then
-        Dim s$
-        s = RegGetString(HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Ad-Aware SE Personal", "DisplayIcon")
-        If s <> vbNullString Then
-            s = Left(s, InStrRev(s, ".exe") + 3)
-            GetAdAwareVersion = GetFilePropVersion(s)
-        Else
-            GetAdAwareVersion = "not installed"
-        End If
-    Else
-        If RegKeyExists(HKEY_CURRENT_USER, "Software\Lavasoft\AD-Aware") Then
-            'only works for 5.x and lower, 6.x uses stupid tricks
-            GetAdAwareVersion = RegGetString(HKEY_CURRENT_USER, "Software\Lavasoft\AD-Aware", "Version")
-        Else
-            GetAdAwareVersion = "not installed"
-        End If
-    End If
-End Function
-
 Public Function GetUser$(Optional bCheckAdmin As Boolean = False)
     Dim sUserName$
     sUserName = String(255, 0)
@@ -5848,7 +5820,7 @@ Public Sub ToggleWow64FSRedirection(bEnable As Boolean)
 End Sub
 
 Public Sub SilentDeleteOnReboot(sCmd$)
-    Dim sDummy$, sFilename$
+    Dim sDummy$, sFileName$
     'sCmd is all command-line parameters, like this
     '/param1 /deleteonreboot c:\progra~1\bla\bla.exe /param3
     '/param1 /deleteonreboot "c:\program files\bla\bla.exe" /param3
@@ -5856,17 +5828,17 @@ Public Sub SilentDeleteOnReboot(sCmd$)
     sDummy = Mid(sCmd, InStr(sCmd, "/deleteonreboot") + Len("/deleteonreboot") + 1)
     If InStr(sDummy, """") = 1 Then
         'enclosed in quotes, chop off at next quote
-        sFilename = Mid(sDummy, 2)
-        sFilename = Left(sFilename, InStr(sFilename, """") - 1)
+        sFileName = Mid(sDummy, 2)
+        sFileName = Left(sFileName, InStr(sFileName, """") - 1)
     Else
         'no quotes, chop off at next space if present
         If InStr(sDummy, " ") > 0 Then
-            sFilename = Left(sDummy, InStr(sDummy, " ") - 1)
+            sFileName = Left(sDummy, InStr(sDummy, " ") - 1)
         Else
-            sFilename = sDummy
+            sFileName = sDummy
         End If
     End If
-    DeleteFileOnReboot sFilename, True
+    DeleteFileOnReboot sFileName, True
 End Sub
 
 Public Sub DeleteFile(sFile$)
