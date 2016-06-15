@@ -314,7 +314,7 @@ Public Sub GetInfo(ByVal sItem$)
             "down the system or killing the shell process." & vbCrLf & vbCrLf & _
             "(Action taken: Registry value is deleted, CLSID key is deleted.)"
             
-        Case "O23" 'NT Services
+        Case "O23" 'Windows Services
             sMsg = "The 'Services' in Windows NT4, Windows 2000, Windows XP and " & _
             "Windows 2003 are a special type of programs that are essential to " & _
             "the system and are required for proper functioning of the system. " & _

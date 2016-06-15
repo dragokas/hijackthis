@@ -60,3 +60,4 @@ Public Function Crypt$(sMsg$, sPhrase$, Optional bEnOrDec As Boolean = False)
     Next i
     Crypt = sOut
 End Function
+

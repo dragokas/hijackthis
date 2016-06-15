@@ -72,23 +72,25 @@ Public Function NormalizePath$(sFile$)
 End Function
 
 Public Function GetChromeVersion$()
-    Dim sItems$(), sName$, sVer$, ChromeVer$
+    Dim sVer$, ChromeVer$
     Dim i&
     
-    sItems = Split(RegEnumSubkeys(HKEY_CURRENT_USER, "Software\Google\Update\Clients"), "|")
-    If UBound(sItems) <> -1 Then
-        For i = 0 To UBound(sItems)
-            sName = RegGetString(HKEY_CURRENT_USER, "Software\Google\Update\Clients\" & sItems(i), "name")
-            sVer = RegGetString(HKEY_CURRENT_USER, "Software\Google\Update\Clients\" & sItems(i), "pv")
-            If sName Like "*Chrome*" And sVer <> vbNullString Then
-                ChromeVer = "CHROME: " & sVer
-                Exit For
-            End If
-        Next i
+    sVer = RegGetString(HKEY_LOCAL_MACHINE, "Software\Google\Update\Clients\{8A69D345-D564-463c-AFF1-A69D9E530F96}", "pv")
+    'not found try current user - win7(x86)
+    If sVer = vbNullString Then
+        sVer = RegGetString(HKEY_CURRENT_USER, "Software\Google\Update\Clients\{8A69D345-D564-463c-AFF1-A69D9E530F96}", "pv")
     End If
-
+    If sVer = vbNullString Then
+        sVer = RegGetString(HKEY_LOCAL_MACHINE, "Software\Wow6432Node\Google\Update\Clients\{8A69D345-D564-463c-AFF1-A69D9E530F96}", "pv")
+    End If
+    
+    If sVer <> vbNullString Then
+        ChromeVer = "CHROME: " & sVer
+    End If
+    
     GetChromeVersion = ChromeVer
 End Function
+
 
 Public Function GetFirefoxVersion$()
     Dim sVer$, FirefoxVer$
@@ -100,4 +102,69 @@ Public Function GetFirefoxVersion$()
     End If
 
     GetFirefoxVersion = FirefoxVer
+End Function
+
+'---------------------------------------------------------------------------------------
+' Procedure : GetOperaVersion
+' Purpose   : Gets the version of the installed Opera program
+' Return    : The version as a string or an error message if it cannot be found
+' Notes     : Required Project Reference: Microsoft Scripting Runtime
+'---------------------------------------------------------------------------------------
+' Revision History:
+' Date       Author        Purpose
+' ---------  ------------  -------------------------------------------------------------
+' 02Jul2013  Claire Streb  Original
+'
+Public Function GetOperaVersion() As String
+
+    Const MyProcName = "GetOperaVersion"
+    Const DoubleQuote = """"
+    
+    Dim sResult As String: sResult = "Unable to get Opera version!"
+    
+    Dim sOperaPath As String, sOperaVer As String, sOperaFriendlyVer As String
+
+    On Error GoTo ErrorHandler
+
+    sOperaFriendlyVer = "0"
+
+    sOperaPath = RegGetString(HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\App Paths\Opera.exe", vbNullString)
+
+    If Len(sOperaPath) > 0 Then
+        
+        If Left$(sOperaPath, 1) = DoubleQuote Then sOperaPath = Mid$(sOperaPath, 2)
+        If Right$(sOperaPath, 1) = DoubleQuote Then sOperaPath = Left$(sOperaPath, Len(sOperaPath) - 1)
+        
+        If DoesFileExist(sOperaPath) Then
+            Dim Fso As Scripting.FileSystemObject
+            Set Fso = New Scripting.FileSystemObject
+            sResult = "OPERA: " & Fso.GetFileVersion(sOperaPath)
+        End If
+        
+    End If
+    GoTo EndProcedure
+    
+ErrorHandler:
+    ErrorMsg Err.Number, Err.Description, MyProcName
+    
+EndProcedure:
+    GetOperaVersion = sResult
+    On Error GoTo 0
+
+End Function
+
+'---------------------------------------------------------------------------------------
+' Procedure : DoesFileExist
+' Purpose   : Determines whether a file exists
+' Return    : True if it exists, False if it doesn't
+'---------------------------------------------------------------------------------------
+' Revision History:
+' Date       Author        Purpose
+' ---------  ------------  -------------------------------------------------------------
+' 02Jul2013  Claire Streb  Original
+'
+Public Function DoesFileExist(ByVal sFilename As String) As Boolean
+    On Error Resume Next
+    DoesFileExist = (GetAttr(sFilename) And vbDirectory) <> vbDirectory
+    On Error GoTo 0
 End Function

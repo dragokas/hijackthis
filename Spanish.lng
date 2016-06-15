@@ -86,17 +86,15 @@
 106=Si un archivo no se puede borrar de la memoria, se puede hacer que Windows lo borre en el siguiente reinicio.
 107=Borrar un servicio NT...
 108=Borra un servicio de Windows NT (O23). USE CON CUIDADO! (solo WinNT4/2k/XP)
-109=Abrir ADS Spy...
-110=Abre la utilidad ADS Spy para examinar en búsqueda de elementos ocultos.
-111=Agregar/Quitar Programas
-112=Administra los elementos en la lista de Agregar/Quitar programas.
+109=Agregar/Quitar Programas
+110=Administra los elementos en la lista de Agregar/Quitar programas.
 
-113=Escriba el nombre correcto del servicio tal cual como aparece en la lista, o el nombre corto entre los parentesis si aparece.\nEl servicio será detenido y deshabilitado.\nServicios pertenecientes a Microsoft, Symantec y algunos otros, son críticos y no podrán eliminarse.\nADVERTENCIA! Cuando se borra un servicio, éste no se puede restaurar!
-114=Borrar un Servicio Windows NT
-115=El Servicio '[]' no se encontró en el Registro.\nAsegúrese de escribir el nombre correcto.
-116=El Servicio '[]' está habilitado y/o en ejecución. Deshabilítelo primero, usando HijackThis (desde la lists de resultados) ó con Services.msc.
-117=El siguiente Servicio no se encontró:
-118=Está completamente seguro de eliminar este Servicio?
+111=Escriba el nombre correcto del servicio tal cual como aparece en la lista, o el nombre corto entre los parentesis si aparece.\nEl servicio será detenido y deshabilitado.\nServicios pertenecientes a Microsoft, Symantec y algunos otros, son críticos y no podrán eliminarse.\nADVERTENCIA! Cuando se borra un servicio, éste no se puede restaurar!
+112=Borrar un Servicio Windows NT
+113=El Servicio '[]' no se encontró en el Registro.\nAsegúrese de escribir el nombre correcto.
+114=El Servicio '[]' está habilitado y/o en ejecución. Deshabilítelo primero, usando HijackThis (desde la lists de resultados) ó con Services.msc.
+115=El siguiente Servicio no se encontró:
+116=Está completamente seguro de eliminar este Servicio?
 
 120=Opciones avanzadas (éstos no se guardan)
 121=Calcular MD5 en archivos si es posible

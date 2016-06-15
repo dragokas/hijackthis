@@ -80,6 +80,18 @@ Command-line parameters:
 * /uninstall - remove all HijackThis Registry entries, backups and quit
 * /silentautuolog - the same as /autolog, except with no required user intervention
 
+[v2.0.6 Beta]
+* Fixed modUtils to get Chrome Version XP/?Win7 
+* Remove references to Netscape 
+* Missing registry key 
+* Removed ADS Spy	 
+* support newest version of FireFox 
+* determine the correct Windows and IE version
+* Remove get url check	 
+* change log file 
+* 'default' restored hosts file does not include ipv6 address entry	 
+* Check shell values in Winlogon
+* Horizontal Scroll Bar
 [v2.0.5 Beta]
 * Fixed "No internet connection available" when pressing the button Analyze This
 
