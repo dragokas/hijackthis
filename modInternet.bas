@@ -57,13 +57,15 @@ Public szSubmitUrl As String
 Public Sub CheckForUpdate()
     Dim hInternet&, hFile&, sBuffer$, lBufferLen&
     Dim sVer$, sUpdate$, sZipFile$, sThisVersion$
-    Dim sProxy$, sFileName$
+    Dim sProxy$, sFilename$
     'On Error GoTo Error:
     
     sThisVersion = CStr(App.Major) & "." & CStr(App.Minor) & "." & CStr(App.Revision)
     
+    'Dim szUpdateUrl As String
+    'szUpdateUrl = "http://www.trendmicro.com/go/hjt/check_for_updates/?hjtver=" & sThisVersion
     Dim szUpdateUrl As String
-    szUpdateUrl = "http://www.trendmicro.com/go/hjt/check_for_updates/?hjtver=" & sThisVersion
+    szUpdateUrl = "http://sourceforge.net/projects/hjt/"
         
     If True = IsOnline Then
         ShellExecute 0&, "open", szUpdateUrl, vbNullString, vbNullString, vbNormalFocus

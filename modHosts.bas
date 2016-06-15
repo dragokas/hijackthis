@@ -56,7 +56,7 @@ End Sub
 Public Sub CreateDefaultHostsFile()
     On Error Resume Next
     Open sHostsFile For Output As #1
-        Print #1, "# Copyright (c) 1993-1999 Microsoft Corp."
+        Print #1, "# Copyright (c) 1993-2009 Microsoft Corp."
         Print #1, "#"
         Print #1, "# This is a sample HOSTS file used by Microsoft TCP/IP for Windows."
         Print #1, "#"
@@ -75,6 +75,7 @@ Public Sub CreateDefaultHostsFile()
         Print #1, "#       38.25.63.10     x.acme.com              # x client host"
         Print #1,
         Print #1, "127.0.0.1       localhost"
+        Print #1, "::1             localhost"
     Close #1
 End Sub
 
