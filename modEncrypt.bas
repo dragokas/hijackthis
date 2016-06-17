@@ -1,9 +1,9 @@
 Attribute VB_Name = "modEncrypt"
 Option Explicit
 
-Public Function Crypt$(sMsg$, sPhrase$, Optional bEnOrDec As Boolean = False)
+Public Function Crypt$(sMsg$, sPhrase$, Optional doCrypt As Boolean = False)  'if Crypt = False then we do decryption
     Dim sEncryptionPhrase$
-    On Error Resume Next
+    On Error GoTo ErrorHandler:
     'if one error happens, don't screw up everything following
     
     'like, NOT!
@@ -12,29 +12,14 @@ Public Function Crypt$(sMsg$, sPhrase$, Optional bEnOrDec As Boolean = False)
     'bEnOrDec = false -> decrypt
     'bEnOrDec = true -> encrypt
     
-    ''some checks to prevent double encrypting
-    ''or double decrypting
-    'If Left(sMsg, 1) = ">" Then
-    '    'the stuff is encrypted
-    '    If bEnOrDec = True Then
-    '        Crypt = sMsg
-    '        Exit Function
-    '    End If
-    'ElseIf Left(sMsg, 1) = "H" Then
-    '    'the stuff is not encrypted
-    '    If bEnOrDec = False Then
-    '        Crypt = sMsg
-    '        Exit Function
-    '    End If
-    'End If
-    
-    Dim i%, j%, sChar$, iChar%, sOut$
-    j = 1
+    Dim i&, J&, sChar$, iChar&, sOut$
+    J = 1
     For i = 1 To Len(sMsg)
-        sChar = Mid(sMsg, i, 1)
-        If bEnOrDec Then
+        sChar = Mid$(sMsg, i, 1)
+        If doCrypt Then
             'encrypt
-            sChar = Chr(Asc(sChar) + Asc(Mid(sPhrase, j, 1)))
+            sChar = Chr(Asc(sChar) + Asc(Mid$(sPhrase, J, 1)))
+            If iChar > 255 Then Exit Function 'Wrong Pass phrase
             If Asc(sChar) > 126 Then
                 'make sure encrypted char is within
                 'normal range (space to ~)
@@ -42,7 +27,8 @@ Public Function Crypt$(sMsg$, sPhrase$, Optional bEnOrDec As Boolean = False)
             End If
         Else
             'decrypt
-            iChar = Asc(sChar) - Asc(Mid(sPhrase, j, 1))
+            iChar = Asc(sChar) - Asc(Mid$(sPhrase, J, 1))
+            If iChar < -94 Then Exit Function 'Wrong Pass phrase
             If iChar < 32 Then
                 'make sure decrypted char is within
                 'normal range (space to ~)
@@ -55,9 +41,12 @@ Public Function Crypt$(sMsg$, sPhrase$, Optional bEnOrDec As Boolean = False)
             End If
         End If
         sOut = sOut & sChar
-        j = j + 1
-        If j > Len(sPhrase) Then j = 1
+        J = J + 1
+        If J > Len(sPhrase) Then J = 1
     Next i
     Crypt = sOut
+    Exit Function
+ErrorHandler:
+    ErrorMsg err, "Crypt", sMsg
+    If inIDE Then Stop: Resume Next
 End Function
-

@@ -1,5 +1,6 @@
 Attribute VB_Name = "modADSSpy"
 Option Explicit
+
 Private Declare Function FindFirstFile Lib "kernel32" Alias "FindFirstFileA" (ByVal lpFileName As String, lpFindFileData As WIN32_FIND_DATA) As Long
 Private Declare Function FindNextFile Lib "kernel32" Alias "FindNextFileA" (ByVal hFindFile As Long, lpFindFileData As WIN32_FIND_DATA) As Long
 Private Declare Function FindClose Lib "kernel32" (ByVal hFindFile As Long) As Long
@@ -12,10 +13,9 @@ Private Declare Function GetDriveType Lib "kernel32" Alias "GetDriveTypeA" (ByVa
 
 Private Declare Function CreateFileA Lib "kernel32" (ByVal lpFileName As String, ByVal dwDesiredAccess As Long, ByVal dwShareMode As Long, lpSecurityAttributes As Any, ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, ByVal hTemplateFile As Long) As Long
 Private Declare Function CreateFileW Lib "kernel32" (ByVal lpFileName As Long, ByVal dwDesiredAccess As Long, ByVal dwShareMode As Long, ByVal lpSecurityAttributes As Long, ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, ByVal hTemplateFile As Long) As Long
-Private Declare Function NtQueryInformationFile Lib "NTDLL.DLL" (ByVal FileHandle As Long, IoStatusBlock_Out As IO_STATUS_BLOCK, lpFileInformation_Out As Long, ByVal Length As Long, ByVal FileInformationClass As FILE_INFORMATION_CLASS) As Long
-Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, ByVal Source As Any, ByVal Length As Long)
-Private Declare Function DeleteFile Lib "kernel32.dll" Alias "DeleteFileA" (ByVal lpFileName As String) As Long
-Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" (ByVal hwnd As Long, ByVal lpOperation As String, ByVal lpFile As String, ByVal lpParameters As String, ByVal lpDirectory As String, ByVal nShowCmd As Long) As Long
+Private Declare Function NtQueryInformationFile Lib "NTDLL.DLL" (ByVal FileHandle As Long, IoStatusBlock_Out As IO_STATUS_BLOCK, lpFileInformation_Out As Long, ByVal length As Long, ByVal FileInformationClass As FILE_INFORMATION_CLASS) As Long
+Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, ByVal Source As Any, ByVal length As Long)
+Private Declare Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
 
 Private Enum FILE_INFORMATION_CLASS
     FileDirectoryInformation = 1
@@ -102,10 +102,67 @@ Private Const FILE_FLAG_BACKUP_SEMANTICS = &H2000000
 
 Private Const OpenExisting As Long = 3
 
-'Public bADSSpyAbortScanNow As Boolean
+Public bADSSpyAbortScanNow As Boolean
 Private bQuickScan As Boolean, bIgnoreSystem As Boolean, bCalcMD5 As Boolean
 
 
+
+Public Sub ADSSpyScan(bArgQuickScan As Boolean, bArgIgnoreSystem As Boolean, bArgCalcMD5 As Boolean)
+    bQuickScan = bArgQuickScan
+    bIgnoreSystem = bArgIgnoreSystem
+    bCalcMD5 = bArgCalcMD5
+    
+    If bQuickScan Then
+        EnumADSInAllFiles sWinDir
+    Else
+        'changed this from scanning only C: to scanning
+        'all non-removable local drives.
+        Dim lDrives&, lType&, sDrive$, i%
+        lDrives = GetLogicalDrives()
+        For i = 0 To 25
+            If (lDrives And 2 ^ i) Then
+                sDrive = Chr(i + 65) & ":"
+                If GetDriveType(sDrive & "\") = DRIVE_FIXED Or _
+                   GetDriveType(sDrive & "\") = DRIVE_RAMDISK Then
+                    EnumADSInAllFiles sDrive
+                    DoEvents
+                End If
+            End If
+        Next i
+        'EnumADSInAllFiles left$(sWinDir, 2)
+    End If
+End Sub
+
+Public Sub ADSSpyRemove(lstADSSpyResults As ListBox)
+    If lstADSSpyResults.ListCount = 0 Then Exit Sub
+    If lstADSSpyResults.SelCount = 0 Then Exit Sub
+    
+    Dim i&, sStream$, sLockedStreams$
+    If MsgBox(Translate(206), vbQuestion + vbYesNo) = vbNo Then Exit Sub
+    'If MsgBox("Are you sure you want to remove the selected ADS's from your system? They will be deleted permanently!", vbQuestion + vbYesNo) = vbNo Then Exit Sub
+    Status "Removing selected streams..."
+    For i = lstADSSpyResults.ListCount - 1 To 0 Step -1
+        If lstADSSpyResults.Selected(i) Then
+            sStream = lstADSSpyResults.List(i)
+            sStream = Replace$(sStream, " : ", ":")
+            sStream = Left$(sStream, InStr(sStream, "  (") - 1)
+            DeleteFileWEx (StrPtr(sStream))
+            Sleep 100
+            If Not FileExists(sStream) Then
+                lstADSSpyResults.RemoveItem i
+            Else
+                sLockedStreams = sLockedStreams & lstADSSpyResults.List(i) & vbCrLf
+            End If
+        End If
+    Next i
+    
+    lstADSSpyResults.Clear
+    If sLockedStreams <> vbNullString Then
+        MsgBox "The following ADS streams could not be deleted. They may be locked by another program:" & _
+               vbCrLf & vbCrLf & Left$(sLockedStreams, Len(sLockedStreams) - 2), vbExclamation
+    End If
+    Status "Ready."
+End Sub
 
 Public Function CheckIfSystemIsNTFS() As Boolean
     Dim lFlags&, sVolName$, lVolSN&, lMaxCompLen&, sVolFileSys$
@@ -117,14 +174,14 @@ Public Function CheckIfSystemIsNTFS() As Boolean
             sDrive = Chr(Asc("A") + i) & ":\"
             lDriveType = GetDriveType(sDrive)
             If lDriveType = DRIVE_FIXED Or lDriveType = DRIVE_RAMDISK Then
-                sVolName = String(260, 0)
-                sVolFileSys = String(260, 0)
+                sVolName = String$(260, 0)
+                sVolFileSys = String$(260, 0)
                 GetVolumeInformation sDrive, sVolName, Len(sVolName), lVolSN, lMaxCompLen, lFlags, ByVal sVolFileSys, Len(sVolFileSys)
                 'this isn't reliable. just assume NTFS = ADS streams
                 'If (lFlags And FILE_NAMED_STREAMS) = FILE_NAMED_STREAMS Then
                 '    bNoNTFSDrives = False
                 'End If
-                 If UCase(TrimNull(sVolFileSys)) = "NTFS" Then
+                 If UCase$(TrimNull(sVolFileSys)) = "NTFS" Then
                     bNoNTFSDrives = False
                  End If
             End If
@@ -139,7 +196,7 @@ Public Function CheckIfSystemIsNTFS() As Boolean
 End Function
 
 Private Sub EnumADSInAllFiles(sFolder$)
-    Dim hFind, uWFD As WIN32_FIND_DATA, sFilename$
+    Dim hFind, uWFD As WIN32_FIND_DATA, sFileName$
     
     Status sFolder
     EnumADSInFile sFolder, True
@@ -150,14 +207,14 @@ Private Sub EnumADSInAllFiles(sFolder$)
     End If
     
     Do
-        sFilename = TrimNull(uWFD.cFileName)
+        sFileName = TrimNull(uWFD.cFileName)
         If Not ((uWFD.dwFileAttributes And FILE_ATTRIBUTE_DIRECTORY) = 16) Then
             'Status sFolder & "\" & sFileName
-            EnumADSInFile sFolder & "\" & sFilename
+            EnumADSInFile sFolder & "\" & sFileName
         Else
-            If sFilename <> "." And sFilename <> ".." And Not bQuickScan Then
-                EnumADSInFile sFolder & "\" & sFilename, True
-                EnumADSInAllFiles sFolder & "\" & sFilename
+            If sFileName <> "." And sFileName <> ".." And Not bQuickScan Then
+                EnumADSInFile sFolder & "\" & sFileName, True
+                EnumADSInAllFiles sFolder & "\" & sFileName
             End If
         End If
         If bADSSpyAbortScanNow Then Exit Do
@@ -188,7 +245,7 @@ Private Sub EnumADSInFile(sFilePath$, Optional bIsFolder As Boolean = False)
     Do
         CopyMemory ByVal VarPtr(uFSI.NextEntryOffset), ByVal lStreamInfo, 24
         CopyMemory ByVal VarPtr(uFSI.StreamName(0)), ByVal lStreamInfo + 24, uFSI.StreamNameLength
-        sStreamName = Left(uFSI.StreamName, uFSI.StreamNameLength / 2)
+        sStreamName = Left$(uFSI.StreamName, uFSI.StreamNameLength / 2)
         If sStreamName <> vbNullString And _
            sStreamName <> "::$DATA" Then
             If (sStreamName <> ":encryptable:$DATA" And _
@@ -197,8 +254,8 @@ Private Sub EnumADSInFile(sFilePath$, Optional bIsFolder As Boolean = False)
                 sStreamName <> ":{4c8cc155-6c1e-11d1-8e41-00c04fb9386d}:$DATA" And _
                 sStreamName <> ":Zone.Identifier:$DATA") _
                Or Not bIgnoreSystem Then
-                sStreamName = Mid(sStreamName, 2)
-                sStreamName = Left(sStreamName, InStr(sStreamName, ":") - 1)
+                sStreamName = Mid$(sStreamName, 2)
+                sStreamName = Left$(sStreamName, InStr(sStreamName, ":") - 1)
                 If bCalcMD5 Then
                     frmMain.lstADSSpyResults.AddItem sFilePath & " : " & sStreamName & "  (" & uFSI.StreamSize & " bytes, MD5 " & GetFileMD5(sFilePath & ":" & sStreamName, uFSI.StreamSize) & ")"
                 Else
