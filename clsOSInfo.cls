@@ -34,7 +34,7 @@ Private Type OSVERSIONINFOEX
 End Type
 
 Private Type SID_IDENTIFIER_AUTHORITY
-    value(0 To 5) As Byte
+    Value(0 To 5) As Byte
 End Type
 
 Private Type SID_AND_ATTRIBUTES
@@ -54,7 +54,7 @@ Private Declare Function GetSystemDefaultLCID Lib "kernel32.dll" () As Long
 Private Declare Function GetUserDefaultLCID Lib "kernel32.dll" () As Long
 Private Declare Function IsWow64Process Lib "kernel32.dll" (ByVal hProc As Long, bWow64Process As Long) As Long
 Private Declare Function GetVersionEx Lib "kernel32.dll" Alias "GetVersionExW" (lpVersionInformation As OSVERSIONINFOEX) As Long
-Private Declare Function GetSystemMetrics Lib "User32.dll" (ByVal nIndex As Long) As Long
+Private Declare Function GetSystemMetrics Lib "user32.dll" (ByVal nIndex As Long) As Long
 Private Declare Function GetProductInfo Lib "kernel32.dll" (ByVal dwOSMajorVersion As Long, ByVal dwOSMinorVersion As Long, ByVal dwSpMajorVersion As Long, ByVal dwSpMinorVersion As Long, pdwReturnedProductType As Long) As Long
 Private Declare Function CheckTokenMembership Lib "advapi32.dll" (ByVal TokenHandle As Long, ByVal SidToCheck As Long, IsMember As Long) As Long
 Private Declare Function OpenProcessToken Lib "advapi32.dll" (ByVal ProcessHandle As Long, ByVal DesiredAccess As Long, TokenHandle As Long) As Long
@@ -142,6 +142,8 @@ Dim CodepageANSI_File_      As String
 Dim SuiteMask_              As String 'As Integer
 Dim ProductType_            As String 'As Byte
 Dim SID_CurrentProcess_     As String
+Dim SafeBootMode_           As String
+Dim Platform_               As String 'Win9x / WinNT
 
 Dim t ' not used
 
@@ -151,6 +153,7 @@ Private Sub Class_Initialize()
     
     Dim dec             As Single
     Dim ProductType     As Long
+    Dim lret            As Long
     
     LangDisplayCode_ = GetUserDefaultUILanguage Mod &H10000
     LangDisplayName_ = GetLangNameByCultureCode(LangDisplayCode_)
@@ -172,21 +175,64 @@ Private Sub Class_Initialize()
     
     Bitness_ = IIf(IsWin64, "x64", "x32")
     
-    IsSafeBoot_ = (GetSystemMetrics(SM_CLEANBOOT) > 0) ' 0 - Normal boot, 1 - Fail-safe boot, 2 - Fail-safe with network boot
+    lret = GetSystemMetrics(SM_CLEANBOOT)
+    IsSafeBoot_ = (lret > 0)
+    Select Case lret
+        Case 1
+            SafeBootMode_ = "Safe mode"
+        Case 2
+            SafeBootMode_ = "Safe mode with network support"
+        Case Else
+            SafeBootMode_ = "Normal"
+    End Select
     
-    ' OS Major + Minor
-    dec = osi.dwMinorVersion
-    If dec <> 0 Then Do: dec = dec / 10: Loop Until dec < 1
-    MajorMinor_ = osi.dwMajorVersion + dec
+    'if VB IDE has no manifest (by default)
+    'this is not an option, because 'CurrentVersion' has wrong value for Windows 10
+'    If inIDE Then
+'        On Error Resume Next
+'        MajorMinor_ = CSng(replace$(RegRead_REG_SZ(HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentVersion"), ".", ","))
+'        On Error GoTo 0
+'    End If
+    
+    If MajorMinor_ = 0 Then
+        ' OS Major + Minor
+        dec = osi.dwMinorVersion
+        If dec <> 0 Then Do: dec = dec / 10: Loop Until dec < 1
+        MajorMinor_ = osi.dwMajorVersion + dec
+    End If
     
     ' Service Pack Major + Minor
     dec = osi.wServicePackMinor
     If dec <> 0 Then Do: dec = dec / 10: Loop Until dec < 1
     SPver_ = osi.wServicePackMajor + dec
-       
+           
     'https://msdn.microsoft.com/en-us/library/windows/desktop/ms724833(v=vs.85).aspx
-       
-    Select Case MajorMinor_
+    
+    If osi.dwPlatformId = 0 Then
+        OSName_ = "Windows 3.x"
+        
+    ElseIf osi.dwPlatformId = 1 Then
+        'Win 9x
+        If osi.dwMajorVersion = 4 Then
+            Platform_ = "Win9x"
+            
+            Select Case osi.dwMinorVersion
+                '4.0
+                Case 0 'Windows 95 [A/B/C]
+                    OSName_ = "Windows 95"
+                '4.10
+                Case 10 'Windows 98 [Gold/SE]
+                    OSName_ = "Windows 98"
+                    Edition_ = IIf(SPver_ <> 0, "SE", "Gold")
+                '4.90
+                Case 90 'Windows Millennium Edition
+                    OSName_ = "Windows ME"
+            End Select
+        End If
+    Else
+        Platform_ = "WinNT"
+        
+        Select Case MajorMinor_
         Case 10
             If osi.wProductType = VER_NT_WORKSTATION Then
                 OSName_ = "Windows 10"
@@ -258,10 +304,13 @@ Private Sub Class_Initialize()
                     Edition_ = "Server"
                 End If
             End If
+        Case 4
+            OSName_ = "Windows NT"
         Case Else
             OSName_ = "Windows Unknown" & "(ver. " & MajorMinor_ & ") (" & "Build: " & osi.dwBuildNumber & ")" & " Registry's data: " & _
                 RegRead_REG_SZ(HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName")
-    End Select
+        End Select
+    End If
     
     'Редакция
     If Edition_ = "" Then
@@ -423,7 +472,7 @@ Public Function GetUserType(Optional hProcess As Long) As String
     Dim tpSidAuth       As SID_IDENTIFIER_AUTHORITY
     
     GetUserType = "Unknown"
-    tpSidAuth.value(5) = SECURITY_NT_AUTHORITY
+    tpSidAuth.Value(5) = SECURITY_NT_AUTHORITY
     
     ' в идеале, сначала нужно проверять токен, полученный от потока
     ' If Not OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, True, hProcessToken) Then
@@ -556,11 +605,11 @@ Function GetIntegrityLevel(Optional hProcess As Long) As String       'https://m
     Dim pSidAuthCnt      As Long
     Dim SidAuthCnt       As Long
     Dim pILSid           As Long
-    Dim ILevel           As String
+    Dim iLevel           As String
     
     If osi.dwMajorVersion < 6 Then GetIntegrityLevel = "Not supported": Exit Function ' < Win Vista
     
-    ILevel = "Unknown"
+    iLevel = "Unknown"
     
     If hProcess = 0 Then hProcess = GetCurrentProcess()
     
@@ -593,19 +642,19 @@ Function GetIntegrityLevel(Optional hProcess As Long) As String       'https://m
                             Select Case dwIntegrityLevel
                             
                                 Case Is < SECURITY_MANDATORY_UNTRUSTED_RID
-                                    ILevel = "Unknown"
+                                    iLevel = "Unknown"
                                 Case Is < SECURITY_MANDATORY_LOW_RID
-                                    ILevel = "Untrusted"
+                                    iLevel = "Untrusted"
                                 Case Is < SECURITY_MANDATORY_MEDIUM_RID
-                                    ILevel = "Low"
+                                    iLevel = "Low"
                                 Case Is < SECURITY_MANDATORY_HIGH_RID
-                                    ILevel = "Medium"
+                                    iLevel = "Medium"
                                 Case Is < SECURITY_MANDATORY_SYSTEM_RID
-                                    ILevel = "High"
+                                    iLevel = "High"
                                 Case Is < SECURITY_MANDATORY_PROTECTED_PROCESS_RID
-                                    ILevel = "System"
+                                    iLevel = "System"
                                 Case Else
-                                    ILevel = "ProtectedProcess"
+                                    iLevel = "ProtectedProcess"
                             End Select
                         End If
                     End If
@@ -615,7 +664,7 @@ Function GetIntegrityLevel(Optional hProcess As Long) As String       'https://m
         End If
         CloseHandle hToken: hToken = 0
     End If
-    GetIntegrityLevel = ILevel
+    GetIntegrityLevel = iLevel
     Exit Function
 ErrorHandler:
     ErrorMsg err, "clsOSInfo.GetIntegrityLevel"
@@ -1115,19 +1164,19 @@ End Function
 
 Function IsWin64() As Boolean   ' Разрядность ОС
     Dim hModule As Long, procAddr As Long, lIsWin64 As Long
-    Static isInit As Boolean, result As Boolean
+    Static IsInit As Boolean, Result As Boolean
     
-    If isInit Then
-        IsWin64 = result
+    If IsInit Then
+        IsWin64 = Result
     Else
-        isInit = True
+        IsInit = True
         hModule = LoadLibrary(StrPtr("kernel32.dll"))
         If hModule Then
             procAddr = GetProcAddress(hModule, "IsWow64Process")
             If procAddr <> 0 Then
                 IsWow64Process GetCurrentProcess(), lIsWin64
-                result = CBool(lIsWin64)
-                IsWin64 = result
+                Result = CBool(lIsWin64)
+                IsWin64 = Result
             End If
             FreeLibrary hModule
         End If
@@ -1254,4 +1303,10 @@ Public Property Get SID_CurrentProcess() As String 'Byte
     SID_CurrentProcess = SID_CurrentProcess_
 End Property
 
+Public Property Get SafeBootMode() As String
+    SafeBootMode = SafeBootMode_
+End Property
 
+Public Property Get Platform() As String
+    Platform = Platform_
+End Property

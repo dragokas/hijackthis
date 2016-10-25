@@ -57,10 +57,10 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
 
-Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteW" (ByVal hwnd As Long, ByVal lpOperation As Long, ByVal lpFile As Long, ByVal lpParameters As Long, ByVal lpDirectory As Long, ByVal nShowCmd As Long) As Long
+Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteW" (ByVal hWnd As Long, ByVal lpOperation As Long, ByVal lpFile As Long, ByVal lpParameters As Long, ByVal lpDirectory As Long, ByVal nShowCmd As Long) As Long
 Private Declare Function MessageBeep Lib "user32.dll" (ByVal uType As Long) As Long
 Private Declare Function LoadIcon Lib "user32" Alias "LoadIconW" (ByVal hInstance As Long, ByVal lpIconName As Long) As Long
-Private Declare Function DrawIcon Lib "user32" (ByVal hdc As Long, ByVal x As Long, ByVal y As Long, ByVal hIcon As Long) As Long
+Private Declare Function DrawIcon Lib "user32" (ByVal hdc As Long, ByVal X As Long, ByVal Y As Long, ByVal hIcon As Long) As Long
 
 Private Const IDI_ASTERISK      As Long = 32516&    'Information
 Private Const IDI_EXCLAMATION   As Long = 32515&    'Exclamation
@@ -71,8 +71,8 @@ Private Const MB_ICONERROR      As Long = &H10&
 
 
 Private Sub chkNoMoreErrors_Click()
-    frmMain.chkSkipErrorMsg.value = chkNoMoreErrors.value
-    bSkipErrorMsg = (chkNoMoreErrors.value = 1)
+    frmMain.chkSkipErrorMsg.Value = chkNoMoreErrors.Value
+    bSkipErrorMsg = (chkNoMoreErrors.Value = 1)
 End Sub
 
 Private Sub cmdNo_Click()
@@ -88,6 +88,8 @@ End Sub
 
 Private Sub Form_Load()
     Dim Icon As Long
+    
+    ReloadLanguage
     
     CenterForm Me
     

@@ -11,10 +11,6 @@ Option Explicit
 ' - TimeStamp
 ' - Signature hash (look at module 'modSignerInfo')
 
-' Part of original code for this port was written on C++ by:
-' 1) AD13 ( http://forum.sysinternals.com/howto-verify-the-digital-signature-of-a-file_topic19247.html )
-' 2) Process Hacker - image verification by wj32 (License: GNU GPL v3) ( http://processhacker.sourceforge.net/doc/verify_8c_source.html )
-
 'Some code examples:
 'https://msdn.microsoft.com/en-us/library/windows/desktop/aa382384%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
 'https://support.microsoft.com/en-us/kb/323809?wa=wsignin1.0
@@ -23,6 +19,8 @@ Option Explicit
 'http://rsdn.ru/forum/winapi/2731079.hot
 'http://processhacker.sourceforge.net/doc/verify_8c_source.html
 'http://eternalwindows.jp/crypto/certverify/certverify03.html
+'http://forum.sysinternals.com/howto-verify-the-digital-signature-of-a-file_topic19247.html
+'http://processhacker.sourceforge.net/doc/verify_8c_source.html
 
 'CERT_CHAIN_POLICY_STATUS structure
 'https://msdn.microsoft.com/en-us/library/windows/desktop/aa377188%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
@@ -37,22 +35,23 @@ Option Explicit
 
 Const MAX_PATH As Long = 260&
 
-Public Type SignResult_TYPE ' данные об ЭЦП
-    isSigned     As Boolean ' подписан?
-    isLegit      As Boolean ' ЭЦП легитимна?
-    isCert       As Boolean ' подписан через каталог безопасности Windows?
-    Issuer       As String  ' имя подписанта
+Public Type SignResult_TYPE ' Digital signature data
+    isSigned     As Boolean ' signed?
+    isLegit      As Boolean ' is signature legitimate?
+    isCert       As Boolean ' is signed by Windows security catalogue?
+    Issuer       As String  ' signer name
     RootCertHash As String
-    ShortMessage As String  ' краткое описание результата проверки
-    FullMessage  As String  ' полное описание результата проверки
-    ReturnCode   As String  ' код возврата WinVerifyTrust
+    ShortMessage As String  ' short description of checking results
+    FullMessage  As String  ' full description of cheking results
+    ReturnCode   As String  ' result error code of WinVerifyTrust
 End Type
 
 Public Enum FLAGS_SignVerify
-    SV_CheckHoleChain = 1       ' - проверять всю цепочку доверия ( потребуется подключение к сети )
-    SV_DoNotUseHashChecking = 2 ' - не использовать проверку по хешу
-    SV_DisableCatalogVerify = 4 ' - не использовать проверку по каталогу безопасности
-    SV_isDriver = 8             ' - выполнить проверку драйвера на соответствие стандарту WHQL
+    SV_CheckHoleChain = 1       ' - check whole trust chain ( require internet connection )
+    SV_DoNotUseHashChecking = 2 ' - do not use system cache ( checking by hash )
+    SV_DisableCatalogVerify = 4 ' - do not use checking by security catalogue
+    SV_isDriver = 8             ' - verify driver for compliance with WHQL standard
+    SV_AllowSelfSigned = 16     ' - self-signed certificates should be considered as legitimate
 End Enum
 
 Private Type GUID
@@ -120,12 +119,12 @@ Private Declare Function CryptCATAdminCalcHashFromFileHandle2 Lib "Wintrust.dll"
 Private Declare Function CryptCATAdminEnumCatalogFromHash Lib "Wintrust.dll" (ByVal hCatAdmin As Long, pbHash As Byte, ByVal cbHash As Long, ByVal dwFlags As Long, phPrevCatInfo As Long) As Long
 Private Declare Function CryptCATCatalogInfoFromContext Lib "Wintrust.dll" (ByVal hCatInfo As Long, psCatInfo As CATALOG_INFO, ByVal dwFlags As Long) As Long
 Private Declare Function CryptCATAdminReleaseCatalogContext Lib "Wintrust.dll" (ByVal hCatAdmin As Long, ByVal hCatInfo As Long, ByVal dwFlags As Long) As Long
-Private Declare Function WinVerifyTrust Lib "Wintrust.dll" (ByVal hwnd As Long, pgActionID As GUID, ByVal pWVTData As Long) As Long
+Private Declare Function WinVerifyTrust Lib "Wintrust.dll" (ByVal hWnd As Long, pgActionID As GUID, ByVal pWVTData As Long) As Long
 Private Declare Function CreateFile Lib "kernel32.dll" Alias "CreateFileW" (ByVal lpFileName As Long, ByVal dwDesiredAccess As Long, ByVal dwShareMode As Long, lpSecurityAttributes As Any, ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, ByVal hTemplateFile As Long) As Long
 Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
 Private Declare Function GetFileSizeEx Lib "kernel32.dll" (ByVal hFile As Long, lpFileSize As Any) As Long
 Private Declare Function GetVersionEx Lib "kernel32.dll" Alias "GetVersionExW" (lpVersionInformation As Any) As Long
-Private Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal length As Long) As Long
+Private Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long) As Long
 Private Declare Function FormatMessage Lib "kernel32.dll" Alias "FormatMessageW" (ByVal dwFlags As Long, ByVal lpSource As Long, ByVal dwMessageId As Long, ByVal dwLanguageId As Long, ByVal lpBuffer As Long, ByVal nSize As Long, Arguments As Any) As Long
 Private Declare Function WriteConsole Lib "kernel32" Alias "WriteConsoleA" (ByVal hConsoleOutput As Long, lpBuffer As Any, ByVal nNumberOfCharsToWrite As Long, lpNumberOfCharsWritten As Long, lpReserved As Any) As Long
 Private Declare Function MultiByteToWideChar Lib "kernel32" (ByVal CodePage As Long, ByVal dwFlags As Long, ByVal lpMultiByteStr As String, ByVal cchMultiByte As Long, ByVal lpWideCharStr As Long, ByVal cchWideChar As Long) As Long
@@ -136,33 +135,35 @@ Private Declare Function GetProcAddress Lib "kernel32" (ByVal hModule As Long, B
 Private Declare Function GetCurrentProcess Lib "kernel32.dll" () As Long
 Private Declare Function IsWow64Process Lib "kernel32" (ByVal hProcess As Long, ByRef Wow64Process As Long) As Long
 
+'Private Declare Function WinVerifyFile Lib "istrusted.dll" Alias "Checkfile" (ByVal sFilename As String) As Boolean
+
 'Private Declare Function Wow64DisableWow64FsRedirection Lib "kernel32.dll" (OldValue As Long) As Long
 'Private Declare Function Wow64RevertWow64FsRedirection Lib "kernel32.dll" (byval OldValue As Long) As Long
 
 Const WTD_UI_NONE                   As Long = 2&
-' проверка отзыва сертификата
-Const WTD_REVOKE_NONE               As Long = 0&    ' не проверять сертификаты на предмет отзыва
-Const WTD_REVOKE_WHOLECHAIN         As Long = 1&    ' проверять на предмет отзыва сертификаты по цепочке доверия
-' способ проверки
-Const WTD_CHOICE_CATALOG            As Long = 2&    ' проверка через сравнение с сертификатом, занесенным в локальное хранилище безопасности Windows
-Const WTD_CHOICE_FILE               As Long = 1&    ' полная верификация
-' флаги
+' checking certificate revocation
+Const WTD_REVOKE_NONE               As Long = 0&    ' do not check certificates for revocation
+Const WTD_REVOKE_WHOLECHAIN         As Long = 1&    ' check for certificate revocation all chain
+' method of verification
+Const WTD_CHOICE_CATALOG            As Long = 2&    ' check by certificate that is stored in local windows security storage
+Const WTD_CHOICE_FILE               As Long = 1&    ' check internal signature
+' flags
 Const WTD_SAFER_FLAG                As Long = 256&   ' ??? (probably, no UI for XP SP2)
-Const WTD_REVOCATION_CHECK_NONE     As Long = 16&    ' не проверять цепочку доверия на предмет отзыва сертификата
-Const WTD_REVOCATION_CHECK_END_CERT As Long = &H20&  ' проверять на предмет отзыва только конечный сертификат
-Const WTD_REVOCATION_CHECK_CHAIN    As Long = &H40&  ' проверять всю цепочку доверия ( требуется подключение к порту 53 TCP/UDP )
-Const WTD_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT As Long = &H80& ' проверять всю цепочку, кроме корневого сертификата
-Const WTD_HASH_ONLY_FLAG            As Long = &H200& ' проверка только по хешу
-Const WTD_NO_POLICY_USAGE_FLAG      As Long = 4&     ' не брать в рассчет настройки локальной политики безопасности
-Const WTD_CACHE_ONLY_URL_RETRIEVAL  As Long = 4096&  ' можно проверять сертификат на предмет отзыва, но только используя данные из локального кеша
-Const WTD_LIFETIME_SIGNING_FLAG     As Long = &H800& ' проверять на истечение срока действия сертификата
-' действие
+Const WTD_REVOCATION_CHECK_NONE     As Long = 16&    ' do not execute revecation checking of cert. chain
+Const WTD_REVOCATION_CHECK_END_CERT As Long = &H20&  ' check for revocation end cert. only
+Const WTD_REVOCATION_CHECK_CHAIN    As Long = &H40&  ' check all cert. chain ( require internet connection to port 53 TCP/UDP )
+Const WTD_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT As Long = &H80& ' check all chain, excepting the root cert.
+Const WTD_HASH_ONLY_FLAG            As Long = &H200& ' checking by hash only
+Const WTD_NO_POLICY_USAGE_FLAG      As Long = 4&     ' do not mention on local security policy settings
+Const WTD_CACHE_ONLY_URL_RETRIEVAL  As Long = 4096&  ' check for certificate revocation but only by local cache
+Const WTD_LIFETIME_SIGNING_FLAG     As Long = &H800& ' check exparation date of certificate
+' action
 Const WTD_STATEACTION_VERIFY        As Long = 1&
 Const WTD_STATEACTION_IGNORE        As Long = 0&
 Const WTD_STATEACTION_CLOSE         As Long = 2&
-' контекст
+' context
 Const WTD_UICONTEXT_EXECUTE         As Long = 0&
-' ошибки
+' errors
 Const TRUST_E_SUBJECT_NOT_TRUSTED   As Long = &H800B0004
 Const TRUST_E_PROVIDER_UNKNOWN      As Long = &H800B0001
 Const TRUST_E_ACTION_UNKNOWN        As Long = &H800B0002
@@ -184,7 +185,7 @@ Const BCRYPT_SHA256_ALGORITHM       As String = "SHA256"    '256-bit
 
 Const CERT_STRONG_SIGN_OID_INFO_CHOICE As Long = 2&
 
-' прочее
+' other
 Const INVALID_HANDLE_VALUE          As Long = -1&
 Const ERROR_INSUFFICIENT_BUFFER     As Long = 122&
 
@@ -202,28 +203,28 @@ Public Function SignVerify( _
  
     On Error GoTo ErrorHandler
  
-    'AppendErrorLogCustom "VerifyDigiSign.SignVerify - Begin"
- 
-    ' in.  FilePath - путь к PE EXE файлу для проверки
-    ' in.  Flags - опции проверки
-    ' out. SignResult.ShortMessage - краткое описание статуса проверки
-    ' out. SignResult.FullMessage - послное описание результата проверки
-    ' out. SignResult.ReturnCode - код, возвращаемый функцией WinVerifyTrust ( по нему смотреть статус проверки )
+    ' in.  FilePath - path to PE EXE file for validation
+    ' in.  Flags - options for checking
+    ' out. SignResult struct
     
-    ' RETURN - Вернет true, если целостность исполняемого файла подтверждена, невзирая на:
-    ' - возможные запреты в настройках локальной политики
-    ' - самоподписанный тип сертификата ( если не указана опция CheckHoleChain = true и данные об отзыве не были закешированы )
-    ' - проверка на просрочку действия сертификата не выполняется. Если нужна, добавляем флаг WTD_LIFETIME_SIGNING_FLAG
+    ' RETURN value - return true, if the integrity of the executable file is confirmed, notwithstanding:
+    ' - possible restrictions in the local policy settings
+    ' - self-signed certificate type (if the option 'CheckHoleChain = true' is not specified and revocation data are not cached)
+    ' - checking for certificate exparation is not performed. If needed, add a flag WTD_LIFETIME_SIGNING_FLAG
     
-    ' P.S. Для запрета самоподписанных сертификатов, удалите флаг CERT_E_UNTRUSTEDROOT
-    ' Для еще менее строгой проверки ( запрете чтения из кеша данных об отзыве ), замените флаг WTD_CACHE_ONLY_URL_RETRIEVAL на WTD_REVOCATION_CHECK_NONE.
-    ' Обратите внимание, что отзыв сертификата - это исключительная процедура, которая проводится например, когда ЭЦП была украдена или использована во вредоносном ПО.
+    ' For even more strong verification (forbid reading revocation info from the cache),
+    ' replace the flag WTD_CACHE_ONLY_URL_RETRIEVAL into WTD_REVOCATION_CHECK_NONE.
+    ' Note that certificate revocation is a specific procedure and it should be performed
+    ' only if you suspect that digital signature has been stolen or used in malware
+    ' (this kind of verification require internet connection, can freeze a program and time-consuming).
     
-    ' in. Flags (можно комбинировать друг с другом через OR):
-    ' SV_CheckHoleChain = 1       ' - проверять всю цепочку доверия ( потребуется подключение к сети )
-    ' SV_DoNotUseHashChecking = 2 ' - не использовать проверку по хешу
-    ' SV_DisableCatalogVerify = 4 ' - не использовать проверку по каталогу безопасности
-    ' SV_isDriver = 8             ' - выполнить проверку драйвера на соответствие стандарту WHQL
+    ' in. Flags (can be combined by 'OR' statement):
+    
+    ' SV_CheckHoleChain       ' - check whole trust chain ( require internet connection )
+    ' SV_DoNotUseHashChecking ' - do not use system cache ( checking by hash )
+    ' SV_DisableCatalogVerify ' - do not use checking by security catalogue
+    ' SV_isDriver             ' - verify driver for compliance with WHQL standard
+    ' SV_AllowSelfSigned      ' - self-signed certificates should be considered as legitimate
     
     Dim InfoStruct               As CATALOG_INFO
     Dim WintrustStructure        As WINTRUST_DATA
@@ -257,7 +258,7 @@ Public Function SignVerify( _
     Dim ActionGuid      As GUID
     Dim Success         As Boolean
     
-    With SignResult     'обнуление результата проверки
+    With SignResult     'clear results of checking
         .ReturnCode = 0
         .FullMessage = vbNullString
         .ShortMessage = vbNullString
@@ -292,7 +293,7 @@ Public Function SignVerify( _
     If MajorMinor = 0 Then  'not cached
         hLib = LoadLibrary(StrPtr("Wintrust.dll"))
         If hLib = 0 Then
-            'WriteCon "NOT SUPPORTED. LastDllErr=0x" & Hex(err.LastDllError)
+            WriteCon "NOT SUPPORTED. LastDllErr = 0x" & Hex(err.LastDllError)
             SignResult.ShortMessage = "NOT SUPPORTED."
             SignCache(SC_pos) = SignResult
             Exit Function
@@ -329,7 +330,7 @@ Public Function SignVerify( _
     'StrPtr(BCRYPT_SHA256_ALGORITHM)
     
     If MajorMinor >= 6.2 Then
-        ' Получаем контекст для процедуры проверки подписи
+        ' obtain context for procedure of signature verification
         CryptCATAdminAcquireContext2 Context, VarPtr(DRIVER_ACTION_VERIFY), StrPtr(BCRYPT_SHA256_ALGORITHM), 0&, 0&
     End If
     
@@ -347,7 +348,7 @@ Public Function SignVerify( _
         Exit Function
     End If
     
-    ' Открываем файл
+    ' opening the file
     ToggleWow64FSRedirection False, FilePath
     
     OpenW FilePath, FOR_READ, FileHandle
@@ -369,11 +370,11 @@ Public Function SignVerify( _
         Exit Function
     End If
     
-    ' Проверяем наличие внутренней подписи
+    ' checking, is internal signature present
     'SignResult.isSigned = IsSignPresent(FilePath) ', FileHandle)
     
     If MajorMinor >= 6.2 Then
-        ' Получаем размер, необходимый для хеша
+        ' obtain size needed for hash
         HashSize = 1
         ReDim aBuf(HashSize - 1&)
         Success = CryptCATAdminCalcHashFromFileHandle2(Context, FileHandle, HashSize, ByVal 0&, 0&)
@@ -386,7 +387,7 @@ Public Function SignVerify( _
     End If
     
     If (HashSize = 0& Or Not Success) Then
-        ' Получаем размер, необходимый для хеша
+        ' obtain size needed for hash
         CryptCATAdminCalcHashFromFileHandle FileHandle, HashSize, ByVal 0&, 0&
     
         If (HashSize = 0&) Then
@@ -397,10 +398,10 @@ Public Function SignVerify( _
             Exit Function
         End If
 
-        ' Выделяем память
+        ' allocating the memory
         ReDim aBuf(HashSize - 1&)
 
-        ' Подсчитываем хеш
+        ' calculation of the hash
         If Not CBool(CryptCATAdminCalcHashFromFileHandle(FileHandle, HashSize, aBuf(0), 0&)) Then
             WriteError err, SignResult.ShortMessage, "CryptCATAdminCalcHashFromFileHandle", FilePath
             CryptCATAdminReleaseContext Context, 0&
@@ -410,24 +411,23 @@ Public Function SignVerify( _
         End If
     End If
     
-    ' Преобразовываем хеш в строку
+    ' Converting hash into string
     For i = 0& To UBound(aBuf)
         MemberTag = MemberTag & Right$("0" & Hex(aBuf(i)), 2&)
     Next
-    'Debug.Print MemberTag
 
-    'here is M$ bug with  C:\WINDOWS\system32\catroot2\{GUID} file. // Need to avoid.
+    'here is M$ bug with  C:\WINDOWS\system32\catroot2\{GUID} file. // Now we handle it.
 
-    ' Получаем каталог для нашего контекста
-    If Not HasVulnerability() Then
+    ' Obtain catalogue for our context
+    If Not HasCatRootVulnerability() Then
         CatalogContext = CryptCATAdminEnumCatalogFromHash(Context, aBuf(0), HashSize, 0&, ByVal 0&)
     End If
 
     If (CatalogContext) Then
-        ' Если не можем получить информацию
+        ' If unable to get information
         If Not CBool(CryptCATCatalogInfoFromContext(CatalogContext, InfoStruct, 0&)) Then
             WriteError err, SignResult.ShortMessage, "CryptCATCatalogInfoFromContext", FilePath
-            ' Освобождаем контекст
+            ' Release context
             CryptCATAdminReleaseCatalogContext Context, CatalogContext, 0&
             SignCache(SC_pos) = SignResult
             CatalogContext = 0&
@@ -439,8 +439,8 @@ Public Function SignVerify( _
         'Debug.Print "Hash: " & sBuf
     End If
     
-    ' Если получили валидный контекст, проверяем подпись через каталог.
-    ' Иначе (если есть Embedded signature или установлен флаг "Игнорировать проверку через каталог"), пытаемся проверить внутреннюю подпись файла:
+    ' If we got a valid context, verify the signature through the catalog.
+    ' Otherwise (if Embedded signature is exist or flag "Ignore checking by catalogue" is set), trying to verify internal signature of the file:
     If (CatalogContext = 0& Or (flags And SV_DisableCatalogVerify)) Or SignResult.isSigned Then
         With WintrustFileStructure                  'WINTRUST_FILE_INFO
             .cbStruct = Len(WintrustFileStructure)
@@ -458,21 +458,21 @@ Public Function SignVerify( _
             .hWVTStateData = 0&
             .pwszURLReference = 0&
             ' ---------------------------------------- Перечень флагов -------------------------------------------
-            .fdwRevocationChecks = IIf(flags And SV_CheckHoleChain, WTD_REVOKE_WHOLECHAIN, WTD_REVOKE_NONE)   ' проверка на отзыв сертификата
+            .fdwRevocationChecks = IIf(flags And SV_CheckHoleChain, WTD_REVOKE_WHOLECHAIN, WTD_REVOKE_NONE)   ' checking for cert. revokation
             If flags And SV_CheckHoleChain Then
                 .dwProvFlags = .dwProvFlags Or WTD_REVOCATION_CHECK_CHAIN
             Else
-                ' брать данные о проверке цепочки сертификатов только из локального кеша, если сохранены ( >= Vista ). Не использовать подключение к сети.
+                ' take data about cert. chain verification from local cache only, if they were saved ( >= Vista ). Do not use internet connection.
                 .dwProvFlags = .dwProvFlags Or IIf(IsVistaAndLater, WTD_CACHE_ONLY_URL_RETRIEVAL, WTD_REVOCATION_CHECK_NONE)
             End If
-            '.dwProvFlags = .dwProvFlags Or WTD_NO_POLICY_USAGE_FLAG                                          ' не проверять назначение сертификата (отключено)
-            .dwProvFlags = .dwProvFlags Or WTD_LIFETIME_SIGNING_FLAG                                          ' признавать недействительными просроченные подписи
-            If 0 = (flags And SV_DoNotUseHashChecking) Then .dwProvFlags = .dwProvFlags Or WTD_HASH_ONLY_FLAG ' проверка только по хешу
-            If IsVistaAndLater Then .dwProvFlags = .dwProvFlags Or WTD_SAFER_FLAG                             ' без UI (XP SP2)
+            '.dwProvFlags = .dwProvFlags Or WTD_NO_POLICY_USAGE_FLAG                                          ' do not check certificate purpose (disabled)
+            .dwProvFlags = .dwProvFlags Or WTD_LIFETIME_SIGNING_FLAG                                          ' invalidate expired signatures
+            If 0 = (flags And SV_DoNotUseHashChecking) Then .dwProvFlags = .dwProvFlags Or WTD_HASH_ONLY_FLAG ' check only by hash
+            .dwProvFlags = .dwProvFlags Or WTD_SAFER_FLAG                                                     ' without UI
         End With
     
     Else
-        ' Получили информацию из каталога. Проверяем валидность через него.
+        ' We received information from the catalogue. Check validity through it.
         SignResult.isSigned = True
         SignResult.isCert = True
         With WintrustStructure                      'WINTRUST_DATA
@@ -486,11 +486,14 @@ Public Function SignVerify( _
             .dwStateAction = WTD_STATEACTION_VERIFY
             .hWVTStateData = 0&
             .pwszURLReference = 0&
-            .dwProvFlags = 0&
+            .dwProvFlags = WTD_SAFER_FLAG
+            If Not CBool(flags And SV_CheckHoleChain) Then
+                .dwProvFlags = .dwProvFlags Or IIf(IsVistaAndLater, WTD_CACHE_ONLY_URL_RETRIEVAL, WTD_REVOCATION_CHECK_NONE)
+            End If
             .dwUIContext = WTD_UICONTEXT_EXECUTE
         End With
         
-        ' Заполняем структуру каталога
+        ' Fill in catalogue structure
         With WintrustCatalogStructure               'WINTRUST_CATALOG_INFO
             .cbStruct = Len(WintrustCatalogStructure)
             .dwCatalogVersion = 0&
@@ -505,20 +508,22 @@ Public Function SignVerify( _
     
     ToggleWow64FSRedirection False, FilePath
     
-    'If FilePath = "C:\Windows\system32\wbem\WmiApSrv.exe" Then Stop
-    
-    ' Вызываем функцию проверки подписи
-    ReturnVal = WinVerifyTrust(INVALID_HANDLE_VALUE, ActionGuid, VarPtr(WintrustStructure)) ' INVALID_HANDLE_VALUE означает неинтерактивную проверку (без UI)
+    ' calling main verification function
+    ReturnVal = WinVerifyTrust(INVALID_HANDLE_VALUE, ActionGuid, VarPtr(WintrustStructure)) ' INVALID_HANDLE_VALUE mean non-interactive checking (without UI)
     'Stop
     ToggleWow64FSRedirection True
 
-    'Debug.Print WintrustStructure.hWVTStateData    ' -> идентификатор, по которому можно извлечь отдельные подписи
+    'Debug.Print WintrustStructure.hWVTStateData    ' -> identifier, in which individual signatures can be extracted
 
     GetSignerInfo WintrustStructure.hWVTStateData, SignResult.Issuer, SignResult.RootCertHash
 
-    ' разрешить самоподписанный сертификат ( CERT_E_UNTRUSTEDROOT - игнорировать отсутствие недоверия к конечному сертификату )
-    'ReturnFlag = ((ReturnVal = 0) Or (ReturnVal = CRYPT_E_SECURITY_SETTINGS) Or (ReturnVal = CERT_E_UNTRUSTEDROOT))
-    ReturnFlag = (ReturnVal = 0)
+    ' SV_AllowSelfSigned - allow self-signed certificate ( ignore lack of confidence in the final certificate )
+    
+    If flags And SV_AllowSelfSigned Then
+        ReturnFlag = ((ReturnVal = 0) Or (ReturnVal = CERT_E_UNTRUSTEDROOT))
+    Else
+        ReturnFlag = (ReturnVal = 0)
+    End If
     
     With SignResult
     
@@ -580,10 +585,10 @@ Public Function SignVerify( _
             'The UI was disabled in dwUIChoice or the admin policy has disabled user trust. ReturnVal contains the publisher or time stamp chain error.
         End Select
     
-        ' Прочие коды ошибок можно посмотреть на MSDN:
+        ' Other error codes can be found on MSDN:
         ' https://msdn.microsoft.com/en-us/library/windows/desktop/aa377188%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
         ' https://msdn.microsoft.com/en-us/library/ee488436.aspx
-        ' Это не исчерпывающий список.
+        ' This is not an exhaustive list.
     
         .FullMessage = ErrMessageText(ReturnVal)
     
@@ -593,48 +598,42 @@ Public Function SignVerify( _
     
         .ReturnCode = ReturnVal
         .isLegit = ReturnFlag
-        SignVerify = ReturnFlag
-    
-        'WriteCon .ShortMessage
-        'WriteCon "FormatMessage: " & .FullMessage
+        SignVerify = .isLegit
     
     End With
     
-    ' Освобождаем контекст
+    ' Release context
     If (CatalogContext) Then
         CryptCATAdminReleaseCatalogContext Context, CatalogContext, 0&
     End If
     
-    ' Очистка памяти, использованная провайдером во время проверки подписи
+    ' Free memory, used by provider during signature verification
     WintrustStructure.dwStateAction = WTD_STATEACTION_CLOSE
     WinVerifyTrust INVALID_HANDLE_VALUE, ActionGuid, VarPtr(WintrustStructure)
     
-    ' Закрытие файла и освобождение контекста
+    ' closing the file, release context
     CloseHandle FileHandle: FileHandle = 0
     CryptCATAdminReleaseContext Context, 0&
     
     SignCache(SC_pos) = SignResult
     
-    'AppendErrorLogCustom "VerifyDigiSign.SignVerify - End"
     Exit Function
-    
 ErrorHandler:
-    'AppendErrorLogFormat Now, err, "VerifyDigiSign.SignVerify", "File:", FilePath
     ErrorMsg err, "SignVerify", FilePath
     ToggleWow64FSRedirection True
     If inIDE Then Stop: Resume Next
 End Function
 
-Function HasVulnerability() As Boolean
+Function HasCatRootVulnerability() As Boolean
     On Error GoTo ErrHandler
-    Static isInit       As Boolean
+    Static IsInit       As Boolean
     Static VulnStatus   As Boolean
     
-    If isInit Then
-        HasVulnerability = VulnStatus
+    If IsInit Then
+        HasCatRootVulnerability = VulnStatus
         Exit Function
     Else
-        isInit = True
+        IsInit = True
     End If
     
     Dim inf(68) As Long: inf(0) = 276: GetVersionEx inf(0): If inf(1) < 6 Then Exit Function
@@ -651,14 +650,14 @@ Function HasVulnerability() As Boolean
         If sFile Like "{????????????????????????????????????}" Then
             lr = GetFileAttributes(StrPtr(WinDir & "\System32\catroot2\" & sFile))
             If lr <> INVALID_HANDLE_VALUE And (lr And vbDirectory) Then
-                VulnStatus = True: HasVulnerability = True: Exit Function
+                VulnStatus = True: HasCatRootVulnerability = True: Exit Function
             End If
         End If
         sFile = Dir$()
     Loop
     Exit Function
 ErrHandler:
-    ErrorMsg err, "HasVulnerability"
+    ErrorMsg err, "HasCatRootVulnerability"
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -669,7 +668,6 @@ Public Function ErrMessageText(lCode As Long) As String
     
     Dim sRtrnMessage   As String
     Dim lret           As Long
-    'Dim hLib           As Long
     
     sRtrnMessage = String$(MAX_PATH, vbNullChar)
     lret = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM Or FORMAT_MESSAGE_IGNORE_INSERTS, 0&, lCode, 0&, StrPtr(sRtrnMessage), MAX_PATH, ByVal 0&)
@@ -679,18 +677,19 @@ Public Function ErrMessageText(lCode As Long) As String
     End If
 End Function
 
-' Запишет ошибку с описанием в консоль и в ShortMessage (RetErrMessage)
+' Will write error with description to console and in ShortMessage (RetErrMessage)
 Function WriteError(err As ErrObject, RetErrMessage As String, FunctionName As String, FileName As String)
     Dim ErrNumber As Long
     ErrNumber = err.LastDllError
     
     If &H800700C1 = ErrNumber Then
-        ' если получили "%1 не является приложением Win32.", и при этом в PE EXE есть указатель на структуру SecurityDir,
-        ' значит ЭЦП была повреждена
+        ' if we got "%1 is not a valid Win32 application." and PE EXE contain pointer to SecurityDir struct,
+        ' it's mean digital signature was damaged
         ' https://chentiangemalc.wordpress.com/2014/08/01/case-of-the-server-returned-a-referral/
 
         If IsSignPresent(FileName) Then
-            RetErrMessage = "Signature is damaged!"
+            'Signature is damaged!
+            RetErrMessage = Translate(1862)
         Else
             RetErrMessage = ErrMessageText(ErrNumber)
         End If
@@ -699,7 +698,6 @@ Function WriteError(err As ErrObject, RetErrMessage As String, FunctionName As S
     End If
     
     WriteCon "Error in " & FunctionName & ": " & "0x" & Hex(ErrNumber) & ". " & RetErrMessage & ". File: " & FileName
-    'AppendErrorLogFormat Now, err, "VerifyDigiSign." & FunctionName & ": " & "0x" & Hex(ErrNumber) & ". " & RetErrMessage & " File: " & FileName
 End Function
 
 Public Sub WriteCon(ByVal txt As String, Optional cHandle As Long, Optional NoNewLine As Boolean = False)
@@ -717,3 +715,84 @@ Public Sub WriteCon(ByVal txt As String, Optional cHandle As Long, Optional NoNe
     End If
 End Sub
 
+
+' ---------------------------------------------------------------------------------------------------
+' StartupList2 routine
+' ---------------------------------------------------------------------------------------------------
+
+Public Function VerifyFileSignature(sFile$) As Integer
+'    If Not FileExists(App.Path & "\istrusted.dll") Then
+'        If msgboxw("To verify file signatures, StartupList needs to " & _
+'                  "download an external library from www.merijn.org. " & _
+'                  vbCrLf & vbCrLf & "Continue?", vbYesNo + vbQuestion) = vbYes Then
+'            If DownloadFile("http://www.merijn.org/files/istrusted.dll", App.Path & "\istrusted.dll") Then
+'                'file downloaded ok, continue
+'            Else
+'                'file download failed
+'                bAbort = True
+'                VerifyFileSignature = -1
+'                Exit Function
+'            End If
+'        Else
+'            'user aborted download
+'            bAbort = True
+'            VerifyFileSignature = -1
+'            Exit Function
+'        End If
+'    End If
+    
+    If WinVerifyFile(sFile) Then
+        VerifyFileSignature = 1
+    Else
+        VerifyFileSignature = 0
+    End If
+End Function
+
+Public Sub WinTrustVerifyChildNodes(sKey$)
+    If bAbort Then Exit Sub
+    If Not NodeExists(sKey) Then Exit Sub
+    Dim nodFirst As Node, nodCurr As Node
+    Set nodFirst = frmStartupList2.tvwMain.Nodes(sKey).Child
+    Set nodCurr = nodFirst
+    If Not (nodCurr Is Nothing) Then
+        Do
+            If nodCurr.Children > 0 Then WinTrustVerifyChildNodes nodCurr.Key
+        
+            WinTrustVerifyNode nodCurr.Key
+        
+            If nodCurr = nodFirst.LastSibling Then Exit Do
+            Set nodCurr = nodCurr.Next
+            If bAbort Then Exit Sub
+        Loop
+    End If
+End Sub
+
+Public Sub WinTrustVerifyNode(sKey$)
+    If bAbort Then Exit Sub
+    If Not NodeIsValidFile(frmStartupList2.tvwMain.Nodes(sKey)) Then Exit Sub
+        
+    Dim sFile$, sMD5$, sIcon$
+    sFile = frmStartupList2.tvwMain.Nodes(sKey).Text
+    If Not FileExists(sFile) Then
+        sFile = frmStartupList2.tvwMain.Nodes(sKey).Tag
+        If Not FileExists(sFile) Then Exit Sub
+    End If
+    'Verifying file signature of:
+    Status Translate(973) & " " & sFile
+    'sMD5 = GetFileMD5(sFile)
+    
+    Select Case VerifyFileSignature(sFile)
+        Case 1: sIcon = "wintrust1"
+        Case 0: sIcon = "wintrust3"
+        Case -1: Exit Sub
+    End Select
+    
+    frmStartupList2.tvwMain.Nodes(sKey).Image = sIcon
+    frmStartupList2.tvwMain.Nodes(sKey).SelectedImage = sIcon
+End Sub
+
+Private Function WinVerifyFile(sFile As String) As Boolean
+    Dim SignResult As SignResult_TYPE
+    SignVerify sFile, 0&, SignResult
+    WinVerifyFile = SignResult.isLegit
+End Function

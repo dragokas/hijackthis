@@ -48,13 +48,35 @@ Private Type SECURITY_ATTRIBUTES
     bInheritHandle As Long
 End Type
 
+Private Type VS_FIXEDFILEINFO
+    dwSignature As Long
+    dwStrucVersionl As Integer
+    dwStrucVersionh As Integer
+    dwFileVersionMSl As Integer
+    dwFileVersionMSh As Integer
+    dwFileVersionLSl As Integer
+    dwFileVersionLSh As Integer
+    dwProductVersionMSl As Integer
+    dwProductVersionMSh As Integer
+    dwProductVersionLSl As Integer
+    dwProductVersionLSh As Integer
+    dwFileFlagsMask As Long
+    dwFileFlags As Long
+    dwFileOS As Long
+    dwFileType As Long
+    dwFileSubtype As Long
+    dwFileDateMS As Long
+    dwFileDateLS As Long
+End Type
+
 Private Declare Function PathFileExists Lib "Shlwapi.dll" Alias "PathFileExistsW" (ByVal pszPath As Long) As Long
 Private Declare Function GetFileAttributes Lib "kernel32.dll" Alias "GetFileAttributesW" (ByVal lpFileName As Long) As Long
 Private Declare Function FindFirstFile Lib "kernel32.dll" Alias "FindFirstFileW" (ByVal lpFileName As Long, lpFindFileData As WIN32_FIND_DATA) As Long
+Private Declare Function FindNextFile Lib "kernel32.dll" Alias "FindNextFileW" (ByVal hFindFile As Long, lpFindFileData As WIN32_FIND_DATA) As Long
 Private Declare Function FindClose Lib "kernel32.dll" (ByVal hFindFile As Long) As Long
 Private Declare Function CreateFile Lib "kernel32.dll" Alias "CreateFileW" (ByVal lpFileName As Long, ByVal dwDesiredAccess As Long, ByVal dwShareMode As Long, lpSecurityAttributes As Any, ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, ByVal hTemplateFile As Long) As Long
 Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
-Private Declare Function SHFileExists Lib "shell32.dll" Alias "#45" (ByVal szPath As String) As Long
+'Private Declare Function SHFileExists Lib "shell32.dll" Alias "#45" (ByVal szPath As String) As Long
 Private Declare Function Wow64DisableWow64FsRedirection Lib "kernel32.dll" (OldValue As Long) As Long
 Private Declare Function Wow64RevertWow64FsRedirection Lib "kernel32.dll" (ByVal OldValue As Long) As Long
 Private Declare Function GetDriveType Lib "kernel32.dll" Alias "GetDriveTypeW" (ByVal nDrive As Long) As Long
@@ -66,8 +88,15 @@ Private Declare Function WriteFile Lib "kernel32" (ByVal hFile As Long, ByVal lp
 Private Declare Function RegOpenKeyEx Lib "advapi32.dll" Alias "RegOpenKeyExW" (ByVal hKey As Long, ByVal lpSubKey As Long, ByVal ulOptions As Long, ByVal samDesired As Long, phkResult As Long) As Long
 Private Declare Function RegQueryValueExLong Lib "advapi32.dll" Alias "RegQueryValueExW" (ByVal hKey As Long, ByVal lpValueName As Long, ByVal lpReserved As Long, ByRef lpType As Long, szData As Long, ByRef lpcbData As Long) As Long
 Private Declare Function RegCloseKey Lib "advapi32.dll" (ByVal hKey As Long) As Long
-Private Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal length As Long) As Long
+Private Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long) As Long
 Private Declare Function GetWindowsDirectory Lib "kernel32.dll" Alias "GetWindowsDirectoryW" (ByVal lpBuffer As Long, ByVal uSize As Long) As Long
+Private Declare Function lstrlen Lib "kernel32.dll" Alias "lstrlenW" (ByVal lpString As Long) As Long
+Private Declare Function lstrcpy Lib "kernel32.dll" Alias "lstrcpyW" (ByVal lpStringDest As Long, ByVal lpStringSrc As Long) As Long
+Private Declare Function GetLongPathNameW Lib "kernel32" (ByVal lpszShortPath As Long, ByVal lpszLongPath As Long, ByVal cchBuffer As Long) As Long
+Private Declare Function GetFileVersionInfo Lib "version.dll" Alias "GetFileVersionInfoW" (ByVal lptstrFilename As Long, ByVal dwHandle As Long, ByVal dwLen As Long, lpData As Any) As Long
+Private Declare Function GetFileVersionInfoSize Lib "version.dll" Alias "GetFileVersionInfoSizeW" (ByVal lptstrFilename As Long, lpdwHandle As Long) As Long
+Private Declare Function VerQueryValue Lib "version.dll" Alias "VerQueryValueW" (pBlock As Any, ByVal lpSubBlock As Long, lplpBuffer As Long, puLen As Long) As Long
+
 
 Const FILE_SHARE_READ           As Long = &H1&
 Const FILE_SHARE_WRITE          As Long = &H2&
@@ -87,12 +116,24 @@ Const FILE_CURRENT              As Long = 1&
 Const FILE_END                  As Long = 2&
 Const INVALID_SET_FILE_POINTER  As Long = &HFFFFFFFF
 
+Const DRIVE_FIXED               As Long = 3&
+Const DRIVE_RAMDISK             As Long = 6&
+
 Const HKEY_LOCAL_MACHINE        As Long = &H80000002
 Const KEY_QUERY_VALUE           As Long = &H1&
 Const RegType_DWord             As Long = 4&
 
+Const ch_Dot                    As String = "."
+Const ch_DotDot                 As String = ".."
+Const ch_Slash                  As String = "\"
+Const ch_SlashAsterisk          As String = "\*"
+
 Private lWow64Old               As Long
 Private DriveTypeName           As New Collection
+Private arrPathFolders()        As String
+Private arrPathFiles()          As String
+Private Total_Folders           As Long
+Private Total_Files             As Long
 
 
 
@@ -152,43 +193,43 @@ ErrorHandler:
 End Function
 
 
-Public Sub GetDriveTypeNames()
-    On Error GoTo ErrorHandler
-    Dim lr As Long
-    Dim i  As Long
-    Dim DT As String
-    
-    For i = 65& To 90&
-    
-      lr = GetDriveType(StrPtr(Chr$(i) & ":\"))
-    
-      Select Case lr
-        Case 3&
-            DT = "FIXED"
-        Case 2&
-            DT = "REMOVABLE"
-        Case 5&
-            DT = "CDROM"
-        Case 4&
-            DT = "REMOTE"
-        Case 0&
-            DT = "UNKNOWN"
-        Case 1&
-            DT = "DISCONNECTED" '"NO_ROOT_DIR"
-        Case 6&
-            DT = "RAMDISK"
-        Case Else
-            DT = "UNKNOWN"
-      End Select
-      
-      DriveTypeName.Add DT, Chr$(i)
-      
-    Next
-    
-    Exit Sub
-ErrorHandler:
-    ErrorMsg err, "modFile.GetDriveTypeNames", "Drive:", Chr$(i)
-End Sub
+'Public Sub GetDriveTypeNames()
+'    On Error GoTo ErrorHandler
+'    Dim lr As Long
+'    Dim i  As Long
+'    Dim DT As String
+'
+'    For i = 65& To 90&
+'
+'      lr = GetDriveType(StrPtr(Chr$(i) & ":\"))
+'
+'      Select Case lr
+'        Case 3&
+'            DT = "FIXED"
+'        Case 2&
+'            DT = "REMOVABLE"
+'        Case 5&
+'            DT = "CDROM"
+'        Case 4&
+'            DT = "REMOTE"
+'        Case 0&
+'            DT = "UNKNOWN"
+'        Case 1&
+'            DT = "DISCONNECTED" '"NO_ROOT_DIR"
+'        Case 6&
+'            DT = "RAMDISK"
+'        Case Else
+'            DT = "UNKNOWN"
+'      End Select
+'
+'      DriveTypeName.Add DT, Chr$(i)
+'
+'    Next
+'
+'    Exit Sub
+'ErrorHandler:
+'    ErrorMsg err, "modFile.GetDriveTypeNames", "Drive:", Chr$(i)
+'End Sub
 
 
 Function FileLenW(Path As String) As Currency ', Optional DoNotUseCache As Boolean
@@ -266,7 +307,7 @@ Public Function OpenW(FileName As String, Access As VB_FILE_ACCESS_MODE, retHand
             End If
         End If
     Else
-        err.Clear: ErrorMsg err, "modFile.OpenW: Cannot open file: " & FileName
+        ErrorMsg err, "modFile.OpenW: Cannot open file: " & FileName
         err.Raise 75 ' Path/File Access error
     End If
 
@@ -418,7 +459,7 @@ Public Function ToggleWow64FSRedirection(bEnable As Boolean, Optional PathNecess
 End Function
 
 
-Public Function GetExtensionName(Path As String) As String  'вернет .EXT
+Public Function GetExtensionName(Path As String) As String  'вернет .ext
     Dim pos As Long
     pos = InStrRev(Path, ".")
     If pos <> 0 Then GetExtensionName = Mid$(Path, pos)
@@ -490,9 +531,322 @@ Public Function isPE_EXE(Optional FileName As String, Optional FileHandle As Lon
     
 ErrorHandler:
     ErrorMsg err, "Parser.isPE_EXE", "File:", FileName
-    On Error Resume Next
+    'On Error Resume Next
     'If Len(FileName) <> 0& Then PE_EXE_Cache.Add FileName, isPE_EXE
     If FileHandle = 0& Then
         If hFile <> 0 Then CloseW hFile: hFile = 0&
     End If
+End Function
+
+'main function to list folders
+
+' Возвращает массив путей.
+' Если ничего не найдено - возвращается неинициализированный массив. Используйте SafeArrayGetDim()
+Public Function ListSubfolders(Path As String, Optional Recursively As Boolean = False) As String()
+    Dim bRedirected As Boolean
+    'прежде, чем использовать ListSubfolders_Ex, нужно инициализировать глобальные массивы.
+    ReDim arrPathFolders(100) As String
+    'при каждом вызове ListSubfolders_Ex следует обнулить глобальный счетчик файлов
+    Total_Folders = 0&
+    
+    If bIsWin64 Then
+        If StrBeginWith(Path, sWinDir) Then
+            ToggleWow64FSRedirection False
+            bRedirected = True
+        End If
+    End If
+    
+    'вызов тушки
+    Call ListSubfolders_Ex(Path, Recursively)
+    If Total_Folders > 0 Then
+        Total_Folders = Total_Folders - 1
+        ReDim Preserve arrPathFolders(Total_Folders)      '0 to Max -1
+        ListSubfolders = arrPathFolders
+    End If
+    
+    If bRedirected Then ToggleWow64FSRedirection True
+End Function
+
+
+Private Sub ListSubfolders_Ex(Path As String, Optional Recursively As Boolean = False)
+    On Error GoTo ErrorHandler
+    'On Error Resume Next
+    Dim SubPathName     As String
+    Dim PathName        As String
+    Dim hFind           As Long
+    Dim l               As Long
+    Dim lpSTR           As Long
+    Dim fd              As WIN32_FIND_DATA
+    
+    'Local module variables:
+    '
+    ' Total_Folders as long
+    ' arrPathFolders() as string
+    
+    Do
+        If hFind <> 0& Then
+            If FindNextFile(hFind, fd) = 0& Then FindClose hFind: Exit Do
+        Else
+            hFind = FindFirstFile(StrPtr(Path & ch_SlashAsterisk), fd)  '"\*"
+            If hFind = INVALID_HANDLE_VALUE Then Exit Do
+        End If
+        
+        l = fd.dwFileAttributes And &H600& ' мимо симлинков
+        Do While l <> 0&
+            If FindNextFile(hFind, fd) = 0& Then FindClose hFind: hFind = 0: Exit Do
+            l = fd.dwFileAttributes And &H600&
+        Loop
+    
+        If hFind <> 0& Then
+            lpSTR = VarPtr(fd.dwReserved1) + 4&
+            PathName = Space(lstrlen(lpSTR))
+            lstrcpy StrPtr(PathName), lpSTR
+        
+            If fd.dwFileAttributes And vbDirectory Then
+                If PathName <> ch_Dot Then  '"."
+                    If PathName <> ch_DotDot Then '".."
+                        SubPathName = Path & "\" & PathName
+                        If UBound(arrPathFolders) < Total_Folders Then ReDim Preserve arrPathFolders(UBound(arrPathFolders) + 100&) As String
+                        arrPathFolders(Total_Folders) = SubPathName
+                        Total_Folders = Total_Folders + 1&
+                        If Recursively Then
+                            Call ListSubfolders_Ex(SubPathName, Recursively)
+                        End If
+                    End If
+                End If
+            End If
+        End If
+        
+    Loop While hFind
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg err, "modFile.ListSubfolders", "Folder:", Path
+    Resume Next
+End Sub
+
+'main function to list files
+
+Public Function ListFiles(Path As String, Optional Extension As String = "", Optional Recursively As Boolean = False) As String()
+    Dim bRedirected As Boolean
+    'прежде, чем использовать ListFiles_Ex, нужно инициализировать глобальные массивы.
+    ReDim arrPathFiles(100) As String
+    'при каждом вызове ListFiles_Ex следует обнулить глобальный счетчик файлов
+    Total_Files = 0&
+    
+    If bIsWin64 Then
+        If StrBeginWith(Path, sWinDir) Then
+            ToggleWow64FSRedirection False
+            bRedirected = True
+        End If
+    End If
+    
+    'вызов тушки
+    Call ListFiles_Ex(Path, Extension, Recursively)
+    If Total_Files > 0 Then
+        Total_Files = Total_Files - 1
+        ReDim Preserve arrPathFiles(Total_Files)      '0 to Max -1
+        ListFiles = arrPathFiles
+    End If
+    
+    If bRedirected Then ToggleWow64FSRedirection True
+End Function
+
+
+Private Sub ListFiles_Ex(Path As String, Optional Extension As String = "", Optional Recursively As Boolean = False)
+    'Example of Extension:
+    '".txt" - txt files
+    'empty line - all files (by default)
+
+    On Error GoTo ErrorHandler
+    'On Error Resume Next
+    Dim SubPathName     As String
+    Dim PathName        As String
+    Dim hFind           As Long
+    Dim l               As Long
+    Dim lpSTR           As Long
+    Dim fd              As WIN32_FIND_DATA
+    
+    'Local module variables:
+    '
+    ' Total_Files as long
+    ' arrPathFiles() as string
+    
+    Do
+        If hFind <> 0& Then
+            If FindNextFile(hFind, fd) = 0& Then FindClose hFind: Exit Do
+        Else
+            hFind = FindFirstFile(StrPtr(Path & ch_SlashAsterisk), fd)  '"\*"
+            If hFind = INVALID_HANDLE_VALUE Then Exit Do
+        End If
+        
+        l = fd.dwFileAttributes And &H600& ' мимо симлинков
+        Do While l <> 0&
+            If FindNextFile(hFind, fd) = 0& Then FindClose hFind: hFind = 0: Exit Do
+            l = fd.dwFileAttributes And &H600&
+        Loop
+    
+        If hFind <> 0& Then
+            lpSTR = VarPtr(fd.dwReserved1) + 4&
+            PathName = Space(lstrlen(lpSTR))
+            lstrcpy StrPtr(PathName), lpSTR
+        
+            If fd.dwFileAttributes And vbDirectory Then
+                If PathName <> ch_Dot Then  '"."
+                    If PathName <> ch_DotDot Then '".."
+                        SubPathName = Path & "\" & PathName
+                        If Recursively Then
+                            Call ListFiles_Ex(SubPathName, Extension, Recursively)
+                        End If
+                    End If
+                End If
+            Else
+                If inArray(GetExtensionName(PathName), SplitSafe(Extension, ";"), , , 1) Or Len(Extension) = 0 Then
+                    SubPathName = Path & "\" & PathName
+                    If UBound(arrPathFiles) < Total_Files Then ReDim Preserve arrPathFiles(UBound(arrPathFiles) + 100&) As String
+                    arrPathFiles(Total_Files) = SubPathName
+                    Total_Files = Total_Files + 1&
+                End If
+            End If
+        End If
+    Loop While hFind
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg err, "modFile.ListFiles_Ex", "File:", Path
+    Resume Next
+End Sub
+
+Public Function GetLocalDisks$()
+    Dim lDrives&, i&, sDrive$, sLocalDrives$
+    lDrives = GetLogicalDrives()
+    For i = 0 To 26
+        If (lDrives And 2 ^ i) Then
+            sDrive = Chr$(Asc("A") + i) & ":\"
+            Select Case GetDriveType(StrPtr(sDrive))
+                Case DRIVE_FIXED, DRIVE_RAMDISK: sLocalDrives = sLocalDrives & Chr$(Asc("A") + i) & " "
+            End Select
+        End If
+    Next i
+    GetLocalDisks = Trim$(sLocalDrives)
+End Function
+
+Public Function EnumFiles$(sFolder$)
+    Dim hFind&, sFile$, uWFD As WIN32_FIND_DATA, sList$, lpSTR&
+    If Not FolderExists(sFolder) Then Exit Function
+    hFind = FindFirstFile(StrPtr(BuildPath(sFolder, "*.*")), uWFD)
+    If hFind <= 0 Then Exit Function
+    Do
+        lpSTR = VarPtr(uWFD.lpszFileName(0))
+        sFile = Space(lstrlen(lpSTR))
+        lstrcpy StrPtr(sFile), lpSTR
+        
+        If sFile <> "." And sFile <> ".." Then
+            sList = sList & "|" & sFile
+        End If
+        If bAbort Then
+            FindClose hFind
+            Exit Function
+        End If
+    Loop Until FindNextFile(hFind, uWFD) = 0
+    FindClose hFind
+    If sList <> vbNullString Then EnumFiles = Mid$(sList, 2)
+End Function
+
+Public Function GetLongFilename$(sFileName$)
+    Dim sLongFilename$
+    If InStr(sFileName, "~") = 0 Then
+        GetLongFilename = sFileName
+        Exit Function
+    End If
+    sLongFilename = String(512, 0)
+    GetLongPathNameW StrPtr(sFileName), StrPtr(sLongFilename), Len(sLongFilename)
+    GetLongFilename = TrimNull(sLongFilename)
+End Function
+
+Public Function GetFilePropVersion(sFileName As String) As String
+    On Error GoTo ErrorHandler:
+    Dim hData&, lDataLen&, uBuf() As Byte, uCodePage(0 To 3) As Byte
+    Dim sCodePage$, sCompanyName$, uVFFI As VS_FIXEDFILEINFO, sVersion$
+    
+    If Not FileExists(sFileName) Then Exit Function
+    
+    lDataLen = GetFileVersionInfoSize(StrPtr(sFileName), ByVal 0&)
+    If lDataLen = 0 Then Exit Function
+    
+    ReDim uBuf(0 To lDataLen - 1)
+    If 0 <> GetFileVersionInfo(StrPtr(sFileName), 0&, lDataLen, uBuf(0)) Then
+    
+        If 0 <> VerQueryValue(uBuf(0), StrPtr("\"), hData, lDataLen) Then
+        
+            If hData <> 0 Then
+        
+                CopyMemory uVFFI, ByVal hData, Len(uVFFI)
+    
+                With uVFFI
+                    sVersion = .dwFileVersionMSh & "." & _
+                        .dwFileVersionMSl & "." & _
+                        .dwFileVersionLSh & "." & _
+                        .dwFileVersionLSl
+                End With
+            End If
+        End If
+    End If
+    GetFilePropVersion = sVersion
+    Exit Function
+ErrorHandler:
+    ErrorMsg err, "GetFilePropVersion", sFileName
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function GetFilePropCompany(sFileName As String) As String
+    On Error GoTo ErrorHandler:
+    Dim hData&, lDataLen&, uBuf() As Byte, uCodePage(0 To 3) As Byte
+    Dim sCodePage$, sCompanyName$, Stady&
+    
+    If Not FileExists(sFileName) Then Exit Function
+    
+    Stady = 1
+    lDataLen = GetFileVersionInfoSize(StrPtr(sFileName), ByVal 0&)
+    If lDataLen = 0 Then Exit Function
+    
+    Stady = 2
+    ReDim uBuf(0 To lDataLen - 1)
+    
+    Stady = 3
+    If 0 <> GetFileVersionInfo(StrPtr(sFileName), 0&, lDataLen, uBuf(0)) Then
+        
+        Stady = 4
+        VerQueryValue uBuf(0), StrPtr("\VarFileInfo\Translation"), hData, lDataLen
+        If lDataLen = 0 Then Exit Function
+        
+        Stady = 5
+        CopyMemory uCodePage(0), ByVal hData, 4
+        
+        Stady = 6
+        sCodePage = Right$("0" & Hex(uCodePage(1)), 2) & _
+                Right$("0" & Hex(uCodePage(0)), 2) & _
+                Right$("0" & Hex(uCodePage(3)), 2) & _
+                Right$("0" & Hex(uCodePage(2)), 2)
+        
+        'get CompanyName string
+        Stady = 7
+        If VerQueryValue(uBuf(0), StrPtr("\StringFileInfo\" & sCodePage & "\CompanyName"), hData, lDataLen) = 0 Then Exit Function
+    
+        If lDataLen > 0 And hData <> 0 Then
+            Stady = 8
+            sCompanyName = String$(lDataLen, 0)
+            
+            Stady = 9
+            lstrcpy ByVal StrPtr(sCompanyName), ByVal hData
+        End If
+        
+        Stady = 10
+        GetFilePropCompany = RTrimNull(sCompanyName)
+    End If
+    Exit Function
+ErrorHandler:
+    ErrorMsg err, "GetFilePropCompany", sFileName, "DataLen: ", lDataLen, "hData: ", hData, "sCodePage: ", sCodePage, _
+        "Buf: ", uCodePage(0), uCodePage(1), uCodePage(2), uCodePage(3), "Stady: ", Stady
+    If inIDE Then Stop: Resume Next
 End Function

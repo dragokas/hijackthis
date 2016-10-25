@@ -139,13 +139,16 @@ Public Function DeleteNTService(sServiceName As String, Optional AllowReboot As 
                         bRebootNeeded = True
                         
                     Case ERROR_ACCESS_DENIED
-                        MsgBoxW Replace$("Access denied during deletion of the service '[]'. Make sure the service is not running.", "[]", sServiceName), vbExclamation
+                        'Access denied during removing the service '[]'. Make sure the service is not running.
+                        MsgBoxW Replace$(Translate(509), "[]", sServiceName), vbExclamation
                         
                     Case ERROR_INVALID_HANDLE
-                        MsgBoxW Replace$("Unable to delete the service '[]'. Make sure the name is correct.", "[]", sServiceName), vbExclamation
+                        'Unable to delete the service '[]'. Make sure the name is correct.
+                        MsgBoxW Replace$(Translate(510), "[]", sServiceName), vbExclamation
                         
                     Case Else
-                        MsgBoxW Replace$("Unknown error occured during deletion of the service '[]'.", "[]", sServiceName), vbExclamation
+                        'Unknown error occured during deletion of the service '[]'.
+                        MsgBoxW Replace$(Translate(511), "[]", sServiceName), vbExclamation
                 End Select
             End If
             CloseServiceHandle hService

@@ -75,8 +75,8 @@ Public Sub CheckO25Item()
     Dim sHit As String, sScriptFile As String, sAdditionalInfo As String, sEventName As String, sScriptText As String
     Dim cmdExecute As String, cmdWorkDir As String, cmdArguments As String, sConsumerFileName As String, sConsumerText As String
     'Dim O25() As O25_Info: ReDim O25(0)
-    Dim result As TYPE_Scan_Results
-    Dim Stady As Single, ComeBack As Boolean
+    Dim Result As TYPE_Scan_Results
+    Dim Stady As Single, ComeBack As Boolean, NoConsumer As Boolean, NoFilter As Boolean, bOtherConsumerClass As Boolean
     
     If GetServiceRunState("winmgmt") <> SERVICE_RUNNING Then Exit Sub
     
@@ -93,7 +93,10 @@ Public Sub CheckO25Item()
     'get all namespaces for current machine
     
     Stady = 2
-    Call WMI_GetNamespaces("Root", aNameSpaces)
+    'Call WMI_GetNamespaces("Root", aNameSpaces)
+    'let's concentrate on actual malware method
+    ReDim aNameSpaces(1)
+    aNameSpaces(1) = "root\subscription"
     
     For i = 1 To UBound(aNameSpaces)
 
@@ -155,6 +158,8 @@ Public Sub CheckO25Item()
                     'Checking several known classes on: root\subscription
                     'to provide a bit more information to log
                     
+                    bOtherConsumerClass = False
+                    
                     Stady = 7
                     If StrComp(ConsumerClassName, "ActiveScriptEventConsumer", 1) = 0 Then
                     
@@ -164,14 +169,16 @@ Public Sub CheckO25Item()
                         Stady = 8
                         If Not IsNull(objConsumer.ScriptFileName) Then sScriptFile = objConsumer.ScriptFileName
                         If Not IsNull(objConsumer.ScriptText) Then sScriptText = objConsumer.ScriptText
-                        If Not IsNull(objConsumer.ScriptingEngine) Then
-                            sAdditionalInfo = "Lang=" & """" & objConsumer.ScriptingEngine & """" & ", "
-                        End If
+'                        If Not IsNull(objConsumer.ScriptingEngine) Then
+'                            sAdditionalInfo = "Lang=" & """" & objConsumer.ScriptingEngine & """" & ", "
+'                        End If
                         If 0 <> Len(sScriptFile) Then
-                            sAdditionalInfo = sAdditionalInfo & "ScriptFileName=" & """" & sScriptFile & """"
+                            'sAdditionalInfo = sAdditionalInfo & "ScriptFileName=" & """" & sScriptFile & """"
+                            sAdditionalInfo = sAdditionalInfo & sScriptFile
                         End If
                         If 0 <> Len(sScriptText) Then
-                            sAdditionalInfo = sAdditionalInfo & "ScriptCode=" & """" & StripCode(sScriptText) & """"
+                            'sAdditionalInfo = sAdditionalInfo & "ScriptCode=" & """" & StripCode(sScriptText) & """"
+                            sAdditionalInfo = sAdditionalInfo & IIf(sAdditionalInfo <> "", " / ", "") & StripCode(sScriptText)
                         End If
                     
                     ElseIf StrComp(ConsumerClassName, "CommandLineEventConsumer", 1) = 0 Then
@@ -191,33 +198,38 @@ Public Sub CheckO25Item()
                         If Not IsNull(objConsumer.CommandLineTemplate) Then cmdArguments = objConsumer.CommandLineTemplate
                         Stady = 9.3
                         
-                        sAdditionalInfo = "Executable=" & """" & cmdExecute & """" & _
-                            ", WorkDir=" & """" & cmdWorkDir & """" & _
-                            ", Arguments=" & """" & StripCode(cmdArguments) & """"
+                        'sAdditionalInfo = "Executable=" & """" & cmdExecute & """" & _
+                        '    ", WorkDir=" & """" & cmdWorkDir & """" & _
+                        '    ", Arguments=" & """" & StripCode(cmdArguments) & """"
+                           
+                        sAdditionalInfo = cmdExecute & " " & cmdArguments & IIf(cmdWorkDir <> "", " (WorkDir = " & cmdWorkDir & ")", "")
+                        
                         ComeBack = False
                         
-                    ElseIf StrComp(ConsumerClassName, "LogFileEventConsumer", 1) = 0 Then
-                        Stady = 10
-                        'Debug.Print objConsumer.FileName    'Where information logged
-                        'Debug.Print objConsumer.Text        'What kind of information logged
-                        
-                        If Not IsNull(objConsumer.FileName) Then sConsumerFileName = objConsumer.FileName
-                        If Not IsNull(objConsumer.Text) Then sConsumerText = objConsumer.Text
-                        
-                        sAdditionalInfo = "LogFileName=" & """" & sConsumerFileName & """" & _
-                            ", InfoType=" & """" & sConsumerText & """"
-                        
-                    ElseIf StrComp(ConsumerClassName, "NTEventLogEventConsumer", 1) = 0 Then
-                        Stady = 11
-                        'Debug.Print objConsumer.SourceName
-                        If Not IsNull(objConsumer.SourceName) Then
-                            sAdditionalInfo = "LogSourceName=" & """" & objConsumer.SourceName & """"
-                        End If
-                        
+'                    ElseIf StrComp(ConsumerClassName, "LogFileEventConsumer", 1) = 0 Then
+'                        Stady = 10
+'                        'Debug.Print objConsumer.FileName    'Where information logged
+'                        'Debug.Print objConsumer.Text        'What kind of information logged
+'
+'                        If Not IsNull(objConsumer.FileName) Then sConsumerFileName = objConsumer.FileName
+'                        If Not IsNull(objConsumer.Text) Then sConsumerText = objConsumer.Text
+'
+'                        sAdditionalInfo = "LogFileName=" & """" & sConsumerFileName & """" & _
+'                            ", InfoType=" & """" & sConsumerText & """"
+'
+'                    ElseIf StrComp(ConsumerClassName, "NTEventLogEventConsumer", 1) = 0 Then
+'                        Stady = 11
+'                        'Debug.Print objConsumer.SourceName
+'                        If Not IsNull(objConsumer.SourceName) Then
+'                            sAdditionalInfo = "LogSourceName=" & """" & objConsumer.SourceName & """"
+'                        End If
+'
+'                    Else
+'                        Stady = 12
+'                        'other consumers -> Show Namespace + ClassName
+'                        sAdditionalInfo = "ClassName=" & """" & ConsumerNameSpace & ":" & ConsumerClassName & """"
                     Else
-                        Stady = 12
-                        'other consumers -> Show Namespace + ClassName
-                        sAdditionalInfo = "ClassName=" & """" & ConsumerNameSpace & ":" & ConsumerClassName & """"
+                        bOtherConsumerClass = True
                     End If
                     
                 End If
@@ -289,20 +301,34 @@ Public Sub CheckO25Item()
             
                 'WhiteList
                 Stady = 18
-                If Not (StrComp(ConsumerClassName, "NTEventLogEventConsumer", 1) = 0 And StrComp(FilterName, "SCM Event Log Filter", 1) = 0) Then
-                'If Not (StrComp(ConsumerName, "BVTConsumer", 1) = 0 And cmdExecutable = "" And cmdWorkDir = "C:\\tools\\kernrate" And cmdArguments = "cscript KernCap.vbs" And Not FileExists("C:\tools\kernrate\KernCap.vbs")) Then
+                'If Not (StrComp(ConsumerClassName, "NTEventLogEventConsumer", 1) = 0 And StrComp(FilterName, "SCM Event Log Filter", 1) = 0) Then
+                If Not bOtherConsumerClass Then
+                If bIgnoreAllWhitelists Or _
+                    Not (StrComp(ConsumerName, "BVTConsumer", 1) = 0 And cmdExecute = "" And cmdWorkDir = SysDisk & "\\tools\\kernrate" And cmdArguments = "cscript KernCap.vbs" And Not FileExists(SysDisk & "\tools\kernrate\KernCap.vbs")) Then
+                
+                    'added more safely cheking
+                    NoConsumer = False: NoFilter = False
                     
-                        sHit = "O25 - WMI Event: " & ConsumerName & " / " & FilterName & _
-                            IIf(0 = Len(sTimerName), "", " / " & sTimerName) & " -> " & sAdditionalInfo & _
-                            IIf(objConsumer Is Nothing, " (no consumer)", "") & _
-                            IIf(objFilter Is Nothing, " (no filter)", "")
+                    If IsNull(objConsumer) Then
+                        NoConsumer = True
+                    Else
+                        If objConsumer Is Nothing Then NoConsumer = True
+                    End If
+                    If IsNull(objFilter) Then
+                        NoFilter = True
+                    Else
+                        If objFilter Is Nothing Then NoFilter = True
+                    End If
                     
-                        'Debug.Print sHit
+                        sHit = "O25 - WMI Event: " & _
+                            IIf(NoConsumer, " (no consumer)", ConsumerName) & " - " & _
+                            IIf(NoFilter, " (no filter)", FilterName) & " - " & _
+                            sAdditionalInfo
                         
                         If Not IsOnIgnoreList(sHit) Then
                             If bMD5 And 0 <> Len(sScriptFile) Then sHit = sHit & GetFileMD5(sScriptFile)
                 
-                            With result
+                            With Result
                                 .Section = "O25"
                                 .HitLineW = sHit
                                 With .O25
@@ -317,11 +343,11 @@ Public Sub CheckO25Item()
                                     .TimerID = sTimerName
                                 End With
                             End With
-                            AddToScanResults result
+                            AddToScanResults Result
                         End If
-                    
-                'End If
                 End If
+                End If
+                'End If
                 
                 Set objConsumer = Nothing
                 Set objFilter = Nothing
@@ -363,11 +389,11 @@ Public Sub FixO25Item(sItem$)
     
     Dim objService As Object, objInstance As Object, Finish As Boolean, i As Long
     Dim colBindings As Object, objBinding As Object, objBindingToDelete As Object
-    Dim result As TYPE_Scan_Results
+    Dim Result As TYPE_Scan_Results
     
-    If Not GetScanResults(sItem, result) Then MsgBoxW "Cannot find appropriate cure item for:" & vbCrLf & sItem, vbCritical, "Error": Exit Sub
+    If Not GetScanResults(sItem, Result) Then Exit Sub
     
-    With result.O25
+    With Result.O25
     
         On Error Resume Next
         'filter
@@ -443,8 +469,11 @@ ErrorHandler:
 End Sub
 
 ' strip string to length defined
-Function StripCode(sCode, Optional Max_Characters As Long = MAX_CODE_LENGTH, Optional AddActualLength As Boolean = True) As String
+Function StripCode(ByVal sCode, Optional Max_Characters As Long = MAX_CODE_LENGTH, Optional AddActualLength As Boolean = True) As String
     On Error GoTo ErrorHandler
+
+    sCode = Replace$(sCode, vbCr, "")
+    sCode = Replace$(sCode, vbLf, ChrW$(182) & Space$(1))
 
     If Len(sCode) <= Max_Characters Then
         StripCode = sCode
@@ -510,5 +539,4 @@ ErrorHandler:
     ErrorMsg err, "modMain2_GetStringInsideQt", sStr
     If inIDE Then Stop: Resume Next
 End Function
-
 

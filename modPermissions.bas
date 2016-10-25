@@ -148,7 +148,7 @@ Private Declare Function SetSecurityInfo Lib "advapi32.dll" (ByVal Handle As Lon
 Private Declare Function SetNamedSecurityInfo Lib "advapi32.dll" Alias "SetNamedSecurityInfoW" (ByVal pObjectName As Long, ByVal ObjectType As Long, ByVal SecurityInfo As Long, ByVal psidOwner As Long, ByVal psidGroup As Long, ByVal pDacl As Long, ByVal pSacl As Long) As Long
 Private Declare Function GetAclInformation Lib "advapi32.dll" (ByVal pAcl As Long, ByVal pAclInformation As Long, ByVal nAclInformationLength As Long, ByVal dwAclInformationClass As ACL_INFORMATION_CLASS) As Long
 Private Declare Function GetAce Lib "advapi32.dll" (ByVal pAcl As Long, ByVal dwAceIndex As Long, pAce As Long) As Long
-Private Declare Function memcpy Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal length As Long) As Long
+Private Declare Function memcpy Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long) As Long
 Private Declare Function GetExplicitEntriesFromAcl Lib "advapi32.dll" Alias "GetExplicitEntriesFromAclW" (ByVal pAcl As Long, pcCountOfExplicitEntries As Long, pListOfExplicitEntries As Long) As Long
 Private Declare Function DeleteAce Lib "advapi32.dll" (ByVal pAcl As Long, ByVal dwAceIndex As Long) As Long
 Private Declare Function InitializeAcl Lib "advapi32.dll" (ByVal pAcl As Long, ByVal nAclLength As Long, ByVal dwAclRevision As Long) As Long
@@ -206,12 +206,12 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
     
     Dim i As Long
     Dim cntAces As Long
-    Dim Idx As Long
+    Dim idx As Long
     Dim pSid As Long
     Dim inf(68) As Long: inf(0) = 276: GetVersionEx inf(0)
     Dim MajorMinor As Single: MajorMinor = inf(1) + inf(2) / 10
     
-    Static isInit As Boolean
+    Static IsInit As Boolean
     
     Static bufSidAdmin()        As Byte
     Static bufSidSystem()       As Byte
@@ -222,8 +222,8 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
     Static bufSidTI()           As Byte
     Static bufSidAppX()         As Byte
     
-    If Not isInit Then
-        isInit = True
+    If Not IsInit Then
+        IsInit = True
         bufSidSystem = CreateBufferedSID("S-1-5-18")
         bufSidAdmin = CreateBufferedSID("S-1-5-32-544")
         bufSidUsers = CreateBufferedSID("S-1-5-32-545")
@@ -267,10 +267,10 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
     ReDim Ace_Explicit(10) As EXPLICIT_ACCESS   '// now used 5-8/10
     
     '1. Local System:F (OI)(CI)
-    Idx = 0
+    idx = 0
     pSid = VarPtr(bufSidSystem(0))
     If IsValidSid(pSid) Then
-      With Ace_Explicit(Idx)
+      With Ace_Explicit(idx)
         .grfAccessPermissions = GENERIC_ALL
         .grfAccessMode = SET_ACCESS
         .grfInheritance = OBJECT_INHERIT_ACE Or CONTAINER_INHERIT_ACE
@@ -280,13 +280,13 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
             .ptstrName = pSid
         End With
       End With
-      Idx = Idx + 1
+      idx = idx + 1
     End If
     
     '2. Administrators:F (OI)(CI)
     pSid = VarPtr(bufSidAdmin(0))
     If IsValidSid(pSid) Then
-      With Ace_Explicit(Idx)
+      With Ace_Explicit(idx)
         .grfAccessPermissions = GENERIC_ALL
         .grfAccessMode = SET_ACCESS
         .grfInheritance = OBJECT_INHERIT_ACE Or CONTAINER_INHERIT_ACE
@@ -296,7 +296,7 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
             .ptstrName = pSid
         End With
       End With
-      Idx = Idx + 1
+      idx = idx + 1
     End If
     
     '3. Service:F (OI)(CI) (optional), depends on Key name
@@ -306,7 +306,7 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
       Tok = Split(KeyName, "\")
       If UBound(Tok) >= 3 Then SrvName = Tok(3)
     
-      With Ace_Explicit(Idx)
+      With Ace_Explicit(idx)
         .grfAccessPermissions = GENERIC_ALL
         .grfAccessMode = SET_ACCESS
         .grfInheritance = OBJECT_INHERIT_ACE Or CONTAINER_INHERIT_ACE
@@ -316,14 +316,14 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
             .ptstrName = StrPtr("NT SERVICE\" & SrvName)
         End With
       End With
-      Idx = Idx + 1
+      idx = idx + 1
     End If
     
     '4. Trusted Installer:F (OI)(CI) (optional) (Vista+)
     If MajorMinor >= 6 Then
       pSid = VarPtr(bufSidTI(0))
       If IsValidSid(pSid) Then
-        With Ace_Explicit(Idx)
+        With Ace_Explicit(idx)
           .grfAccessPermissions = GENERIC_ALL
           .grfAccessMode = SET_ACCESS
           .grfInheritance = OBJECT_INHERIT_ACE Or CONTAINER_INHERIT_ACE
@@ -333,7 +333,7 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
             .ptstrName = pSid
           End With
         End With
-        Idx = Idx + 1
+        idx = idx + 1
       End If
     End If
     
@@ -341,7 +341,7 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
     If MajorMinor >= 6.2 Then
       pSid = VarPtr(bufSidAppX(0))
       If IsValidSid(pSid) Then
-        With Ace_Explicit(Idx)
+        With Ace_Explicit(idx)
           .grfAccessPermissions = GENERIC_READ
           .grfAccessMode = SET_ACCESS
           .grfInheritance = OBJECT_INHERIT_ACE Or CONTAINER_INHERIT_ACE
@@ -351,7 +351,7 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
             .ptstrName = pSid
           End With
         End With
-        Idx = Idx + 1
+        idx = idx + 1
       End If
     End If
     
@@ -363,7 +363,7 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
       'Restricted:R (OI)(CI)
       pSid = VarPtr(bufSidUsers(0))
       If IsValidSid(pSid) Then
-        With Ace_Explicit(Idx)
+        With Ace_Explicit(idx)
           .grfAccessPermissions = GENERIC_ALL
           .grfAccessMode = SET_ACCESS
           .grfInheritance = OBJECT_INHERIT_ACE Or CONTAINER_INHERIT_ACE
@@ -373,12 +373,12 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
             .ptstrName = pSid
           End With
         End With
-        Idx = Idx + 1
+        idx = idx + 1
       End If
       
       pSid = VarPtr(bufSidRestricted(0))
       If IsValidSid(pSid) Then
-        With Ace_Explicit(Idx)
+        With Ace_Explicit(idx)
           .grfAccessPermissions = GENERIC_READ
           .grfAccessMode = SET_ACCESS
           .grfInheritance = OBJECT_INHERIT_ACE Or CONTAINER_INHERIT_ACE
@@ -388,7 +388,7 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
             .ptstrName = pSid
           End With
         End With
-        Idx = Idx + 1
+        idx = idx + 1
       End If
       
     Else
@@ -398,7 +398,7 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
       'PowerUsers:R (OI)(CI) (XP only)
       pSid = VarPtr(bufSidCreator(0))
       If IsValidSid(pSid) Then
-        With Ace_Explicit(Idx)
+        With Ace_Explicit(idx)
           .grfAccessPermissions = GENERIC_ALL
           .grfAccessMode = SET_ACCESS
           .grfInheritance = CONTAINER_INHERIT_ACE
@@ -408,12 +408,12 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
             .ptstrName = pSid
           End With
         End With
-        Idx = Idx + 1
+        idx = idx + 1
       End If
       
       pSid = VarPtr(bufSidUsers(0))
       If IsValidSid(pSid) Then
-        With Ace_Explicit(Idx)
+        With Ace_Explicit(idx)
           .grfAccessPermissions = GENERIC_READ
           .grfAccessMode = SET_ACCESS
           .grfInheritance = OBJECT_INHERIT_ACE Or CONTAINER_INHERIT_ACE
@@ -423,13 +423,13 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
             .ptstrName = pSid
           End With
         End With
-        Idx = Idx + 1
+        idx = idx + 1
       End If
       
       If MajorMinor < 6 Then
         pSid = VarPtr(bufSidPowerUsers(0))
         If IsValidSid(pSid) Then
-          With Ace_Explicit(Idx)
+          With Ace_Explicit(idx)
             .grfAccessPermissions = GENERIC_READ
             .grfAccessMode = SET_ACCESS
             .grfInheritance = OBJECT_INHERIT_ACE Or CONTAINER_INHERIT_ACE
@@ -439,14 +439,14 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
               .ptstrName = pSid
             End With
           End With
-          Idx = Idx + 1
+          idx = idx + 1
         End If
       End If
       
     End If
     
-    If Idx > 0 Then
-        ReDim Preserve Ace_Explicit(Idx - 1)
+    If idx > 0 Then
+        ReDim Preserve Ace_Explicit(idx - 1)
     End If
     
     Make_Default_Ace_Explicit = Ace_Explicit
@@ -461,7 +461,7 @@ Public Function CreateBufferedSID(SidString As String) As Byte()
     ReDim bufSid(0) As Byte
 
     If 0 = ConvertStringSidToSid(StrPtr(SidString), pSid) Then  ' * -> *
-        Debug.Print "ErrorHandler: ConvertStringSidToSidW"
+        Debug.Print "ErrorHandler: ConvertStringSidToSidW failed. Input buffer: " & SidString
     Else
         If IsValidSid(pSid) Then
             cbSID = GetLengthSid(pSid)
@@ -918,7 +918,7 @@ Private Function GetHKey(ByVal HKeyName As String) As Long 'Get handle of main h
             GetHKey = HKEY_CURRENT_USER
         Case "HKEY_LOCAL_MACHINE", "HKLM"
             GetHKey = HKEY_LOCAL_MACHINE
-        Case "HKEY_USERS", "HKU", "HKUS"
+        Case "HKEY_USERS", "HKU"
             GetHKey = HKEY_USERS
         Case "HKEY_PERFORMANCE_DATA"
             GetHKey = HKEY_PERFORMANCE_DATA
@@ -930,6 +930,7 @@ Private Function GetHKey(ByVal HKeyName As String) As Long 'Get handle of main h
     Exit Function
 ErrorHandler:
     Debug.Print "Error in GetHKey", err, err.Description
+    If inIDE Then Stop: Resume Next
 End Function
 
 Private Function ConvertHiveHandleToSeObjectName(hHive As Long) As String

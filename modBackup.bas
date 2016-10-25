@@ -6,9 +6,9 @@ Private Declare Function RegOpenKeyExW Lib "advapi32.dll" (ByVal hKey As Long, B
 Private Declare Function RegEnumKeyExW Lib "advapi32.dll" (ByVal hKey As Long, ByVal dwIndex As Long, ByVal lpName As Long, lpcbName As Long, ByVal lpReserved As Long, ByVal lpClass As Long, lpcbClass As Long, lpftLastWriteTime As Any) As Long
 
 Public Sub MakeBackup(ByVal sItem$)
-    Dim sPath$, lHive&, sKey$, sValue$, sSID$, sUserName$
+    Dim sPath$, lHive&, sKey$, sValue$, sSID$, sUsername$
     Dim sData$, sDummy$, sBackup$, sLine$
-    Dim sDPFKey$, sCLSID$, sOSD$, sINF$, sInProcServer32$
+    Dim sDPFKey$, sCLSID$, sOSD$, sInf$, sInProcServer32$
     Dim sNum$, sFile1$, sFile2$, ff%, sPrefix$, Wow64Redir As Boolean
     Dim sFullPrefix$
     On Error Resume Next
@@ -26,11 +26,11 @@ Public Sub MakeBackup(ByVal sItem$)
     
     'create backup file name
     Randomize
-    sBackup = "backup-" & Format(Date, "yyyymmdd") & "-" & Format(Time, "HhNnSs") & "-" & CStr(1000 * Format(Rnd(), "0.000"))
+    sBackup = "backup-" & Format(Date, "yyyymmdd") & "-" & Format(time, "HhNnSs") & "-" & CStr(1000 * Format(Rnd(), "0.000"))
     If Dir$(sPath & "backups\" & sBackup & "*.*") <> vbNullString Or _
        InStrRev(sBackup, "-") <> Len(sBackup) - 3 Then
         Do
-            sBackup = "backup-" & Format(Date, "yyyymmdd") & "-" & Format(Time, "HhNnSs") & "-"
+            sBackup = "backup-" & Format(Date, "yyyymmdd") & "-" & Format(time, "HhNnSs") & "-"
             Randomize
             sBackup = sBackup & CStr(1000 * Format(Rnd(), "0.000"))
         Loop Until Dir$(sPath & "backups\" & sBackup & "*.*") = vbNullString And _
@@ -40,24 +40,24 @@ Public Sub MakeBackup(ByVal sItem$)
     sFullPrefix = Left$(sItem, InStr(sItem, " - ") - 1)
     sPrefix = Trim(Left$(sItem, InStr(sItem, "-") - 1))
     
-    If Not StrEndWith(sFullPrefix, "-64") And bIsWin64 Then Wow64Redir = True
+    If StrEndWith(sFullPrefix, "-32") Then Wow64Redir = True
     
     On Error GoTo ErrorHandler:
     Select Case sPrefix 'Trim$(Left$(sItem, 3))
         'these lot don't need any additional stuff
         'backed up, everything is in the sItem line
-        Case "R0", "R3" '"R0-32", "R0-64"
-        Case "F0", "F1", "F2", "F3"  '"F2-32", "F2-64"
+        Case "R0", "R3"
+        Case "F0", "F1", "F2", "F3"
         'Case "N1", "N2", "N3", "N4"
-        Case "O1", "O3", "O5"  '"O3-32", "O3-64"
-        Case "O7", "O8", "O13", "O14" '"O13-32", "O13-64"
-        Case "O15", "O17", "O18", "O19"  '"O15-32", "O15-64", "O17-32", "O17-64", "O19-32", "O19-64"
+        Case "O1", "O3", "O5"
+        Case "O7", "O8", "O13", "O14"
+        Case "O15", "O17", "O18", "O19"
         Case "O23", "O25"
         
         'below items that DO need something else
         'backed up
         
-        Case "R1" ', "R1-32", "R1-64"
+        Case "R1" ', "R1-32"
             'R1 - Created Registry value
             'R1 - HKCU\Software\..\Subkey,Value[=Data]
             
@@ -68,7 +68,7 @@ Public Sub MakeBackup(ByVal sItem$)
                     Case "HKCU": lHive = HKEY_CURRENT_USER
                     Case "HKCR": lHive = HKEY_CLASSES_ROOT
                     Case "HKLM": lHive = HKEY_LOCAL_MACHINE
-                    Case "HKUS": lHive = HKEY_USERS
+                    Case "HKU\": lHive = HKEY_USERS
                 End Select
                 sDummy = Mid$(sDummy, 6)
                 sKey = Left$(sDummy, InStr(sDummy, ",") - 1)
@@ -91,7 +91,7 @@ Public Sub MakeBackup(ByVal sItem$)
             'MsgBoxW "Not implemented yet, item '" & sItem & "' will not be backed up!", vbExclamation, "bad coder - no donuts"
             MsgBoxW Replace$(Translate(531), "[]", sItem), vbExclamation, Translate(532)
             
-        Case "O2" ', "O2-32", "O2-64"
+        Case "O2" ', "O2-32"
             'O2 - BHO
             'O2 - BHO: BhoName - CLSID - Filename
             
@@ -108,7 +108,7 @@ Public Sub MakeBackup(ByVal sItem$)
             End If
             If FileExists(sDummy) Then FileCopyW sDummy, sPath & "backups\" & sBackup & ".dll"
             
-        Case "O4" ', "O4-32", "O4-64"
+        Case "O4" ', "O4-32"
             'O4 - Regrun and Startup run, also for other users
             'O4 - Common Startup: Bla.lnk = c:\dummy.exe
             
@@ -131,7 +131,7 @@ Public Sub MakeBackup(ByVal sItem$)
                     End Select
                 Else 'item from other user account
                     sSID = Left$(sData, InStr(sData, " ") - 1)
-                    sUserName = MapSIDToUsername(sSID)
+                    sUsername = MapSIDToUsername(sSID)
                     sData = Mid$(sData, InStr(sData, " ") + 1)
                     sData = Left$(sData, InStr(sData, ":") - 1)
                     Select Case sData
@@ -192,7 +192,7 @@ Public Sub MakeBackup(ByVal sItem$)
                 sData = RegExportKeyToVariable(0&, "HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Internet Explorer\Control Panel")
             End If
             
-        Case "O9" ', "O9-32", "O9-64"
+        Case "O9" ', "O9-32"
             'O9 - IE Tools menu item/button
             'O9 - Extra button: Offline
             'O9 - Extra 'Tools' menuitem: Add to T&rusted Zone
@@ -234,7 +234,7 @@ Public Sub MakeBackup(ByVal sItem$)
             '       "reinstall the program.", vbExclamation
             Exit Sub
             
-        Case "O11" ', "O11-32", "O11-64"
+        Case "O11" ', "O11-32"
             'O11 - Extra options in MSIE 'Advanced' settings tab
             'O11 - Options group: [COMMONNAME] CommonName
             
@@ -244,7 +244,7 @@ Public Sub MakeBackup(ByVal sItem$)
             '"-advopt.reg"
             sData = RegExportKeyToVariable(0&, "HKEY_LOCAL_MACHINE\Software\Microsoft\Internet Explorer\AdvancedOptions\" & sDummy, Wow64Redir)
             
-        Case "O12" ', "O12-32", "O12-64"
+        Case "O12" ', "O12-32"
             'O12 - MSIE plugins for file extensions or MIME types
             'O12 - Plugin for .spop: NAV.DLL
             'O12 - Plugin for text/html: NAV.DLL
@@ -264,7 +264,7 @@ Public Sub MakeBackup(ByVal sItem$)
             '"-plugin.reg"
             sData = RegExportKeyToVariable(0&, "HKEY_LOCAL_MACHINE\Software\Microsoft\Internet Explorer\Plugins\" & sDummy, Wow64Redir)
             
-        Case "O16" ', "O16-32", "O16-64"
+        Case "O16" ', "O16-32"
             'O16 - Download Program Files item
             'O16 - DPF: Plugin name - http://bla.com/bla.cab
             'O16 - DPF: {000000} (name) - http://bla.com/bla.cab
@@ -316,7 +316,7 @@ Public Sub MakeBackup(ByVal sItem$)
                 End If
             End If
             
-        Case "O20" ', "O20-32", "O20-64"
+        Case "O20" ', "O20-32"
             'O20 - AppInit_DLLs: file.dll (do nothing)
             'O20 - Winlogon Notify: bla - c:\file.dll
             'todo:
@@ -329,7 +329,7 @@ Public Sub MakeBackup(ByVal sItem$)
                 sData = RegExportKeyToVariable(0&, "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\Notify\" & sDummy, Wow64Redir)
             End If
         
-        Case "O21" ', "O21-32", "O21-64"
+        Case "O21" ', "O21-32"
             'O21 - ShellServiceObjectDelayLoad
             'O21 - SSODL: webcheck - {000....000} - c:\file.dll
             'todo:
@@ -401,7 +401,7 @@ Public Sub RestoreBackup(ByVal sItem$)
     'line 3+: any Registry data
     'format of sItem:
     ' [short date], [long time]: [original item name]
-    Dim sPath$, sDate$, sTime$, sFile$, sBackup$, sSID$, ff%
+    Dim sPath$, sDate$, stime$, sFile$, sBackup$, sSID$, ff%
     Dim sName$, sDummy$, i&, sKey1$, sKey2$
     Dim sRegKey$, sRegKey2$, sRegKey3$, sRegKey4$, sRegKey5$
     Dim Wow64Redir As Boolean, sPrefix$, sFullPrefix$
@@ -412,9 +412,9 @@ Public Sub RestoreBackup(ByVal sItem$)
     If Not FolderExists(sPath & "backups") Then Exit Sub
     
     sDate = Left$(sItem, InStr(sItem, ", ") - 1)
-    sTime = Mid$(sItem, InStr(sItem, ", ") + 2)
-    sName = Mid$(sTime, InStr(sTime, ": ") + 2)
-    sTime = Left$(sTime, InStr(sTime, ": ") - 1)
+    stime = Mid$(sItem, InStr(sItem, ", ") + 2)
+    sName = Mid$(stime, InStr(stime, ": ") + 2)
+    stime = Left$(stime, InStr(stime, ": ") - 1)
     
     sItem = Mid$(sItem, InStr(sItem, ": ") + 2)
     
@@ -424,7 +424,7 @@ Public Sub RestoreBackup(ByVal sItem$)
         'use stupid workaround for USA data format
         sDate = Format(sDate, "yyyyddmm")
     End If
-    sTime = Format(sTime, "HhNnSs")
+    stime = Format(stime, "HhNnSs")
     
     'sBackup = "backup-" & sDate & "-" & sTime '& "*.*"
     sBackup = "backup-*.*"
@@ -484,13 +484,13 @@ Public Sub RestoreBackup(ByVal sItem$)
     Dim lHive&, sKey$, sVal$, sData$
     Dim sIniFile$, sSection$
     Dim sMyFile$, sMyName$, sCLSID$, sLine$
-    Dim sDPFKey$, sINF$, sOSD$, sInProcServer32$
+    Dim sDPFKey$, sInf$, sOSD$, sInProcServer32$
     
     'sPrefix = Trim$(Left$(sName, 3))
     sPrefix = Trim(Left$(sItem, InStr(sItem, "-") - 1))
     sFullPrefix = Left$(sItem, InStr(sItem, " - ") - 1)
     
-    If Not StrEndWith(sFullPrefix, "-64") And bIsWin64 Then Wow64Redir = True
+    If StrEndWith(sFullPrefix, "-32") Then Wow64Redir = True
     
     Select Case sPrefix
         Case "R0", "R1" 'Changed/Created Regval
@@ -626,7 +626,7 @@ Public Sub RestoreBackup(ByVal sItem$)
             End If
             If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
             
-        Case "O2" ', "O2-64" 'BHO
+        Case "O2"
             'O2 - BHO: [bhoname] - [clsid] - [file]
             
             sDummy = Mid$(sItem, InStr(sItem, ": ") + 2)
@@ -657,7 +657,7 @@ Public Sub RestoreBackup(ByVal sItem$)
                 On Error Resume Next
                 FileCopyW sPath & "backups\" & sBackup & ".dll", sMyFile
                 On Error GoTo ErrorHandler:
-                If OSVer.Bitness = "x64" And FolderExists(sWinDir & "\sysnative") Then
+                If OSver.Bitness = "x64" And FolderExists(sWinDir & "\sysnative") Then
                     Shell sWinDir & "\sysnative\regsvr32.exe /s """ & sMyFile & """", vbHide
                 Else
                     Shell sWinDir & IIf(bIsWinNT, "\system32", "\system") & "\regsvr32.exe /s """ & sMyFile & """", vbHide
@@ -666,7 +666,7 @@ Public Sub RestoreBackup(ByVal sItem$)
             If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
             If FileExists(sPath & "backups\" & sFile & ".dll") Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile & ".dll"))
             
-        Case "O3" ', "O3-64" 'IE Toolbar
+        Case "O3"
             'O3 - Toolbar: Radio - {00000000-0000-0000-0000-000000000000}
             
             sMyName = Mid$(sItem, InStr(sItem, ": ") + 2)
@@ -691,7 +691,7 @@ Public Sub RestoreBackup(ByVal sItem$)
                 Select Case Left$(sDummy, 4)
                     Case "HKLM": lHive = HKEY_LOCAL_MACHINE
                     Case "HKCU": lHive = HKEY_CURRENT_USER
-                    Case "HKUS": lHive = HKEY_USERS
+                    Case "HKU\": lHive = HKEY_USERS
                 End Select
                 If Not lHive = HKEY_USERS Then
                     sDummy = Mid$(sDummy, 9)
@@ -1023,11 +1023,11 @@ ProtDefs:
             Else
                 sCLSID = Left$(sCLSID, InStr(sCLSID, " - ") - 1)
             End If
-            sINF = RegGetString(HKEY_LOCAL_MACHINE, sDPFKey & "\" & sCLSID & "\DownloadInformation", "INF")
-            If sINF <> vbNullString Then
+            sInf = RegGetString(HKEY_LOCAL_MACHINE, sDPFKey & "\" & sCLSID & "\DownloadInformation", "INF")
+            If sInf <> vbNullString Then
                 If FileExists(sPath & "backups\" & sFile & ".inf") Then
                     On Error Resume Next
-                    FileCopyW sPath & "backups\" & sFile & ".inf", sINF
+                    FileCopyW sPath & "backups\" & sFile & ".inf", sInf
                     On Error GoTo ErrorHandler:
                 End If
             End If
@@ -1223,7 +1223,7 @@ ProtDefs:
             Dim sServices$(), sDisplayName$
             sDisplayName = Mid$(sItem, InStr(sItem, ": ") + 2)
             sDisplayName = Left$(sDisplayName, InStr(sDisplayName, " - ") - 1)
-            sServices = Split(RegEnumSubkeys(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services"), "|")
+            sServices = Split(RegEnumSubKeys(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services"), "|")
             If UBound(sServices) <> 0 And UBound(sServices) <> -1 Then
                 For i = 0 To UBound(sServices)
                     If sDisplayName = RegGetString(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\" & sServices(i), "DisplayName") Then
@@ -1280,8 +1280,8 @@ ProtDefs:
             If FileExists(sPath & "backups\" & sFile & "-source.html") Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile & "-source.html"))
             If FileExists(sPath & "backups\" & sFile & "-suburl.html") Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile & "-suburl.html"))
         Case Else
-        
-            MsgBoxW "Restore for this item is not implemented:" & vbCrLf & vbCrLf & sItem
+            'Restore for this item is not implemented:
+            MsgBoxW Translate(89) & vbCrLf & vbCrLf & sItem
         
     End Select
     Exit Sub
@@ -1293,9 +1293,13 @@ ErrorHandler:
 End Sub
 
 Public Sub ListBackups()
-    Dim sPath$, sFile$, vDummy As Variant, ff%
-    Dim sBackup$, sDate$, sTime$
     On Error GoTo ErrorHandler:
+    
+    Dim sPath$, sFile$, vDummy As Variant, ff%
+    Dim sBackup$, sDate$, stime$, aBackup() As String, Cnt&, i&
+    
+    ReDim aBackup(100)
+    
     sPath = AppPath() & IIf(Right$(AppPath(), 1) = "\", vbNullString, "\")
     sFile = Dir$(sPath & "backups\" & "backup*")
     If sFile = vbNullString Then Exit Sub
@@ -1313,17 +1317,26 @@ Public Sub ListBackups()
             Close #ff
             
             sDate = Right$(vDummy(1), 2) & "-" & Mid$(vDummy(1), 5, 2) & "-" & Mid$(vDummy(1), 1, 4)
-            sTime = Left$(vDummy(2), 2) & ":" & Mid$(vDummy(2), 3, 2) & ":" & Right$(vDummy(2), 2)
+            stime = Left$(vDummy(2), 2) & ":" & Mid$(vDummy(2), 3, 2) & ":" & Right$(vDummy(2), 2)
             
             sBackup = Format(sDate, "Short Date") & ", " & _
-                      Format(sTime, "Long Time") & ": " & _
+                      Format(stime, "Long Time") & ": " & _
                       sBackup
-            frmMain.lstBackups.AddItem sBackup
+                      
+            Cnt = Cnt + 1
+            If UBound(aBackup) < Cnt Then ReDim Preserve aBackup(UBound(aBackup) + 100)
+            aBackup(Cnt) = sBackup
         End If
         sFile = Dir
     Loop Until sFile = vbNullString
-    Exit Sub
     
+    If Cnt <> 0 Then
+        For i = Cnt To 1 Step -1
+            frmMain.lstBackups.AddItem aBackup(i)
+        Next
+    End If
+    
+    Exit Sub
 ErrorHandler:
     ErrorMsg err, "modBackup_ListBackups"
     If inIDE Then Stop: Resume Next
@@ -1332,7 +1345,7 @@ End Sub
 Public Sub DeleteBackup(sBackup$)
     On Error GoTo ErrorHandler:
     
-    Dim sFile$, sDate$, sTime$
+    Dim sFile$, sDate$, stime$
     
     If sBackup = vbNullString Then
         '// TODO
@@ -1341,8 +1354,8 @@ Public Sub DeleteBackup(sBackup$)
     End If
     
     sDate = Left$(sBackup, InStr(sBackup, ", ") - 1)
-    sTime = Mid$(sBackup, InStr(sBackup, ", ") + 2)
-    sTime = Left$(sTime, InStr(sTime, ": ") - 1)
+    stime = Mid$(sBackup, InStr(sBackup, ", ") + 2)
+    stime = Left$(stime, InStr(stime, ": ") - 1)
     
     If Not bIsUSADateFormat Then
         sDate = Format(sDate, "yyyymmdd")
@@ -1350,9 +1363,9 @@ Public Sub DeleteBackup(sBackup$)
         'use stupid workaround for USA date format
         sDate = Format(sDate, "yyyyddmm")
     End If
-    sTime = Format(sTime, "HhNnSs")
+    stime = Format(stime, "HhNnSs")
     
-    sFile = "backup-" & sDate & "-" & sTime & "*.*"
+    sFile = "backup-" & sDate & "-" & stime & "*.*"
     
     DeleteFileWEx StrPtr(BuildPath(AppPath(), "backups\" & sFile))
     Exit Sub

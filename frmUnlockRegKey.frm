@@ -8,7 +8,7 @@ Begin VB.Form frmUnlockRegKey
    LinkTopic       =   "Form1"
    ScaleHeight     =   3240
    ScaleWidth      =   8445
-   StartUpPosition =   3  'Windows Default
+   StartUpPosition =   2  'CenterScreen
    Begin VB.CommandButton cmdExit 
       Caption         =   "Close"
       Height          =   495
@@ -42,7 +42,7 @@ Begin VB.Form frmUnlockRegKey
       Top             =   600
       Width           =   8055
    End
-   Begin VB.Label Label1 
+   Begin VB.Label lblWhatToDo 
       Caption         =   "Enter Registry Key(s) to unlock and reset access:"
       Height          =   255
       Left            =   240
@@ -59,6 +59,8 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Private Sub cmdGo_Click()
+    On Error GoTo ErrorHandler:
+
     Dim sKeys As String
     Dim aKeys, Key
     Dim Recursively As Boolean
@@ -68,11 +70,12 @@ Private Sub cmdGo_Click()
     sKeys = Text1.Text
     
     If sKeys = "" Then
-        MsgBoxW "You should enter at least one key!", vbExclamation
+        'You should enter at least one key!
+        MsgBoxW Translate(1905), vbExclamation
         Exit Sub
     End If
     
-    Recursively = (chkRecur.value = 1)
+    Recursively = (chkRecur.Value = 1)
     
     sKeys = Replace$(sKeys, vbCr, "")
     aKeys = Split(sKeys, vbLf)
@@ -80,9 +83,12 @@ Private Sub cmdGo_Click()
     For Each Key In aKeys
         If Len(Key) <> 0 Then
             If True = modPermissions.RegKeyResetDACL(0&, CStr(Key), False, Recursively) Then
-                FixLines = FixLines & "[OK] - " & Key & IIf(Recursively, " (recursively)", "") & vbCrLf
+                '[OK]
+                '(recursively)
+                FixLines = FixLines & Translate(1906) & " - " & Key & IIf(Recursively, " " & Translate(1907), "") & vbCrLf
             Else
-                FixLines = FixLines & "[Fail] - " & Key & vbCrLf
+                '[Fail]
+                FixLines = FixLines & Translate(1908) & " - " & Key & vbCrLf
             End If
         End If
     Next
@@ -92,6 +98,11 @@ Private Sub cmdGo_Click()
     Print #ff, FixLines
     Close ff
     Shell "notepad.exe" & " " & """" & FixLog & """", vbNormalFocus
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg err, "frmUnlockRegKey.cmdGo_Click"
+    If inIDE Then Stop: Resume Next
 End Sub
 
 Private Sub CmdExit_Click()
@@ -99,6 +110,7 @@ Private Sub CmdExit_Click()
 End Sub
 
 Private Sub Form_Load()
+    ReloadLanguage
     CenterForm Me
 End Sub
 
@@ -110,11 +122,12 @@ Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
 End Sub
 
 Private Sub Form_Resize()
+    If Me.WindowState = vbMinimized Or Me.WindowState = vbMaximized Then Exit Sub
     If Me.Width < 7860 Then Me.Width = 7860
     If Me.Height < 2570 Then Me.Height = 2570
     Text1.Width = Me.Width - 630
     Text1.Height = Me.Height - 2010
     chkRecur.Top = Me.Height - 1300
     cmdGo.Top = Me.Height - 1300
-    cmdExit.Top = Me.Height - 1300
+    CmdExit.Top = Me.Height - 1300
 End Sub

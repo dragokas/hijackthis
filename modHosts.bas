@@ -6,22 +6,22 @@ Public Sub ListHostsFile(objList As ListBox, objInfo As Label)
     Dim sAttr$, iAttr&, sDummy$, vContent As Variant, i&, ff%
     On Error Resume Next
     'objInfo.Caption = "Loading hosts file, please wait..."
-    objInfo.Caption = Translate(550)
+    objInfo.Caption = Translate(279)
     frmMain.cmdHostsManDel.Enabled = False
     frmMain.cmdHostsManToggle.Enabled = False
     DoEvents
     If Not FileExists(sHostsFile) Then
         'If MsgBoxW("Cannot find the hosts file." & vbCrLf & "Do you want to create a new, default hosts file?", vbExclamation + vbYesNo) = vbNo Then
-        If MsgBoxW(Translate(551), vbExclamation Or vbYesNo) = vbNo Then
+        If MsgBoxW(Translate(280), vbExclamation Or vbYesNo) = vbNo Then
             'objInfo.Caption = "No hosts file found."
-            objInfo.Caption = Translate(552)
+            objInfo.Caption = Translate(281)
             Exit Sub
         Else
             CreateDefaultHostsFile
         End If
     End If
-    
-    objInfo.Caption = "Loading hosts file, please wait..."
+    'Loading hosts file, please wait...
+    objInfo.Caption = Translate(279)
     frmMain.cmdHostsManDel.Enabled = False
     frmMain.cmdHostsManToggle.Enabled = False
     DoEvents
@@ -66,7 +66,7 @@ End Sub
 Public Function GetDefaultHostsContents() As String
   Dim DefaultContent$
     
-  If OSVer.MajorMinor < 6 Then
+  If OSver.MajorMinor < 6 Then
     
     'XP
     DefaultContent = _
@@ -90,7 +90,7 @@ Public Function GetDefaultHostsContents() As String
     "" & vbCrLf & _
     "127.0.0.1       localhost"
     
-  ElseIf OSVer.MajorMinor < 6.1 Then
+  ElseIf OSver.MajorMinor < 6.1 Then
     
     'Vista
     DefaultContent = _
@@ -159,7 +159,7 @@ Public Sub HostsDeleteLine(objList As ListBox)
         'MsgBoxW "The hosts file is locked for reading and cannot be edited. " & vbCrLf & _
         '       "Make sure you have privileges to modify the hosts file and " & _
         '       "no program is protecting it against changes.", vbCritical
-        MsgBoxW Translate(553), vbCritical
+        MsgBoxW Translate(282), vbCritical
         Exit Sub
     End If
     
@@ -191,9 +191,10 @@ Public Sub HostsToggleLine(objList As ListBox)
     If (iAttr And 2048) Then iAttr = iAttr - 2048
     SetFileAttributes StrPtr(sHostsFile), vbArchive
     If err.Number Then
-        MsgBoxW "The hosts file is locked for reading and cannot be edited. " & vbCrLf & _
+        '"The hosts file is locked for reading and cannot be edited. " & vbCrLf & _
                "Make sure you have privileges to modify the hosts file and " & _
-               "no program is protecting it against changes.", vbCritical
+               "no program is protecting it against changes."
+        MsgBoxW Translate(282), vbCritical
         Exit Sub
     End If
     

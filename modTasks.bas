@@ -81,7 +81,7 @@ End Sub
 Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState As Boolean)
     On Error GoTo ErrorHandler:
     
-    Dim result      As TYPE_Scan_Results
+    Dim Result      As TYPE_Scan_Results
     Dim taskState   As String
     Dim RunObj      As String
     Dim RunObjExpanded As String
@@ -293,7 +293,8 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
             If errN <> 0 Then HRESULT = MessageText(errN)
             
             If CreateLogFile Then
-                Print #LogHandle, OSver.MajorMinor & ";" & taskState & ";" & ScreenChar(registeredTask.Name) & ";" & ScreenChar(DirParent) & ";" & _
+                'taskState
+                Print #LogHandle, OSver.MajorMinor & ";" & "" & ";" & ScreenChar(registeredTask.Name) & ";" & ScreenChar(DirParent) & ";" & _
                     ScreenChar(RunObj) & ";" & ScreenChar(RunArgs) & ";" & _
                     IIf(NoFile, "(file missing)", "") & ";" & _
                     IIf(0 <> Len(HRESULT), "(" & HRESULT & ", idx: " & StadyLast & ")", "")
@@ -306,16 +307,7 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                 IIf(NoFile, " (file missing)", "") & _
                 IIf(0 <> Len(HRESULT), " (" & HRESULT & ", idx: " & StadyLast & ")", "")
             
-            'cheking in whitelist
-            If oDict.TaskWL_ID.Exists(DirParent & "\" & registeredTask.Name) Then
-                'verifying all components
-                
-                WL_ID = oDict.TaskWL_ID(DirParent & "\" & registeredTask.Name)
-                
-                With g_TasksWL(WL_ID)
-                    If StrComp(.RunObj, RunObj, 1) = 0 And StrComp(.Args, RunArgs, 1) = 0 Then isSafe = True
-                End With
-            End If
+            isSafe = isInTasksWhiteList(DirParent & "\" & registeredTask.Name, RunObj, RunArgs)
             
             'do not log subfolder yet (just check it)
             'If Not isRecursiveState Then
@@ -328,7 +320,7 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                     End If
                 End If
                 
-                With result
+                With Result
                     .Section = "O22"
                     .HitLineW = sHit
                     .RunObject = RunObj
@@ -336,7 +328,7 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                     .AutoRunObject = DirFull
                     .CureType = AUTORUN_BASED
                 End With
-                AddToScanResults result
+                AddToScanResults Result
               End If
             End If
               
@@ -382,6 +374,28 @@ ErrorHandler:
 '    End If
     If inIDE Then Stop: Resume Next
 End Sub
+
+Public Function isInTasksWhiteList(sPathName As String, sTargetFile As String, sArguments As String) As Boolean
+    On Error GoTo ErrorHandler
+    Dim WL_ID As Long
+
+    If bIgnoreAllWhitelists Then Exit Function
+    If Not oDict.TaskWL_ID.Exists(sPathName) Then Exit Function
+    
+    WL_ID = oDict.TaskWL_ID(sPathName)
+    
+    With g_TasksWL(WL_ID)
+        'verifying all components
+        If inArraySerialized(sTargetFile, .RunObj, "|", , , 1) And _
+          inArraySerialized(sArguments, .Args, "|", , , 1) Then
+            isInTasksWhiteList = True
+        End If
+    End With
+    Exit Function
+ErrorHandler:
+    ErrorMsg err, "modTasks.isInTasksWhiteList"
+    If inIDE Then Stop: Resume Next
+End Function
 
 ' replace ; -> \\\, (for CSV)
 ' adds 1 space (Excel support)

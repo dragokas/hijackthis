@@ -19,32 +19,6 @@ Attribute VB_Ext_KEY = "Top_Level" ,"Yes"
 ' Thanks to Catstail (Boris Fayfel) & The Trick (Anatolii Krivous) for improvements.
 '
 
-'
-' Contains:
-'
-' Function IsRunned(Optional ByRef ProcessName As String, Optional ByRef ProcessID As Long) As Boolean
-' Function WaitForTerminate(
-'                        Optional ByVal WindowHandle As Long, _
-'                        Optional ByVal ProcessHandle As Long, _
-'                        Optional ByVal FreezeThread As Boolean, _
-'                        Optional ByVal TimeOut As Single) As Long 'msec
-'Public Function ProcessClose( _
-'                        Optional WindowHandle As Long, _
-'                        Optional ProcessName As String, _
-'                        Optional Async As Boolean, _
-'                        Optional TimeOut As Single = INFINITE) As Long
-'Public Function ProcessRun( _
-'                        ByVal FileName As String, _
-'                        Optional ByVal CommandLine As String, _
-'                        Optional ByVal CurrentDirectory As String = vbNullString, _
-'                        Optional WindowStyle As Long = 1&)
-'
-'Public Property Get GetProcessID() As Long
-'Public Property Get GetThreadId() As Long
-'Public Property Get GetProcessHandle() As Long
-'Public Property Get GetThreadHandle() As Long
-'
-
 Option Explicit
 
 Private Const MAX_PATH As Long = 260&
@@ -99,12 +73,12 @@ End Enum
 Private Declare Function Process32First Lib "kernel32.dll" (ByVal hSnapshot As Long, ByRef lppe As PROCESSENTRY32) As Long
 Private Declare Function Process32Next Lib "kernel32.dll" (ByVal hSnapshot As Long, ByRef lppe As PROCESSENTRY32) As Long
 Private Declare Function CreateToolhelp32Snapshot Lib "kernel32.dll" (ByVal dwFlags As Long, ByVal th32ProcessID As Long) As Long
-Private Declare Function GetWindowThreadProcessId Lib "user32.dll" (ByVal hwnd As Long, lpdwProcessId As Long) As Long
+Private Declare Function GetWindowThreadProcessId Lib "user32.dll" (ByVal hWnd As Long, lpdwProcessId As Long) As Long
 Private Declare Function OpenProcess Lib "kernel32.dll" (ByVal dwDesiredAccess As Long, ByVal bInheritHandle As Long, ByVal dwProcessId As Long) As Long
 Private Declare Function WaitForSingleObject Lib "kernel32.dll" (ByVal hHandle As Long, ByVal dwMilliseconds As Long) As Long
 Private Declare Function GetExitCodeProcess Lib "kernel32.dll" (ByVal hProcess As Long, lpExitCode As Long) As Long
 Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
-Private Declare Function PostMessage Lib "user32.dll" Alias "PostMessageA" (ByVal hwnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Declare Function PostMessage Lib "user32.dll" Alias "PostMessageA" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
 Private Declare Function CreateProcess Lib "kernel32.dll" Alias "CreateProcessW" (ByVal lpApplicationName As Long, ByVal lpCommandLine As Long, lpProcessAttributes As Any, lpThreadAttributes As Any, ByVal bInheritHandles As Long, ByVal dwCreationFlags As Long, lpEnvironment As Any, ByVal lpCurrentDirectory As Long, lpStartupInfo As STARTUPINFO, lpProcessInformation As PROCESS_INFORMATION) As Long
 Private Declare Function TerminateProcess Lib "kernel32.dll" (ByVal hProcess As Long, ByVal uExitCode As Long) As Long
 Private Declare Function CommandLineToArgvW Lib "shell32.dll" (ByVal lpCmdLine As Long, pNumArgs As Long) As Long
@@ -115,6 +89,7 @@ Private Declare Function GetMem4 Lib "msvbvm60.dll" (src As Any, dst As Any) As 
 Private Declare Function GlobalFree Lib "kernel32.dll" (ByVal hMem As Long) As Long
 Private Declare Function SetEnvironmentVariable Lib "kernel32.dll" Alias "SetEnvironmentVariableW" (ByVal lpName As Long, ByVal lpValue As Long) As Long
 Private Declare Function GetEnvironmentVariable Lib "kernel32.dll" Alias "GetEnvironmentVariableW" (ByVal lpName As Long, ByVal lpBuffer As Long, ByVal nSize As Long) As Long
+Private Declare Function GetVersionEx Lib "kernel32.dll" Alias "GetVersionExW" (lpVersionInformation As Any) As Long
 
 Private Declare Sub GetStartupInfo Lib "kernel32" Alias "GetStartupInfoW" (lpStartupInfo As STARTUPINFO)
 Private Declare Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
@@ -217,6 +192,15 @@ Function WaitForTerminate( _
     Dim InitialTime As Single
     Dim DeadTime    As Single
     Dim bTimeOutON  As Boolean
+    
+    Static IsInit As Boolean
+    Static bIsWinVistaOrLater As Boolean
+    
+    If Not IsInit Then
+        IsInit = True
+        Dim inf(68) As Long
+        inf(0) = 276: GetVersionEx inf(0): bIsWinVistaOrLater = (inf(1) >= 6)
+    End If
     
     If WindowHandle = 0 Then
         If ProcessHandle = 0 Then
@@ -341,7 +325,8 @@ Public Function ProcessRun( _
                             ByVal FileName As String, _
                             Optional ByVal CommandLine As String, _
                             Optional ByVal CurrentDirectory As String = vbNullString, _
-                            Optional WindowStyle As Long = 1&)
+                            Optional WindowStyle As Long = 1&, _
+                            Optional CloseHandles As Boolean = False)
                             ' По-умолчанию стиль окна - SW_SHOWNORMAL
     
     On Error GoTo ErrorHandler:
@@ -383,6 +368,11 @@ Public Function ProcessRun( _
 
     ProcessRun = lr    ' not 0 is SUCCESS
     
+    If CloseHandles Then
+        CloseHandle pi.hProcess
+        CloseHandle pi.hThread
+    End If
+    
     Exit Function
 ErrorHandler:
     ErrorMsg err, "clsProcess_ProcessRun", "FileName:", FileName, "CommandLine:", CommandLine
@@ -413,3 +403,4 @@ ErrorHandler:
     ErrorMsg err, "clsProcess_ParseCommandLine", "Line:", Line
     If inIDE Then Stop: Resume Next
 End Sub
+

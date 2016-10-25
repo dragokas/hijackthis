@@ -22,13 +22,13 @@ Private Type RECT
 End Type
 
 Private Type POINTAPI
-    x As Long
-    y As Long
+    X As Long
+    Y As Long
 End Type
 
 Private Type OPENFILENAME
     lStructSize As Long
-    hwndOwner As Long
+    hWndOwner As Long
     hInstance As Long
     lpstrFilter As Long
     lpstrCustomFilter As Long
@@ -52,11 +52,26 @@ Private Type OPENFILENAME
     FlagsEx As Long
 End Type
 
-Private Declare Function SetWindowLong Lib "user32" Alias "SetWindowLongW" (ByVal hwnd As Long, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
-Private Declare Function CallWindowProc Lib "user32" Alias "CallWindowProcW" (ByVal lpPrevWndFunc As Long, ByVal hwnd As Long, ByVal Msg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Type OSVERSIONINFOEX
+    dwOSVersionInfoSize As Long
+    dwMajorVersion As Long
+    dwMinorVersion As Long
+    dwBuildNumber As Long
+    dwPlatformId As Long
+    szCSDVersion(255) As Byte
+    wServicePackMajor As Integer
+    wServicePackMinor As Integer
+    wSuiteMask As Integer
+    wProductType As Byte
+    wReserved As Byte
+End Type
+
+
+Private Declare Function SetWindowLong Lib "user32" Alias "SetWindowLongW" (ByVal hWnd As Long, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
+Private Declare Function CallWindowProc Lib "user32" Alias "CallWindowProcW" (ByVal lpPrevWndFunc As Long, ByVal hWnd As Long, ByVal msg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
 Private Declare Function GetCursorPos Lib "user32" (lpPoint As POINTAPI) As Long
-Private Declare Function GetWindowRect Lib "user32" (ByVal hwnd As Long, lpRect As RECT) As Long
-Private Declare Function PtInRect Lib "user32" (lpRect As RECT, ByVal x As Long, ByVal y As Long) As Long
+Private Declare Function GetWindowRect Lib "user32" (ByVal hWnd As Long, lpRect As RECT) As Long
+Private Declare Function PtInRect Lib "user32" (lpRect As RECT, ByVal X As Long, ByVal Y As Long) As Long
 Private Declare Sub SHChangeNotify Lib "shell32.dll" (ByVal wEventId As Long, ByVal uFlags As Long, ByVal dwItem1 As Long, ByVal dwItem2 As Long)
 Private Declare Function GetModuleHandle Lib "kernel32.dll" Alias "GetModuleHandleW" (ByVal lpModuleName As Long) As Long
 Private Declare Function GetModuleFileName Lib "kernel32.dll" Alias "GetModuleFileNameW" (ByVal hModule As Long, ByVal lpFileName As Long, ByVal nSize As Long) As Long
@@ -66,6 +81,17 @@ Private Declare Function LoadString Lib "user32.dll" Alias "LoadStringW" (ByVal 
 Private Declare Function lstrlen Lib "kernel32.dll" Alias "lstrlenW" (ByVal lpString As Long) As Long
 Private Declare Function lstrcpy Lib "kernel32.dll" Alias "lstrcpyW" (ByVal lpStrDest As Long, ByVal lpStrSrc As Long) As Long
 Private Declare Function GetOpenFileName Lib "comdlg32.dll" Alias "GetOpenFileNameW" (pOpenfilename As OPENFILENAME) As Long
+Private Declare Function SystemTimeToVariantTime Lib "oleaut32.dll" (lpSystemTime As SYSTEMTIME, vtime As Date) As Long
+Private Declare Function VariantTimeToSystemTime Lib "oleaut32.dll" (ByVal vtime As Date, lpSystemTime As SYSTEMTIME) As Long
+Private Declare Function SystemTimeToTzSpecificLocalTime Lib "kernel32.dll" (ByVal lpTimeZone As Any, lpUniversalTime As SYSTEMTIME, lpLocalTime As SYSTEMTIME) As Long
+Private Declare Function FileTimeToSystemTime Lib "kernel32.dll" (ByVal lpFileTime As Long, lpSystemTime As SYSTEMTIME) As Long
+'Private Declare Function FileTimeToLocalFileTime Lib "kernel32.dll" (lpFileTime As FILETIME, lpLocalFileTime As FILETIME) As Long
+'Private Declare Function SystemTimeToFileTime Lib "kernel32.dll" (lpSystemTime As SYSTEMTIME, lpFileTime As FILETIME) As Long
+'Private Declare Function GetTimeZoneInformation Lib "kernel32.dll" (ByVal lpTimeZoneInformation As Long) As Long
+Private Declare Function GetCurrentProcess Lib "kernel32.dll" () As Long
+Private Declare Function IsWow64Process Lib "kernel32" (ByVal hProcess As Long, ByRef Wow64Process As Long) As Long
+Private Declare Function GetSystemMetrics Lib "user32.dll" (ByVal nIndex As Long) As Long
+Private Declare Function GetVersionEx Lib "kernel32" Alias "GetVersionExW" (lpVersionInformation As OSVERSIONINFOEX) As Long
 
 Private Const LOAD_LIBRARY_AS_DATAFILE As Long = &H2   'Read Only      ( do not execute DllMain )
 
@@ -92,43 +118,43 @@ Private lpPrevWndProc As Long
 Public Sub SubClassScroll(SwitchON As Boolean)
     If DisableSubclassing Then Exit Sub
     If SwitchON Then
-        If lpPrevWndProc = 0 Then lpPrevWndProc = SetWindowLong(frmMain.hwnd, GWL_WNDPROC, AddressOf WndProc)
+        If lpPrevWndProc = 0 Then lpPrevWndProc = SetWindowLong(frmMain.hWnd, GWL_WNDPROC, AddressOf WndProc)
     Else
-        If lpPrevWndProc Then SetWindowLong frmMain.hwnd, GWL_WNDPROC, lpPrevWndProc: lpPrevWndProc = 0
+        If lpPrevWndProc Then SetWindowLong frmMain.hWnd, GWL_WNDPROC, lpPrevWndProc: lpPrevWndProc = 0
     End If
 End Sub
 
-Function IsMouseWithin(hwnd As Long) As Boolean
-    Dim R As RECT
+Function IsMouseWithin(hWnd As Long) As Boolean
+    Dim r As RECT
     Dim p As POINTAPI
-    If GetWindowRect(hwnd, R) Then
+    If GetWindowRect(hWnd, r) Then
         If GetCursorPos(p) Then
-            IsMouseWithin = PtInRect(R, p.x, p.y)
+            IsMouseWithin = PtInRect(r, p.X, p.Y)
         End If
     End If
 End Function
 
-Private Function WndProc(ByVal hwnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WndProc(ByVal hWnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
     On Error Resume Next
     Select Case uMsg
     Case WM_MOUSEWHEEL
-        If Not IsMouseWithin(frmMain.hwnd) Then Exit Function ' mouse is outside the form
+        If Not IsMouseWithin(frmMain.hWnd) Then Exit Function ' mouse is outside the form
         Dim MouseKeys&, Rotation&, NewValue%
         MouseKeys = wParam And &HFFFF&
         Rotation = wParam / &HFFFF& 'direction
         With frmMain.vscMiscTools
-            NewValue = .value - .LargeChange * IIf(Rotation > 0, 1, -1)
+            NewValue = .Value - .LargeChange * IIf(Rotation > 0, 1, -1)
             If NewValue < .Min Then NewValue = .Min
             If NewValue > .Max Then NewValue = .Max
-            .value = NewValue   'change scroll value
+            .Value = NewValue   'change scroll value
         End With
     Case Else
-        WndProc = CallWindowProc(lpPrevWndProc, hwnd, uMsg, wParam, lParam)
+        WndProc = CallWindowProc(lpPrevWndProc, hWnd, uMsg, wParam, lParam)
     End Select
 End Function
 
 ' affected by wow64
-Public Function OpenFileDialog(Optional sTitle As String, Optional InitDir As String, Optional hwnd As Long) As String
+Public Function OpenFileDialog(Optional sTitle As String, Optional InitDir As String, Optional hWnd As Long) As String
     On Error GoTo ErrorHandler
     Const OFN_DONTADDTORECENT As Long = &H2000000
     Const OFN_ENABLESIZING As Long = &H800000
@@ -147,7 +173,7 @@ Public Function OpenFileDialog(Optional sTitle As String, Optional InitDir As St
     '    "Исполняемые файлы" & vbNullChar & "*.exe;*.dll" & vbNullChar)
     Filter = "All Files" & vbNullChar & "*.*" & vbNullChar
     With ofn
-        .hwndOwner = IIf(hwnd = 0, frmMain.hwnd, hwnd)
+        .hWndOwner = IIf(hWnd = 0, frmMain.hWnd, hWnd)
         .lpstrTitle = StrPtr(sTitle)
         .lpstrFile = StrPtr(out)
         .lStructSize = Len(ofn)
@@ -162,7 +188,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function GetStringFromBinary(Optional ByVal sFile As String, Optional ByVal nID As Long, Optional ByVal FileAndIDHybrid As String) As String
+Public Function GetStringFromBinary(Optional ByVal sFile As String, Optional ByVal nid As Long, Optional ByVal FileAndIDHybrid As String) As String
     On Error GoTo ErrorHandler:
 
     Dim hModule As Long
@@ -182,7 +208,7 @@ Public Function GetStringFromBinary(Optional ByVal sFile As String, Optional ByV
         If 0 <> pos Then
             sFile = Left$(FileAndIDHybrid, pos - 1)
             sBuf = Mid$(FileAndIDHybrid, pos + 1)
-            If IsNumeric(sBuf) And 0 <> Len(sBuf) Then nID = Val(sBuf) Else Exit Function
+            If IsNumeric(sBuf) And 0 <> Len(sBuf) Then nid = Val(sBuf) Else Exit Function
         End If
     End If
     
@@ -199,7 +225,7 @@ Public Function GetStringFromBinary(Optional ByVal sFile As String, Optional ByV
     hModule = LoadLibraryEx(StrPtr(sFile), 0&, LOAD_LIBRARY_AS_DATAFILE)
     
     If hModule Then
-        nSize = LoadString(hModule, Abs(nID), StrPtr(sBuf), LenB(sBuf))
+        nSize = LoadString(hModule, Abs(nid), StrPtr(sBuf), LenB(sBuf))
         If nSize > 0 Then
             GetStringFromBinary = TrimNull(Left$(sBuf, nSize))
         End If
@@ -211,65 +237,6 @@ ErrorHandler:
     ErrorMsg err, "GetStringFromBinary", sFile
     If inIDE Then Stop: Resume Next
 End Function
-
-'Public Function NormalizePath$(sFile$)
-'
-'    Dim sBegin$, sValue$, sNext$
-'    Dim EnvVar As String
-'    Dim RealEnvVar As String
-'
-'    If False Then
-''        Dim EnvRegExp As RegExp
-''        Dim ObjMatch As Match
-''        Dim ObjMatches As MatchCollection
-''        'Dim EnvVar As String
-''
-''        Set EnvRegExp = New RegExp
-''        EnvRegExp.Pattern = "%[\w_-]+%"
-''        EnvRegExp.IgnoreCase = True
-''        EnvRegExp.Global = True
-''
-''        If EnvRegExp.Test(sFile) = True Then
-''            Set ObjMatches = EnvRegExp.Execute(sFile)
-''            For Each ObjMatch In ObjMatches
-''                EnvVar = Replace$(ObjMatch.value, "%", "", , , vbTextCompare)
-''                If Len(Environ$(EnvVar)) > 0 Then
-''                    sFile = Replace$(sFile, ObjMatch.value, Environ$(EnvVar), , , vbTextCompare)
-''                End If
-''            Next
-''        End If
-'    End If
-    
-'    'If False Then
-'    sBegin = 1
-'    Do
-'        sValue = InStr(sBegin, sFile, "%", vbTextCompare)
-'        If sValue = 0 Or sValue = Len(sFile) Or sBegin > Len(sFile) Then
-'            Exit Do
-'        End If
-'
-'        sBegin = sValue + 1
-'        sNext = InStr(sBegin + 1, sFile, "%", vbTextCompare)
-'        If sNext = 0 Or sNext > Len(sFile) Or sBegin > Len(sFile) Then
-'            Exit Do
-'        End If
-'
-'        EnvVar = mid$(sFile, sValue, sNext - sValue + 1)
-'        RealEnvVar = mid$(sFile, sValue + 1, sNext - sValue - 1)
-'
-'        If Len(Environ$(RealEnvVar)) > 0 Then
-'            sFile = Replace$(sFile, EnvVar, Environ$(RealEnvVar), sValue, sNext - sValue + 1, vbTextCompare)
-'            sBegin = sNext + 1 + Len(Environ$(RealEnvVar)) - Len(EnvVar)
-'        Else
-'            sBegin = sNext + 1
-'        End If
-'
-'    Loop While True
-'    'End If
-'
-'    NormalizePath = sFile
-'    NormalizePath = EnvironW(sFile)
-'End Function
 
 Public Sub GetBrowsersInfo()
     With BROWSERS
@@ -288,7 +255,7 @@ Public Function GetEdgeVersion() As String
 End Function
 
 Public Function GetChromeVersion() As String
-    Dim sVer$
+    Dim sVer$, sPath$
     sVer = RegGetString(HKEY_LOCAL_MACHINE, "Software\Google\Update\Clients\{8A69D345-D564-463c-AFF1-A69D9E530F96}", "pv")
     'not found try current user - win7(x86)
     If Len(sVer) = 0 Then
@@ -297,7 +264,15 @@ Public Function GetChromeVersion() As String
     If Len(sVer) = 0 Then 'Wow6432Node
         sVer = RegGetString(HKEY_LOCAL_MACHINE, "Software\Google\Update\Clients\{8A69D345-D564-463c-AFF1-A69D9E530F96}", "pv", True)
     End If
-
+    If Len(sVer) = 0 Then
+        sPath = RegGetString(HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe", vbNullString)
+        If sPath <> "" Then
+            sVer = GetFilePropVersion(sPath)
+        End If
+    End If
+    If Len(sVer) = 0 Then
+        sVer = RegGetString(HKEY_CURRENT_USER, "SOFTWARE\Google\Chrome\BLBeacon", "version")
+    End If
     GetChromeVersion = sVer
 End Function
 
@@ -492,9 +467,9 @@ Sub TryUnlock(ByVal File As String)  'получения прав NTFS + смена владельца на л
     DosName = GetDOSFilename(File)
     If Len(DosName) <> 0 Then File = DosName
     
-    If Not OSVer.bIsVistaOrLater Then Exit Sub
+    If Not OSver.bIsVistaOrLater Then Exit Sub
     
-    If OSVer.Bitness = "x64" And FolderExists(sWinDir & "\sysnative") Then
+    If OSver.Bitness = "x64" And FolderExists(sWinDir & "\sysnative") Then
         TakeOwn = EnvironW("%SystemRoot%") & "\Sysnative\takeown.exe"
         Icacls = EnvironW("%SystemRoot%") & "\Sysnative\icacls.exe"
     Else
@@ -542,7 +517,7 @@ Public Function AppPath(Optional bGetFullPath As Boolean) As String
     Static ProcPathFull  As String
     Static ProcPathShort As String
     Dim ProcPath As String
-    Dim cnt      As Long
+    Dim Cnt      As Long
     Dim hProc    As Long
     Dim pos      As Long
     
@@ -569,17 +544,17 @@ Public Function AppPath(Optional bGetFullPath As Boolean) As String
     If hProc < 0 Then hProc = 0
 
     ProcPath = String$(MAX_PATH, vbNullChar)
-    cnt = GetModuleFileName(hProc, StrPtr(ProcPath), Len(ProcPath)) 'hproc can be 0 (mean - current process)
+    Cnt = GetModuleFileName(hProc, StrPtr(ProcPath), Len(ProcPath)) 'hproc can be 0 (mean - current process)
     
-    If cnt = MAX_PATH Then 'Path > MAX_PATH -> realloc
+    If Cnt = MAX_PATH Then 'Path > MAX_PATH -> realloc
         ProcPath = Space$(MAX_PATH_W)
-        cnt = GetModuleFileName(hProc, StrPtr(ProcPath), Len(ProcPath))
+        Cnt = GetModuleFileName(hProc, StrPtr(ProcPath), Len(ProcPath))
     End If
     
-    If cnt = 0 Then                          'clear path
+    If Cnt = 0 Then                          'clear path
         ProcPath = App.Path
     Else
-        ProcPath = Left$(ProcPath, cnt)
+        ProcPath = Left$(ProcPath, Cnt)
         If StrComp("\SystemRoot\", Left$(ProcPath, 12), 1) = 0 Then ProcPath = sWinDir & Mid$(ProcPath, 12)
         If "\??\" = Left$(ProcPath, 4) Then ProcPath = Mid$(ProcPath, 5)
         
@@ -611,7 +586,7 @@ Public Function AppExeName(Optional WithExtension As Boolean) As String
     Static ProcPathShort As String
     Static ProcPathFull  As String
     Dim ProcPath As String
-    Dim cnt      As Long
+    Dim Cnt      As Long
     Dim hProc    As Long
     Dim pos      As Long
 
@@ -637,17 +612,17 @@ Public Function AppExeName(Optional WithExtension As Boolean) As String
     If hProc < 0 Then hProc = 0
 
     ProcPath = String$(MAX_PATH, vbNullChar)
-    cnt = GetModuleFileName(hProc, StrPtr(ProcPath), Len(ProcPath)) 'hproc can be 0 (mean - current process)
+    Cnt = GetModuleFileName(hProc, StrPtr(ProcPath), Len(ProcPath)) 'hproc can be 0 (mean - current process)
     
-    If cnt = MAX_PATH Then 'Path > MAX_PATH -> realloc
+    If Cnt = MAX_PATH Then 'Path > MAX_PATH -> realloc
         ProcPath = Space$(MAX_PATH_W)
-        cnt = GetModuleFileName(hProc, StrPtr(ProcPath), Len(ProcPath))
+        Cnt = GetModuleFileName(hProc, StrPtr(ProcPath), Len(ProcPath))
     End If
     
-    If cnt = 0 Then                          'clear path
+    If Cnt = 0 Then                          'clear path
         ProcPath = App.EXEName & IIf(WithExtension, ".exe", "")
     Else
-        ProcPath = Left$(ProcPath, cnt)
+        ProcPath = Left$(ProcPath, Cnt)
         
         pos = InStrRev(ProcPath, "\")
         If pos <> 0 Then ProcPath = Mid$(ProcPath, pos + 1)
@@ -709,28 +684,34 @@ ErrorHandler:
 End Function
 
 'Delete File with unlock access rights on failure. Return non 0 on success.
-Public Function DeleteFileWEx(lpStr As Long) As Long
+Public Function DeleteFileWEx(lpSTR As Long, Optional ForceDeleteMicrosoft As Boolean) As Long
     On Error GoTo ErrorHandler:
 
-    Dim iAttr As Long, lr As Long
+    Dim iAttr As Long, lr As Long, sExt As String
 
     Dim FileName$
-    FileName = String$(lstrlen(lpStr), vbNullChar)
+    FileName = String$(lstrlen(lpSTR), vbNullChar)
     If Len(FileName) <> 0 Then
-        lstrcpy StrPtr(FileName), lpStr
+        lstrcpy StrPtr(FileName), lpSTR
     Else
         Exit Function
     End If
     
-    If IsMicrosoftFile(FileName) Then Exit Function
+    sExt = GetExtensionName(FileName)
+    
+    If Not ForceDeleteMicrosoft Then
+        If Not StrInParamArray(sExt, ".txt", ".log", ".tmp") Then
+            If IsMicrosoftFile(FileName) Then Exit Function
+        End If
+    End If
     
     ToggleWow64FSRedirection False, FileName
     
-    iAttr = GetFileAttributes(lpStr)
+    iAttr = GetFileAttributes(lpSTR)
     If (iAttr And 2048) Then iAttr = iAttr - 2048
     
-    If iAttr And FILE_ATTRIBUTE_READONLY Then SetFileAttributes lpStr, iAttr And Not FILE_ATTRIBUTE_READONLY
-    lr = DeleteFileW(lpStr)
+    If iAttr And FILE_ATTRIBUTE_READONLY Then SetFileAttributes lpSTR, iAttr And Not FILE_ATTRIBUTE_READONLY
+    lr = DeleteFileW(lpSTR)
     
     If lr <> 0 Then
         DeleteFileWEx = lr
@@ -746,8 +727,8 @@ Public Function DeleteFileWEx(lpStr As Long) As Long
     
     If err.LastDllError = ERROR_ACCESS_DENIED Then
         TryUnlock FileName
-        If iAttr And FILE_ATTRIBUTE_READONLY Then SetFileAttributes lpStr, iAttr And Not FILE_ATTRIBUTE_READONLY
-        lr = DeleteFileW(lpStr)
+        If iAttr And FILE_ATTRIBUTE_READONLY Then SetFileAttributes lpSTR, iAttr And Not FILE_ATTRIBUTE_READONLY
+        lr = DeleteFileW(lpSTR)
     End If
     ToggleWow64FSRedirection True, FileName
     
@@ -757,16 +738,383 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
+Public Function ConvertUnixTimeToLocalDate(Seconds As Long) As Date
+    On Error GoTo ErrorHandler
+    'Dim ftime               As FILETIME
+    'Dim TimeZoneInfo(171)   As Byte
+    Dim stime               As SYSTEMTIME
+    Dim DateTime            As Date
+    
+    DateTime = DateAdd("s", Seconds, #1/1/1970#)    ' time_t -> Date
+    VariantTimeToSystemTime DateTime, stime         ' Date -> SYSTEMTIME
+    
+    'SystemTimeToFileTime stime, ftime               ' SYSTEMTIME -> FILETIME
+    'FileTimeToLocalFileTime ftime, ftime            ' учитываем смещение согласно текущим региональным настройкам в системе
+    'FileTimeToSystemTime varptr(ftime), stime               ' FILETIME -> SYSTEMTIME
+    
+    'alternate:
+    'GetTimeZoneInformation VarPtr(TimeZoneInfo(0))
+    'SystemTimeToTzSpecificLocalTime VarPtr(TimeZoneInfo(0)), stime, stime
+    
+    SystemTimeToTzSpecificLocalTime 0&, stime, stime    'tz can be 0, if tz is current
+    
+    SystemTimeToVariantTime stime, DateTime         ' SYSTEMTIME -> Date
+    ConvertUnixTimeToLocalDate = DateTime
+    Exit Function
+ErrorHandler:
+    ErrorMsg err, "modUtils.ConvertUnixTimeToLocalDate", "sec:", Seconds
+    If inIDE Then Stop: Resume Next
+End Function
 
-'    Dim hLib     As Long
-'    Dim hModule  As Long
-'    Dim hHandle As Long
-'    hLib = LoadLibrary(StrPtr("c:\Windows\SysWOW64\ntdll.dll"))
-'    If hLib <> 0 Then
-'        hModule = GetProcAddress(hLib, "A_SHAFinal")
-'        hHandle = GetModuleHandle(StrPtr("c:\Windows\SysWOW64\ntdll.dll"))
-'        Debug.Print "Addr func: " & hModule
-'        Debug.Print "Addr Base: " & hHandle
-'        Debug.Print "RVA: 0x" & Hex(hModule - hHandle)
+Public Function ConvertFileTimeToLocalDate(lpFileTime As Long) As Date
+    On Error GoTo ErrorHandler
+    
+    Dim DateTime            As Date
+    Dim stime               As SYSTEMTIME
+    
+    FileTimeToSystemTime ByVal lpFileTime, stime        ' FILETIME -> SYSTEMTIME
+    SystemTimeToTzSpecificLocalTime 0&, stime, stime    ' tz can be 0, if tz is current
+    SystemTimeToVariantTime stime, DateTime             ' SYSTEMTIME -> vtDate
+    
+    ConvertFileTimeToLocalDate = DateTime
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg err, "modUtils.ConvertFileTimeToLocalDate", "lpFileTime:", lpFileTime
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function BuildPath$(sPath$, sFile$)
+    BuildPath = sPath & IIf(Right$(sPath, 1) = "\", vbNullString, "\") & sFile
+End Function
+
+Public Function GetWindowsVersion() As String    'Init by Form_load.
+                                                 
+    ' Result -> sWinVersion (global)
+    ' bIsWin64 (global)
+    ' bIsWin32 (global)
+    ' bIsWinVistaOrLater (global)
+    ' OSver struct (global)
+    ' OSInfo class (global)
+    ' bIsWinVistaOrLater (global)
+    ' bIsWin9x (global)
+    ' bIsWinME (global)
+    ' bIsWinNT (global)
+    
+    On Error GoTo ErrorHandler:
+    
+    Dim OVI As OSVERSIONINFOEX, sWinVer$
+    
+    Set OSInfo = New clsOSInfo
+    
+    bIsWin64 = (OSInfo.Bitness = "x64")
+    bIsWin32 = Not bIsWin64
+
+    'enable redirector
+    If bIsWin64 Then ToggleWow64FSRedirection True
+    
+    OSver.bIsSafeBoot = OSInfo.IsSafeBoot
+    OSver.BootMode = OSInfo.SafeBootMode
+
+    OSver.bIsAdmin = OSInfo.IsElevated
+    
+    OVI.dwOSVersionInfoSize = LenB(OVI)
+    GetVersionEx OVI
+    
+    OSver.Major = OVI.dwMajorVersion
+    OSver.Minor = OVI.dwMinorVersion
+    
+    OSver.MajorMinor = OSInfo.MajorMinor
+    OSver.SPVer = OSInfo.SPVer
+    OSver.Build = OVI.dwBuildNumber
+    OSver.Platform = OSInfo.Platform
+    OSver.OSName = OSInfo.OSName
+    OSver.Edition = OSInfo.Edition
+    OSver.bIsWin64 = bIsWin64
+    OSver.Bitness = OSInfo.Bitness
+
+    With OVI
+        bIsWinVistaOrLater = .dwMajorVersion >= 6
+        OSver.bIsVistaOrLater = bIsWinVistaOrLater
+        
+        Select Case .dwPlatformId
+            Case 0: GetWindowsVersion = "Detected: Windows 3.x running Win32s": Exit Function
+            Case 1: bIsWin9x = True: bIsWinNT = False
+            Case 2: bIsWinNT = True: bIsWin9x = False
+        End Select
+        
+        If bIsWin9x Then
+            If .dwMajorVersion = 4 Then
+                If .dwMinorVersion = 90 Then 'Windows Millennium Edition
+                    bIsWinME = True
+                End If
+            End If
+        End If
+
+        sWinVer = OSver.OSName & " " & OSver.Edition & " SP" & OSver.SPVer & " " & _
+            "(Windows " & OSver.Platform & " " & .dwMajorVersion & "." & .dwMinorVersion & "." & .dwBuildNumber & ")"
+
+    End With
+
+    GetWindowsVersion = sWinVer
+
+    Exit Function
+ErrorHandler:
+    ErrorMsg err, "GetWindowsVersion"
+    If inIDE Then Stop: Resume Next
+End Function
+
+
+'Ищет полный путь к файлу.
+'Функция не гарантирует, что файл существует.
+'Результатом могут быть даже служебные символы, если таковые были поданы на вход.
+'Это конечно странно, но пока что не трогаю это поведение функции, чтобы ничего не сломать вверх по стеку вызовов.
+
+Public Function GetLongPath$(ByVal sFile$)
+    'sub applies to NT only, checked in ListRunningProcesses()
+    'attempt to find location of given file
+    On Error GoTo ErrorHandler:
+    'On Error Resume Next
+    
+    Dim pos&
+    
+    'evading parasites that put html or garbled data in
+    'O4 autorun entries :P
+    If InStr(sFile, "<") > 0 Or InStr(sFile, ">") > 0 Or _
+       InStr(sFile, "|") > 0 Or InStr(sFile, "*") > 0 Or _
+       InStr(sFile, "?") > 0 Then  'Or InStr(sFile, "/") > 0 Or InStr(sFile, ":") > 0 Then
+        GetLongPath = sFile ' ???? //TODO
+        Exit Function
+    End If
+    
+    If InStr(sFile, "/") <> 0 Then sFile = Replace$(sFile, "/", "\")
+    
+    'Dim ProcPath$
+    'ToggleWow64FSRedirection False
+    'ProcPath = Space$(MAX_PATH)
+    'LSet ProcPath = sFile & vbNullChar
+    'If CBool(PathFindOnPath(StrPtr(ProcPath), 0&)) Then
+    '    GetLongPath = ProcPath
+    '    ToggleWow64FSRedirection True
+    '    Exit Function
+    'Else
+    '    ToggleWow64FSRedirection True
+    'End If
+    
+    If Left$(sFile, 1) = """" Then
+        pos = InStr(2, sFile, """")
+        If pos <> 0 Then
+            sFile = Mid$(sFile, 2, pos - 2)
+        Else
+            sFile = Mid$(sFile, 2)
+        End If
+    End If
+    
+    GetLongPath = FindOnPath(sFile)
+    If 0 <> Len(GetLongPath) Then Exit Function
+    
+    pos = InStrRev(sFile, ".exe", -1, 1)
+    If 0 <> pos And pos <> Len(sFile) - 3 Then
+        sFile = Left$(sFile, pos + 3)
+        GetLongPath = FindOnPath(sFile)
+        If 0 <> Len(GetLongPath) Then Exit Function
+    End If
+    
+    'If sFile = "[System Process]" Or sFile = "System" Then
+    '    GetLongPath = sFile
+    '    Exit Function
+    'End If
+    
+    If InStr(sFile, "\") > 0 Then
+        'filename is already full path
+        GetLongPath = sFile
+        Exit Function
+    End If
+    
+'    'check if file is self
+'    If LCase$(sFile) = LCase$(AppExeName(True)) Then
+'        GetLongPath = AppPath() & IIf(Right$(AppPath(), 1) = "\", vbNullString, "\") & sFile
+'        Exit Function
 '    End If
-'    Stop
+    
+    Dim hKey, sData$, i&, sDummy$, sProgramFiles$
+    'check App Paths regkey
+    sData = RegGetString(HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\App Paths\" & sFile, vbNullString)
+    If sData <> vbNullString Then
+        GetLongPath = sData
+        Exit Function
+    End If
+    
+    'check own folder
+    If Dir$(BuildPath(AppPath(), sFile), vbArchive + vbHidden + vbReadOnly + vbSystem) <> vbNullString Then
+        GetLongPath = BuildPath(AppPath(), sFile)
+        Exit Function
+    End If
+    
+    'check windir
+    If Dir$(sWinDir & "\" & sFile, vbArchive + vbHidden + vbReadOnly + vbSystem) <> vbNullString Then
+        GetLongPath = sWinDir & "\" & sFile
+        Exit Function
+    End If
+    
+    'check windir\system
+    If Dir$(sWinDir & "\system\" & sFile, vbArchive + vbHidden + vbReadOnly + vbSystem) <> vbNullString Then
+        GetLongPath = sWinDir & "\system\" & sFile
+        Exit Function
+    End If
+    
+    'check windir\system32
+    ToggleWow64FSRedirection False
+    If Dir$(sWinDir & "\system32\" & sFile, vbArchive + vbHidden + vbReadOnly + vbSystem) <> vbNullString Then
+        GetLongPath = sWinDir & "\system32\" & sFile
+        ToggleWow64FSRedirection True
+        Exit Function
+    End If
+    ToggleWow64FSRedirection True
+    
+    If OSver.Bitness = "x64" Then
+        If Dir$(sWinDir & "\syswow64\" & sFile, vbArchive + vbHidden + vbReadOnly + vbSystem) <> vbNullString Then
+            GetLongPath = sWinDir & "\syswow64\" & sFile
+            Exit Function
+        End If
+    End If
+    
+    If InStr(sFile, ".") > 0 Then
+        'prog.exe -> prog
+        sDummy = Left$(sFile, InStr(sFile, ".") - 1)
+        sProgramFiles = RegGetString(HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion", "ProgramFilesDir")
+        
+        'check x:\program files\prog\prog.exe
+        If Dir$(sProgramFiles & "\" & sDummy & "\" & sFile, vbArchive + vbHidden + vbReadOnly + vbSystem) <> vbNullString Then
+            GetLongPath = sProgramFiles & "\" & sDummy & "\" & sFile
+            Exit Function
+        End If
+        
+        'check c:\prog\prog.exe
+        If Dir$("C:\" & sDummy & "\" & sFile, vbArchive + vbHidden + vbReadOnly + vbSystem) <> vbNullString Then
+            GetLongPath = "C:\" & sDummy & "\" & sFile
+            Exit Function
+        End If
+        
+        'check x:\program files\prog32\prog.exe
+        If Dir$(sProgramFiles & "\" & sDummy & "32\" & sFile, vbArchive + vbHidden + vbReadOnly + vbSystem) <> vbNullString Then
+            GetLongPath = sProgramFiles & "\" & sDummy & "32\" & sFile
+            Exit Function
+        End If
+        If Dir$(sProgramFiles & "\" & sDummy & "16\" & sFile, vbArchive + vbHidden + vbReadOnly + vbSystem) <> vbNullString Then
+            GetLongPath = sProgramFiles & "\" & sDummy & "16\" & sFile
+            Exit Function
+        End If
+        
+        'check c:\prog32\prog.exe
+        If Dir$("C:\" & sDummy & "32\" & sFile, vbArchive + vbHidden + vbReadOnly + vbSystem) <> vbNullString Then
+            GetLongPath = "C:\" & sDummy & "32\" & sFile
+            Exit Function
+        End If
+        If Dir$("C:\" & sDummy & "16\" & sFile, vbArchive + vbHidden + vbReadOnly + vbSystem) <> vbNullString Then
+            GetLongPath = "C:\" & sDummy & "16\" & sFile
+            Exit Function
+        End If
+        
+        If Right$(sDummy, 2) = "32" Or Right$(sDummy, 2) = "16" Then
+            'asssuming sFile is prog32.exe,
+            'check x:\program files\prog\prog32.exe
+            sDummy = Left$(sDummy, Len(sDummy) - 2)
+            If Dir$(sProgramFiles & "\" & sDummy & "\" & sFile, vbArchive + vbHidden + vbReadOnly + vbSystem) <> vbNullString Then
+                GetLongPath = sProgramFiles & "\" & sDummy & "\" & sFile
+                Exit Function
+            End If
+            
+            'check c:\prog\prog32.exe
+            If Dir$("C:\" & sDummy & "\" & sFile, vbArchive + vbHidden + vbReadOnly + vbSystem) <> vbNullString Then
+                GetLongPath = "C:\" & sDummy & "\" & sFile
+                Exit Function
+            End If
+        End If
+    End If
+    
+    'can't find it!
+    GetLongPath = "?:\?\" & sFile
+    Exit Function
+    
+ErrorHandler:
+    ErrorMsg err, "GetLongPath", sFile
+    If inIDE Then Stop: Resume Next
+End Function
+
+
+Public Function GetFileFromAutostart$(sAutostart$, Optional bGetMD5 As Boolean = True)
+    Dim sDummy$
+    On Error GoTo ErrorHandler:
+    
+    If InStr(sAutostart, "(file missing)") > 0 Then Exit Function
+    
+    sDummy = sAutostart
+
+    'forms we can find the file in:
+    'c:\bla\bla.exe
+    'c:\bla.exe
+    'bla.exe
+    'bla
+    '
+    'also possible:
+    '* surrounding quotes
+    '* arguments (possibly files)
+    
+    If Not FileExists(sDummy) Then
+      If Left$(sDummy, 1) = """" Then
+        'has quotes
+        'stripping like this also removes any
+        'arguments, so a path means it's finished
+        sDummy = Mid$(sDummy, 2)
+        sDummy = Left$(sDummy, InStr(sDummy, """") - 1)
+        
+        If InStr(sDummy, "\") = 0 Then
+            'GoTo FindFullPath:
+            If InStr(sDummy, "\") = 0 Then
+                'no path - so search for file
+                sDummy = GetLongPath(sDummy)
+            End If
+        End If
+      End If
+    End If
+    
+    If Not FileExists(sDummy) Then
+      If LCase$(Right$(sDummy, 4)) <> ".exe" And _
+       LCase$(Right$(sDummy, 4)) <> ".com" Then
+        'has arguments, or no extension
+        If InStr(sDummy, " ") = 0 Then
+            'only one word, so no extension
+            sDummy = GetLongPath(sDummy & ".exe")
+            If InStr(sDummy, "\") = 0 Then
+                sDummy = GetLongPath(sDummy & ".com")
+            End If
+        Else
+            'multiple words, the first is the program
+            If FileExists(Left$(sDummy, InStr(sDummy, " ") - 1)) Then
+                sDummy = Left$(sDummy, InStr(sDummy, " ") - 1)
+                sDummy = GetLongPath(sDummy)
+            Else
+                sDummy = Left$(sDummy, InStrRev(sDummy, " ") - 1)
+                sDummy = GetLongPath(sDummy)
+            End If
+        End If
+      End If
+    End If
+    
+    If FileExists(sDummy) Then
+        If bGetMD5 Then
+            GetFileFromAutostart = GetFileMD5(sDummy)
+        Else
+            GetFileFromAutostart = sDummy
+        End If
+    End If
+    
+    DoEvents
+    Exit Function
+ErrorHandler:
+    ErrorMsg err, "modMD5_GetFileFromAutostart", sAutostart
+    If inIDE Then Stop: Resume Next
+End Function
+
+
