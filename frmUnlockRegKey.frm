@@ -75,7 +75,7 @@ Private Sub cmdGo_Click()
         Exit Sub
     End If
     
-    Recursively = (chkRecur.Value = 1)
+    Recursively = (chkRecur.value = 1)
     
     sKeys = Replace$(sKeys, vbCr, "")
     aKeys = Split(sKeys, vbLf)
@@ -101,7 +101,7 @@ Private Sub cmdGo_Click()
     
     Exit Sub
 ErrorHandler:
-    ErrorMsg err, "frmUnlockRegKey.cmdGo_Click"
+    ErrorMsg Err, "frmUnlockRegKey.cmdGo_Click"
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -112,6 +112,7 @@ End Sub
 Private Sub Form_Load()
     ReloadLanguage
     CenterForm Me
+    Me.Icon = frmMain.Icon
 End Sub
 
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
@@ -122,7 +123,11 @@ Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
 End Sub
 
 Private Sub Form_Resize()
-    If Me.WindowState = vbMinimized Or Me.WindowState = vbMaximized Then Exit Sub
+    If Me.WindowState = vbMinimized Then Exit Sub
+    If Me.WindowState <> vbMaximized Then
+        If Me.Width < 7860 Then Me.Width = 7860
+        If Me.Height < 2570 Then Me.Height = 2570
+    End If
     If Me.Width < 7860 Then Me.Width = 7860
     If Me.Height < 2570 Then Me.Height = 2570
     Text1.Width = Me.Width - 630

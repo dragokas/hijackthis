@@ -21,7 +21,7 @@ Private Type CLIENT_ID
 End Type
 
 Private Type UNICODE_STRING
-    Length      As Integer
+    length      As Integer
     MaxLength   As Integer
     lpBuffer    As Long
 End Type
@@ -129,35 +129,37 @@ Private Declare Function GetFullPathName Lib "kernel32.dll" Alias "GetFullPathNa
 Private Declare Function QueryFullProcessImageName Lib "kernel32.dll" Alias "QueryFullProcessImageNameW" (ByVal hProcess As Long, ByVal dwFlags As Long, ByVal lpExeName As Long, ByVal lpdwSize As Long) As Long
 Private Declare Function GetLogicalDriveStrings Lib "kernel32.dll" Alias "GetLogicalDriveStringsW" (ByVal nBufferLength As Long, ByVal lpBuffer As Long) As Long
 Private Declare Function QueryDosDevice Lib "kernel32.dll" Alias "QueryDosDeviceW" (ByVal lpDeviceName As Long, ByVal lpTargetPath As Long, ByVal ucchMax As Long) As Long
-Private Declare Sub memcpy Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long)
+Private Declare Sub memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal length As Long)
 
-Private Declare Function CreateToolhelp32Snapshot Lib "kernel32" (ByVal lFlags As Long, ByVal lProcessID As Long) As Long
-Private Declare Function Process32First Lib "kernel32" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
-Private Declare Function Process32Next Lib "kernel32" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
-Private Declare Function Module32First Lib "kernel32" (ByVal hSnapshot As Long, uProcess As MODULEENTRY32) As Long
-Private Declare Function Module32Next Lib "kernel32" (ByVal hSnapshot As Long, uProcess As MODULEENTRY32) As Long
-Private Declare Function Thread32First Lib "kernel32" (ByVal hSnapshot As Long, uThread As THREADENTRY32) As Long
-Private Declare Function Thread32Next Lib "kernel32" (ByVal hSnapshot As Long, ByRef ThreadEntry As THREADENTRY32) As Long
-Private Declare Function TerminateProcess Lib "kernel32" (ByVal hProcess As Long, ByVal uExitCode As Long) As Long
-Private Declare Function CloseHandle Lib "kernel32" (ByVal hObject As Long) As Long
+Private Declare Function CreateToolhelp32Snapshot Lib "kernel32.dll" (ByVal lFlags As Long, ByVal lProcessID As Long) As Long
+Private Declare Function Process32First Lib "kernel32.dll" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
+Private Declare Function Process32Next Lib "kernel32.dll" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
+Private Declare Function Module32First Lib "kernel32.dll" (ByVal hSnapshot As Long, uProcess As MODULEENTRY32) As Long
+Private Declare Function Module32Next Lib "kernel32.dll" (ByVal hSnapshot As Long, uProcess As MODULEENTRY32) As Long
+Private Declare Function Thread32First Lib "kernel32.dll" (ByVal hSnapshot As Long, uThread As THREADENTRY32) As Long
+Private Declare Function Thread32Next Lib "kernel32.dll" (ByVal hSnapshot As Long, ByRef ThreadEntry As THREADENTRY32) As Long
+Private Declare Function TerminateProcess Lib "kernel32.dll" (ByVal hProcess As Long, ByVal uExitCode As Long) As Long
+Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
 
-Private Declare Function SuspendThread Lib "kernel32" (ByVal hThread As Long) As Long
-Private Declare Function ResumeThread Lib "kernel32" (ByVal hThread As Long) As Long
-Private Declare Function OpenThread Lib "kernel32" (ByVal dwDesiredAccess As Long, ByVal bInheritHandle As Boolean, ByVal dwThreadId As Long) As Long
-Private Declare Function GetCurrentProcessId Lib "kernel32" () As Long
+Private Declare Function NtSuspendProcess Lib "NTDLL.DLL" (ByVal hProcess As Long) As Long
+Private Declare Function NtResumeProcess Lib "NTDLL.DLL" (ByVal hProcess As Long) As Long
+Private Declare Function SuspendThread Lib "kernel32.dll" (ByVal hThread As Long) As Long
+Private Declare Function ResumeThread Lib "kernel32.dll" (ByVal hThread As Long) As Long
+Private Declare Function OpenThread Lib "kernel32.dll" (ByVal dwDesiredAccess As Long, ByVal bInheritHandle As Boolean, ByVal dwThreadId As Long) As Long
+Private Declare Function GetCurrentProcessId Lib "kernel32.dll" () As Long
 
 Private Declare Function EnumProcesses Lib "psapi.dll" (ByRef lpidProcess As Long, ByVal cb As Long, ByRef cbNeeded As Long) As Long
 Private Declare Function GetModuleFileNameExA Lib "psapi.dll" (ByVal hProcess As Long, ByVal hModule As Long, ByVal ModuleName As String, ByVal nSize As Long) As Long
-Private Declare Function OpenProcess Lib "kernel32" (ByVal dwDesiredAccess As Long, ByVal bInheritHandle As Long, ByVal dwProcessId As Long) As Long
+Private Declare Function OpenProcess Lib "kernel32.dll" (ByVal dwDesiredAccess As Long, ByVal bInheritHandle As Long, ByVal dwProcessId As Long) As Long
 Private Declare Function EnumProcessModules Lib "psapi.dll" (ByVal hProcess As Long, ByRef lphModule As Long, ByVal cb As Long, ByRef cbNeeded As Long) As Long
 
-Private Declare Function SHRunDialog Lib "shell32" Alias "#61" (ByVal hOwner As Long, ByVal Unknown1 As Long, ByVal Unknown2 As Long, ByVal szTitle As String, ByVal szPrompt As String, ByVal uFlags As Long) As Long
+Private Declare Function SHRunDialog Lib "shell32.dll" Alias "#61" (ByVal hOwner As Long, ByVal Unknown1 As Long, ByVal Unknown2 As Long, ByVal szTitle As String, ByVal szPrompt As String, ByVal uFlags As Long) As Long
 Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteW" (ByVal hWnd As Long, ByVal lpOperation As Long, ByVal lpFile As Long, ByVal lpParameters As Long, ByVal lpDirectory As Long, ByVal nShowCmd As Long) As Long
 
 Private Declare Function lstrcpy Lib "kernel32.dll" Alias "lstrcpyW" (ByVal lpStrDest As Long, ByVal lpStrSrc As Long) As Long
-Private Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, ByVal Source As Any, ByVal Length As Long)
+Private Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, ByVal Source As Any, ByVal length As Long)
 
-Private Declare Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, lParam As Any) As Long
+Private Declare Function SendMessage Lib "user32.dll" Alias "SendMessageW" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, lParam As Any) As Long
 
 Public Const TH32CS_SNAPPROCESS = &H2
 Public Const TH32CS_SNAPMODULE = &H8
@@ -167,6 +169,7 @@ Public Const PROCESS_QUERY_INFORMATION = 1024
 Public Const PROCESS_QUERY_LIMITED_INFORMATION = &H1000
 Public Const PROCESS_VM_READ = 16
 Public Const THREAD_SUSPEND_RESUME = &H2
+Private Const PROCESS_SUSPEND_RESUME As Long = &H800&
 
 Private Const SystemProcessInformation      As Long = &H5&
 Private Const STATUS_INFO_LENGTH_MISMATCH   As Long = &HC0000004
@@ -174,9 +177,9 @@ Private Const STATUS_SUCCESS                As Long = 0&
 Private Const ERROR_PARTIAL_COPY            As Long = 299&
 
 
-Public Sub KillProcess(lPID&)
+Public Function KillProcess(lPID&) As Boolean
     Dim hProcess&
-    If lPID = 0 Then Exit Sub
+    If lPID = 0 Then Exit Function
     hProcess = OpenProcess(PROCESS_TERMINATE, 0, lPID)
     If hProcess = 0 Then
         'The selected process could not be killed." & _
@@ -188,16 +191,17 @@ Public Sub KillProcess(lPID&)
                    " It may be protected by Windows.
             MsgBoxW Translate(1653), vbCritical
         Else
-            CloseHandle hProcess
             DoEvents
+            KillProcess = True
         End If
+        CloseHandle hProcess
     End If
-End Sub
+End Function
 
-Public Sub KillProcessNT(lPID&)
+Public Function KillProcessNT(lPID&) As Boolean
     Dim hProc&
-    On Error Resume Next
-    If lPID = 0 Then Exit Sub
+    If lPID = 0 Then Exit Function
+    
     hProc = OpenProcess(PROCESS_TERMINATE, 0, lPID)
     If hProc <> 0 Then
         If TerminateProcess(hProc, 0) = 0 Then
@@ -205,9 +209,10 @@ Public Sub KillProcessNT(lPID&)
                    " It may be protected by Windows.
             MsgBoxW Translate(1653), vbCritical
         Else
-            CloseHandle hProc
             DoEvents
+            KillProcessNT = True
         End If
+        CloseHandle hProc
     Else
         'The selected process could not be killed." & _
                " It may have already closed, or it may be protected by Windows." & vbCrLf & vbCrLf & _
@@ -216,45 +221,118 @@ Public Sub KillProcessNT(lPID&)
                "(To load this window, click Start, Run and enter 'services.msc')
         MsgBoxW Translate(1654), vbCritical
     End If
-End Sub
+End Function
 
-Public Sub PauseProcess(lPID&, Optional bPauseOrResume As Boolean = True)
-    Dim hSnap&, uTE32 As THREADENTRY32, hThread&
-    If Not bIsWinNT And Not bIsWinME Then Exit Sub
-    If lPID = GetCurrentProcessId Then Exit Sub
+Public Function PauseProcess(lPID As Long) As Boolean
+    On Error GoTo ErrorHandler:
+
+    '//TODO: add process status checking after Nt
+
+    Dim hSnap&, uTE32 As THREADENTRY32, hThread&, IsFailed As Boolean, hProc&
+    
+    If Not bIsWinNT And Not bIsWinME Then Exit Function
+    If lPID = 0 Or lPID = GetCurrentProcessId Then Exit Function
+    
+    If IsProcedureAvail("NtSuspendProcess", "ntdll.dll") Then
+        hProc = OpenProcess(PROCESS_SUSPEND_RESUME, 0, lPID)
+    
+        If hProc <> 0 Then
+            Call NtSuspendProcess(hProc)
+            CloseHandle hProc
+        End If
+    End If
     
     hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, lPID)
-    If hSnap = -1 Then Exit Sub
+    If hSnap = -1 Then Exit Function
     
     uTE32.dwSize = Len(uTE32)
     If Thread32First(hSnap, uTE32) = 0 Then
         CloseHandle hSnap
-        Exit Sub
+        Exit Function
     End If
     
     Do
         If uTE32.th32ProcessID = lPID Then
+            PauseProcess = True
+            
             hThread = OpenThread(THREAD_SUSPEND_RESUME, False, uTE32.th32ThreadID)
-            If bPauseOrResume Then
-                SuspendThread hThread
+            If hThread = 0 Then
+                IsFailed = True
             Else
-                ResumeThread hThread
+                If SuspendThread(hThread) = -1 Then IsFailed = True
+                CloseHandle hThread
             End If
-            CloseHandle hThread
         End If
     Loop Until Thread32Next(hSnap, uTE32) = 0
     CloseHandle hSnap
-End Sub
+    
+    If IsFailed Then PauseProcess = False
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "PauseProcess. PID:", lPID
+    If inIDE Then Stop: Resume Next
+End Function
 
+Public Function ResumeProcess(lPID As Long) As Boolean
+    On Error GoTo ErrorHandler:
 
-Public Sub KillProcessByFile(sPath$)
+    '//TODO: add process status checking after Nt
+
+    Dim hSnap&, uTE32 As THREADENTRY32, hThread&, IsFailed As Boolean, hProc&
+    
+    If Not (bIsWinNT Or bIsWinME) Then Exit Function
+    If lPID = 0 Or lPID = GetCurrentProcessId Then Exit Function
+    
+    If IsProcedureAvail("NtResumeProcess", "ntdll.dll") Then
+        hProc = OpenProcess(PROCESS_SUSPEND_RESUME, 0, lPID)
+        
+        If hProc <> 0 Then
+            Call NtResumeProcess(hProc)
+            CloseHandle hProc
+        End If
+    End If
+    
+    hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, lPID)
+    If hSnap = -1 Then Exit Function
+    
+    uTE32.dwSize = Len(uTE32)
+    If Thread32First(hSnap, uTE32) = 0 Then
+        CloseHandle hSnap
+        Exit Function
+    End If
+    
+    Do
+        If uTE32.th32ProcessID = lPID Then
+            ResumeProcess = True
+            
+            hThread = OpenThread(THREAD_SUSPEND_RESUME, False, uTE32.th32ThreadID)
+            If hThread = 0 Then
+                IsFailed = True
+            Else
+                If ResumeThread(hThread) = -1 Then IsFailed = True
+                CloseHandle hThread
+            End If
+        End If
+    Loop Until Thread32Next(hSnap, uTE32) = 0
+    CloseHandle hSnap
+    
+    If IsFailed Then ResumeProcess = False
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "ResumeProcess. PID:", lPID
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function KillProcessByFile(sPath$) As Boolean
     'Dim hSnap&, uPE32 As PROCESSENTRY32
     Dim sExeFile$, hProcess&, i&
     'Note: this sub is silent - it displays no errors !
-    If sPath = vbNullString Then Exit Sub
+    If sPath = vbNullString Then Exit Function
     If bIsWinNT Then
-        KillProcessNTByFile sPath
-        Exit Sub
+        KillProcessByFile = KillProcessNTByFile(sPath)
+        Exit Function
     End If
     
     Dim lNumProcesses As Long
@@ -275,23 +353,52 @@ Public Sub KillProcessByFile(sPath$)
                     If TerminateProcess(hProcess, 0) <> 0 Then
                         'Success
                         DoEvents
+                        KillProcessByFile = True
                     End If
                     CloseHandle hProcess
                 End If
             End If
         Next
     End If
-End Sub
+End Function
 
-Public Sub KillProcessNTByFile(sPath$)
+Public Function PauseProcessByFile(sPath$) As Boolean
+    'Dim hSnap&, uPE32 As PROCESSENTRY32
+    Dim sExeFile$, hProcess&, i&
+    'Note: this sub is silent - it displays no errors !
+    If sPath = vbNullString Then Exit Function
+    If bIsWinNT Then
+        KillProcessNTByFile sPath
+        Exit Function
+    End If
+    
+    Dim lNumProcesses As Long
+    Dim sProcessPath As String
+    Dim Process() As MY_PROC_ENTRY
+    
+    lNumProcesses = GetProcesses_Zw(Process)
+        
+    If lNumProcesses Then
+        
+        For i = 0 To UBound(Process)
+        
+            If StrComp(sPath, Process(i).Path, 1) = 0 Then
+            
+                PauseProcessByFile = PauseProcess(Process(i).PID)
+            End If
+        Next
+    End If
+End Function
+
+Public Function KillProcessNTByFile(sPath$) As Boolean
     'Note: this sub is silent - it displays no errors!
     Dim lProcesses&(1 To 1024), lNeeded&, lNumProcesses&
     Dim hProc&, sProcessName$, lModules&(1 To 1024), i&
     On Error Resume Next
-    If sPath = vbNullString Then Exit Sub
+    If sPath = vbNullString Then Exit Function
     If EnumProcesses(lProcesses(1), CLng(1024) * 4, lNeeded) = 0 Then
         'no PSAPI.DLL file or wrong version
-        Exit Sub
+        Exit Function
     End If
 
     lNumProcesses = lNeeded / 4
@@ -318,23 +425,24 @@ Public Sub KillProcessNTByFile(sPath$)
                         'found the process!
                         PauseProcess lProcesses(i)
                         If TerminateProcess(hProc, 0) <> 0 Then
-                            CloseHandle hProc
                             DoEvents
+                            KillProcessNTByFile = True
                         End If
-
-                        Exit Sub
+                        'CloseHandle hProc
+                        'Exit Function
                     End If
                 End If
             End If
+            CloseHandle hProc
         End If
-        CloseHandle hProc
     Next i
-End Sub
+End Function
 
 
 
 Public Function GetProcesses_Zw(ProcList() As MY_PROC_ENTRY) As Long    'Return -> Count of processes
     On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "GetProcesses_Zw - Begin"
 
     Const SPI_SIZE      As Long = &HB8&                                 'SPI struct: http://www.informit.com/articles/article.aspx?p=22442&seqNum=5
     Const THREAD_SIZE   As Long = &H40&
@@ -374,12 +482,12 @@ Public Function GetProcesses_Zw(ProcList() As MY_PROC_ENTRY) As Long    'Return 
                     ElseIf .ProcessID = 4 Then
                         ProcName = "System"
                     Else
-                        ProcName = Space$(.ImageName.Length \ 2)
-                        memcpy ByVal StrPtr(ProcName), ByVal .ImageName.lpBuffer, .ImageName.Length
+                        ProcName = Space$(.ImageName.length \ 2)
+                        memcpy ByVal StrPtr(ProcName), ByVal .ImageName.lpBuffer, .ImageName.length
                         ProcPath = GetFilePathByPID(.ProcessID)
                         
                         If Len(ProcPath) = 0 Then
-                            ProcPath = GetLongPath(ProcName)
+                            ProcPath = FindOnPath(ProcName)
                         End If
                     End If
                     
@@ -407,9 +515,11 @@ Public Function GetProcesses_Zw(ProcList() As MY_PROC_ENTRY) As Long    'Return 
     
     ReDim Preserve ProcList(Cnt - 1)
     GetProcesses_Zw = Cnt
+    
+    AppendErrorLogCustom "GetProcesses_Zw - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg err, "GetProcesses_Zw"
+    ErrorMsg Err, "GetProcesses_Zw"
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -433,7 +543,7 @@ Function GetFilePathByPID(PID As Long) As String
     hProc = OpenProcess(IIf(bIsWinVistaOrLater, PROCESS_QUERY_LIMITED_INFORMATION, PROCESS_QUERY_INFORMATION) Or PROCESS_VM_READ, 0&, PID)
     
     If hProc = 0 Then
-        If err.LastDllError = ERROR_ACCESS_DENIED Then
+        If Err.LastDllError = ERROR_ACCESS_DENIED Then
             hProc = OpenProcess(IIf(bIsWinVistaOrLater, PROCESS_QUERY_LIMITED_INFORMATION, PROCESS_QUERY_INFORMATION), 0&, PID)
         End If
     End If
@@ -446,7 +556,7 @@ Function GetFilePathByPID(PID As Long) As String
             Call QueryFullProcessImageName(hProc, 0&, StrPtr(ProcPath), VarPtr(Cnt))
         End If
         
-        If 0 <> err.LastDllError Or Not bIsWinVistaOrLater Then     'Win 2008 Server (x64) can cause Error 128 if path contains space characters
+        If 0 <> Err.LastDllError Or Not bIsWinVistaOrLater Then     'Win 2008 Server (x64) can cause Error 128 if path contains space characters
         
             ProcPath = Space$(MAX_PATH)
             Cnt = GetModuleFileNameEx(hProc, 0&, StrPtr(ProcPath), Len(ProcPath))
@@ -463,7 +573,7 @@ Function GetFilePathByPID(PID As Long) As String
             If "\??\" = Left$(ProcPath, 4) Then ProcPath = Mid$(ProcPath, 5)
         End If
         
-        If ERROR_PARTIAL_COPY = err.LastDllError Or Cnt = 0 Then     'because GetModuleFileNameEx cannot access to that information for 64-bit processes on WOW64
+        If ERROR_PARTIAL_COPY = Err.LastDllError Or Cnt = 0 Then     'because GetModuleFileNameEx cannot access to that information for 64-bit processes on WOW64
             ProcPath = Space$(MAX_PATH)
             Cnt = GetProcessImageFileName(hProc, StrPtr(ProcPath), Len(ProcPath))
             
@@ -503,7 +613,7 @@ Function GetFilePathByPID(PID As Long) As String
     
     Exit Function
 ErrorHandler:
-    ErrorMsg err, "GetFilePathByPID"
+    ErrorMsg Err, "GetFilePathByPID"
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -529,7 +639,7 @@ Public Function ConvertDosDeviceToDriveName(inDosDeviceName As String) As String
     
     Cnt = GetLogicalDriveStrings(Len(sDrives), StrPtr(sDrives))
 
-    If 0 = err.LastDllError Then
+    If 0 = Err.LastDllError Then
     
         aDrive = Split(Left$(sDrives, Cnt - 1), vbNullChar)
     
@@ -554,7 +664,7 @@ Public Function ConvertDosDeviceToDriveName(inDosDeviceName As String) As String
     ConvertDosDeviceToDriveName = DosDevices(inDosDeviceName)
     Exit Function
 ErrorHandler:
-    ErrorMsg err, "ConvertDosDeviceToDriveName"
+    ErrorMsg Err, "ConvertDosDeviceToDriveName"
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -629,7 +739,7 @@ Public Function GetRunningProcesses$()
             
                 If Not ((StrComp(.Name, "System Idle Process", 1) = 0 And .PID = 0) _
                         Or (StrComp(.Name, "System", 1) = 0 And .PID = 4) _
-                        Or StrComp(.Path, "?:\?\Memory Compression", 1) = 0) Then
+                        Or (StrComp(.Name, "Memory Compression", 1) = 0)) Then
 
                     sProc = sProc & "|" & .PID & "=" & .Path
                 End If

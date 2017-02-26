@@ -21,7 +21,7 @@ Private Const TASK_STATE_QUEUED         As Long = 2&
 ' Include hidden tasks enumeration
 Private Const TASK_ENUM_HIDDEN          As Long = 1&
 
-Private Declare Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
+Private Declare Sub Sleep Lib "kernel32.dll" (ByVal dwMilliseconds As Long)
 
 Private CreateLogFile As Boolean
 Private LogHandle As Integer
@@ -29,11 +29,13 @@ Private LogHandle As Integer
 
 Public Sub EnumTasks(Optional MakeCSV As Boolean)
     On Error GoTo ErrorHandler
+    AppendErrorLogCustom "EnumTasks - Begin"
+    
     Dim Stady As Long
     Dim sLogFile As String
     
     If GetServiceRunState("Schedule") <> SERVICE_RUNNING Then
-        err.Raise 33333, , "Task scheduler service is not running!"
+        Err.Raise 33333, , "Task scheduler service is not running!"
         Exit Sub
     End If
     
@@ -71,15 +73,17 @@ Public Sub EnumTasks(Optional MakeCSV As Boolean)
         Shell "rundll32.exe shell32.dll,ShellExec_RunDLL " & """" & sLogFile & """", vbNormalFocus
     End If
     
+    AppendErrorLogCustom "EnumTasks - End"
     Exit Sub
 
 ErrorHandler:
-    ErrorMsg err, "EnumTasks. Stady: " & Stady
+    ErrorMsg Err, "EnumTasks. Stady: " & Stady
     If inIDE Then Stop: Resume Next
 End Sub
 
 Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState As Boolean)
     On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "EnumTasksInITaskFolder - Begin"
     
     Dim Result      As TYPE_Scan_Results
     Dim taskState   As String
@@ -94,6 +98,8 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
     Dim WL_ID       As Long
     Dim ActionType  As Long
     Dim taskFolder  As ITaskFolder
+    Dim SignResult  As SignResult_TYPE
+    Dim bIsMicrosoftFile As Boolean
     
     Dim nTask           As Long
     Dim RunObjLast      As String
@@ -109,6 +115,7 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
     Dim HRESULT         As String
     Dim errN            As Long
     Dim StadyLast       As Long
+    Dim sTmp            As String
     
     
     'Debug.Print "Folder Name: " & rootFolder.Name
@@ -147,8 +154,8 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
         
             DoEvents
             
-            err.Clear
-            Call LogError(err, Stady, ClearAll:=True)
+            Err.Clear
+            Call LogError(Err, Stady, ClearAll:=True)
         
             NoFile = False
             isSafe = False
@@ -164,12 +171,16 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
             taskState = "Unknown"
             DirParent = ""
             Stady = 5
+            lTaskState = 0
+            bTaskEnabled = False
             
             
             DirFull = registeredTask.Path
-            Call LogError(err, Stady)
+            Call LogError(Err, Stady)
             
-            DirParent = GetParentDir$(DirFull)
+            'If DirFull = "\klcp_update" Then Stop
+            
+            DirParent = GetParentDir(DirFull)
             If 0 = Len(DirParent) Then DirParent = "{root}"
             
             With registeredTask
@@ -177,23 +188,23 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                 'Debug.Print "Task Path: " & .Path
                 Stady = 6
 
-                err.Clear
+                Err.Clear
                 Set taskDefinition = .Definition
-                Call LogError(err, Stady)
+                Call LogError(Err, Stady)
                 
-                If err.Number = 0 Then
+                If Err.Number = 0 Then
                   
                   Stady = 7
                   
                   Set taskActions = taskDefinition.Actions
-                  Call LogError(err, Stady)
+                  Call LogError(Err, Stady)
                   
                   For Each taskAction In taskActions
                     
                     Stady = 8
                     
                     ActionType = taskAction.Type
-                    Call LogError(err, Stady)
+                    Call LogError(Err, Stady)
                     
                     Select Case ActionType
                     
@@ -206,16 +217,16 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                             'Debug.Print "  Exec Type: " & taskActionExec.Type
                             Stady = 10
                             RunObj = taskActionExec.Path
-                            Call LogError(err, Stady)
+                            Call LogError(Err, Stady)
                             
                             'RunObj = EnvironW(RunObj)
                             RunObjExpanded = EnvironW(RunObj)
                             
                             Stady = 11
                             RunArgs = taskActionExec.Arguments
-                            Call LogError(err, Stady)
+                            Call LogError(Err, Stady)
                             
-                            NoFile = Not FileExists(GetLongPath(RunObjExpanded))
+                            NoFile = (0 = Len(FindOnPath(RunObjExpanded)))
                             
                         Case TASK_ACTION_SEND_EMAIL
                             Stady = 12
@@ -224,7 +235,7 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                             'Debug.Print "  Recepient: " & taskActionEmail.To
                             'Debug.Print "  Subject:   " & taskActionEmail.Subject
                             RunObj = taskActionEmail.To & ", " & taskActionEmail.Subject
-                            Call LogError(err, Stady)
+                            Call LogError(Err, Stady)
                         
                         Case TASK_ACTION_SHOW_MESSAGE
                             Stady = 13
@@ -232,7 +243,7 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                             Set taskActionMsg = taskAction
                             'Debug.Print "  Title: " & taskActionMsg.Title
                             RunObj = taskActionMsg.Title
-                            Call LogError(err, Stady)
+                            Call LogError(Err, Stady)
                             
                         Case TASK_ACTION_COM_HANDLER
                             Stady = 14
@@ -241,7 +252,7 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                             'Debug.Print "  ClassID: " & taskActionCOM.ClassId
                             'Debug.Print "  Data:    " & taskActionCOM.Data
                             RunObj = taskActionCOM.ClassId & IIf(Len(taskActionCOM.Data) <> 0, "," & taskActionCOM.Data, "")
-                            Call LogError(err, Stady)
+                            Call LogError(Err, Stady)
                     End Select
                     
                   Next
@@ -264,18 +275,18 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                 Case "4"
                     taskState = "Running"
             End Select
-            Call LogError(err, Stady)
+            Call LogError(Err, Stady)
             
-            err.Clear
+            Err.Clear
             Stady = 16
             lTaskState = registeredTask.State
-            Call LogError(err, Stady)
+            Call LogError(Err, Stady)
             
             Stady = 17
             bTaskEnabled = registeredTask.Enabled
-            Call LogError(err, Stady)
+            Call LogError(Err, Stady)
             
-            If err.Number <> 0 Then
+            If Err.Number <> 0 Then
                 taskState = taskState & " (Unknown)"
             Else
                 If lTaskState <> TASK_STATE_DISABLED _
@@ -287,33 +298,69 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
             Stady = 18
             
             'get last saved error
-            Call LogError(err, StadyLast, errN, False)
+            Call LogError(Err, StadyLast, errN, False)
             
             HRESULT = ""
-            If errN <> 0 Then HRESULT = MessageText(errN)
+            If errN <> 0 Then HRESULT = ErrMessageText(errN)
             
             If CreateLogFile Then
                 'taskState
                 Print #LogHandle, OSver.MajorMinor & ";" & "" & ";" & ScreenChar(registeredTask.Name) & ";" & ScreenChar(DirParent) & ";" & _
                     ScreenChar(RunObj) & ";" & ScreenChar(RunArgs) & ";" & _
                     IIf(NoFile, "(file missing)", "") & ";" & _
-                    IIf(0 <> Len(HRESULT), "(" & HRESULT & ", idx: " & StadyLast & ")", "")
+                    IIf(0 <> Len(HRESULT), "(" & HRESULT & ", idx: " & StadyLast & ")", "") '& _
+                    'IIf(NoFile Or 0 <> Len(HRESULT), " <==== ATTENTION", "")
             End If
             
             If Len(RunObjExpanded) <> 0 Then RunObj = RunObjExpanded
+            RunObj = Replace$(RunObj, "\\", "\")
             
-            sHit = "O22 - ScheduledTask: " & "(" & taskState & ") " & registeredTask.Name & " - " & DirParent & " - " & RunObj & _
-                IIf(Len(RunArgs) <> 0, " " & RunArgs, "") & _
-                IIf(NoFile, " (file missing)", "") & _
-                IIf(0 <> Len(HRESULT), " (" & HRESULT & ", idx: " & StadyLast & ")", "")
+            AppendErrorLogCustom "EnumTasksInITaskFolder: Checking - " & DirParent & "\" & registeredTask.Name
             
             isSafe = isInTasksWhiteList(DirParent & "\" & registeredTask.Name, RunObj, RunArgs)
             
-            'do not log subfolder yet (just check it)
-            'If Not isRecursiveState Then
+            If ActionType = TASK_ACTION_EXEC Then
+                RunObj = PathNormalize(RunObj)
+                SignVerify RunObj, 0&, SignResult
+            Else
+                WipeSignResult SignResult
+            End If
+            
+            If isSafe Then
+                AppendErrorLogCustom "[OK] EnumTasksInITaskFolder: WhiteListed."
+                
+                'If Left$(RunObj, 1) <> "{" Then 'not CLSID-based task
+                If ActionType = TASK_ACTION_EXEC Then
+                    
+                    bIsMicrosoftFile = (IsMicrosoftCertHash(SignResult.HashRootCert) And SignResult.isLegit)
+                    
+                    isSafe = (bIsMicrosoftFile And bHideMicrosoft)
+                    
+                    If Not isSafe Then
+                        If Not bIsMicrosoftFile Then
+                            AppendErrorLogCustom "[Failed] EnumTasksInITaskFolder: File - " & RunObj & " => is not Microsoft EDS !!! <======"
+                            Debug.Print "Task MS file has wrong EDS: " & RunObj
+                        End If
+                        If FileExists(RunObj) Then NoFile = False
+                    End If
+                End If
+            Else
+                AppendErrorLogCustom "[Failed] EnumTasksInITaskFolder: NOT WhiteListed !!! <======"
+            End If
+            
+            'If RunObj = "C:\WINDOWS\system32\spaceman.exe" Then Stop
             
             If Not isSafe Then
+              
+              sHit = "O22 - ScheduledTask: " & "(" & taskState & ") " & registeredTask.Name & " - " & DirParent & " - " & RunObj & _
+                IIf(Len(RunArgs) <> 0, " " & RunArgs, "") & _
+                IIf(NoFile, " (file missing)", "") & _
+                IIf(0 <> Len(SignResult.SubjectName) And SignResult.isLegit, " (" & SignResult.SubjectName & ")", "") & _
+                IIf(0 <> Len(HRESULT), " (" & HRESULT & ", idx: " & StadyLast & ")", "") '& _
+                'IIf(NoFile Or 0 <> Len(HRESULT), " <==== ATTENTION", "")
+              
               If Not IsOnIgnoreList(sHit) Then
+              
                 If bMD5 Then
                     If FileExists(RunObj) Then
                         sHit = sHit & GetFileMD5(RunObj)
@@ -331,10 +378,7 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                 AddToScanResults Result
               End If
             End If
-              
-            'End If
 
-            'Debug.Print "    Task State: " & taskState
         Next
     End If
     
@@ -360,10 +404,11 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
     
     Set taskFolder = Nothing
     Set taskFolderCollection = Nothing
-    Exit Sub
     
+    AppendErrorLogCustom "EnumTasksInITaskFolder - End"
+    Exit Sub
 ErrorHandler:
-    ErrorMsg err, "EnumTasksInITaskFolder. Stady: " & Stady & ". Number of tasks: " & numberOfTasks & ". Curr. task # " & nTask & ": " & DirFull & ", " & _
+    ErrorMsg Err, "EnumTasksInITaskFolder. Stady: " & Stady & ". Number of tasks: " & numberOfTasks & ". Curr. task # " & nTask & ": " & DirFull & ", " & _
         "RunObj = " & RunObj & ", RunArgs = " & RunArgs & ", taskState = " & taskState
         '& ". ____Last task Data:___ " & DirFullLast & ", " & _
         '"RunObjLast = " & RunObjLast & ", RunArgsLast = " & RunArgsLast & ", taskStateLast = " & taskStateLast
@@ -375,12 +420,47 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
+Public Function PathNormalize(ByVal sFileName As String) As String
+    
+    Dim sTmp As String, bShouldSeek As Boolean
+    
+    sFileName = UnQuote(sFileName)
+    
+    If Mid$(sFileName, 2, 1) <> ":" Then
+        bShouldSeek = True  'relative or on the %PATH%
+    Else
+        If Not FileExists(sFileName) Then bShouldSeek = True 'e.g. no extension
+    End If
+    
+    If bShouldSeek Then
+        sTmp = FindOnPath(sFileName)
+        If Len(sTmp) <> 0 Then
+            sFileName = sTmp
+        End If
+    End If
+    
+    PathNormalize = sFileName
+End Function
+
 Public Function isInTasksWhiteList(sPathName As String, sTargetFile As String, sArguments As String) As Boolean
     On Error GoTo ErrorHandler
     Dim WL_ID As Long
 
     If bIgnoreAllWhitelists Then Exit Function
-    If Not oDict.TaskWL_ID.Exists(sPathName) Then Exit Function
+    If Not oDict.TaskWL_ID.Exists(sPathName) Then
+    
+        'O22 - ScheduledTask: (Ready) User_Feed_Synchronization-{826B43E8-D4FF-4589-B639-B04CB653CCC1} - {root} - C:\Windows\system32\msfeedssync.exe sync
+        
+        'If InStr(sTargetFile, "msfeedssync") <> 0 Then Stop
+        
+        If sPathName Like "{root}\User_Feed_Synchronization-{????????-????-????-????-????????????}" Then
+            If StrComp(sTargetFile, sWinSysDir & "\msfeedssync.exe", 1) = 0 And sArguments = "sync" Then
+                isInTasksWhiteList = True
+            End If
+        End If
+    
+        Exit Function
+    End If
     
     WL_ID = oDict.TaskWL_ID(sPathName)
     
@@ -391,9 +471,10 @@ Public Function isInTasksWhiteList(sPathName As String, sTargetFile As String, s
             isInTasksWhiteList = True
         End If
     End With
+    
     Exit Function
 ErrorHandler:
-    ErrorMsg err, "modTasks.isInTasksWhiteList"
+    ErrorMsg Err, "modTasks.isInTasksWhiteList"
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -437,12 +518,15 @@ Sub LogError(objError As ErrObject, in_out_Stady As Long, Optional out_LastLogge
 End Sub
 
 Public Function KillTask(TaskFullPath As String) As Boolean
+
+    '// TODO: Replace KillProcess by FreezeProcess
+
     On Error GoTo ErrorHandler
     Dim TaskPath As String
     Dim TaskName As String
     Dim pos As Long
     Dim Stady As Long
-    Dim ComeBack As Boolean
+    'Dim ComeBack As Boolean
     Dim lTaskState As Long
     Dim BrokenTask As Boolean
     
@@ -458,21 +542,27 @@ Public Function KillTask(TaskFullPath As String) As Boolean
         Exit Function
     End If
 
+    On Error Resume Next
     Stady = 2
     ' Create the TaskService object.
     Dim Service As Object
     Set Service = CreateObject("Schedule.Service")
+    If Err.Number <> 0 Then Exit Function
+    
     Stady = 3
     Service.Connect
+    If Err.Number <> 0 Then Exit Function
     
     Stady = 4
     ' Get the root task folder that contains the tasks.
     Dim rootFolder As ITaskFolder
     Set rootFolder = Service.GetFolder(TaskPath)
+    If Err.Number <> 0 Then Exit Function
     
     Stady = 5
     Dim registeredTask  As IRegisteredTask
     Set registeredTask = rootFolder.GetTask(TaskName)
+    If Err.Number <> 0 Then Exit Function
     
     'Dim taskCollection As Object
     'Set taskCollection = rootFolder.GetTasks(TASK_ENUM_HIDDEN)
@@ -499,16 +589,26 @@ Public Function KillTask(TaskFullPath As String) As Boolean
     On Error Resume Next
     Stady = 6
     lTaskState = registeredTask.State
-    If err.Number <> 0 Then
-        ComeBack = True
-        GoSub ErrorHandler
-        registeredTask.Stop 0&
-        Sleep 2000&
+    If Err.Number <> 0 Then
+        'ErrorMsg err, "KillTask. Stady: " & Stady
         BrokenTask = True
-    ElseIf lTaskState = TASK_STATE_RUNNING Or lTaskState = TASK_STATE_QUEUED Then
-        registeredTask.Stop 0&
-        Sleep 2000&
     End If
+    
+'    If err.Number <> 0 Then
+'        ComeBack = True
+'        GoSub ErrorHandler
+'        registeredTask.Stop 0&
+'        Sleep 2000&
+'        BrokenTask = True
+'    ElseIf lTaskState = TASK_STATE_RUNNING Or lTaskState = TASK_STATE_QUEUED Then
+'        registeredTask.Stop 0&
+'        Sleep 2000&
+'    End If
+
+'    If BrokenTask Or lTaskState = TASK_STATE_RUNNING Or lTaskState = TASK_STATE_QUEUED Then
+'        registeredTask.Stop 0&
+'        Sleep 2000&
+'    End If
     
     Stady = 7
     If registeredTask.Enabled Then registeredTask.Enabled = False
@@ -520,13 +620,12 @@ Public Function KillTask(TaskFullPath As String) As Boolean
     Stady = 8
     
     ' Kill process
-    err.Clear
+    Err.Clear
     Set taskDefinition = registeredTask.Definition
     
-    If err.Number <> 0 Then
+    If Err.Number <> 0 Then
         If Not BrokenTask Then
-            ComeBack = True
-            GoSub ErrorHandler
+            'ErrorMsg err, "KillTask. Stady: " & Stady
         End If
     Else
       Stady = 9
@@ -543,14 +642,16 @@ Public Function KillTask(TaskFullPath As String) As Boolean
       Next
     End If
     
-    On Error GoTo ErrorHandler
-    
+    'On Error GoTo ErrorHandler
+    On Error Resume Next
+    Err.Clear
     Stady = 12
     ' Remove the Job
     rootFolder.DeleteTask TaskName, 0&
-    Sleep 1000&
-    
-    KillTask = True
+    If Err.Number = 0 Then
+        Sleep 1000&
+        KillTask = True
+    End If
     
     Stady = 13
     Set taskActionExec = Nothing
@@ -561,12 +662,7 @@ Public Function KillTask(TaskFullPath As String) As Boolean
     Set Service = Nothing
     Exit Function
 ErrorHandler:
-    ErrorMsg err, "KillTask. Stady: " & Stady
-    If ComeBack Then
-        ComeBack = False
-        If inIDE Then Stop
-        Return
-    End If
+    ErrorMsg Err, "KillTask. Stady: " & Stady
     If inIDE Then Stop: Resume Next
 End Function
 

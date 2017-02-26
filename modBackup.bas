@@ -6,12 +6,16 @@ Private Declare Function RegOpenKeyExW Lib "advapi32.dll" (ByVal hKey As Long, B
 Private Declare Function RegEnumKeyExW Lib "advapi32.dll" (ByVal hKey As Long, ByVal dwIndex As Long, ByVal lpName As Long, lpcbName As Long, ByVal lpReserved As Long, ByVal lpClass As Long, lpcbClass As Long, lpftLastWriteTime As Any) As Long
 
 Public Sub MakeBackup(ByVal sItem$)
+    On Error GoTo ErrorHandler:
+    
+    AppendErrorLogCustom "MakeBackup - Begin", sItem
+
     Dim sPath$, lHive&, sKey$, sValue$, sSID$, sUsername$
     Dim sData$, sDummy$, sBackup$, sLine$
     Dim sDPFKey$, sCLSID$, sOSD$, sInf$, sInProcServer32$
     Dim sNum$, sFile1$, sFile2$, ff%, sPrefix$, Wow64Redir As Boolean
     Dim sFullPrefix$
-    On Error Resume Next
+    
     sPath = AppPath() & IIf(Right$(AppPath(), 1) = "\", vbNullString, "\")
     
     If bNoWriteAccess Then Exit Sub
@@ -27,13 +31,13 @@ Public Sub MakeBackup(ByVal sItem$)
     'create backup file name
     Randomize
     sBackup = "backup-" & Format(Date, "yyyymmdd") & "-" & Format(time, "HhNnSs") & "-" & CStr(1000 * Format(Rnd(), "0.000"))
-    If Dir$(sPath & "backups\" & sBackup & "*.*") <> vbNullString Or _
+    If DirW$(sPath & "backups\" & sBackup & "*.*") <> vbNullString Or _
        InStrRev(sBackup, "-") <> Len(sBackup) - 3 Then
         Do
             sBackup = "backup-" & Format(Date, "yyyymmdd") & "-" & Format(time, "HhNnSs") & "-"
             Randomize
             sBackup = sBackup & CStr(1000 * Format(Rnd(), "0.000"))
-        Loop Until Dir$(sPath & "backups\" & sBackup & "*.*") = vbNullString And _
+        Loop Until DirW$(sPath & "backups\" & sBackup & "*.*") = vbNullString And _
                    InStrRev(sBackup, "-") = Len(sBackup) - 3
     End If
     
@@ -377,7 +381,7 @@ Public Sub MakeBackup(ByVal sItem$)
     End Select
         
     'winNT/2000/XP reg data workaround
-    If Left$(sData, 2) = "ÿþ" Then sData = Mid$(sData, 3)
+    If Left$(sData, 2) = "ÿþ" Or Left$(sData, 2) = ChrW(&HFF) & ChrW(&HFE) Then sData = Mid$(sData, 3)
     sData = StrConv(sData, vbFromUnicode)
     
     'write item + any data to file
@@ -386,11 +390,12 @@ Public Sub MakeBackup(ByVal sItem$)
         Print #ff, sItem
         If sData <> vbNullString Then Print #ff, vbCrLf & sData
     Close #ff
-    Exit Sub
     
+    AppendErrorLogCustom "MakeBackup - End"
+    Exit Sub
 ErrorHandler:
     Close #ff
-    ErrorMsg err, "modBackup_MakeBackup", "sItem=", sItem
+    ErrorMsg Err, "modBackup_MakeBackup", "sItem=", sItem
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -407,6 +412,8 @@ Public Sub RestoreBackup(ByVal sItem$)
     Dim Wow64Redir As Boolean, sPrefix$, sFullPrefix$
     Dim bBackupHasRegData As Boolean, bBackupHasDLL As Boolean
     On Error GoTo ErrorHandler:
+    
+    AppendErrorLogCustom "RestoreBackup - Begin", sItem
     
     sPath = AppPath() & IIf(Right$(AppPath(), 1) = "\", vbNullString, "\")
     If Not FolderExists(sPath & "backups") Then Exit Sub
@@ -433,13 +440,13 @@ Public Sub RestoreBackup(ByVal sItem$)
     'multiple backups can exist, so open each file
     'and check the first line against the item
     'we are looking for
-    sFile = Dir$(sPath & "backups\" & sBackup)
+    sFile = DirW$(sPath & "backups\" & sBackup, vbFile)
     If sFile = vbNullString Then
         'note the small difference with the next msg
         'MsgBoxW "The backup files for this item were not found. It could not be restored.", vbExclamation
         MsgBoxW Translate(535), vbExclamation
         
-        'msgboxW "Dir$(" & sPath & "backups\" & sBackup & "*.*) = vbNullString"
+        'msgboxW "DirW$(" & sPath & "backups\" & sBackup & "*.*) = vbNullString"
         Exit Sub
     End If
     Do
@@ -454,8 +461,8 @@ Public Sub RestoreBackup(ByVal sItem$)
                 End If
             Close #ff
         End If
-        sFile = Dir
-    Loop Until sFile = vbNullString
+        sFile = DirW$()
+    Loop Until Len(sFile) = 0
     If sDummy <> sName Then
         'things like this help troubleshooting stupid bugs
         'MsgBoxW "The backup file for this item was not found. It could not be restored.", vbExclamation
@@ -1284,16 +1291,18 @@ ProtDefs:
             MsgBoxW Translate(89) & vbCrLf & vbCrLf & sItem
         
     End Select
-    Exit Sub
     
+    AppendErrorLogCustom "RestoreBackup - End"
+    Exit Sub
 ErrorHandler:
-    ErrorMsg err, "modBackup_RestoreBackup", "sItem=", sItem
+    ErrorMsg Err, "modBackup_RestoreBackup", "sItem=", sItem
     Close #ff
     If inIDE Then Stop: Resume Next
 End Sub
 
 Public Sub ListBackups()
     On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "ListBackups - Begin"
     
     Dim sPath$, sFile$, vDummy As Variant, ff%
     Dim sBackup$, sDate$, stime$, aBackup() As String, Cnt&, i&
@@ -1301,8 +1310,8 @@ Public Sub ListBackups()
     ReDim aBackup(100)
     
     sPath = AppPath() & IIf(Right$(AppPath(), 1) = "\", vbNullString, "\")
-    sFile = Dir$(sPath & "backups\" & "backup*")
-    If sFile = vbNullString Then Exit Sub
+    sFile = DirW$(sPath & "backups\" & "backup*", vbFile)
+    If Len(sFile) = 0 Then Exit Sub
     frmMain.lstBackups.Clear
     
     Do
@@ -1327,7 +1336,7 @@ Public Sub ListBackups()
             If UBound(aBackup) < Cnt Then ReDim Preserve aBackup(UBound(aBackup) + 100)
             aBackup(Cnt) = sBackup
         End If
-        sFile = Dir
+        sFile = DirW$()
     Loop Until sFile = vbNullString
     
     If Cnt <> 0 Then
@@ -1336,14 +1345,16 @@ Public Sub ListBackups()
         Next
     End If
     
+    AppendErrorLogCustom "ListBackups - End"
     Exit Sub
 ErrorHandler:
-    ErrorMsg err, "modBackup_ListBackups"
+    ErrorMsg Err, "modBackup_ListBackups"
     If inIDE Then Stop: Resume Next
 End Sub
 
 Public Sub DeleteBackup(sBackup$)
     On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "DeleteBackup - Begin", sBackup
     
     Dim sFile$, sDate$, stime$
     
@@ -1368,16 +1379,19 @@ Public Sub DeleteBackup(sBackup$)
     sFile = "backup-" & sDate & "-" & stime & "*.*"
     
     DeleteFileWEx StrPtr(BuildPath(AppPath(), "backups\" & sFile))
-    Exit Sub
     
+    AppendErrorLogCustom "DeleteBackup - End"
+    Exit Sub
 ErrorHandler:
-    ErrorMsg err, "modBackup_DeleteBackup", "sBackup=", sBackup
+    ErrorMsg Err, "modBackup_DeleteBackup", "sBackup=", sBackup
     If inIDE Then Stop: Resume Next
 End Sub
 
 Public Function GetCLSIDOfMSIEExtension(ByVal sName$, bButtonOrMenu As Boolean)
     Dim hKey&, i&, sCLSID$
     On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "GetCLSIDOfMSIEExtension - Begin"
+    
     sName = Left$(sName, InStr(sName, " (HK") - 1)
     
     If RegOpenKeyExW(HKEY_LOCAL_MACHINE, StrPtr("Software\Microsoft\Internet Explorer\Extensions"), 0, KEY_ENUMERATE_SUB_KEYS, hKey) = 0 Then
@@ -1434,14 +1448,14 @@ Public Function GetCLSIDOfMSIEExtension(ByVal sName$, bButtonOrMenu As Boolean)
         RegCloseKey hKey
     End If
     
+    AppendErrorLogCustom "GetCLSIDOfMSIEExtension - End"
     Exit Function
-    
 ErrorHandler:
     RegCloseKey hKey
-    ErrorMsg err, "modBackup_GetCLSIDOfMSIEExtension", "sName=", sName, "bButtonOrMenu=", CStr(bButtonOrMenu)
+    ErrorMsg Err, "modBackup_GetCLSIDOfMSIEExtension", "sName=", sName, "bButtonOrMenu=", CStr(bButtonOrMenu)
     If inIDE Then Stop: Resume Next
 End Function
 
 Public Function HasBOM_UTF16(sText As String) As Boolean
-    If Left$(sText, 2) = Chr$(&HFF) & Chr$(&HFE) Then HasBOM_UTF16 = True
+    If Left$(sText, 2) = Chr$(&HFF) & Chr$(&HFE) Or Left$(sText, 2) = ChrW$(&HFF) & ChrW$(&HFE) Then HasBOM_UTF16 = True
 End Function

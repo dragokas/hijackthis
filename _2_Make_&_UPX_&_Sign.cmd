@@ -61,7 +61,7 @@ set Manifest=
 
 :: Location of script(s) for adding digital signature
 set SignScript_1=h:\_AVZ\Наши разработки\_Dragokas\DigiSign\SignME.cmd
-::set SignScript_2=d:\Наши проекты\Цифровая подпись\SignME.cmd
+set SignScript_2=
 
 :: Version Patcher EXE (support for 'build' field of PE EXE version)
 set VerPatcher=Tools\VersionPatcher\VersionPatcher.exe
@@ -70,6 +70,8 @@ set VerPatcher=Tools\VersionPatcher\VersionPatcher.exe
 
 :: -------------------------------------------------------------------------------------------
 
+:: Searching for non-screened STOP statements
+call _5_Check_Stop_Statements.cmd
 
 :: Searching project's file name
 if not Defined ProjFile For %%a in (*.vbp) do set ProjFile=%%a
@@ -314,6 +316,7 @@ Exit /B
   )) >> "%ProjFile%_"
   move /y "%ProjFile%_" "%ProjFile%" >NUL
   call :Normalize_VBP_References
+  call :RemoveMSComctlVer
 Exit /B
 
 :CheckOpenIDE
@@ -383,8 +386,24 @@ Exit /B
   )) >> "%ProjFile%_"
   :: skip 1-st line (Type=Exe) and References lines
   < "%ProjFile%" more +1 | findstr /IVRC:"^Reference=" >> "%ProjFile%_"
+  
   move /y "%ProjFile%_" "%ProjFile%" >NUL
+  
 exit /B
+
+:RemoveMSComctlVer
+  2>NUL del "%ProjFile%_"
+  For /F "UseBackQ delims=" %%a in ("%ProjFile%") do (
+    For /F "tokens=1-2 delims==#" %%b in ("%%a") do (
+      if "%%c"=="{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}" (
+        echo Object={831FDD16-0C5C-11D2-A9FC-0000F8754DA1}##0; MSCOMCTL.OCX
+      ) else (
+        echo %%a
+      )
+    )
+  ) >> "%ProjFile%_"
+  move /y "%ProjFile%_" "%ProjFile%" >NUL
+Exit /b
 
 :IsBeginWith [in_source] [paramarray_search term]
   :: return code: 0 - success, 1 - failure.

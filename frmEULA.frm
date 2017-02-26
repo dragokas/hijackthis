@@ -42,7 +42,7 @@ Begin VB.Form frmEULA
    Begin VB.Label lblAware 
       AutoSize        =   -1  'True
       BackStyle       =   0  'Transparent
-      Caption         =   $"frmEULA.frx":0B3A
+      Caption         =   $"frmEULA.frx":000C
       Height          =   780
       Left            =   120
       TabIndex        =   4
@@ -87,8 +87,8 @@ End Type
 Private Declare Function InitCommonControlsEx Lib "comctl32.dll" (lpInitCtrls As tagINITCOMMONCONTROLSEX) As Boolean
 Private Declare Function GetVersionEx Lib "kernel32.dll" Alias "GetVersionExW" (lpVersionInformation As Any) As Long
 Private Declare Function SetCurrentProcessExplicitAppUserModelID Lib "shell32.dll" (ByVal pAppID As Long) As Long
-Private Declare Function LoadLibrary Lib "kernel32" Alias "LoadLibraryW" (ByVal lpLibFileName As Long) As Long
-Private Declare Function FreeLibrary Lib "kernel32" (ByVal hLibModule As Long) As Long
+Private Declare Function LoadLibrary Lib "kernel32.dll" Alias "LoadLibraryW" (ByVal lpLibFileName As Long) As Long
+Private Declare Function FreeLibrary Lib "kernel32.dll" (ByVal hLibModule As Long) As Long
 Private Declare Function OpenProcess Lib "kernel32.dll" (ByVal dwDesiredAccess As Long, ByVal bInheritHandle As Long, ByVal dwProcessId As Long) As Long
 Private Declare Function WaitForSingleObject Lib "kernel32.dll" (ByVal hHandle As Long, ByVal dwMilliseconds As Long) As Long
 Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
@@ -131,11 +131,16 @@ Private Sub Form_Initialize()
     End If
     
     If MajorMinor >= 6.1 Then ' Windows 7 and Later
-        lr = SetCurrentProcessExplicitAppUserModelID(StrPtr("TrendMicro.HiJackThis"))
+        lr = SetCurrentProcessExplicitAppUserModelID(StrPtr("Alex.Dragokas.HiJackThis"))
     End If
+    
+    Set ErrLogCustomText = New clsStringBuilder 'tracing
+    Set oDictFileExist = New clsTrickHashTable  'file exists cache
+    oDictFileExist.CompareMode = 1
 End Sub
 
 Private Sub Form_Load()
+    AppendErrorLogCustom "frmEULA.Form_Load - Begin"
 
     If InStr(1, Command(), "/release", 1) <> 0 Then
         'Если мы - клон, ожидать завершения PID, переданного через аргументы командной строки, после чего удалить файлы
@@ -167,6 +172,8 @@ Private Sub Form_Load()
         txtText1.Text = GetEULA()
         Set ControlsEvent.txtBoxInArr = txtText1   'focus on txtbox to add scrolling support
     End If
+    
+    AppendErrorLogCustom "frmEULA.Form_Load - Begin"
 End Sub
 
 Private Sub cmdAgree_Click()
@@ -180,7 +187,7 @@ Private Sub cmdNotAgree_Click()
     Unload Me
 End Sub
 
-Function CheckIDE(Value As Boolean) As Boolean: Value = True: CheckIDE = True: End Function
+Function CheckIDE(value As Boolean) As Boolean: value = True: CheckIDE = True: End Function
 
 Sub WatchForProcess()   'waiting for process completion to release unpacked resources
     On Error GoTo ErrorHandler
@@ -215,7 +222,7 @@ Sub WatchForProcess()   'waiting for process completion to release unpacked reso
 
     Exit Sub
 ErrorHandler:
-    ErrorMsg err, "WatchForProcess", "PID:", ProcessID
+    ErrorMsg Err, "WatchForProcess", "PID:", ProcessID
 End Sub
 
 Sub EULA_Agree()

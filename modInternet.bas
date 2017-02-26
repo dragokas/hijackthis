@@ -55,13 +55,13 @@ Private Declare Function InternetReadFile Lib "wininet.dll" (ByVal hFile As Long
 Private Declare Function HttpOpenRequest Lib "wininet.dll" Alias "HttpOpenRequestA" (ByVal hHttpSession As Long, ByVal sVerb As String, ByVal sObjectName As String, ByVal sVersion As String, ByVal sReferer As String, ByVal something As Long, ByVal lFlags As Long, ByVal lContext As Long) As Long
 Private Declare Function HttpSendRequest Lib "wininet.dll" Alias "HttpSendRequestA" (ByVal hHttpRequest As Long, ByVal sHeaders As String, ByVal lHeadersLength As Long, sOptional As Any, ByVal lOptionalLength As Long) As Integer
 Private Declare Function HttpQueryInfo Lib "wininet.dll" Alias "HttpQueryInfoA" (ByVal hHttpRequest As Long, ByVal lInfoLevel As Long, ByRef sBuffer As Any, ByRef lBufferLength As Long, ByRef lIndex As Long) As Integer
-Private Declare Function InternetGetConnectedState Lib "wininet" (ByRef dwFlags As Long, ByVal dwReserved As Long) As Long
+Private Declare Function InternetGetConnectedState Lib "wininet.dll" (ByRef dwFlags As Long, ByVal dwReserved As Long) As Long
 
 Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteW" (ByVal hWnd As Long, ByVal lpOperation As Long, ByVal lpFile As Long, ByVal lpParameters As Long, ByVal lpDirectory As Long, ByVal nShowCmd As Long) As Long
 
 Private Declare Function GetNetworkParams Lib "IPHlpApi.dll" (FixedInfo As Any, pOutBufLen As Long) As Long
 Private Declare Function lstrlen Lib "kernel32.dll" Alias "lstrlenW" (ByVal lpString As Long) As Long
-Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long)
+Private Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal length As Long)
 
 
 Private Const OFN_HIDEREADONLY = &H4
@@ -91,6 +91,10 @@ Public szSubmitUrl As String
 Private sTriageObj() As String
 
 Public Function GetDNS(DnsAdresses() As String) As Boolean
+    On Error GoTo ErrorHandler:
+
+    AppendErrorLogCustom "GetDNS - Begin"
+
     Dim DNS()               As String
     Dim FixedInfoBuffer()   As Byte
     Dim FixedInfo           As FIXED_INFO
@@ -120,6 +124,12 @@ Public Function GetDNS(DnsAdresses() As String) As Boolean
         End If
     End If
     DnsAdresses = DNS
+    
+    AppendErrorLogCustom "GetDNS - End"
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetDNS"
+    If inIDE Then Stop: Resume Next
 End Function
 
 Public Sub CheckForUpdate()
@@ -163,6 +173,8 @@ Public Sub SendData(szUrl As String, szData As String)
     Set xmlhttp = Nothing
     Exit Sub
 ErrorHandler:
+    ErrorMsg Err, "SendData"
+    If inIDE Then Stop: Resume Next
 End Sub
 
 Function GetUrl(szUrl As String) As String
@@ -188,10 +200,12 @@ Function GetUrl(szUrl As String) As String
 
 ErrorHandler:
     GetUrl = "HJT_NOT_SUPPORTED"
+    ErrorMsg Err, "GetUrl"
     If inIDE Then Stop: Resume Next
 End Function
 
 Public Sub ParseHTTPResponse(szResponse As String)
+    On Error GoTo ErrorHandler:
 
     Dim curPos As Long
     Dim startIDPos, endIDPos, startDataPos, endDataPos As Long
@@ -232,9 +246,15 @@ Public Sub ParseHTTPResponse(szResponse As String)
         End Select
     Loop
     
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "ParseHTTPResponse", "Response:", szResponse
+    If inIDE Then Stop: Resume Next
 End Sub
 
 Function URLEncode(ByVal Text As String) As String
+    On Error GoTo ErrorHandler:
+
     Dim i As Long
     Dim acode As Long
     Dim char As String
@@ -256,6 +276,10 @@ Function URLEncode(ByVal Text As String) As String
         End Select
     Next
     
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "URLEncode", "Src:", Text
+    If inIDE Then Stop: Resume Next
 End Function
 
 Public Function IsOnline() As Boolean
@@ -290,7 +314,7 @@ Public Sub AddTriageObj(sName$, sType$, sFile$, Optional sCLSID$, Optional sCode
     
     On Error Resume Next
     If UBound(sTriageObj) = -2 Then ReDim sTriageObj(0)
-    If err Then ReDim sTriageObj(0)
+    If Err Then ReDim sTriageObj(0)
     On Error GoTo 0:
     
     ReDim Preserve sTriageObj(UBound(sTriageObj) + 1)
@@ -333,8 +357,10 @@ Public Function GetTriage$()
 End Function
 
 Public Function DownloadFile(sURL$, sTarget$) As Boolean
+    On Error GoTo ErrorHandler:
+
     Dim hInternet&, hFile&, sBuffer$, sFile$, lBytesRead&
-    Dim sUserAgent$
+    Dim sUserAgent$, ff%
     DownloadFile = False
     If FileExists(sTarget) Then Exit Function
     sUserAgent = "StartupList v" & StartupListVer '& App.Major & "." & Format(App.Minor, "00") & "." & App.Revision
@@ -351,9 +377,11 @@ Public Function DownloadFile(sURL$, sTarget$) As Boolean
             Loop Until lBytesRead = 0
             InternetCloseHandle hFile
             
-            Open sTarget For Output As #1
-                Print #1, sFile
-            Close #1
+            ff = FreeFile()
+            
+            Open sTarget For Output As #ff
+                Print #ff, sFile
+            Close #ff
             DownloadFile = True
         Else
             'Unable to connect to the Internet.
@@ -363,5 +391,10 @@ Public Function DownloadFile(sURL$, sTarget$) As Boolean
     End If
     'Done.
     Status Translate(1006)
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "DownloadFile", "URL:", sURL, "Target:", sTarget
+    If inIDE Then Stop: Resume Next
 End Function
 

@@ -62,7 +62,7 @@ Private Declare Function RegCreateKeyExW Lib "advapi32.dll" (ByVal hKey As Long,
 Private Declare Function RegSetValueExW Lib "advapi32.dll" (ByVal hKey As Long, ByVal lpValueName As Long, ByVal Reserved As Long, ByVal dwType As Long, lpData As Any, ByVal cbData As Long) As Long
 Private Declare Function RegQueryValueExW Lib "advapi32.dll" (ByVal hKey As Long, ByVal lpValueName As Long, ByVal lpReserved As Long, lpType As Long, lpData As Any, lpcbData As Long) As Long
 Private Declare Function RegCloseKey Lib "advapi32.dll" (ByVal hKey As Long) As Long
-Private Declare Function SHRestartSystemMB Lib "shell32" Alias "#59" (ByVal hOwner As Long, ByVal sExtraPrompt As String, ByVal uFlags As Long) As Long
+Private Declare Function SHRestartSystemMB Lib "shell32.dll" Alias "#59" (ByVal hOwner As Long, ByVal sExtraPrompt As String, ByVal uFlags As Long) As Long
 Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteW" (ByVal hWnd As Long, ByVal lpOperation As Long, ByVal lpFile As Long, ByVal lpParameters As Long, ByVal lpDirectory As Long, ByVal nShowCmd As Long) As Long
 
 Private Declare Function WSAStartup Lib "ws2_32.dll" (ByVal wVR As Integer, ByVal lpWSAD As Long) As Long
@@ -74,7 +74,7 @@ Private Declare Function WSCGetProviderPath Lib "ws2_32.dll" (ByVal lpProviderId
 Private Declare Function StringFromGUID2 Lib "ole32.dll" (rguid As UUID, ByVal lpsz As Long, ByVal cchMax As Long) As Long
 Private Declare Function lstrlen Lib "kernel32.dll" Alias "lstrlenW" (ByVal lpString As Long) As Long
 Private Declare Function lstrcpyn Lib "kernel32.dll" Alias "lstrcpynW" (ByVal lpDst As Long, ByVal lpSrc As Long, ByVal iMaxLength As Long) As Long
-Private Declare Sub memcpy Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long)
+Private Declare Sub memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal length As Long)
 
 Private Const SOCKET_ERROR As Long = -1
 
@@ -88,6 +88,7 @@ Private sKeyProtocol As String
 
 Public Function EnumWinsockProtocol$()
     On Error GoTo ErrorHandler:
+    
     Dim i&, sEnumProt$
     Dim uWSAData As WSAData, sGUID$, sFile$
     Dim uWSAProtInfo As WSAPROTOCOL_INFO
@@ -120,7 +121,7 @@ Public Function EnumWinsockProtocol$()
     
     Exit Function
 ErrorHandler:
-    ErrorMsg err, "modLSP.EnumWinsockProtocol"
+    ErrorMsg Err, "modLSP.EnumWinsockProtocol"
     WSACleanup
     If inIDE Then Stop: Resume Next
 End Function
@@ -161,7 +162,7 @@ Public Function EnumWinsockNameSpace$()
 
     Exit Function
 ErrorHandler:
-    ErrorMsg err, "modLSP.EnumWinsockNameSpace"
+    ErrorMsg Err, "modLSP.EnumWinsockNameSpace"
     WSACleanup
     If inIDE Then Stop: Resume Next
 End Function
@@ -220,8 +221,10 @@ End Sub
 Public Sub CheckLSP()
     On Error GoTo ErrorHandler:
     
+    AppendErrorLogCustom "CheckLSP - Begin"
+    
     Dim lNumNameSpace&, lNumProtocol&, i&, J& ', sSafeFiles$
-    Dim sFile$, uData() As Byte, hKey&, sHit$, sDummy$
+    Dim sFile$, uData() As Byte, hKey&, sHit$, sDummy$, sFindFile$
     
     lNumNameSpace = RegGetDword(HKEY_LOCAL_MACHINE, sKeyNameSpace, "Num_Catalog_Entries")
     lNumProtocol = RegGetDword(HKEY_LOCAL_MACHINE, sKeyProtocol, "Num_Catalog_Entries")
@@ -254,9 +257,10 @@ Public Sub CheckLSP()
         sFile = LCase$(Replace$(sFile, "%SYSTEMROOT%", sWinDir, , , vbTextCompare))
         sFile = LCase$(Replace$(sFile, "%windir%", sWinDir, , , vbTextCompare))
         If sFile <> vbNullString Then
-            If FileExists(sFile) Or _
-               FileExists(sWinDir & "\" & sFile) Or _
-               FileExists(sWinSysDir & "\" & sFile) Then
+            sFindFile = FindOnPath(sFile)
+            If 0 <> Len(sFindFile) Then
+                sFile = sFindFile
+            
                 'file ok
                 If InStr(sFile, "webhdll.dll") > 0 Then
                     sHit = "O10 - Hijacked Internet access by WebHancer"
@@ -290,9 +294,12 @@ Public Sub CheckLSP()
         
         If sFile <> vbNullString Then
             sFile = EnvironW(sFile)
-            If FileExists(sFile) Or _
-               FileExists(sWinDir & "\" & sFile) Or _
-               FileExists(sWinSysDir & "\" & sFile) Then
+            
+            sFindFile = FindOnPath(sFile)
+            
+            If 0 <> Len(sFindFile) Then
+                sFile = sFindFile
+                
                 'file ok
                 If InStr(1, sFile, "webhdll.dll", vbTextCompare) > 0 Then
                     sHit = "O10 - Hijacked Internet access by WebHancer"
@@ -320,10 +327,11 @@ Public Sub CheckLSP()
             End If
         End If
     Next i
-    Exit Sub
     
+    AppendErrorLogCustom "CheckLSP - End"
+    Exit Sub
 ErrorHandler:
-    ErrorMsg err, "modLSP_CheckLSP"
+    ErrorMsg Err, "modLSP_CheckLSP"
     RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Sub
@@ -347,7 +355,7 @@ Public Sub FixLSP()
     End If
     Exit Sub
 ErrorHandler:
-    ErrorMsg err, "FixLSP"
+    ErrorMsg Err, "FixLSP"
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -377,7 +385,7 @@ End Sub
 '        sFile = RegGetString(HKEY_LOCAL_MACHINE, sKeyNameSpace & "\Catalog_Entries\" & String(12 - Len(CStr(i)), "0") & CStr(i), "LibraryPath")
 '        sFile = LCase(Replace$(sFile, "%SYSTEMROOT%", sWinDir, , , vbTextCompare))
 '        sFile = LCase(Replace$(sFile, "%windir%", sWinDir, , , vbTextCompare))
-'        If sFile <> vbNullString And Dir$(sFile, vbArchive + vbHidden + vbReadOnly + vbSystem) <> vbNullString Then
+'        If sFile <> vbNullString And DirW$(sFile, vbFile) <> vbNullString Then
 '            'file ok
 '            If InStr(1, sFile, "webhdll.dll", vbTextCompare) > 0 Or _
 '               InStr(1, sFile, "newdot", vbTextCompare) > 0 Or _
@@ -417,7 +425,7 @@ End Sub
 '        sFile = RegGetFileFromBinary(HKEY_LOCAL_MACHINE, sKeyProtocol & "\Catalog_Entries\" & String(12 - Len(CStr(i)), "0") & CStr(i), "PackedCatalogItem")
 '        sFile = LCase(Replace$(sFile, "%SYSTEMROOT%", sWinDir, , , vbTextCompare))
 '        sFile = LCase(Replace$(sFile, "%windir%", sWinDir, , , vbTextCompare))
-'        If sFile <> vbNullString And Dir$(sFile, vbArchive + vbHidden + vbReadOnly + vbSystem) <> vbNullString Then
+'        If sFile <> vbNullString And DirW$(sFile, vbFile) <> vbNullString Then
 '            'file ok
 '            If InStr(1, sFile, "webhdll.dll", vbTextCompare) > 0 Or _
 '               InStr(1, sFile, "newdotnet", vbTextCompare) > 0 Or _
@@ -590,7 +598,7 @@ Private Sub RegRenameKey(lHive&, sKeyOldName$, sKeyNewName$)
     RegDeleteKeyW lHive, StrPtr(sKeyOldName)
     Exit Sub
 ErrorHandler:
-    ErrorMsg err, "modLSP_RegRenameKey", "sKeyOldName=", sKeyOldName, "sKeyNewName=", sKeyNewName
+    ErrorMsg Err, "modLSP_RegRenameKey", "sKeyOldName=", sKeyOldName, "sKeyNewName=", sKeyNewName
     RegCloseKey hKey
     RegCloseKey hKey2
     If inIDE Then Stop: Resume Next

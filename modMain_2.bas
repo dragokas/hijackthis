@@ -15,8 +15,8 @@ Sub WMI_GetNamespaces(sNamespace As String, aNameSpaces() As String)
     On Error Resume Next
     Set objService = GetObject("winmgmts:{impersonationLevel=Impersonate, (Security, Backup)}!\\.\" & sNamespace)
     
-    If err.Number <> 0 Then
-        ErrorMsg err, "modMain2_WMI_GetNamespaces", "Namespace: ", sNamespace
+    If Err.Number <> 0 Then
+        ErrorMsg Err, "modMain2_WMI_GetNamespaces", "Namespace: ", sNamespace
     End If
     On Error GoTo ErrorHandler:
     
@@ -50,7 +50,7 @@ Sub WMI_GetNamespaces(sNamespace As String, aNameSpaces() As String)
     Set objService = Nothing
     Exit Sub
 ErrorHandler:
-    ErrorMsg err, "modMain2_WMI_GetNamespaces", "Namespace: ", sNamespace
+    ErrorMsg Err, "modMain2_WMI_GetNamespaces", "Namespace: ", sNamespace
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -64,6 +64,7 @@ Public Sub CheckO25Item()
     '
 
     On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "CheckO25Item - Begin"
 
     Dim objService As Object, colBindings As Object, objBinding As Object
     Dim FilterName As String, ConsumerName As String, i As Long
@@ -304,7 +305,8 @@ Public Sub CheckO25Item()
                 'If Not (StrComp(ConsumerClassName, "NTEventLogEventConsumer", 1) = 0 And StrComp(FilterName, "SCM Event Log Filter", 1) = 0) Then
                 If Not bOtherConsumerClass Then
                 If bIgnoreAllWhitelists Or _
-                    Not (StrComp(ConsumerName, "BVTConsumer", 1) = 0 And cmdExecute = "" And cmdWorkDir = SysDisk & "\\tools\\kernrate" And cmdArguments = "cscript KernCap.vbs" And Not FileExists(SysDisk & "\tools\kernrate\KernCap.vbs")) Then
+                    (Not (StrComp(ConsumerName, "BVTConsumer", 1) = 0 And cmdExecute = "" And cmdWorkDir = SysDisk & "\\tools\\kernrate" And cmdArguments = "cscript KernCap.vbs" And Not FileExists(SysDisk & "\tools\kernrate\KernCap.vbs")) _
+                    And Not (FilterName = "BVTFilter") And sEventName = "__InstanceModificationEvent WITHIN 60 WHERE TargetInstance ISA ""Win32_Processor"" AND TargetInstance.LoadPercentage > 99") Then
                 
                     'added more safely cheking
                     NoConsumer = False: NoFilter = False
@@ -360,12 +362,13 @@ Public Sub CheckO25Item()
 
     Set objTimerNamespace = Nothing
 
+    AppendErrorLogCustom "CheckO25Item - End"
     Exit Sub
 ErrorHandler:
     If i >= 1 And i <= UBound(aNameSpaces) Then
-        ErrorMsg err, "modMain2_CheckO25Item", "Namespace: " & aNameSpaces(i), "Stady: " & Stady
+        ErrorMsg Err, "modMain2_CheckO25Item", "Namespace: " & aNameSpaces(i), "Stady: " & Stady
     Else
-        ErrorMsg err, "modMain2_CheckO25Item", "Stady: " & Stady
+        ErrorMsg Err, "modMain2_CheckO25Item", "Stady: " & Stady
     End If
     If inIDE Then Stop: Resume Next
     If ComeBack Then Resume Next
@@ -464,7 +467,7 @@ Public Sub FixO25Item(sItem$)
     
     Exit Sub
 ErrorHandler:
-    ErrorMsg err, "modMain2_FixO25Item"
+    ErrorMsg Err, "modMain2_FixO25Item"
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -482,7 +485,7 @@ Function StripCode(ByVal sCode, Optional Max_Characters As Long = MAX_CODE_LENGT
     End If
     Exit Function
 ErrorHandler:
-    ErrorMsg err, "modMain2_StripCode", sCode
+    ErrorMsg Err, "modMain2_StripCode", sCode
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -516,7 +519,7 @@ Sub ExtractNameSpaceAndClassNameFromString(sComplexString As String, out_NameSpa
     End If
     Exit Sub
 ErrorHandler:
-    ErrorMsg err, "modMain2_ExtractNameSpaceAndClassNameFromString", sComplexString
+    ErrorMsg Err, "modMain2_ExtractNameSpaceAndClassNameFromString", sComplexString
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -536,7 +539,7 @@ Function GetStringInsideQt(sStr As String) As String
     End If
     Exit Function
 ErrorHandler:
-    ErrorMsg err, "modMain2_GetStringInsideQt", sStr
+    ErrorMsg Err, "modMain2_GetStringInsideQt", sStr
     If inIDE Then Stop: Resume Next
 End Function
 

@@ -169,7 +169,9 @@ Option Explicit
 
 
 Private Declare Function SfcIsFileProtected Lib "Sfc.dll" (ByVal RpcHandle As Long, ByVal ProtFileName As Long) As Long
+Private Declare Function SetWindowTheme Lib "UxTheme.dll" (ByVal hWnd As Long, ByVal pszSubAppName As Long, ByVal pszSubIdList As Long) As Long
 
+Private Const CERT_E_UNTRUSTEDROOT          As Long = &H800B0109
 
 Dim isRan As Boolean
 
@@ -181,12 +183,12 @@ Private Sub cmdGo_Click()
     Dim bRecursively    As Boolean
     Dim bListSystemPath As Boolean
     Dim ReportPath      As String
-    Dim arrFiles()      As String
     Dim arrTmp()        As String
     Dim i               As Long
     Dim SignResult      As SignResult_TYPE
     Dim SignResultTemp  As SignResult_TYPE
     Dim hFile           As Long
+    Dim sFile           As String
     Dim pos             As Long
     Dim bCSV            As Boolean
     Dim bPlainText      As Boolean
@@ -205,17 +207,16 @@ Private Sub cmdGo_Click()
     
     If isRan Then Exit Sub
     
-    ReDim arrFiles(0)
     Set oDictFiles = New clsTrickHashTable
     Set oDictSFC = New clsTrickHashTable
     oDictFiles.CompareMode = TextCompare
     oDictSFC.CompareMode = TextCompare
     
     'Get options
-    bRecursively = (chkRecur.Value = 1)
-    bListSystemPath = (chkIncludeSys.Value = 1) 'System32 / SysWow64
-    bCSV = OptCSV.Value               'CSV (in ANSI)
-    bPlainText = optPlainText.Value   'Plain (in Unicode)
+    bRecursively = (chkRecur.value = 1)
+    bListSystemPath = (chkIncludeSys.value = 1) 'System32 / SysWow64
+    bCSV = OptCSV.value               'CSV (in ANSI)
+    bPlainText = optPlainText.value   'Plain (in Unicode)
     
     sPathes = Text1.Text
     
@@ -236,7 +237,18 @@ Private Sub cmdGo_Click()
     
     For Each vPath In aPathes
     
-        vPath = UnQuote(Trim$(vPath))
+        'If InStr(1, vPath, "Wudfh", 1) <> 0 Then Stop
+    
+        vPath = Trim$(vPath)
+        If Left$(vPath, 1) = """" Then
+            pos = InStr(2, vPath, """")
+            If pos <> 0 Then
+                vPath = Mid$(vPath, 2, pos - 2)
+            Else
+                vPath = Mid$(vPath, 2)
+            End If
+        End If
+        
         vPath = Replace$(vPath, "\\", "\")
         If Mid$(vPath, 2, 1) <> ":" Then
             'try to remove some remnants from beginning of line
@@ -246,67 +258,52 @@ Private Sub cmdGo_Click()
             End If
         End If
         
-        If Not oDictFiles.Exists(vPath) Then
-        
-            oDictFiles.Add vPath, 0
-        
+        If FileExists(CStr(vPath)) Then
+            If Not oDictFiles.Exists(vPath) Then oDictFiles.Add vPath, 0
+        ElseIf FolderExists(CStr(vPath)) Then
+            arrTmp = ListFiles(CStr(vPath), IIf(OptAllFiles.value = 1, "", txtExtensions.Text), bRecursively)
+            CopyArrayToDictionary arrTmp, oDictFiles
+            DoEvents
+        Else
+            If InStr(vPath, " ") <> 0 Then  'dirty path? - contain arguments? - Try to remove.
+                vPath = Left$(vPath, InStr(vPath, " ") - 1)
+            ElseIf InStr(vPath, "/") <> 0 Then
+                OriginPath = vPath
+                vPath = RTrim(Left$(vPath, InStr(vPath, "/") - 1))     'res://C:\PROGRA~1\MICROS~3\Office15\EXCEL.EXE/3000
+            End If
+
             If FileExists(CStr(vPath)) Then
-                ReDim Preserve arrFiles(UBound(arrFiles) + 1)
-                arrFiles(UBound(arrFiles)) = vPath
-            ElseIf FolderExists(CStr(vPath)) Then
-                arrTmp = ListFiles(CStr(vPath), IIf(OptAllFiles.Value = 1, "", txtExtensions.Text), bRecursively)
-                Call ConcatArrays(arrFiles, arrTmp)
-                DoEvents
+                If Not oDictFiles.Exists(vPath) Then oDictFiles.Add vPath, 0
             Else
-                If InStr(vPath, " ") <> 0 Then  'dirty path? - contain arguments? - Try to remove.
-                    vPath = Left$(vPath, InStr(vPath, " ") - 1)
-                ElseIf InStr(vPath, "/") <> 0 Then
-                    OriginPath = vPath
-                    vPath = Left$(vPath, InStr(vPath, "/") - 1)     'res://C:\PROGRA~1\MICROS~3\Office15\EXCEL.EXE/3000
-                End If
-            
-                If Not oDictFiles.Exists(vPath) Then
-                    oDictFiles.Add vPath, 0
-                    
+                If InStr(OriginPath, "/") <> 0 Then
+                    vPath = Replace$(OriginPath, "/", "\")      'path altered by / chars instead of \
+                    vPath = Replace$(vPath, "\\", "\")
+                            
                     If FileExists(CStr(vPath)) Then
-                        ReDim Preserve arrFiles(UBound(arrFiles) + 1)
-                        arrFiles(UBound(arrFiles)) = vPath
-                    Else
-                        If InStr(OriginPath, "/") <> 0 Then
-                            vPath = Replace$(OriginPath, "/", "\")      'path altered by / chars instead of \
-                            vPath = Replace$(vPath, "\\", "\")
-                            If Not oDictFiles.Exists(vPath) Then
-                                oDictFiles.Add vPath, 0
-                                If FileExists(CStr(vPath)) Then
-                                    ReDim Preserve arrFiles(UBound(arrFiles) + 1)
-                                    arrFiles(UBound(arrFiles)) = vPath
-                                End If
-                            End If
-                        End If
+                        If Not oDictFiles.Exists(vPath) Then oDictFiles.Add vPath, 0
                     End If
                 End If
-                'specified path is not exist
             End If
         End If
     Next
     
     If bListSystemPath Then
         'default - .exe;.dll;.sys
-        arrTmp = ListFiles(sWinSysDir, IIf(OptAllFiles.Value = 1, "", txtExtensions.Text), bRecursively)
+        arrTmp = ListFiles(sWinSysDir, IIf(OptAllFiles.value = 1, "", txtExtensions.Text), bRecursively)
         DoEvents
-        Call ConcatArrays(arrFiles, arrTmp)
+        CopyArrayToDictionary arrTmp, oDictFiles
         
         If bIsWin64 Then
-            arrTmp = ListFiles(sWinSysDirWow64, IIf(OptAllFiles.Value = 1, "", txtExtensions.Text), bRecursively)
+            arrTmp = ListFiles(sWinSysDirWow64, IIf(OptAllFiles.value = 1, "", txtExtensions.Text), bRecursively)
             DoEvents
-            Call ConcatArrays(arrFiles, arrTmp)
+            CopyArrayToDictionary arrTmp, oDictFiles
         End If
     End If
     
     ' Checking digital signature
     
     'No files found.
-    If UBound(arrFiles) = 0 Then MsgBoxW Translate(1860): Exit Sub
+    If oDictFiles.Count = 0 Then MsgBoxW Translate(1860): Exit Sub
     
     'Abort
     CmdExit.Caption = Translate(1861)
@@ -315,10 +312,11 @@ Private Sub cmdGo_Click()
     Dim bWPF As Boolean
     Dim bIsDriver As Boolean
     Dim IsMicrosoftFile As Boolean
+    Dim aLogLine() As String
     Dim sLogLine As String
-    Dim bHeader As Boolean
     Dim bData() As Byte
     Dim bPE_EXE As Boolean
+    Dim bSkipErrorOld As Boolean
     
     lblStatus.Caption = ""
     lblStatus.Visible = True
@@ -343,7 +341,16 @@ Private Sub cmdGo_Click()
     isRan = True
     cmdGo.Enabled = False
     
-    For i = 1 To UBound(arrFiles)
+    bSkipErrorOld = bSkipErrorMsg
+    bSkipErrorMsg = True
+    ErrReport = ""
+    
+    ReDim aLogLine(oDictFiles.Count - 1)
+    
+    For i = 0 To oDictFiles.Count - 1
+    
+        sFile = oDictFiles.Keys(i)
+    
         DoEvents
         If isRan = False Then
             CloseW hFile
@@ -358,82 +365,82 @@ Private Sub cmdGo_Click()
         bWHQL = False
         
         'ProgressBar
-        lblStatus = i & " / " & UBound(arrFiles) & " - " & GetFileNameAndExt(arrFiles(i)) & " - " & GetPathName(arrFiles(i))
-        shpFore.Width = CLng(shpBack.Width / UBound(arrFiles) * i)
+        lblStatus = (i + 1) & " / " & oDictFiles.Count & " - " & GetFileNameAndExt(sFile) & " - " & GetPathName(sFile)
+        If i Mod 10 = 0 Then
+            shpFore.Width = CLng((shpBack.Width / oDictFiles.Count) * i)
+        End If
         
         'bWPF = inArray(arrFiles(i), SFCFiles, , , vbTextCompare)
-        bWPF = oDictSFC.Exists(arrFiles(i))
-        If Not bWPF Then bWPF = SfcIsFileProtected(0&, StrPtr(arrFiles(i)))
+        bWPF = oDictSFC.Exists(sFile)
+        If Not bWPF Then bWPF = SfcIsFileProtected(0&, StrPtr(sFile))
         
         'bPE_EXE = isPE_EXE(arrFiles(i))
         'maybe replace by GetBinaryType API ?
         
         'If bPE_EXE Then
-            SignVerify arrFiles(i), 0&, SignResult
-            IsMicrosoftFile = IsMicrosoftCertHash(SignResult.RootCertHash) And SignResult.isLegit
-        
-            If StrComp(GetExtensionName(arrFiles(i)), ".sys", 1) = 0 Then
-                SignVerify arrFiles(i), SV_isDriver, SignResultTemp
-                bWHQL = SignResultTemp.isLegit
+            If StrComp(GetExtensionName(sFile), ".sys", 1) = 0 Then
+                SignVerify sFile, SV_isDriver, SignResult
+                bWHQL = SignResult.isLegit
                 bIsDriver = True
-            End If
-        'End If
-        
-        ' Log Header
-        If Not bHeader Then
-            bHeader = True
-            If bCSV Then
-                sLogLine = "File;FullPath;Legitimate;WQHL;IsMicrosoft;WPF / SFC;Embedded Sign;Issuer;RootCertHash;ErrCode;ErrMsgShort;ErrMsgFull" & vbCrLf
+                If CERT_E_UNTRUSTEDROOT = SignResult.ReturnCode Then
+                    SignVerify sFile, SV_CacheDoNotLoad, SignResult
+                End If
             Else
-                sLogLine = ChrW$(-257) & _
-                           "FileName - Is legitimate - (Microsoft, WFP)" & vbCrLf & _
-                           "-------------------------------------------" & vbCrLf
+                SignVerify sFile, 0&, SignResult
             End If
-        End If
+            
+            IsMicrosoftFile = IsMicrosoftCertHash(SignResult.HashRootCert) 'And SignResult.isLegit
+        'End If
         
         With SignResult
             If bCSV Then
-                sLogLine = sLogLine & _
-                    GetFileNameAndExt(arrFiles(i)) & ";" & _
-                    arrFiles(i) & ";" & _
+                aLogLine(i) = _
+                    GetFileNameAndExt(sFile) & ";" & _
+                    sFile & ";" & _
                     IIf(.isLegit, "Yes", "No") & ";" & _
                     IIf(bWHQL, "Yes", "No") & ";" & _
                     IIf(IsMicrosoftFile, "Yes", "No") & ";" & _
                     IIf(bWPF, "Yes", "No") & ";" & _
-                    IIf(.ReturnCode = -2146762496, "", IIf(Not .isCert, "Yes", "No")) & ";" & _
+                    IIf(.ReturnCode = -2146762496, "", IIf(Not .isSignedByCert, "Yes", "No")) & ";" & _
                     .Issuer & ";" & _
-                    .RootCertHash & ";" & _
+                    .HashRootCert & ";" & _
                     .ReturnCode & ";" & _
                     .ShortMessage & ";" & _
-                    .FullMessage & _
-                    vbCrLf
-                    
-                bData() = StrConv(sLogLine, vbFromUnicode)
+                    .FullMessage
             Else
                 'IIf(bPE_EXE, "[not PE EXE] ", "")
-                sLogLine = sLogLine & _
+                aLogLine(i) = _
                     IIf(bIsDriver, IIf(bWHQL, "[OK] ", ""), IIf(.isLegit, "[OK] ", "")) & _
-                    IIf(.ShortMessage = "TRUST_E_NOSIGNATURE: Not signed", "[NoSign] ", "") & _
+                    IIf(.ShortMessage = "TRUST_E_NOSIGNATURE: Not signed", "[NoSign] ", IIf(.ShortMessage = "Legit signature.", "", "[" & .ShortMessage & "] ")) & _
                     IIf(IsMicrosoftFile, "[MS] ", "") & _
-                    arrFiles(i) & " - " & _
+                    sFile & " - " & _
                     IIf(bIsDriver, IIf(bWHQL, "legit.", ""), IIf(.isLegit, "legit.", "")) & _
                     IIf(IsMicrosoftFile, " (Microsoft)", "") & _
-                    IIf(bWPF, " (protected)", "") & _
-                    vbCrLf
-                    
-                bData() = sLogLine
+                    IIf(bWPF, " (protected)", "")
             End If
         End With
-        
-        'PutW hFile, 1&, VarPtr(bData(0)), UBound(bData) + 1, doAppend:=True
-        'sLogLine = ""
     Next
     
-    'Sort
-    Dim Lines
-    Lines = Split(sLogLine, vbCrLf)
-    QuickSort Lines, 0, UBound(Lines)
-    sLogLine = Join(Lines, vbCrLf)
+    QuickSort aLogLine, 0, UBound(aLogLine)
+    sLogLine = Join(aLogLine, vbCrLf) & IIf(Len(ErrReport) <> 0, vbCrLf & vbCrLf & "There are some errors while verification:" & vbCrLf & ErrReport, "")
+    
+    If bCSV Then
+        sLogLine = "File;FullPath;Legitimate;WQHL;IsMicrosoft;WPF / SFC;Embedded Sign;Issuer;RootCertHash;ErrCode;ErrMsgShort;ErrMsgFull" & vbCrLf & _
+            sLogLine
+    Else
+        sLogLine = ChrW$(-257) & _
+            "FileName - Is legitimate - (Microsoft, WFP)" & vbCrLf & _
+            "-------------------------------------------" & vbCrLf & _
+            sLogLine
+    End If
+    
+    If bCSV Then
+        bData() = StrConv(sLogLine, vbFromUnicode)
+    Else
+        bData() = sLogLine
+    End If
+    
+    bSkipErrorMsg = bSkipErrorOld
     
     PutW hFile, 1&, VarPtr(bData(0)), UBound(bData) + 1, doAppend:=True
     
@@ -452,15 +459,24 @@ Private Sub cmdGo_Click()
     
     Exit Sub
 ErrorHandler:
-    ErrorMsg err, "frmCheckDigiSign.cmdGo_Click"
+    ErrorMsg Err, "frmCheckDigiSign.cmdGo_Click"
     ToggleWow64FSRedirection True
-    If inIDE Then
-        Stop: Resume Next
-    Else
+    If inIDE Then Stop: Resume Next
+    If Not inIDE Then
         isRan = False
         cmdGo.Enabled = True
         CloseW hFile
     End If
+End Sub
+
+Sub CopyArrayToDictionary(arr() As String, oDict As Object)
+    If Not IsArrDimmed(arr) Then Exit Sub
+    Dim i As Long
+    For i = 0 To UBound(arr)
+        If Not oDict.Exists(arr(i)) Then
+            oDict.Add arr(i), 0
+        End If
+    Next
 End Sub
 
 Private Sub CmdExit_Click()
@@ -476,8 +492,23 @@ Private Sub CmdExit_Click()
 End Sub
 
 Private Sub Form_Load()
+    Dim OptB As OptionButton
+    Dim ctl As Control
+    
     ReloadLanguage
     CenterForm Me
+    Me.Icon = frmMain.Icon
+    
+    ' if Win XP -> disable all window styles from option buttons
+    If Not OSver.bIsVistaOrLater Then
+        For Each ctl In Me.Controls
+            If TypeName(ctl) = "OptionButton" Then
+                Set OptB = ctl
+                SetWindowTheme OptB.hWnd, StrPtr(" "), StrPtr(" ")
+            End If
+        Next
+        Set OptB = Nothing
+    End If
 End Sub
 
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
@@ -496,17 +527,16 @@ Private Sub Form_Resize()
 
     If Me.WindowState = vbMinimized Or Me.WindowState = vbMaximized Then Exit Sub
   
-    Dim TopLevel1&, TopLevel2&, TopLevel3&
+    Dim TopLevel1&, TopLevel2&
     
-    If Me.Width < 8250 Then Me.Width = 8250
-    If Me.Height < 3430 Then Me.Height = 3430
+    If Me.Width < 8350 Then Me.Width = 8350
+    If Me.Height < 3650 Then Me.Height = 3650
     
     Text1.Width = Me.Width - 630
-    Text1.Height = Me.Height - 2850
+    Text1.Height = Me.Height - 3500
     
     TopLevel1 = Me.Height - 1300
-    TopLevel2 = TopLevel1 - 480
-    TopLevel3 = TopLevel2 - 360
+    TopLevel2 = TopLevel1 - 1440
     
     cmdGo.Top = TopLevel1
     CmdExit.Top = TopLevel1
@@ -515,6 +545,9 @@ Private Sub Form_Resize()
     shpFore.Top = TopLevel1 + 120
     lblStatus.Top = TopLevel1 + 210
     
+    fraFilter.Top = TopLevel2
+    fraReportFormat.Top = TopLevel2
+    
     'chkIncludeSys.Top = TopLevel2
     'optPlainText.Top = TopLevel3 + 230
     
@@ -522,3 +555,4 @@ Private Sub Form_Resize()
     'lblFormat.Top = TopLevel3
     'OptCSV.Top = TopLevel3 + 230 + 360
 End Sub
+

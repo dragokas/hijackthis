@@ -8,7 +8,19 @@
 1. HiJackThis version history
 -----------------------------
 
-[v2.0.6 fork Alpha 3.0]
+[2.6.4.0 (fork by Dragokas)] - 24.07.2016
+ADSspy заменён на версию 1.12
+Process Manager теперь работает в отдельном окне.
+Исправлена ошибка при проверке O4 - BootVerificationProgram
+Расширено описание программы при нажатии кнопки меню Help -> About и Info... в окне сканирования. Теперь разбито на вкладки "Секции", "Ключи", "О программе", "Автора", "История".
+O17 - Fix: Добавлен сброс кеша DNS.
+Через внешние языковые файлы теперь можно изменить практически любой текст.
+Добавлена коррекция CRC лога.
+Правки ошибок при переходе между меню, и других визуальных проблем.
+O12 Fix - убрано предупреждение закрыть Internet Explorer, если нет ни одного процесса iexplore.
+O4 - добавлен вывод аргументов цели ярлыка.
+
+[2.6.3.0 (fork by Dragokas)] - 14.07.2016
 O14 - iereset.inf Fix портил файл. Исправлено.
 R3 - добавлены ключи для HKLM, HKU\.Default
 *New: добавлена функция сворачивания программы в значок в область уведомления (см. настройку в меню Misc Tools -> Main).
@@ -36,7 +48,49 @@ StartupList: библиотека MSComCtl.dll помещена в ресурс�
 StartupList: теперь показывает полный список процессов.
 StartupList: устранен крэш программы при проверке LSP, доработано получение путей к провайдерам.
 
-[v2.0.6 fork Alpha 2.0]
+
+[2.6.2.0 (fork by Dragokas)] - 09.07.2016
+O1 - Hosts: улучшена функция чтения Hosts на системах с активной защитой от записи.
+O7 - IPSec добавлена (описание ниже).
+O25 - WMI Events: упрощена и урезана до поиска только актуальной malware (описание обновлено); добавлен whitelist.
+O22 - Tasks: пополнены белые списки для OS Win XP/Vista/7/8/8.1/10.
+O4 - убраны ложные записи, которые могли относится к отключенным эл-там автозапуска на Win 8+
+O4 - добавлены подсекции:
+..\StartupApproved\Run
+..\StartupApproved\Run32
+..\StartupApproved\StartupFolder
+Это аналог MSConfig для Win 8+ (отключённые элементы автозапуска). Общее описание доступно ниже.
+O4 - добавлена проверка ключей HKCU/HKLM/HKU для:
+..\Software\Microsoft\Windows\CurrentVersion\Run-
+..\Software\Microsoft\Windows\CurrentVersion\RunServices-
+..\Software\Microsoft\Windows\CurrentVersion\RunOnce-
+..\Software\Microsoft\Windows\CurrentVersion\RunServicesOnce-
+..\Software\Microsoft\Command Processor -> AutoRun
+O4 - Startup other users: (новая подсекция) - проверка папки "Автозапуск" других пользователей.
+O4 - MSConfig: переименована в MSConfig\startupreg.
+O4 - MSConfig\startupfolder: добавлена (отключённые элементы папки "Автозагрузка" WinXP).
+Убрано мерцание рабочего стола во время скана на некоторых ОС (баг v.1.19).
+F3 Fix: не работал (баг v.1.20)
+ALT+TAB теперь переключает к окну активного инструмента HJT вместо главного окна.
+Добавлен инструмент пакетной проверки ЭЦП и Windows Protected Files.
+Устранена проблема, когда проверка ЭЦП приводила к подключению к сети Интернет.
+Упрощена проверка ярлыков.
+Прогрессбар сделан по всей ширине.
+Добавлены отсутствующие иконки программы.
+Убрана информация об OS Product Type и OS Suite Mask.
+Все упоминания об улье HKUS заменены на HKU.
+Префиксы -64 удалены. Добавлены префиксы -32 (означает, что ключ находится под переадресацией, т.е. 32-битный ключ в 64-битной ОС).
+Список бекапов отсортирован в обратном порядке (начиная от наиболее свежего). Напомню, что в Alpha версии бекапами лучше пока не пользоваться, т.к. ревизия этого кода будет проведена только в бета-версии (перед релизом).
+Fix O2, Fix O3: дополнены удалением ключей HKCU/HKLM для:
+..\Software\Microsoft\Internet Explorer\Extension Compatibility\{CLSID}
+..\Software\Microsoft\Windows\CurrentVersion\Ext\Stats\{CLSID}
+..\Software\Microsoft\Windows\CurrentVersion\Ext\Settings\{CLSID}
+..\Software\Microsoft\Windows\CurrentVersion\Ext\PreApproved\{CLSID}
+..\Software\Microsoft\Internet Explorer\ApprovedExtensionsMigration\{CLSID}
+..\Software\Microsoft\Internet Explorer\ApprovedExtensionsMigration{CLSID}
+..\Software\Microsoft\Windows\CurrentVersion\Policies\Ext\CLSID -> {CLSID}
+
+[2.6.2.0 (fork by Dragokas)] - 09.07.2016
 O1 - Hosts: been improved function for reading Hosts on systems with active write protection.
 O7 - IPSec subsection added (it's IP Security policies which allow fine tuning of IP packets filter).
 O25 - WMI Events: simplified and trimmed to provide output of actual malware only; added whitelist.
@@ -77,7 +131,7 @@ Fix O2, Fix O3: supplemented by removing the HKCU/HKLM keys for:
 ..\Software\Microsoft\Internet Explorer\ApprovedExtensionsMigration{CLSID}
 ..\Software\Microsoft\Windows\CurrentVersion\Policies\Ext\CLSID -> {CLSID}
 
-[v2.0.6 fork Alpha 1.25]
+[2.6.1.25 (fork by Dragokas)] - 11.06.2016
 O22 - Tasks. Добавлено сканирование вглубь на основе белых списков.
 O25 - правка ошибок.
 O4 - для ярлыков автозапуска добавлено распознавание подмены на PE EXE.
@@ -86,7 +140,7 @@ O4 - переработан (рефакторинг), убран баг с ду�
 В окно сканирования добавлено контекстное меню: Fix checked, Info on selected, Add to ignore list, Search on Google, ReScan.
 В лог строки будут попадать в юникодном виде (ранее были знаки '?').
 
-[v2.0.6 fork Alpha 1.23]
+[2.6.1.23 (fork by Dragokas)] - 01.06.2016
 Исправлен баг с получением имени компании PE EXE.
 O4 - теперь отображает полный путь к файлу ярлыка.
 O23 - добавлен вывод состояния службы. [RS|01234]. S - остановлена. R - любое другое состояние (запущена, в процессе запуска/остановки, защищена). Тип запуска: 0 - загрузочная, 1 - системная, 2 - Автоматически, 3 - Вручную, 4 - Отключена (не отображаются в логе).
@@ -100,14 +154,14 @@ R - устранено дублирование из-за х64 переадре�
 O1 hosts - поддержка нестандартных переносов строк (спасибо Sandor)
 Добавлен прогрессбар процесса фикса, а также звуковое оповещение об окончании фикса.
 
-[v2.0.6 fork Alpha 1.22]
+[2.6.1.22 (fork by Dragokas)] - 31.05.2016
 Исправлен баг с созданием бекапов
 
-[v2.0.6 fork Alpha 1.21]
+[2.6.1.21 (fork by Dragokas)] - 30.05.2016
 Исправлен конфликт при запуске HJT в системе, где уже работала старая версия (несовместимость криптографического модуля).
 Исправлен баг с функцией удаления HJT.
 
-[v2.0.6 fork Alpha 1.20]
+[2.6.1.20 (fork by Dragokas)] - 29.05.2016
 O4 (msconfig) - улучшено получение даты отключения эл-та автозагрузки.
 Завершено подключение юникода ко всем функциям реестра.
 Зашифрованы значения в реестре настроек Default Start Page / Default Search Page / Default Search Assistant / Default Search Customize. Эти строки подключены к проверке / фиксу O14 (хотя, в справке было написано, что они уже подключены).
@@ -132,19 +186,19 @@ O20 (Check/Fix) - добавлена поддержка x32/x64 ключей.
 O21 (Check/Fix) - добавлена поддержка x32/x64 ключей.
 На текущий момент все секции имеют поддержку скана и фикса ключей обеих разрядностей. Работа бекапов не гарантируется.
 
-[v2.0.6 fork Alpha 1.19]
+[2.6.1.19 (fork by Dragokas)] - 18.05.2016
 С HiJackThis.exe удалена ЭЦП.
 
-[v2.0.6 fork Alpha 1.18]
+[2.6.1.18 (fork by Dragokas)] - 17.05.2016
 Добавлена поддержка проверки ЭПЦ по SHA256 (Windows 8+), более надежный фильтр в O23.
 
-[v2.0.6 fork Alpha 1.16]
+[2.6.1.16 (fork by Dragokas)] - 11.05.2016
 O25 - WMI Events. Добавлено обнаружение постоянных потребителей событий WMI (Check / Fix).
 Исправлено несколько багов (связанных с сохранением лога, получением свойств файла, заданиями планировщика, интерфейсом, ...)
 Улучшено завершение процессов.
 Установлена защита от случайного удаления системных файлов.
 
-[v2.0.6 fork Alpha 1.15]
+[2.6.1.15 (fork by Dragokas)] - 10.05.2016
 O1 - улучшена поддержка x64.
 O1 - отключена сортировка лога.
 O1 - добавлена обработка Hosts.ICS. Новый префикс: "O1 - Hosts.ICS: ".
@@ -161,7 +215,7 @@ O2,O3 Fix - Добавлена обработка ключей HKLM\SOFTWARE\Mic
 LSP Fix - рекомендация использовать LSP-Fix заменена на WinSockReset.
 R3 Fix - исправлена ошибка, когда нельзя было пофиксить "Default URLSearchHook is missing".
 
-[v2.0.6 fork Alpha 1.14]
+[2.6.1.14 (fork by Dragokas)] - 25.04.2016
 Починил O20 (file missing).
 Починил R3 - Default URLSearchHook is missing.
 Удален O4 - HKUS\.DEFAULT, т.к. всегда является симлинком для O4 - HKUS\S-1-5-18.
@@ -176,12 +230,12 @@ R3 Fix - исправлена ошибка, когда нельзя было п�
 В окно с отображаемой ошибкой добавлена галочка "Больше не показывать это сообщение" (Do not show this message again). Такая же галочка добавлена в настройки.
 Улучшено сохранение настроек.
 
-[v2.0.6 fork Alpha 1.13]
+[2.6.1.13 (fork by Dragokas)] - 22.04.2016
 HJT больше не будет останавливаться на первом поврежденном задании планировщика.
 HJT будет показывать в секции отладки все поврежденные задания (с проверкой вглубь).
 При ручном запуске сканирования с сохранением лога любые ошибки больше не отображаются на экране (только в логе).
 
-[v2.0.6 fork Alpha 1.12]
+[2.6.1.12 (fork by Dragokas)] - 21.04.2016
 Добавлено меню Tools -> Unlock Registry Key
 O23 Services - Fix починил. Похоже, он в половине случаев вообще никогда и не работал ни в одной версии.
 Улучшена функция удаления служб.
@@ -190,25 +244,25 @@ O23 Services - Fix починил. Похоже, он в половине слу
 Удален неиспользованный логотип.
 Добавлена иконка программы для режимов просмотра папки "Крупные значки" и "Огромные значки".
 
-[v2.0.6 fork Alpha 1.11]
+[2.6.1.11 (fork by Dragokas)] - 19.04.2016
 O4-64 - теперь показывает 64-битные ветви реестра. O4 всегда показывает 32-битные ветви.
 O4-64 - добавлена возможность фикса.
 Улучшена функция расблокировки прав на файл. Добавлена поддержка юникода в имени. Исправлена ошибка, связанная с файловым редиректором на x64.
 Функции "Delete File on Reboot.." и "Unlock and delete File..." теперь не вызывают диалогового окна, т.к. оно не поддерживает x64. Путь необходимо вводить вручную.
 
-[v2.0.6 fork Alpha 1.10]
+[2.6.1.10 (fork by Dragokas)] - 17.04.2016
 Исправлена ошибка с получением списка ключей реестра (функция работала не так, как описано в MSDN).
 Исправлена ошибка с получением списка задач Планировщика заданий.
 Добавлен вывод ошибки, если не включена служба Планировщика заданий.
 
-[v2.0.6 fork Alpha 1.9]
+2.6.1.9 (fork by Dragokas)] - 13.04.2016
 Ключ /accepteula - добавлена обратная совместимость со старыми версиями HJT.
 Починил отображение версии Internet Explorer (сломал, когда первый раз улучшал это в v1.0).
 Функции удаления файлов теперь усилены сбросом привилегий.
 Добавлено меню File -> Settings
 Добавлено меню Tools -> Delete File -> Unlock & Delete File...
 
-[v2.0.6 fork Alpha 1.8]
+[2.6.1.8 (fork by Dragokas)] - 05.04.2016
 Добавлены определения редакций Windows 10, SuiteMask (SM), ProductType (PT).
 Добавлены сведения о языке установки ОС, языке для отображения в диалогах, языке для программ, не поддерживающих юникод.
 Добавлена информация о наличии повышенных привилегий (Elevation).
@@ -217,18 +271,18 @@ O4-64 - добавлена возможность фикса.
 Добавлено меню быстрого доступа - File, Tools, Help
 Отключена сортировка O1 - Hosts.
 
-[v2.0.6 fork Alpha 1.7]
+[2.6.1.7 (fork by Dragokas)] - 03.04.2016
 O2 Fix - предупреждение о необходимости закрыть IE больше не выводится, если он не запущен.
 O2 Fix - добавлена поддержка систем x64.
 O2 Check - иногда выдавал "(file missing)", если файл существовал.
 O9 Fix - улучшен + добавлена поддержка x64.
 Исправлена ошибка с файловым редиректором.
 
-[v2.0.6 fork Alpha 1.6]
+[2.6.1.6 (fork by Dragokas)] - 02.04.2016
 Улучшен парсер командной строки
 Убраны фильтры DNS DCHP по маске 192.168.*.* (белые только - 192.168.0.1 и 192.168.1.1)
 
-[v2.0.6 fork Alpha 1.4]
+[2.6.1.4 (fork by Dragokas)] - 10.12.2015
 O23 - Fix дополнен удалением службы.
 O23 - усилен обработчик ошибок.
 O23 - белый список проверки по описанию файла заменен на проверку через ЭЦП.
@@ -236,7 +290,7 @@ O23 - белый список проверки по описанию файла 
 Добавлена в лог секция с отладочной информацией. Просьба сообщать о них автору.
 Добавлено в лог время, затраченное на проверку.
 
-[v2.0.6 fork Alpha 1.3]
+[2.6.1.3 (fork by Dragokas)] - 08.11.2015
 O22 - SheduledTasks - Убийство процесса перед удаленем задачи.
 Изменены надписи на некоторых кнопках.
 Онлайн руководство открывается в зависимости от выбранного языка.
@@ -254,7 +308,7 @@ N1, N2, N3, N4 - отключены.
 Отображение версий модулей StartupList и ADS Spy.
 Логи части утилит теперь открываются в редакторе по умолчанию.
 
-[v2.0.6 fork Alpha 1.2]
+[2.6.1.2 (fork by Dragokas)] - 31.10.2015
 Исправлен баг "Отказано в доступе" в режиме /silentautolog
 Исправлен крэш при получении DNS роутера
 Исправлены крякозябры в буфере обмена при отправке репортов об ошибках.
@@ -265,14 +319,43 @@ O4 - Ярлыки - Улучшено удаление
 O23 - Добавлено раскрытие имени службы, заданной как строковой ресурс системного файла
 O22 - SheduledTasks - добавлена совместимость с Windows Vista и выше (проверка задач только в корневом каталоге)
 
-[v2.0.6 fork Alpha 1.1]
+[2.6.1.1 (fork by Dragokas)] - 29.10.2015
 - Исправлена возможная ошибка при старте сканирования. Усилен обработчик ошибок.
 - App paths\HiJackThis больше не будет создаваться.
 - Отключены стили у CheckBox в Windows XP
 - Получение DNS Router не работало в XP x64. Была проблема с файловым редиректором.
 - "Корпорация Майкрософт" добавлено в белый список служб (признак - слова в описании службы). Я вот думаю, может этот список вообще убрать, а вместо него присобачить проверку по цифровой подписи? Ты так и сам сможешь изменить описание файла и он для Джека окажется белым.
 
-[v2.0.6 fork Alpha 1.0]
+[v2.6.1.0 Alpha (fork by Dragokas)] - 12.10.2015 - основан на официальной версии 2.0.6 Beta
+* Больше не будет внутренних ошибок доступа при чтении/записи файлов.
+* Добавлены визуальные стили.
+* Частичная поддержка юникодных путей.
+* Юникодное окно MsgBox.
+* Добавлен переключатель языков в главное меню (английский язык - по-умолчанию; русский и др. языки в виде файлов .lng можно выбрать вручную переключателем)
+* Добавлены ключи командной строки: /langEN - принудительный выбор английского языка интерфейса и /langRU (русского). Также Вы можете переименовать файл программы в "HiJackThis_EN.exe" или "HiJackThis_RU.exe". Эффект будет аналогичен ключам.
+* Добавлен ключ /acepteula - не отображать соглашение EULA (для администраторов).
+* Удален ключ /history модуля StartupList (история изменений перенесена в файл "readme.txt").
+* Список процессов отсортирован. Одинаковые процессы суммируются -> кол-во выводится в 1-м столбце. Список теперь полный (получение через функцию ядра).
+* Частичный рефакторинг.
+* Значительные улучшения функций получения информации об ОС, окружения, механизма поиска по путям PATH, файлового переадресатора.
+* O4 - частично переработан, добавлен список отключённых элементов MSConfig.
+* O16 - почищен белый список.
+* Улучшения проверки на запуск из-под временной папки.
+* Исправлена ошибка распознавания WOW служб, как x64.
+* Ускорен рассчёт MD5.
+* Значительно улучшен менеджер удаления программ.
+* ProcMan - добавлено сохранение списка модулей, загруженных каждым из процессов.
+* Добавлена привилегия отладчика процесса.
+* Полностью переработаны реализации функций работы с реестром.
+* Исправлено множество ошибок, в т.ч. с неверной типизацией данных либо её отсутствием.
+* Улучшены функции получения цели ярлыков LNK/PIF.
+* Улучшено получение информации о версии браузеров IE, Chrome, Firefox, Opera.
+* Добавлены функции расблокировки ACL прав доступа к файлам.
+* Внутрисекционная сортировка отчёта.
+* Добавлена поддержка скроллинга мышью во множестве окон.
+* Центрирование главной формы.
+
+[v2.6.1.0 Alpha (fork by Dragokas)] - 12.10.2015 - based on v2.0.6 Beta official
 * first fork
 * new visual styles
 * prevent to run program twice using mutexes
@@ -489,18 +572,18 @@ O22 - SheduledTasks - добавлена совместимость с Windows V
 2. StartupList version history
 ------------------------------
 
-v.2.10 fork 0.1 by Dragokas
+[v.2.10 (fork 0.1 by Dragokas)]
 * WinTrustVerifyChildNodes. Fixed error with empty node
 * istrusted.dll replaced by internal digital signature checking
 * list of processes is full now
 * MSComCtl.dll library placed in resources
 * fixed proram crash when checking LSP, fixed receiving paths to NS providers.
 
-v2.02
+[v2.02]
 * appinit_dlls zit in Windows key, niet Winlogon
 * path voor log bij /autosave kunnen aangeven
 
-v2.01
+[v2.01]
 * ICQ/mIRC help text
 * save node tree to disk
 * mirc voor 3rd party autoruns
@@ -516,7 +599,7 @@ v2.01
 * skippen van grote hostsfile & zones, cmdline arguments
 * node right-click wat beter
 
-v2.00
+[v2.00]
 * Checken of alle stuff te zien is bij bShowEmpty
 * Users Software \ DisabledEnums \ Zones is leeg, moet weg (win98)
 * Abort knopje tijdens scan/save log?
@@ -543,7 +626,7 @@ v2.00
 * Help texts
 * Triage
 
-v1.52
+[v1.52]
 * Fixed stupid 'Bad filename or number' error at startup (hopefully)
 * Fixed two bugs in function that reads settings from .ini files
 * Added two more files to LSP files safelist (MS Firewall and
@@ -552,7 +635,7 @@ v1.52
   BIG bug affected two sections)
 * Added listing of values in ShellServiceObjectDelayLoad regkey
 
-v1.51
+[v1.51]
 * Added switch: /full, which will show some rarely important
   sections that otherwise remain hidden:  Stub Paths, Explorer Check, 
   Config.sys, Dosstart.bat, Superhidden Extensions, 
@@ -562,7 +645,7 @@ v1.51
 * Rudimentary check for PendingFileRenameOperations in NT, located
   in above section. Also moved BootExecute check to this section
 
-v1.5
+[v1.5]
 * Added more files to safe list of LSP files
 * REM/ECHO line in .bat files only listed with /complete switch
 * Check for Policies\System\Shell= at SYSTEM.INI check
@@ -570,29 +653,29 @@ v1.5
   with /full switch)
 * Also lists Windows 9x Vxd services (only with /full switch)
 
-v1.4
+[v1.4]
 * Added listing of Winsock LSP providers
 * Fixed a NT bug with Load key
 
-v1.35
+[v1.35]
 * Fixed a few items not appearing in NT/2000/XP.
 * Made Regedit check even more supple.
 
-v1.34
+[v1.34]
 * Added listing of drivers= line from system.ini
 * Some more sections are now hidden if nothing interesting is there
 * Enumeration of Stub Paths now shows disabled items
 * Fixed a few bugs
 * Workaround for Atguard 'From:' bug :)
 
-v1.33
+[v1.33]
 * Fixed some erroneous errors.
 * Added listing of MSIE version.
 
-v1.32
+[v1.32]
 * Fixed a few bugs. That's basically it. :)
 
-v1.31
+[v1.31]
 * Finally added alternative (and better) method for listing processes
   in Windows NT/2000/XP (PSAPI.DLL needed for NT4)
 * Improved filename extracting from shortcuts - StartupList should
@@ -603,102 +686,99 @@ v1.31
 * Added listing of Task Scheduler jobs
 * Added listing of 'Download Program Files' (aka ActiveX Objects)
 
-v1.3
+[v1.3]
 * Added /html parameter, for a report in HTML format
 * Lots of performance enhancements, more readble code (like you care :)
 * Also some small upgrades/tweaks
 
-v1.23
+[v1.23]
 * Now also lists WININIT.BAK (the last WININIT.INI)
 
-v1.22
+[v1.22]
 * Made System.ini check platform independant (was Win9x only)
 * The target file & path is now extracted from enumerated shortcuts
-* Fixed MAJOR bug - GetWindowsVersion wasn't remembered, WinNT was
-  assumed
+* Fixed MAJOR bug - GetWindowsVersion wasn't remembered, WinNT was assumed
 
-v1.21
+[v1.21]
 * Fixed some WinNT bugs
 * Slightly improved Explorer.exe check in WinNT
 
-v1.2
+[v1.2]
 * Added WinNT-only startups
 * Added Windows version check
-* Added command line parameters /verbose, /complete,
-  /force9x, /forcent and /forceall
+* Added command line parameters /verbose, /complete, /force9x, /forcent and /forceall
 
-v1.1
+[v1.1]
 * Added RunOnceEx listing
 
-v1.0
+[v1.0]
 * Initial release
 
 
 3. ADSspy
 ------------------------------
 
-v1.12 - Added Q30lsldxJoudresxAaaqpcawXc to the safelist
+[v1.12]
+* Added Q30lsldxJoudresxAaaqpcawXc to the safelist
 
-[05/02/06]
-v1.11 - Fixed a bug where max 72 streams in one file were found and others
-	were ignored. Enlarged buffer to allow for ca. max 7000 streams.
+[1.11] - 05.02.2006
+* Fixed a bug where max 72 streams in one file were found and others 
+were ignored. Enlarged buffer to allow for ca. max 7000 streams.
 
-[17/12/05]
-v1.10 - Changed the UI slightly. Added option to scan only a selected folder.
+[v1.10] - 17.12.2005
+* Changed the UI slightly. Added option to scan only a selected folder.
 
-[30/11/05]
-v1.09.2 - The root folder was not scanned for streams. Added.
+[v1.09.2] - 30.11.2005
+* The root folder was not scanned for streams. Added.
 
-[14/08/05]
-v1.09.1 - Fixed bug where GetVolumeInformation returned incorrect data
-	when drive path did not include trailing backslash.
+[v1.09.1] - 14.08.2005
+* Fixed bug where GetVolumeInformation returned incorrect data 
+when drive path did not include trailing backslash.
 
-[15/07/05]
-v1.09 - Fix a bug where ADS Spy would refuse to run when drive with
-	Windows volume was not NTFS, even if other volumes were.
+[v1.09] - 15.07.2005
+* Fix a bug where ADS Spy would refuse to run when drive with 
+Windows volume was not NTFS, even if other volumes were.
 
-[11/01/05]
-v1.08 - ?
+[v1.08] - 11.01.2005
+* ?
 
-[??/09/04]
-v1.07 - Version number is now displayed in titlebar. Scan button changes to
-	'abort scan' during scan now.
+[v1.07] - ??.09.2004
+* Version number is now displayed in titlebar. Scan button changes 
+to 'abort scan' during scan now.
 
-[05/09/04]
-v1.06 - Added proper handling for ADS streams which fail to be removed.
+[v1.06] - 05.09.2004
+* Added proper handling for ADS streams which fail to be removed.
 
-[03/09/04]
-v1.05 - Added ':Zone.Identifier:' to ignorelist. This stream is present in files
-	downloaded with IE6 SP2 on XP SP2 systems and provides zone security
-	information on them.
+[v1.05] - 03.09.2004
+* Added ':Zone.Identifier:' to ignorelist. This stream is present 
+in files downloaded with IE6 SP2 on XP SP2 systems and provides 
+zone security information on them.
 
-[29/08/04]
-v1.04 - Improved displaying of streams with binary data (NULL characters are
-	removed, this doesn't affect saving the stream to disk though).
-	Saving a stream contents to disk is now done directly from the stream
-	instead of just copying displayed contents to a file.
-	Added option to calculate MD5 checksum of stream contents in scan
-	results list (disabled by default).
-	Changed 'save contents' dialog box filter to have 'Binary files (*.bin)'
-	as default, instead of 'Text files (*.txt)'.
+[v1.04] - 29.08.2004
+* Improved displaying of streams with binary data (NULL characters 
+are removed, this doesn't affect saving the stream to disk though).
+* Saving a stream contents to disk is now done directly from 
+the stream	instead of just copying displayed contents to a file.
+* Added option to calculate MD5 checksum of stream contents 
+in scan results list (disabled by default).
+* Changed 'save contents' dialog box filter to have 'Binary files (*.bin)' 
+as default, instead of 'Text files (*.txt)'.
 
-[28/08/04]
-v1.03 - Changed checkbox to exclude ':encryptable:' and ':SummaryInformation:'
-	and renamed it 'ignore system info streams'.
-	Fixed a bug when viewing a stream that contains binary data (added
-	warning).
-	Folders are now scanned for ADS streams as well. :)
+[v1.03] - 28.08.2004
+* Changed checkbox to exclude ':encryptable:' and ':SummaryInformation:' 
+and renamed it 'ignore system info streams'.
+* Fixed a bug when viewing a stream that contains binary data (added warning).
+* Folders are now scanned for ADS streams as well. :)
 
-[28/08/04]
-v1.02 - Added right-click option to scan results, allowing scan results to be
-	saved to disk and viewed, where the stream can be copied, saved and
-	edited in Wordpad.
-	Added checkbox option to ignore ':encryptable:' streams.
-	Added ADS Spy to download section on Merijn.org.
+[v1.02] - 28.08.2004
+* Added right-click option to scan results, allowing scan results 
+to be	saved to disk and viewed, where the stream can be copied, 
+saved and edited in Wordpad.
+* Added checkbox option to ignore ':encryptable:' streams.
+* Added ADS Spy to download section on Merijn.org.
 
-[27/08/04]
-v1.01 - Added 'quick scan' option, when unchecked ADS Spy scans entire disk.
+[v1.01] - 27.08.2004
+* Added 'quick scan' option, when unchecked ADS Spy scans entire disk.
 
-[27/08/04]
-v1.00 - Original release.
-
+[v1.00] - 27.08.2004
+* Original release.

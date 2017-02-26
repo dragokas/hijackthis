@@ -16,7 +16,6 @@ Private Declare Function GetSystemDefaultUILanguage Lib "kernel32.dll" () As Lon
 Private Declare Function GetSystemDefaultLCID Lib "kernel32.dll" () As Long
 Private Declare Function GetUserDefaultLCID Lib "kernel32.dll" () As Long
 Private Declare Function GetLocaleInfo Lib "kernel32.dll" Alias "GetLocaleInfoW" (ByVal lcid As Long, ByVal LCTYPE As Long, ByVal lpLCData As Long, ByVal cchData As Long) As Long
-Private Declare Function SafeArrayGetDim Lib "oleaut32.dll" (psa() As Any) As Long
 Private Declare Function MultiByteToWideChar Lib "kernel32.dll" (ByVal CodePage As Long, ByVal dwFlags As Long, ByVal lpMultiByteStr As String, ByVal cchMultiByte As Long, ByVal lpWideCharStr As Long, ByVal cchWideChar As Long) As Long
 
 Private Const LOCALE_SENGLANGUAGE = &H1001&
@@ -86,6 +85,7 @@ End Function
 '// parse Lang file contents into -> gLines(). It's a temp array.
 Sub ExtractLanguage(sLangFileContents As String, Optional sFileName As String) ' sFileName for logging reasons only
     On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "ExtractLanguage - Begin", "File: " & sFileName
 
     Dim Lines, i As Long, idx&, ch$, pos&
     
@@ -121,15 +121,17 @@ Sub ExtractLanguage(sLangFileContents As String, Optional sFileName As String) '
         End If
     Next
     
+    AppendErrorLogCustom "ExtractLanguage - End"
     Exit Sub
 ErrorHandler:
-    ErrorMsg err, "ExtractLanguage", "Size of contents: " & Len(sLangFileContents)
+    ErrorMsg Err, "ExtractLanguage", "Size of contents: " & Len(sLangFileContents)
     If inIDE Then Stop: Resume Next
 End Sub
 
 '// update program language by specified locale code
 Public Sub LoadLanguage(lCode As Long, Force As Boolean, Optional PreLoadNativeLang As Boolean)
     On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "LoadLanguage - Begin", "Code: " & lCode, "Force? " & Force
 
     Dim HasSupportSlavian As Boolean
     
@@ -199,9 +201,10 @@ Public Sub LoadLanguage(lCode As Long, Force As Boolean, Optional PreLoadNativeL
         ReloadLanguage  'fill Translate() array & replace text on forms
     End If
     
+    AppendErrorLogCustom "LoadLanguage - End"
     Exit Sub
 ErrorHandler:
-    ErrorMsg err, "LoadLanguage", "lCode: " & lCode
+    ErrorMsg Err, "LoadLanguage", "lCode: " & lCode
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -220,6 +223,9 @@ Public Sub LangRU()
 End Sub
 
 Sub LoadLangFile(sFileName As String, Optional ResID As Long, Optional UseResource As Boolean)
+
+    AppendErrorLogCustom "LoadLangFile - Begin", "File: " & sFileName, "ResID: " & ResID, "Unicode? " & UseResource
+
     Dim sPath As String, sText As String, b() As Byte
     sPath = BuildPath(AppPath(), sFileName)
     
@@ -236,6 +242,8 @@ Sub LoadLangFile(sFileName As String, Optional ResID As Long, Optional UseResour
     End If
     sText = ConvertCodePageW(sText, 65001) ' UTF8
     ExtractLanguage sText, sFileName  ' parse sText -> gLines()
+    
+    AppendErrorLogCustom "LoadLangFile - End"
 End Sub
 '------------------------------------------------------------------
 
@@ -251,13 +259,14 @@ Public Sub ReloadLanguageNative()
     
     Exit Sub
 ErrorHandler:
-    ErrorMsg err, "ReloadLanguageNative"
+    ErrorMsg Err, "ReloadLanguageNative"
     If inIDE Then Stop: Resume Next
 End Sub
 
 '// copy gLines() -> Translate() + replace text on controls
 Public Sub ReloadLanguage()
     On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "ReloadLanguage - Begin"
     
     Dim i&, Translation$, pos&, ID As String
     Static SecondChance As Boolean
@@ -293,7 +302,7 @@ Public Sub ReloadLanguage()
                     Case "0011": .cmdScan.Caption = Translation
                     Case "0013": .cmdFix.Caption = Translation
                     Case "0014": .cmdInfo.Caption = Translation
-                    Case "0521": .cmdAnalyze.Caption = Translation
+                    Case "1009": .cmdAnalyze.Caption = Translation
                     Case "0009": .cmdMainMenu.Caption = Translation
                     Case "0015": .fraOther.Caption = Translation
                     Case "0016": .cmdHelp.Caption = Translation
@@ -454,7 +463,7 @@ Public Sub ReloadLanguage()
                     
                     Case Else
                     
-                    If False Then
+                    If True Then
                         ' ================ ADS Spy =================
                     
                         If IsFormInit(frmADSspy) Then
@@ -467,7 +476,7 @@ Public Sub ReloadLanguage()
                                     Case "0201": .mnuPopupSelInvert.Caption = Translation
                                     Case "0202": .mnuPopupView.Caption = Translation
                                     Case "0203": .mnuPopupSave.Caption = Translation
-                                    
+                                    Case "2230": .mnuPopupShowFile.Caption = Translation
                                     ' Main window
                                     Case "0190": .Caption = Replace$(Translation, "[]", ADSspyVer)
                                     Case "0191": .optScanLocation(0).Caption = Translation
@@ -479,6 +488,10 @@ Public Sub ReloadLanguage()
                                     Case "0196": .cmdScan.Caption = Translation
                                     Case "0198": .cmdRemove.Caption = Translation
                                     Case "0205": .txtUselessBlabber.Text = Translation
+                                    Case "2231": .cmdViewCopy.Caption = Translation
+                                    Case "2232": .cmdViewSave.Caption = Translation
+                                    Case "2233": .cmdViewEdit.Caption = Translation
+                                    Case "2234": .cmdViewBack.Caption = Translation
                                 End Select
                             End With
                         End If
@@ -507,14 +520,17 @@ Public Sub ReloadLanguage()
                         
                         ' ============ Error window ===========
                     
+                        'If ID = "0552" Then Stop
+                    
                         If IsFormInit(frmError) Then
                             With frmError
-                                Select Case ID
-                                    Case "0550": .Caption = Translation
-                                    Case "0551": .chkNoMoreErrors.Caption = Translation
-                                    Case "0552": .cmdYes.Caption = Translation
-                                    Case "0553": .cmdNo.Caption = Translation
-                                End Select
+                                'raplced by TranslateNative in form module
+'                                Select Case ID
+'                                    Case "0550": .Caption = Translation
+'                                    Case "0551": .chkNoMoreErrors.Caption = Translation
+'                                    Case "0552": .cmdYes.Caption = Translation
+'                                    Case "0553": .cmdNo.Caption = Translation
+'                                End Select
                             End With
                         End If
                         
@@ -699,15 +715,17 @@ Public Sub ReloadLanguage()
         Next i
     End With
     SecondChance = False
+    
+    AppendErrorLogCustom "ReloadLanguage - End"
     Exit Sub
 ErrorHandler:
     If SecondChance Then Resume Next
-    ErrorMsg err, "ReloadLanguage", "ID: " & ID
+    ErrorMsg Err, "ReloadLanguage", "ID: " & ID
     If inIDE Then Stop: Resume Next
     SecondChance = True
     Translation = IIf(Translate(572) <> "", Translate(572), "Invalid language File. Reset to default (English)?")
     If MsgBoxW( _
-      Translation & vbCrLf & vbCrLf & "[ #" & err.Number & ", " & err.Description & ", ID: " & ID & " ]", _
+      Translation & vbCrLf & vbCrLf & "[ #" & Err.Number & ", " & Err.Description & ", ID: " & ID & " ]", _
       vbYesNo Or vbExclamation) = vbYes Then
         LoadDefaultLanguage UseResource:=True
         ReloadLanguage
@@ -716,10 +734,10 @@ ErrorHandler:
     End If
 End Sub
 
-Public Function IsFormInit(Frm As Form) As Boolean
+Public Function IsFormInit(frm As Form) As Boolean
     Dim cForm As Form
     For Each cForm In Forms
-        If cForm Is Frm Then
+        If cForm Is frm Then
             IsFormInit = True
             Exit For
         End If
@@ -811,7 +829,7 @@ Public Sub GetInfo(ByVal sItem$)
     Exit Sub
     
 ErrorHandler:
-    ErrorMsg err, "modInfo_GetInfo", "sItem=", sItem
+    ErrorMsg Err, "modInfo_GetInfo", "sItem=", sItem
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -1049,6 +1067,7 @@ End Function
 '// converting specified CodePage to UTF-16
 Public Function ConvertCodePageW(src As String, inPage As idCodePage) As String
     On Error GoTo ErrorHandler
+    AppendErrorLogCustom "ConvertCodePageW - Begin"
     
     Dim buf   As String
     Dim size  As Long
@@ -1061,9 +1080,9 @@ Public Function ConvertCodePageW(src As String, inPage As idCodePage) As String
         If size <> 0 Then ConvertCodePageW = Left$(buf, size)
     End If
     
+    AppendErrorLogCustom "ConvertCodePageW - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg err, "ConvertCodePageW", "src: " & src
+    ErrorMsg Err, "ConvertCodePageW", "src: " & src
     If inIDE Then Stop: Resume Next
 End Function
-

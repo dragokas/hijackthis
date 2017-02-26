@@ -39,6 +39,8 @@ Private Const MS_ENHANCED_PROV As String = "Microsoft Enhanced Cryptographic Pro
 Public Function GetFileMD5(sFileName$, Optional lFileSize&, Optional JustMD5 As Boolean) As String
     On Error GoTo ErrorHandler:
     
+    AppendErrorLogCustom "GetFileMD5 - Begin", "File: " & sFileName
+    
     Dim ff          As Long
     Dim hCrypt      As Long
     Dim hHash       As Long
@@ -48,8 +50,9 @@ Public Function GetFileMD5(sFileName$, Optional lFileSize&, Optional JustMD5 As 
     Dim sMD5        As String
     Dim aBuf()      As Byte
     Dim OldRedir    As Boolean
+    Dim Redirect    As Boolean
 
-    ToggleWow64FSRedirection False, sFileName, OldRedir
+    Redirect = ToggleWow64FSRedirection(False, sFileName, OldRedir)
     
     If Not OpenW(sFileName, FOR_READ, ff) Then GoTo Finalize
     
@@ -61,13 +64,13 @@ Public Function GetFileMD5(sFileName$, Optional lFileSize&, Optional JustMD5 As 
         Else
             GetFileMD5 = " (size: 0 bytes, MD5: D41D8CD98F00B204E9800998ECF8427E)"
         End If
-        Exit Function
+        GoTo Finalize
     End If
     If lFileSize > MAX_HASH_FILE_SIZE Then
         If Not JustMD5 Then
             GetFileMD5 = " (size: " & lFileSize & " bytes)"
         End If
-        Exit Function
+        GoTo Finalize
     End If
     
     ReDim aBuf(lFileSize - 1)
@@ -77,32 +80,22 @@ Public Function GetFileMD5(sFileName$, Optional lFileSize&, Optional JustMD5 As 
     End If
     
     DoEvents
-    
-    'frmMain.shpMD5Background.Visible = True
-    'frmMain.shpMD5Progress.Width = 15
-    'frmMain.shpMD5Progress.Visible = True
+
     frmMain.lblMD5.Caption = "Calculating checksum of " & sFileName & "..."
-    'frmMain.lblMD5.Visible = True
-    'DoEvents
-    'UpdateMD5Progress 0, 0
-    '...
-    'On Error Resume Next
-    'UpdateMD5Progress 1, 8
     
     ToggleWow64FSRedirection True
     
-    'UpdateMD5Progress 2, 8
     If CryptAcquireContext(hCrypt, 0&, StrPtr(MS_ENHANCED_PROV), PROV_RSA_FULL, CRYPT_VERIFYCONTEXT) <> 0 Then
-        'UpdateMD5Progress 3, 8
+
         If CryptCreateHash(hCrypt, ALG_TYPE_ANY Or ALG_CLASS_HASH Or ALG_SID_MD5, 0, 0, hHash) <> 0 Then
-            'UpdateMD5Progress 4, 8
+
             If CryptHashData_Array(hHash, aBuf(0), lFileSize, 0) <> 0 Then
-                'UpdateMD5Progress 5, 8
+
                 If CryptGetHashParam(hHash, HP_HASHSIZE, uMD5(0), UBound(uMD5) + 1, 0) <> 0 Then
-                    'UpdateMD5Progress 6, 8
+
                     lMD5Len = uMD5(0)
                     If CryptGetHashParam(hHash, HP_HASHVAL, uMD5(0), UBound(uMD5) + 1, 0) <> 0 Then
-                        'UpdateMD5Progress 7, 8
+
                         For i = 0 To lMD5Len - 1
                             sMD5 = sMD5 & Right$("0" & Hex(uMD5(i)), 2)
                         Next i
@@ -112,9 +105,9 @@ Public Function GetFileMD5(sFileName$, Optional lFileSize&, Optional JustMD5 As 
             CryptDestroyHash hHash
         End If
         CryptReleaseContext hCrypt, 0&
-        'UpdateMD5Progress 8, 8
+        
     Else
-        ErrorMsg err, "modMD5_GetFileMD5", "File: ", sFileName$, "Handle: ", ff, "Size: ", lFileSize
+        ErrorMsg Err, "modMD5_GetFileMD5", "File: ", sFileName$, "Handle: ", ff, "Size: ", lFileSize
     End If
     
     If Len(sMD5) <> 0 Then
@@ -130,13 +123,16 @@ Public Function GetFileMD5(sFileName$, Optional lFileSize&, Optional JustMD5 As 
     End If
     
     DoEvents
-    'UpdateMD5Progress -1, 0
+    
 Finalize:
-    If OldRedir = False Then ToggleWow64FSRedirection False
+    If Redirect Then Call ToggleWow64FSRedirection(OldRedir)
     frmMain.lblMD5.Caption = ""
+    
+    AppendErrorLogCustom "GetFileMD5 - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg err, "modMD5_GetFileMD5", "File: ", sFileName$, "Handle: ", ff, "Size: ", lFileSize
+    ErrorMsg Err, "modMD5_GetFileMD5", "File: ", sFileName$, "Handle: ", ff, "Size: ", lFileSize
+    If Redirect Then Call ToggleWow64FSRedirection(OldRedir)
     frmMain.lblMD5.Caption = ""
     If inIDE Then Stop: Resume Next
 End Function
@@ -169,6 +165,8 @@ End Function
 Public Function Crypt$(sMsg$, sPhrase$, Optional doCrypt As Boolean = False)  'if Crypt = False then we do decryption
     Dim sEncryptionPhrase$
     On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "Crypt - Begin"
+    
     'if one error happens, don't screw up everything following
     
     'like, NOT!
@@ -177,13 +175,13 @@ Public Function Crypt$(sMsg$, sPhrase$, Optional doCrypt As Boolean = False)  'i
     'bEnOrDec = false -> decrypt
     'bEnOrDec = true -> encrypt
     
-    Dim i&, j&, sChar$, iChar&, sOut$
-    j = 1
+    Dim i&, J&, sChar$, iChar&, sOut$
+    J = 1
     For i = 1 To Len(sMsg)
         sChar = Mid$(sMsg, i, 1)
         If doCrypt Then
             'encrypt
-            sChar = Chr(Asc(sChar) + Asc(Mid$(sPhrase, j, 1)))
+            sChar = Chr(Asc(sChar) + Asc(Mid$(sPhrase, J, 1)))
             If iChar > 255 Then Exit Function 'Wrong Pass phrase
             If Asc(sChar) > 126 Then
                 'make sure encrypted char is within
@@ -192,7 +190,7 @@ Public Function Crypt$(sMsg$, sPhrase$, Optional doCrypt As Boolean = False)  'i
             End If
         Else
             'decrypt
-            iChar = Asc(sChar) - Asc(Mid$(sPhrase, j, 1))
+            iChar = Asc(sChar) - Asc(Mid$(sPhrase, J, 1))
             If iChar < -94 Then Exit Function 'Wrong Pass phrase
             If iChar < 32 Then
                 'make sure decrypted char is within
@@ -206,13 +204,15 @@ Public Function Crypt$(sMsg$, sPhrase$, Optional doCrypt As Boolean = False)  'i
             End If
         End If
         sOut = sOut & sChar
-        j = j + 1
-        If j > Len(sPhrase) Then j = 1
+        J = J + 1
+        If J > Len(sPhrase) Then J = 1
     Next i
     Crypt = sOut
+    
+    AppendErrorLogCustom "Crypt - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg err, "Crypt", sMsg
+    ErrorMsg Err, "Crypt", sMsg
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -549,15 +549,23 @@ Public Function CalcFileCRC(FileName As String) As String '// Added by Dragokas
 
     Dim ff      As Long
     Dim str     As String
+    Dim Redirect As Boolean, bOldStatus As Boolean
+
+    Redirect = ToggleWow64FSRedirection(False, FileName, bOldStatus)
 
     If OpenW(FileName, FOR_READ, ff) Then
         str = String$(LOFW(ff), vbNullChar)
         GetW ff, 1&, str
         CloseW ff: ff = 0
-    
-        CalcFileCRC = CalcCRC(str)
     End If
+    
+    If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
+    
+    If Len(str) <> 0 Then CalcFileCRC = CalcCRC(str)
+    Exit Function
 ErrorHandler:
+    ErrorMsg Err, "CalcFileCRC", "File:", FileName
+    If inIDE Then Stop: Resume Next
 End Function
 
 'Sub Make_CRC_32_Table()
@@ -667,15 +675,15 @@ Public Function CalcCRCLong(Stri As String) As Long
     CalcCRCLong = -(CRC + 1&)
 End Function
 
-Public Function CalcArrayCRCLong(Arr() As Byte, Optional prevValue As Long = -1) As Long
+Public Function CalcArrayCRCLong(arr() As Byte, Optional prevValue As Long = -1) As Long
     Dim CRC&, i&, M&, n&
 
     'If CRC_32_Tab(1) = 0 Then Make_CRC_32_Table
 
     CRC = prevValue
 
-    For i = 0& To UBound(Arr)
-        M = Arr(i)
+    For i = 0& To UBound(arr)
+        M = arr(i)
         n = (CRC Xor M) And &HFF&
         CRC = (CRC_32_Tab(n) Xor (((CRC And &HFFFFFF00) \ &H100) And &HFFFFFF)) And -1  ' Tab ^ (crc >> 8)
     Next

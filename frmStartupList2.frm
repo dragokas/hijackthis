@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.1#0"; "MSComCtl.ocx"
+Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.1#0"; "MSCOMCTL.OCX"
 Begin VB.Form frmStartupList2 
    Caption         =   "StartupList 2"
    ClientHeight    =   4815
@@ -1414,54 +1414,54 @@ Private NUM_OF_SECTIONS As Long
 Private lCountedNodes& 'for GetStartupListReport()
 
 
-Private Sub chkSectionDisabled_Click(Index As Integer)
+Private Sub chkSectionDisabled_Click(index As Integer)
     If chkSectionDisabled(0).Tag = "stop" Then Exit Sub
-    If chkSectionDisabled(Index).Enabled = False Then Exit Sub
+    If chkSectionDisabled(index).Enabled = False Then Exit Sub
     Dim objCheck As CheckBox
-    If Index = 0 Then
+    If index = 0 Then
         For Each objCheck In chkSectionDisabled
-            If objCheck.Index > 0 And chkSectionDisabled(objCheck.Index).Enabled Then
+            If objCheck.index > 0 And chkSectionDisabled(objCheck.index).Enabled Then
                 chkSectionDisabled(0).Tag = "stop"
-                chkSectionDisabled(objCheck.Index).Value = chkSectionDisabled(0).Value
+                chkSectionDisabled(objCheck.index).value = chkSectionDisabled(0).value
                 chkSectionDisabled(0).Tag = vbNullString
             End If
         Next objCheck
     Else
         chkSectionDisabled(0).Tag = "stop"
-        chkSectionDisabled(0).Value = 0
+        chkSectionDisabled(0).value = 0
         chkSectionDisabled(0).Tag = vbNullString
     End If
     If txtHelp.Visible Then
-        If Index = 0 Then
+        If index = 0 Then
             txtHelp.Text = GetHelpText("Disabled")
         Else
-            txtHelp.Text = GetHelpText(chkSectionDisabled(Index).Tag)
+            txtHelp.Text = GetHelpText(chkSectionDisabled(index).Tag)
         End If
     End If
 End Sub
 
-Private Sub chkSectionFiles_Click(Index As Integer)
+Private Sub chkSectionFiles_Click(index As Integer)
     If chkSectionFiles(0).Tag = "stop" Then Exit Sub
-    If chkSectionFiles(Index).Enabled = False Then Exit Sub
+    If chkSectionFiles(index).Enabled = False Then Exit Sub
     Dim objCheck As CheckBox
-    If Index = 0 Then
+    If index = 0 Then
         For Each objCheck In chkSectionFiles
-            If objCheck.Index > 0 And chkSectionFiles(objCheck.Index).Enabled Then
+            If objCheck.index > 0 And chkSectionFiles(objCheck.index).Enabled Then
                 chkSectionFiles(0).Tag = "stop"
-                chkSectionFiles(objCheck.Index).Value = chkSectionFiles(0).Value
+                chkSectionFiles(objCheck.index).value = chkSectionFiles(0).value
                 chkSectionFiles(0).Tag = vbNullString
             End If
         Next objCheck
     Else
         chkSectionFiles(0).Tag = "stop"
-        chkSectionFiles(0).Value = 0
+        chkSectionFiles(0).value = 0
         chkSectionFiles(0).Tag = vbNullString
     End If
     If txtHelp.Visible Then
-        If Index = 0 Then
+        If index = 0 Then
             txtHelp.Text = GetHelpText("Files")
         Else
-            txtHelp.Text = GetHelpText(chkSectionFiles(Index).Tag)
+            txtHelp.Text = GetHelpText(chkSectionFiles(index).Tag)
         End If
     End If
 End Sub
@@ -1470,80 +1470,80 @@ Private Sub chkSectionHardware_Click()
     If txtHelp.Visible Then txtHelp.Text = GetHelpText(chkSectionHardware.Tag)
 End Sub
 
-Private Sub chkSectionHijack_Click(Index As Integer)
+Private Sub chkSectionHijack_Click(index As Integer)
     If chkSectionHijack(0).Tag = "stop" Then Exit Sub
-    If chkSectionHijack(Index).Enabled = False Then Exit Sub
+    If chkSectionHijack(index).Enabled = False Then Exit Sub
     Dim objCheck As CheckBox
-    If Index = 0 Then
+    If index = 0 Then
         For Each objCheck In chkSectionHijack
-            If objCheck.Index > 0 And chkSectionHijack(objCheck.Index).Enabled Then
+            If objCheck.index > 0 And chkSectionHijack(objCheck.index).Enabled Then
                 chkSectionHijack(0).Tag = "stop"
-                chkSectionHijack(objCheck.Index).Value = chkSectionHijack(0).Value
+                chkSectionHijack(objCheck.index).value = chkSectionHijack(0).value
                 chkSectionHijack(0).Tag = vbNullString
             End If
         Next objCheck
     Else
         chkSectionHijack(0).Tag = "stop"
-        chkSectionHijack(0).Value = 0
+        chkSectionHijack(0).value = 0
         chkSectionHijack(0).Tag = vbNullString
     End If
     If txtHelp.Visible Then
-        If Index = 0 Then
+        If index = 0 Then
             txtHelp.Text = GetHelpText("Hijack")
         Else
-            txtHelp.Text = GetHelpText(chkSectionHijack(Index).Tag)
+            txtHelp.Text = GetHelpText(chkSectionHijack(index).Tag)
         End If
     End If
 End Sub
 
-Private Sub chkSectionMSIE_Click(Index As Integer)
+Private Sub chkSectionMSIE_Click(index As Integer)
     If chkSectionMSIE(0).Tag = "stop" Then Exit Sub
-    If chkSectionMSIE(Index).Enabled = False Then Exit Sub
+    If chkSectionMSIE(index).Enabled = False Then Exit Sub
     Dim objCheck As CheckBox
-    If Index = 0 Then
+    If index = 0 Then
         For Each objCheck In chkSectionMSIE
-            If objCheck.Index > 0 And chkSectionMSIE(objCheck.Index).Enabled Then
+            If objCheck.index > 0 And chkSectionMSIE(objCheck.index).Enabled Then
                 chkSectionMSIE(0).Tag = "stop"
-                chkSectionMSIE(objCheck.Index).Value = chkSectionMSIE(0).Value
+                chkSectionMSIE(objCheck.index).value = chkSectionMSIE(0).value
                 chkSectionMSIE(0).Tag = vbNullString
             End If
         Next objCheck
     Else
         chkSectionMSIE(0).Tag = "stop"
-        chkSectionMSIE(0).Value = 0
+        chkSectionMSIE(0).value = 0
         chkSectionMSIE(0).Tag = vbNullString
     End If
     If txtHelp.Visible Then
-        If Index = 0 Then
+        If index = 0 Then
             txtHelp.Text = GetHelpText("MSIE")
         Else
-            txtHelp.Text = GetHelpText(chkSectionMSIE(Index).Tag)
+            txtHelp.Text = GetHelpText(chkSectionMSIE(index).Tag)
         End If
     End If
 End Sub
 
-Private Sub chkSectionRegistry_Click(Index As Integer)
+Private Sub chkSectionRegistry_Click(index As Integer)
     If chkSectionRegistry(0).Tag = "stop" Then Exit Sub
-    If chkSectionRegistry(Index).Enabled = False Then Exit Sub
+    If chkSectionRegistry(index).Enabled = False Then Exit Sub
     Dim objCheck As CheckBox
-    If Index = 0 Then
+    If index = 0 Then
         For Each objCheck In chkSectionRegistry
-            If objCheck.Index > 0 And chkSectionRegistry(objCheck.Index).Enabled Then
+            If objCheck.index > 0 And chkSectionRegistry(objCheck.index).Enabled Then
                 chkSectionRegistry(0).Tag = "stop"
-                chkSectionRegistry(objCheck.Index).Value = chkSectionRegistry(0).Value
+                chkSectionRegistry(objCheck.index).value = chkSectionRegistry(0).value
                 chkSectionRegistry(0).Tag = vbNullString
             End If
         Next objCheck
     Else
         chkSectionRegistry(0).Tag = "stop"
-        chkSectionRegistry(0).Value = 0
+        chkSectionRegistry(0).value = 0
         chkSectionRegistry(0).Tag = vbNullString
     End If
     If txtHelp.Visible Then
-        If Index = 0 Then
+        If index = 0 Then
             txtHelp.Text = GetHelpText("Registry")
         Else
-            txtHelp.Text = GetHelpText(chkSectionRegistry(Index).Tag)
+            txtHelp.Text = GetHelpText(chkSectionRegistry(index).Tag)
         End If
     End If
 End Sub
@@ -1573,9 +1573,11 @@ Private Sub cmdSaveCancel_Click()
 End Sub
 
 Private Sub cmdSaveOK_Click()
+    On Error GoTo ErrorHandler:
+
     Dim i%, l%, sTag$
     For i = 1 To chkSectionFiles.UBound
-        If chkSectionFiles(i).Value = 1 Then
+        If chkSectionFiles(i).value = 1 Then
             sTag = chkSectionFiles(i).Tag
             tvwMain.Nodes(sTag).Tag = "1"
             For l = 0 To UBound(sUsernames)
@@ -1593,7 +1595,7 @@ Private Sub cmdSaveOK_Click()
         End If
     Next i
     For i = 1 To chkSectionMSIE.UBound
-        If chkSectionMSIE(i).Value = 1 Then
+        If chkSectionMSIE(i).value = 1 Then
             tvwMain.Nodes(chkSectionMSIE(i).Tag).Tag = "1"
         Else
             If chkSectionMSIE(i).Enabled Then
@@ -1602,7 +1604,7 @@ Private Sub cmdSaveOK_Click()
         End If
     Next i
     For i = 1 To chkSectionHijack.UBound
-        If chkSectionHijack(i).Value = 1 Then
+        If chkSectionHijack(i).value = 1 Then
             tvwMain.Nodes(chkSectionHijack(i).Tag).Tag = "1"
         Else
             If chkSectionHijack(i).Enabled Then
@@ -1611,7 +1613,7 @@ Private Sub cmdSaveOK_Click()
         End If
     Next i
     For i = 1 To chkSectionDisabled.UBound
-        If chkSectionDisabled(i).Value = 1 Then
+        If chkSectionDisabled(i).value = 1 Then
             tvwMain.Nodes(chkSectionDisabled(i).Tag).Tag = "1"
         Else
             If chkSectionDisabled(i).Enabled Then
@@ -1620,7 +1622,7 @@ Private Sub cmdSaveOK_Click()
         End If
     Next i
     For i = 1 To chkSectionRegistry.UBound
-        If chkSectionRegistry(i).Value = 1 Then
+        If chkSectionRegistry(i).value = 1 Then
             tvwMain.Nodes(chkSectionRegistry(i).Tag).Tag = "1"
         Else
             If chkSectionRegistry(i).Enabled Then
@@ -1628,14 +1630,14 @@ Private Sub cmdSaveOK_Click()
             End If
         End If
     Next i
-    If chkSectionUsers.Value = 1 Then
+    If chkSectionUsers.value = 1 Then
         tvwMain.Nodes("Users").Tag = "1"
     Else
         If chkSectionUsers.Enabled Then
             tvwMain.Nodes("Users").Tag = "0"
         End If
     End If
-    If chkSectionHardware.Value = 1 Then
+    If chkSectionHardware.value = 1 Then
         tvwMain.Nodes("Hardware").Tag = "1"
     Else
         If chkSectionHardware.Enabled Then
@@ -1643,23 +1645,24 @@ Private Sub cmdSaveOK_Click()
         End If
     End If
 
-    Dim sFile$, sLog$
+    Dim sFile$, sLog$, ff%
     '"Save file...", Text files, All files
     sFile = CmnDialogSave(Translate(900), "startuplist.txt", Translate(901) & " (*.txt)|*.txt|" & Translate(902) & " (*.*)|*.*")
     If sFile = vbNullString Then Exit Sub
     If Not (LCase(Right$(sFile, 4)) = ".txt") Then sFile = sFile & ".txt"
     sLog = GetStartupListReport
-    On Error Resume Next
-    Open sFile For Output As #1
-        Print #1, sLog
-    Close #1
+    
+    ff = FreeFile()
+    Open sFile For Output As #ff
+        Print #ff, sLog
+    Close #ff
     If bAbort Then
         '"Generating of StartupList report was aborted!"
         Status Translate(903)
     Else
-        If err Then
+        If Err Then
             'The StartupList log could not be written to disk
-            Status Translate(904) & ": " & err.Description
+            Status Translate(904) & ": " & Err.Description
         Else
             'The StartupList log has been written to disk
             Status Translate(905) & ". (" & Format$(Len(sLog) / 1024, "#,00") & " Kb)"
@@ -1667,6 +1670,11 @@ Private Sub cmdSaveOK_Click()
     End If
     picFrame.Visible = False
     tvwMain.Visible = True
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "cmdSaveOK_Click"
+    If inIDE Then Stop: Resume Next
 End Sub
 
 Private Sub LoadStrings()
@@ -1731,6 +1739,7 @@ Private Sub LoadStrings()
 End Sub
 
 Private Sub Form_Load()
+    Dim ff%
     ReloadLanguage
     LoadStrings
 
@@ -1847,13 +1856,15 @@ Private Sub Form_Load()
     
     If bAutoSave Then
         If sAutoSavePath <> vbNullString Then
-            Open BuildPath(sAutoSavePath, "startuplist.txt") For Output As #1
-                Print #1, GetStartupListReport
-            Close #1
+            ff = FreeFile()
+            Open BuildPath(sAutoSavePath, "startuplist.txt") For Output As #ff
+                Print #ff, GetStartupListReport
+            Close #ff
         Else
-            Open BuildPath(App.Path, "startuplist.txt") For Output As #1
-                Print #1, GetStartupListReport
-            Close #1
+            ff = FreeFile()
+            Open BuildPath(App.Path, "startuplist.txt") For Output As #ff
+                Print #ff, GetStartupListReport
+            Close #ff
         End If
         Terminate_HJT
     End If
@@ -1894,7 +1905,7 @@ Private Sub GetAllEnums()
     'Loading...
     Status Translate(909)
     pgbStatus.Max = NUM_OF_SECTIONS
-    pgbStatus.Value = 0
+    pgbStatus.value = 0
     pgbStatus.Visible = True
     Form_Resize
 
@@ -1937,7 +1948,7 @@ Private Sub GetAllEnums()
             tvwMain.Nodes.Add "Hardware", tvwChild, "Hardware" & sHardwareCfgs(i), sName, "system"
         Next i
     End If
-    pgbStatus.Value = 1
+    pgbStatus.value = 1
     
     
     'running processes
@@ -2421,116 +2432,116 @@ End Sub
 Private Sub mnuFileSave_Click()
     tvwMain.Visible = False
     picFrame.Visible = True
-    scrSaveSections.Value = 0
+    scrSaveSections.value = 0
     
     Dim i%, sAllChecked As Boolean
     i = 1
     sAllChecked = True
-    chkSectionFiles(0).Value = 1
+    chkSectionFiles(0).value = 1
     On Error Resume Next
     Do
         If chkSectionFiles(i).Caption <> vbNullString Then
             If NodeExists(chkSectionFiles(i).Tag) Then
                 chkSectionFiles(i).Enabled = True
-                chkSectionFiles(i).Value = 1
+                chkSectionFiles(i).value = 1
             Else
                 chkSectionFiles(i).Enabled = False
-                chkSectionFiles(i).Value = 0
+                chkSectionFiles(i).value = 0
                 sAllChecked = False
             End If
         End If
         i = i + 1
-    Loop Until err
-    If sAllChecked Then chkSectionFiles(0).Value = 1
+    Loop Until Err
+    If sAllChecked Then chkSectionFiles(0).value = 1
     
     i = 1
     sAllChecked = True
-    chkSectionMSIE(0).Value = 1
-    err.Clear
+    chkSectionMSIE(0).value = 1
+    Err.Clear
     Do
         If chkSectionMSIE(i).Caption <> vbNullString Then
             If NodeExists(chkSectionMSIE(i).Tag) Then
                 chkSectionMSIE(i).Enabled = True
-                chkSectionMSIE(i).Value = 1
+                chkSectionMSIE(i).value = 1
             Else
                 chkSectionMSIE(i).Enabled = False
-                chkSectionMSIE(i).Value = 0
+                chkSectionMSIE(i).value = 0
                 sAllChecked = False
             End If
         End If
         i = i + 1
-    Loop Until err
-    If sAllChecked Then chkSectionMSIE(0).Value = 1
+    Loop Until Err
+    If sAllChecked Then chkSectionMSIE(0).value = 1
     
     i = 1
     sAllChecked = True
-    chkSectionHijack(0).Value = 1
-    err.Clear
+    chkSectionHijack(0).value = 1
+    Err.Clear
     Do
         If chkSectionHijack(i).Caption <> vbNullString Then
             If NodeExists(chkSectionHijack(i).Tag) Then
                 chkSectionHijack(i).Enabled = True
-                chkSectionHijack(i).Value = 1
+                chkSectionHijack(i).value = 1
             Else
                 chkSectionHijack(i).Enabled = False
-                chkSectionHijack(i).Value = 0
+                chkSectionHijack(i).value = 0
                 sAllChecked = False
             End If
         End If
         i = i + 1
-    Loop Until err
-    If sAllChecked Then chkSectionHijack(0).Value = 1
+    Loop Until Err
+    If sAllChecked Then chkSectionHijack(0).value = 1
     
     i = 1
     sAllChecked = True
-    chkSectionDisabled(0).Value = 1
-    err.Clear
+    chkSectionDisabled(0).value = 1
+    Err.Clear
     Do
         If chkSectionDisabled(i).Caption <> vbNullString Then
             If NodeExists(chkSectionDisabled(i).Tag) Then
                 chkSectionDisabled(i).Enabled = True
-                chkSectionDisabled(i).Value = 1
+                chkSectionDisabled(i).value = 1
             Else
                 chkSectionDisabled(i).Enabled = False
-                chkSectionDisabled(i).Value = 0
+                chkSectionDisabled(i).value = 0
                 sAllChecked = False
             End If
         End If
         i = i + 1
-    Loop Until err
-    If sAllChecked Then chkSectionDisabled(0).Value = 1
+    Loop Until Err
+    If sAllChecked Then chkSectionDisabled(0).value = 1
     
     i = 1
     sAllChecked = True
-    chkSectionRegistry(0).Value = 1
-    err.Clear
+    chkSectionRegistry(0).value = 1
+    Err.Clear
     Do
         If chkSectionRegistry(i).Caption <> vbNullString Then
             If NodeExists(chkSectionRegistry(i).Tag) Then
                 chkSectionRegistry(i).Enabled = True
-                chkSectionRegistry(i).Value = 1
+                chkSectionRegistry(i).value = 1
             Else
                 chkSectionRegistry(i).Enabled = False
-                chkSectionRegistry(i).Value = 0
+                chkSectionRegistry(i).value = 0
                 sAllChecked = False
             End If
         End If
         i = i + 1
-    Loop Until err
-    If sAllChecked Then chkSectionRegistry(0).Value = 1
+    Loop Until Err
+    If sAllChecked Then chkSectionRegistry(0).value = 1
     
     If NodeExists("Users") Then
-        chkSectionUsers.Value = 1
+        chkSectionUsers.value = 1
         chkSectionUsers.Enabled = True
     Else
-        chkSectionUsers.Value = 0
+        chkSectionUsers.value = 0
         chkSectionUsers.Enabled = False
     End If
     If NodeExists("Hardware") Then
-        chkSectionHardware.Value = 1
+        chkSectionHardware.value = 1
         chkSectionHardware.Enabled = True
     Else
-        chkSectionHardware.Value = 0
+        chkSectionHardware.value = 0
         chkSectionHardware.Enabled = False
     End If
 End Sub
@@ -2566,9 +2577,9 @@ Private Sub mnuFileTriage_Click()
     If Section.Children > 0 Then
         'Running processes
         tvwTriage.Nodes.Add "Triage", tvwChild, "RunningProcesses", Translate(935), "memory"
-        For i = Section.Index + 1 To Section.Children + Section.Index
+        For i = Section.index + 1 To Section.Children + Section.index
             sFile = tvwMain.Nodes(i).Text
-            AddTriageObj "RunningProcesses" & i - 1 - Section.Index, "Process", sFile
+            AddTriageObj "RunningProcesses" & i - 1 - Section.index, "Process", sFile
         Next i
     End If
 '    EnumAutoStartFolders
@@ -2582,11 +2593,11 @@ Private Sub mnuFileTriage_Click()
     If Section.Children > 0 Then
         'Registry 'Run' keys
         tvwTriage.Nodes.Add "Triage", tvwChild, "RunRegKeys", Translate(936), "registry"
-        For i = Section.Index + 1 To Section.Children + Section.Index
+        For i = Section.index + 1 To Section.Children + Section.index
             Set Subsection = tvwMain.Nodes(i)
             If Subsection.Children > 0 Then
                 tvwTriage.Nodes.Add "RunRegKeys", tvwChild, Subsection.Key, Subsection.Text, "registry"
-                For J = Subsection.Index + 1 To Subsection.Children + Subsection.Index
+                For J = Subsection.index + 1 To Subsection.Children + Subsection.index
                     If InStr(tvwMain.Nodes(J).Text, " = ") > 0 Then
                         sName = Left$(tvwMain.Nodes(J).Text, InStr(tvwMain.Nodes(J).Text, " = ") - 1)
                         sFile = Mid$(tvwMain.Nodes(J).Text, InStr(tvwMain.Nodes(J).Text, " = ") + 3)
@@ -2607,7 +2618,7 @@ Private Sub mnuFileTriage_Click()
     If Section.Children > 0 Then
         'ActiveX Autoruns
         tvwTriage.Nodes.Add "Triage", tvwChild, "ActiveX", Translate(937), "msie"
-        For i = Section.Index + 1 To Section.Children + Section.Index
+        For i = Section.index + 1 To Section.Children + Section.index
             sDummy = Split(tvwMain.Nodes(i).Text, " - ")
             If UBound(sDummy) = 1 Or UBound(sDummy) = 2 Then
                 sName = sDummy(0)
@@ -2618,7 +2629,7 @@ Private Sub mnuFileTriage_Click()
                 End If
                 sFile = sDummy(1)
                 sFile = GuessFullpathFromAutorun(sFile)
-                AddTriageObj "ActiveX" & (i - 1 - Section.Index), "ActiveX Object", sFile, sCLSID
+                AddTriageObj "ActiveX" & (i - 1 - Section.index), "ActiveX Object", sFile, sCLSID
             End If
         Next i
     End If
@@ -2629,7 +2640,7 @@ Private Sub mnuFileTriage_Click()
     If Section.Children > 0 Then
         'Explorer clones
         tvwTriage.Nodes.Add "Triage", tvwChild, "ExplorerClones", Translate(938), "explorer"
-        For i = Section.Index + 1 To Section.Children + Section.Index
+        For i = Section.index + 1 To Section.Children + Section.index
             sFile = tvwMain.Nodes(i).Text
             AddTriageObj tvwMain.Nodes(i).Key, "File", sFile
         Next i
@@ -2643,7 +2654,7 @@ Private Sub mnuFileTriage_Click()
     If Section.Children > 0 Then
         'Browser Helper Objects
         tvwTriage.Nodes.Add "Triage", tvwChild, "BHOs", Translate(939), "msie"
-        For i = Section.Index + 1 To Section.Children + Section.Index
+        For i = Section.index + 1 To Section.Children + Section.index
             sDummy = Split(tvwMain.Nodes(i).Text, " = ")
             If UBound(sDummy) = 2 Then
                 'sName = sDummy(0)
@@ -2655,7 +2666,7 @@ Private Sub mnuFileTriage_Click()
                 sFile = sDummy(1)
             End If
             
-            AddTriageObj "BHO" & (i - 1 - Section.Index), "BHO", sFile, sCLSID
+            AddTriageObj "BHO" & (i - 1 - Section.index), "BHO", sFile, sCLSID
         Next i
     End If
 '    EnumImageFileExecution
@@ -2670,7 +2681,7 @@ Private Sub mnuFileTriage_Click()
     If Section.Children > 0 Then
         'ShellServiceObjectDelayLoad
         tvwTriage.Nodes.Add "Triage", tvwChild, "ShellServiceObjectDelayLoad", Translate(940), "registry"
-        For i = Section.Index + 1 To Section.Children + Section.Index
+        For i = Section.index + 1 To Section.Children + Section.index
             sDummy = Split(tvwMain.Nodes(i).Text, " = ")
             If UBound(sDummy) = 2 Then
                 sName = sDummy(0)
@@ -2688,7 +2699,7 @@ Private Sub mnuFileTriage_Click()
     If Section.Children > 0 Then
         'SharedTaskScheduler
         tvwTriage.Nodes.Add "Triage", tvwChild, "SharedTaskScheduler", Translate(941), "registry"
-        For i = Section.Index + 1 To Section.Children + Section.Index
+        For i = Section.index + 1 To Section.Children + Section.index
             sDummy = Split(tvwMain.Nodes(i).Text, " = ")
             If UBound(sDummy) = 2 Then
                 sName = sDummy(0)
@@ -2788,7 +2799,7 @@ Private Sub mnuFindNext_Click()
     End If
     
     Dim iFirst&, i&
-    iFirst = tvwMain.SelectedItem.Index + 1
+    iFirst = tvwMain.SelectedItem.index + 1
     For i = iFirst To tvwMain.Nodes.Count
         If InStr(1, tvwMain.Nodes(i).Text, sFind, vbTextCompare) > 0 Then
             tvwMain.SelectedItem = tvwMain.Nodes(i)
@@ -2899,7 +2910,7 @@ End Sub
 Private Sub mnuPopupCopyTree_Click()
     Dim sReport$
     pgbStatus.Visible = True
-    pgbStatus.Value = 0
+    pgbStatus.value = 0
     pgbStatus.Max = tvwMain.Nodes.Count
     Form_Resize
     lCountedNodes = 1
@@ -3013,9 +3024,11 @@ Private Sub mnuPopupCLSIDGoogle_Click()
 End Sub
 
 Private Sub mnuPopupSaveTree_Click()
-    Dim sReport$, sFile$
+    On Error GoTo ErrorHandler:
+
+    Dim sReport$, sFile$, ff%
     pgbStatus.Visible = True
-    pgbStatus.Value = 0
+    pgbStatus.value = 0
     pgbStatus.Max = tvwMain.Nodes.Count
     Form_Resize
     lCountedNodes = 1
@@ -3034,17 +3047,23 @@ Private Sub mnuPopupSaveTree_Click()
         sReport
     
     On Error Resume Next
-    Open sFile For Output As #1
-        Print #1, sReport
-    Close #1
+    ff = FreeFile()
+    Open sFile For Output As #ff
+        Print #ff, sReport
+    Close #ff
     
-    If Not err Then
+    If Err.Number = 0 Then
         'Node tree saved to disk as
         Status Translate(958) & " " & sFile
     Else
         'Failed to save tree to disk, error
-        Status Translate(959) & ": " & err.Description & " (" & Translate(960) & " " & err.Number & ")"
+        Status Translate(959) & ": " & Err.Description & " (" & Translate(960) & " " & Err.Number & ")"
     End If
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "mnuPopupSaveTree_Click"
+    If inIDE Then Stop: Resume Next
 End Sub
 
 Private Sub mnuPopupShowFile_Click()
@@ -3149,7 +3168,7 @@ Private Function GetStartupListReport$()
     sLog = sLog & String$(50, "=") & vbCrLf
     
     pgbStatus.Visible = True
-    pgbStatus.Value = 0
+    pgbStatus.value = 0
     pgbStatus.Max = tvwMain.Nodes.Count
     Form_Resize
     lCountedNodes = 1
@@ -3243,7 +3262,7 @@ Private Function GetNodeChildren$(sKey$, iLevel%)
         Set nodCurrent = nodCurrent.Next
         lCountedNodes = lCountedNodes + 1
         If lCountedNodes Mod 100 = 0 And lCountedNodes <= pgbStatus.Max Then
-            pgbStatus.Value = lCountedNodes
+            pgbStatus.value = lCountedNodes
             DoEvents
         End If
         If bAbort Then Exit Function
@@ -3254,9 +3273,9 @@ End Function
 Private Sub UpdateProgressBar()
     On Error Resume Next
     If bDebug Then
-        If pgbStatus.Value = pgbStatus.Max Then MsgBoxW "UpdateProgressBar: at max!"
+        If pgbStatus.value = pgbStatus.Max Then MsgBoxW "UpdateProgressBar: at max!"
     End If
-    pgbStatus.Value = pgbStatus.Value + 1
+    pgbStatus.value = pgbStatus.value + 1
     DoEvents
 End Sub
 
@@ -7765,7 +7784,7 @@ Private Sub EnumLSAPackages()
 End Sub
 
 Private Sub scrSaveSections_Change()
-    fraScroller.Top = -scrSaveSections.Value
+    fraScroller.Top = -scrSaveSections.value
 End Sub
 
 Private Sub scrSaveSections_Scroll()

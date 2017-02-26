@@ -218,18 +218,18 @@ Private Type THREADENTRY32
 End Type
 
 
-Private Declare Function CreateToolhelp32Snapshot Lib "kernel32" (ByVal lFlags As Long, ByVal lProcessID As Long) As Long
-Private Declare Function Process32First Lib "kernel32" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
-Private Declare Function Process32Next Lib "kernel32" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
-Private Declare Function Module32First Lib "kernel32" (ByVal hSnapshot As Long, uProcess As MODULEENTRY32) As Long
-Private Declare Function Module32Next Lib "kernel32" (ByVal hSnapshot As Long, uProcess As MODULEENTRY32) As Long
-Private Declare Function Thread32First Lib "kernel32" (ByVal hSnapshot As Long, uThread As THREADENTRY32) As Long
-Private Declare Function Thread32Next Lib "kernel32" (ByVal hSnapshot As Long, ByRef ThreadEntry As THREADENTRY32) As Long
-Private Declare Function TerminateProcess Lib "kernel32" (ByVal hProcess As Long, ByVal uExitCode As Long) As Long
-Private Declare Function CloseHandle Lib "kernel32" (ByVal hObject As Long) As Long
+Private Declare Function CreateToolhelp32Snapshot Lib "kernel32.dll" (ByVal lFlags As Long, ByVal lProcessID As Long) As Long
+Private Declare Function Process32First Lib "kernel32.dll" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
+Private Declare Function Process32Next Lib "kernel32.dll" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
+Private Declare Function Module32First Lib "kernel32.dll" (ByVal hSnapshot As Long, uProcess As MODULEENTRY32) As Long
+Private Declare Function Module32Next Lib "kernel32.dll" (ByVal hSnapshot As Long, uProcess As MODULEENTRY32) As Long
+Private Declare Function Thread32First Lib "kernel32.dll" (ByVal hSnapshot As Long, uThread As THREADENTRY32) As Long
+Private Declare Function Thread32Next Lib "kernel32.dll" (ByVal hSnapshot As Long, ByRef ThreadEntry As THREADENTRY32) As Long
+Private Declare Function TerminateProcess Lib "kernel32.dll" (ByVal hProcess As Long, ByVal uExitCode As Long) As Long
+Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
 Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteW" (ByVal hWnd As Long, ByVal lpOperation As Long, ByVal lpFile As Long, ByVal lpParameters As Long, ByVal lpDirectory As Long, ByVal nShowCmd As Long) As Long
-Private Declare Function SHRunDialog Lib "shell32" Alias "#61" (ByVal hOwner As Long, ByVal Unknown1 As Long, ByVal Unknown2 As Long, ByVal szTitle As String, ByVal szPrompt As String, ByVal uFlags As Long) As Long
-Private Declare Sub ReleaseCapture Lib "user32" ()
+Private Declare Function SHRunDialog Lib "shell32.dll" Alias "#61" (ByVal hOwner As Long, ByVal Unknown1 As Long, ByVal Unknown2 As Long, ByVal szTitle As String, ByVal szPrompt As String, ByVal uFlags As Long) As Long
+Private Declare Sub ReleaseCapture Lib "user32.dll" ()
 
 Private Const TH32CS_SNAPPROCESS = &H2
 Private Const TH32CS_SNAPMODULE = &H8
@@ -282,11 +282,10 @@ Public Sub RefreshProcessListNT(objList As ListBox)
                 
                 If Len(Process(i).Path) = 0 Then
                     If Not ((StrComp(Process(i).Name, "System Idle Process", 1) = 0 And Process(i).PID = 0) _
-                        Or (StrComp(Process(i).Name, "System", 1) = 0 And Process(i).PID = 4)) Then
+                        Or (StrComp(Process(i).Name, "System", 1) = 0 And Process(i).PID = 4) _
+                        Or (StrComp(Process(i).Name, "Memory Compression", 1) = 0)) Then
                           sProcessName = Process(i).Name '& " (cannot get Process Path)"
                     End If
-                Else
-                    If StrComp(Process(i).Path, "?:\?\Memory Compression", 1) = 0 Then sProcessName = ""
                 End If
                 
                 If Len(sProcessName) <> 0 Then
@@ -423,7 +422,7 @@ Private Sub SetListBoxColumns(objListBox As ListBox)
 End Sub
 
 Private Sub chkProcManShowDLLs_Click()
-    lstProcManDLLs.Visible = CBool(chkProcManShowDLLs.Value)
+    lstProcManDLLs.Visible = CBool(chkProcManShowDLLs.value)
     On Error Resume Next
     'lstProcessManager.ListIndex = 0
     lstProcessManager_MouseUp 1, 0, 0, 0
@@ -481,7 +480,7 @@ Private Sub cmdProcManKill_Click()
         If lstProcessManager.Selected(i) Then
             s = lstProcessManager.List(i)
             s = Left$(s, InStr(s, vbTab) - 1)
-            PauseProcess CLng(s), False
+            ResumeProcess CLng(s)
         End If
     Next i
     
@@ -554,7 +553,7 @@ Private Sub Form_Resize()
     imgProcManCopy.Left = Me.ScaleWidth - 2415
 
     fraProcessManager.Height = Me.ScaleHeight - 225
-    If chkProcManShowDLLs.Value = 0 Then
+    If chkProcManShowDLLs.value = 0 Then
         lstProcessManager.Height = Me.ScaleHeight - 1470
     Else
         lstProcessManager.Height = (Me.ScaleHeight - 1470) / 2 - 120
@@ -577,7 +576,7 @@ End Sub
 Private Sub imgProcManCopy_Click()
     imgProcManCopy.BorderStyle = 1
     DoEvents
-    If chkProcManShowDLLs.Value = 1 Then
+    If chkProcManShowDLLs.value = 1 Then
         CopyProcessList lstProcessManager, lstProcManDLLs, True
     Else
         CopyProcessList lstProcessManager, lstProcManDLLs, False
@@ -588,7 +587,7 @@ End Sub
 Private Sub imgProcManSave_Click()
     imgProcManSave.BorderStyle = 1
     DoEvents
-    If chkProcManShowDLLs.Value = 1 Then
+    If chkProcManShowDLLs.value = 1 Then
         SaveProcessList lstProcessManager, lstProcManDLLs, True
     Else
         SaveProcessList lstProcessManager, lstProcManDLLs, False

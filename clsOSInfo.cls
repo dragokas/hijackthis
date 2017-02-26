@@ -16,7 +16,7 @@ Attribute VB_Ext_KEY = "Top_Level" ,"Yes"
 Option Explicit
 
 ' Класс OSInfo by Alex Dragokas
-' ver 1.4.11
+' ver 1.4.14
 '
 
 Private Type OSVERSIONINFOEX
@@ -34,7 +34,7 @@ Private Type OSVERSIONINFOEX
 End Type
 
 Private Type SID_IDENTIFIER_AUTHORITY
-    Value(0 To 5) As Byte
+    value(0 To 5) As Byte
 End Type
 
 Private Type SID_AND_ATTRIBUTES
@@ -59,16 +59,16 @@ Private Declare Function GetProductInfo Lib "kernel32.dll" (ByVal dwOSMajorVersi
 Private Declare Function CheckTokenMembership Lib "advapi32.dll" (ByVal TokenHandle As Long, ByVal SidToCheck As Long, IsMember As Long) As Long
 Private Declare Function OpenProcessToken Lib "advapi32.dll" (ByVal ProcessHandle As Long, ByVal DesiredAccess As Long, TokenHandle As Long) As Long
 Private Declare Function GetTokenInformation Lib "advapi32.dll" (ByVal TokenHandle As Long, ByVal TokenInformationClass As Long, TokenInformation As Any, ByVal TokenInformationLength As Long, ReturnLength As Long) As Long
-Private Declare Function OpenThreadToken Lib "advapi32" (ByVal ThreadHandle As Long, ByVal DesiredAccess As Long, ByVal OpenAsSelf As Long, TokenHandle As Long) As Long
-Private Declare Function GetCurrentThread Lib "kernel32" () As Long
+Private Declare Function OpenThreadToken Lib "advapi32.dll" (ByVal ThreadHandle As Long, ByVal DesiredAccess As Long, ByVal OpenAsSelf As Long, TokenHandle As Long) As Long
+Private Declare Function GetCurrentThread Lib "kernel32.dll" () As Long
 Private Declare Function GetCurrentProcess Lib "kernel32.dll" () As Long
-Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Dest As Any, Source As Any, ByVal lSize As Long)
+Private Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (Dest As Any, Source As Any, ByVal lSize As Long)
 Private Declare Function GetMem4 Lib "msvbvm60.dll" (src As Any, dst As Any) As Long
 Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
 Private Declare Function LocalFree Lib "kernel32.dll" (ByVal hMem As Long) As Long
 Private Declare Sub FreeSid Lib "advapi32.dll" (ByVal pSid As Long)
 Private Declare Function AllocateAndInitializeSid Lib "advapi32.dll" (pIdentifierAuthority As Any, ByVal nSubAuthorityCount As Byte, ByVal nSubAuthority0 As Long, ByVal nSubAuthority1 As Long, ByVal nSubAuthority2 As Long, ByVal nSubAuthority3 As Long, ByVal nSubAuthority4 As Long, ByVal nSubAuthority5 As Long, ByVal nSubAuthority6 As Long, ByVal nSubAuthority7 As Long, lpPSid As Long) As Long
-Private Declare Function IsValidSid Lib "advapi32" (ByVal pSid As Long) As Long
+Private Declare Function IsValidSid Lib "advapi32.dll" (ByVal pSid As Long) As Long
 Private Declare Function GetSidSubAuthority Lib "advapi32.dll" (ByVal pSid As Long, ByVal nSubAuthority As Long) As Long
 Private Declare Function GetSidSubAuthorityCount Lib "advapi32.dll" (ByVal pSid As Long) As Long
 Private Declare Function EqualSid Lib "advapi32.dll" (pSid1 As Any, pSid2 As Any) As Long
@@ -77,8 +77,8 @@ Private Declare Function RegCloseKey Lib "advapi32.dll" (ByVal hKey As Long) As 
 Private Declare Function RegQueryValueExStr Lib "advapi32.dll" Alias "RegQueryValueExW" (ByVal hKey As Long, ByVal lpValueName As Long, ByVal lpReserved As Long, lpType As Long, ByVal szData As Long, lpcbData As Long) As Long
 Private Declare Function RegQueryValueExLong Lib "advapi32.dll" Alias "RegQueryValueExW" (ByVal hKey As Long, ByVal lpValueName As Long, ByVal lpReserved As Long, lpType As Long, szData As Long, lpcbData As Long) As Long
 Private Declare Function LoadLibrary Lib "kernel32.dll" Alias "LoadLibraryW" (ByVal lpFileName As Long) As Long
-Private Declare Function FreeLibrary Lib "kernel32" (ByVal hLibModule As Long) As Long
-Private Declare Function GetProcAddress Lib "kernel32" (ByVal hModule As Long, ByVal lpProcName As String) As Long
+Private Declare Function FreeLibrary Lib "kernel32.dll" (ByVal hLibModule As Long) As Long
+Private Declare Function GetProcAddress Lib "kernel32.dll" (ByVal hModule As Long, ByVal lpProcName As String) As Long
 Private Declare Function lstrlenW Lib "kernel32.dll" (ByVal lpString As Long) As Long
 Private Declare Function lstrcpyW Lib "kernel32.dll" (ByVal lpStrDest As Long, ByVal lpStrSrc As Long) As Long
 Private Declare Function ConvertSidToStringSid Lib "advapi32.dll" Alias "ConvertSidToStringSidW" (ByVal pSid As Long, StringSid As Long) As Long
@@ -144,6 +144,7 @@ Dim ProductType_            As String 'As Byte
 Dim SID_CurrentProcess_     As String
 Dim SafeBootMode_           As String
 Dim Platform_               As String 'Win9x / WinNT
+Dim ReleaseId_              As Long
 
 Dim t ' not used
 
@@ -151,9 +152,13 @@ Dim t ' not used
 Private Sub Class_Initialize()
     On Error GoTo ErrorHandler
     
+    AppendErrorLogCustom "clsOSInfo.Class_Initialize - Begin"
+    
     Dim dec             As Single
     Dim ProductType     As Long
     Dim lret            As Long
+    Dim pos             As Long
+    Dim tmp             As String
     
     LangDisplayCode_ = GetUserDefaultUILanguage Mod &H10000
     LangDisplayName_ = GetLangNameByCultureCode(LangDisplayCode_)
@@ -170,10 +175,44 @@ Private Sub Class_Initialize()
     osi.dwOSVersionInfoSize = Len(osi)
     GetVersionEx osi
     
+    If inIDE Then
+        'query correct OS version without manifest
+        Dim oWMI As Object
+        Dim colOS As Object
+        Dim oOS As Object
+        Dim Ver() As String
+    
+        Set oWMI = CreateObject("winmgmts:{impersonationLevel=Impersonate}!\\.\root\cimv2")
+        Set colOS = oWMI.ExecQuery("Select * from Win32_OperatingSystem")
+        
+        For Each oOS In colOS
+            pos = InStr(oOS.Version, ".")
+            If pos = 0 Then
+                osi.dwMajorVersion = CLng(oOS.Version)
+                osi.dwMinorVersion = 0
+                osi.dwBuildNumber = 0
+            Else
+                Ver = Split(oOS.Version, ".")
+                If UBound(Ver) = 1 Then
+                    osi.dwMajorVersion = CLng(Ver(0))
+                    osi.dwMinorVersion = CLng(Ver(1))
+                    osi.dwBuildNumber = 0
+                Else
+                    osi.dwMajorVersion = CLng(Ver(0))
+                    osi.dwMinorVersion = CLng(Ver(1))
+                    osi.dwBuildNumber = CLng(Ver(2))
+                End If
+            End If
+        Next
+        Set oOS = Nothing
+        Set colOS = Nothing
+        Set oWMI = Nothing
+    End If
+    
     Family_ = IIf(osi.dwMajorVersion >= 6, "Vista", "NT")
     IsVistaOrLater_ = (osi.dwMajorVersion >= 6)
     
-    Bitness_ = IIf(IsWin64, "x64", "x32")
+    Bitness_ = IIf(IsWow64(), "x64", "x32")
     
     lret = GetSystemMetrics(SM_CLEANBOOT)
     IsSafeBoot_ = (lret > 0)
@@ -185,14 +224,6 @@ Private Sub Class_Initialize()
         Case Else
             SafeBootMode_ = "Normal"
     End Select
-    
-    'if VB IDE has no manifest (by default)
-    'this is not an option, because 'CurrentVersion' has wrong value for Windows 10
-'    If inIDE Then
-'        On Error Resume Next
-'        MajorMinor_ = CSng(replace$(RegRead_REG_SZ(HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentVersion"), ".", ","))
-'        On Error GoTo 0
-'    End If
     
     If MajorMinor_ = 0 Then
         ' OS Major + Minor
@@ -237,7 +268,7 @@ Private Sub Class_Initialize()
             If osi.wProductType = VER_NT_WORKSTATION Then
                 OSName_ = "Windows 10"
             Else
-                OSName_ = "Windows Server 2016 Technical Preview"
+                OSName_ = "Windows Server 2016"
             End If
         Case 6.4
             OSName_ = "Windows 10 Technical Preview"
@@ -312,6 +343,12 @@ Private Sub Class_Initialize()
         End Select
     End If
     
+    If MajorMinor_ >= 10 Then
+        'Get ReleaseId for Windows 10
+        tmp = RegRead_REG_SZ(HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ReleaseId")
+        If IsNumeric(tmp) Then ReleaseId_ = CLng(tmp)
+    End If
+    
     'Редакция
     If Edition_ = "" Then
         If MajorMinor_ >= 6 Then
@@ -358,14 +395,18 @@ Private Sub Class_Initialize()
     
     SID_CurrentProcess_ = GetCurrentProcessSID()
     
+    AppendErrorLogCustom "clsOSInfo.Class_Initialize - End"
+    
     Exit Sub
 ErrorHandler:
-    ErrorMsg err, "clsOSInfo.Class_Initialize"
+    ErrorMsg Err, "clsOSInfo.Class_Initialize"
     Resume Next
 End Sub
 
 Function GetCodePageInfo()
     On Error GoTo ErrorHandler
+
+    AppendErrorLogCustom "GetCodePageInfo - Begin"
 
     CodepageOEM_ = RegRead_REG_SZ(HKEY_LOCAL_MACHINE, "SYSTEM\CurrentControlSet\Control\Nls\CodePage", "OEMCP")
  
@@ -379,9 +420,10 @@ Function GetCodePageInfo()
         CodepageANSI_File_ = RegRead_REG_SZ(HKEY_LOCAL_MACHINE, "SYSTEM\CurrentControlSet\Control\Nls\CodePage", CodepageANSI_)
     End If
     
+    AppendErrorLogCustom "GetCodePageInfo - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg err, "clsOSInfo.GetCodePageInfo"
+    ErrorMsg Err, "clsOSInfo.GetCodePageInfo"
 End Function
 
 Function GetLangNameFullByCultureCode(lcid As Long) As String
@@ -418,12 +460,14 @@ Function RegRead_REG_SZ(hHive As Long, strKey As String, strParam As String) As 
     If hKey <> 0 Then RegCloseKey hKey
     Exit Function
 ErrorHandler:
-    ErrorMsg err, "clsOSInfo.RegRead_REG_SZ"
+    ErrorMsg Err, "clsOSInfo.RegRead_REG_SZ"
     If hKey <> 0 Then RegCloseKey hKey
 End Function
 
 Function IsProcessElevated(Optional hProcess As Long) As Boolean
     On Error GoTo ErrorHandler
+    
+    AppendErrorLogCustom "IsProcessElevated - Begin"
     
     Dim hToken           As Long
     Dim dwLengthNeeded   As Long
@@ -442,6 +486,8 @@ Function IsProcessElevated(Optional hProcess As Long) As Boolean
         
         CloseHandle hToken: hToken = 0
     End If
+    
+    AppendErrorLogCustom "IsProcessElevated - End"
     Exit Function
 ErrorHandler:
     ErrorMsg Now, "clsOSInfo.IsProcessElevated"
@@ -450,6 +496,8 @@ End Function
 
 Public Function GetUserType(Optional hProcess As Long) As String
     On Error GoTo ErrorHandler
+
+    AppendErrorLogCustom "GetUserType - Begin"
 
     Const TOKEN_QUERY                   As Long = &H8&
     Const SECURITY_NT_AUTHORITY         As Long = 5&
@@ -472,7 +520,7 @@ Public Function GetUserType(Optional hProcess As Long) As String
     Dim tpSidAuth       As SID_IDENTIFIER_AUTHORITY
     
     GetUserType = "Unknown"
-    tpSidAuth.Value(5) = SECURITY_NT_AUTHORITY
+    tpSidAuth.value(5) = SECURITY_NT_AUTHORITY
     
     ' в идеале, сначала нужно проверять токен, полученный от потока
     ' If Not OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, True, hProcessToken) Then
@@ -527,9 +575,11 @@ Public Function GetUserType(Optional hProcess As Long) As String
         End If
         CloseHandle hProcessToken: hProcessToken = 0
     End If
+    
+    AppendErrorLogCustom "GetUserType - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg err, "clsOSInfo.GetUserType"
+    ErrorMsg Err, "clsOSInfo.GetUserType"
     If hProcessToken Then CloseHandle hProcessToken: hProcessToken = 0
     If psidAdmin Then FreeSid psidAdmin
     If psidPower Then FreeSid psidPower
@@ -539,6 +589,8 @@ End Function
 
 Function GetCurrentProcessSID() As String
     On Error GoTo ErrorHandler
+
+    AppendErrorLogCustom "GetCurrentProcessSID - Begin"
 
     Const TokenUser As Long = 1&
         
@@ -578,17 +630,24 @@ Function GetCurrentProcessSID() As String
             End If
         End If
     End If
+    
+    AppendErrorLogCustom "GetCurrentProcessSID - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg err, "clsOSInfo.GetCurrentProcessSID"
+    ErrorMsg Err, "clsOSInfo.GetCurrentProcessSID"
 End Function
 
-Function GetIntegrityLevel(Optional hProcess As Long) As String       'https://msdn.microsoft.com/en-us/library/bb625966.aspx?f=255
+Function GetIntegrityLevel(Optional hProcess As Long) As String
+    'https://msdn.microsoft.com/en-us/library/bb625963.aspx
+    'https://msdn.microsoft.com/en-us/library/bb625966.aspx
     On Error GoTo ErrorHandler
+    
+    AppendErrorLogCustom "GetIntegrityLevel - Begin"
     
     Const SECURITY_MANDATORY_UNTRUSTED_RID          As Long = 0&
     Const SECURITY_MANDATORY_LOW_RID                As Long = &H1000&
     Const SECURITY_MANDATORY_MEDIUM_RID             As Long = &H2000&
+    Const SECURITY_MANDATORY_UIACCESS_RID           As Long = SECURITY_MANDATORY_MEDIUM_RID + &H10&
     Const SECURITY_MANDATORY_HIGH_RID               As Long = &H3000&
     Const SECURITY_MANDATORY_SYSTEM_RID             As Long = &H4000&
     Const SECURITY_MANDATORY_PROTECTED_PROCESS_RID  As Long = &H5000&
@@ -617,7 +676,7 @@ Function GetIntegrityLevel(Optional hProcess As Long) As String       'https://m
     
         GetTokenInformation hToken, TokenIntegrityLevel, 0&, 0&, dwLengthNeeded
         
-        If ERROR_INSUFFICIENT_BUFFER = err.LastDllError Then
+        If ERROR_INSUFFICIENT_BUFFER = Err.LastDllError Then
         
             ReDim bTIL(dwLengthNeeded - 1)
         
@@ -647,6 +706,8 @@ Function GetIntegrityLevel(Optional hProcess As Long) As String       'https://m
                                     iLevel = "Untrusted"
                                 Case Is < SECURITY_MANDATORY_MEDIUM_RID
                                     iLevel = "Low"
+                                Case SECURITY_MANDATORY_UIACCESS_RID
+                                    iLevel = "Medium (UIAccess)"
                                 Case Is < SECURITY_MANDATORY_HIGH_RID
                                     iLevel = "Medium"
                                 Case Is < SECURITY_MANDATORY_SYSTEM_RID
@@ -658,17 +719,19 @@ Function GetIntegrityLevel(Optional hProcess As Long) As String       'https://m
                             End Select
                         End If
                     End If
-                    FreeSid pILSid
+                    'FreeSid pILSid
                 End If
             End If
         End If
         CloseHandle hToken: hToken = 0
     End If
     GetIntegrityLevel = iLevel
+    
+    AppendErrorLogCustom "GetIntegrityLevel - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg err, "clsOSInfo.GetIntegrityLevel"
-    If pILSid Then FreeSid pILSid
+    ErrorMsg Err, "clsOSInfo.GetIntegrityLevel"
+    'If pILSid Then FreeSid pILSid
     If hToken Then CloseHandle hToken: hToken = 0
 End Function
 
@@ -873,7 +936,7 @@ Function GetProductName(ProductType As Long) As String
     GetProductName = ProductName
     Exit Function
 ErrorHandler:
-    ErrorMsg err, "clsOSInfo.GetProductName"
+    ErrorMsg Err, "clsOSInfo.GetProductName"
 End Function
 
 
@@ -1162,12 +1225,12 @@ Function GetLangNameByCultureCode(CultureCode As Long) As String
     GetLangNameByCultureCode = Lang
 End Function
 
-Function IsWin64() As Boolean   ' Разрядность ОС
+Function IsWow64() As Boolean   ' Разрядность ОС
     Dim hModule As Long, procAddr As Long, lIsWin64 As Long
     Static IsInit As Boolean, Result As Boolean
     
     If IsInit Then
-        IsWin64 = Result
+        IsWow64 = Result
     Else
         IsInit = True
         hModule = LoadLibrary(StrPtr("kernel32.dll"))
@@ -1176,7 +1239,7 @@ Function IsWin64() As Boolean   ' Разрядность ОС
             If procAddr <> 0 Then
                 IsWow64Process GetCurrentProcess(), lIsWin64
                 Result = CBool(lIsWin64)
-                IsWin64 = Result
+                IsWow64 = Result
             End If
             FreeLibrary hModule
         End If
@@ -1309,4 +1372,8 @@ End Property
 
 Public Property Get Platform() As String
     Platform = Platform_
+End Property
+
+Public Property Get ReleaseId() As Long
+    ReleaseId = ReleaseId_
 End Property

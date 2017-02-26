@@ -26,7 +26,6 @@
    
     - Anatolii Krivous aka The Trick (TrickHashTable class, call VB6 functions by pointer)
     - Boris Fayfel aka Catstail (Process class, CRC32)
-    - Brian Reilly (AnotherSysTray)
    
    
     Copyrights

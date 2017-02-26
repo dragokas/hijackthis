@@ -148,7 +148,7 @@ Private Declare Function SetSecurityInfo Lib "advapi32.dll" (ByVal Handle As Lon
 Private Declare Function SetNamedSecurityInfo Lib "advapi32.dll" Alias "SetNamedSecurityInfoW" (ByVal pObjectName As Long, ByVal ObjectType As Long, ByVal SecurityInfo As Long, ByVal psidOwner As Long, ByVal psidGroup As Long, ByVal pDacl As Long, ByVal pSacl As Long) As Long
 Private Declare Function GetAclInformation Lib "advapi32.dll" (ByVal pAcl As Long, ByVal pAclInformation As Long, ByVal nAclInformationLength As Long, ByVal dwAclInformationClass As ACL_INFORMATION_CLASS) As Long
 Private Declare Function GetAce Lib "advapi32.dll" (ByVal pAcl As Long, ByVal dwAceIndex As Long, pAce As Long) As Long
-Private Declare Function memcpy Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long) As Long
+Private Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal length As Long) As Long
 Private Declare Function GetExplicitEntriesFromAcl Lib "advapi32.dll" Alias "GetExplicitEntriesFromAclW" (ByVal pAcl As Long, pcCountOfExplicitEntries As Long, pListOfExplicitEntries As Long) As Long
 Private Declare Function DeleteAce Lib "advapi32.dll" (ByVal pAcl As Long, ByVal dwAceIndex As Long) As Long
 Private Declare Function InitializeAcl Lib "advapi32.dll" (ByVal pAcl As Long, ByVal nAclLength As Long, ByVal dwAclRevision As Long) As Long
@@ -156,7 +156,7 @@ Private Declare Function LocalAlloc Lib "kernel32.dll" (ByVal uFlags As Long, By
 Private Declare Function IsValidAcl Lib "advapi32.dll" (ByVal pAcl As Long) As Long
 'Private Declare Function TreeResetNamedSecurityInfo Lib "advapi32.dll" Alias "TreeResetNamedSecurityInfoW" (ByVal pObjectName As Long, ByVal ObjectType As SE_OBJECT_TYPE, ByVal SecurityInfo As SECURITY_INFORMATION, ByVal pOwner As Long, ByVal pGroup As Long, ByVal pDacl As Long, ByVal pSacl As Long, ByVal KeepExplicit As Long, ByVal fnProgress As Long, ByVal ProgressInvokeSetting As Long, ByVal Args As Long) As Long
 Private Declare Function RegEnumKeyEx Lib "advapi32.dll" Alias "RegEnumKeyExW" (ByVal hKey As Long, ByVal dwIndex As Long, ByVal lpName As Long, lpcbName As Long, ByVal lpReserved As Long, ByVal lpClass As Long, lpcbClass As Long, lpftLastWriteTime As Any) As Long
-Private Declare Function lstrlen Lib "kernel32" Alias "lstrlenW" (ByVal lpString As Long) As Long
+Private Declare Function lstrlen Lib "kernel32.dll" Alias "lstrlenW" (ByVal lpString As Long) As Long
 
 Private Const MAX_KEYNAME            As Long = 255&
 
@@ -529,7 +529,7 @@ Public Function RegKeySetOwnerShip(lHive&, ByVal KeyName$, SidString As String, 
 '    SetCurrentProcessPrivileges "SeTakeOwnershipPrivilege"
     
     ' SeTakeOwnershipPrivilege + WRITE_OWNER
-    If ERROR_SUCCESS <> RegOpenKeyEx(lHive, StrPtr(KeyName), 0&, WRITE_OWNER Or (KEY_WOW64_64KEY And Not bUseWow64), hKey) Then
+    If ERROR_SUCCESS <> RegOpenKeyEx(lHive, StrPtr(KeyName), 0&, WRITE_OWNER Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) Then
         'Key doesn't exist
         Exit Function
     Else
@@ -539,7 +539,7 @@ Public Function RegKeySetOwnerShip(lHive&, ByVal KeyName$, SidString As String, 
     bufSid = CreateBufferedSID(SidString)
     
     ' ACCESS_SYSTEM_SECURITY
-    If ERROR_SUCCESS = RegCreateKeyEx(lHive, StrPtr(KeyName), 0&, 0&, REG_OPTION_BACKUP_RESTORE, WRITE_DAC Or (KEY_WOW64_64KEY And Not bUseWow64), ByVal 0&, hKey, flagDisposition) Then
+    If ERROR_SUCCESS = RegCreateKeyEx(lHive, StrPtr(KeyName), 0&, 0&, REG_OPTION_BACKUP_RESTORE, WRITE_DAC Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), ByVal 0&, hKey, flagDisposition) Then
         
 '        If flagDisposition = REG_CREATED_NEW_KEY Then
 '            RegCloseKey hKey
@@ -568,7 +568,7 @@ Public Function RegKeySetOwnerShip(lHive&, ByVal KeyName$, SidString As String, 
     
     Exit Function
 ErrorHandler:
-    Debug.Print "Error in RegSetOwnerShip", err, err.Description
+    Debug.Print "Error in RegSetOwnerShip", Err, Err.Description
 End Function
 
 
@@ -639,7 +639,7 @@ Public Function RegKeyResetDACL(lHive&, ByVal KeyName$, Optional bUseWow64 As Bo
 '    SetCurrentProcessPrivileges "SeTakeOwnershipPrivilege"
 '    SetCurrentProcessPrivileges "SeSecurityPrivilege"       'SACL
     
-    If ERROR_SUCCESS <> RegOpenKeyEx(lHive, StrPtr(KeyName), 0&, WRITE_OWNER Or (KEY_WOW64_64KEY And Not bUseWow64), hKey) Then
+    If ERROR_SUCCESS <> RegOpenKeyEx(lHive, StrPtr(KeyName), 0&, WRITE_OWNER Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) Then
         'Key doesn't exist
         Exit Function
     Else
@@ -648,7 +648,7 @@ Public Function RegKeyResetDACL(lHive&, ByVal KeyName$, Optional bUseWow64 As Bo
     
     If ERROR_SUCCESS = RegCreateKeyEx(lHive, StrPtr(KeyName), 0&, 0&, _
         REG_OPTION_BACKUP_RESTORE, _
-        READ_CONTROL Or WRITE_DAC Or (KEY_WOW64_64KEY And Not bUseWow64), _
+        READ_CONTROL Or WRITE_DAC Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), _
         ByVal 0&, hKey, flagDisposition) Then
     
         ReDim RelSD(0)
@@ -826,7 +826,8 @@ Public Function RegKeyResetDACL(lHive&, ByVal KeyName$, Optional bUseWow64 As Bo
 '                                    End If
 
                                     'Ще не вмерла Україна :)
-                                    If RegOpenKeyEx(lHive, StrPtr(KeyName), 0&, KEY_ENUMERATE_SUB_KEYS Or (KEY_WOW64_64KEY And Not bUseWow64), hKeyEnum) = ERROR_SUCCESS Then
+                                    'Let all USA people involved in our genocide, will die, slowly and horribly. Good bye, Obama democracy.
+                                    If RegOpenKeyEx(lHive, StrPtr(KeyName), 0&, KEY_ENUMERATE_SUB_KEYS Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKeyEnum) = ERROR_SUCCESS Then
     
                                         sSubKeyName = String$(MAX_KEYNAME, vbNullChar)
                                         
@@ -866,7 +867,7 @@ Public Function RegKeyResetDACL(lHive&, ByVal KeyName$, Optional bUseWow64 As Bo
 
     Exit Function
 ErrorHandler:
-    Debug.Print "Error in SetDACL", err, err.Description
+    Debug.Print "Error in SetDACL", Err, Err.Description
 End Function
 
 'returns ptr to new ACL
@@ -929,7 +930,7 @@ Private Function GetHKey(ByVal HKeyName As String) As Long 'Get handle of main h
     End Select
     Exit Function
 ErrorHandler:
-    Debug.Print "Error in GetHKey", err, err.Description
+    Debug.Print "Error in GetHKey"; Err; Err.Description
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -956,7 +957,7 @@ Public Function SetCurrentProcessPrivileges(PrivilegeName As String) As Boolean
     
         If 0 = OpenThreadToken(GetCurrentThread(), TOKEN_ADJUST_PRIVILEGES Or TOKEN_QUERY, 1&, hToken) Then
         
-            If err.LastDllError = ERROR_NO_TOKEN Then
+            If Err.LastDllError = ERROR_NO_TOKEN Then
             
                 If 0 = OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES Or TOKEN_QUERY, hToken) Then
                     Exit Function

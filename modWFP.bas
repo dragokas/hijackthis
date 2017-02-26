@@ -12,7 +12,7 @@ Option Explicit
 Const MAX_PATH As Long = 260&
 
 Type PPROTECTED_FILE_INFO
-    Length As Long
+    length As Long
     FileName As String * MAX_PATH
 End Type
 
@@ -27,21 +27,21 @@ Type PPROTECT_FILE_ENTRY
     InfName As Long         'pointer PWSTR
 End Type
 
-Private Declare Function GetMem4 Lib "msvbvm60" (src As Any, dst As Any) As Long
-Private Declare Function VirtualProtect Lib "kernel32" (ByVal lpAddress As Long, ByVal dwSize As Long, ByVal flNewProtect As Long, lpflOldProtect As Long) As Long
-Private Declare Sub EbGetExecutingProj Lib "vba6" (hProject As Long)
-Private Declare Function TipGetFunctionId Lib "vba6" (ByVal hProj As Long, ByVal bstrName As Long, ByRef bstrId As Long) As Long
-Private Declare Function TipGetLpfnOfFunctionId Lib "vba6" (ByVal hProject As Long, ByVal bstrId As Long, ByRef lpAddress As Long) As Long
-Private Declare Sub SysFreeString Lib "oleaut32" (ByVal lpbstr As Long)
-Private Declare Function LoadLibrary Lib "kernel32" Alias "LoadLibraryW" (ByVal lpLibFileName As Long) As Long
-Private Declare Function FreeLibrary Lib "kernel32" (ByVal hLibModule As Long) As Long
-Private Declare Function GetProcAddress Lib "kernel32" (ByVal hModule As Long, ByVal lpProcName As String) As Long
-Private Declare Function GetProcAddressByOrd Lib "kernel32" Alias "GetProcAddress" (ByVal hModule As Long, ByVal lpProcName As Long) As Long
-Private Declare Function GetWindowsDirectory Lib "kernel32" Alias "GetWindowsDirectoryW" (ByVal lpBuffer As Long, ByVal nSize As Long) As Long
-'Private Declare Function GetVersionEx Lib "kernel32" Alias "GetVersionExW" (lpVersionInformation As Any) As Long
-Private Declare Function lstrlen Lib "kernel32" Alias "lstrlenW" (ByVal lpString As Long) As Long
-Private Declare Function lstrcpyn Lib "kernel32" Alias "lstrcpynW" (ByVal lpString1 As Long, ByVal lpString2 As Long, ByVal iMaxLength As Long) As Long
-Private Declare Function GlobalFree Lib "kernel32" (ByVal hMem As Long) As Long
+Private Declare Function GetMem4 Lib "msvbvm60.dll" (src As Any, dst As Any) As Long
+Private Declare Function VirtualProtect Lib "kernel32.dll" (ByVal lpAddress As Long, ByVal dwSize As Long, ByVal flNewProtect As Long, lpflOldProtect As Long) As Long
+Private Declare Sub EbGetExecutingProj Lib "vba6.dll" (hProject As Long)
+Private Declare Function TipGetFunctionId Lib "vba6.dll" (ByVal hProj As Long, ByVal bstrName As Long, ByRef bstrId As Long) As Long
+Private Declare Function TipGetLpfnOfFunctionId Lib "vba6.dll" (ByVal hProject As Long, ByVal bstrId As Long, ByRef lpAddress As Long) As Long
+Private Declare Sub SysFreeString Lib "oleaut32.dll" (ByVal lpbstr As Long)
+Private Declare Function LoadLibrary Lib "kernel32.dll" Alias "LoadLibraryW" (ByVal lpLibFileName As Long) As Long
+Private Declare Function FreeLibrary Lib "kernel32.dll" (ByVal hLibModule As Long) As Long
+Private Declare Function GetProcAddress Lib "kernel32.dll" (ByVal hModule As Long, ByVal lpProcName As String) As Long
+Private Declare Function GetProcAddressByOrd Lib "kernel32.dll" Alias "GetProcAddress" (ByVal hModule As Long, ByVal lpProcName As Long) As Long
+Private Declare Function GetWindowsDirectory Lib "kernel32.dll" Alias "GetWindowsDirectoryW" (ByVal lpBuffer As Long, ByVal nSize As Long) As Long
+'Private Declare Function GetVersionEx Lib "kernel32.dll" Alias "GetVersionExW" (lpVersionInformation As Any) As Long
+Private Declare Function lstrlen Lib "kernel32.dll" Alias "lstrlenW" (ByVal lpString As Long) As Long
+Private Declare Function lstrcpyn Lib "kernel32.dll" Alias "lstrcpynW" (ByVal lpString1 As Long, ByVal lpString2 As Long, ByVal iMaxLength As Long) As Long
+Private Declare Function GlobalFree Lib "kernel32.dll" (ByVal hMem As Long) As Long
 
 'Private Declare Function SfcGetNextProtectedFile Lib "sfc_os.dll" (ByVal RpcHandle As Long, ProtFileData As PROTECTED_FILE_DATA) As Long
 
@@ -114,7 +114,7 @@ Public Function SFCList_XP() As String()
     
     Exit Function
 ErrorHandler:
-    ErrorMsg err, "modWFP.SFCList_XP"
+    ErrorMsg Err, "modWFP.SFCList_XP"
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -125,7 +125,7 @@ Public Function SFCList_XP_0() As String()  ' with SFCFILES.dll
     Dim hSfcFil_Lib             As Long
     Dim SfcGetFilesAddr         As Long
     Dim FileCount               As Long
-    Dim Index                   As Long
+    Dim index                   As Long
     Dim strAdr                  As Long
     Dim strLen                  As Long
     Dim FileName                As String
@@ -152,12 +152,12 @@ Public Function SFCList_XP_0() As String()  ' with SFCFILES.dll
             
     ReDim SFCList(FileCount - 1)
     
-    For Index = 0 To FileCount - 1
-        GetMem4 ByVal pfe.SourceFileName + 4 + Index * 12, strAdr
+    For index = 0 To FileCount - 1
+        GetMem4 ByVal pfe.SourceFileName + 4 + index * 12, strAdr
         strLen = lstrlen(strAdr)
         FileName = Space(strLen)
         lstrcpyn StrPtr(FileName), strAdr, strLen + 1
-        SFCList(Index) = Replace$(FileName, "%systemroot%\", SystemRoot, , , 1)
+        SFCList(index) = EnvironW(FileName) 'Replace$(FileName, "%systemroot%\", SystemRoot, , , 1)
     Next
     GlobalFree pfe.SourceFileName
 
@@ -167,7 +167,7 @@ Public Function SFCList_XP_0() As String()  ' with SFCFILES.dll
     
     Exit Function
 ErrorHandler:
-    ErrorMsg err, "modWFP.SFCList_XP_0"
+    ErrorMsg Err, "modWFP.SFCList_XP_0"
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -217,14 +217,14 @@ Public Function SFCList_Vista() As String()
     Do
         ret = GetNextFileMapContent(GetNextFileAddr, 0&, hSFC, dwBufferSize, pData, dwNeeded)
     
-        Select Case err.LastDllError ' <--- Does not working here !!!
+        Select Case Err.LastDllError ' <--- Does not working here !!!
         
             Case 0
                 If UBound(SFCList) < i Then ReDim Preserve SFCList(i + 100)
-                SFCList(i) = Replace$(Left$(pData.FileName, pData.Length \ 2), "\SystemRoot\", SystemRoot, 1, 1, 1)
+                SFCList(i) = Replace$(Left$(pData.FileName, pData.length \ 2), "\SystemRoot\", SystemRoot, 1, 1, 1)
                 i = i + 1
         
-            Case ERROR_NO_MORE_FILES Or (pData.Length = 0)
+            Case ERROR_NO_MORE_FILES Or (pData.length = 0)
                 Exit Do
         
             Case ERROR_INSUFFICIENT_BUFFER Or (dwNeeded > dwBufferSize)
@@ -232,7 +232,7 @@ Public Function SFCList_Vista() As String()
     
         End Select
 
-        If pData.Length = 0 Then Exit Do
+        If pData.length = 0 Then Exit Do
 
     Loop
     
@@ -254,7 +254,7 @@ Public Function SFCList_Vista() As String()
     
     Exit Function
 ErrorHandler:
-    ErrorMsg err, "modWFP.SFCList_Vista"
+    ErrorMsg Err, "modWFP.SFCList_Vista"
     If inIDE Then Stop: Resume Next
 End Function
  

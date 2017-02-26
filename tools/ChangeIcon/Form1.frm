@@ -1,4 +1,5 @@
 VERSION 5.00
+Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "ComDlg32.OCX"
 Begin VB.Form Form1 
    Caption         =   "—мена иконы у EXE"
    ClientHeight    =   1680
@@ -9,6 +10,13 @@ Begin VB.Form Form1
    ScaleHeight     =   1680
    ScaleWidth      =   7305
    StartUpPosition =   3  'Windows Default
+   Begin MSComDlg.CommonDialog dlg 
+      Left            =   3360
+      Top             =   1080
+      _ExtentX        =   847
+      _ExtentY        =   847
+      _Version        =   393216
+   End
    Begin VB.TextBox txtIco 
       Height          =   375
       Left            =   1800
@@ -23,7 +31,7 @@ Begin VB.Form Form1
       Top             =   120
       Width           =   5295
    End
-   Begin VB.PictureBox dlg 
+   Begin VB.PictureBox dlg2 
       Height          =   480
       Left            =   1800
       ScaleHeight     =   420

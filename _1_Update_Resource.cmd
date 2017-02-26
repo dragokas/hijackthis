@@ -44,6 +44,14 @@ For /L %%C in (1 1 10) do (
     pause
 )
 
+:: Clear
+For /L %%C in (1 1 10) do (
+  if defined Res[%%C] (
+    for /f "tokens=1-2*" %%a in ("!Res[%%C]!") do (
+      >NUL del "%%c.tmp"
+    )
+  )
+)
 2>NUL del /f /a 1.RC
 
 exit /b

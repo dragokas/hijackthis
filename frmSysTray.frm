@@ -39,16 +39,16 @@ Attribute VB_Exposed = False
 '
 ' Fork by Dragokas
 ' Fixed: right-click menu does not disappear after clicking on desktop
+' Cut all unused code.
 '
 ' Look also:
-'
 ' https://support.microsoft.com/en-us/kb/176085
 ' http://www.vbforums.com/showthread.php?595990-VB6-System-tray-icon-systray
 
 Option Explicit
 
-Private Declare Function SetForegroundWindow Lib "user32" (ByVal hWnd As Long) As Long
-Private Declare Function Shell_NotifyIcon Lib "shell32" Alias "Shell_NotifyIconA" (ByVal dwMessage As Long, pnid As NOTIFYICONDATA) As Boolean
+Private Declare Function SetForegroundWindow Lib "user32.dll" (ByVal hWnd As Long) As Long
+Private Declare Function Shell_NotifyIcon Lib "shell32.dll" Alias "Shell_NotifyIconA" (ByVal dwMessage As Long, pnid As NOTIFYICONDATA) As Boolean
 
 Private Const NIM_ADD = &H0
 Private Const NIM_MODIFY = &H1
@@ -82,25 +82,25 @@ Public Event Click(ClickWhat As String)
 Private nid As NOTIFYICONDATA
 Private LastWindowState As Integer
 
-Public Property Let Tooltip(Value As String)
-   nid.szTip = Value & vbNullChar
+Public Property Let Tooltip(value As String)
+   nid.szTip = value & vbNullChar
 End Property
 
 Public Property Get Tooltip() As String
    Tooltip = nid.szTip
 End Property
 
-Public Property Let TrayIcon(Value)
+Public Property Let TrayIcon(value)
    On Error Resume Next
    ' Value can be a picturebox, image, form or string
-   Select Case TypeName(Value)
+   Select Case TypeName(value)
       Case "PictureBox", "Image"
-         Me.Icon = Value.Picture
+         Me.Icon = value.Picture
       Case "String"
-        Me.Icon = LoadPicture(Value)
+        Me.Icon = LoadPicture(value)
       Case Else
-         ' It's a form ?
-         Me.Icon = Value.Icon
+         ' Is it a form ?
+         Me.Icon = value.Icon
    End Select
    UpdateIcon NIM_MODIFY
 End Property
@@ -131,32 +131,6 @@ Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, Y A
       Case WM_RBUTTONUP
          ' Popup menu: selectively enable items dependent on context.
          SetForegroundWindow FSys.hWnd
-         Select Case FSys.Visible
-            Case True
-               Select Case FSys.WindowState
-                  Case vbMaximized
-                     'mMaximize.Enabled = False
-                     'mMinimize.Enabled = True
-                     'mRestore.Enabled = False
-                  Case vbNormal
-                     'mMaximize.Enabled = True
-                     'mMinimize.Enabled = True
-                     'mRestore.Enabled = False
-                  Case vbMinimized
-                     'mMaximize.Enabled = True
-                     'mMinimize.Enabled = False
-                     'mRestore.Enabled = True
-                  Case Else
-                     'mMaximize.Enabled = True
-                     'mMinimize.Enabled = True
-                     'mRestore.Enabled = True
-               End Select
-            Case Else
-               'mRestore.Enabled = True
-               'mMaximize.Enabled = True
-               'mMinimize.Enabled = False
-         End Select
-         
          RaiseEvent Click("RBUTTONUP")
          PopupMenu mPopupMenu
       Case WM_LBUTTONDBLCLK
@@ -182,37 +156,18 @@ End Sub
 
 Private Sub FSys_Resize()
    ' Event generated my main form. WindowState is stored in LastWindowState, so that
-   ' it may be re- set when the menu item "Restore" is selected.
+   ' it may be re-set when the menu item "Restore" is selected.
    If (FSys.WindowState <> vbMinimized) Then LastWindowState = FSys.WindowState
 End Sub
 
 Private Sub FSys_Unload(Cancel As Integer)
-   ' Important: remove icon from tray, and unload this form when
-   ' the main form is unloaded.
    UpdateIcon NIM_DELETE
    Unload Me
 End Sub
 
-'Private Sub mAbout_Click()
-'   msgboxw "About code goes here.", vbInformation, "About"
-'End Sub
-
-'Private Sub mMaximize_Click()
-'   FSys.WindowState = vbMaximized
-'   FSys.Show
-'End Sub
-
-'Private Sub mMinimize_Click()
-'   FSys.WindowState = vbMinimized
-'End Sub
-
 Public Sub mExit_Click()
    Unload FSys
 End Sub
-
-'Private Sub mRestore_Click()
-'    Restore_Window
-'End Sub
 
 Private Sub Restore_Window()
    ' Don't "restore"  FSys is visible and not minimized.
@@ -223,7 +178,7 @@ Private Sub Restore_Window()
    SetForegroundWindow FSys.hWnd
 End Sub
 
-Private Sub UpdateIcon(Value As Long)
+Private Sub UpdateIcon(value As Long)
    ' Used to add, modify and delete icon.
    With nid
       .cbSize = Len(nid)
@@ -233,7 +188,7 @@ Private Sub UpdateIcon(Value As Long)
       .uCallbackMessage = WM_MOUSEMOVE
       .hIcon = Me.Icon
    End With
-   Shell_NotifyIcon Value, nid
+   Shell_NotifyIcon value, nid
 End Sub
 
 Public Sub MeQueryUnload(ByRef F As Form, Cancel As Integer, UnloadMode As Integer)

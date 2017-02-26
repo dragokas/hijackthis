@@ -9,6 +9,8 @@ As known, unlike IDE mode, compiled program automatically adds bytes by 4-byte b
 during loading resource by LoadResData function.
 To avoid these random data in the end of resource, we append <NUL> on our own.
 
+Provided as backward compatibility with VB6 pre-SP6 IDE update.
+
 -------------------------------------------------------------------------------
 
 Russian:
@@ -20,4 +22,6 @@ Russian:
 
 Как известно при загрузке ресурса через LoadResData скомпилированное приложение
 в отличие от режима IDE автоматически дописывает байты до 4-байтовой границы.
-Чтобы избечь случайных данных в конце ресурса, дописываем <NUL> самостоятельно.
+Чтобы избежать случайных данных в конце ресурса, дописываем <NUL> самостоятельно.
+
+Предоставлен в качестве обратной совместимости с VB6 IDE без обновления SP6.

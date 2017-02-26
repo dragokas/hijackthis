@@ -2,9 +2,11 @@ Attribute VB_Name = "modHosts"
 Option Explicit
 
 Public Sub ListHostsFile(objList As ListBox, objInfo As Label)
+    On Error GoTo ErrorHandler:
+
     'custom hosts file handling?
     Dim sAttr$, iAttr&, sDummy$, vContent As Variant, i&, ff%
-    On Error Resume Next
+    'On Error Resume Next
     'objInfo.Caption = "Loading hosts file, please wait..."
     objInfo.Caption = Translate(279)
     frmMain.cmdHostsManDel.Enabled = False
@@ -53,14 +55,25 @@ Public Sub ListHostsFile(objList As ListBox, objInfo As Label)
                       sAttr & ")"
     frmMain.cmdHostsManDel.Enabled = True
     frmMain.cmdHostsManToggle.Enabled = True
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "ListHostsFile"
+    If inIDE Then Stop: Resume Next
 End Sub
 
 Public Sub CreateDefaultHostsFile()
-    On Error Resume Next
+    On Error GoTo ErrorHandler:
+    
     Dim ff%
     Open sHostsFile For Output As #ff
         Print #ff, GetDefaultHostsContents()
     Close #ff
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "CreateDefaultHostsFile"
+    If inIDE Then Stop: Resume Next
 End Sub
 
 Public Function GetDefaultHostsContents() As String
@@ -149,13 +162,15 @@ End Function
 
 
 Public Sub HostsDeleteLine(objList As ListBox)
+    On Error GoTo ErrorHandler:
+
     'delete ith line in hosts file (zero-based)
     Dim iAttr&, sDummy$, vContent As Variant, i&, ff%
-    On Error Resume Next
+    
     iAttr = GetFileAttributes(StrPtr(sHostsFile))
     If (iAttr And 2048) Then iAttr = iAttr - 2048
     SetFileAttributes StrPtr(sHostsFile), vbArchive
-    If err.Number Then
+    If Err.Number Then
         'MsgBoxW "The hosts file is locked for reading and cannot be edited. " & vbCrLf & _
         '       "Make sure you have privileges to modify the hosts file and " & _
         '       "no program is protecting it against changes.", vbCritical
@@ -181,16 +196,23 @@ Public Sub HostsDeleteLine(objList As ListBox)
             Next i
         End With
     Close #ff
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "HostsDeleteLine"
+    If inIDE Then Stop: Resume Next
 End Sub
 
 Public Sub HostsToggleLine(objList As ListBox)
+    On Error GoTo ErrorHandler:
+
     'enable/disable ith line in hosts file (zero-based)
     Dim iAttr&, sDummy$, vContent As Variant, i&, ff%
-    On Error Resume Next
+    
     iAttr = GetFileAttributes(StrPtr(sHostsFile))
     If (iAttr And 2048) Then iAttr = iAttr - 2048
     SetFileAttributes StrPtr(sHostsFile), vbArchive
-    If err.Number Then
+    If Err.Number Then
         '"The hosts file is locked for reading and cannot be edited. " & vbCrLf & _
                "Make sure you have privileges to modify the hosts file and " & _
                "no program is protecting it against changes."
@@ -225,4 +247,9 @@ Public Sub HostsToggleLine(objList As ListBox)
         Print #ff, Join(vContent, vbCrLf)
     Close #ff
     SetFileAttributes StrPtr(sHostsFile), iAttr
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "HostsToggleLine"
+    If inIDE Then Stop: Resume Next
 End Sub

@@ -26,27 +26,27 @@ Public Enum EnumMethod      ' Метод перечисления для For each
     ENUM_BY_VALUE
 End Enum
 
-Private Declare Function SetEnvironmentVariable Lib "kernel32" Alias "SetEnvironmentVariableW" (ByVal lpName As Long, ByVal lpValue As Long) As Long
-Private Declare Function GetEnvironmentVariable Lib "kernel32" Alias "GetEnvironmentVariableW" (ByVal lpName As Long, ByVal lpBuffer As Long, ByVal nSize As Long) As Long
-Private Declare Function VirtualAlloc Lib "kernel32" (lpAddress As Any, ByVal dwSize As Long, ByVal flAllocationType As Long, ByVal flProtect As Long) As Long
-Private Declare Function VirtualFree Lib "kernel32" (lpAddress As Any, ByVal dwSize As Long, ByVal dwFreeType As Long) As Long
-Private Declare Function HeapAlloc Lib "kernel32" (ByVal hHeap As Long, ByVal dwFlags As Long, ByVal dwBytes As Long) As Long
-Private Declare Function GetProcessHeap Lib "kernel32" () As Long
-Private Declare Function GetMem8 Lib "msvbvm60" (src As Any, dst As Any) As Long
-Private Declare Function GetMem4 Lib "msvbvm60" (src As Any, dst As Any) As Long
-Private Declare Function GetMem2 Lib "msvbvm60" (src As Any, dst As Any) As Long
-Private Declare Function GetMem1 Lib "msvbvm60" (src As Any, dst As Any) As Long
-Private Declare Function GetModuleHandle Lib "kernel32" Alias "GetModuleHandleW" (ByVal lpModuleName As Long) As Long
-Private Declare Function GetProcAddress Lib "kernel32" (ByVal hModule As Long, ByVal lpProcName As String) As Long
-Private Declare Function memcpy Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long) As Long
-Private Declare Function VarCmp Lib "oleaut32" (pvarLeft As Any, pvarRight As Any, ByVal lcid As Long, ByVal dwFlags As Long) As Long
-Private Declare Function VariantCopy Lib "oleaut32" (pvargDest As Any, pvargSrc As Any) As Long
-Private Declare Function VariantCopyInd Lib "oleaut32" (pvarDest As Any, pvargSrc As Any) As Long
-Private Declare Function LCMapString Lib "kernel32" Alias "LCMapStringW" (ByVal Locale As Long, ByVal dwMapFlags As Long, lpSrcStr As Any, ByVal cchSrc As Long, lpDestStr As Any, ByVal cchDest As Long) As Long
-Private Declare Function GetUserDefaultLCID Lib "kernel32" () As Long
-Private Declare Function VarR4FromUI1 Lib "oleaut32" (Value As Any, R4 As Any) As Long
-Private Declare Function VarR4FromI2 Lib "oleaut32" (Value As Any, R4 As Any) As Long
-Private Declare Function VarR4FromI4 Lib "oleaut32" (Value As Any, R4 As Any) As Long
+Private Declare Function SetEnvironmentVariable Lib "kernel32.dll" Alias "SetEnvironmentVariableW" (ByVal lpName As Long, ByVal lpValue As Long) As Long
+Private Declare Function GetEnvironmentVariable Lib "kernel32.dll" Alias "GetEnvironmentVariableW" (ByVal lpName As Long, ByVal lpBuffer As Long, ByVal nSize As Long) As Long
+Private Declare Function VirtualAlloc Lib "kernel32.dll" (lpAddress As Any, ByVal dwSize As Long, ByVal flAllocationType As Long, ByVal flProtect As Long) As Long
+Private Declare Function VirtualFree Lib "kernel32.dll" (lpAddress As Any, ByVal dwSize As Long, ByVal dwFreeType As Long) As Long
+Private Declare Function HeapAlloc Lib "kernel32.dll" (ByVal hHeap As Long, ByVal dwFlags As Long, ByVal dwBytes As Long) As Long
+Private Declare Function GetProcessHeap Lib "kernel32.dll" () As Long
+Private Declare Function GetMem8 Lib "msvbvm60.dll" (src As Any, dst As Any) As Long
+Private Declare Function GetMem4 Lib "msvbvm60.dll" (src As Any, dst As Any) As Long
+Private Declare Function GetMem2 Lib "msvbvm60.dll" (src As Any, dst As Any) As Long
+Private Declare Function GetMem1 Lib "msvbvm60.dll" (src As Any, dst As Any) As Long
+Private Declare Function GetModuleHandle Lib "kernel32.dll" Alias "GetModuleHandleW" (ByVal lpModuleName As Long) As Long
+Private Declare Function GetProcAddress Lib "kernel32.dll" (ByVal hModule As Long, ByVal lpProcName As String) As Long
+Private Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal length As Long) As Long
+Private Declare Function VarCmp Lib "oleaut32.dll" (pvarLeft As Any, pvarRight As Any, ByVal lcid As Long, ByVal dwFlags As Long) As Long
+Private Declare Function VariantCopy Lib "oleaut32.dll" (pvargDest As Any, pvargSrc As Any) As Long
+Private Declare Function VariantCopyInd Lib "oleaut32.dll" (pvarDest As Any, pvargSrc As Any) As Long
+Private Declare Function LCMapString Lib "kernel32.dll" Alias "LCMapStringW" (ByVal Locale As Long, ByVal dwMapFlags As Long, lpSrcStr As Any, ByVal cchSrc As Long, lpDestStr As Any, ByVal cchDest As Long) As Long
+Private Declare Function GetUserDefaultLCID Lib "kernel32.dll" () As Long
+Private Declare Function VarR4FromUI1 Lib "oleaut32.dll" (value As Any, R4 As Any) As Long
+Private Declare Function VarR4FromI2 Lib "oleaut32.dll" (value As Any, R4 As Any) As Long
+Private Declare Function VarR4FromI4 Lib "oleaut32.dll" (value As Any, R4 As Any) As Long
 
 Private Const LCMAP_LOWERCASE           As Long = &H100
 Private Const PAGE_EXECUTE_READWRITE    As Long = &H40&
@@ -59,11 +59,11 @@ Private Const HASH_SIZE                 As Long = 2999
 
 Private Type tPointer                                                           ' Индекс в таблице объектов
     hash            As Integer                                                  ' Хэш
-    Index           As Integer                                                  ' Индекс
+    index           As Integer                                                  ' Индекс
 End Type
 Private Type tElement                                                           ' Колонка хэш таблицы
     Key             As Variant                                                  ' Ключ
-    Value           As Variant                                                  ' Значение
+    value           As Variant                                                  ' Значение
     Next            As tPointer                                                 ' Индекс следующего элемента
     Prev            As tPointer                                                 ' Индекс предыдущего элемента
 End Type
@@ -110,8 +110,8 @@ Public Property Get EnumMode() As EnumMethod
 Attribute EnumMode.VB_Description = "Определяет режим сравнения в циклах For Each."
     EnumMode = mEnumMode
 End Property
-Public Property Let EnumMode(ByVal Value As EnumMethod)
-    mEnumMode = Value
+Public Property Let EnumMode(ByVal value As EnumMethod)
+    mEnumMode = value
 End Property
 
 ' // Получает/Устанавливает режим сравнения ключей
@@ -119,30 +119,30 @@ Public Property Get CompareMode() As CompareMethod
 Attribute CompareMode.VB_Description = "Установить или получить метод сравнения строк.\n"
     CompareMode = mCompareMode
 End Property
-Public Property Let CompareMode(ByVal Value As CompareMethod)
+Public Property Let CompareMode(ByVal value As CompareMethod)
     ' Только когда элементов нет
-    If mCount Then ErrorMsg err, "clsTrickHashTable.CompareMode", "Compare mode can be changed when there are no items only!": Exit Property
-    mCompareMode = Value
+    If mCount Then ErrorMsg Err, "clsTrickHashTable.CompareMode", "Compare mode can be changed when there are no items only!": Exit Property
+    mCompareMode = value
 End Property
 
 ' // Добавить элемент
-Public Sub Add(Key As Variant, Value As Variant)
+Public Sub Add(Key As Variant, value As Variant)
 Attribute Add.VB_Description = "Добавить в таблицу новый ключ и элемент.\n"
     Dim pt As tPointer
     
     If Not GetFromKey(Key, pt) Then
-        ErrorMsg err, "clsTrickHashTable.Add", "Error 5."
+        ErrorMsg Err, "clsTrickHashTable.Add", "Error 5."
         Exit Sub
     End If
     
-    If pt.Index <> -1 Then
-        ErrorMsg err, "clsTrickHashTable.Add", "Error 457. Line: " & Key
+    If pt.index <> -1 Then
+        ErrorMsg Err, "clsTrickHashTable.Add", "Error 457. Line: " & Key
         Exit Sub
     End If
     
-    pt.Index = List(pt.hash).ElementsCount
+    pt.index = List(pt.hash).ElementsCount
     
-    Add_ pt, Key, Value
+    Add_ pt, Key, value
     
 End Sub
 
@@ -153,43 +153,43 @@ Attribute Item.VB_UserMemId = 0
     Dim pt As tPointer
 
     If Not GetFromKey(Key, pt) Then
-        ErrorMsg err, "clsTrickHashTable.Item Get", "Error 5 (1)."
+        ErrorMsg Err, "clsTrickHashTable.Item Get", "Error 5 (1)."
         Exit Property
     End If
     
-    If pt.Index = -1 Then
-        ErrorMsg err, "clsTrickHashTable.Item Get", "Error 5 (2)."
+    If pt.index = -1 Then
+        ErrorMsg Err, "clsTrickHashTable.Item Get", "Error 5 (2)."
         Exit Property
     End If
-    VariantCopy Item, List(pt.hash).Elements(pt.Index).Value
+    VariantCopy Item, List(pt.hash).Elements(pt.index).value
     
 End Property
 
 ' // Присвоить значение элементу с заданным ключом
-Public Property Let Item(Key As Variant, Value As Variant)
+Public Property Let Item(Key As Variant, value As Variant)
     Dim pt As tPointer
     
     If Not GetFromKey(Key, pt) Then
-        ErrorMsg err, "clsTrickHashTable.Item Let", "Error 5 (1)."
+        ErrorMsg Err, "clsTrickHashTable.Item Let", "Error 5 (1)."
         Exit Property
     End If
     
-    If pt.Index = -1 Then ErrorMsg err, "clsTrickHashTable.Item Let", "Error 5 (2).": Exit Property
-    List(pt.hash).Elements(pt.Index).Value = Value
+    If pt.index = -1 Then ErrorMsg Err, "clsTrickHashTable.Item Let", "Error 5 (2).": Exit Property
+    List(pt.hash).Elements(pt.index).value = value
     
 End Property
 
 ' // Присвоить объектное значение элементу с заданным ключом
-Public Property Set Item(Key As Variant, Value As Variant)
+Public Property Set Item(Key As Variant, value As Variant)
     Dim pt As tPointer
     
     If Not GetFromKey(Key, pt) Then
-        ErrorMsg err, "clsTrickHashTable.Item Set", "Error 5 (1)."
+        ErrorMsg Err, "clsTrickHashTable.Item Set", "Error 5 (1)."
         Exit Property
     End If
     
-    If pt.Index = -1 Then ErrorMsg err, "clsTrickHashTable.Item Set", "Error 5 (2).": Exit Property
-    Set List(pt.hash).Elements(pt.Index).Value = Value
+    If pt.index = -1 Then ErrorMsg Err, "clsTrickHashTable.Item Set", "Error 5 (2).": Exit Property
+    Set List(pt.hash).Elements(pt.index).value = value
     
 End Property
 
@@ -216,11 +216,11 @@ Attribute Exists.VB_Description = "Определить, имеется ли в таблице заданный клю
     Dim pt As tPointer
     
     If Not GetFromKey(Key, pt) Then
-        ErrorMsg err, "clsTrickHashTable.Exists", "Error 5."
+        ErrorMsg Err, "clsTrickHashTable.Exists", "Error 5."
         Exit Function
     End If
     
-    Exists = pt.Index <> -1
+    Exists = pt.index <> -1
 End Function
 
 ' // Удалить элемент по ключу
@@ -233,12 +233,12 @@ Attribute Remove.VB_Description = "Удалить ключ и связанный с ним элемент из теб
     Dim l   As Long
     
     If Not GetFromKey(Key, pt) Then
-        ErrorMsg err, "clsTrickHashTable.Remove", "Error 5 (1)."
+        ErrorMsg Err, "clsTrickHashTable.Remove", "Error 5 (1)."
         Exit Sub
     End If
     
-    If pt.Index = -1 Then
-        ErrorMsg err, "clsTrickHashTable.Remove", "Error 5 (2)."
+    If pt.index = -1 Then
+        ErrorMsg Err, "clsTrickHashTable.Remove", "Error 5 (2)."
         Exit Sub
     End If
     
@@ -265,8 +265,8 @@ Attribute Items.VB_Description = "Получить массив всех элементов теблицы.\n"
     
     Do
     
-        VariantCopy ret(i), List(pt.hash).Elements(pt.Index).Value
-        pt = List(pt.hash).Elements(pt.Index).Next
+        VariantCopy ret(i), List(pt.hash).Elements(pt.index).value
+        pt = List(pt.hash).Elements(pt.index).Next
         i = i + 1
         
     Loop While i < mCount
@@ -287,8 +287,8 @@ Attribute Keys.VB_Description = "Получить массив всех ключей словаря.\n"
     
     Do
     
-        VariantCopy ret(i), List(pt.hash).Elements(pt.Index).Key
-        pt = List(pt.hash).Elements(pt.Index).Next
+        VariantCopy ret(i), List(pt.hash).Elements(pt.index).Key
+        pt = List(pt.hash).Elements(pt.index).Next
         i = i + 1
         
     Loop While i < mCount
@@ -297,14 +297,14 @@ Attribute Keys.VB_Description = "Получить массив всех ключей словаря.\n"
 End Function
 
 ' // Вычислить хеш
-Public Function HashValue(Value As Variant) As Long
+Public Function HashValue(value As Variant) As Long
 Attribute HashValue.VB_Description = "Получит значение хеш-функции от заданного ключа."
     Dim hash    As Long
     
-    hash = CalcHash(Value)
+    hash = CalcHash(value)
     
     If hash < 0 Then
-        ErrorMsg err, "clsTrickHashTable.HashValue", "Error 5."
+        ErrorMsg Err, "clsTrickHashTable.HashValue", "Error 5."
         Exit Function
     End If
     
@@ -314,32 +314,32 @@ End Function
 
 ' //
 
-Private Sub Add_(pt As tPointer, Key As Variant, Value As Variant)
+Private Sub Add_(pt As tPointer, Key As Variant, value As Variant)
 
-    If pt.Index Then
-        If pt.Index > UBound(List(pt.hash).Elements) Then
+    If pt.index Then
+        If pt.index > UBound(List(pt.hash).Elements) Then
             ReDim Preserve List(pt.hash).Elements(UBound(List(pt.hash).Elements) + GRANULARITY)
         End If
     Else
         ReDim Preserve List(pt.hash).Elements(GRANULARITY - 1)
     End If
     
-    List(pt.hash).ElementsCount = pt.Index + 1
+    List(pt.hash).ElementsCount = pt.index + 1
     
-    VariantCopyInd List(pt.hash).Elements(pt.Index).Value, Value
-    VariantCopyInd List(pt.hash).Elements(pt.Index).Key, Key
+    VariantCopyInd List(pt.hash).Elements(pt.index).value, value
+    VariantCopyInd List(pt.hash).Elements(pt.index).Key, Key
     
     If Last.hash >= 0 Then
-        List(Last.hash).Elements(Last.Index).Next = pt
-        List(pt.hash).Elements(pt.Index).Prev = Last
+        List(Last.hash).Elements(Last.index).Next = pt
+        List(pt.hash).Elements(pt.index).Prev = Last
     Else
-        List(pt.hash).Elements(pt.Index).Prev.hash = -1
-        List(pt.hash).Elements(pt.Index).Prev.Index = -1
+        List(pt.hash).Elements(pt.index).Prev.hash = -1
+        List(pt.hash).Elements(pt.index).Prev.index = -1
         First = pt
     End If
     
-    List(pt.hash).Elements(pt.Index).Next.hash = -1
-    List(pt.hash).Elements(pt.Index).Next.Index = -1
+    List(pt.hash).Elements(pt.index).Next.hash = -1
+    List(pt.hash).Elements(pt.index).Next.index = -1
     
     Last = pt
     mCount = mCount + 1
@@ -352,21 +352,21 @@ Private Sub Remove_(pt As tPointer)
     Dim p   As tPointer
     Dim l   As Long
 
-    lp = List(pt.hash).Elements(pt.Index).Prev
-    ln = List(pt.hash).Elements(pt.Index).Next
+    lp = List(pt.hash).Elements(pt.index).Prev
+    ln = List(pt.hash).Elements(pt.index).Next
     
-    For l = pt.Index To List(pt.hash).ElementsCount - 2
+    For l = pt.index To List(pt.hash).ElementsCount - 2
     
         List(pt.hash).Elements(l) = List(pt.hash).Elements(l + 1)
         
         ' Правим ссылки на элемент
         p = List(pt.hash).Elements(l).Prev
         
-        If p.Index >= 0 Then List(p.hash).Elements(p.Index).Next.Index = List(p.hash).Elements(p.Index).Next.Index - 1
+        If p.index >= 0 Then List(p.hash).Elements(p.index).Next.index = List(p.hash).Elements(p.index).Next.index - 1
             
         p = List(pt.hash).Elements(l).Next
         
-        If p.Index >= 0 Then List(p.hash).Elements(p.Index).Prev.Index = List(p.hash).Elements(p.Index).Prev.Index - 1
+        If p.index >= 0 Then List(p.hash).Elements(p.index).Prev.index = List(p.hash).Elements(p.index).Prev.index - 1
         
     Next
     
@@ -378,10 +378,10 @@ Private Sub Remove_(pt As tPointer)
         Erase List(pt.hash).Elements()
     End If
     
-    If lp.Index >= 0 Then List(lp.hash).Elements(lp.Index).Next = ln
-    If ln.Index >= 0 Then List(ln.hash).Elements(ln.Index).Prev = lp
-    If lp.Index = -1 Then First = ln
-    If ln.Index = -1 Then Last = lp
+    If lp.index >= 0 Then List(lp.hash).Elements(lp.index).Next = ln
+    If ln.index >= 0 Then List(ln.hash).Elements(ln.index).Prev = lp
+    If lp.index = -1 Then First = ln
+    If ln.index = -1 Then Last = lp
     
     mCount = mCount - 1
     
@@ -390,26 +390,26 @@ End Sub
 Private Sub Key_(Key As Variant, NewKey As Variant)
     Dim pt1     As tPointer
     Dim pt2     As tPointer
-    Dim Value   As Variant
+    Dim value   As Variant
     
     If Not GetFromKey(Key, pt1) Then
-        ErrorMsg err, "clsTrickHashTable.Key_ Set", "Error 5 (1)."
+        ErrorMsg Err, "clsTrickHashTable.Key_ Set", "Error 5 (1)."
         Exit Sub
     End If
     
-    If pt1.Index = -1 Then ErrorMsg err, "clsTrickHashTable.Key_ Set", "Error 5 (2).": Exit Sub
+    If pt1.index = -1 Then ErrorMsg Err, "clsTrickHashTable.Key_ Set", "Error 5 (2).": Exit Sub
     
     If Not GetFromKey(NewKey, pt2) Then
-        ErrorMsg err, "clsTrickHashTable.Key_ Set", "Error 5 (3)."
+        ErrorMsg Err, "clsTrickHashTable.Key_ Set", "Error 5 (3)."
         Exit Sub
     End If
     
-    If pt2.Index <> -1 Then ErrorMsg err, "clsTrickHashTable.Key_ Set", "Error 457.": Exit Sub
+    If pt2.index <> -1 Then ErrorMsg Err, "clsTrickHashTable.Key_ Set", "Error 457.": Exit Sub
 
-    VariantCopy Value, List(pt1.hash).Elements(pt1.Index).Value
+    VariantCopy value, List(pt1.hash).Elements(pt1.index).value
     Remove_ pt1
-    pt2.Index = List(pt2.hash).ElementsCount
-    Add_ pt2, NewKey, Value
+    pt2.index = List(pt2.hash).ElementsCount
+    Add_ pt2, NewKey, value
     
 End Sub
 
@@ -438,7 +438,7 @@ Private Function GetFromKey(Key As Variant, Pointer As tPointer) As Boolean
             For i = 0 To List(hash).ElementsCount - 1
                 
                 If VarCmp(List(hash).Elements(i).Key, keyi, lcid, mCompareMode) = 1 Then
-                    Pointer.Index = i
+                    Pointer.index = i
                     Exit Function
                 End If
                 
@@ -456,7 +456,7 @@ Private Function GetFromKey(Key As Variant, Pointer As tPointer) As Boolean
                     
                     If List(hash).Elements(i).Key Is keyi Then
                     
-                        Pointer.Index = i
+                        Pointer.index = i
                         Exit Function
                         
                     End If
@@ -471,7 +471,7 @@ Private Function GetFromKey(Key As Variant, Pointer As tPointer) As Boolean
 
                 If IsNull(List(hash).Elements(i).Key) Then
                 
-                    Pointer.Index = i
+                    Pointer.index = i
                     Exit Function
                     
                 End If
@@ -484,7 +484,7 @@ Private Function GetFromKey(Key As Variant, Pointer As tPointer) As Boolean
 
                 If IsEmpty(List(hash).Elements(i).Key) Then
                 
-                    Pointer.Index = i
+                    Pointer.index = i
                     Exit Function
                     
                 End If
@@ -496,7 +496,7 @@ Private Function GetFromKey(Key As Variant, Pointer As tPointer) As Boolean
             For i = 0 To List(hash).ElementsCount - 1
                 
                 If List(hash).Elements(i).Key = keyi Then
-                    Pointer.Index = i
+                    Pointer.index = i
                     Exit Function
                 End If
                 
@@ -506,20 +506,20 @@ Private Function GetFromKey(Key As Variant, Pointer As tPointer) As Boolean
                 
     End If
     
-    Pointer.Index = -1
+    Pointer.index = -1
     
 End Function
 
-Private Function CalcHash(Value As Variant) As Long
+Private Function CalcHash(value As Variant) As Long
     Dim i       As Long
     Dim typ     As Integer
     Dim ptr     As Long
-    Dim Length  As Long
+    Dim length  As Long
     Dim dbl     As Double
     Dim cur     As Currency
     Dim sgl     As Single
     
-    ptr = VarPtr(Value)
+    ptr = VarPtr(value)
     GetMem2 ByVal ptr, typ
     
     Do While typ = &H400C
@@ -543,22 +543,22 @@ Private Function CalcHash(Value As Variant) As Long
         
         GetMem4 ByVal ptr, ptr
         If ptr = 0 Then CalcHash = 0: Exit Function
-        GetMem4 ByVal ptr - 4, Length
-        Length = Length \ 2
+        GetMem4 ByVal ptr - 4, length
+        length = length \ 2
         
-        If Length >= UBound(locbuf) Then
-            ReDim locbuf(Length + 1)
+        If length >= UBound(locbuf) Then
+            ReDim locbuf(length + 1)
         End If
         
         If mCompareMode = vbTextCompare Then
         
-            LCMapString lcid, LCMAP_LOWERCASE, ByVal ptr, Length, locbuf(0), Length
+            LCMapString lcid, LCMAP_LOWERCASE, ByVal ptr, length, locbuf(0), length
         Else
         
-            memcpy locbuf(0), ByVal ptr, Length * 2&
+            memcpy locbuf(0), ByVal ptr, length * 2&
         End If
         
-        For i = 0 To Length - 1
+        For i = 0 To length - 1
             CalcHash = (CalcHash * 37& + locbuf(i) And &HFFFF&)
         Next
         
@@ -614,10 +614,10 @@ Private Function CalcHash(Value As Variant) As Long
         
     Case vbDecimal
         
-        If Value > decMax Or Value < decMin Then
+        If value > decMax Or value < decMin Then
             CalcHash = 0
         Else
-            GetMem4 CSng(Value), CalcHash
+            GetMem4 CSng(value), CalcHash
         End If
         
     Case vbNull, vbEmpty
@@ -702,7 +702,7 @@ Private Function CreateAsm() As Long
     
     memcpy ByVal lpAddr, dat(0), &HEC
     
-    hLib = GetModuleHandle(StrPtr("kernel32"))
+    hLib = GetModuleHandle(StrPtr("kernel32.dll"))
     If hLib = 0 Then GoTo Clear
     
     lpProc = GetProcAddress(hLib, "GetProcessHeap")
@@ -715,7 +715,7 @@ Private Function CreateAsm() As Long
     
     GetMem4 lpProc - (lpAddr + &H38 + 4), ByVal lpAddr + &H38
     
-    hLib = GetModuleHandle(StrPtr("oleaut32"))
+    hLib = GetModuleHandle(StrPtr("oleaut32.dll"))
     If hLib = 0 Then GoTo Clear
     
     lpProc = GetProcAddress(hLib, "VariantCopy")
@@ -748,9 +748,9 @@ Private Sub Class_Initialize()
     ReDim locbuf(255)
     
     First.hash = -1
-    First.Index = -1
+    First.index = -1
     Last.hash = -1
-    Last.Index = -1
+    Last.index = -1
     mCount = 0
     lcid = GetUserDefaultLCID()
     decMin = CDec(-9999999)
