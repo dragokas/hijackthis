@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin VB.Form frmProcMan 
    Caption         =   "Process Manager"
-   ClientHeight    =   4095
+   ClientHeight    =   4140
    ClientLeft      =   60
    ClientTop       =   -240
    ClientWidth     =   8610
@@ -16,7 +16,7 @@ Begin VB.Form frmProcMan
    EndProperty
    Icon            =   "frmProcMan.frx":0000
    LinkTopic       =   "Form1"
-   ScaleHeight     =   4095
+   ScaleHeight     =   4140
    ScaleWidth      =   8610
    StartUpPosition =   2  'CenterScreen
    Begin VB.Frame fraProcessManager 
@@ -30,14 +30,14 @@ Begin VB.Form frmProcMan
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   3855
+      Height          =   3975
       Left            =   120
       TabIndex        =   0
       Top             =   120
       Width           =   8415
       Begin VB.CommandButton cmdProcManRefresh 
          Caption         =   "Re&fresh"
-         Height          =   375
+         Height          =   495
          Left            =   1440
          TabIndex        =   7
          Top             =   3360
@@ -46,7 +46,7 @@ Begin VB.Form frmProcMan
       Begin VB.CommandButton cmdProcManBack 
          Cancel          =   -1  'True
          Caption         =   "E&xit"
-         Height          =   375
+         Height          =   495
          Left            =   4440
          TabIndex        =   6
          Top             =   3360
@@ -54,7 +54,7 @@ Begin VB.Form frmProcMan
       End
       Begin VB.CommandButton cmdProcManRun 
          Caption         =   "&Run..."
-         Height          =   375
+         Height          =   495
          Left            =   2760
          TabIndex        =   5
          Top             =   3360
@@ -62,7 +62,7 @@ Begin VB.Form frmProcMan
       End
       Begin VB.CommandButton cmdProcManKill 
          Caption         =   "&Kill process"
-         Height          =   375
+         Height          =   495
          Left            =   120
          TabIndex        =   4
          Top             =   3360
@@ -83,7 +83,7 @@ Begin VB.Form frmProcMan
          Left            =   3480
          TabIndex        =   2
          Top             =   330
-         Width           =   1215
+         Width           =   1935
       End
       Begin VB.ListBox lstProcManDLLs 
          Height          =   1140
@@ -118,7 +118,7 @@ Begin VB.Form frmProcMan
          Left            =   5760
          TabIndex        =   9
          Top             =   3330
-         Width           =   1575
+         Width           =   2295
       End
       Begin VB.Label lblConfigInfo 
          AutoSize        =   -1  'True
@@ -548,11 +548,11 @@ Private Sub Form_Resize()
     fraProcessManager.Width = Me.ScaleWidth - 240
     lstProcessManager.Width = Me.ScaleWidth - 480
     lstProcManDLLs.Width = Me.ScaleWidth - 480
-    chkProcManShowDLLs.Left = Me.ScaleWidth - 1575
-    imgProcManSave.Left = Me.ScaleWidth - 2055
-    imgProcManCopy.Left = Me.ScaleWidth - 2415
+    chkProcManShowDLLs.Left = Me.ScaleWidth - 2200
+    imgProcManSave.Left = Me.ScaleWidth - 2700
+    imgProcManCopy.Left = Me.ScaleWidth - 3100
 
-    fraProcessManager.Height = Me.ScaleHeight - 225
+    fraProcessManager.Height = Me.ScaleHeight - 125
     If chkProcManShowDLLs.value = 0 Then
         lstProcessManager.Height = Me.ScaleHeight - 1470
     Else

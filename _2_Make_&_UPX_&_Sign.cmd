@@ -271,6 +271,9 @@ if %errorlevel% neq 0 (pause & exit /B)
 Tools\7zip\7za.exe t -pclean "%cd%\_%AppTitle%_pass_clean.zip"
 if %errorlevel% neq 0 (pause & exit /B)
 
+copy /y MSCOMCTL.OCX.bak MSCOMCTL.OCX
+copy /y HiJackThis.zip HiJackThis_test.zip
+
 ping -n 2 127.1 >NUL
 
 exit /B

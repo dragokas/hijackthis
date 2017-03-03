@@ -1684,12 +1684,13 @@ Public Sub CreateUninstallKey(bCreate As Boolean) ' if false -> delete registry 
         If RegGetString(HKEY_LOCAL_MACHINE, Setup_Key, "DisplayName") <> _
                    "HiJackThis " & App.Major & "." & App.Minor & "." & App.Revision Then
             RegCreateKey HKEY_LOCAL_MACHINE, Setup_Key
-            RegSetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "DisplayName", "HiJackThis " & App.Major & "." & App.Minor & "." & App.Revision
+            RegSetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "DisplayName", "HiJackThis Fork " & App.Major & "." & App.Minor & "." & App.Revision
             RegSetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "UninstallString", """" & AppPath(True) & """ /uninstall"
             RegSetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "DisplayIcon", AppPath(True)
             RegSetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "DisplayVersion", App.Major & "." & App.Minor & "." & App.Revision
-            RegSetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "Publisher", "TrendMicro"
+            RegSetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "Publisher", "Alex Dragokas"
             'RegSetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "URLInfoAbout", "http://www.spywareinfo.com/~merijn/"
+            'RegSetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "URLInfoAbout", "https://sourceforge.net/projects/hjt/"
             RegSetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "URLInfoAbout", "https://sourceforge.net/projects/hjt/"
         End If
     Else

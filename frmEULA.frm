@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin VB.Form frmEULA 
    BorderStyle     =   4  'Fixed ToolWindow
-   Caption         =   "Trend Micro HiJackThis v."
+   Caption         =   "HiJackThis Fork v."
    ClientHeight    =   7200
    ClientLeft      =   4785
    ClientTop       =   4830
@@ -54,7 +54,7 @@ Begin VB.Form frmEULA
       Alignment       =   2  'Center
       AutoSize        =   -1  'True
       BackStyle       =   0  'Transparent
-      Caption         =   "Welcome to HiJackThis 3"
+      Caption         =   "Welcome to HiJackThis Fork 3"
       BeginProperty Font 
          Name            =   "Constantia"
          Size            =   15
@@ -66,10 +66,10 @@ Begin VB.Form frmEULA
       EndProperty
       ForeColor       =   &H00FF0000&
       Height          =   360
-      Left            =   1545
+      Left            =   1185
       TabIndex        =   3
       Top             =   120
-      Width           =   3615
+      Width           =   4335
    End
 End
 Attribute VB_Name = "frmEULA"

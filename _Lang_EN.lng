@@ -60,11 +60,11 @@
 ;
 ; (1090-1099)
 ;
-1090=Welcome to HiJackThis 3
+1090=Welcome to HiJackThis Fork 3
 1091=    HiJackThis is a free and open source tool designed to combat against malware and unwanted adware. It is provided "AS IS" without warranty of any kind. You may use this software at your own risk.
          This software is not permitted for commercial purposes.
          You need to read and accept license agreement to continue:
-1092=Trend Micro HiJackThis - License Agreement
+1092=HiJackThis Fork - License Agreement
 1093=I Accept
 1094=I DO NOT Accept
 ;
@@ -184,6 +184,7 @@
 
      1. HiJackThis
      2. StartupList
+     3. How to use?
 
      
      
@@ -243,11 +244,11 @@
      Description
      -------------
      
-     Trend Micro HiJackThis is a tool for scanning your computer to find and fix settings changed by adware, spyware, malware and other unwanted programs.
-     HiJackThis does not target specific programs/URLs, just the methods used by hijackers to force you onto their sites.
-     As a result, false positives are imminent. Unless you are sure what you're doing, you should always consult with knowledgable folks BEFORE DELETING ANYTHING.
+	HiJackThis Fork is a tool for scanning your computer to find and fix settings changed by adware, spyware, malware and other unwanted programs.
+	HiJackThis does not target specific programs/URLs, just the methods used by hijackers to force you onto their sites.
+	As a result, false positives are imminent. Unless you are sure what you're doing, you should always consult with knowledgable folks BEFORE DELETING ANYTHING.
      
-     It comes with several usefull tools available under new 'Tools' menu and 'Misc tools' tab:
+	It comes with several usefull tools available under new 'Tools' menu and 'Misc tools' tab:
      
        - StartupList 2
        - Process Manager
@@ -265,38 +266,39 @@
      
       * Microsoft™ Windows™ 10 / 8.1 / 8 / 7 / Vista / XP, include Server editions, both 32 and 64 bitness.
 
-0034=
+
      Authors and copyrights
      ----------------------------
      
      Developers:
      
-     - Merijn Bellekom { original author }
-     - Polshyn Stanislav a.k.a. { Alex Dragokas } (Major update 3 and all forks, refactoring, additions, tools integration)
+     - Polshyn Stanislav { Alex Dragokas } - author of fork (major update 3), refactoring, additions, tools integration
+     - Merijn Bellekom - original author
+     - Trend Micro - the owner of the original version (2.0.5)
      
      Consulting:
      
-     - regist { VIRUSNET } (updates, User's manual)
-     - SafeZone.cc team (updates)
+     - regist - VIRUSNET association - updates, user's manual
+     - SafeZone.cc team - updates
      
      Coordination:
      
-     - Fernando Mercês { Trend Micro }
-     - Loucif Kharouni { Trend Micro }
+     - Fernando Mercês -= Trend Micro =-
+     - Loucif Kharouni -= Trend Micro =-
      
      Translations:
      
-     Russian: Dragokas, ScriptMakeR, Boris, fseto { SafeZone.cc }, wylek.ru team
+     Russian: Dragokas, ScriptMakeR, Boris, fseto (SafeZone.cc), wylek.ru team
      
      Third-party development:
      HJT uses code snippets and third-party developments written by:
      
-     - Anatolii Krivous a.k.a. { The Trick } ('TrickHashTable' class)
-     - Boris Fayfel a.k.a. { Catstail } ('Process', 'CRC32' classes)
-     - VolteFace ('StringBuilder' class)
+     - Anatolii Krivous { The Trick } - 'TrickHashTable' class
+     - Boris Fayfel { Catstail } - 'Process' and 'CRC32' classes
+     - VolteFace - 'StringBuilder' class
      
      
-     Copyrights
+     License
      -------------
      
      HiJackThis is a free and open-source tool and distributed under GPLv2 license.
@@ -370,7 +372,8 @@
 ; (90-159, 1600 - 1649)
 ;
 0091=StartupList scan
-0092=A simple tool that lists all and every auto starting program on your system. Commonly used to troubleshoot malfunctioning systems, trojan/viral infections, new spyware/malware breed and the likes.
+0092=
+     A simple tool that lists all and every auto starting program on your system. Commonly used to troubleshoot malfunctioning systems, trojan/viral infections, new spyware/malware breed and the likes.
 0100=System tools
 0101=Process manager
 0102=Small process manager, working much like the Task Manager.
@@ -391,7 +394,7 @@
      Make sure you entered the name of the service correctly.
 0117=The following service was found:
 0118=Are you absolutely sure you want to delete this service?
-0120=Advanced settings (these will not be saved)
+0120=Advanced settings
 0121=Calculate MD5 of files if possible
 0122=Include environment variables in logfile
 0123=Ignore Microsoft files
@@ -593,7 +596,7 @@
 ;
 ; (1850 - 1899)
 ;
-1850=Authenticode EDS checker (by Dragokas)
+1850=Authenticode EDS checker (created by Dragokas)
 1851=This tool will create a detail report about digital signature of files/folders you specify below:
 1852=Recursively (include subfolders)
 1853=Include files in Windows\System32 (SysWOW64) folder
@@ -615,7 +618,7 @@
 ;
 ; (1900 - 1949)
 ;
-1900=Registry Key Unlocker (by Dragokas)
+1900=Registry Key Unlocker (created by Dragokas)
 1901=Enter Registry Key(s) to unlock and reset access rights:
 1902=Recursively (process keys and all subkeys)
 1903=Go

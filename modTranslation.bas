@@ -318,8 +318,8 @@ Public Sub ReloadLanguage()
                     Case "0035": .chkHelp(0).Caption = Translation
                     Case "0036": .chkHelp(1).Caption = Translation
                     Case "0037": .chkHelp(2).Caption = Translation
-                    Case "0038": .chkHelp(3).Caption = Translation
-                    Case "0039": .chkHelp(4).Caption = Translation
+                    'Case "0038": .chkHelp(3).Caption = Translation
+                    Case "0039": .chkHelp(3).Caption = Translation
                     
                     '; =========== Menu (main form) ===========
                     
@@ -380,7 +380,7 @@ Public Sub ReloadLanguage()
                     Case "0108": .lblInfo(6).Caption = Translation
                     
                     Case "0109": .cmdADSSpy.Caption = Translation
-                    Case "0110": .lblInfo(5).Caption = Translation & " (ADS Spy v." & ADSspyVer & ")"
+                    Case "0110": .lblInfo(5).Caption = Translation
                     
                     Case "0224": .cmdARSMan.Caption = Translation
                     Case "0112": .lblInfo(7).Caption = Translation

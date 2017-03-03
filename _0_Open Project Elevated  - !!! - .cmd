@@ -27,6 +27,7 @@ if defined TaskExist (
     call :GetPrivileges
     tools\REGTLIB.EXE %SystemRoot%\System32\msdatsrc.tlb
     tools\REGTLIB.EXE %SystemRoot%\SysWow64\msdatsrc.tlb
+    regsvr32.exe /s MSCOMCTL.OCX
   ) else (
     call :CreateTask
     call :RunProject

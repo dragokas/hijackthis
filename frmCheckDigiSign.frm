@@ -40,7 +40,7 @@ Begin VB.Form frmCheckDigiSign
          TabIndex        =   10
          Top             =   360
          Value           =   -1  'True
-         Width           =   3135
+         Width           =   3495
       End
    End
    Begin VB.Frame fraFilter 
@@ -53,11 +53,11 @@ Begin VB.Form frmCheckDigiSign
       Begin VB.OptionButton OptExtension 
          Caption         =   "by extension"
          Height          =   255
-         Left            =   1200
+         Left            =   1320
          TabIndex        =   13
          Top             =   240
          Value           =   -1  'True
-         Width           =   1335
+         Width           =   1575
       End
       Begin VB.OptionButton OptAllFiles 
          Caption         =   "All Files"
@@ -65,7 +65,7 @@ Begin VB.Form frmCheckDigiSign
          Left            =   120
          TabIndex        =   12
          Top             =   240
-         Width           =   1095
+         Width           =   1215
       End
       Begin VB.CheckBox chkIncludeSys 
          Caption         =   "Include files in Windows\System32 (SysWOW64) folder"
@@ -85,11 +85,11 @@ Begin VB.Form frmCheckDigiSign
       End
       Begin VB.TextBox txtExtensions 
          Height          =   285
-         Left            =   2640
+         Left            =   3000
          TabIndex        =   6
          Text            =   ".exe;.dll;.sys"
          Top             =   240
-         Width           =   2295
+         Width           =   1935
       End
    End
    Begin VB.CommandButton CmdExit 

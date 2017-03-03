@@ -6574,20 +6574,27 @@ ErrorHandler:
 End Sub
 
 Public Sub CheckO23Item()   '2.0.7 fixed
+    'https://www.bleepingcomputer.com/tutorials/how-malware-hides-as-a-service/
+    
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "CheckO23Item - Begin"
     
     'enum NT services
-    Dim sServices$(), i&, J&, sName$, sDisplayName$, ext$
+    Dim sServices$(), i&, J&, sName$, sDisplayName$, ext$, tmp$
     Dim lStart&, lType&, sFile$, sCompany$, sHit$, sBuf$, sTmp$, IsCompositeCmd As Boolean, sCompositeFile$, arr
-    Dim bHideDisabled As Boolean, NoFile As Boolean, Stady As Long
+    Dim bHideDisabled As Boolean, NoFile As Boolean, Stady As Long, sServiceDll As String, sServiceDll_2 As String, bDllMissing As Boolean
     Dim ServState As SERVICE_STATE
+    Dim argc As Long
+    Dim argv() As String
+    Dim isSafeMSCmdLine As Boolean
+    Dim SignResult As SignResult_TYPE
+    Dim SignResult2 As SignResult_TYPE
+    Dim FoundFile As String
+    Dim IsMSCert As Boolean
     
     If Not bIsWinNT Then Exit Sub
     
     bHideDisabled = True
-    
-    If bIgnoreAllWhitelists Then bHideMicrosoft = False
     
     Stady = 0: Dbg CStr(Stady)
     
@@ -6609,25 +6616,54 @@ Public Sub CheckO23Item()   '2.0.7 fixed
         
         If lType < 16 Or (lStart = 4 And bHideDisabled) Then GoTo Continue
         
-        Stady = 5: Dbg CStr(Stady)
-        sDisplayName = RegGetString(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\" & sName, "DisplayName")
-        Stady = 6: Dbg CStr(Stady)
-        If Len(sDisplayName) = 0 Then
-            sDisplayName = sName
-        Else
-            If Left$(sDisplayName, 1) = "@" Then                    'extract string resource from file
-                Stady = 7: Dbg CStr(Stady)
-                sBuf = GetStringFromBinary(, , EnvironW(sDisplayName))
-                Stady = 8: Dbg CStr(Stady)
-                If 0 <> Len(sBuf) Then sDisplayName = sBuf
-            End If
-        End If
+'        Stady = 5: Dbg CStr(Stady)
+'        sDisplayName = RegGetString(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\" & sName, "DisplayName")
+'        Stady = 6: Dbg CStr(Stady)
+'        If Len(sDisplayName) = 0 Then
+'            sDisplayName = sName
+'        Else
+'            If Left$(sDisplayName, 1) = "@" Then                    'extract string resource from file
+'                Stady = 7: Dbg CStr(Stady)
+'                sBuf = GetStringFromBinary(, , EnvironW(sDisplayName))
+'                Stady = 8: Dbg CStr(Stady)
+'                If 0 <> Len(sBuf) Then sDisplayName = sBuf
+'            End If
+'        End If
         
         Stady = 9: Dbg CStr(Stady)
         sFile = RegGetString(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\" & sName, "ImagePath")
+        sServiceDll = RegGetString(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\" & sName & "\Parameters", "ServiceDll")
         Stady = 10: Dbg CStr(Stady)
         
-        'If sDisplayName = "DokanMounter" Then Stop
+        bDllMissing = False
+        
+        'Checking Service Dll
+        If Len(sServiceDll) <> 0 Then
+            sServiceDll = EnvironW(UnQuote(sServiceDll))
+            
+            tmp = FindOnPath(sServiceDll)
+            
+            If Len(tmp) = 0 Then
+                sServiceDll = sServiceDll & " (file missing)"
+                bDllMissing = True
+            Else
+                sServiceDll = tmp
+            End If
+        End If
+        
+        If bDllMissing Then
+            
+            sServiceDll_2 = RegGetString(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\" & sName, "ServiceDll")
+            
+            If Len(sServiceDll_2) <> 0 Then
+                
+                sServiceDll_2 = EnvironW(UnQuote(sServiceDll_2))
+                
+                tmp = FindOnPath(sServiceDll_2)
+                
+                If Len(tmp) <> 0 Then sServiceDll = tmp: bDllMissing = False
+            End If
+        End If
         
         'cleanup filename
         If Len(sFile) <> 0 Then
@@ -6736,17 +6772,9 @@ Public Sub CheckO23Item()   '2.0.7 fixed
         ServState = GetServiceRunState(sName)
         
         If lType >= 16 Then
-          If Not (lStart = 4 And bHideDisabled) Then  ' _
-           'and Not (InStr(sCompany, "Microsoft") > 0 Or InStr(sCompany, "Корпорация Майкрософт") > 0 And bHideMicrosoft) Then
+          If Not (lStart = 4 And bHideDisabled) Then
                
             Stady = 22: Dbg CStr(Stady)
-               
-            Dim argc As Long
-            Dim argv() As String
-            Dim isSafeMSCmdLine As Boolean
-            Dim SignResult As SignResult_TYPE
-            Dim FoundFile As String
-            Dim IsMSCert As Boolean
             
             IsCompositeCmd = False
             isSafeMSCmdLine = False
@@ -6844,16 +6872,20 @@ Public Sub CheckO23Item()   '2.0.7 fixed
             
             If Not IsCompositeCmd And sFile <> "(no file)" Then    'иначе, такая проверка уже выполнена ранее
                 Stady = 34: Dbg CStr(Stady)
-                'If sFile = "C:\Windows\system32\SearchIndexer.exe" Then Stop
                 SignVerify sFile, 0&, SignResult
                 DoEvents
             End If
             
             Stady = 35: Dbg CStr(Stady)
             
+            'override by checkind EDS of service dll if original file is Microsoft (usually, svchost)
+            If Len(sServiceDll) <> 0 And (Not bDllMissing) Then
+                SignVerify sServiceDll, 0&, SignResult
+            End If
+            
             With SignResult
                 ' если корневой сертификат цепочки доверия принадлежит Майкрософт, то исключаем службу из лога
-                If Not (IsMicrosoftCertHash(.HashRootCert) And .isLegit And bHideMicrosoft) Then
+                If bDllMissing Or Not (IsMicrosoftCertHash(.HashRootCert) And .isLegit And bHideMicrosoft) Then
                     Stady = 36: Dbg CStr(Stady)
                     If bMD5 Then
                         If sFile <> "(no file)" Then sFile = sFile & GetFileMD5(sFile)
@@ -6862,11 +6894,20 @@ Public Sub CheckO23Item()   '2.0.7 fixed
                     'sHit = "O23 - Service " & IIf(ServState <> SERVICE_STOPPED, "R", "S") & lStart & _
                     '    ": " & sDisplayName & " - (" & sName & ")" & " - " & sCompany & " - " & sFile
                     
-                    sHit = "O23 - Service " & IIf(ServState <> SERVICE_STOPPED, "R", "S") & lStart & _
-                        ": " & sDisplayName & " - HKLM\..\" & sName & " - " & sFile
+                    'sHit = "O23 - Service " & IIf(ServState <> SERVICE_STOPPED, "R", "S") & lStart & _
+                    '    ": " & sDisplayName & " - HKLM\..\" & sName & " - " & sFile
                     
-                    If .isLegit And 0 <> Len(.SubjectName) Then
+                    sHit = "O23 - " & IIf(ServState <> SERVICE_STOPPED, "R", "S") & lStart & _
+                        ": " & sName & " - " & sFile
+                    
+                    If Len(sServiceDll) <> 0 Then
+                        sHit = sHit & "; ""ServiceDll"" = " & sServiceDll
+                    End If
+                    
+                    If .isLegit And 0 <> Len(.SubjectName) And Not bDllMissing Then
                         sHit = sHit & " (" & .SubjectName & ")"
+                    Else
+                        sHit = sHit & " (not signed)"
                     End If
                     
                     If Not IsOnIgnoreList(sHit) Then

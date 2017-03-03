@@ -287,7 +287,9 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
             Call LogError(Err, Stady)
             
             If Err.Number <> 0 Then
-                taskState = taskState & " (Unknown)"
+                If taskState <> "Unknown" Then
+                    taskState = taskState & " (Unknown)"
+                End If
             Else
                 If lTaskState <> TASK_STATE_DISABLED _
                     And bTaskEnabled = False Then
@@ -352,13 +354,22 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
             
             If Not isSafe Then
               
-              sHit = "O22 - ScheduledTask: " & "(" & taskState & ") " & registeredTask.Name & " - " & DirParent & " - " & RunObj & _
+              'sHit = "O22 - ScheduledTask: " & "(" & taskState & ") " & registeredTask.Name & " - " & DirParent & " - " & RunObj & _
+              '  IIf(Len(RunArgs) <> 0, " " & RunArgs, "") & _
+              '  IIf(NoFile, " (file missing)", "") & _
+              '  IIf(0 <> Len(SignResult.SubjectName) And SignResult.isLegit, " (" & SignResult.SubjectName & ")", "") & _
+              '  IIf(0 <> Len(HRESULT), " (" & HRESULT & ", idx: " & StadyLast & ")", "") '& _
+              '  'IIf(NoFile Or 0 <> Len(HRESULT), " <==== ATTENTION", "")
+              
+              sHit = "O22 - " & taskState & ": " & _
+                IIf(DirParent = "{root}", registeredTask.Name, DirParent & "\" & registeredTask.Name)
+              
+              sHit = sHit & " - " & RunObj & _
                 IIf(Len(RunArgs) <> 0, " " & RunArgs, "") & _
                 IIf(NoFile, " (file missing)", "") & _
                 IIf(0 <> Len(SignResult.SubjectName) And SignResult.isLegit, " (" & SignResult.SubjectName & ")", "") & _
-                IIf(0 <> Len(HRESULT), " (" & HRESULT & ", idx: " & StadyLast & ")", "") '& _
-                'IIf(NoFile Or 0 <> Len(HRESULT), " <==== ATTENTION", "")
-              
+                IIf(0 <> Len(HRESULT), " (" & HRESULT & ", idx: " & StadyLast & ")", "")
+
               If Not IsOnIgnoreList(sHit) Then
               
                 If bMD5 Then

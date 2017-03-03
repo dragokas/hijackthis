@@ -1,8 +1,8 @@
-﻿# Trend Micro HiJackThis v3
+﻿# HiJackThis Fork v3
 
 ## Overview
 
-HiJackThis is a free utility for Microsoft Windows that generates a report of non-standard parameters of registry and file system for selectively removal of items related to the activities of malware and security risks.
+HiJackThis Fork is a free utility for Microsoft Windows that generates a report of non-standard parameters of registry and file system for selectively removal of items related to the activities of malware and security risks.
 
 HJT primarily rely on hijacking methods rather than a database, that's why it makes no separation between safe and unsafe items, giving you the ability to selectively remove items from your machine.
 
@@ -47,3 +47,11 @@ If you are not expert, we recommend you to submit your case to online helper for
 
 Operating System
   * Microsoft™ Windows™ 10 / 8.1 / 8 / 7 / Vista / XP
+
+## Copyrights
+
+* Polshyn Stanislav { Alex Dragokas } - author of fork (major update 3), refactoring, additions, tools integration
+* Merijn Bellekom - original author
+* Trend Micro - the owner of the original version (2.0.5)
+
+HiJackThis is distributed under GPLv2 license.
