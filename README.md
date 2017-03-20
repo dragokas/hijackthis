@@ -2,19 +2,9 @@
 
 ## Overview
 
-HiJackThis Fork is a free utility for Microsoft Windows that generates a report of non-standard parameters of registry and file system for selectively removal of items related to the activities of malware and security risks.
+HiJackThis Fork is a free utility for Microsoft Windows that generates a report of non-standard parameters of registry and file system for selectively removal of items related to the activities of malware, adware and security risks.
 
 HJT primarily rely on hijacking methods rather than a database, that's why it makes no separation between safe and unsafe items, giving you the ability to selectively remove items from your machine.
-
-Also HiJackThis comes with several tools useful in manually removing malware from a computer:
- * StartupList 2
- * Process Manager
- * Uninstall manager
- * Hosts file manager
- * Alternative Data Spy
- * Delete file / service staff
- * Digital Signature Checker
- * Registry key unlocker
 
 ## Features
 
@@ -33,15 +23,33 @@ Also HiJackThis comes with several tools useful in manually removing malware fro
  * Improved interface
  * More securely
 
+Also HiJackThis comes with several tools useful in manually removing malware from a computer:
+ * (updated) StartupList 2 
+ * (updated) Process Manager
+ * (updated) Uninstall manager
+ * (updated) Hosts file manager
+ * (updated) Alternative Data Spy
+ * (updated) Delete file / service staff
+ * (new) Digital Signature Checker
+ * (new) Registry key unlocker
+
 ## Log analysis
 
 IMPORTANT: HiJackThis does not make value based calls between what is considered good or bad.
 It is important to exercise caution and avoid making changes to your computer settings, unless you have expert knowledge.
 
 If you are not expert, we recommend you to submit your case to online helper forums such as:
+- Russian: http://safezone.cc/pravila/
 - English: www.bleepingcomputer.com ; http://www.cnet.com/forums/
 - French: http://forum.malekal.com/
-- Russian: http://safezone.cc/pravila/
+
+However, currently only Russian anti-malware supporting team (VIRUSNET association) provide analysis of HiJackThis Fork logs. Feel free to ask help there.
+
+## Technical help
+
+Actual User's manual for this fork available on Russian: https://safezone.cc/threads/25184/
+With hot additions from author in this topic: https://safezone.cc/threads/27470/
+You can also freely ask question, report bug or propose innovation by creating issue here: https://github.com/dragokas/hijackthis/issues
 
 ## System Requirements
 
@@ -50,8 +58,9 @@ Operating System
 
 ## Copyrights
 
-* Polshyn Stanislav { Alex Dragokas } - author of fork (major update 3), refactoring, additions, tools integration
-* Merijn Bellekom - original author
-* Trend Micro - the owner of the original version (2.0.5)
+ * Polshyn Stanislav { Alex Dragokas } - author of fork (major update 3), refactoring, additions, tools integration
+ * Merijn Bellekom - original author
+ * Trend Micro - the owner of the original version (2.0.5): https://sourceforge.net/projects/hjt/
 
-HiJackThis is distributed under GPLv2 license.
+HiJackThis Fork by Alex Dragokas is a continuation of Trend Micro HiJackThis development, initially supported officially, but further Trend Micro refused any supporting and closed its GitHub repository.
+HiJackThis Fork is distributed under GPLv2 license.

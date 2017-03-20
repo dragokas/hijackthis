@@ -137,6 +137,12 @@ Private Sub Form_Initialize()
     Set ErrLogCustomText = New clsStringBuilder 'tracing
     Set oDictFileExist = New clsTrickHashTable  'file exists cache
     oDictFileExist.CompareMode = 1
+    
+    'If InStr(1, Command(), "/debugtofile", 1) <> 0 Then
+    If InStr(1, Command(), "/debug", 1) <> 0 Then
+        DebugToFile = True
+        OpenDebugLogHandle
+    End If
 End Sub
 
 Private Sub Form_Load()

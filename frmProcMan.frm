@@ -354,10 +354,12 @@ Public Sub SaveProcessList(objProcess As ListBox, objDLL As ListBox, Optional bD
                 '[file version]
                 '[company name]
                 Print #ff, Translate(186) & vbTab & vbTab & Translate(187) & vbTab & Translate(188)
-                For J = 0 To UBound(arList)
-                    sModule = arList(J)
-                    Print #ff, sModule & vbTab & vbTab & GetFilePropVersion(sModule) & vbTab & GetFilePropCompany(sModule)
-                Next
+                If IsArrDimmed(arList) Then
+                    For J = 0 To UBound(arList)
+                        sModule = arList(J)
+                        Print #ff, sModule & vbTab & vbTab & GetFilePropVersion(sModule) & vbTab & GetFilePropCompany(sModule)
+                    Next
+                End If
                 Print #ff, vbNullString
                 DoEvents
             Next

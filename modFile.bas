@@ -156,26 +156,28 @@ Public Function FileExists(ByVal sFile As String, Optional bUseWow64 As Boolean)
     On Error GoTo ErrorHandler:
     
     Static bLastFile(2) As String, bLastStatus(2) As Boolean
+    Dim bIsWinSysDir As Boolean
     
-    sFile = Trim$(sFile)
-    If Len(sFile) = 0 Then Exit Function
-    If Left$(sFile, 2) = "\\" Then Exit Function 'DriveType = "REMOTE"
+    AppendErrorLogCustom "FileExists - Begin", "File: " & sFile
+    
+    sFile = EnvironW(Trim$(sFile))
+    If Len(sFile) = 0 Then GoTo ExitFunc
+    If Left$(sFile, 2) = "\\" Then GoTo ExitFunc 'DriveType = "REMOTE"
     
     'little cache stack :)
     If bScanMode Then ' used only in HJT Checking mode. This flag has set in "StartScan" function
-        If StrComp(sFile, bLastFile(2), 1) = 0 Then FileExists = bLastStatus(2): Exit Function
-        If StrComp(sFile, bLastFile(1), 1) = 0 Then FileExists = bLastStatus(1): Exit Function
-        If StrComp(sFile, bLastFile(0), 1) = 0 Then FileExists = bLastStatus(0): Exit Function
-    End If
-    
-    'advanced cache - to minimize future numbers of file system redirector calls
-    Dim bIsWinSysDir As Boolean
-    
-    If StrComp(Left$(sFile, Len(sWinSysDir)), sWinSysDir, vbTextCompare) = 0 Then
-        bIsWinSysDir = True
-        If oDictFileExist.Exists(sFile) Then
-            FileExists = oDictFileExist(sFile)
-            GoTo Finalize
+        If StrComp(sFile, bLastFile(2), 1) = 0 Then FileExists = bLastStatus(2): GoTo ExitFunc
+        If StrComp(sFile, bLastFile(1), 1) = 0 Then FileExists = bLastStatus(1): GoTo ExitFunc
+        If StrComp(sFile, bLastFile(0), 1) = 0 Then FileExists = bLastStatus(0): GoTo ExitFunc
+        
+        'advanced cache - to minimize future numbers of file system redirector calls
+
+        If StrComp(Left$(sFile, Len(sWinSysDir)), sWinSysDir, vbTextCompare) = 0 Then
+            bIsWinSysDir = True
+            If oDictFileExist.Exists(sFile) Then
+                FileExists = oDictFileExist(sFile)
+                GoTo Finalize
+            End If
         End If
     End If
     
@@ -224,6 +226,7 @@ Finalize:
     bLastStatus(1) = bLastStatus(2)
     bLastStatus(2) = FileExists
     
+ExitFunc:
     AppendErrorLogCustom "FileExists - End", "File: " & sFile, "bUseWow64: " & bUseWow64, "Exists: " & FileExists
     Exit Function
 ErrorHandler:
@@ -236,6 +239,8 @@ Public Function FolderExists(ByVal sFolder$, Optional bUseWow64 As Boolean) As B
     AppendErrorLogCustom "FolderExists - Begin", "Folder: " & sFolder, "bUseWow64: " & bUseWow64
     
     Dim ret As Long, Redirect As Boolean, bOldStatus As Boolean
+    
+    AppendErrorLogCustom "FolderExists - Begin", "Folder: " & sFolder
     
     sFolder = Trim$(sFolder)
     If Len(sFolder) = 0 Then Exit Function
@@ -455,7 +460,8 @@ End Function
 
 Public Function PutW(hFile As Long, pos As Long, vInPtr As Long, cbToWrite As Long, Optional doAppend As Boolean) As Boolean
     On Error GoTo ErrorHandler
-    AppendErrorLogCustom "PutW - Begin", "Handle: " & hFile, "pos: " & pos, "Bytes: " & cbToWrite
+    'don't uncomment it -> recurse on DebugToFile !!!
+    'AppendErrorLogCustom "PutW - Begin", "Handle: " & hFile, "pos: " & pos, "Bytes: " & cbToWrite
     
     Dim lBytesWrote  As Long
     
@@ -473,9 +479,10 @@ Public Function PutW(hFile As Long, pos As Long, vInPtr As Long, cbToWrite As Lo
         
     End If
     
-    AppendErrorLogCustom "PutW - End"
+    'AppendErrorLogCustom "PutW - End"
     Exit Function
 ErrorHandler:
+    'don't change/append this identifier !!! -> can cause recurse on DebugToFile !!!
     ErrorMsg Err, "modFile.PutW"
 End Function
 
@@ -524,9 +531,6 @@ Public Function ToggleWow64FSRedirection(bEnable As Boolean, Optional PathNecess
     Static IsNotRedirected  As Boolean
     Dim lr                  As Long
     
-    'If "c:\windows\system32\napinsp.dll" = PathNecessity Then Stop
-    'If PathNecessity = "H:\_AVZ\Наши разработки\HiJackThis\beta\2.0.7" Then Stop
-    
     OldStatus = Not IsNotRedirected
     
     If Not bIsWin64 Then Exit Function
@@ -555,8 +559,6 @@ Public Function ToggleWow64FSRedirection(bEnable As Boolean, Optional PathNecess
                 "Old State: " & OldStatus, "New State: " & bEnable
         End If
     End If
-    
-    'If PathNecessity = "H:\_AVZ\Наши разработки\HiJackThis\beta\2.0.7" Then Stop
     
 End Function
 
@@ -1079,3 +1081,24 @@ ErrorHandler:
     Debug.Print Err; Err.Description; "DirW"
 End Function
 
+Public Function GetEmptyName(ByVal sFullPath As String) As String
+
+    Dim sExt As String
+    Dim sName As String
+    Dim sPath As String
+    Dim i As Long
+
+    If Not FileExists(sFullPath) Then
+        GetEmptyName = sFullPath
+    Else
+        sExt = GetExtensionName(sFullPath)
+        sPath = GetPathName(sFullPath)
+        sName = GetFileName(sFullPath)
+        Do
+            i = i + 1
+            sFullPath = BuildPath(sPath, sName & "(" & i & ")" & sExt)
+        Loop While FileExists(sFullPath)
+        
+        GetEmptyName = sFullPath
+    End If
+End Function

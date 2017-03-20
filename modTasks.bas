@@ -111,10 +111,10 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
     Dim bTaskEnabled    As Boolean
     '------------------------------
     'Dim ComeBack        As Boolean
-    Dim Stady           As Long
+    Dim Stady           As Single
     Dim HRESULT         As String
     Dim errN            As Long
-    Dim StadyLast       As Long
+    Dim StadyLast       As Single
     Dim sTmp            As String
     
     
@@ -124,10 +124,12 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
     Dim taskCollection As Object
     Set taskCollection = rootFolder.GetTasks(TASK_ENUM_HIDDEN)
     Stady = 1
+    AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
 
     Dim numberOfTasks As Long
     numberOfTasks = taskCollection.Count
     Stady = 2
+    AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
 
     Dim registeredTask  As IRegisteredTask
     Dim taskDefinition  As ITaskDefinition
@@ -187,6 +189,7 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                 'Debug.Print "Task Name: " & .Name
                 'Debug.Print "Task Path: " & .Path
                 Stady = 6
+                AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
 
                 Err.Clear
                 Set taskDefinition = .Definition
@@ -195,6 +198,7 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                 If Err.Number = 0 Then
                   
                   Stady = 7
+                  AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
                   
                   Set taskActions = taskDefinition.Actions
                   Call LogError(Err, Stady)
@@ -202,6 +206,7 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                   For Each taskAction In taskActions
                     
                     Stady = 8
+                    AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
                     
                     ActionType = taskAction.Type
                     Call LogError(Err, Stady)
@@ -263,6 +268,8 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
             'BrokenTask will be under error ignor mode until log line on this cycle
             
             Stady = 15
+            AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
+            
             Select Case registeredTask.State
                 Case "0"
                     taskState = "Unknown"
@@ -282,22 +289,27 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
             lTaskState = registeredTask.State
             Call LogError(Err, Stady)
             
+            AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
+            
             Stady = 17
             bTaskEnabled = registeredTask.Enabled
             Call LogError(Err, Stady)
             
+            AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
+            
             If Err.Number <> 0 Then
                 If taskState <> "Unknown" Then
-                    taskState = taskState & " (Unknown)"
+                    taskState = taskState & ", Unknown"
                 End If
             Else
                 If lTaskState <> TASK_STATE_DISABLED _
                     And bTaskEnabled = False Then
-                        taskState = taskState & " (Disabled)"
+                        taskState = taskState & ", Disabled"
                 End If
             End If
             
             Stady = 18
+            AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
             
             'get last saved error
             Call LogError(Err, StadyLast, errN, False)
@@ -314,6 +326,9 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                     'IIf(NoFile Or 0 <> Len(HRESULT), " <==== ATTENTION", "")
             End If
             
+            Stady = 19
+            AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
+            
             If Len(RunObjExpanded) <> 0 Then RunObj = RunObjExpanded
             RunObj = Replace$(RunObj, "\\", "\")
             
@@ -321,12 +336,18 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
             
             isSafe = isInTasksWhiteList(DirParent & "\" & registeredTask.Name, RunObj, RunArgs)
             
+            Stady = 19.1
+            AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
+            
             If ActionType = TASK_ACTION_EXEC Then
                 RunObj = PathNormalize(RunObj)
                 SignVerify RunObj, 0&, SignResult
             Else
                 WipeSignResult SignResult
             End If
+            
+            Stady = 19.2
+            AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
             
             If isSafe Then
                 AppendErrorLogCustom "[OK] EnumTasksInITaskFolder: WhiteListed."
@@ -343,7 +364,12 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                             AppendErrorLogCustom "[Failed] EnumTasksInITaskFolder: File - " & RunObj & " => is not Microsoft EDS !!! <======"
                             Debug.Print "Task MS file has wrong EDS: " & RunObj
                         End If
+                        
+                        Stady = 19.3
+                        AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
+                        
                         If FileExists(RunObj) Then NoFile = False
+                        
                     End If
                 End If
             Else
@@ -351,6 +377,9 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
             End If
             
             'If RunObj = "C:\WINDOWS\system32\spaceman.exe" Then Stop
+            
+            Stady = 19.4
+            AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
             
             If Not isSafe Then
               
@@ -360,23 +389,35 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
               '  IIf(0 <> Len(SignResult.SubjectName) And SignResult.isLegit, " (" & SignResult.SubjectName & ")", "") & _
               '  IIf(0 <> Len(HRESULT), " (" & HRESULT & ", idx: " & StadyLast & ")", "") '& _
               '  'IIf(NoFile Or 0 <> Len(HRESULT), " <==== ATTENTION", "")
-              
-              sHit = "O22 - " & taskState & ": " & _
+
+              sHit = "O22 - Task " & "(" & taskState & "): " & _
                 IIf(DirParent = "{root}", registeredTask.Name, DirParent & "\" & registeredTask.Name)
               
+'I temporarily remove EDS name in log
+'              sHit = sHit & " - " & RunObj & _
+'                IIf(Len(RunArgs) <> 0, " " & RunArgs, "") & _
+'                IIf(NoFile, " (file missing)", "") & _
+'                IIf(0 <> Len(SignResult.SubjectName) And SignResult.isLegit, " (" & SignResult.SubjectName & ")", "") & _
+'                IIf(0 <> Len(HRESULT), " (" & HRESULT & ", idx: " & StadyLast & ")", "")
+
               sHit = sHit & " - " & RunObj & _
                 IIf(Len(RunArgs) <> 0, " " & RunArgs, "") & _
                 IIf(NoFile, " (file missing)", "") & _
-                IIf(0 <> Len(SignResult.SubjectName) And SignResult.isLegit, " (" & SignResult.SubjectName & ")", "") & _
                 IIf(0 <> Len(HRESULT), " (" & HRESULT & ", idx: " & StadyLast & ")", "")
 
               If Not IsOnIgnoreList(sHit) Then
+              
+                Stady = 19.5
+                AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
               
                 If bMD5 Then
                     If FileExists(RunObj) Then
                         sHit = sHit & GetFileMD5(RunObj)
                     End If
                 End If
+                
+                Stady = 19.6
+                AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
                 
                 With Result
                     .Section = "O22"
@@ -390,12 +431,17 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
               End If
             End If
 
+            Stady = 19.7
+            AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
+
         Next
     End If
     
     On Error GoTo ErrorHandler:
     
     Stady = 20
+    AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
+    
     Set taskActionExec = Nothing
     Set taskActionEmail = Nothing
     Set taskActionMsg = Nothing
@@ -406,8 +452,13 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
     Set taskCollection = Nothing
     
     Stady = 21
+    AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
+    
     Dim taskFolderCollection As ITaskFolderCollection
     Set taskFolderCollection = rootFolder.GetFolders(0&)
+    
+    Stady = 22
+    AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
     
     For Each taskFolder In taskFolderCollection 'deep to subfolders
         EnumTasksInITaskFolder taskFolder, True
@@ -433,6 +484,8 @@ End Sub
 
 Public Function PathNormalize(ByVal sFileName As String) As String
     
+    AppendErrorLogCustom "PathNormalize - Begin", "File: " & sFileName
+    
     Dim sTmp As String, bShouldSeek As Boolean
     
     sFileName = UnQuote(sFileName)
@@ -451,6 +504,8 @@ Public Function PathNormalize(ByVal sFileName As String) As String
     End If
     
     PathNormalize = sFileName
+    
+    AppendErrorLogCustom "PathNormalize - End"
 End Function
 
 Public Function isInTasksWhiteList(sPathName As String, sTargetFile As String, sArguments As String) As Boolean
@@ -500,7 +555,7 @@ Public Function UnScreenChar(sText As String) As String
     UnScreenChar = LTrim(Replace$(sText, "\\\,", ";"))
 End Function
 
-Sub LogError(objError As ErrObject, in_out_Stady As Long, Optional out_LastLoggedErrorNumber As Long, Optional in_ActionPut As Boolean = True, Optional ClearAll As Boolean)
+Sub LogError(objError As ErrObject, in_out_Stady As Single, Optional out_LastLoggedErrorNumber As Long, Optional in_ActionPut As Boolean = True, Optional ClearAll As Boolean)
     '
     'in_ActionPut - if false, this function fill _out_ parameters with last saved error number and Stady position
     

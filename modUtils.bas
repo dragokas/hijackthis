@@ -216,6 +216,8 @@ Public Function GetStringFromBinary(Optional ByVal sFile As String, Optional ByV
     
     If 0 = Len(sFile) Then Exit Function
     
+    sFile = EnvironW(sFile)
+    
     If Not FileExists(sFile) Then
         sFile = FindOnPath(sFile)
         If 0 = Len(sFile) Then Exit Function

@@ -51,6 +51,9 @@ Public Function GetFileMD5(sFileName$, Optional lFileSize&, Optional JustMD5 As 
     Dim aBuf()      As Byte
     Dim OldRedir    As Boolean
     Dim Redirect    As Boolean
+    
+    If StrEndWith(sFileName, "(file missing)") Then Exit Function
+    If StrEndWith(sFileName, "(no file)") Then Exit Function
 
     Redirect = ToggleWow64FSRedirection(False, sFileName, OldRedir)
     

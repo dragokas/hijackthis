@@ -32,11 +32,11 @@
 0011=Scan
 0012=Save log...
 0013=Fix checked
-0014=Info on selected item...
+0014=Info on selected item
 0015=Other stuff
-0016=Info...
+0016=Help
 0017=Back
-0018=Config...
+0018=Config
 0019=Back
 0020=Add checked to ignorelist
 0025=This will set HiJackThis to ignore the checked items, unless they change. Continue?
@@ -80,7 +80,7 @@
 1115=Misc Tools
 1116=Online Guide
 1117=None of above, just start the program
-1118=Do not show this menu after starting
+1118=Do not show this menu after starting the program
 1119=Language:
 ;
 ; ================ Context menu ==============
@@ -204,7 +204,8 @@
        /SysTray	- run program minimized in notification area (system tray)
        /LangEN	- force use English language for user interface
        /LangRU	- force use Russian language for user interface
-       /debug		- debug mode (run tracing). Renaming application file to HiJackThis_debug.exe will be the same.
+       /debug		- tracing mode. Sequence of functions execution will be appended to main log and HiJackThis_debug.log file. You can also rename file to HiJackThis_debug.exe.
+       /debugtofile	- trace info will be saved to HiJackThis_debug.log file only.
      
      
      2. StartupList
@@ -245,10 +246,10 @@
      -------------
      
 	HiJackThis Fork is a tool for scanning your computer to find and fix settings changed by adware, spyware, malware and other unwanted programs.
-	HiJackThis does not target specific programs/URLs, just the methods used by hijackers to force you onto their sites.
-	As a result, false positives are imminent. Unless you are sure what you're doing, you should always consult with knowledgable folks BEFORE DELETING ANYTHING.
+	HiJackThis checking is not based on black lists, specific programs or URLs, it check the methods used by hijackers to force you onto their sites.
+	Thereby, false positives are imminent. Unless you are sure what you're doing, you should always consult with knowledgable folks BEFORE DELETING ANYTHING.
      
-	It comes with several usefull tools available under new 'Tools' menu and 'Misc tools' tab:
+	HiJackThis comes with several usefull tools available under button 'Misc Tools' and new bar in menu 'Tools':
      
        - StartupList 2
        - Process Manager
@@ -291,6 +292,7 @@
      Russian: Dragokas, ScriptMakeR, Boris, fseto (SafeZone.cc), wylek.ru team
      
      Third-party development:
+
      HJT uses code snippets and third-party developments written by:
      
      - Anatolii Krivous { The Trick } - 'TrickHashTable' class
@@ -301,7 +303,7 @@
      License
      -------------
      
-     HiJackThis is a free and open-source tool and distributed under GPLv2 license.
+     HiJackThis Fork is a fork of Trend Micro HiJackThis program, made by Alex Dragokas and SafeZone.cc team, and distributed as open source under original GPLv2 license.
 
 0035=Sections
 0036=Keys

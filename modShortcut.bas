@@ -32,11 +32,20 @@ Dim oSLink          As IShellLinkW
 Dim CLSID_InternetShortcut  As UUID
 
 
-Public Function GetFileFromShortcut(Path As String, Optional out_Args As String) As String
+Public Function GetFileFromShortcut(Path As String, Optional out_Args As String, Optional ForceLNK As Boolean) As String
+    On Error GoTo ErrorHandler
+
     Dim Target  As String
     Dim ObjPath As String
+    Dim sExt    As String
 
-    Select Case UCase$(GetExtensionName(Path))
+    If ForceLNK Then
+        sExt = ".LNK"
+    Else
+        sExt = UCase$(GetExtensionName(Path))
+    End If
+
+    Select Case sExt
     
         Case ".LNK"
         
@@ -59,17 +68,22 @@ Public Function GetFileFromShortcut(Path As String, Optional out_Args As String)
     End Select
     
     GetFileFromShortcut = Target
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "Parser.GetFileFromShortcut", "Path: " & Path
+    If inIDE Then Stop: Resume Next
 End Function
 
 
 Public Function GetPathFromIDL(sIDL As String) As String
-    'On Error GoTo ErrorHandler
+    On Error Resume Next
+    
     Dim shl     As Object
     Dim fld     As Object
     Dim Path    As String
     Dim itm     As Variant
     
-    On Error Resume Next
     AppendErrorLogCustom "GetPathFromIDL - Begin", "IDL: " & sIDL
     
     Set shl = CreateObject("shell.application")
@@ -102,7 +116,7 @@ Public Function GetPathFromIDL(sIDL As String) As String
     AppendErrorLogCustom "GetPathFromIDL - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "Parser.GetPathFromIDL", "IDL: ", sIDL
+    ErrorMsg Err, "Parser.GetPathFromIDL", "IDL: " & sIDL
     If inIDE Then Stop: Resume Next
 End Function
 

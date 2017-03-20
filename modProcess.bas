@@ -683,13 +683,44 @@ Public Function ProcessExist(NameOrPath As String) As Boolean
     End If
 End Function
 
-Public Function GetDLLList(lPID&, arList() As String)
+Public Function GetDLLList(lPID As Long, arList() As String)
+    On Error GoTo ErrorHandler:
+
+    Erase arList
+
     Dim lProcesses&(1 To 1024), lNeeded&, lNumProcesses&
     Dim hProc&, sProcessName$, lModules&(1 To 1024)
     Dim sModuleName$, J&, Cnt&, myDLLs() As String
-    On Error Resume Next
+    
+    '//TODO: add support for x64 processes:
+    'replace by WMI CIM_ProcessExecutable: http://2011sg.poshcode.org/94.html
+    'or Win32_ModuleLoadTrace
+    'or RTL_PROCESS_MODULE_INFORMATION: http://www.rohitab.com/discuss/topic/40696-list-loaded-drivers-with-ntquerysysteminformation/
+    'https://doxygen.reactos.org/d7/d55/ldrapi_8c_source.html#l00972
     
     ReDim myDLLs(1024): Cnt = 0
+
+'    If OSver.MajorMinor >= 6 Then 'Vista+
+'        If GetServiceRunState("winmgmt") = SERVICE_RUNNING Then
+'
+'            Dim oWMI As Object, colMod As Object, oMod As Object
+'
+'            Set oWMI = CreateObject("winmgmts:{impersonationLevel=Impersonate}!\\.\root\cimv2")
+'            Set colMod = oWMI.ExecQuery("Select * from CIM_ProcessExecutable")
+'
+'            For Each oMod In colMod
+'                With oMod.Dependent ' CIM_Process
+'                    Debug.Print .Handle
+'                    Debug.Print .Caption
+'                End With
+'                With oMod.Antecedent ' CIM_DataFile
+'                    Debug.Print .Path
+'                End With
+'            Next
+'
+'            Exit Function
+'        End If
+'    End If
     
     hProc = OpenProcess(IIf(bIsWinVistaOrLater, PROCESS_QUERY_LIMITED_INFORMATION, PROCESS_QUERY_INFORMATION) Or PROCESS_VM_READ, 0, lPID)
     If hProc <> 0 Then
@@ -709,9 +740,35 @@ Public Function GetDLLList(lPID&, arList() As String)
         End If
         CloseHandle hProc
     End If
-    If Cnt > 0 Then Cnt = Cnt - 1
-    ReDim Preserve myDLLs(Cnt)
-    arList() = myDLLs()
+    
+'    hProc = OpenProcess(PROCESS_QUERY_INFORMATION Or PROCESS_VM_READ, 0, lPID)
+'        If hProc > 0 Then
+'            lNeeded = 0
+'            If EnumProcessModules(hProc, lModules(1), CLng(1024) * 4, lNeeded) > 0 Then
+'                For i = 2 To 1024
+'                    If lModules(i) = 0 Then Exit For
+'                    sModuleName = String$(260, 0)
+'                    GetModuleFileNameExA hProc, lModules(i), sModuleName, Len(sModuleName)
+'                    sModuleName = TrimNull(sModuleName)
+'                    If sModuleName <> vbNullString And sModuleName <> "?" Then
+'                        myDLLs(Cnt) = sModuleName
+'                        Cnt = Cnt + 1
+'                    End If
+'                Next i
+'            End If
+'            CloseHandle hProc
+'        End If
+
+    If Cnt > 0 Then
+        Cnt = Cnt - 1
+        ReDim Preserve myDLLs(Cnt)
+        arList() = myDLLs()
+    End If
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetDLLList"
+    If inIDE Then Stop: Resume Next
 End Function
 
 Public Sub RefreshDLLListNT(lPID&, objList As ListBox)
@@ -749,83 +806,15 @@ Public Function GetRunningProcesses$()
     End If
 End Function
 
-Public Function GetLoadedModules$(lPID&, sProcess$)
-    Dim sModuleList$
-    Dim hProc&, lNeeded&, i&, lNumProcesses&, sModuleName$, lModules&(1 To 1024)
-    Dim hSnap&, uME32 As MODULEENTRY32
-
-    If Not bIsWinNT Then
-        hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, lPID)
-        If hSnap <> -1 Then
-            uME32.dwSize = Len(uME32)
-            If Module32First(hSnap, uME32) = 0 Then
-                CloseHandle hSnap
-                Exit Function
-            End If
-        End If
-        Do
-            sModuleName = TrimNull(uME32.szExePath)
-            If InStr(1, sProcess, sModuleName, vbTextCompare) = 0 Then
-                sModuleList = sModuleList & "|" & sModuleName
-            End If
-            If bAbort Then Exit Function
-        Loop Until Module32Next(hSnap, uME32) = 0
-        CloseHandle hSnap
-    Else
-        hProc = OpenProcess(PROCESS_QUERY_INFORMATION Or PROCESS_VM_READ, 0, lPID)
-        If hProc > 0 Then
-            lNeeded = 0
-            If EnumProcessModules(hProc, lModules(1), CLng(1024) * 4, lNeeded) > 0 Then
-                For i = 2 To 1024
-                    If lModules(i) = 0 Then Exit For
-                    sModuleName = String$(260, 0)
-                    GetModuleFileNameExA hProc, lModules(i), sModuleName, Len(sModuleName)
-                    sModuleName = TrimNull(sModuleName)
-                    If sModuleName <> vbNullString And sModuleName <> "?" Then
-                        sModuleList = sModuleList & "|" & sModuleName
-                    End If
-                    If bAbort Then Exit Function
-                Next i
-            End If
-            CloseHandle hProc
-        End If
-    End If
-
-    If sModuleList <> vbNullString Then GetLoadedModules = Mid$(sModuleList, 2)
-End Function
-
-Public Function GetLoadedModulesToArray(lPID As Long) As MODULEENTRY32()
-    Dim hSnap As Long, n&, uME32 As MODULEENTRY32, sModuleName As String, sProcess As String
-    Dim aModules() As MODULEENTRY32
-    ReDim aModules(1024)
-
-    '//TODO: add support for x64 processes:
-    'replace by WMI CIM_ProcessExecutable: http://2011sg.poshcode.org/94.html
-    'or RTL_PROCESS_MODULE_INFORMATION: http://www.rohitab.com/discuss/topic/40696-list-loaded-drivers-with-ntquerysysteminformation/
+Public Function GetLoadedModules(lPID As Long, sProcess As String) As String
+    '//TODO: sProcess
     
-    sProcess = GetFilePathByPID(lPID)
+    Dim DLLList() As String
+    
+    Call GetDLLList(lPID, DLLList)
 
-    If lPID <> 0 Then
-        hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, lPID)
-        If hSnap <> -1 Then
-            uME32.dwSize = Len(uME32)
-            If Module32First(hSnap, uME32) = 0 Then
-                CloseHandle hSnap
-                Exit Function
-            End If
-        End If
-        Do
-            uME32.szExePath = TrimNull(uME32.szExePath)
-            uME32.szModule = TrimNull(uME32.szModule)
-            aModules(n) = uME32
-            n = n + 1
-        Loop Until Module32Next(hSnap, uME32) = 0
-        CloseHandle hSnap
-        If n <> 0 Then
-            ReDim Preserve aModules(n - 1)
-            GetLoadedModulesToArray = aModules
-        End If
+    If IsArrDimmed(DLLList) Then
+        GetLoadedModules = Join(DLLList, "|")
     End If
 End Function
-
 

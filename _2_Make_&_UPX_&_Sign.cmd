@@ -251,6 +251,10 @@ Tools\7zip\7za.exe t "%cd%\%AppTitle%.zip"
 :: If there was errors
 if %errorlevel% neq 0 (pause & exit /B)
 
+:: For debug purposes
+copy /y "%cd%\%AppTitle%.exe" "%AppTitle%_debug.exe"
+Tools\7zip\7za.exe a -mx9 -y -o"%cd%" "%AppTitle%_debug.zip" "%AppTitle%_debug.exe"
+
 :: For Vir Labs
 del %AppTitle%.ex_ 2>NUL
 ren "%cd%\%AppTitle%.exe" %AppTitle%.ex_
@@ -274,7 +278,15 @@ if %errorlevel% neq 0 (pause & exit /B)
 copy /y MSCOMCTL.OCX.bak MSCOMCTL.OCX
 copy /y HiJackThis.zip HiJackThis_test.zip
 
-ping -n 2 127.1 >NUL
+::ping -n 2 127.1 >NUL
+
+echo.
+set "ch="
+set /p "ch=Would you like to write hot-update.txt ? (Y/N)"
+if /i "%ch%" neq "n" (
+  start "" hot-changelog.txt
+  start "" ChangeLog\ChangeLog.txt
+)
 
 exit /B
 

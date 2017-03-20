@@ -1830,3 +1830,22 @@ Public Sub RegDelHJT(sName$)
     RegDelVal HKEY_LOCAL_MACHINE, "Software\TrendMicro\HiJackThis", sName
 End Sub
 
+Public Function GetDefaultProgram(sExtension As String) As String 'e.g., ".txt"
+    Dim TXTProg As String
+    Dim TXTClassID  As String
+    Dim sFile As String
+    
+    TXTClassID = GetRegData(HKEY_CLASSES_ROOT, sExtension, "")
+    
+    If TXTClassID <> "" Then
+        TXTProg = EnvironW(GetRegData(HKEY_CLASSES_ROOT, TXTClassID & "\shell\open\command", ""))
+        
+        SplitIntoPathAndArgs TXTProg, sFile, , True
+        TXTProg = sFile
+    End If
+    
+    If Not FileExists(TXTProg) Then
+        TXTProg = "rundll32.exe shell32,ShellExec_RunDLL"
+    End If
+    GetDefaultProgram = TXTProg
+End Function
