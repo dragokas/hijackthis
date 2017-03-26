@@ -505,7 +505,7 @@ Private Sub Form_Load()
     Me.Icon = frmMain.Icon
     
     ' if Win XP -> disable all window styles from option buttons
-    If Not OSver.bIsVistaOrLater Then
+    If OSver.MajorMinor >= 5.1 And OSver.MajorMinor <= 5.2 Then
         For Each ctl In Me.Controls
             If TypeName(ctl) = "OptionButton" Then
                 Set OptB = ctl

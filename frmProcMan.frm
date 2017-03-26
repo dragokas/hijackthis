@@ -181,32 +181,6 @@ Option Explicit
 '--
 'v1.05 - dll list is updated when browsing process list with keyboard
 
-Private Type PROCESSENTRY32
-    dwSize As Long
-    cntUsage As Long
-    th32ProcessID As Long
-    th32DefaultHeapID As Long
-    th32ModuleID As Long
-    cntThreads As Long
-    th32ParentProcessID As Long
-    pcPriClassBase As Long
-    dwFlags As Long
-    szExeFile As String * 260
-End Type
-
-Private Type MODULEENTRY32
-    dwSize As Long
-    th32ModuleID As Long
-    th32ProcessID As Long
-    GlblcntUsage As Long
-    ProccntUsage As Long
-    modBaseAddr As Long
-    modBaseSize As Long
-    hModule As Long
-    szModule As String * 256
-    szExePath As String * 260
-End Type
-
 Private Type THREADENTRY32
     dwSize As Long
     dwRefCount As Long
@@ -217,12 +191,6 @@ Private Type THREADENTRY32
     dwFlags As Long
 End Type
 
-
-Private Declare Function CreateToolhelp32Snapshot Lib "kernel32.dll" (ByVal lFlags As Long, ByVal lProcessID As Long) As Long
-Private Declare Function Process32First Lib "kernel32.dll" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
-Private Declare Function Process32Next Lib "kernel32.dll" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
-Private Declare Function Module32First Lib "kernel32.dll" (ByVal hSnapshot As Long, uProcess As MODULEENTRY32) As Long
-Private Declare Function Module32Next Lib "kernel32.dll" (ByVal hSnapshot As Long, uProcess As MODULEENTRY32) As Long
 Private Declare Function Thread32First Lib "kernel32.dll" (ByVal hSnapshot As Long, uThread As THREADENTRY32) As Long
 Private Declare Function Thread32Next Lib "kernel32.dll" (ByVal hSnapshot As Long, ByRef ThreadEntry As THREADENTRY32) As Long
 Private Declare Function TerminateProcess Lib "kernel32.dll" (ByVal hProcess As Long, ByVal uExitCode As Long) As Long
@@ -261,7 +229,7 @@ Public Sub RefreshProcessList(objList As ListBox)
     
     objList.Clear
     Do
-        sExeFile = TrimNull(uPE32.szExeFile)
+        sExeFile = TrimNull(StrConv(uPE32.szExeFile, vbFromUnicode))
         objList.AddItem uPE32.th32ProcessID & vbTab & sExeFile
     Loop Until Process32Next(hSnap, uPE32) = 0
     CloseHandle hSnap
@@ -272,7 +240,7 @@ Public Sub RefreshProcessListNT(objList As ListBox)
         Dim sProcessName As String
         Dim Process() As MY_PROC_ENTRY
         
-        lNumProcesses = GetProcesses_Zw(Process)
+        lNumProcesses = GetProcesses(Process)
         
         If lNumProcesses Then
         
@@ -310,7 +278,7 @@ Public Sub RefreshDLLList(lPID&, objList As ListBox)
     End If
     
     Do
-        sDllFile = TrimNull(uME32.szExePath)
+        sDllFile = TrimNull(StrConv(uME32.szExePath, vbFromUnicode))
         objList.AddItem sDllFile
     Loop Until Module32Next(hSnap, uME32) = 0
     CloseHandle hSnap

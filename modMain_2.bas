@@ -80,6 +80,7 @@ Public Sub CheckO25Item()
     Dim Stady As Single, ComeBack As Boolean, NoConsumer As Boolean, NoFilter As Boolean, bOtherConsumerClass As Boolean
     
     If GetServiceRunState("winmgmt") <> SERVICE_RUNNING Then Exit Sub
+    If OSver.MajorMinor <= 5 Then Exit Sub 'XP+ only
     
     Dim aNameSpaces() As String
     ReDim aNameSpaces(0)

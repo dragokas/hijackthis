@@ -33,7 +33,7 @@ Private Type PROCESSENTRY32
     th32ParentProcessID As Long
     pcPriClassBase As Long
     dwFlags As Long
-    szExeFile As String * MAX_PATH
+    szExeFile As Long 'As String * MAX_PATH
 End Type
 
 Private Type PROCESS_INFORMATION
@@ -70,9 +70,9 @@ Enum Win_Style
     SW_SHOWNORMAL = 1&
 End Enum
 
-Private Declare Function Process32First Lib "kernel32.dll" (ByVal hSnapshot As Long, ByRef lppe As PROCESSENTRY32) As Long
-Private Declare Function Process32Next Lib "kernel32.dll" (ByVal hSnapshot As Long, ByRef lppe As PROCESSENTRY32) As Long
-Private Declare Function CreateToolhelp32Snapshot Lib "kernel32.dll" (ByVal dwFlags As Long, ByVal th32ProcessID As Long) As Long
+Private Declare Function CreateToolhelp32Snapshot Lib "kernel32.dll" (ByVal lFlags As Long, ByVal lProcessID As Long) As Long
+Private Declare Function Process32First Lib "kernel32.dll" Alias "Process32FirstW" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
+Private Declare Function Process32Next Lib "kernel32.dll" Alias "Process32NextW" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
 Private Declare Function GetWindowThreadProcessId Lib "user32.dll" (ByVal hWnd As Long, lpdwProcessId As Long) As Long
 Private Declare Function OpenProcess Lib "kernel32.dll" (ByVal dwDesiredAccess As Long, ByVal bInheritHandle As Long, ByVal dwProcessId As Long) As Long
 Private Declare Function WaitForSingleObject Lib "kernel32.dll" (ByVal hHandle As Long, ByVal dwMilliseconds As Long) As Long
@@ -153,11 +153,11 @@ Function IsRunned(Optional ByRef ProcessName As String, Optional ByRef ProcessID
             If ProcessName = vbNullString Then
                 If pe.th32ProcessID = ProcessID Then
                     IsRunned = True
-                    ProcessName = Left$(pe.szExeFile, InStr(pe.szExeFile, Chr(0)) - 1)
+                    ProcessName = TrimNull(StrConv(pe.szExeFile, vbFromUnicode))
                     Exit Do
                 End If
             Else
-                If lstrcmpi(StrPtr(pe.szExeFile), StrPtr(ProcessName)) = 0 Then
+                If StrComp(TrimNull(StrConv(pe.szExeFile, vbFromUnicode)), ProcessName, 1) = 0 Then
                     IsRunned = True
                     ProcessID = pe.th32ProcessID
                     Exit Do
@@ -285,7 +285,7 @@ Private Function GetPIDsByName(ProcessName As String) As Long()
 
     If Process32First(hSnap, pe) Then
         Do
-            If lstrcmpi(StrPtr(pe.szExeFile), StrPtr(ProcessName)) = 0 Then
+            If StrComp(TrimNull(StrConv(pe.szExeFile, vbFromUnicode)), ProcessName, 1) = 0 Then
                 
                 ReDim Preserve PID(UBound(PID) + 1)
                 PID(UBound(PID)) = pe.th32ProcessID
@@ -327,9 +327,11 @@ Public Function ProcessClose( _
 
         PID() = GetPIDsByName(ProcessName)
         
-        For i = 1 To UBound(PID)
-            ProcessClose , , True, 0, PID(i), SendCloseMsg 'Async mode
-        Next
+        If IsArrDimmed(PID) Then
+            For i = 1 To UBound(PID)
+                ProcessClose , , True, 0, PID(i), SendCloseMsg 'Async mode
+            Next
+        End If
         
         If Not Async Then
             If TimeOutMs = INFINITE Then
@@ -471,23 +473,23 @@ End Function
 
 Private Sub ParseCommandLine(Line As String, argc As Long, argv() As String)
     On Error GoTo ErrorHandler:
-    Dim ptr     As Long
+    Dim Ptr     As Long
     Dim index   As Long
     Dim strLen  As Long
     Dim strAdr  As Long
     
-    ptr = CommandLineToArgvW(StrPtr(Line), argc)
+    Ptr = CommandLineToArgvW(StrPtr(Line), argc)
     ReDim argv(argc)
     argv(0) = App.Path & "\" & App.EXEName & ".exe"
     If argc = 0 Then Exit Sub
     
     For index = 1 To argc
-        GetMem4 ByVal ptr + (index - 1) * 4, strAdr
+        GetMem4 ByVal Ptr + (index - 1) * 4, strAdr
         strLen = lstrlen(strAdr)
         argv(index) = Space(strLen)
         lstrcpyn StrPtr(argv(index)), strAdr, strLen + 1
     Next
-    GlobalFree ptr
+    GlobalFree Ptr
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "clsProcess_ParseCommandLine", "Line:", Line

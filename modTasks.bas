@@ -116,6 +116,7 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
     Dim errN            As Long
     Dim StadyLast       As Single
     Dim sTmp            As String
+    Dim RunObjCom       As String
     
     
     'Debug.Print "Folder Name: " & rootFolder.Name
@@ -175,6 +176,7 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
             Stady = 5
             lTaskState = 0
             bTaskEnabled = False
+            RunObjCom = ""
             
             
             DirFull = registeredTask.Path
@@ -258,6 +260,8 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                             'Debug.Print "  Data:    " & taskActionCOM.Data
                             RunObj = taskActionCOM.ClassId & IIf(Len(taskActionCOM.Data) <> 0, "," & taskActionCOM.Data, "")
                             Call LogError(Err, Stady)
+                            
+                            RunObjCom = EnvironW(RegGetString(HKEY_CLASSES_ROOT, "CLSID\" & taskActionCOM.ClassId & "\InprocServer32", vbNullString))
                     End Select
                     
                   Next
@@ -341,7 +345,9 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
             
             If ActionType = TASK_ACTION_EXEC Then
                 RunObj = PathNormalize(RunObj)
-                SignVerify RunObj, 0&, SignResult
+                If isSafe Then
+                    SignVerify RunObj, 0&, SignResult
+                End If
             Else
                 WipeSignResult SignResult
             End If
@@ -349,6 +355,7 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
             Stady = 19.2
             AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
             
+            ' Digital signature checking
             If isSafe Then
                 AppendErrorLogCustom "[OK] EnumTasksInITaskFolder: WhiteListed."
                 
@@ -371,12 +378,38 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                         If FileExists(RunObj) Then NoFile = False
                         
                     End If
+                ElseIf ActionType = TASK_ACTION_COM_HANDLER And Len(RunObjCom) <> 0 Then
+                
+                    Debug.Print RunObjCom
+                
+                    SignVerify RunObjCom, 0&, SignResult
+                
+                    bIsMicrosoftFile = (IsMicrosoftCertHash(SignResult.HashRootCert) And SignResult.isLegit)
+                    
+                    isSafe = (bIsMicrosoftFile And bHideMicrosoft)
+                    
+                    If Not isSafe Then
+                        If Not bIsMicrosoftFile Then
+                            AppendErrorLogCustom "[Failed] EnumTasksInITaskFolder: File - " & RunObjCom & " => is not Microsoft EDS !!! <======"
+                            Debug.Print "Task MS file has wrong EDS: " & RunObjCom
+                        End If
+                    End If
                 End If
             Else
                 AppendErrorLogCustom "[Failed] EnumTasksInITaskFolder: NOT WhiteListed !!! <======"
             End If
             
-            'If RunObj = "C:\WINDOWS\system32\spaceman.exe" Then Stop
+            If ActionType = TASK_ACTION_COM_HANDLER Then
+                If Len(RunObjCom) = 0 Then
+                    RunObj = RunObj & " - (no file)"
+                Else
+                    RunObj = RunObj & " - " & RunObjCom
+                    NoFile = Not FileExists(RunObjCom)
+                    If NoFile Then
+                        RunObj = RunObj & " (file missing)"
+                    End If
+                End If
+            End If
             
             Stady = 19.4
             AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
@@ -433,7 +466,6 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
 
             Stady = 19.7
             AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
-
         Next
     End If
     

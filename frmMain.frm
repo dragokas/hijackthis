@@ -1618,9 +1618,6 @@ Private Type MY_PROC_LOG
 End Type
 
 Private Declare Function SendMessage Lib "user32.dll" Alias "SendMessageW" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, lParam As Any) As Long
-Private Declare Function CreateToolhelpSnapshot Lib "kernel32.dll" Alias "CreateToolhelp32Snapshot" (ByVal lFlags As Long, ByVal lProcessID As Long) As Long
-Private Declare Function Process32First Lib "kernel32.dll" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
-Private Declare Function Process32Next Lib "kernel32.dll" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
 Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteW" (ByVal hWnd As Long, ByVal lpOperation As Long, ByVal lpFile As Long, ByVal lpParameters As Long, ByVal lpDirectory As Long, ByVal nShowCmd As Long) As Long
 Private Declare Function SHRunDialog Lib "shell32.dll" Alias "#61" (ByVal hOwner As Long, ByVal Unknown1 As Long, ByVal Unknown2 As Long, ByVal szTitle As String, ByVal szPrompt As String, ByVal uFlags As Long) As Long
 Private Declare Function GetMem4 Lib "msvbvm60.dll" (src As Any, dst As Any) As Long
@@ -1763,7 +1760,7 @@ Private Sub Form_Load()
     lblMD5.Caption = ""
     
     ' if Win XP -> disable all window styles from buttons on frames
-    If Not OSver.bIsVistaOrLater Then
+    If bIsWinXP Then
         For Each ctl In Me.Controls
             If TypeName(ctl) = "CommandButton" Then
                 Set Btn = ctl
@@ -1781,16 +1778,18 @@ Private Sub Form_Load()
         Set Btn = Nothing
         Set ctl = Nothing
     End If
-    ' disable visual bugs with .caption property of frames
-    For Each ctl In Me.Controls
-        If TypeName(ctl) = "Frame" Then
-            Set Fra = ctl
-            If Fra.Name = "fraHostsMan" Or Fra.Name = "fraUninstMan" Then
-                SetWindowTheme Fra.hWnd, StrPtr(" "), StrPtr(" ")
+    ' disable visual bugs with .caption property of frames (XP+)
+    If OSver.MajorMinor >= 5.1 Then
+        For Each ctl In Me.Controls
+            If TypeName(ctl) = "Frame" Then
+                Set Fra = ctl
+                If Fra.Name = "fraHostsMan" Or Fra.Name = "fraUninstMan" Then
+                    SetWindowTheme Fra.hWnd, StrPtr(" "), StrPtr(" ")
+                End If
             End If
-        End If
-    Next
-    Set Fra = Nothing
+        Next
+        Set Fra = Nothing
+    End If
     
     CenterForm Me
     
@@ -2779,7 +2778,7 @@ Private Sub cmdFix_Click()
     bShownToolbarWarning = False
     bSeenHostsFileAccessDeniedWarning = False
     
-    Call GetProcesses_Zw(gProcess)
+    Call GetProcesses(gProcess)
     
     For i = 0 To lstResults.ListCount - 1
         If lstResults.Selected(i) = True Then
@@ -3139,7 +3138,7 @@ Private Sub SaveReport()
                             Dim hRet As Long
                             Dim pIDL As Long
             
-                            If OSver.MajorMinor >= 5.1 Then
+                            If OSver.MajorMinor >= 5.1 Then '(XP+)
             
                                 pIDL = ILCreateFromPath(StrPtr(sLogFile))
     
@@ -3512,7 +3511,6 @@ End Sub
 
 Private Function CreateLogFile() As String
     Dim sLog$, i&, sProcessList$
-    Dim hSnap&, uProcess As PROCESSENTRY32, sDummy$ '9x
     Dim lProcesses&(1 To 1024), lNeeded&, lNumProcesses&
     Dim hProc&, sProcessName$, lModules&(1 To 1024) 'NT
     Dim Col As New Collection, Cnt&, sPrefix$, sPrefixLast$
@@ -3525,47 +3523,10 @@ Private Function CreateLogFile() As String
     
     'UpdateProgressBar "ProcList"
     'DoEvents
-    
-    If Not bIsWinNT Then
-        hSnap = CreateToolhelpSnapshot(TH32CS_SNAPPROCESS, 0)
-        If hSnap = INVALID_HANDLE_VALUE Then
-            'sProcessList = "(Unable to list running processes)" & vbCrLf
-            sProcessList = "(" & Translate(28) & ")" & vbCrLf
-            GoTo MakeLog
-        End If
-        
-        uProcess.dwSize = Len(uProcess)
-        If Process32First(hSnap, uProcess) = 0 Then
-            'sProcessList = "(Unable to list running processes)" & vbCrLf
-            sProcessList = "(" & Translate(28) & ")" & vbCrLf
-            CloseHandle hSnap: hSnap = 0
-            GoTo MakeLog
-        End If
-        
-        On Error Resume Next
-        
-        Do
-            sDummy = TrimNull(uProcess.szExeFile)
             
-            Col.Add 1&, sDummy              ' item - count, key - name of process
-
-            If Err.Number <> 0& Then        ' if the same process
-                Cnt = Col.Item(sDummy)      ' replacing item of collection
-                Col.Remove (sDummy)
-                Col.Add Cnt + 1&, sDummy    ' increase count of identical processes
-            End If
-            
-        Loop Until Process32Next(hSnap, uProcess) = 0
-        
-        On Error GoTo MakeLog:
-        
-        CloseHandle hSnap: hSnap = 0
-        sProcessList = sProcessList & vbCrLf
-    Else
-        
         Dim Process() As MY_PROC_ENTRY
         
-        lNumProcesses = GetProcesses_Zw(Process)
+        lNumProcesses = GetProcesses(Process)
         
         On Error Resume Next
         
@@ -3597,8 +3558,6 @@ Private Function CreateLogFile() As String
                 End If
             Next
         End If
-        
-    End If
     
     'sProcessList = "Running processes:" & vbCrLf
     sProcessList = Translate(29) & ":" & vbCrLf
@@ -3729,7 +3688,7 @@ MakeLog:
         '& vbCrLf & "CmdLine: " & AppPath(True) & " " & Command()
     End If
     
-    If 0 <> ErrLogCustomText.length Then
+    If 0 <> ErrLogCustomText.Length Then
         sLog = sLog & vbCrLf & vbCrLf & "Trace information:" & vbCrLf & ErrLogCustomText.ToString & vbCrLf
     End If
     
@@ -3762,7 +3721,6 @@ MakeLog:
     
     CreateLogFile = b()
     
-    If hSnap Then CloseHandle hSnap
     If hProc Then CloseHandle hProc
     
     AppendErrorLogCustom "frmMain.CreateLogFile - End"

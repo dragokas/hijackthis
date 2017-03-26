@@ -878,6 +878,9 @@ Public Function GetWindowsVersion() As String    'Init by Form_load.
     OSver.bIsWin64 = bIsWin64
     OSver.Bitness = OSInfo.Bitness
 
+    If OSver.MajorMinor >= 5.1 And OSver.MajorMinor <= 5.2 Then bIsWinXP = True
+    If OSver.MajorMinor = 5 Then bIsWin2k = True
+
     With OVI
         bIsWinVistaOrLater = .dwMajorVersion >= 6
         OSver.bIsVistaOrLater = bIsWinVistaOrLater

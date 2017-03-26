@@ -49,6 +49,7 @@ If you are not expert, we recommend you to submit your case to online helper for
 However, currently only Russian anti-malware supporting team (VIRUSNET association) provide analysis of HiJackThis Fork logs. Feel free to ask help there.
 
 ## Technical help
+
  * Actual User's manual for this fork available on Russian: https://safezone.cc/threads/25184/
  * Hot additions from the author is in this topic: https://safezone.cc/threads/27470/
  * You can also freely ask question, report a bug or propose innovation by creating issue here: https://github.com/dragokas/hijackthis/issues

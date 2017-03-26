@@ -306,7 +306,7 @@ Private Sub cmdGo_Click()
     If oDictFiles.Count = 0 Then MsgBoxW Translate(1860): Exit Sub
     
     'Abort
-    CmdExit.Caption = Translate(1861)
+    cmdExit.Caption = Translate(1861)
     
     Dim bWHQL As Boolean
     Dim bWPF As Boolean
@@ -485,7 +485,7 @@ Private Sub CmdExit_Click()
         ToggleWow64FSRedirection True
         'Unload Me
         'Close
-        CmdExit.Caption = Translate(1858)
+        cmdExit.Caption = Translate(1858)
     Else
         Me.Hide
     End If
@@ -500,7 +500,7 @@ Private Sub Form_Load()
     Me.Icon = frmMain.Icon
     
     ' if Win XP -> disable all window styles from option buttons
-    If Not OSver.bIsVistaOrLater Then
+    If bIsWinXP Then
         For Each ctl In Me.Controls
             If TypeName(ctl) = "OptionButton" Then
                 Set OptB = ctl
@@ -539,7 +539,7 @@ Private Sub Form_Resize()
     TopLevel2 = TopLevel1 - 1440
     
     cmdGo.Top = TopLevel1
-    CmdExit.Top = TopLevel1
+    cmdExit.Top = TopLevel1
     
     shpBack.Top = TopLevel1 + 120
     shpFore.Top = TopLevel1 + 120

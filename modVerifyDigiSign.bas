@@ -375,12 +375,12 @@ Private Declare Function GetFileSizeEx Lib "kernel32.dll" (ByVal hFile As Long, 
 Private Declare Function HeapFree Lib "kernel32.dll" (ByVal hHeap As Long, ByVal dwFlags As Long, ByVal lpMem As Long) As Long
 Private Declare Function GetProcessHeap Lib "kernel32.dll" () As Long
 Private Declare Function ArrPtr Lib "msvbvm60.dll" Alias "VarPtr" (arr() As Any) As Long
-Private Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal length As Long) As Long
+Private Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long) As Long
 Private Declare Function GetMem4 Lib "msvbvm60.dll" (pSrc As Any, pDst As Any) As Long
 Private Declare Function lstrlen Lib "kernel32.dll" Alias "lstrlenW" (ByVal lpString As Long) As Long
 Private Declare Function lstrlenA Lib "kernel32.dll" (ByVal lpString As Long) As Long
 Private Declare Function lstrcpyn Lib "kernel32.dll" Alias "lstrcpynW" (ByVal lpDst As Long, ByVal lpSrc As Long, ByVal iMaxLength As Long) As Long
-Private Declare Function SysAllocStringByteLen Lib "oleaut32.dll" (ByVal pszStrPtr As Long, ByVal length As Long) As String
+Private Declare Function SysAllocStringByteLen Lib "oleaut32.dll" (ByVal pszStrPtr As Long, ByVal Length As Long) As String
 Private Declare Function FileTimeToSystemTime Lib "kernel32.dll" (lpFileTime As FILETIME, lpSystemTime As SYSTEMTIME) As Long
 Private Declare Function FileTimeToLocalFileTime Lib "kernel32.dll" (lpFileTime As FILETIME, lpLocalFileTime As FILETIME) As Long
 Private Declare Function SystemTimeToVariantTime Lib "oleaut32.dll" (lpSystemTime As SYSTEMTIME, vtime As Date) As Long
@@ -1257,8 +1257,8 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Private Function WINTRUST_Free(ptr As Long) As Long
-    If 0 <> ptr Then HeapFree GetProcessHeap(), 0, ptr
+Private Function WINTRUST_Free(Ptr As Long) As Long
+    If 0 <> Ptr Then HeapFree GetProcessHeap(), 0, Ptr
 End Function
 
 Private Function GetCertInfoFromCertificate(pCertificate As Long, out_CertInfo As CERT_INFO) As Boolean  'ptr -> CERT_CONTEXT
@@ -1566,19 +1566,19 @@ Private Function FileTime_To_VT_Date(ftime As FILETIME) As Date
     FileTime_To_VT_Date = DateTime
 End Function
 
-Private Function StringFromPtrA(ByVal ptr As Long) As String
-    If 0& <> ptr Then
-        StringFromPtrA = SysAllocStringByteLen(ptr, lstrlenA(ptr))
+Private Function StringFromPtrA(ByVal Ptr As Long) As String
+    If 0& <> Ptr Then
+        StringFromPtrA = SysAllocStringByteLen(Ptr, lstrlenA(Ptr))
     End If
 End Function
 
-Private Function StringFromPtrW(ByVal ptr As Long) As String
+Private Function StringFromPtrW(ByVal Ptr As Long) As String
     Dim strSize As Long
-    If 0 <> ptr Then
-        strSize = lstrlen(ptr)
+    If 0 <> Ptr Then
+        strSize = lstrlen(Ptr)
         If 0 <> strSize Then
             StringFromPtrW = String$(strSize, 0&)
-            lstrcpyn StrPtr(StringFromPtrW), ptr, strSize + 1&
+            lstrcpyn StrPtr(StringFromPtrW), Ptr, strSize + 1&
         End If
     End If
 End Function

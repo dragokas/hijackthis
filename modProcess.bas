@@ -21,7 +21,7 @@ Private Type CLIENT_ID
 End Type
 
 Private Type UNICODE_STRING
-    length      As Integer
+    Length      As Integer
     MaxLength   As Integer
     lpBuffer    As Long
 End Type
@@ -108,7 +108,7 @@ Public Type MODULEENTRY32
     modBaseAddr As Long
     modBaseSize As Long
     hModule As Long
-    szModule As String * 256
+    szModule  As String * 256
     szExePath As String * 260
 End Type
 
@@ -129,13 +129,14 @@ Private Declare Function GetFullPathName Lib "kernel32.dll" Alias "GetFullPathNa
 Private Declare Function QueryFullProcessImageName Lib "kernel32.dll" Alias "QueryFullProcessImageNameW" (ByVal hProcess As Long, ByVal dwFlags As Long, ByVal lpExeName As Long, ByVal lpdwSize As Long) As Long
 Private Declare Function GetLogicalDriveStrings Lib "kernel32.dll" Alias "GetLogicalDriveStringsW" (ByVal nBufferLength As Long, ByVal lpBuffer As Long) As Long
 Private Declare Function QueryDosDevice Lib "kernel32.dll" Alias "QueryDosDeviceW" (ByVal lpDeviceName As Long, ByVal lpTargetPath As Long, ByVal ucchMax As Long) As Long
-Private Declare Sub memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal length As Long)
+Private Declare Sub memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long)
 
-Private Declare Function CreateToolhelp32Snapshot Lib "kernel32.dll" (ByVal lFlags As Long, ByVal lProcessID As Long) As Long
-Private Declare Function Process32First Lib "kernel32.dll" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
-Private Declare Function Process32Next Lib "kernel32.dll" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
-Private Declare Function Module32First Lib "kernel32.dll" (ByVal hSnapshot As Long, uProcess As MODULEENTRY32) As Long
-Private Declare Function Module32Next Lib "kernel32.dll" (ByVal hSnapshot As Long, uProcess As MODULEENTRY32) As Long
+Public Declare Function CreateToolhelp32Snapshot Lib "kernel32.dll" (ByVal lFlags As Long, ByVal lProcessID As Long) As Long
+Public Declare Function Process32First Lib "kernel32.dll" Alias "Process32FirstW" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
+Public Declare Function Process32Next Lib "kernel32.dll" Alias "Process32NextW" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
+
+Public Declare Function Module32First Lib "kernel32.dll" Alias "Module32FirstW" (ByVal hSnapshot As Long, uProcess As MODULEENTRY32) As Long
+Public Declare Function Module32Next Lib "kernel32.dll" Alias "Module32NextW" (ByVal hSnapshot As Long, uProcess As MODULEENTRY32) As Long
 Private Declare Function Thread32First Lib "kernel32.dll" (ByVal hSnapshot As Long, uThread As THREADENTRY32) As Long
 Private Declare Function Thread32Next Lib "kernel32.dll" (ByVal hSnapshot As Long, ByRef ThreadEntry As THREADENTRY32) As Long
 Private Declare Function TerminateProcess Lib "kernel32.dll" (ByVal hProcess As Long, ByVal uExitCode As Long) As Long
@@ -157,7 +158,7 @@ Private Declare Function SHRunDialog Lib "shell32.dll" Alias "#61" (ByVal hOwner
 Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteW" (ByVal hWnd As Long, ByVal lpOperation As Long, ByVal lpFile As Long, ByVal lpParameters As Long, ByVal lpDirectory As Long, ByVal nShowCmd As Long) As Long
 
 Private Declare Function lstrcpy Lib "kernel32.dll" Alias "lstrcpyW" (ByVal lpStrDest As Long, ByVal lpStrSrc As Long) As Long
-Private Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, ByVal Source As Any, ByVal length As Long)
+Private Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, ByVal Source As Any, ByVal Length As Long)
 
 Private Declare Function SendMessage Lib "user32.dll" Alias "SendMessageW" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, lParam As Any) As Long
 
@@ -175,6 +176,7 @@ Private Const SystemProcessInformation      As Long = &H5&
 Private Const STATUS_INFO_LENGTH_MISMATCH   As Long = &HC0000004
 Private Const STATUS_SUCCESS                As Long = 0&
 Private Const ERROR_PARTIAL_COPY            As Long = 299&
+Private Const INVALID_HANDLE_VALUE      As Long = &HFFFFFFFF
 
 
 Public Function KillProcess(lPID&) As Boolean
@@ -326,7 +328,6 @@ ErrorHandler:
 End Function
 
 Public Function KillProcessByFile(sPath$) As Boolean
-    'Dim hSnap&, uPE32 As PROCESSENTRY32
     Dim sExeFile$, hProcess&, i&
     'Note: this sub is silent - it displays no errors !
     If sPath = vbNullString Then Exit Function
@@ -339,7 +340,7 @@ Public Function KillProcessByFile(sPath$) As Boolean
     Dim sProcessPath As String
     Dim Process() As MY_PROC_ENTRY
     
-    lNumProcesses = GetProcesses_Zw(Process)
+    lNumProcesses = GetProcesses(Process)
         
     If lNumProcesses Then
         
@@ -363,7 +364,6 @@ Public Function KillProcessByFile(sPath$) As Boolean
 End Function
 
 Public Function PauseProcessByFile(sPath$) As Boolean
-    'Dim hSnap&, uPE32 As PROCESSENTRY32
     Dim sExeFile$, hProcess&, i&
     'Note: this sub is silent - it displays no errors !
     If sPath = vbNullString Then Exit Function
@@ -376,7 +376,7 @@ Public Function PauseProcessByFile(sPath$) As Boolean
     Dim sProcessPath As String
     Dim Process() As MY_PROC_ENTRY
     
-    lNumProcesses = GetProcesses_Zw(Process)
+    lNumProcesses = GetProcesses(Process)
         
     If lNumProcesses Then
         
@@ -438,7 +438,59 @@ Public Function KillProcessNTByFile(sPath$) As Boolean
     Next i
 End Function
 
+Public Function GetProcesses(ProcList() As MY_PROC_ENTRY) As Long
+    'If OSver.MajorMinor >= 5.1 Then
+    '    GetProcesses = GetProcesses_Zw(ProcList)
+    'Else
+        GetProcesses = GetProcesses_2k(ProcList)
+    'End If
+End Function
 
+Public Function GetProcesses_2k(ProcList() As MY_PROC_ENTRY) As Long
+    
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "GetProcesses_2k - Begin"
+    
+    Dim hSnap As Long
+    Dim Cnt As Long
+    Dim uProcess As PROCESSENTRY32
+    
+    ReDim ProcList(100)
+    
+    hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
+    
+    If hSnap <> INVALID_HANDLE_VALUE Then
+            
+        uProcess.dwSize = LenB(uProcess)
+        
+        If Process32First(hSnap, uProcess) <> 0 Then
+            Do
+                ProcList(Cnt).Name = TrimNull(StrConv(uProcess.szExeFile, vbFromUnicode))
+                If ProcList(Cnt).Name <> "[System Process]" And ProcList(Cnt).Name <> "System" Then
+                    ProcList(Cnt).PID = uProcess.th32ProcessID
+                    If 0 <> uProcess.th32ProcessID Then
+                        ProcList(Cnt).Path = GetFilePathByPID(uProcess.th32ProcessID)
+                    End If
+                    Cnt = Cnt + 1
+                    If Cnt > UBound(ProcList) Then ReDim Preserve ProcList(UBound(ProcList) + 100)
+                End If
+            Loop Until Process32Next(hSnap, uProcess) = 0
+        End If
+        
+        CloseHandle hSnap: hSnap = 0
+    End If
+
+    If Cnt > 1 Then
+        ReDim Preserve ProcList(Cnt - 1)
+    End If
+    GetProcesses_2k = Cnt
+
+    AppendErrorLogCustom "GetProcesses_2k - End"
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetProcesses_2k"
+    If inIDE Then Stop: Resume Next
+End Function
 
 Public Function GetProcesses_Zw(ProcList() As MY_PROC_ENTRY) As Long    'Return -> Count of processes
     On Error GoTo ErrorHandler:
@@ -482,8 +534,8 @@ Public Function GetProcesses_Zw(ProcList() As MY_PROC_ENTRY) As Long    'Return 
                     ElseIf .ProcessID = 4 Then
                         ProcName = "System"
                     Else
-                        ProcName = Space$(.ImageName.length \ 2)
-                        memcpy ByVal StrPtr(ProcName), ByVal .ImageName.lpBuffer, .ImageName.length
+                        ProcName = Space$(.ImageName.Length \ 2)
+                        memcpy ByVal StrPtr(ProcName), ByVal .ImageName.lpBuffer, .ImageName.Length
                         ProcPath = GetFilePathByPID(.ProcessID)
                         
                         If Len(ProcPath) = 0 Then
@@ -513,7 +565,9 @@ Public Function GetProcesses_Zw(ProcList() As MY_PROC_ENTRY) As Long    'Return 
         
     End If
     
-    ReDim Preserve ProcList(Cnt - 1)
+    If Cnt > 1 Then
+        ReDim Preserve ProcList(Cnt - 1)
+    End If
     GetProcesses_Zw = Cnt
     
     AppendErrorLogCustom "GetProcesses_Zw - End"
@@ -595,17 +649,10 @@ Function GetFilePathByPID(PID As Long) As String
             
         End If
         
-        If Cnt <> 0 Then    'if process ran with 8.3 style, GetModuleFileNameEx will return 8.3 style on x64 and full pathname on x86
-                            'so wee need to expand it ourself
-        
-            FullPath = Space$(MAX_PATH)
-            SizeOfPath = GetFullPathName(StrPtr(ProcPath), MAX_PATH, StrPtr(FullPath), lpFilePart)
-            If SizeOfPath <> 0& Then
-                GetFilePathByPID = Left$(FullPath, SizeOfPath)
-            Else
-                GetFilePathByPID = ProcPath
-            End If
+        If Len(ProcPath) <> 0 Then    'if process ran with 8.3 style, GetModuleFileNameEx will return 8.3 style on x64 and full pathname on x86
+                                      'so wee need to expand it ourself
             
+            GetFilePathByPID = GetFullPath(ProcPath)
         End If
         
         CloseHandle hProc
@@ -789,7 +836,7 @@ End Sub
 Public Function GetRunningProcesses$()
     Dim aProcess() As MY_PROC_ENTRY
     Dim i&, sProc$
-    If GetProcesses_Zw(aProcess) Then
+    If GetProcesses(aProcess) Then
         For i = 0 To UBound(aProcess)
             ' PID=Full Process Path|...
             With aProcess(i)

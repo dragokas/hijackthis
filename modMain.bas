@@ -317,6 +317,7 @@ Private Declare Sub memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination
 Private Declare Function LookupAccountSid Lib "advapi32.dll" Alias "LookupAccountSidW" (ByVal lpSystemName As Long, ByVal lpSid As Long, ByVal lpName As Long, cchName As Long, ByVal lpReferencedDomainName As Long, cchReferencedDomainName As Long, eUse As Long) As Long
 Private Declare Function ConvertStringSidToSid Lib "advapi32.dll" Alias "ConvertStringSidToSidW" (ByVal StringSid As Long, pSid As Long) As Long
 Private Declare Function IsBadReadPtr Lib "kernel32.dll" (ByVal lp As Long, ByVal ucb As Long) As Long
+Private Declare Function SysAllocStringByteLen Lib "oleaut32.dll" (ByVal pszStrPtr As Long, ByVal length As Long) As String
 
 Public Const CREATE_NEW                As Long = 1&
 Public Const OPEN_EXISTING             As Long = 3&
@@ -404,6 +405,8 @@ Public sHostsFile$
 Public bIsWin9x As Boolean
 Public bIsWinNT As Boolean
 Public bIsWinME As Boolean
+Public bIsWin2k As Boolean
+Public bIsWinXP As Boolean
 Public bIsWinVistaOrLater As Boolean
 
 Public bIsWin64 As Boolean
@@ -623,7 +626,7 @@ Public Sub LoadStuff()
       For Each Hive In Array("HKCU", "HKLM", "HKU\.DEFAULT")
     
         .Add Hive & "\Software\Microsoft\Internet Explorer,Default_Page_URL," & Default_Page_URL & "|,"
-        .Add Hive & "\Software\Microsoft\Internet Explorer\Main,Default_Page_URL," & Default_Page_URL & "|,"
+        .Add Hive & "\Software\Microsoft\Internet Explorer\Main,Default_Page_URL," & Default_Page_URL & "|http://www.msn.com|,"
         .Add Hive & "\Software\Microsoft\Internet Explorer\Search,Default_Page_URL," & Default_Page_URL & "|,"
         
         .Add Hive & "\Software\Microsoft\Internet Explorer,Default_Search_URL," & Default_Search_URL & "|,"
@@ -643,8 +646,8 @@ Public Sub LoadStuff()
         .Add Hive & "\Software\Microsoft\Internet Explorer\Main,SearchAssistant,,"
         .Add Hive & "\Software\Microsoft\Internet Explorer\Main,CustomizeSearch,,"
         .Add Hive & "\Software\Microsoft\Internet Explorer\Main,Search Bar,http://ie.search.msn.com/{SUB_RFC1766}/srchasst/srchasst.htm|,"
-        .Add Hive & "\Software\Microsoft\Internet Explorer\Main,Search Page,,"
-        .Add Hive & "\Software\Microsoft\Internet Explorer\Main,Start Page,$DEFSTARTPAGE|,"
+        .Add Hive & "\Software\Microsoft\Internet Explorer\Main,Search Page,http://www.microsoft.com/isapi/redir.dll?prd=ie&ar=iesearch|,"
+        .Add Hive & "\Software\Microsoft\Internet Explorer\Main,Start Page,$DEFSTARTPAGE|http://www.microsoft.com/isapi/redir.dll?prd=ie&ar=msnhome|http://www.microsoft.com/isapi/redir.dll?prd={SUB_PRD}&clcid={SUB_CLSID}&pver={SUB_PVER}&ar=home|,"
         .Add Hive & "\Software\Microsoft\Internet Explorer\Main,SearchURL,,"
         .Add Hive & "\Software\Microsoft\Internet Explorer\Main,Start Page Redirect Cache,http://ru.msn.com/?ocid=iehp|,"
         
@@ -692,7 +695,8 @@ Public Sub LoadStuff()
         .Add "HKLM\SOFTWARE\Clients\StartMenuInternet\IEXPLORE.EXE\shell\open\command,(Default)," & _
             IIf(bIsWin64, "%ProgramW6432%", "%ProgramFiles%") & "\Internet Explorer\iexplore.exe" & _
             IIf(bIsWin64, "|%ProgramFiles(x86)%\Internet Explorer\iexplore.exe", "") & _
-            "|" & """" & "%ProgramFiles%\Internet Explorer\iexplore.exe" & """" & ","
+            "|" & """" & "%ProgramFiles%\Internet Explorer\iexplore.exe" & """" & _
+            IIf(OSver.MajorMinor <= 5, "|", "") & ","
         
         'Note: if you would like to add x64 shared key here (which do not redirected), you should specify it directly on CheckO1item function (look at example: HKLM\SOFTWARE\Clients).
         
@@ -952,7 +956,7 @@ Public Sub StartScan()
     'frmMain.shpBackground.Tag = iItems
     SetProgressBar g_HJT_Items_Count   'R + F + O25
     
-    Call GetProcesses_Zw(gProcess)
+    Call GetProcesses(gProcess)
     
     Dim sRule$, i&
     'load ignore list
@@ -1319,6 +1323,20 @@ Private Sub ProcessRuleReg(ByVal sRule$)
             End If
         End Select
     Next
+    
+    'SearchScope
+    
+'    Dim sDefScope$
+'
+'    sDefScope = RegGetString(HKEY_CURRENT_USER, "Software\Microsoft\Internet Explorer\SearchScopes", "DefaultScope")
+'    If sDefScope = "" Then
+'
+'    Else
+'
+'    End If
+    
+    
+    'HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\SearchScopes'
     
     AppendErrorLogCustom "ProcessRuleReg - End"
     Exit Sub
@@ -1749,6 +1767,8 @@ End Sub
 Private Sub CheckO1Item_DNSApi()
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "CheckO1Item_DNSApi - Begin"
+    
+    If OSver.MajorMinor <= 5 Then Exit Sub 'XP+ only
     
     Const MaxSize As Long = 5242880 ' 5 MB.
     
@@ -4323,11 +4343,17 @@ Public Sub CheckO8Item()
             Else
                 If InStr(1, sFile, "res://", vbTextCompare) = 1 Then
                     sFile = Mid$(sFile, 7)
-                    pos = InStrRev(sFile, "/")
-                    If pos <> 0 Then sFile = Left$(sFile, pos - 1)
-                    pos = InStrRev(sFile, "?")
-                    If pos <> 0 Then sFile = Left$(sFile, pos - 1)
                 End If
+                
+                If InStr(1, sFile, "file://", vbTextCompare) = 1 Then
+                    sFile = Mid$(sFile, 8)
+                End If
+                
+                pos = InStrRev(sFile, "/")
+                If pos <> 0 Then sFile = Left$(sFile, pos - 1)
+                
+                pos = InStrRev(sFile, "?")
+                If pos <> 0 Then sFile = Left$(sFile, pos - 1)
                 
                 sFile = EnvironW(sFile)
                 
@@ -4457,16 +4483,18 @@ Public Sub CheckO9Item()
                 If InStr(1, sFile, "res://", vbTextCompare) = 1 And _
                    (LCase$(Right$(sFile, 4)) = ".htm" Or LCase$(Right$(sFile, 4)) = "html") Then
                     sFile = Mid$(sFile, 7)
-                    pos = InStrRev(sFile, "/")
-                    If pos <> 0 Then sFile = Left$(sFile, pos - 1)
-                    pos = InStrRev(sFile, "?")
-                    If pos <> 0 Then sFile = Left$(sFile, pos - 1)
                 End If
                 
                 'remove other stupid prefixes
-                If InStr(1, sFile, "file://", 1) = 1 Then
+                If InStr(1, sFile, "file://", vbTextCompare) = 1 Then
                     sFile = Mid$(sFile, 8)
                 End If
+                
+                pos = InStrRev(sFile, "/")
+                If pos <> 0 Then sFile = Left$(sFile, pos - 1)
+                
+                pos = InStrRev(sFile, "?")
+                If pos <> 0 Then sFile = Left$(sFile, pos - 1)
                 
                 If InStr(1, sFile, "http:", 1) <> 1 And _
                   InStr(1, sFile, "https:", 1) <> 1 Then
@@ -6993,22 +7021,16 @@ Public Sub CheckO23Item()   '2.0.7 fixed
                         
                             Stady = 29: Dbg CStr(Stady)
                         
-                            SignVerify FoundFile, 0&, SignResult
-                            
-                            Stady = 30: Dbg CStr(Stady)
-                            
-                            IsMSCert = IsMicrosoftCertHash(SignResult.HashRootCert) And SignResult.isLegit
-                            
-                            DoEvents
-                            
-                            Stady = 31: Dbg CStr(Stady)
+                            If IsWinServiceFileName(FoundFile) Then
+                                SignVerify FoundFile, 0&, SignResult
+                                IsMSCert = IsMicrosoftCertHash(SignResult.HashRootCert) And SignResult.isLegit
+                            Else
+                                IsMSCert = False
+                            End If
                             
                             If Not IsMSCert Then isSafeMSCmdLine = False: Exit For
-                            
                         End If
-                        
                     Next
-                
                   End If
                 End If
             
@@ -7036,20 +7058,25 @@ Public Sub CheckO23Item()   '2.0.7 fixed
             End If
             
             If Not IsCompositeCmd And sFile <> "(no file)" Then    'иначе, такая проверка уже выполнена ранее
-                Stady = 34: Dbg CStr(Stady)
-                SignVerify sFile, 0&, SignResult
-                DoEvents
+                If IsWinServiceFileName(sFile) Then
+                    SignVerify sFile, 0&, SignResult
+                Else
+                    WipeSignResult SignResult
+                End If
             End If
-            
-            Stady = 35: Dbg CStr(Stady)
             
             'override by checkind EDS of service dll if original file is Microsoft (usually, svchost)
             If Len(sServiceDll) <> 0 And (Not bDllMissing) Then
-                SignVerify sServiceDll, 0&, SignResult
+                If IsWinServiceFileName(sServiceDll) Then
+                    SignVerify sServiceDll, 0&, SignResult
+                Else
+                    WipeSignResult SignResult
+                End If
             End If
             
             With SignResult
                 ' если корневой сертификат цепочки доверия принадлежит Майкрософт, то исключаем службу из лога
+                
                 If bDllMissing Or Not (IsMicrosoftCertHash(.HashRootCert) And .isLegit And bHideMicrosoft) Then
                     Stady = 36: Dbg CStr(Stady)
                     If bMD5 Then
@@ -7086,13 +7113,301 @@ Public Sub CheckO23Item()   '2.0.7 fixed
         End If
 Continue:
     Next i
-    
+
     AppendErrorLogCustom "CheckO23Item - End"
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "modMain_CheckO23Item", "Service=", sDisplayName, "Stady=", Stady
     If inIDE Then Stop: Resume Next
 End Sub
+
+Private Function IsWinServiceFileName(sFilePath As String) As Boolean
+    
+    On Error GoTo ErrorHandler:
+    
+    Static IsInit As Boolean
+    Static oDictSRV As clsTrickHashTable
+    
+    'If sFilePath = "C:\Program Files (x86)\Skype\Updater\Updater.exe" Then Stop
+    
+    If IsInit Then
+        IsWinServiceFileName = oDictSRV.Exists(sFilePath)
+    Else
+        Dim Key, prefix$
+        IsInit = True
+        Set oDictSRV = New clsTrickHashTable
+        
+        With oDictSRV
+            .CompareMode = TextCompare
+            .Add "<PF32>\Common Files\Microsoft Shared\Phone Tools\CoreCon\11.0\bin\IpOverUsbSvc.exe", 0&
+            .Add "<PF32>\Common Files\Microsoft Shared\Source Engine\OSE.exe", 0&
+            .Add "<PF32>\Common Files\Microsoft Shared\VS7DEBUG\MDM.exe", 0&
+            .Add "<PF32>\Skype\Updater\Updater.exe", 0&
+            .Add "<PF64>\Common Files\Microsoft Shared\OfficeSoftwareProtectionPlatform\OSPPSVC.exe", 0&
+            .Add "<PF64>\Microsoft SQL Server\90\Shared\sqlwriter.exe", 0&
+            .Add "<PF64>\Windows Media Player\wmpnetwk.exe", 0&
+            .Add "<SysRoot>\ehome\ehRecvr.exe", 0&
+            .Add "<SysRoot>\ehome\ehsched.exe", 0&
+            .Add "<SysRoot>\ehome\ehstart.dll", 0&
+            .Add "<SysRoot>\Microsoft.NET\Framework64\v2.0.50727\mscorsvw.exe", 0&
+            .Add "<SysRoot>\Microsoft.NET\Framework64\v3.0\Windows Communication Foundation\infocard.exe", 0&
+            .Add "<SysRoot>\Microsoft.Net\Framework64\v3.0\WPF\PresentationFontCache.exe", 0&
+            .Add "<SysRoot>\Microsoft.NET\Framework64\v4.0.30319\mscorsvw.exe", 0&
+            .Add "<SysRoot>\Microsoft.NET\Framework\v2.0.50727\mscorsvw.exe", 0&
+            .Add "<SysRoot>\Microsoft.NET\Framework\v4.0.30319\mscorsvw.exe", 0&
+            .Add "<SysRoot>\PCHealth\HelpCtr\Binaries\pchsvc.dll", 0&
+            .Add "<SysRoot>\servicing\TrustedInstaller.exe", 0&
+            .Add "<SysRoot>\System32\advapi32.dll", 0&
+            .Add "<SysRoot>\System32\aelupsvc.dll", 0&
+            .Add "<SysRoot>\System32\AJRouter.dll", 0&
+            .Add "<SysRoot>\System32\alg.exe", 0&
+            .Add "<SysRoot>\System32\APHostService.dll", 0&
+            .Add "<SysRoot>\System32\appidsvc.dll", 0&
+            .Add "<SysRoot>\System32\appinfo.dll", 0&
+            .Add "<SysRoot>\System32\appmgmts.dll", 0&
+            .Add "<SysRoot>\System32\AppReadiness.dll", 0&
+            .Add "<SysRoot>\System32\appxdeploymentserver.dll", 0&
+            .Add "<SysRoot>\System32\AudioEndpointBuilder.dll", 0&
+            .Add "<SysRoot>\System32\Audiosrv.dll", 0&
+            .Add "<SysRoot>\System32\AxInstSV.dll", 0&
+            .Add "<SysRoot>\System32\bdesvc.dll", 0&
+            .Add "<SysRoot>\System32\bfe.dll", 0&
+            .Add "<SysRoot>\System32\bisrv.dll", 0&
+            .Add "<SysRoot>\System32\browser.dll", 0&
+            .Add "<SysRoot>\System32\BthHFSrv.dll", 0&
+            .Add "<SysRoot>\System32\bthserv.dll", 0&
+            .Add "<SysRoot>\System32\CDPSvc.dll", 0&
+            .Add "<SysRoot>\System32\CDPUserSvc.dll", 0&
+            .Add "<SysRoot>\System32\certprop.dll", 0&
+            .Add "<SysRoot>\System32\cisvc.exe", 0&
+            .Add "<SysRoot>\System32\ClipSVC.dll", 0&
+            .Add "<SysRoot>\System32\coremessaging.dll", 0&
+            .Add "<SysRoot>\System32\cryptsvc.dll", 0&
+            .Add "<SysRoot>\System32\cscsvc.dll", 0&
+            .Add "<SysRoot>\System32\das.dll", 0&
+            .Add "<SysRoot>\System32\dcpsvc.dll", 0&
+            .Add "<SysRoot>\System32\defragsvc.dll", 0&
+            .Add "<SysRoot>\System32\DeviceSetupManager.dll", 0&
+            .Add "<SysRoot>\System32\DevQueryBroker.dll", 0&
+            .Add "<SysRoot>\System32\DFSR.exe", 0&
+            .Add "<SysRoot>\System32\dhcpcore.dll", 0&
+            .Add "<SysRoot>\System32\dhcpcsvc.dll", 0&
+            .Add "<SysRoot>\System32\DiagSvcs\DiagnosticsHub.StandardCollector.Service.exe", 0&
+            .Add "<SysRoot>\System32\diagtrack.dll", 0&
+            .Add "<SysRoot>\System32\dllhost.exe", 0&
+            .Add "<SysRoot>\System32\dmadmin.exe", 0&
+            .Add "<SysRoot>\System32\dmserver.dll", 0&
+            .Add "<SysRoot>\System32\dmwappushsvc.dll", 0&
+            .Add "<SysRoot>\System32\dnsrslvr.dll", 0&
+            .Add "<SysRoot>\System32\dot3svc.dll", 0&
+            .Add "<SysRoot>\System32\dps.dll", 0&
+            .Add "<SysRoot>\System32\DsSvc.dll", 0&
+            .Add "<SysRoot>\System32\eapsvc.dll", 0&
+            .Add "<SysRoot>\System32\efssvc.dll", 0&
+            .Add "<SysRoot>\System32\embeddedmodesvc.dll", 0&
+            .Add "<SysRoot>\System32\emdmgmt.dll", 0&
+            .Add "<SysRoot>\System32\EnterpriseAppMgmtSvc.dll", 0&
+            .Add "<SysRoot>\System32\ersvc.dll", 0&
+            .Add "<SysRoot>\System32\es.dll", 0&
+            .Add "<SysRoot>\System32\fdPHost.dll", 0&
+            .Add "<SysRoot>\System32\fdrespub.dll", 0&
+            .Add "<SysRoot>\System32\fhsvc.dll", 0&
+            .Add "<SysRoot>\System32\flightsettings.dll", 0&
+            .Add "<SysRoot>\System32\FntCache.dll", 0&
+            .Add "<SysRoot>\System32\FrameServer.dll", 0&
+            .Add "<SysRoot>\System32\fxssvc.exe", 0&
+            .Add "<SysRoot>\System32\GeofenceMonitorService.dll", 0&
+            .Add "<SysRoot>\System32\gpsvc.dll", 0&
+            .Add "<SysRoot>\System32\hidserv.dll", 0&
+            .Add "<SysRoot>\System32\hvhostsvc.dll", 0&
+            .Add "<SysRoot>\System32\icsvc.dll", 0&
+            .Add "<SysRoot>\System32\icsvcext.dll", 0&
+            .Add "<SysRoot>\System32\IEEtwCollector.exe", 0&
+            .Add "<SysRoot>\System32\ikeext.dll", 0&
+            .Add "<SysRoot>\System32\imapi.exe", 0&
+            .Add "<SysRoot>\System32\ipbusenum.dll", 0&
+            .Add "<SysRoot>\System32\iphlpsvc.dll", 0&
+            .Add "<SysRoot>\System32\ipnathlp.dll", 0&
+            .Add "<SysRoot>\System32\ipsecsvc.dll", 0&
+            .Add "<SysRoot>\System32\irmon.dll", 0&
+            .Add "<SysRoot>\System32\iscsiexe.dll", 0&
+            .Add "<SysRoot>\System32\keyiso.dll", 0&
+            .Add "<SysRoot>\System32\kmsvc.dll", 0&
+            .Add "<SysRoot>\System32\lfsvc.dll", 0&
+            .Add "<SysRoot>\System32\LicenseManagerSvc.dll", 0&
+            .Add "<SysRoot>\System32\ListSvc.dll", 0&
+            .Add "<SysRoot>\System32\lltdsvc.dll", 0&
+            .Add "<SysRoot>\System32\lmhsvc.dll", 0&
+            .Add "<SysRoot>\System32\locator.exe", 0&
+            .Add "<SysRoot>\System32\lsass.exe", 0&
+            .Add "<SysRoot>\System32\lsm.dll", 0&
+            .Add "<SysRoot>\System32\MessagingService.dll", 0&
+            .Add "<SysRoot>\System32\mmcss.dll", 0&
+            .Add "<SysRoot>\System32\mnmsrvc.exe", 0&
+            .Add "<SysRoot>\System32\moshost.dll", 0&
+            .Add "<SysRoot>\System32\mpssvc.dll", 0&
+            .Add "<SysRoot>\System32\msdtc.exe", 0&
+            .Add "<SysRoot>\System32\msdtckrm.dll", 0&
+            .Add "<SysRoot>\System32\msiexec.exe", 0&
+            .Add "<SysRoot>\System32\mspmsnsv.dll", 0&
+            .Add "<SysRoot>\System32\mswsock.dll", 0&
+            .Add "<SysRoot>\System32\ncasvc.dll", 0&
+            .Add "<SysRoot>\System32\ncbservice.dll", 0&
+            .Add "<SysRoot>\System32\NcdAutoSetup.dll", 0&
+            .Add "<SysRoot>\System32\netlogon.dll", 0&
+            .Add "<SysRoot>\System32\netman.dll", 0&
+            .Add "<SysRoot>\System32\netprofm.dll", 0&
+            .Add "<SysRoot>\System32\netprofmsvc.dll", 0&
+            .Add "<SysRoot>\System32\NetSetupSvc.dll", 0&
+            .Add "<SysRoot>\System32\NgcCtnrSvc.dll", 0&
+            .Add "<SysRoot>\System32\ngcsvc.dll", 0&
+            .Add "<SysRoot>\System32\nlasvc.dll", 0&
+            .Add "<SysRoot>\System32\nsisvc.dll", 0&
+            .Add "<SysRoot>\System32\ntmssvc.dll", 0&
+            .Add "<SysRoot>\System32\p2psvc.dll", 0&
+            .Add "<SysRoot>\System32\pcasvc.dll", 0&
+            .Add "<SysRoot>\System32\peerdistsvc.dll", 0&
+            .Add "<SysRoot>\System32\PhoneService.dll", 0&
+            .Add "<SysRoot>\System32\PimIndexMaintenance.dll", 0&
+            .Add "<SysRoot>\System32\pla.dll", 0&
+            .Add "<SysRoot>\System32\pnrpauto.dll", 0&
+            .Add "<SysRoot>\System32\pnrpsvc.dll", 0&
+            .Add "<SysRoot>\System32\profsvc.dll", 0&
+            .Add "<SysRoot>\System32\provsvc.dll", 0&
+            .Add "<SysRoot>\System32\qagentRT.dll", 0&
+            .Add "<SysRoot>\System32\qmgr.dll", 0&
+            .Add "<SysRoot>\System32\qwave.dll", 0&
+            .Add "<SysRoot>\System32\rasauto.dll", 0&
+            .Add "<SysRoot>\System32\rasmans.dll", 0&
+            .Add "<SysRoot>\System32\RDXService.dll", 0&
+            .Add "<SysRoot>\System32\regsvc.dll", 0&
+            .Add "<SysRoot>\System32\RMapi.dll", 0&
+            .Add "<SysRoot>\System32\RpcEpMap.dll", 0&
+            .Add "<SysRoot>\System32\rpcss.dll", 0&
+            .Add "<SysRoot>\System32\rsvp.exe", 0&
+            .Add "<SysRoot>\System32\SCardSvr.dll", 0&
+            .Add "<SysRoot>\System32\SCardSvr.exe", 0&
+            .Add "<SysRoot>\System32\ScDeviceEnum.dll", 0&
+            .Add "<SysRoot>\System32\schedsvc.dll", 0&
+            .Add "<SysRoot>\System32\SDRSVC.dll", 0&
+            .Add "<SysRoot>\System32\SearchIndexer.exe", 0&
+            .Add "<SysRoot>\System32\seclogon.dll", 0&
+            .Add "<SysRoot>\System32\sens.dll", 0&
+            .Add "<SysRoot>\System32\SensorDataService.exe", 0&
+            .Add "<SysRoot>\System32\SensorService.dll", 0&
+            .Add "<SysRoot>\System32\sensrsvc.dll", 0&
+            .Add "<SysRoot>\System32\services.exe", 0&
+            .Add "<SysRoot>\System32\sessenv.dll", 0&
+            .Add "<SysRoot>\System32\sessmgr.exe", 0&
+            .Add "<SysRoot>\System32\shsvcs.dll", 0&
+            .Add "<SysRoot>\System32\SLsvc.exe", 0&
+            .Add "<SysRoot>\System32\SLUINotify.dll", 0&
+            .Add "<SysRoot>\System32\smlogsvc.exe", 0&
+            .Add "<SysRoot>\System32\smphost.dll", 0&
+            .Add "<SysRoot>\System32\SmsRouterSvc.dll", 0&
+            .Add "<SysRoot>\System32\snmptrap.exe", 0&
+            .Add "<SysRoot>\System32\spool\drivers\x64\3\PrintConfig.dll", 0&
+            .Add "<SysRoot>\System32\spoolsv.exe", 0&
+            .Add "<SysRoot>\System32\sppsvc.exe", 0&
+            .Add "<SysRoot>\System32\sppuinotify.dll", 0&
+            .Add "<SysRoot>\System32\srsvc.dll", 0&
+            .Add "<SysRoot>\System32\srvsvc.dll", 0&
+            .Add "<SysRoot>\System32\ssdpsrv.dll", 0&
+            .Add "<SysRoot>\System32\sstpsvc.dll", 0&
+            .Add "<SysRoot>\System32\storsvc.dll", 0&
+            .Add "<SysRoot>\System32\svchost.exe", 0&
+            .Add "<SysRoot>\System32\svsvc.dll", 0&
+            .Add "<SysRoot>\System32\swprv.dll", 0&
+            .Add "<SysRoot>\System32\sysmain.dll", 0&
+            .Add "<SysRoot>\System32\SystemEventsBrokerServer.dll", 0&
+            .Add "<SysRoot>\System32\TabSvc.dll", 0&
+            .Add "<SysRoot>\System32\tapisrv.dll", 0&
+            .Add "<SysRoot>\System32\tbssvc.dll", 0&
+            .Add "<SysRoot>\System32\termsrv.dll", 0&
+            .Add "<SysRoot>\System32\tetheringservice.dll", 0&
+            .Add "<SysRoot>\System32\themeservice.dll", 0&
+            .Add "<SysRoot>\System32\TieringEngineService.exe", 0&
+            .Add "<SysRoot>\System32\tileobjserver.dll", 0&
+            .Add "<SysRoot>\System32\TimeBrokerServer.dll", 0&
+            .Add "<SysRoot>\System32\trkwks.dll", 0&
+            .Add "<SysRoot>\System32\UI0Detect.exe", 0&
+            .Add "<SysRoot>\System32\umpnpmgr.dll", 0&
+            .Add "<SysRoot>\System32\umpo.dll", 0&
+            .Add "<SysRoot>\System32\umrdp.dll", 0&
+            .Add "<SysRoot>\System32\unistore.dll", 0&
+            .Add "<SysRoot>\System32\upnphost.dll", 0&
+            .Add "<SysRoot>\System32\ups.exe", 0&
+            .Add "<SysRoot>\System32\userdataservice.dll", 0&
+            .Add "<SysRoot>\System32\usermgr.dll", 0&
+            .Add "<SysRoot>\System32\usocore.dll", 0&
+            .Add "<SysRoot>\System32\uxsms.dll", 0&
+            .Add "<SysRoot>\System32\vaultsvc.dll", 0&
+            .Add "<SysRoot>\System32\vds.exe", 0&
+            .Add "<SysRoot>\System32\vssvc.exe", 0&
+            .Add "<SysRoot>\System32\w32time.dll", 0&
+            .Add "<SysRoot>\System32\w3ssl.dll", 0&
+            .Add "<SysRoot>\System32\WalletService.dll", 0&
+            .Add "<SysRoot>\System32\Wat\WatAdminSvc.exe", 0&
+            .Add "<SysRoot>\System32\wbem\WmiApSrv.exe", 0&
+            .Add "<SysRoot>\System32\wbem\WMIsvc.dll", 0&
+            .Add "<SysRoot>\System32\wbengine.exe", 0&
+            .Add "<SysRoot>\System32\wbiosrvc.dll", 0&
+            .Add "<SysRoot>\System32\wcmsvc.dll", 0&
+            .Add "<SysRoot>\System32\wcncsvc.dll", 0&
+            .Add "<SysRoot>\System32\WcsPlugInService.dll", 0&
+            .Add "<SysRoot>\System32\wdi.dll", 0&
+            .Add "<SysRoot>\System32\webclnt.dll", 0&
+            .Add "<SysRoot>\System32\wecsvc.dll", 0&
+            .Add "<SysRoot>\System32\wephostsvc.dll", 0&
+            .Add "<SysRoot>\System32\wercplsupport.dll", 0&
+            .Add "<SysRoot>\System32\WerSvc.dll", 0&
+            .Add "<SysRoot>\System32\wiarpc.dll", 0&
+            .Add "<SysRoot>\System32\wiaservc.dll", 0&
+            .Add "<SysRoot>\System32\Windows.Internal.Management.dll", 0&
+            .Add "<SysRoot>\System32\windows.staterepository.dll", 0&
+            .Add "<SysRoot>\System32\winhttp.dll", 0&
+            .Add "<SysRoot>\System32\wkssvc.dll", 0&
+            .Add "<SysRoot>\System32\wlansvc.dll", 0&
+            .Add "<SysRoot>\System32\wlidsvc.dll", 0&
+            .Add "<SysRoot>\System32\workfolderssvc.dll", 0&
+            .Add "<SysRoot>\System32\wpcsvc.dll", 0&
+            .Add "<SysRoot>\System32\wpdbusenum.dll", 0&
+            .Add "<SysRoot>\System32\WpnService.dll", 0&
+            .Add "<SysRoot>\System32\WpnUserService.dll", 0&
+            .Add "<SysRoot>\System32\wscsvc.dll", 0&
+            .Add "<SysRoot>\System32\WsmSvc.dll", 0&
+            .Add "<SysRoot>\System32\WSService.dll", 0&
+            .Add "<SysRoot>\System32\wuaueng.dll", 0&
+            .Add "<SysRoot>\System32\wuauserv.dll", 0&
+            .Add "<SysRoot>\System32\WUDFSvc.dll", 0&
+            .Add "<SysRoot>\System32\wwansvc.dll", 0&
+            .Add "<SysRoot>\System32\wzcsvc.dll", 0&
+            .Add "<SysRoot>\System32\XblAuthManager.dll", 0&
+            .Add "<SysRoot>\System32\XblGameSave.dll", 0&
+            .Add "<SysRoot>\System32\XboxNetApiSvc.dll", 0&
+            .Add "<SysRoot>\System32\xmlprov.dll", 0&
+            .Add "<SysRoot>\SysWow64\perfhost.exe", 0&
+            .Add "<SysRoot>\SysWow64\svchost.exe", 0&
+            
+            For Each Key In .Keys
+                prefix = Left$(Key, InStr(Key, "\") - 1)
+                Select Case prefix
+                    Case "<SysRoot>"
+                        .Add Replace$(Key, prefix, sWinDir), 0&
+                    Case "<PF64>"
+                        .Add Replace$(Key, prefix, PF_64), 0&
+                    Case "<PF32>"
+                        .Add Replace$(Key, prefix, PF_32), 0&
+                End Select
+            Next
+        End With
+    End If
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "IsWinServiceFileName", "File: " & sFilePath
+    If inIDE Then Stop: Resume Next
+End Function
 
 Public Sub FixO23Item(sItem$)
     'stop & disable NT service - DON'T delete it
@@ -8391,12 +8706,12 @@ Public Sub InitVariables()
     sWinSysDirWow64 = sWinDir & "\SysWow64"
     
     If bIsWin64 Then
-        PF_32 = EnvironW("%ProgramFiles%")
         If OSver.MajorMinor >= 6.1 Then     'Win 7 and later
             PF_64 = EnvironW("%ProgramW6432%")
         Else
             PF_64 = SysDisk & "\Program Files"
         End If
+        PF_32 = EnvironW("%ProgramFiles%", True)
     Else
         PF_32 = EnvironW("%ProgramFiles%")
         PF_64 = PF_32
@@ -8447,7 +8762,7 @@ Public Sub InitVariables()
     AppendErrorLogCustom "InitVariables - End"
 End Sub
 
-Public Function EnvironW(ByVal SrcEnv As String) As String
+Public Function EnvironW(ByVal SrcEnv As String, Optional UseRedir As Boolean) As String
     Dim lr As Long
     Dim buf As String
     Static LastFile As String
@@ -8465,11 +8780,13 @@ Public Function EnvironW(ByVal SrcEnv As String) As String
         End If
         'redirector correction
         If OSver.bIsWin64 Then
-            If InStr(1, SrcEnv, "%PROGRAMFILES%", 1) <> 0 Then
-                SrcEnv = Replace$(SrcEnv, "%PROGRAMFILES%", PF_64, 1, 1, 1)
-            End If
-            If InStr(1, SrcEnv, "%COMMONPROGRAMFILES%", 1) <> 0 Then
-                SrcEnv = Replace$(SrcEnv, "%COMMONPROGRAMFILES%", PF_64_Common, 1, 1, 1)
+            If Not UseRedir Then
+                If InStr(1, SrcEnv, "%PROGRAMFILES%", 1) <> 0 Then
+                    SrcEnv = Replace$(SrcEnv, "%PROGRAMFILES%", PF_64, 1, 1, 1)
+                End If
+                If InStr(1, SrcEnv, "%COMMONPROGRAMFILES%", 1) <> 0 Then
+                    SrcEnv = Replace$(SrcEnv, "%COMMONPROGRAMFILES%", PF_64_Common, 1, 1, 1)
+                End If
             End If
         End If
         buf = String$(MAX_PATH, vbNullChar)
@@ -8809,6 +9126,7 @@ Public Sub SplitIntoPathAndArgs(ByVal InLine As String, Path As String, Optional
             pos = InStrRev(InLine, ".exe", -1, 1)
             If pos <> 0 Then
                 Path = Left$(InLine, pos + 3)
+                Args = Mid$(InLine, pos + 4)
                 If Not FileExists(Path) Then bFail = True
             End If
         Else
@@ -9250,3 +9568,20 @@ Public Sub OpenDebugLogHandle()
         
     End If
 End Sub
+
+Public Function StringFromPtrA(ByVal ptr As Long) As String
+    If 0& <> ptr Then
+        StringFromPtrA = SysAllocStringByteLen(ptr, lstrlenA(ptr))
+    End If
+End Function
+
+Public Function StringFromPtrW(ByVal ptr As Long) As String
+    Dim strSize As Long
+    If 0 <> ptr Then
+        strSize = lstrlen(ptr)
+        If 0 <> strSize Then
+            StringFromPtrW = String$(strSize, 0&)
+            lstrcpyn StrPtr(StringFromPtrW), ptr, strSize + 1&
+        End If
+    End If
+End Function

@@ -68,6 +68,7 @@ Win7
 6,1;; DispatchRecoveryTasks; \Microsoft\Windows\Media Center; %SystemRoot%\ehome\ehPrivJob.exe; /DoRecoveryTasks $(Arg0);;
 6,1;; ehDRMInit; \Microsoft\Windows\Media Center; %SystemRoot%\ehome\ehPrivJob.exe; /DRMInit;;
 6,1;; EOONotify; \Microsoft\Windows\Setup; %windir%\EOONotify\EOONotify.exe; ;;
+6,1;; EOSNotify; \Microsoft\Windows\Setup; %windir%\system32\EOSNotify.exe; ;;
 6,1;; GadgetManager; \Microsoft\Windows\SideShow; {FF87090D-4A9A-4F47-879B-29A80C355D61},$(Arg0); ;;
 6,1;; GatherNetworkInfo; \Microsoft\Windows\NetTrace; %windir%\system32\gatherNetworkInfo.vbs; ;;
 6,1;; HiveUploadTask; \Microsoft\Windows\User Profile Service; {BA677074-762C-444B-94C8-8C83F93F6605}; ;;
@@ -83,6 +84,7 @@ Win7
 6,1;; MediaCenterRecoveryTask; \Microsoft\Windows\Media Center; {23E5D772-327A-42F5-BDEE-C65C6796BB2A},$(Arg1)|%SystemRoot%\ehome\mcupdate.exe; -MediaCenterRecoveryTask;;
 6,1;; Microsoft-Windows-DiskDiagnosticDataCollector; \Microsoft\Windows\DiskDiagnostic; %windir%\system32\rundll32.exe; dfdts.dll,DfdGetDefaultPolicyAndSMART;;
 6,1;; Microsoft-Windows-DiskDiagnosticResolver; \Microsoft\Windows\DiskDiagnostic; %windir%\system32\DFDWiz.exe; ;;
+6,1;; Microsoft Compatibility Appraiser; \Microsoft\Windows\Application Experience; %windir%\system32\CompatTelRunner.exe; ;;
 6,1;; MobilityManager; \Microsoft\Windows\Ras; {C463A0FC-794F-4FDF-9201-01938CEACAFA}; ;;
 6,1;; MP Scheduled Scan; \Microsoft\Windows Defender; %ProgramFiles%\windows defender\MpCmdRun.exe; Scan -ScheduleJob -WinTask -RestrictPrivilegesScan;;
 6,1;; MpIdleTask; \Microsoft\Windows Defender; %ProgramFiles%\windows defender\MpCmdRun.exe; -IdleTask -TaskName MpIdleTask;;
@@ -96,7 +98,7 @@ Win7
 6,1;; PBDADiscoveryW2; \Microsoft\Windows\Media Center; %SystemRoot%\ehome\ehPrivJob.exe; /wait:90 /PBDADiscovery;;
 6,1;; PeriodicScanRetry; \Microsoft\Windows\Media Center; %windir%\ehome\MCUpdate.exe; -pscn 0;;
 6,1;; PolicyConverter; \Microsoft\Windows\AppID; %windir%\system32\appidpolicyconverter.exe; ;;
-6,1;; ProgramDataUpdater; \Microsoft\Windows\Application Experience; %windir%\system32\rundll32.exe; aepdu.dll,AePduRunUpdate;;
+6,1;; ProgramDataUpdater; \Microsoft\Windows\Application Experience; %windir%\system32\rundll32.exe|%windir%\system32\compattelrunner.exe; aepdu.dll,AePduRunUpdate|-maintenance;;
 6,1;; Proxy; \Microsoft\Windows\Autochk; %windir%\system32\rundll32.exe; /d acproxy.dll,PerformAutochkOperations;;
 6,1;; PvrRecoveryTask; \Microsoft\Windows\Media Center; {7FA3A1C3-3C87-40DE-AC16-B6E2815A4CC8},$(Arg1)|%SystemRoot%\ehome\mcupdate.exe; -PvrRecoveryTask;;
 6,1;; PvrScheduleTask; \Microsoft\Windows\Media Center; {CEF51277-5358-477B-858C-4E14F0C80BF7},$(Arg1)|%SystemRoot%\ehome\mcupdate.exe; -PvrSchedule;;
