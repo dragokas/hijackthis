@@ -57,7 +57,7 @@ However, currently only Russian anti-malware supporting team (VIRUSNET associati
 ## System Requirements
 
 Operating System
-  * Microsoft™ Windows™ 10 / 8.1 / 8 / 7 / Vista / XP
+  * Microsoft™ Windows™ 10 / 8.1 / 8 / 7 / Vista / XP / 2000
 
 ## Copyrights
 
