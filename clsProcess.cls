@@ -33,7 +33,7 @@ Private Type PROCESSENTRY32
     th32ParentProcessID As Long
     pcPriClassBase As Long
     dwFlags As Long
-    szExeFile As Long 'As String * MAX_PATH
+    szExeFile As String * MAX_PATH
 End Type
 
 Private Type PROCESS_INFORMATION
@@ -473,23 +473,23 @@ End Function
 
 Private Sub ParseCommandLine(Line As String, argc As Long, argv() As String)
     On Error GoTo ErrorHandler:
-    Dim Ptr     As Long
+    Dim ptr     As Long
     Dim index   As Long
     Dim strLen  As Long
     Dim strAdr  As Long
     
-    Ptr = CommandLineToArgvW(StrPtr(Line), argc)
+    ptr = CommandLineToArgvW(StrPtr(Line), argc)
     ReDim argv(argc)
     argv(0) = App.Path & "\" & App.EXEName & ".exe"
     If argc = 0 Then Exit Sub
     
     For index = 1 To argc
-        GetMem4 ByVal Ptr + (index - 1) * 4, strAdr
+        GetMem4 ByVal ptr + (index - 1) * 4, strAdr
         strLen = lstrlen(strAdr)
         argv(index) = Space(strLen)
         lstrcpyn StrPtr(argv(index)), strAdr, strLen + 1
     Next
-    GlobalFree Ptr
+    GlobalFree ptr
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "clsProcess_ParseCommandLine", "Line:", Line

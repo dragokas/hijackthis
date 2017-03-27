@@ -50,10 +50,10 @@ Public Const MAX_NAME = 256&
 Private Const LB_SETHORIZONTALEXTENT    As Long = &H194
 
 Public Enum ENUM_Cure_type
-    FILE_BASED = 0              ' if need to cure .RunObject
-    REGISTRY_KEY_BASED = 1      ' if need to cure .RegKey
-    REGISTRY_PARAM_BASED = 2    ' if need to cure .RegParam inside the .RegKey
-    AUTORUN_BASED = 3           ' if need to cure .AutoRunObject
+    FILE_BASED = 1              ' if need to cure .RunObject
+    REGISTRY_KEY_BASED = 2      ' if need to cure .RegKey
+    REGISTRY_PARAM_BASED = 4    ' if need to cure .RegParam inside the .RegKey
+    AUTORUN_BASED = 8           ' if need to cure .AutoRunObject
 End Enum
 
 Private Type O25_Info
@@ -3725,6 +3725,8 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUser() As String)
                     If Not bLink Or sLinkExt = ".PIF" Then  'not a Shortcut ?
                         bPE_EXE = isPE_EXE(sLinkPath)       'PE EXE ?
                     End If
+                    
+                    sTarget = ""
                     
                     If bLink Then
                         sTarget = GetFileFromShortcut(sLinkPath, sArguments)

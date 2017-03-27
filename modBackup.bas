@@ -354,12 +354,12 @@ Public Sub MakeBackup(ByVal sItem$)
             'O22 - ScheduledTask: blah - {000...000} - file.dll
             'todo:
             'backup CLSID regkey
-            sCLSID = Mid$(sItem, InStr(sItem, ": ") + 2)
-            sCLSID = Mid$(sCLSID, InStr(sCLSID, " - ") + 3)
-            sCLSID = Left$(sCLSID, InStr(sCLSID, " - ") - 1)
+            'sCLSID = Mid$(sItem, InStr(sItem, ": ") + 2)
+            'sCLSID = Mid$(sCLSID, InStr(sCLSID, " - ") + 3)
+            'sCLSID = Left$(sCLSID, InStr(sCLSID, " - ") - 1)
             
             '"-sts.reg"
-            sData = RegExportKeyToVariable(0&, "HKEY_CLASSES_ROOT\CLSID\" & sCLSID)
+            'sData = RegExportKeyToVariable(0&, "HKEY_CLASSES_ROOT\CLSID\" & sCLSID)
         
         Case "O24"
             'O24 - Desktop Component N: blah - c:\windows\index.html

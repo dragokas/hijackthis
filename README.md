@@ -15,7 +15,7 @@ HJT primarily rely on hijacking methods rather than a database, that's why it ma
  * Generate reports and presents them in an organized fashion
  * Does not target specific programs and URLs
  * Detects only the methods used by hijackers to force you onto their sites
- * The possibility of adding to autostart scanning at system boot
+ * The possibility of adding to autostart scanning at system boot (TODO)
  * No need constant updates
 
 ## New on version 3
