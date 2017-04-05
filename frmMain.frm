@@ -1898,7 +1898,7 @@ Private Sub Form_Load()
     LoadStuff 'regvals, filevals, safelspfiles, safeprotocols
     LoadSettings
     GetLSPCatalogNames
-    CheckForReadOnlyMedia
+    If Not bAutoLogSilent Then CheckForReadOnlyMedia
     CheckDateFormat
     CheckForStartedFromTempDir
     'msgboxW "bIsUSADateFormat: " & bIsUSADateFormat
@@ -2035,6 +2035,7 @@ Private Sub LoadResources()
                         oDict.TaskWL_ID.Add .Directory & "\" & .Name, i
                     Else
                         Debug.Print "Critical Database error: duplicate entry key: " & .Directory & "\" & .Name
+                        ErrorMsg Err, "Critical Database error: duplicate entry key: " & .Directory & "\" & .Name
                     End If
                 End If
             End With
@@ -2797,6 +2798,7 @@ Private Sub cmdFix_Click()
             Select Case sPrefix ' RTrim$(Left$(lstResults.List(i), 3))
                 Case "R0", "R1", "R2": FixRegItem lstResults.List(i)
                 Case "R3":             FixRegistry3Item lstResults.List(i)
+                Case "R4":             FixRegistry4Item lstResults.List(i)
                 Case "F0", "F1":       FixFileItem lstResults.List(i)
                 Case "F2", "F3":       FixFileItem lstResults.List(i)
                 'Case "N1", "N2", "N3", "N4": FixNetscapeMozilla lstResults.List(i)
@@ -2856,10 +2858,9 @@ Private Sub cmdFix_Click()
     'CloseProgressbar 'leave progressBar visible to ensure the user saw completion of cure
     
     If Not inIDE Then MessageBeep MB_ICONINFORMATION
-    Exit Sub
     
     AppendErrorLogCustom "frmMain.cmdFix_Click - End"
-    
+    Exit Sub
 ErrorHandler:
     ErrorMsg Err, "cmdFix_Click"
     If inIDE Then Stop: Resume Next
@@ -3536,12 +3537,11 @@ Private Function CreateLogFile() As String
         
                 sProcessName = Process(i).Path
                 
-                'Debug.Print Process(i).Path
-                
                 If Len(Process(i).Path) = 0 Then
                     If Not ((StrComp(Process(i).Name, "System Idle Process", 1) = 0 And Process(i).PID = 0) _
                         Or (StrComp(Process(i).Name, "System", 1) = 0 And Process(i).PID = 4) _
-                        Or (StrComp(Process(i).Name, "Memory Compression", 1) = 0)) Then
+                        Or (StrComp(Process(i).Name, "Memory Compression", 1) = 0) _
+                        Or (StrComp(Process(i).Name, "Secure System", 1) = 0)) Then
                           sProcessName = Process(i).Name '& " (cannot get Process Path)"
                     End If
                 End If
@@ -3688,7 +3688,7 @@ MakeLog:
         '& vbCrLf & "CmdLine: " & AppPath(True) & " " & Command()
     End If
     
-    If 0 <> ErrLogCustomText.Length Then
+    If 0 <> ErrLogCustomText.length Then
         sLog = sLog & vbCrLf & vbCrLf & "Trace information:" & vbCrLf & ErrLogCustomText.ToString & vbCrLf
     End If
     
@@ -3762,16 +3762,13 @@ Private Sub SortSectionsOfResultList()
     SectNames(1) = "R1"
     SectNames(2) = "R2"
     SectNames(3) = "R3"
-    SectNames(4) = "F0"
-    SectNames(5) = "F1"
-    SectNames(6) = "F2"
-    SectNames(7) = "F3"
-    SectNames(8) = "N1"
-    SectNames(9) = "N2"
-    SectNames(10) = "N3"
-    SectNames(11) = "N4"
+    SectNames(4) = "R4"
+    SectNames(5) = "F0"
+    SectNames(6) = "F1"
+    SectNames(7) = "F2"
+    SectNames(8) = "F3"
     For i = 1 To 30
-        SectNames(11 + i) = "O" & i
+        SectNames(8 + i) = "O" & i
     Next
     
     For i = 0 To lstResults.ListCount - 1
@@ -4514,14 +4511,51 @@ Private Sub chkHelp_Click(index As Integer)
     Select Case index
     'Sections
     Case 0:
-        aSect = Array("R0", "R1", "R2", "R3", "F0", "F1", "F2", "F3", "O1", "O2", "O3", "O4", "O5", "O6", "O7", "O8", "O9", "O10", _
+        aSect = Array("R0", "R1", "R2", "R3", "R4", "F0", "F1", "F2", "F3", "O1", "O2", "O3", "O4", "O5", "O6", "O7", "O8", "O9", "O10", _
             "O11", "O12", "O13", "O14", "O15", "O16", "O17", "O18", "O19", "O20", "O21", "O22", "O23", "O24", "O25")
         
         sText = Translate(31) & vbCrLf & vbCrLf & Translate(490)
         sSeparator = String$(100, "-")
         
         For i = 0 To UBound(aSect)
-            J = 401 + i
+            Select Case aSect(i)
+            Case ""
+                Case "R0": J = 401
+                Case "R1": J = 402
+                Case "R2": J = 403
+                Case "R3": J = 404
+                Case "R4": J = 434
+                Case "F0": J = 405
+                Case "F1": J = 406
+                Case "F2": J = 407
+                Case "F3": J = 408
+                Case "O1": J = 409
+                Case "O2": J = 410
+                Case "O3": J = 411
+                Case "O4": J = 412
+                Case "O5": J = 413
+                Case "O6": J = 414
+                Case "O7": J = 415
+                Case "O8": J = 416
+                Case "O9": J = 417
+                Case "O10": J = 418
+                Case "O11": J = 419
+                Case "O12": J = 420
+                Case "O13": J = 421
+                Case "O14": J = 422
+                Case "O15": J = 423
+                Case "O16": J = 424
+                Case "O17": J = 425
+                Case "O18": J = 426
+                Case "O19": J = 427
+                Case "O20": J = 428
+                Case "O21": J = 429
+                Case "O22": J = 430
+                Case "O23": J = 431
+                Case "O24": J = 432
+                Case "O25": J = 433
+            End Select
+
             sText = sText & vbCrLf & sSeparator & vbCrLf & FindLine(aSect(i) & " -", Translate(31)) & vbCrLf & sSeparator & vbCrLf & Translate(J) & vbCrLf
         Next
         

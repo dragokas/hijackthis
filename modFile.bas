@@ -22,16 +22,31 @@ End Enum
     Dim vbAll, vbFile, vbReparse 'case sensitive protection against modification (for non-overloaded enum variables only)
 #End If
 
-Enum VB_FILE_ACCESS_MODE
+Public Enum VB_FILE_ACCESS_MODE
     FOR_READ = 1
     FOR_READ_WRITE = 2
     FOR_OVERWRITE_CREATE = 4
 End Enum
+#If False Then
+    Dim FOR_READ, FOR_READ_WRITE, FOR_OVERWRITE_CREATE
+#End If
 
-Enum CACHE_TYPE
+Public Enum CACHE_TYPE
     USE_CACHE
     NO_CACHE
 End Enum
+#If False Then
+    Dim USE_CACHE, NO_CACHE
+#End If
+
+Public Enum ENUM_File_Date_Type
+    Date_Created = 1
+    Date_Modified = 2
+    Date_Accessed = 3
+End Enum
+#If False Then
+    Dim Date_Created, Date_Modified, Date_Accessed
+#End If
  
 Private Type LARGE_INTEGER
     LowPart As Long
@@ -110,6 +125,9 @@ Private Declare Function GetLongPathNameW Lib "kernel32.dll" (ByVal lpszShortPat
 Private Declare Function GetFileVersionInfo Lib "version.dll" Alias "GetFileVersionInfoW" (ByVal lptstrFilename As Long, ByVal dwHandle As Long, ByVal dwLen As Long, lpData As Any) As Long
 Private Declare Function GetFileVersionInfoSize Lib "version.dll" Alias "GetFileVersionInfoSizeW" (ByVal lptstrFilename As Long, lpdwHandle As Long) As Long
 Private Declare Function VerQueryValue Lib "version.dll" Alias "VerQueryValueW" (pBlock As Any, ByVal lpSubBlock As Long, lplpBuffer As Long, puLen As Long) As Long
+Private Declare Function GetFileTime Lib "kernel32.dll" (ByVal hFile As Long, lpCreationTime As FILETIME, lpLastAccessTime As FILETIME, lpLastWriteTime As FILETIME) As Long
+Private Declare Function FileTimeToSystemTime Lib "kernel32.dll" (lpFileTime As FILETIME, lpSystemTime As SYSTEMTIME) As Long
+Private Declare Function FileTimeToLocalFileTime Lib "kernel32.dll" (lpFileTime As FILETIME, lpLocalFileTime As FILETIME) As Long
 
 
 Const FILE_SHARE_READ           As Long = &H1&
@@ -1101,4 +1119,74 @@ Public Function GetEmptyName(ByVal sFullPath As String) As String
         
         GetEmptyName = sFullPath
     End If
+End Function
+
+Public Function GetFileDate(Optional file As String, Optional Date_Type As ENUM_File_Date_Type, Optional hFile As Long) As Date
+    On Error GoTo ErrorHandler
+    
+    Dim SFCacheMode As Boolean
+    Dim rval        As Long
+    Dim ctime       As FILETIME
+    Dim atime       As FILETIME
+    Dim wtime       As FILETIME
+    Dim ftime       As SYSTEMTIME
+    Dim bOldRedir   As Boolean
+    Dim bExternalHandle As Boolean
+    
+    AppendErrorLogCustom "Parser.GetFileDate - Begin: " & file
+    
+    If hFile <= 0 Then
+        ToggleWow64FSRedirection False, file, bOldRedir
+    
+        hFile = CreateFile(StrPtr(file), ByVal 0&, FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, ByVal 0&, OPEN_EXISTING, 0&, 0&)
+    
+        ToggleWow64FSRedirection bOldRedir
+    Else
+        bExternalHandle = True
+    End If
+    
+    If hFile <> INVALID_HANDLE_VALUE Then
+        rval = GetFileTime(hFile, ctime, atime, wtime)
+        Select Case Date_Type
+        Case Date_Modified
+            rval = FileTimeToLocalFileTime(wtime, wtime)
+            rval = FileTimeToSystemTime(wtime, ftime)
+        Case Date_Created
+            rval = FileTimeToLocalFileTime(ctime, ctime)
+            rval = FileTimeToSystemTime(ctime, ftime)
+        Case Date_Accessed
+            rval = FileTimeToLocalFileTime(atime, atime)
+            rval = FileTimeToSystemTime(atime, ftime)
+        End Select
+        GetFileDate = DateSerial(ftime.wYear, ftime.wMonth, ftime.wDay) + TimeSerial(ftime.wHour, ftime.wMinute, ftime.wSecond)
+        If Not bExternalHandle Then
+            CloseHandle hFile
+        End If
+    Else
+        GetFileDate = CDate(0)
+    End If
+    
+    AppendErrorLogCustom "Parser.GetFileDate - End"
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "Parser.GetFileDate", "File: " & file
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function IsFileOneMonthModified(sFile As String) As Boolean
+
+    Dim bOldRedir   As Boolean
+    Dim hFile       As Long
+
+    ToggleWow64FSRedirection False, sFile, bOldRedir
+    
+    hFile = CreateFile(StrPtr(sFile), ByVal 0&, FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, ByVal 0&, OPEN_EXISTING, 0&, 0&)
+    
+    If DateDiff("d", GetFileDate(, Date_Created, hFile), Now) < 31 Then
+        IsFileOneMonthModified = True
+    ElseIf DateDiff("d", GetFileDate(, Date_Modified, hFile), Now) < 31 Then
+        IsFileOneMonthModified = True
+    End If
+    
+    ToggleWow64FSRedirection bOldRedir
 End Function

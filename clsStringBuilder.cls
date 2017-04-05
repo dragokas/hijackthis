@@ -25,6 +25,7 @@ Option Explicit
 '   class available in the .NET framework. It makes use
 '   of direct memory allocation and manipulation, so is
 '   much faster than traditional VB string concatenation.
+
 '
 '   **************************************************
 '

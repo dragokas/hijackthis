@@ -56,6 +56,12 @@ Public Enum ENUM_Cure_type
     AUTORUN_BASED = 8           ' if need to cure .AutoRunObject
 End Enum
 
+Public Enum ENUM_Action_type
+    REMOVE_KEY = 1
+    REMOVE_PARAMETER = 2
+    MODIFY_PARAMETER = 4
+End Enum
+
 Private Type O25_Info
     sScriptFile     As String
     '-------------------------
@@ -87,6 +93,7 @@ Public Type TYPE_Scan_Results
     RunObjectArgs   As String
     ExpandedTarget  As String   ' target, expanded from .RunObject
     CureType        As ENUM_Cure_type
+    ActionType      As ENUM_Action_type
     Redirected      As Boolean  'is key under Wow64
 End Type
 
@@ -259,6 +266,7 @@ Private Declare Function GetSystemMetrics Lib "user32.dll" (ByVal nIndex As Long
 
 Private Declare Function SHFileOperation Lib "shell32.dll" Alias "SHFileOperationW" (lpFileOp As SHFILEOPSTRUCT) As Long
 Private Declare Function SHGetFolderPath Lib "shell32.dll" Alias "SHGetFolderPathW" (ByVal hWndOwner As Long, ByVal CSIDL As Long, ByVal hToken As Long, ByVal dwFlags As Long, ByVal pszPath As Long) As Long
+Private Declare Function SHGetKnownFolderPath Lib "shell32.dll" (rfid As UUID, ByVal dwFlags As Long, ByVal hToken As Long, ppszPath As Long) As Long
 
 Private Declare Function ExpandEnvironmentStrings Lib "kernel32.dll" Alias "ExpandEnvironmentStringsW" (ByVal lpSrc As Long, ByVal lpDst As Long, ByVal nSize As Long) As Long
 
@@ -318,6 +326,7 @@ Private Declare Function LookupAccountSid Lib "advapi32.dll" Alias "LookupAccoun
 Private Declare Function ConvertStringSidToSid Lib "advapi32.dll" Alias "ConvertStringSidToSidW" (ByVal StringSid As Long, pSid As Long) As Long
 Private Declare Function IsBadReadPtr Lib "kernel32.dll" (ByVal lp As Long, ByVal ucb As Long) As Long
 Private Declare Function SysAllocStringByteLen Lib "oleaut32.dll" (ByVal pszStrPtr As Long, ByVal length As Long) As String
+Private Declare Function CLSIDFromString Lib "ole32.dll" (ByVal lpszGuid As Long, pGuid As UUID) As Long
 
 Public Const CREATE_NEW                As Long = 1&
 Public Const OPEN_EXISTING             As Long = 3&
@@ -389,6 +398,7 @@ Private Const OFN_OVERWRITEPROMPT   As Long = &H2&
 Private Const SM_CXFULLSCREEN           As Long = 16&
 Private Const SM_CYFULLSCREEN           As Long = 17&
 
+Public cReg4vals    As New Collection
 Public sRegVals()   As String
 Public sFileVals()  As String
 
@@ -426,6 +436,7 @@ Public PF_64            As String
 Public PF_32_Common     As String
 Public PF_64_Common     As String
 Public AppData          As String
+Public AppDataLocalLow  As String
 Public LocalAppData     As String
 Public Desktop          As String
 Public UserProfile      As String
@@ -506,6 +517,8 @@ Public DebugMode As Boolean
 Public DebugToFile As Boolean
 Public bScanMode As Boolean
 Public hDebugLog As Long
+
+Public gSIDs() As String, gUsers() As String, gHives() As String
 
 
 'it map ANSI scan result string from ListBox to Unicode string that is stored in memory (TYPE_Scan_Results structure)
@@ -645,7 +658,7 @@ Public Sub LoadStuff()
         
         .Add Hive & "\Software\Microsoft\Internet Explorer\Main,SearchAssistant,,"
         .Add Hive & "\Software\Microsoft\Internet Explorer\Main,CustomizeSearch,,"
-        .Add Hive & "\Software\Microsoft\Internet Explorer\Main,Search Bar,http://ie.search.msn.com/{SUB_RFC1766}/srchasst/srchasst.htm|,"
+        .Add Hive & "\Software\Microsoft\Internet Explorer\Main,Search Bar,http://ie.search.msn.com/{SUB_RFC1766}/srchasst/srchasst.htm|Preserve|,"
         .Add Hive & "\Software\Microsoft\Internet Explorer\Main,Search Page,http://www.microsoft.com/isapi/redir.dll?prd=ie&ar=iesearch|,"
         .Add Hive & "\Software\Microsoft\Internet Explorer\Main,Start Page,$DEFSTARTPAGE|http://www.microsoft.com/isapi/redir.dll?prd=ie&ar=msnhome|http://www.microsoft.com/isapi/redir.dll?prd={SUB_PRD}&clcid={SUB_CLSID}&pver={SUB_PVER}&ar=home|,"
         .Add Hive & "\Software\Microsoft\Internet Explorer\Main,SearchURL,,"
@@ -704,6 +717,68 @@ Public Sub LoadStuff()
     ReDim sRegVals(colRegIE.Count - 1)
     For i = 1 To colRegIE.Count
         sRegVals(i - 1) = colRegIE.Item(i)
+    Next
+    
+    'R4 database
+    
+    'HKCU\Software\Microsoft\Internet Explorer\SearchScopes
+    'HKLM\Software\Microsoft\Internet Explorer\SearchScopes
+    
+    Dim aHives() As String, sHive$, J&
+    
+    GetHives aHives, bIncludeSystem:=False
+    
+    With cReg4vals
+        '.Add "HKCU,DisplayName,Bing"
+        '.Add "HKCU,FaviconURLFallback,http://www.bing.com/favicon.ico"
+        
+        If OSver.MajorMinor >= 6.3 Then 'Win 8.1
+            '.Add "HKCU,FaviconURL,"
+            '.Add "HKCU,NTLogoPath,"
+            '.Add "HKCU,NTLogoURL,"
+            '.Add "HKCU,NTSuggestionsURL,"
+            '.Add "HKCU,NTTopResultURL,"
+            '.Add "HKCU,NTURL,"
+            .Add "HKCU,SuggestionsURL,"
+            .Add "HKCU,TopResultURL,"
+        
+            .Add "HKCU,SuggestionsURLFallback,http://api.bing.com/qsml.aspx?query={searchTerms}&maxwidth={ie:maxWidth}&rowheight={ie:rowHeight}&sectionHeight={ie:sectionHeight}&FORM=IE11SS&market={language}"
+            .Add "HKCU,TopResultURLFallback,http://www.bing.com/search?q={searchTerms}&src=IE-TopResult&FORM=IE11TR"
+            .Add "HKCU,URL,http://www.bing.com/search?q={searchTerms}&src=IE-SearchBox&FORM=IE11SR"
+            
+        Else
+        
+            '.Add "HKCU,FaviconURL,http://www.bing.com/favicon.ico"
+            '.Add "HKCU,NTLogoPath," & AppDataLocalLow & "\Microsoft\Internet Explorer\Services\"
+            '.Add "HKCU,NTLogoURL,http://go.microsoft.com/fwlink/?LinkID=403856&language={language}&scale={scalelevel}&contrast={contrast}"
+            '.Add "HKCU,NTSuggestionsURL,http://api.bing.com/qsml.aspx?query={searchTerms}&market={language}&maxwidth={ie:maxWidth}&rowheight={ie:rowHeight}&sectionHeight={ie:sectionHeight}&FORM=IENTSS"
+            '.Add "HKCU,NTTopResultURL,http://www.bing.com/search?q={searchTerms}&src=IE-SearchBox&FORM=IENTTR"
+            '.Add "HKCU,NTURL,http://www.bing.com/search?q={searchTerms}&src=IE-SearchBox&FORM=IENTSR"
+            .Add "HKCU,SuggestionsURL,http://api.bing.com/qsml.aspx?query={searchTerms}&maxwidth={ie:maxWidth}&rowheight={ie:rowHeight}&sectionHeight={ie:sectionHeight}&FORM=IESS02&market={language}|"
+            .Add "HKCU,TopResultURL,http://www.bing.com/search?q={searchTerms}&src=IE-TopResult&FORM=IETR02|"
+        
+            .Add "HKCU,SuggestionsURLFallback,http://api.bing.com/qsml.aspx?query={searchTerms}&maxwidth={ie:maxWidth}&rowheight={ie:rowHeight}&sectionHeight={ie:sectionHeight}&FORM=IESS02&market={language}" & _
+                "|http://api.bing.com/qsml.aspx?query={searchTerms}&maxwidth={ie:maxWidth}&rowheight={ie:rowHeight}&sectionHeight={ie:sectionHeight}&FORM=IE8SSC&market={language}|"
+             
+            .Add "HKCU,TopResultURLFallback,http://www.bing.com/search?q={searchTerms}&src=IE-TopResult&FORM=IETR02|"
+            .Add "HKCU,URL,http://www.bing.com/search?q={searchTerms}&src=IE-SearchBox&FORM=IESR02" & _
+                "|http://www.bing.com/search?q={searchTerms}&src=IE-SearchBox&FORM=IE8SRC|"
+        End If
+        
+        .Add "HKLM,,Bing"
+        .Add "HKLM,DisplayName,@ieframe.dll,-12512"
+        .Add "HKLM,URL,http://www.bing.com/search?q={searchTerms}&FORM=IE8SRC"
+    End With
+    
+    For i = 1 To cReg4vals.Count  ' append HKU hive
+        sHive = Left$(cReg4vals.Item(i), 4)
+        If sHive = "HKCU" Then
+            For J = 0 To UBound(aHives)
+                If Left$(aHives(J), 3) = "HKU" Then
+                    cReg4vals.Add Replace$(cReg4vals.Item(i), "HKCU", aHives(J), 1, 1)
+                End If
+            Next
+        End If
     Next
     
     
@@ -973,6 +1048,7 @@ Public Sub StartScan()
     Next i
     
     CheckRegistry3Item
+    CheckRegistry4Item
     
     UpdateProgressBar "F"
     'File
@@ -1324,20 +1400,6 @@ Private Sub ProcessRuleReg(ByVal sRule$)
         End Select
     Next
     
-    'SearchScope
-    
-'    Dim sDefScope$
-'
-'    sDefScope = RegGetString(HKEY_CURRENT_USER, "Software\Microsoft\Internet Explorer\SearchScopes", "DefaultScope")
-'    If sDefScope = "" Then
-'
-'    Else
-'
-'    End If
-    
-    
-    'HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\SearchScopes'
-    
     AppendErrorLogCustom "ProcessRuleReg - End"
     Exit Sub
 ErrorHandler:
@@ -1440,7 +1502,7 @@ Public Sub CheckRegistry3Item()
                 If 0 = Len(sFile) Then
                     sFile = "(no file)"
                 Else
-                    sFile = EnvironW(sFile)
+                    sFile = UnQuote(EnvironW(sFile))
                     If FileExists(sFile) Then
                         sFile = GetLongPath(sFile) '8.3 -> Full
                     Else
@@ -1503,6 +1565,211 @@ Public Sub FixRegistry3Item(sItem$)
     
 ErrorHandler:
     ErrorMsg Err, "modMain_FixRegistry3Item", "sItem=", sItem
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Public Sub CheckRegistry4Item()
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "CheckRegistry4Item - Begin"
+    
+    'http://ijustdoit.eu/changing-default-search-provider-in-internet-explorer-11-using-group-policies/
+    
+    'SearchScope
+    'R4 - DefaultScope:
+    'R4 - SearchScopes:
+    
+    Dim Result As TYPE_Scan_Results, sHit$, i&, J&, sDefScope$, sURL$, sProvider$, aScopes() As String, sHive$, vKey, aHives() As String
+    Dim aKey() As String, aDes() As String, sValue$, sParam$, sDefData$, aData$()
+    
+    GetHives aHives, bIncludeSystem:=False
+    
+    'DefaultScope should NOT be here:
+    'HKCU\Software\Policies\Microsoft\Internet Explorer\SearchScopes
+    'HKLM\Software\Policies\Microsoft\Internet Explorer\SearchScopes
+    'HKLM\Software\Microsoft\Internet Explorer\SearchScopes
+    
+    'DefaultScope should be here:
+    'HKCU\Software\Microsoft\Internet Explorer\SearchScopes
+     
+    ReDim aKey((UBound(aHives) + 1) * 2 - 1)
+    ReDim aDes((UBound(aHives) + 1) * 2 - 1)
+    
+    'preparing keys for checking and its descriptions
+    For i = 0 To UBound(aHives)
+        aKey(J) = aHives(i) & "\Software\Microsoft\Internet Explorer\SearchScopes"
+        aDes(J) = aHives(i)
+        J = J + 1
+    Next
+    For i = 0 To UBound(aHives)
+        aKey(J) = aHives(i) & "\Software\Policies\Microsoft\Internet Explorer\SearchScopes"
+        aDes(J) = aHives(i) & "\Software\Policies"
+        J = J + 1
+    Next
+    
+    For i = 0 To UBound(aKey)
+        sHive = Left$(aKey(i), 4)
+        sDefScope = RegGetString(0&, aKey(i), "DefaultScope")
+        
+        If sDefScope = "" Then
+'            If StrEndWith(aKey(i), "Software\Microsoft\Internet Explorer\SearchScopes") _
+'              And Not (sHive = "HKLM") _
+'              And OSver.MajorMinor >= 6 Then
+'            If Not (OSver.MajorMinor = 6 And sHive = "HKCU") Then 'Vista
+'
+'                sHit = "R4 - " & aDes(i) & "\...\DefaultScope: is missing"
+'
+'                If Not IsOnIgnoreList(sHit) Then
+'                    With Result
+'                        .Section = "R4"
+'                        .HitLineW = sHit
+'                        ReDim .RegKey(0)
+'                        .RegKey(0) = aKey(i)
+'                        .RegParam = "DefaultScope"
+'                        .DefaultData = "{0633EE93-D776-472f-A0FF-E1416B8B2E3A}"
+'                        .ActionType = MODIFY_PARAMETER
+'                    End With
+'                    AddToScanResults Result
+'                End If
+'            End If
+'            End If
+            
+        ElseIf StrComp(sDefScope, "{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", 1) <> 0 Then
+            
+            sURL = RegGetString(0&, aKey(i) & "\" & sDefScope, "URL")
+            If sURL = "" Then
+                sURL = RegGetString(0&, aKey(i) & "\" & sDefScope, "SuggestionsURL_JSON")
+            End If
+            If sURL = "" Then sURL = "(no URL)"
+            
+            sProvider = RegGetString(0&, aKey(i) & "\" & sDefScope, "DisplayName")
+            If sProvider = "" Then sProvider = "(no name)"
+            
+            'sHit = "R4 - " & aDes(i) & "\...\DefaultScope: " & sDefScope & " - " & sProvider & " - " & sURL
+            sHit = "R4 - " & aKey(i) & ": DefaultScope = " & sDefScope & " - " & sProvider & " - " & sURL
+            
+            If Not IsOnIgnoreList(sHit) Then
+                With Result
+                    .Section = "R4"
+                    .HitLineW = sHit
+                    ReDim .RegKey(0)
+                    .RegKey(0) = aKey(i)
+                    .RegParam = "DefaultScope"
+                    .DefaultData = "{0633EE93-D776-472f-A0FF-E1416B8B2E3A}"
+                    .ActionType = MODIFY_PARAMETER
+                End With
+                AddToScanResults Result
+            End If
+        End If
+    Next
+    
+    'Checking consistency of default scope
+    
+    'HKCU\Software\Microsoft\Internet Explorer\SearchScopes
+    'HKLM\Software\Microsoft\Internet Explorer\SearchScopes
+    
+    Dim bAllowEmpty As Boolean
+    
+    If OSver.MajorMinor >= 6 Then
+      For i = 1 To cReg4vals.Count
+        aData = Split(cReg4vals.Item(i), ",", 3)
+        sHive = aData(0)
+        sParam = aData(1)
+        sDefData = aData(2)
+        
+        'bAllowEmpty = False
+        'If OSver.MajorMinor = 6 And sHive = "HKCU" Then bAllowEmpty = True 'Vista, no parameters for HKCU
+        
+            sValue = RegGetString(0&, sHive & "\Software\Microsoft\Internet Explorer\SearchScopes\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", sParam)
+            
+            If Not inArraySerialized(sValue, sDefData, "|", , , vbTextCompare) And Not (sValue = "") Then
+            'And Not (bAllowEmpty And sValue = "") Then
+            
+                'sHit = "R4 - " & sHive & "\...\DefaultScope: " & sParam & " = " & sValue
+                sHit = "R4 - " & sHive & "\Software\Microsoft\Internet Explorer\SearchScopes\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}: " & sParam & " = " & sValue
+                
+                If Not IsOnIgnoreList(sHit) Then
+                    With Result
+                        .Section = "R4"
+                        .HitLineW = sHit
+                        ReDim .RegKey(0)
+                        .RegKey(0) = sHive & "\Software\Microsoft\Internet Explorer\SearchScopes\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}"
+                        .RegParam = sParam
+                        .DefaultData = SplitSafe(sDefData, "|")(0)
+                        .ActionType = MODIFY_PARAMETER
+                    End With
+                    AddToScanResults Result
+                End If
+            End If
+      Next
+    End If
+    
+    'Enum custom scopes
+    '
+    'HKCU\Software\Policies\Microsoft\Internet Explorer\SearchScopes
+    'HKLM\Software\Policies\Microsoft\Internet Explorer\SearchScopes
+    'HKLM\Software\Microsoft\Internet Explorer\SearchScopes
+    'HKCU\Software\Microsoft\Internet Explorer\SearchScopes
+    
+    For i = 0 To UBound(aKey)
+        sHive = Left$(aKey(i), 4)
+        
+        For J = 1 To RegEnumSubkeysToArray(0&, aKey(i), aScopes())
+            If StrComp(aScopes(J), "{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", 1) <> 0 Then
+                
+                sURL = RegGetString(0&, aKey(i) & "\" & aScopes(J), "URL")
+                If sURL = "" Then
+                    sURL = RegGetString(0&, aKey(i) & "\" & aScopes(J), "SuggestionsURL_JSON")
+                End If
+                If sURL = "" Then sURL = "(no URL)"
+                
+                sProvider = RegGetString(0&, aKey(i) & "\" & aScopes(J), "DisplayName")
+                If sProvider = "" Then sProvider = "(no name)"
+        
+                'sHit = "R4 - " & aDes(i) & "\...\SearchScopes: " & aScopes(j) & " - " & sProvider & " - " & sURL
+                sHit = "R4 - " & aKey(i) & "\" & aScopes(J) & " - " & sProvider & " - " & sURL
+        
+                If Not IsOnIgnoreList(sHit) Then
+                    With Result
+                        .Section = "R4"
+                        .HitLineW = sHit
+                        ReDim .RegKey(0)
+                        .RegKey(0) = aKey(i) & "\" & aScopes(J)
+                        .ActionType = REMOVE_KEY
+                    End With
+                    AddToScanResults Result
+                End If
+            End If
+        Next
+    Next
+    
+    AppendErrorLogCustom "CheckRegistry4Item - End"
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "CheckRegistry4Item"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Public Sub FixRegistry4Item(sItem$)
+    On Error GoTo ErrorHandler:
+    
+    Dim Result As TYPE_Scan_Results
+    If Not GetScanResults(sItem, Result) Then Exit Sub
+    
+    With Result
+        Select Case .ActionType
+        
+            Case MODIFY_PARAMETER
+                RegCreateKey 0&, .RegKey(0)
+                RegSetStringVal 0&, .RegKey(0), .RegParam, CStr(.DefaultData)
+            
+            Case REMOVE_KEY
+                RegDelKey 0&, .RegKey(0)
+        End Select
+    End With
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "FixRegistry4Item", "sItem=", sItem
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -2635,7 +2902,7 @@ Public Sub CheckO2Item()
                 sFile = Left$(sFile, InStr(sFile, "__BHODemonDisabled") - 1) & " (disabled by BHODemon)"
             Else
                 If 0 <> Len(sFile) Then
-                    sFile = EnvironW(sFile)
+                    sFile = UnQuote(EnvironW(sFile))
                     If FileExists(sFile) Then
                         sFile = GetLongPath(sFile) '8.3 -> Full
                         sFileExisted = sFile
@@ -2854,7 +3121,7 @@ Public Sub CheckO3Item()
         If 0 = Len(sFile) Then
             sFile = "(no file)"
         Else
-            sFile = EnvironW(sFile)
+            sFile = UnQuote(EnvironW(sFile))
             If FileExists(sFile) Then
                 sFile = GetLongPath(sFile) '8.3 -> Full
             Else
@@ -3146,7 +3413,7 @@ Sub CheckO4_RegRuns(aHives() As String, aUser() As String)
                         
                         SplitIntoPathAndArgs sData, sFile, sArgs, True
                         
-                        sFile = EnvironW(sFile)
+                        sFile = UnQuote(EnvironW(sFile))
                         
                         If Len(sFile) = 0 Then
                             sFile = "(no file)"
@@ -3221,8 +3488,6 @@ Continue:
                 
                 sKey = sHive & "\" & aRegKey(k)
                 Param = aRegParam(k)
-                
-                'Debug.Print IIf(Wow6432Redir, replace$(sKey, "Software\", "Software\Wow6432node\"), sKey) & "," & aRegParam(k)
     
                 sData = GetRegData(0&, sKey, aRegParam(k), Wow6432Redir)
 
@@ -3234,7 +3499,7 @@ Continue:
 
                     SplitIntoPathAndArgs sData, sFile, sArgs, True
                     
-                    sFile = EnvironW(sFile)
+                    sFile = UnQuote(EnvironW(sFile))
                     
                     If Len(sFile) = 0 Then
                         sFile = "(no file)"
@@ -3350,7 +3615,7 @@ Sub CheckO4_MSConfig(aHives() As String, aUser() As String)
                             If Len(sFile) = 0 Then
                                 sFile = "(no file)"
                             Else
-                                sFile = EnvironW(sFile)
+                                sFile = UnQuote(EnvironW(sFile))
                                 
                                 If FileExists(sFile) Then
                                     sFile = GetLongPath(sFile) '8.3 -> Full
@@ -3589,7 +3854,7 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUser() As String)
             'save path of Startup for current user to substitute other user names
             If aParams(k) = "Startup" Then
                 If Len(sAutostartFolder(FldCnt)) <> 0 Then
-                    StartupCU = EnvironW(sAutostartFolder(FldCnt))
+                    StartupCU = UnQuote(EnvironW(sAutostartFolder(FldCnt)))
                 End If
             End If
         Next
@@ -3628,7 +3893,7 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUser() As String)
     ReDim Preserve aUserNames(FldCnt)
     
     For k = 1 To UBound(sAutostartFolder)
-        sAutostartFolder(k) = EnvironW(sAutostartFolder(k))
+        sAutostartFolder(k) = UnQuote(EnvironW(sAutostartFolder(k)))
     Next
     
     ' adding all similar folders in c:\users (in case user isn't logged - so HKU\SID willn't be exist for him, cos his hive is not mounted)
@@ -3801,31 +4066,13 @@ Public Sub CheckO4Item()
     ' https://msdn.microsoft.com/en-us/library/windows/desktop/aa384253(v=vs.85).aspx
     ' http://safezone.cc/threads/27567/
     
-    Dim aSID() As String, aUser() As String, aHives() As String, i&
-    
-    GetUserNamesAndSids aSID(), aUser()
-    
-    ReDim aHives(UBound(aSID) + 2)  '+ HKLM, HKCU
-    ReDim Preserve aUser(UBound(aHives))
-    
-    'Convert SID -> to hive
-    For i = 0 To UBound(aSID)
-        aHives(i) = "HKU\" & aSID(i)
-    Next
-    'Add HKLM, HKCU
-    aHives(UBound(aHives) - 1) = "HKLM"
-    aUser(UBound(aHives) - 1) = "All users"
-    
-    aHives(UBound(aHives)) = "HKCU"
-    aUser(UBound(aHives)) = GetUser()
-    
     'Scanning routines
     
-    CheckO4_RegRuns aHives(), aUser()
+    CheckO4_RegRuns gHives(), gUsers()
     
-    CheckO4_MSConfig aHives(), aUser()
+    CheckO4_MSConfig gHives(), gUsers()
     
-    CheckO4_AutostartFolder aSID(), aUser()
+    CheckO4_AutostartFolder gSIDs(), gUsers()
     
     AppendErrorLogCustom "CheckO4Item - End"
     Exit Sub
@@ -3834,6 +4081,64 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
+Public Sub FillUsers()
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "FillUsers - Begin"
+    
+    Dim i&
+    
+    GetUserNamesAndSids gSIDs(), gUsers()
+    
+    ReDim gHives(UBound(gSIDs) + 2)  '+ HKLM, HKCU
+    ReDim Preserve gUsers(UBound(gHives))
+    
+    'Convert SID -> to hive
+    For i = 0 To UBound(gSIDs)
+        gHives(i) = "HKU\" & gSIDs(i)
+    Next
+    'Add HKLM, HKCU
+    gHives(UBound(gHives) - 1) = "HKLM"
+    gUsers(UBound(gHives) - 1) = "All users"
+    
+    gHives(UBound(gHives)) = "HKCU"
+    gUsers(UBound(gHives)) = GetUser()
+    
+    AppendErrorLogCustom "FillUsers - End"
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "FillUsers"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Public Function GetHives(aHives() As String, Optional bIncludeSystem As Boolean)
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "GetHives - Begin"
+    
+    Dim i&, J&, aSID() As String, aUser() As String
+    
+    GetUserNamesAndSids aSID(), aUser()
+    
+    ReDim aHives(UBound(aSID) + 2)  '+ HKLM, HKCU
+    
+    'Convert SID -> to hive
+    For i = 0 To UBound(aSID)
+        If bIncludeSystem Or (Not bIncludeSystem And aSID(i) <> "S-1-5-18" And aSID(i) <> "S-1-5-19" And aSID(i) <> "S-1-5-20") Then
+            aHives(J) = "HKU\" & aSID(i)
+            J = J + 1
+        End If
+    Next
+    
+    aHives(J) = "HKCU"
+    J = J + 1
+    aHives(J) = "HKLM"
+    ReDim Preserve aHives(J)
+    
+    AppendErrorLogCustom "GetHives - End"
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetHives"
+    If inIDE Then Stop: Resume Next
+End Function
 
 Public Sub FixO4Item(sItem$)
     'O4 - Enumeration of autoloading Regedit entries
@@ -3962,8 +4267,8 @@ Private Sub CheckO6Item()
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "CheckO6Item - Begin"
     
-    'HKEY_CURRENT_USER\ software\ policies\ microsoft\
-    'internet explorer. If there are sub folders called
+    'HKEY_CURRENT_USER\software\policies\microsoft\internet explorer
+    'If there are sub folders called
     '"restrictions" and/or "control panel", delete them
     
     Dim sHit$, Hive, i&, Key$(2), Des$(2), Result As TYPE_Scan_Results
@@ -4357,7 +4662,7 @@ Public Sub CheckO8Item()
                 pos = InStrRev(sFile, "?")
                 If pos <> 0 Then sFile = Left$(sFile, pos - 1)
                 
-                sFile = EnvironW(sFile)
+                sFile = UnQuote(EnvironW(sFile))
                 
                 If FileExists(sFile) Then
                     sFile = GetLongPath(sFile) '8.3 -> Full
@@ -4707,7 +5012,7 @@ Public Sub CheckO12Item()
             If 0 = Len(sFile) Then
                 sFile = "(no file)"
             Else
-                sFile = EnvironW(sFile)
+                sFile = UnQuote(EnvironW(sFile))
             
                 If FileExists(sFile) Then
                     sFile = GetLongPath(sFile) ' 8.3 -> Full
@@ -6197,7 +6502,7 @@ Public Sub CheckO18Item()
             If 0 = Len(sFile) Then
                 sFile = "(no file)"
             Else
-                sFile = EnvironW(sFile)
+                sFile = UnQuote(EnvironW(sFile))
                 If FileExists(sFile) Then
                     sFile = GetLongPath(sFile) ' 8.3 -> Full
                 Else
@@ -6266,7 +6571,7 @@ Public Sub CheckO18Item()
             If 0 = Len(sFile) Then
                 sFile = "(no file)"
             Else
-                sFile = EnvironW(sFile)
+                sFile = UnQuote(EnvironW(sFile))
                 If FileExists(sFile) Then
                     sFile = GetLongPath(sFile) ' 8.3 -> Full
                 Else
@@ -6385,7 +6690,7 @@ Public Sub CheckO19Item()
     
     lUseMySS = RegGetDword(lHive, "Software\Microsoft\Internet Explorer\Styles", "Use My Stylesheet", Wow6432Redir)
     sUserSS = RegGetString(lHive, "Software\Microsoft\Internet Explorer\Styles", "User Stylesheet", Wow6432Redir)
-    sUserSS = EnvironW(sUserSS)
+    sUserSS = UnQuote(EnvironW(sUserSS))
     If FileExists(sUserSS) Then
         sUserSS = GetLongPath(sUserSS) ' 8.3 -> Full
     Else
@@ -6493,7 +6798,7 @@ Public Sub CheckO20Item()
                         End If
                     End If
                     
-                    sFile = FindOnPath(EnvironW(sFile))
+                    sFile = FindOnPath(UnQuote(EnvironW(sFile)))
                     
                     If 0 = Len(sFile) Then
                         sFile = sFile & " (file missing)"
@@ -6596,7 +6901,7 @@ Public Sub CheckO21Item()
         If sFile = vbNullString Then
             sFile = "(no file)"
         Else
-            sFile = EnvironW(sFile)
+            sFile = UnQuote(EnvironW(sFile))
             If FileExists(sFile) Then
                 sFile = GetLongPath(sFile) ' 8.3 -> Full
             Else
@@ -6695,7 +7000,7 @@ Public Sub CheckO22Item()
         sName = TrimNull(sName)
         If sName = vbNullString Then sName = "(no name)"
         sFile = RegGetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InprocServer32", vbNullString, Wow6432Redir)
-        sFile = Replace$(sFile, "%SystemRoot%", sWinDir, , , vbTextCompare)
+        sFile = UnQuote(EnvironW(sFile))
         If sFile = vbNullString Then
             sFile = "(no file)"
         Else
@@ -7129,12 +7434,9 @@ Private Function IsWinServiceFileName(sFilePath As String) As Boolean
     
     Static IsInit As Boolean
     Static oDictSRV As clsTrickHashTable
+    Dim sCompany As String
     
-    'If sFilePath = "C:\Program Files (x86)\Skype\Updater\Updater.exe" Then Stop
-    
-    If IsInit Then
-        IsWinServiceFileName = oDictSRV.Exists(sFilePath)
-    Else
+    If Not IsInit Then
         Dim Key, prefix$
         IsInit = True
         Set oDictSRV = New clsTrickHashTable
@@ -7390,6 +7692,8 @@ Private Function IsWinServiceFileName(sFilePath As String) As Boolean
             .Add "<SysRoot>\System32\xmlprov.dll", 0&
             .Add "<SysRoot>\SysWow64\perfhost.exe", 0&
             .Add "<SysRoot>\SysWow64\svchost.exe", 0&
+            .Add "<SysRoot>\Microsoft.NET\Framework\v3.0\Windows Communication Foundation\infocard.exe", 0&
+            .Add "<SysRoot>\Microsoft.Net\Framework\v3.0\WPF\PresentationFontCache.exe", 0&
             
             For Each Key In .Keys
                 prefix = Left$(Key, InStr(Key, "\") - 1)
@@ -7403,6 +7707,19 @@ Private Function IsWinServiceFileName(sFilePath As String) As Boolean
                 End Select
             Next
         End With
+    End If
+    
+    IsWinServiceFileName = oDictSRV.Exists(sFilePath)
+        
+    If Not IsWinServiceFileName _
+      And Not (StrComp(sFilePath, PF_64 & "\Windows Defender\mpsvc.dll", 1) = 0) _
+      And Not (StrComp(sFilePath, PF_64 & "\Windows Defender\NisSrv.exe", 1) = 0) _
+      And Not (StrComp(sFilePath, PF_64 & "\Windows Defender\MsMpEng.exe", 1) = 0) Then
+          
+        sCompany = GetFilePropCompany(sFilePath)
+        If InStr(1, sCompany, "Microsoft", 1) > 0 Or InStr(1, sCompany, "Корпорация Майкрософт", 1) > 0 Then
+            IsWinServiceFileName = True
+        End If
     End If
     
     Exit Function
@@ -7472,7 +7789,7 @@ Public Sub CheckO24Item()
         If RegKeyExists(HKEY_CURRENT_USER, sDCKey & "\" & sComponents(i), Wow64key) Then
             sSource = RegGetString(HKEY_CURRENT_USER, sDCKey & "\" & sComponents(i), "Source", Wow64key)
             sSubscr = RegGetString(HKEY_CURRENT_USER, sDCKey & "\" & sComponents(i), "SubscribedURL", Wow64key)
-            sSubscr = EnvironW(sSubscr)
+            sSubscr = UnQuote(EnvironW(sSubscr))
             sSubscr = GetLongPath(sSubscr)  ' 8.3 -> Full
             sName = RegGetString(HKEY_CURRENT_USER, sDCKey & "\" & sComponents(i), "FriendlyName", Wow64key)
             If sName = vbNullString Then sName = "(no name)"
@@ -7894,18 +8211,16 @@ Public Function HasSpecialCharacters(sName$) As Boolean
 End Function
 
 Public Sub CheckForReadOnlyMedia()
-    Dim sMsg$, ff%
+    Dim sMsg$, hFile As Long
     On Error Resume Next
     AppendErrorLogCustom "CheckForReadOnlyMedia - Begin"
-    
+
     '// TODO: replace by token privilages checking
     
-    ff = FreeFile()
-    Open BuildPath(AppPath(), "~dummy.tmp") For Output As #ff
-        Print #ff, "."
-    Close #ff
+    OpenW BuildPath(AppPath(), "~dummy.tmp"), FOR_OVERWRITE_CREATE, hFile
+    If hFile <= 0 Then
     
-    If Err.Number Then     'Some strange error happens here, if we delete .Number property
+    'If Err.Number Then     'Some strange error happens here, if we delete .Number property
         'damn, got no write access
         bNoWriteAccess = True
         sMsg = Translate(7)
@@ -7914,10 +8229,10 @@ Public Sub CheckForReadOnlyMedia()
 '               "If you want to make backups of items you fix, " & _
 '               "you must copy HiJackThis.exe to your hard disk " & _
 '               "first, and run it from there." & vbCrLf & vbCrLf & _
-'               "If you continue, you might get 'Path/File Access' " & _
-'               "errors - do NOT email me those please."
+'               "If you continue, you might get 'Path/File Access' "
         MsgBoxW sMsg, vbExclamation
-        
+    Else
+        CloseW hFile
     End If
     DeleteFileWEx (StrPtr(BuildPath(AppPath(), "~dummy.tmp")))
     
@@ -8730,6 +9045,12 @@ Public Sub InitVariables()
         If Len(LocalAppData) = 0 Then LocalAppData = EnvironW("%USERPROFILE%") & "\Local Settings\Application Data"
     End If
     
+    If OSver.MajorMinor < 6 Then
+        AppDataLocalLow = AppData
+    Else
+        AppDataLocalLow = GetKnownFolderPath("{A520A1A4-1780-4FF6-BD18-167343C5AF16}")
+    End If
+    
     Desktop = GetSpecialFolderPath(CSIDL_DESKTOP)
     UserProfile = EnvironW("%UserProfile%")
     AllUsersProfile = EnvironW("%ALLUSERSPROFILE%")
@@ -8760,6 +9081,8 @@ Public Sub InitVariables()
     
     Set colProfiles = New Collection
     GetProfiles
+    
+    FillUsers
     
     AppendErrorLogCustom "InitVariables - End"
 End Sub
@@ -8823,6 +9146,39 @@ Public Function GetSpecialFolderPath(CSIDL As Long, Optional hToken As Long = 0&
     ' 3-th parameter - is a token of user
     lr = SHGetFolderPath(0&, CSIDL, hToken, SHGFP_TYPE_CURRENT, StrPtr(sPath))
     If lr = 0 Then GetSpecialFolderPath = Left$(sPath, lstrlen(StrPtr(sPath)))
+End Function
+
+Public Function GetKnownFolderPath(ByVal KnownFolderID As String) As String
+    On Error GoTo ErrorHandler
+    'https://msdn.microsoft.com/en-us/library/windows/desktop/dd378457(v=vs.85).aspx
+    
+    Const KF_FLAG_NOT_PARENT_RELATIVE   As Long = &H200&
+    Const KF_FLAG_DEFAULT_PATH          As Long = &H400&
+    Const KF_FLAG_CREATE                As Long = &H8000&
+    
+    If OSver.MajorMinor < 6 Then Exit Function
+    
+    Dim rfid    As UUID
+    Dim lr      As Long
+    Dim sPath   As String
+    Dim ptr     As Long
+    Dim strLen  As Long
+    
+    CLSIDFromString StrPtr(KnownFolderID), rfid
+    
+    lr = SHGetKnownFolderPath(rfid, KF_FLAG_NOT_PARENT_RELATIVE Or KF_FLAG_DEFAULT_PATH, 0&, ptr)
+    
+    If 0 = lr Then
+        strLen = lstrlen(ptr)
+        sPath = String$(strLen, vbNullChar)
+        lstrcpyn StrPtr(sPath), ptr, strLen + 1&
+    
+        GetKnownFolderPath = sPath
+    End If
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "Engine.GetKnownFolderPath", "KnownFolderID:", KnownFolderID
+    If inIDE Then Stop: Resume Next
 End Function
 
 Public Function StrInParamArray(Stri As String, ParamArray Etalon()) As Boolean
@@ -9018,6 +9374,8 @@ Public Function FindOnPath(ByVal sAppName As String, Optional bUseSourceValueOnF
             Exts(i) = LCase(Exts(i))
         Next
     End If
+    
+    If Len(sAppName) = 0 Then Exit Function
     
     If Left(sAppName, 1) = """" Then
         If Right(sAppName, 1) = """" Then

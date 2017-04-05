@@ -130,6 +130,12 @@ Public Sub GetTargetShellLinkW(LNK_file As String, Optional Target As String, Op
     
     If Not FileExists(LNK_file) Then Exit Sub
     
+    If isFileFilledByNUL(LNK_file) Then
+        Argument = ""
+        Target = "(lnk is corrupted)"
+        Exit Sub
+    End If
+    
     oPFile.Load LNK_file, STGM_READ
     
     Target = String$(MAX_PATH_W, vbNullChar)
@@ -146,6 +152,36 @@ ErrorHandler:
     ErrorMsg Err, "Parser.GetTargetShellLinkW", "File: ", LNK_file
     If inIDE Then Stop: Resume Next
 End Sub
+
+
+Private Function isFileFilledByNUL(FileName As String) As Boolean
+    On Error GoTo ErrorHandler
+    
+    Dim ff As Long
+    Dim size As Currency
+    Dim Data As String
+    Dim i As Long
+    
+    OpenW FileName, FOR_READ, ff
+    If ff < 1 Then Exit Function
+    
+    size = LOFW(ff)
+    If size = 0@ Then CloseW ff: ff = 0: Exit Function
+    Data = String$(size, vbNullChar)
+    GetW ff, 1&, Data    ' читаем файл целиком
+    
+    CloseW ff: ff = 0
+    
+    isFileFilledByNUL = True
+    
+    For i = 1 To size
+        If Asc(Mid$(Data, i, 1)) <> 0& Then isFileFilledByNUL = False: Exit For
+    Next
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "Parser.isFileFilledByNUL", "File:", FileName
+    If ff <> 0 Then CloseW ff: ff = 0
+End Function
 
 ' Инициализация интерфейса IShellLink
 Public Sub ISL_Init()

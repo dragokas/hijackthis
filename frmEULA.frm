@@ -84,6 +84,7 @@ Private Type tagINITCOMMONCONTROLSEX
     dwICC   As Long
 End Type
 
+Private Declare Sub InitCommonControls Lib "comctl32.dll" ()
 Private Declare Function InitCommonControlsEx Lib "comctl32.dll" (lpInitCtrls As tagINITCOMMONCONTROLSEX) As Boolean
 Private Declare Function GetVersionEx Lib "kernel32.dll" Alias "GetVersionExW" (lpVersionInformation As Any) As Long
 Private Declare Function SetCurrentProcessExplicitAppUserModelID Lib "shell32.dll" (ByVal pAppID As Long) As Long
@@ -93,6 +94,8 @@ Private Declare Function OpenProcess Lib "kernel32.dll" (ByVal dwDesiredAccess A
 Private Declare Function WaitForSingleObject Lib "kernel32.dll" (ByVal hHandle As Long, ByVal dwMilliseconds As Long) As Long
 Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
 Private Declare Function DeleteFileW Lib "kernel32.dll" (ByVal lpFileName As Long) As Long
+
+Private Const ICC_STANDARD_CLASSES As Long = &H4000&
 
 Private ControlsEvent As New clsEvents
 Private hModShell As Long
@@ -120,10 +123,14 @@ Private Sub Form_Initialize()
 
         With ICC
             .dwSize = Len(ICC)
-            .dwICC = &HFF& 'http://www.geoffchappell.com/studies/windows/shell/comctl32/api/commctrl/initcommoncontrolsex.htm
+            .dwICC = ICC_STANDARD_CLASSES 'http://www.geoffchappell.com/studies/windows/shell/comctl32/api/commctrl/initcommoncontrolsex.htm
         End With
 
-        InitCommonControlsEx ICC
+        lr = InitCommonControlsEx(ICC)
+        
+        If lr = 0 Or Err.Number <> 0 Then
+            InitCommonControls ' 9x version
+        End If
     End If
     
     If hModShell <> 0 Then

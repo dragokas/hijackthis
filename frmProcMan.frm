@@ -251,7 +251,8 @@ Public Sub RefreshProcessListNT(objList As ListBox)
                 If Len(Process(i).Path) = 0 Then
                     If Not ((StrComp(Process(i).Name, "System Idle Process", 1) = 0 And Process(i).PID = 0) _
                         Or (StrComp(Process(i).Name, "System", 1) = 0 And Process(i).PID = 4) _
-                        Or (StrComp(Process(i).Name, "Memory Compression", 1) = 0)) Then
+                        Or (StrComp(Process(i).Name, "Memory Compression", 1) = 0) _
+                        Or (StrComp(Process(i).Name, "Secure System", 1) = 0)) Then
                           sProcessName = Process(i).Name '& " (cannot get Process Path)"
                     End If
                 End If

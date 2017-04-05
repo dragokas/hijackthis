@@ -21,7 +21,7 @@ Private Type CLIENT_ID
 End Type
 
 Private Type UNICODE_STRING
-    Length      As Integer
+    length      As Integer
     MaxLength   As Integer
     lpBuffer    As Long
 End Type
@@ -129,7 +129,7 @@ Private Declare Function GetFullPathName Lib "kernel32.dll" Alias "GetFullPathNa
 Private Declare Function QueryFullProcessImageName Lib "kernel32.dll" Alias "QueryFullProcessImageNameW" (ByVal hProcess As Long, ByVal dwFlags As Long, ByVal lpExeName As Long, ByVal lpdwSize As Long) As Long
 Private Declare Function GetLogicalDriveStrings Lib "kernel32.dll" Alias "GetLogicalDriveStringsW" (ByVal nBufferLength As Long, ByVal lpBuffer As Long) As Long
 Private Declare Function QueryDosDevice Lib "kernel32.dll" Alias "QueryDosDeviceW" (ByVal lpDeviceName As Long, ByVal lpTargetPath As Long, ByVal ucchMax As Long) As Long
-Private Declare Sub memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long)
+Private Declare Sub memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal length As Long)
 
 Public Declare Function CreateToolhelp32Snapshot Lib "kernel32.dll" (ByVal lFlags As Long, ByVal lProcessID As Long) As Long
 Public Declare Function Process32First Lib "kernel32.dll" Alias "Process32FirstW" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
@@ -158,7 +158,7 @@ Private Declare Function SHRunDialog Lib "shell32.dll" Alias "#61" (ByVal hOwner
 Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteW" (ByVal hWnd As Long, ByVal lpOperation As Long, ByVal lpFile As Long, ByVal lpParameters As Long, ByVal lpDirectory As Long, ByVal nShowCmd As Long) As Long
 
 Private Declare Function lstrcpy Lib "kernel32.dll" Alias "lstrcpyW" (ByVal lpStrDest As Long, ByVal lpStrSrc As Long) As Long
-Private Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, ByVal Source As Any, ByVal Length As Long)
+Private Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, ByVal Source As Any, ByVal length As Long)
 
 Private Declare Function SendMessage Lib "user32.dll" Alias "SendMessageW" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, lParam As Any) As Long
 
@@ -439,11 +439,11 @@ Public Function KillProcessNTByFile(sPath$) As Boolean
 End Function
 
 Public Function GetProcesses(ProcList() As MY_PROC_ENTRY) As Long
-    'If OSver.MajorMinor >= 5.1 Then
-    '    GetProcesses = GetProcesses_Zw(ProcList)
-    'Else
+    If OSver.MajorMinor >= 5.1 Then
+        GetProcesses = GetProcesses_Zw(ProcList)
+    Else
         GetProcesses = GetProcesses_2k(ProcList)
-    'End If
+    End If
 End Function
 
 Public Function GetProcesses_2k(ProcList() As MY_PROC_ENTRY) As Long
@@ -469,7 +469,7 @@ Public Function GetProcesses_2k(ProcList() As MY_PROC_ENTRY) As Long
                 If ProcList(Cnt).Name <> "[System Process]" And ProcList(Cnt).Name <> "System" Then
                     ProcList(Cnt).PID = uProcess.th32ProcessID
                     If 0 <> uProcess.th32ProcessID Then
-                        ProcList(Cnt).Path = GetFilePathByPID(uProcess.th32ProcessID)
+                        ProcList(Cnt).Path = TrimNull(GetFilePathByPID(uProcess.th32ProcessID))
                     End If
                     Cnt = Cnt + 1
                     If Cnt > UBound(ProcList) Then ReDim Preserve ProcList(UBound(ProcList) + 100)
@@ -534,8 +534,8 @@ Public Function GetProcesses_Zw(ProcList() As MY_PROC_ENTRY) As Long    'Return 
                     ElseIf .ProcessID = 4 Then
                         ProcName = "System"
                     Else
-                        ProcName = Space$(.ImageName.Length \ 2)
-                        memcpy ByVal StrPtr(ProcName), ByVal .ImageName.lpBuffer, .ImageName.Length
+                        ProcName = Space$(.ImageName.length \ 2)
+                        memcpy ByVal StrPtr(ProcName), ByVal .ImageName.lpBuffer, .ImageName.length
                         ProcPath = GetFilePathByPID(.ProcessID)
                         
                         If Len(ProcPath) = 0 Then
@@ -625,6 +625,8 @@ Function GetFilePathByPID(PID As Long) As String
             ProcPath = Left$(ProcPath, Cnt)
             If StrComp("\SystemRoot\", Left$(ProcPath, 12), 1) = 0 Then ProcPath = sWinDir & Mid$(ProcPath, 12)
             If "\??\" = Left$(ProcPath, 4) Then ProcPath = Mid$(ProcPath, 5)
+        Else
+            ProcPath = ""
         End If
         
         If ERROR_PARTIAL_COPY = Err.LastDllError Or Cnt = 0 Then     'because GetModuleFileNameEx cannot access to that information for 64-bit processes on WOW64
@@ -644,7 +646,8 @@ Function GetFilePathByPID(PID As Long) As String
                         End If
                     End If
                 End If
-                
+            Else
+                ProcPath = ""
             End If
             
         End If
@@ -822,9 +825,11 @@ Public Sub RefreshDLLListNT(lPID&, objList As ListBox)
     Dim arList() As String, i&
     objList.Clear
     GetDLLList lPID, arList()
-    For i = 0 To UBound(arList)
-        objList.AddItem arList(i)
-    Next
+    If IsArrDimmed(arList) Then
+        For i = 0 To UBound(arList)
+            objList.AddItem arList(i)
+        Next
+    End If
 End Sub
 
 
@@ -843,7 +848,8 @@ Public Function GetRunningProcesses$()
             
                 If Not ((StrComp(.Name, "System Idle Process", 1) = 0 And .PID = 0) _
                         Or (StrComp(.Name, "System", 1) = 0 And .PID = 4) _
-                        Or (StrComp(.Name, "Memory Compression", 1) = 0)) Then
+                        Or (StrComp(.Name, "Memory Compression", 1) = 0) _
+                        Or (StrComp(.Name, "Secure System", 1) = 0)) Then
 
                     sProc = sProc & "|" & .PID & "=" & .Path
                 End If

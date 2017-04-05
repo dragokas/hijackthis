@@ -100,6 +100,7 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
     Dim taskFolder  As ITaskFolder
     Dim SignResult  As SignResult_TYPE
     Dim bIsMicrosoftFile As Boolean
+    Dim sWorkDir    As String
     
     Dim nTask           As Long
     Dim RunObjLast      As String
@@ -177,6 +178,7 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
             lTaskState = 0
             bTaskEnabled = False
             RunObjCom = ""
+            sWorkDir = ""
             
             
             DirFull = registeredTask.Path
@@ -224,10 +226,17 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                             'Debug.Print "  Exec Type: " & taskActionExec.Type
                             Stady = 10
                             RunObj = taskActionExec.Path
+                            sWorkDir = EnvironW(taskActionExec.WorkingDirectory)
                             Call LogError(Err, Stady)
                             
                             'RunObj = EnvironW(RunObj)
-                            RunObjExpanded = EnvironW(RunObj)
+                            RunObjExpanded = UnQuote(EnvironW(RunObj))
+                            
+                            If Mid$(RunObjExpanded, 2, 1) <> ":" Then
+                                If sWorkDir <> "" Then
+                                    RunObjExpanded = BuildPath(sWorkDir, RunObjExpanded)
+                                End If
+                            End If
                             
                             Stady = 11
                             RunArgs = taskActionExec.Arguments
@@ -261,7 +270,13 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                             RunObj = taskActionCOM.ClassId & IIf(Len(taskActionCOM.Data) <> 0, "," & taskActionCOM.Data, "")
                             Call LogError(Err, Stady)
                             
-                            RunObjCom = EnvironW(RegGetString(HKEY_CLASSES_ROOT, "CLSID\" & taskActionCOM.ClassId & "\InprocServer32", vbNullString))
+                            'If InStr(taskActionCOM.ClassId, "{DE434264-8FE9-4C0B-A83B-89EBEEBFF78E}") <> 0 Then Stop
+                            
+                            RunObjCom = UnQuote(EnvironW(RegGetString(HKEY_CLASSES_ROOT, "CLSID\" & taskActionCOM.ClassId & "\InprocServer32", vbNullString)))
+                            
+                            If RunObjCom <> "" Then
+                                RunObjCom = FindOnPath(RunObjCom, True)
+                            End If
                     End Select
                     
                   Next
@@ -380,8 +395,6 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                     End If
                 ElseIf ActionType = TASK_ACTION_COM_HANDLER And Len(RunObjCom) <> 0 Then
                 
-                    Debug.Print RunObjCom
-                
                     SignVerify RunObjCom, 0&, SignResult
                 
                     bIsMicrosoftFile = (IsMicrosoftCertHash(SignResult.HashRootCert) And SignResult.isLegit)
@@ -405,9 +418,6 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                 Else
                     RunObj = RunObj & " - " & RunObjCom
                     NoFile = Not FileExists(RunObjCom)
-                    If NoFile Then
-                        RunObj = RunObj & " (file missing)"
-                    End If
                 End If
             End If
             
@@ -555,8 +565,15 @@ Public Function isInTasksWhiteList(sPathName As String, sTargetFile As String, s
             If StrComp(sTargetFile, sWinSysDir & "\msfeedssync.exe", 1) = 0 And sArguments = "sync" Then
                 isInTasksWhiteList = True
             End If
+        ElseIf sPathName Like "{root}\Optimize Start Menu Cache Files-S-1-5-21-*" Then
+            If StrComp(sTargetFile, "{2D3F8A1B-6DCD-4ED5-BDBA-A096594B98EF},$(Arg0)", 1) = 0 Then
+                isInTasksWhiteList = True
+            End If
+        ElseIf sPathName Like "\WPD\SqmUpload_S-1-5-21-*" Then
+            If StrComp(sTargetFile, sWinDir & "\system32\rundll32.exe", 1) = 0 And sArguments = "portabledeviceapi.dll,#1" Then
+                isInTasksWhiteList = True
+            End If
         End If
-    
         Exit Function
     End If
     

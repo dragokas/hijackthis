@@ -94,6 +94,9 @@ Public Sub MakeBackup(ByVal sItem$)
             
             'MsgBoxW "Not implemented yet, item '" & sItem & "' will not be backed up!", vbExclamation, "bad coder - no donuts"
             MsgBoxW Replace$(Translate(531), "[]", sItem), vbExclamation, Translate(532)
+        
+        Case "R4"
+            'R4 - (DefaultScope, SearchScopes)
             
         Case "O2" ', "O2-32"
             'O2 - BHO

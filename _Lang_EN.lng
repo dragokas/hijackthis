@@ -140,13 +140,13 @@
      ----------
      
      The different sections of hijacking influences have been separated into the following groups.
-     You can get more detailed information about an item by selecting it from the list of found items OR highlighting the relevant line below, and clicking 'Info on selected item'.
      
       R - Changes in basic Internet Explorer settings:
          R0 - Changed registry value
          R1 - Created registry value
          R2 - Created registry key
          R3 - Created extra registry parameter where only one should be
+         R4 - Search providers (DefaultScope, SearchScopes)
       F - Autoloading from INI-files and corresponding registry locations
          F0 - Changed ini-file value (system.ini)
          F1 - Created ini-file parameter (win.ini)
@@ -246,7 +246,7 @@
      -------------
      
 	HiJackThis Fork is a tool for scanning your computer to find and fix settings changed by adware, spyware, malware and other unwanted programs.
-	HiJackThis checking is not based on black lists, specific programs or URLs, it check the methods used by hijackers to force you onto their sites.
+	HiJackThis checking is not based on black lists, specific programs or URLs. It checks the methods only used by hijackers to force you onto their sites.
 	Thereby, false positives are imminent. Unless you are sure what you're doing, you should always consult with knowledgable folks BEFORE DELETING ANYTHING.
      
 	HiJackThis comes with several usefull tools available under button 'Misc Tools' and new bar in menu 'Tools':
@@ -931,6 +931,12 @@
      >>> Action taken by HiJackThis:
       - event consumer, filter, timer and binding are deleted in WMI database;
       - associated file is also deleted.
+; [R4]
+0434=Internet Explorer browser uses search provider (DefaultScope) to show list of tips in the search bar when you are typing search query in the address bar. IE allows to replace default provider with any from the list (SearchScopes).
+
+     >>> Action taken by HiJackThis:
+      - key of particular provider is deleted;
+      - default value of DefaultScope (Microsoft Bing) and provider parameters are recovered.
 0490=Detailed information on sections:
 ;
 ; ========== Delete Service ==========
