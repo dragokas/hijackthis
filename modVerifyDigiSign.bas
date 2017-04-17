@@ -390,6 +390,7 @@ Private Declare Function SystemTimeToVariantTime Lib "oleaut32.dll" (lpSystemTim
 Private Declare Function VirtualProtect Lib "kernel32.dll" (lpAddress As Any, ByVal dwSize As Long, ByVal flNewProtect As Long, lpflOldProtect As Long) As Long
 Private Declare Function GetMem8 Lib "msvbvm60.dll" (src As Any, dst As Any) As Long
 
+
 Dim func()  As Data, Count   As Long
 
 Private Const PAGE_EXECUTE_READWRITE As Long = &H40&
@@ -503,6 +504,20 @@ Public Function SignVerify( _
     
     On Error GoTo ErrorHandler
     
+'        tim(0).Start 'whole EDS function
+'        tim(1).Start 'CryptCATAdminAcquireContext
+'        tim(2).Start 'CryptCATAdminCalcHashFromFileHandle
+'        tim(3).Start 'CryptCATAdminEnumCatalogFromHash
+'        tim(4).Start 'WinVerifyTrust
+'        tim(5).Start 'GetSignerInfo
+'        tim(6).Start 'release
+'        tim(7).Start 'GetSignaturesFromStateData
+'        tim(8).Start 'ExtractPropertyFromCertificateByID
+'        tim(9).Start 'Signer
+'        tim(10).Start 'hash algo
+    
+    tim(0).Start
+    
     AppendErrorLogCustom "SignVerify - Begin", "File: " & sFilePath
     
     ' in.  sFilePath - path to PE EXE file for validation
@@ -556,6 +571,7 @@ Public Function SignVerify( _
     Dim Success         As Boolean
     Dim RedirResult     As Boolean
     Dim bOldRedir       As Boolean
+      
     
     WipeSignResult SignResult
     
@@ -643,6 +659,8 @@ Public Function SignVerify( _
 '        .pszOID = StrPtr(szOID_CERT_STRONG_KEY_OS_1)
 '    End With
     
+    tim(1).Start 'CryptCATAdminAcquireContext
+    
     If IsWin8AndNewer Then
         ' obtain context for procedure of signature verification
         
@@ -669,16 +687,15 @@ Public Function SignVerify( _
         End If
     End If
     
-    If (INVALID_HANDLE_VALUE = hFile) Then
-        WriteError Err, SignResult, "CreateFile"
-        GoTo Finalize
-    End If
+    tim(1).Freeze
     
     FileSize = FileLenW(, hFile) ' file size == 0 ?
     
     If FileSize = 0@ Or (FileSize > MAX_FILE_SIZE And Not CBool(flags And SV_NoFileSizeLimit)) Then
         GoTo Finalize
     End If
+    
+    tim(2).Start 'CryptCATAdminCalcHashFromFileHandle
     
     If IsWin8AndNewer Then
         ' obtain size needed for hash (Win8+)
@@ -711,11 +728,15 @@ Public Function SignVerify( _
         End If
     End If
     
+    tim(2).Freeze
+    
     ' Converting hash into string
     For i = 0& To UBound(aFileHash)
         sMemberTag = sMemberTag & Right$("0" & Hex$(aFileHash(i)), 2&)
     Next
     SignResult.HashFileCode = sMemberTag
+    
+    tim(3).Start 'CryptCATAdminEnumCatalogFromHash
     
     ' Search sec. catalogue by hash
     If Not HasCatRootVulnerability() Then 'avoid M$ bug with C:\WINDOWS\system32\catroot2\{GUID} file
@@ -737,6 +758,8 @@ Public Function SignVerify( _
             CatalogContext = 0&
         End If
     End If
+    
+    tim(3).Freeze
     
     ' preparing WINTRUST_DATA
     
@@ -832,7 +855,11 @@ Public Function SignVerify( _
     '  Example: "C:\Program Files\WindowsApps\king.com.CandyCrushSodaSaga_1.75.600.0_x86__kgqvnymyfvs32\AppxMetadata\CodeIntegrity.cat"
     '  => "C:\Program Files\WindowsApps\king.com.CandyCrushSodaSaga_1.75.600.0_x86__kgqvnymyfvs32\stritz.exe"
     
+    tim(4).Start 'WinVerifyTrust
+    
     ReturnVal = WinVerifyTrust(INVALID_HANDLE_VALUE, ActionGuid, VarPtr(WintrustData))
+    
+    tim(4).Freeze
     
     If RedirResult Then ToggleWow64FSRedirection True
     
@@ -874,7 +901,9 @@ Public Function SignVerify( _
         ReturnVal <> TRUST_E_BAD_DIGEST And _
         ReturnVal <> TRUST_E_PROVIDER_UNKNOWN Then
     
+        tim(5).Start 'GetSignerInfo
         GetSignerInfo WintrustData.hWVTStateData, SignResult
+        tim(5).Freeze
     End If
     
     ' correcting result if SV_AllowSelfSigned specified to allow self-signed certificate
@@ -963,6 +992,8 @@ Public Function SignVerify( _
         
     End With
     
+    tim(6).Start 'release
+    
     ' Release sec. cat. context
     If (CatalogContext) Then
         CryptCATAdminReleaseCatalogContext hCatAdmin, CatalogContext, 0&
@@ -976,7 +1007,11 @@ Public Function SignVerify( _
         CertFreeCertificateContext verInfo.pcSignerCertContext
     End If
     
+    tim(6).Freeze
+    
 Finalize:
+    tim(6).Start
+
     If Not CBool(flags And SV_CacheDoNotSave) Then SignCache(SC_pos) = SignResult
     
     ' closing the file, release admin. cat. context
@@ -988,13 +1023,23 @@ Finalize:
     End If
     ToggleWow64FSRedirection bOldRedir
     
+    tim(6).Freeze
+    
     AppendErrorLogCustom "SignVerify - End", "Legit? " & SignResult.isLegit
+    
+    For i = 0 To UBound(tim)
+        tim(i).Freeze
+    Next
     
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "SignVerify", sFilePath
     ToggleWow64FSRedirection bOldRedir
     If inIDE Then Stop: Resume Next
+    
+    For i = 0 To UBound(tim)
+        tim(i).Freeze
+    Next
 End Function
 
 Private Function HasCatRootVulnerability() As Boolean
@@ -1076,11 +1121,15 @@ Private Sub GetSignerInfo(StateData As Long, SignResult As SignResult_TYPE)
             idxRoot = UBound(Signature(0).Certificate)
             pCertificate = Signature(0).Certificate(idxRoot)
             
+            tim(8).Start 'ExtractPropertyFromCertificateByID
             .HashRootCert = ExtractPropertyFromCertificateByID(pCertificate, CERT_HASH_PROP_ID)
+            tim(8).Freeze
             
             'Cert. index of person who sign (Subject)
             idxSigner = 0
             pCertificate = Signature(0).Certificate(idxSigner)
+            
+            tim(9).Start 'Signer
             
             If GetCertInfoFromCertificate(pCertificate, CertInfo) Then
                 
@@ -1094,6 +1143,10 @@ Private Sub GetSignerInfo(StateData As Long, SignResult As SignResult_TYPE)
                 .DateCertExpired = FileTime_To_VT_Date(CertInfo.NotAfter)
                 
             End If
+            
+            tim(9).Freeze
+            
+            tim(10).Start 'hash algo
             
             ' Get hash algorithm of signature
             memcpy MsgSigner, ByVal CPSigner(0).psSigner, LenB(MsgSigner)
@@ -1110,6 +1163,8 @@ Private Sub GetSignerInfo(StateData As Long, SignResult As SignResult_TYPE)
             
             AlgoDesc = GetHashNameByOID(.AlgorithmCertHash)
             If Len(AlgoDesc) <> 0 Then .AlgorithmCertHash = .AlgorithmCertHash & " " & "(" & AlgoDesc & ")"
+            
+            tim(10).Freeze
             
             'release
             For i = 0 To UBound(Signature)
@@ -1173,6 +1228,8 @@ End Function
 Private Function GetSignaturesFromStateData(StateData As Long, Signature() As SIGNATURE_TYPE, CPSigner() As CRYPT_PROVIDER_SGNR) As Long
     'Signature(x).Certificate() returns array of pointers to CERT_CONTEXT
     On Error GoTo ErrorHandler
+
+    tim(7).Start 'GetSignaturesFromStateData
 
     Dim pProvData   As Long
     'Dim ProvData    As CRYPT_PROVIDER_DATA
@@ -1251,6 +1308,9 @@ Private Function GetSignaturesFromStateData(StateData As Long, Signature() As SI
     'WINTRUST_Free ProvData.pPDSip
     'WINTRUST_Free ProvData.psPfns
     'WINTRUST_Free pProvData
+    
+    tim(7).Freeze
+    
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "GetSignaturesFromStateData"

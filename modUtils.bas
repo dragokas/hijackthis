@@ -22,8 +22,8 @@ Private Type RECT
 End Type
 
 Private Type POINTAPI
-    X As Long
-    Y As Long
+    x As Long
+    y As Long
 End Type
 
 Private Type OPENFILENAME
@@ -71,7 +71,7 @@ Private Declare Function SetWindowLong Lib "user32.dll" Alias "SetWindowLongW" (
 Private Declare Function CallWindowProc Lib "user32.dll" Alias "CallWindowProcW" (ByVal lpPrevWndFunc As Long, ByVal hWnd As Long, ByVal msg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
 Private Declare Function GetCursorPos Lib "user32.dll" (lpPoint As POINTAPI) As Long
 Private Declare Function GetWindowRect Lib "user32.dll" (ByVal hWnd As Long, lpRect As RECT) As Long
-Private Declare Function PtInRect Lib "user32.dll" (lpRect As RECT, ByVal X As Long, ByVal Y As Long) As Long
+Private Declare Function PtInRect Lib "user32.dll" (lpRect As RECT, ByVal x As Long, ByVal y As Long) As Long
 Private Declare Sub SHChangeNotify Lib "shell32.dll" (ByVal wEventId As Long, ByVal uFlags As Long, ByVal dwItem1 As Long, ByVal dwItem2 As Long)
 Private Declare Function GetModuleHandle Lib "kernel32.dll" Alias "GetModuleHandleW" (ByVal lpModuleName As Long) As Long
 Private Declare Function GetModuleFileName Lib "kernel32.dll" Alias "GetModuleFileNameW" (ByVal hModule As Long, ByVal lpFileName As Long, ByVal nSize As Long) As Long
@@ -92,6 +92,7 @@ Private Declare Function GetCurrentProcess Lib "kernel32.dll" () As Long
 Private Declare Function IsWow64Process Lib "kernel32.dll" (ByVal hProcess As Long, ByRef Wow64Process As Long) As Long
 Private Declare Function GetSystemMetrics Lib "user32.dll" (ByVal nIndex As Long) As Long
 Private Declare Function GetVersionEx Lib "kernel32.dll" Alias "GetVersionExW" (lpVersionInformation As OSVERSIONINFOEX) As Long
+Private Declare Function GetPrivateProfileString Lib "kernel32.dll" Alias "GetPrivateProfileStringW" (ByVal lpApplicationName As Long, ByVal lpKeyName As Long, ByVal lpDefault As Long, ByVal lpReturnedString As Long, ByVal nSize As Long, ByVal lpFileName As Long) As Long
 
 Private Const LOAD_LIBRARY_AS_DATAFILE As Long = &H2   'Read Only      ( do not execute DllMain )
 
@@ -129,7 +130,7 @@ Function IsMouseWithin(hWnd As Long) As Boolean
     Dim p As POINTAPI
     If GetWindowRect(hWnd, r) Then
         If GetCursorPos(p) Then
-            IsMouseWithin = PtInRect(r, p.X, p.Y)
+            IsMouseWithin = PtInRect(r, p.x, p.y)
         End If
     End If
 End Function
@@ -191,26 +192,46 @@ End Function
 Public Function GetStringFromBinary(Optional ByVal sFile As String, Optional ByVal nid As Long, Optional ByVal FileAndIDHybrid As String) As String
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "GetStringFromBinary - Begin", "File: " & sFile, "id: " & nid, "FileAndIDHybrid: " & FileAndIDHybrid
-
+    
     Dim hModule As Long
     Dim nSize As Long
     Dim sBuf As String
     Dim pos As Long
     Dim Redirect As Boolean, bOldStatus As Boolean
+    Dim sResVar As String
+    Dim sInitialVar As String
+    Dim bIsInf As Boolean
     
     'Get string resource from binary file
     'Source can be defined either by Filename and ID, or by hibryd (registry like) string, e.g. @%SystemRoot%\System32\my.dll,-102
     'ID with minus will be converted by module
     
+    sInitialVar = FileAndIDHybrid
+    
     If 0 <> Len(FileAndIDHybrid) Then
     
         If Left$(FileAndIDHybrid, 1) = "@" Then FileAndIDHybrid = Mid$(FileAndIDHybrid, 2)
-        If InStr(FileAndIDHybrid, "%") <> 0 Then FileAndIDHybrid = EnvironW(FileAndIDHybrid)
+        If InStr(FileAndIDHybrid, "%") <> 0 Then
+            If InStr(1, FileAndIDHybrid, ".inf", 1) = 0 Then
+                FileAndIDHybrid = EnvironW(FileAndIDHybrid)
+            End If
+        End If
         pos = InStrRev(FileAndIDHybrid, ",")
         If 0 <> pos Then
             sFile = Left$(FileAndIDHybrid, pos - 1)
             sBuf = Mid$(FileAndIDHybrid, pos + 1)
-            If IsNumeric(sBuf) And 0 <> Len(sBuf) Then nid = Val(sBuf) Else Exit Function
+            
+            If StrComp(GetExtensionName(sFile), ".inf", 1) = 0 Then
+                bIsInf = True
+                sResVar = Trim(sBuf)
+                If Left$(sResVar, 1) = "%" And Right$(sResVar, 1) = "%" Then
+                    sResVar = Mid$(sResVar, 2, Len(sResVar) - 2)
+                End If
+            ElseIf IsNumeric(sBuf) And 0 <> Len(sBuf) Then
+                nid = Val(sBuf)
+            Else
+                Exit Function
+            End If
         End If
     End If
     
@@ -219,7 +240,7 @@ Public Function GetStringFromBinary(Optional ByVal sFile As String, Optional ByV
     sFile = EnvironW(sFile)
     
     If Not FileExists(sFile) Then
-        sFile = FindOnPath(sFile)
+        sFile = FindOnPath(sFile, , IIf(bIsInf, BuildPath(sWinDir, "inf"), ""))
         If 0 = Len(sFile) Then Exit Function
     End If
     
@@ -227,14 +248,22 @@ Public Function GetStringFromBinary(Optional ByVal sFile As String, Optional ByV
     
     Redirect = ToggleWow64FSRedirection(False, sFile, bOldStatus)
     
-    hModule = LoadLibraryEx(StrPtr(sFile), 0&, LOAD_LIBRARY_AS_DATAFILE)
-    
-    If hModule Then
-        nSize = LoadString(hModule, Abs(nid), StrPtr(sBuf), LenB(sBuf))
-        If nSize > 0 Then
-            GetStringFromBinary = TrimNull(Left$(sBuf, nSize))
+    If bIsInf Then
+        nSize = GetPrivateProfileString(StrPtr("Strings"), StrPtr(sResVar), StrPtr(sInitialVar), StrPtr(sBuf), Len(sBuf), StrPtr(sFile))
+        If nSize <> 0 Then
+            sBuf = UnQuote(Left$(sBuf, nSize))
         End If
-        FreeLibrary hModule
+        GetStringFromBinary = sBuf
+    Else
+        hModule = LoadLibraryEx(StrPtr(sFile), 0&, LOAD_LIBRARY_AS_DATAFILE)
+
+        If hModule Then
+            nSize = LoadString(hModule, Abs(nid), StrPtr(sBuf), LenB(sBuf))
+            If nSize > 0 Then
+                GetStringFromBinary = TrimNull(Left$(sBuf, nSize))
+            End If
+            FreeLibrary hModule
+        End If
     End If
     
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
@@ -249,6 +278,9 @@ End Function
 
 Public Sub GetBrowsersInfo()
     AppendErrorLogCustom "GetBrowsersInfo - Begin"
+    Static IsInit As Boolean
+    If IsInit Then Exit Sub
+    IsInit = True
     With BROWSERS
         .Edge.Version = GetEdgeVersion()
         .IE.Version = GetMSIEVersion()
@@ -436,9 +468,9 @@ ErrorHandler:
 End Function
 
 ' Особая процедура удаления файла (с разблокировкой NTFS привилегий)
-Public Function DeleteFileForce(File As String) As Long
+Public Function DeleteFileForce(file As String) As Long
     On Error GoTo ErrorHandler:
-    AppendErrorLogCustom "DeleteFileForce - Begin", "File: " & File
+    AppendErrorLogCustom "DeleteFileForce - Begin", "File: " & file
     
     Const FILE_ATTRIBUTE_NORMAL     As Long = &H80&
     Const FILE_ATTRIBUTE_READONLY   As Long = 1&
@@ -448,37 +480,37 @@ Public Function DeleteFileForce(File As String) As Long
     Dim isDeleted   As Boolean
     Dim Redirect As Boolean, bOldStatus As Boolean
 
-    If IsMicrosoftFile(File) Then Exit Function
+    If IsMicrosoftFile(file) Then Exit Function
 
-    Redirect = ToggleWow64FSRedirection(False, File, bOldStatus)
+    Redirect = ToggleWow64FSRedirection(False, file, bOldStatus)
 
-    Attrib = GetFileAttributes(StrPtr(File))
+    Attrib = GetFileAttributes(StrPtr(file))
 
     If Attrib And FILE_ATTRIBUTE_READONLY Then
-        SetFileAttributes StrPtr(File), Attrib And Not FILE_ATTRIBUTE_READONLY
+        SetFileAttributes StrPtr(file), Attrib And Not FILE_ATTRIBUTE_READONLY
     End If
     
-    lr = DeleteFileW(StrPtr(File))  'not 0 - success
+    lr = DeleteFileW(StrPtr(file))  'not 0 - success
     If lr = 0 Then
-        Debug.Print "Error " & Err.LastDllError & " when deleting file: " & File
+        Debug.Print "Error " & Err.LastDllError & " when deleting file: " & file
     End If
 
     ' -> в случае неудачи, попытка получения прав NTFS + смена владельца на локальную группу "Администраторы"
     ' цель и аргументы передаются только для включение в отчет
 
-    isDeleted = Not FileExists(File)
+    isDeleted = Not FileExists(file)
     
     If Not isDeleted Then
-        TryUnlock File
-        SetFileAttributes StrPtr(File), FILE_ATTRIBUTE_NORMAL
+        TryUnlock file
+        SetFileAttributes StrPtr(file), FILE_ATTRIBUTE_NORMAL
         
-        Call DeleteFileW(StrPtr(File))
+        Call DeleteFileW(StrPtr(file))
         'lr = Err.LastDllError
         
-        isDeleted = Not FileExists(File)
+        isDeleted = Not FileExists(file)
     End If
     
-    If isDeleted Then SHChangeNotify SHCNE_DELETE, SHCNF_PATH Or SHCNF_FLUSHNOWAIT, StrPtr(File), ByVal 0&
+    If isDeleted Then SHChangeNotify SHCNE_DELETE, SHCNF_PATH Or SHCNF_FLUSHNOWAIT, StrPtr(file), ByVal 0&
 
     DeleteFileForce = isDeleted 'lr
 
@@ -487,21 +519,21 @@ Public Function DeleteFileForce(File As String) As Long
     AppendErrorLogCustom "DeleteFileForce - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "DeleteFileEx", "File:", File
+    ErrorMsg Err, "DeleteFileEx", "File:", file
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     If inIDE Then Stop: Resume Next
 End Function
 
-Sub TryUnlock(ByVal File As String)  'получения прав NTFS + смена владельца на локальную группу "Администраторы"
+Sub TryUnlock(ByVal file As String)  'получения прав NTFS + смена владельца на локальную группу "Администраторы"
     On Error GoTo ErrorHandler:
-    AppendErrorLogCustom "TryUnlock - Begin", "File: " & File
+    AppendErrorLogCustom "TryUnlock - Begin", "File: " & file
     
     Dim TakeOwn As String
     Dim Icacls As String
     Dim DosName As String
     
-    DosName = GetDOSFilename(File)
-    If Len(DosName) <> 0 Then File = DosName
+    DosName = GetDOSFilename(file)
+    If Len(DosName) <> 0 Then file = DosName
     
     If Not OSver.bIsVistaOrLater Then Exit Sub
     
@@ -514,27 +546,27 @@ Sub TryUnlock(ByVal File As String)  'получения прав NTFS + смена владельца на л
     End If
     
     If FileExists(TakeOwn) Then
-        Proc.ProcessRun TakeOwn, "/F " & """" & File & """" & " /A", , 0
+        Proc.ProcessRun TakeOwn, "/F " & """" & file & """" & " /A", , 0
         If ERROR_SUCCESS <> Proc.WaitForTerminate(, , , 5000) Then
             Proc.ProcessClose , , True
         End If
     End If
     
     If FileExists(Icacls) Then
-        Proc.ProcessRun Icacls, """" & File & """" & " /grant:r *S-1-1-0:F", , 0
+        Proc.ProcessRun Icacls, """" & file & """" & " /grant:r *S-1-1-0:F", , 0
         If ERROR_SUCCESS <> Proc.WaitForTerminate(, , , 5000) Then
             Proc.ProcessClose , , True
         End If
         
-        Proc.ProcessRun Icacls, """" & File & """" & " /grant:r *S-1-5-32-544:F", , 0
+        Proc.ProcessRun Icacls, """" & file & """" & " /grant:r *S-1-5-32-544:F", , 0
         If ERROR_SUCCESS <> Proc.WaitForTerminate(, , , 5000) Then
             Proc.ProcessClose , , True
         End If
     
         If 0 <> Len(OSInfo.SID_CurrentProcess) Then
-            Proc.ProcessRun Icacls, """" & File & """" & " /grant:r *" & OSInfo.SID_CurrentProcess & ":F", , 0
+            Proc.ProcessRun Icacls, """" & file & """" & " /grant:r *" & OSInfo.SID_CurrentProcess & ":F", , 0
         Else
-            Proc.ProcessRun Icacls, """" & File & """" & " /grant:r """ & EnvironW("%UserName%") & """:F", , 0
+            Proc.ProcessRun Icacls, """" & file & """" & " /grant:r """ & EnvironW("%UserName%") & """:F", , 0
         End If
         If ERROR_SUCCESS <> Proc.WaitForTerminate(, , , 5000) Then
             Proc.ProcessClose , , True
@@ -544,7 +576,7 @@ Sub TryUnlock(ByVal File As String)  'получения прав NTFS + смена владельца на л
     AppendErrorLogCustom "TryUnlock - End"
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "TryUnlock", "File:", File
+    ErrorMsg Err, "TryUnlock", "File:", file
     If inIDE Then Stop: Resume Next
 End Sub
 

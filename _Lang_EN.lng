@@ -55,6 +55,7 @@
 1007=Could not unzip file to Desktop! Please, unzip it manually.
 1008=The value '[*]' could not be written to the settings file '[**]'. Please verify that write access is allowed to that file.
 1009=Analyze report
+1010=Scanning is not finished yet! Are you really sure you want to forcibly close the program?
 ;
 ; ============== EULA ============
 ;
@@ -158,8 +159,8 @@
          O3 - Internet Explorer: toolbars
          O4 - Autoloading Registry entries and 'Autostart' folder / msconfig disabled items
          O5 - Internet Explorer: Blocking of loading Internet Options in Control Panel
-         O6 - Policies: Disabling of 'Internet Options' main tab / IP Security settings
-         O7 - Policies: Disabling of Regedit
+         O6 - IE Policy: Disabling of 'Internet Options' main tab
+         O7 - Policies: Disabling of Regedit / IP Security settings / OS troubleShoot
          O8 - Internet Explorer: Extra context menu items
          O9 - Internet Explorer: Extra services and buttons
          O10 - Breaking of Internet access due to the damage or infection in Winsock LSP
@@ -820,10 +821,20 @@
      >>> Action taken by HiJackThis:
       - Registry value is deleted.
 ; [O7]
-0415=Disabling of Regedit is done by using Windows Policies. Normally used by administrators to restrict their users, it can be used by hijackers to prevent access to the Registry editor. This results in a message saying that your administrator has not given you privilege to use Regedit when running it.
+0415=
+     O7 - Policies
+     Disabling of Regedit is done by using Windows Policies. Normally used by administrators to restrict their users, it can be used by hijackers to prevent access to the Registry editor. This results in a message saying that your administrator has not given you privilege to use Regedit when running it.
      
+     O7 - IPSec
+     IP Security Policies provides the ability to allow or block network data packets, as well as fine-tune the source and destination packet filter, for instance, IP address (including subnet), type, port number and more.
+
+     O7 - TroubleShoot
+     Here, incorrect OS settings are displayed, which potentially lead to various malfunctions in the software and the system as generally. These include incorrect values of environment variables, such as %TEMP%, %TMP%.
+
      >>> Action taken by HiJackThis:
-      - Registry value is deleted.
+      - for O7 - Policies: registry value is deleted.
+      - for O7 - IPSec: all registry keys associated with the marked policy are deleted, including all the filters that apply to it.
+      - for O7 - TroubleShoot: settings are restored to defaults.
 ; [O8]
 0416=Extra items in the context (right-click) menu can prove helpful or annoying. Some recent hijackers add an item to the context menu. The MSIE PowerTweaks Web Accessory adds several useful items, among which "Highlight", "Zoom In/Out", "Links list", "Images list" and "Web Search".
      
@@ -836,7 +847,6 @@
       - Registry key is deleted.
 ; [O10]
 0418=The Windows Socket system (Winsock) uses a list of providers for resolving DNS names (i.e. translating www.microsoft.com into an IP address). This is called the Layered Service Provider (LSP). A few programs are capable of injecting their own (spyware) providers in the LSP. If files referenced by the LSP are missing or the 'chain' of providers is broken, none of the programs on your system can access the Internet. Removing references to missing files and repairing the chain will restore your Internet access.
-     So far, only a few programs use a Winsock hook.
      
      Note: This is a risky procedure. If it should fail, get WinSockReset from https://www.foolishit.com/vb6-projects/winsockreset/ to repair the Winsock stack.
      

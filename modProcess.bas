@@ -655,7 +655,8 @@ Function GetFilePathByPID(PID As Long) As String
         If Len(ProcPath) <> 0 Then    'if process ran with 8.3 style, GetModuleFileNameEx will return 8.3 style on x64 and full pathname on x86
                                       'so wee need to expand it ourself
             
-            GetFilePathByPID = GetFullPath(ProcPath)
+            ProcPath = GetFullPath(ProcPath)
+            GetFilePathByPID = GetLongPath(ProcPath)
         End If
         
         CloseHandle hProc

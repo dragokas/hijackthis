@@ -304,6 +304,7 @@ Public Function CmnDialogSave$(sTitle$, sDefFile$, sFilter$)
         GetSaveFileName uOFN
         CmnDialogSave = TrimNull(.lpstrFile)
     End With
+    If GetExtensionName(CmnDialogSave) = "" Then CmnDialogSave = CmnDialogSave & ".txt"
 End Function
 
 Public Sub ShowFile(sFile$)

@@ -7804,7 +7804,7 @@ Private Sub tvwMain_KeyUp(KeyCode As Integer, Shift As Integer)
     If mnuHelpShow.Checked Then txtHelp.Text = GetHelpText(tvwMain.SelectedItem.Key)
 End Sub
 
-Private Sub tvwMain_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub tvwMain_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     On Error Resume Next
     Status tvwMain.SelectedItem.Tag
     If mnuHelpShow.Checked Then txtHelp.Text = GetHelpText(tvwMain.SelectedItem.Key)

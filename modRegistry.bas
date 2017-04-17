@@ -7,7 +7,7 @@ Option Explicit
 
 ' 2.0.7 - registry functions reworked completely
 
-'Revision 2.2 (28.05.2016)
+'Revision 2.3 (15.04.2017)
 
 Public Const MAX_PATH       As Long = 260&
 Public Const MAX_PATH_W     As Long = 32767&
@@ -82,7 +82,7 @@ Private Declare Function RegOpenKeyEx Lib "advapi32.dll" Alias "RegOpenKeyExW" (
 Private Declare Function RegCloseKey Lib "advapi32.dll" (ByVal hKey As Long) As Long
 Private Declare Function RegQueryInfoKey Lib "advapi32.dll" Alias "RegQueryInfoKeyW" (ByVal hKey As Long, ByVal lpClass As Long, lpcbClass As Long, ByVal lpReserved As Long, lpcSubKeys As Long, lpcbMaxSubKeyLen As Long, lpcbMaxClassLen As Long, lpcValues As Long, lpcbMaxValueNameLen As Long, lpcbMaxValueLen As Long, lpcbSecurityDescriptor As Long, lpftLastWriteTime As Any) As Long
 Private Declare Function RegQueryValueEx Lib "advapi32.dll" Alias "RegQueryValueExW" (ByVal hKey As Long, ByVal lpValueName As Long, ByVal lpReserved As Long, lpType As Long, ByVal lpData As Any, lpcbData As Long) As Long
-'Private Declare Function RegGetValue Lib "advapi32.dll" Alias "RegGetValueW" (ByVal hKey As Long, ByVal lpSubKey As Long, ByVal lpValue As Long, ByVal dwFlags As Long, pdwType As Long, ByVal pvData As Long, pcbData As Long) As Long
+Private Declare Function RegGetValue Lib "advapi32.dll" Alias "RegGetValueW" (ByVal hKey As Long, ByVal lpSubKey As Long, ByVal lpValue As Long, ByVal dwFlags As Long, pdwType As Long, ByVal pvData As Long, pcbData As Long) As Long
 Private Declare Function RegSetValueEx Lib "advapi32.dll" Alias "RegSetValueExW" (ByVal hKey As Long, ByVal lpValueName As Long, ByVal Reserved As Long, ByVal dwType As Long, lpData As Any, ByVal cbData As Long) As Long
 Private Declare Function RegCreateKeyEx Lib "advapi32.dll" Alias "RegCreateKeyExW" (ByVal hKey As Long, ByVal lpSubKey As Long, ByVal Reserved As Long, ByVal lpClass As Long, ByVal dwOptions As Long, ByVal samDesired As Long, lpSecurityAttributes As Any, phkResult As Long, lpdwDisposition As Long) As Long
 Private Declare Function RegDeleteValue Lib "advapi32.dll" Alias "RegDeleteValueW" (ByVal hKey As Long, ByVal lpValueName As Long) As Long
@@ -219,6 +219,32 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
+'to extract root hive name from full key
+'returns short hive name
+'specify bIncludeSID to get e.g., HKU\S-1-5-20
+Public Function GetHiveName(sKey As String, Optional bIncludeSID As Boolean) As String
+    On Error GoTo ErrorHandler:
+    Dim pos1 As Long, pos2 As Long
+    
+    pos1 = InStr(sKey, "\")
+    If pos1 <> 0 Then
+        GetHiveName = GetShortHiveName(Left$(sKey, pos1 - 1))
+        If GetHiveName = "HKU" And bIncludeSID Then
+            pos2 = InStr(pos1 + 1, sKey, "\")
+            If pos2 <> 0 Then
+                GetHiveName = GetHiveName & "\" & Mid$(sKey, pos1 + 1, pos2 - pos1 - 1)
+            ElseIf pos1 < Len(sKey) Then
+                GetHiveName = GetHiveName & "\" & Mid$(sKey, pos1 + 1)
+            End If
+        End If
+    Else
+        GetHiveName = GetShortHiveName(sKey)
+    End If
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetHiveName"
+    If inIDE Then Stop: Resume Next
+End Function
 
 Private Function SwapEndian(ByVal dw As Long) As Long
     memcpy ByVal VarPtr(SwapEndian) + 3&, dw, 1&
@@ -276,8 +302,8 @@ ErrorHandler:
 End Function
 
 
-Public Function RegGetString(lHive&, sKey$, sValue$, Optional bUseWow64 As Boolean) As String
-    RegGetString = GetRegData(lHive, sKey, sValue, bUseWow64)  '-> redirection to common function, just in case REG type is wrong
+Public Function RegGetString(lHive&, sKey$, sValue$, Optional bUseWow64 As Boolean, Optional bDoNotExpand As Boolean) As String
+    RegGetString = GetRegData(lHive, sKey, sValue, bUseWow64, bDoNotExpand) '-> redirection to common function, just in case REG type is wrong
 End Function
 
 Public Function RegGetDword(lHive&, sKey$, sValue$, Optional bUseWow64 As Boolean) As Long
@@ -378,8 +404,10 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function GetRegData(hHive As Long, ByVal KeyName As String, ByVal ValueName As String, Optional bUseWow64 As Boolean) As Variant
+Public Function GetRegData(hHive As Long, ByVal KeyName As String, ByVal ValueName As String, Optional bUseWow64 As Boolean, Optional bDoNotExpand As Boolean) As Variant
     On Error GoTo ErrorHandler:
+    
+    'bDoNotExpand - Win 2003 SP1+ supported only
     
     Dim abData()     As Byte
     Dim cData        As Long
@@ -427,24 +455,35 @@ Public Function GetRegData(hHive As Long, ByVal KeyName As String, ByVal ValueNa
             
         Case REG_EXPAND_SZ
             If cData > 1 Then
+                Dim bRegGetValueUsed As Boolean
             
                 'RegGetValue - Win 2003 SP1 +
-'                sData = String$(cData - 1&, vbNullChar)
-'                lret = RegGetValue(hKey, ByVal 0&, StrPtr(ValueName), RRF_RT_ANY Or RRF_NOEXPAND, ByVal 0&, StrPtr(sData), cData)
-'
-'                'Note: if you don't set RRF_NOEXPAND flag, you should prepare a bit bigger buffer in case of REG_EXPAND_SZ type,
-'                'because it must be large enought to get string with expanded environment variables. And also anyway, be ready to get ERROR_MORE_DATA error.
-'
-'                If lret = ERROR_MORE_DATA Then
-'                    sData = String$(cData - 1&, vbNullChar)
-'                    lret = RegGetValue(hKey, ByVal 0&, StrPtr(ValueName), RRF_RT_ANY Or RRF_NOEXPAND, ByVal 0&, StrPtr(sData), cData)
-'                End If
+                If bDoNotExpand Then
+                    If OSver.MajorMinor >= 5.2 Then
+                        If IsProcedureAvail("RegGetValue", "Advapi32.dll") Then
+                            sData = String$(cData - 1&, vbNullChar)
+                            lret = RegGetValue(hKey, ByVal 0&, StrPtr(ValueName), RRF_RT_ANY Or RRF_NOEXPAND, ByVal 0&, StrPtr(sData), cData)
+
+                            'Note: if you don't set RRF_NOEXPAND flag, you should prepare a bit bigger buffer in case of REG_EXPAND_SZ type,
+                            'because it must be large enought to get string with expanded environment variables. And also anyway, be ready to get ERROR_MORE_DATA error.
+
+                            If lret = ERROR_MORE_DATA Then
+                                sData = String$(cData - 1&, vbNullChar)
+                                lret = RegGetValue(hKey, ByVal 0&, StrPtr(ValueName), RRF_RT_ANY Or RRF_NOEXPAND, ByVal 0&, StrPtr(sData), cData)
+                            End If
+                            
+                            bRegGetValueUsed = True
+                        End If
+                    End If
+                End If
                 
-                sData = String$(cData \ 2 + 1, vbNullChar)  ' (this API doesn't ensure that result buffer will contain null char, so I'll add extra 2 bytes)
+                If Not bRegGetValueUsed Then
+                    sData = String$(cData \ 2 + 1, vbNullChar)  ' (this API doesn't ensure that result buffer will contain null char, so I'll add extra 2 bytes)
                 
-                lret = RegQueryValueEx(hKey, StrPtr(ValueName), 0&, ordType, StrPtr(sData), cData)
-                If lret = ERROR_SUCCESS Then
-                    vValue = ExpandEnvStr(Left$(sData, lstrlen(StrPtr(sData))))
+                    lret = RegQueryValueEx(hKey, StrPtr(ValueName), 0&, ordType, StrPtr(sData), cData)
+                    If lret = ERROR_SUCCESS Then
+                        vValue = ExpandEnvStr(Left$(sData, lstrlen(StrPtr(sData))))
+                    End If
                 End If
             End If
         

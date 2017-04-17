@@ -446,6 +446,7 @@ Win10
 10;; Mcbuilder; \Microsoft\Windows\MUI; %SystemRoot%\System32\mcbuilder.exe; ;;
 10;; MDMMaintenenceTask; \Microsoft\Windows\EnterpriseMgmt; %windir%\system32\MDMAgent.exe; ;;
 10;; Metadata Refresh; \Microsoft\Windows\Device Setup; {23C1F3CF-C110-4512-ACA9-7B6174ECE888}; ;;
+10;; Microsoft Compatibility Appraiser; \Microsoft\Windows\Application Experience; %SystemRoot%\system32\compattelrunner.exe; ;;
 10;; Microsoft-Windows-DiskDiagnosticDataCollector; \Microsoft\Windows\DiskDiagnostic; %windir%\system32\rundll32.exe; dfdts.dll,DfdGetDefaultPolicyAndSMART;;
 10;; Microsoft-Windows-DiskDiagnosticResolver; \Microsoft\Windows\DiskDiagnostic; %windir%\system32\DFDWiz.exe; ;;
 10;; MNO Metadata Parser; \Microsoft\Windows\Mobile Broadband Accounts; %SystemRoot%\System32\MbaeParserTask.exe; ;;
@@ -464,6 +465,7 @@ Win10
 10;; Pre-staged app cleanup; \Microsoft\Windows\AppxDeploymentClient; %windir%\system32\rundll32.exe; %windir%\system32\AppxDeploymentClient.dll,AppxPreStageCleanupRunTask;;
 10;; ProactiveScan; \Microsoft\Windows\Chkdsk; {CF4270F5-2E43-4468-83B3-A8C45BB33EA1}; ;;
 10;; ProcessMemoryDiagnosticEvents; \Microsoft\Windows\MemoryDiagnostic; {8168E74A-B39F-46D8-ADCD-7BED477B80A3},Event; ;;
+10;; ProgramDataUpdater; \Microsoft\Windows\Application Experience; %SystemRoot%\system32\compattelrunner.exe; -maintenance;;
 10;; Property Definition Sync; \Microsoft\Windows\File Classification Infrastructure; {2AE64751-B728-4D6B-97A0-B2DA2E7D2A3B}; ;;
 10;; Proxy; \Microsoft\Windows\Autochk; %windir%\system32\rundll32.exe; /d acproxy.dll,PerformAutochkOperations;;
 10;; Routine Maintenance Task; \Microsoft\Windows\SkyDrive; {1B1F472E-3221-4826-97DB-2C2324D389AE},RoutineMaintenance; ;;

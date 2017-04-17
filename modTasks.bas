@@ -272,10 +272,14 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                             
                             'If InStr(taskActionCOM.ClassId, "{DE434264-8FE9-4C0B-A83B-89EBEEBFF78E}") <> 0 Then Stop
                             
-                            RunObjCom = UnQuote(EnvironW(RegGetString(HKEY_CLASSES_ROOT, "CLSID\" & taskActionCOM.ClassId & "\InprocServer32", vbNullString)))
+                            RunObjCom = RegGetString(HKEY_CLASSES_ROOT, "CLSID\" & taskActionCOM.ClassId & "\InprocServer32", vbNullString)
+                            
+                            If RunObjCom = "" Then
+                                RunObjCom = RegGetString(HKEY_CLASSES_ROOT, "CLSID\" & taskActionCOM.ClassId & "\InprocServer32", vbNullString, True)
+                            End If
                             
                             If RunObjCom <> "" Then
-                                RunObjCom = FindOnPath(RunObjCom, True)
+                                RunObjCom = FindOnPath(UnQuote(EnvironW(RunObjCom)), True)
                             End If
                     End Select
                     

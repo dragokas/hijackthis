@@ -186,7 +186,7 @@ Private Sub Form_Load()
         Set ControlsEvent.txtBoxInArr = txtText1   'focus on txtbox to add scrolling support
     End If
     
-    AppendErrorLogCustom "frmEULA.Form_Load - Begin"
+    AppendErrorLogCustom "frmEULA.Form_Load - End"
 End Sub
 
 Private Sub cmdAgree_Click()

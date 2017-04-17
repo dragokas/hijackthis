@@ -219,7 +219,7 @@ Public Sub MakeBackup(ByVal sItem$)
             If sDummy = vbNullString Then Exit Sub
             
             '"-extension.reg"
-            If InStr(sItem, " (HKLM)") > 0 Then
+            If InStr(sItem, "HKLM") > 0 Then
                 sData = RegExportKeyToVariable(0&, "HKEY_LOCAL_MACHINE\Software\Microsoft\Internet Explorer\Extensions\" & sDummy, Wow64Redir)
             Else
                 sData = RegExportKeyToVariable(0&, "HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\Extensions\" & sDummy)
@@ -902,11 +902,13 @@ Public Sub RestoreBackup(ByVal sItem$)
                 If InStr(sDummy, ".") <> InStrRev(sDummy, ".") Then sDummy = "*." & sDummy
             End If
             
-            If InStr(sItem, " (HKLM)") > 0 Then
+            If InStr(sItem, "HKLM") > 0 Then
                 lHive = HKEY_LOCAL_MACHINE
-                sDummy = Left$(sDummy, InStr(sDummy, " (HKLM)") - 1)
             Else
                 lHive = HKEY_CURRENT_USER
+            End If
+            If InStr(sItem, " (HKLM)") > 0 Then
+                sDummy = Left$(sDummy, InStr(sDummy, " (HKLM)") - 1)
             End If
             
             If InStr(sItem, "http://") > 0 Then

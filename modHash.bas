@@ -20,12 +20,14 @@ Private Declare Function CryptHashData_Array Lib "advapi32.dll" Alias "CryptHash
 Private Declare Function CryptHashData_Str Lib "advapi32.dll" Alias "CryptHashData" (ByVal hHash As Long, ByVal pbData As String, ByVal dwDataLen As Long, ByVal dwFlags As Long) As Long
 Private Declare Function CryptReleaseContext Lib "advapi32.dll" (ByVal hProv As Long, ByVal dwFlags As Long) As Long
 Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
+Private Declare Function CryptGetProvParam Lib "advapi32.dll" (ByVal hProv As Long, ByVal dwParam As Long, ByVal pbData As Long, pdwDataLen As Long, ByVal dwFlags As Long) As Long
 
 Private CRC_32_Tab(0 To 255)    As Long
 Private pTable(255)             As Long
 
 Private Const ALG_TYPE_ANY As Long = 0
 Private Const ALG_SID_MD5 As Long = 3
+Private Const ALG_SID_SHA1 As Long = 4
 Private Const ALG_CLASS_HASH As Long = 32768
 
 Private Const HP_HASHVAL As Long = 2
@@ -90,6 +92,8 @@ Public Function GetFileMD5(sFileName$, Optional lFileSize&, Optional JustMD5 As 
     
     If CryptAcquireContext(hCrypt, 0&, StrPtr(MS_ENHANCED_PROV), PROV_RSA_FULL, CRYPT_VERIFYCONTEXT) <> 0 Then
 
+        'Debug.Print CryptGetProvParam(hCrypt, 5, VarPtr(lProvVer), 4, 0) ' lProvVer == 0x200 for 2.0
+
         If CryptCreateHash(hCrypt, ALG_TYPE_ANY Or ALG_CLASS_HASH Or ALG_SID_MD5, 0, 0, hHash) <> 0 Then
 
             If CryptHashData_Array(hHash, aBuf(0), lFileSize, 0) <> 0 Then
@@ -135,6 +139,110 @@ Finalize:
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "modMD5_GetFileMD5", "File: ", sFileName$, "Handle: ", ff, "Size: ", lFileSize
+    If Redirect Then Call ToggleWow64FSRedirection(OldRedir)
+    frmMain.lblMD5.Caption = ""
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function GetFileSHA1(sFileName$, Optional lFileSize&, Optional JustSHA1 As Boolean) As String
+    On Error GoTo ErrorHandler:
+    
+    AppendErrorLogCustom "GetFileSHA1 - Begin", "File: " & sFileName
+    
+    Dim ff          As Long
+    Dim hCrypt      As Long
+    Dim hHash       As Long
+    Dim uSHA1(255)  As Byte
+    Dim lSHA1Len    As Long
+    Dim i           As Long
+    Dim sSHA1       As String
+    Dim aBuf()      As Byte
+    Dim OldRedir    As Boolean
+    Dim Redirect    As Boolean
+    
+    If StrEndWith(sFileName, "(file missing)") Then Exit Function
+    If StrEndWith(sFileName, "(no file)") Then Exit Function
+
+    Redirect = ToggleWow64FSRedirection(False, sFileName, OldRedir)
+    
+    If Not OpenW(sFileName, FOR_READ, ff) Then GoTo Finalize
+    
+    If lFileSize = 0 Then lFileSize = LOFW(ff)
+    If lFileSize = 0 Then
+        'speed tweak :) 0-byte file always has the same MD5
+        If JustSHA1 Then
+            GetFileSHA1 = "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709"
+        Else
+            GetFileSHA1 = " (size: 0 bytes, MD5: DA39A3EE5E6B4B0D3255BFEF95601890AFD80709)"
+        End If
+        GoTo Finalize
+    End If
+    If lFileSize > MAX_HASH_FILE_SIZE Then
+        If Not JustSHA1 Then
+            GetFileSHA1 = " (size: " & lFileSize & " bytes)"
+        End If
+        GoTo Finalize
+    End If
+    
+    ReDim aBuf(lFileSize - 1)
+    If ff <> 0 And ff <> -1 Then
+      GetW ff, 1&, , VarPtr(aBuf(0)), CLng(lFileSize)
+      CloseW ff
+    End If
+    
+    DoEvents
+
+    frmMain.lblMD5.Caption = "Calculating checksum of " & sFileName & "..."
+    
+    ToggleWow64FSRedirection True
+    
+    If CryptAcquireContext(hCrypt, 0&, StrPtr(MS_ENHANCED_PROV), PROV_RSA_FULL, CRYPT_VERIFYCONTEXT) <> 0 Then
+
+        If CryptCreateHash(hCrypt, ALG_TYPE_ANY Or ALG_CLASS_HASH Or ALG_SID_SHA1, 0, 0, hHash) <> 0 Then
+
+            If CryptHashData_Array(hHash, aBuf(0), lFileSize, 0) <> 0 Then
+
+                If CryptGetHashParam(hHash, HP_HASHSIZE, uSHA1(0), UBound(uSHA1) + 1, 0) <> 0 Then
+
+                    lSHA1Len = uSHA1(0)
+                    If CryptGetHashParam(hHash, HP_HASHVAL, uSHA1(0), UBound(uSHA1) + 1, 0) <> 0 Then
+
+                        For i = 0 To lSHA1Len - 1
+                            sSHA1 = sSHA1 & Right$("0" & Hex(uSHA1(i)), 2)
+                        Next i
+                    End If
+                End If
+            End If
+            CryptDestroyHash hHash
+        End If
+        CryptReleaseContext hCrypt, 0&
+        
+    Else
+        ErrorMsg Err, "modMD5_GetFileMD5", "File: ", sFileName$, "Handle: ", ff, "Size: ", lFileSize
+    End If
+    
+    If Len(sSHA1) <> 0 Then
+        If JustSHA1 Then
+            GetFileSHA1 = sSHA1
+        Else
+            GetFileSHA1 = " (size: " & lFileSize & " bytes, SHA1: " & sSHA1 & ")"
+        End If
+    Else
+        If Not JustSHA1 Then
+            GetFileSHA1 = " (size: " & lFileSize & " bytes)"
+        End If
+    End If
+    
+    DoEvents
+    
+Finalize:
+    If Redirect Then Call ToggleWow64FSRedirection(OldRedir)
+    frmMain.lblMD5.Caption = ""
+    
+    AppendErrorLogCustom "GetFileSHA1 - End"
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "modMD5_GetFileSHA1", "File: ", sFileName$, "Handle: ", ff, "Size: ", lFileSize
     If Redirect Then Call ToggleWow64FSRedirection(OldRedir)
     frmMain.lblMD5.Caption = ""
     If inIDE Then Stop: Resume Next
