@@ -375,8 +375,6 @@ Public Function OpenW(FileName As String, Access As VB_FILE_ACCESS_MODE, retHand
     
     Dim FSize As Currency
     
-    'Print #ffOpened, FileName
-    
     If Access And (FOR_READ Or FOR_READ_WRITE) Then
         If Not FileExists(FileName) Then
             retHandle = INVALID_HANDLE_VALUE
@@ -405,12 +403,12 @@ Public Function OpenW(FileName As String, Access As VB_FILE_ACCESS_MODE, retHand
                 retHandle = INVALID_HANDLE_VALUE
                 OpenW = False
                 '"Ќе хочу и не буду открывать этот файл, потому что его размер превышает безопасный максимум"
-                Err.Clear: ErrorMsg Err, "modFile.OpenW", "Trying to open too big file" & ": (" & (FSize \ 1024 \ 1024) & " MB.) " & FileName
+                Err.Clear: AppendErrorLogNoErr Err, "modFile.OpenW", "Trying to open too big file" & ": (" & (FSize \ 1024 \ 1024) & " MB.) " & FileName
             End If
         End If
     Else
-        ErrorMsg Err, "modFile.OpenW", "Cannot open file: " & FileName
-        Err.Raise 75 ' Path/File Access error
+        AppendErrorLogNoErr Err, "modFile.OpenW", "Cannot open file: " & FileName
+        'Err.Raise 75 ' Path/File Access error
     End If
 
     AppendErrorLogCustom "OpenW - End", "Handle: " & retHandle

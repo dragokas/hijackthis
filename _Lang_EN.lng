@@ -17,7 +17,7 @@
 ;
 0001=Welcome to HiJackThis. This program will generate a report of unusual items
      (files, registry modifications etc.) in the most vulnerable areas of the operating system
-     commonly manipulated by malware as well as a good software.
+     commonly manipulated by malware as well as good software.
 0002=HiJackThis is already run.
      Are you sure you want to launch one more copy?
 0004=Below are the results of the HiJackThis scan. Be careful what you delete with the 'Fix checked' button. Scan results do not determine whether an item is bad or not. The best thing to do is to press 'Analyze report' and show the log file to knowledgeable folks.
@@ -56,6 +56,8 @@
 1008=The value '[*]' could not be written to the settings file '[**]'. Please verify that write access is allowed to that file.
 1009=Analyze report
 1010=Scanning is not finished yet! Are you really sure you want to forcibly close the program?
+1011=Warning: Ignore list contains [] items.
+1012=Warning: General scanning was not performed.
 ;
 ; ============== EULA ============
 ;
@@ -160,7 +162,7 @@
          O4 - Autoloading Registry entries and 'Autostart' folder / msconfig disabled items
          O5 - Internet Explorer: Blocking of loading Internet Options in Control Panel
          O6 - IE Policy: Disabling of 'Internet Options' main tab
-         O7 - Policies: Disabling of Regedit / IP Security settings / OS troubleShoot
+         O7 - Policies: Disabling of Regedit / IP Security settings / OS troubleshoot
          O8 - Internet Explorer: Extra context menu items
          O9 - Internet Explorer: Extra services and buttons
          O10 - Breaking of Internet access due to the damage or infection in Winsock LSP
@@ -174,11 +176,12 @@
          O18 - Protocols and filters hijack
          O19 - User stylesheet hijack
          O20 - AppInit_DLLs, Winlogon Notify
-         O21 - Shell Service Object Delay Load (SSODL)
+         O21 - Shell Service Object Delay Load (SSODL) and Shell Icon Overlay (SIOI)
          O22 - Shared Task Scheduler jobs
          O23 - Windows Services
          O24 - ActiveX Desktop Components
          O25 - WMI permanent event consumers
+         O26 - Image File Execution Options
 0032=
      Command-line parameters:
      --------------------------------
@@ -248,9 +251,9 @@
      
 	HiJackThis Fork is a tool for scanning your computer to find and fix settings changed by adware, spyware, malware and other unwanted programs.
 	HiJackThis checking is not based on black lists, specific programs or URLs. It checks the methods only used by hijackers to force you onto their sites.
-	Thereby, false positives are imminent. Unless you are sure what you're doing, you should always consult with knowledgable folks BEFORE DELETING ANYTHING.
+	Thereby, false positives are imminent. Unless you are sure what you're doing, you should always consult with knowledgeable folks BEFORE DELETING ANYTHING.
      
-	HiJackThis comes with several usefull tools available under button 'Misc Tools' and new bar in menu 'Tools':
+	HiJackThis comes with several useful tools available under button 'Misc Tools' and new bar in menu 'Tools':
      
        - StartupList 2
        - Process Manager
@@ -338,7 +341,7 @@
      If you enable this option, you might disable programs or drivers you need. However, it is highly unlikely you will break your system beyond repair. So you should only enable this option if you know what you're doing!
 0058=Do not show error messages
 0059=Minimize program to system tray by clicking 'X'
-0060=Below URLs will be used when fixing hijacked/unwanted MSIE pages:
+0060=Below URLs will be used when fixing hijacked/unwanted Internet Explorer pages:
 0061=Default Start Page:
 0062=Default Search Page:
 0063=Default Search Assistant:
@@ -573,6 +576,7 @@
 0258=O25 - WMI Event consumers
 0259=Making backup
 0260=Processes checking
+0261=O26 - Image File Execution Options
 ;
 ; ================ Hosts ==================
 ;
@@ -761,10 +765,10 @@
       - registry value is deleted;
       - corresponding file is NOT deleted.
 ; [O1]
-0409=1) Windows uses records in the 'hosts' file to lookup domain names before quering internet DNS servers. Changes to 'hosts' file effectively making Windows believe that e.g. 'google.com' has a different IP than it really has and thus making browser open the wrong page. It also uses to block some site(s) usual antivirus one by redirecting it to localhost or any other incorrect IP. 
+0409=1) Windows uses records in the 'hosts' file to lookup domain names before querying internet DNS servers. Changes to 'hosts' file effectively making Windows believe that e.g. 'google.com' has a different IP than it really has and thus making browser open the wrong page. It also uses to block some site(s) usual antivirus one by redirecting it to localhost or any other incorrect IP. 
      2) Attacker can also hijack DNSApi.dll file to alter location where the system loads hosts file (all OS versions). Example: Hijacker.DNS.Hosts / Trojan.Win32.Patched.qw.
      3) For the same reason attacker can change registry DatabasePath value (Win XP and older).
-     4) Hosts.ics file is created automatically when you share internet access. It contains a mapping beetween IP and home (local) network domain and can be hijacked in the same way as hosts file.
+     4) Hosts.ics file is created automatically when you share internet access. It contains a mapping between IP and home (local) network domain and can be hijacked in the same way as hosts file.
      
      Infected examples:
      213.67.109.7	google.com
@@ -781,13 +785,13 @@
       - For altered hosts location - default registry value is restored.
       - Also, DNS cache entries are flushes.
 ; [O2]
-0410=A BHO (Browser Helper Object) is a specially crafted program that integrates into IE, and has virtually unlimited access rights on your system. Though BHO's can be helpful (like the Google Toolbar), hijackers often use them for malicious purposes such as tracking your online behaviour, displaying popup ads etc.
+0410=A BHO (Browser Helper Object) is a specially crafted program that integrates into IE, and has virtually unlimited access rights on your system. Though BHO's can be helpful (like the Google Toolbar), hijackers often use them for malicious purposes such as tracking your online behavior, displaying popup ads etc.
      
      >>> Action taken by HiJackThis:
       - BHO registry key and all corresponding keys (like CLSID and special IE BHO policies) are deleted;
       - BHO dll file is deleted.
 ; [O3]
-0411=IE Toolbars are part of BHO's (Browser Helper Objects) like the Google Toolbar that are helpful, but can also be annoying and malicious by tracking your behaviour and displaying popup ads.
+0411=IE Toolbars are part of BHO's (Browser Helper Objects) like the Google Toolbar that are helpful, but can also be annoying and malicious by tracking your behavior and displaying popup ads.
      
      >>> Action taken by HiJackThis:
       - Registry value and all corresponding keys (like settings and special IE BHO policies) are deleted.
@@ -836,59 +840,64 @@
       - for O7 - IPSec: all registry keys associated with the marked policy are deleted, including all the filters that apply to it.
       - for O7 - TroubleShoot: settings are restored to defaults.
 ; [O8]
-0416=Extra items in the context (right-click) menu can prove helpful or annoying. Some recent hijackers add an item to the context menu. The MSIE PowerTweaks Web Accessory adds several useful items, among which "Highlight", "Zoom In/Out", "Links list", "Images list" and "Web Search".
+0416=Extra items in the context (right-click) menu can prove helpful or annoying. Some recent hijackers add an item to the context menu. The Internet Explorer PowerTweaks Web Accessory adds several useful items, among which "Highlight", "Zoom In/Out", "Links list", "Images list" and "Web Search".
      
      >>> Action taken by HiJackThis:
       - Registry key is deleted.
 ; [O9]
-0417=Extra items in the MSIE 'Tools' menu and extra buttons in the main toolbar are usally present as branding (Dell Home button) or after system updates (MSN Messenger button) and rarely by hijackers. The MSIE PowerTweaks Web Accessory adds two menu items, being "Add site to Trusted Zone" and "Add site to Restricted Zone".
+0417=Extra items in the Internet Explorer 'Tools' menu and extra buttons in the main toolbar are usually present as branding (Dell Home button) or after system updates (MSN Messenger button) and rarely by hijackers. The Internet Explorer PowerTweaks Web Accessory adds two menu items, being "Add site to Trusted Zone" and "Add site to Restricted Zone".
      
      >>> Action taken by HiJackThis:
       - Registry key is deleted.
 ; [O10]
 0418=The Windows Socket system (Winsock) uses a list of providers for resolving DNS names (i.e. translating www.microsoft.com into an IP address). This is called the Layered Service Provider (LSP). A few programs are capable of injecting their own (spyware) providers in the LSP. If files referenced by the LSP are missing or the 'chain' of providers is broken, none of the programs on your system can access the Internet. Removing references to missing files and repairing the chain will restore your Internet access.
      
-     Note: This is a risky procedure. If it should fail, get WinSockReset from https://www.foolishit.com/vb6-projects/winsockreset/ to repair the Winsock stack.
+     Note: LSP fixing is a risky procedure. You can get WinSockReset from https://www.foolishit.com/vb6-projects/winsockreset/ to repair the Winsock stack.
      
      >>> Action taken by HiJackThis:
-      - none. Use WinSockReset to modify the Winsock stack.
+      - Not provided. You will be asked to go to www.foolishit.com for downloading the WinSockReset program.
 ; [O11]
-0419=The options in the 'Advanced' tab of MSIE options are stored in the Registry, and extra options can be added easily by creating extra Registry keys. Very rarely, spyware/hijackers add their own options there which are hard to remove. E.g. CommonName adds a section 'CommonName' with a few options.
+0419=The options in the 'Advanced' tab of Internet Explorer options are stored in the Registry, and extra options can be added easily by creating extra Registry keys. Very rarely, spyware/hijackers add their own options there which are hard to remove. E.g. CommonName adds a section 'CommonName' with a few options.
      
      >>> Action taken by HiJackThis:
-      - Registry key is deleted, with everything in it.
+      - Registry key is deleted.
 ; [O12]
-0420=Plugins handle filetypes that aren't supported natively by MSIE. Common plugins handle Macromedia Flash, Acrobat PDF documents and Windows Media formats, enabling the browser to open these itself instead of launching a separate program. When hijackers or spyware add plugins for their filetypes, the danger exists that they get reinstalled if everything except the plugin has been removed, and the browser opens such a file.
+0420=Plugins handle filetypes that aren't supported natively by Internet Explorer. Common plugins handle Macromedia Flash, Acrobat PDF documents and Windows Media formats, enabling the browser to open these itself instead of launching a separate program. When hijackers or spyware add plugins for their filetypes, the danger exists that they get reinstalled if everything except the plugin has been removed, and the browser opens such a file.
      
      >>> Action taken by HiJackThis:
-      - Registry key is deleted, with everything in it.
+      - Registry key and plugin file are deleted.
 ; [O13]
-0421=When you type an URL into MSIE's Address bar without the prefix (http://), it is automatically added when you hit Enter. This prefix is stored in the Registry, together with the default prefixes for FTP, Gopher and a few other protocols. When a hijacker changes these to the URL of his server, you always get redirected there when you forget to type the prefix. Prolivation uses this hijack.
+0421=When you type an URL into Internet Explorer's Address bar without the prefix (http://), it is automatically added when you hit Enter. This prefix is stored in the Registry, together with the default prefixes for FTP, Gopher and a few other protocols. When a hijacker changes these to the URL of his server, you always get redirected there when you forget to type the prefix. Prolivation uses this hijack.
      
      >>> Action taken by HiJackThis:
       - Registry value is restored to default data.
 ; [O14]
-0422=When you hit 'Reset Web Settings' on the 'Programs' tab of the MSIE Options dialog, your homepage, search page and a few other sites get reset to their defaults. These defaults are stored in C:\Windows\Inf\Iereset.inf. When a hijacker changes these to his own URLs, you get (re)infected rather than cured when you click 'Reset Web Settings'. SearchALot uses this hijack.
+0422=When you hit 'Reset Web Settings' on the 'Programs' tab of the Internet Explorer Options dialog, your homepage, search page and a few other sites get reset to their defaults. These defaults are stored in C:\Windows\Inf\Iereset.inf. When a hijacker changes these to his own URLs, you get (re)infected rather than cured when you click 'Reset Web Settings'. SearchALot uses this hijack.
      
      >>> Action taken by HiJackThis:
-      - Value in Inf file is restore to default data.
+      - Value in the Inf file is restored to default data.
 ; [O15]
-0423=Websites in the Trusted Zone (see Internet Options,Security, Trusted Zone, Sites) are allowed to use normally dangerous scripts and ActiveX objects normal sites aren't allowed to use. Some programs will automatically add a site to the Trusted Zone without you knowing. Only a very few legitimate programs are known to do this (Netscape 6 is one of them) and a lot of browser hijackersadd sites with ActiveX content to them.
+0423=Websites in the Trusted Zone (see Tools => Internet Options => Security => Trusted sites => Sites) are allowed to use normally dangerous scripts and ActiveX objects normal sites aren't allowed to use. Some programs will automatically add a site to the Trusted Zone without you knowing. Only a very few legitimate programs are known to do this. A lot of browser hijackers add sites with ActiveX content to them.
      
      >>> Action taken by HiJackThis:
-      - Registry key is deleted, with everything in it.
+      - Registry key is deleted.
+      - Protocol to Zone mapping defaults is restored.
 ; [O16]
-0424=The Download Program Files (DPF) folder in your Windows base folder holds various types of programs that were downloaded from the Internet. These programs are loaded whenever Internet Explorer is active.Legitimate examples are the Java VM, Microsoft XML Parser and the Google Toolbar.
-     Unfortunately, due to the lack security of IE, malicious sites let IE automatically download porn dialers, bogus plugins, ActiveX Objects etc to this folder, which haunt you with popups, huge phone bills, random crashes, browser hijackings and whatnot.
+0424=The Download Program Files (DPF) folder in your Windows base folder holds various types of programs that were downloaded from the Internet. These programs are loaded whenever Internet Explorer is active. Legitimate examples are the Java VM, Microsoft XML Parser and the Google Toolbar. When deleted, these objects are downloaded and installed again (after prompting).
+     Unfortunately, due to the lack security of IE, it lets malicious sites automatically download porn dialers, bogus plugins, ActiveX Objects etc to this folder, which haunt you with popups, huge phone bills, random crashes, browser hijackings and whatnot.
      
       >>> Action taken by HiJackThis:
-      - ???????
+      - registration of DPF CLSID is cancelled.
+      - dll file and downloaded file are deleted.
 ; [O17]
-0425=Windows uses several registry values as a help to resolve domain names into IP addresses. Hijacking these values can cause all programs that use the Internet to be redirected to other pages for seemingly unknown reasons.
-     New versions of Lop.com use this method, together with a (huge) list of cryptic domains.
+0425=Windows uses several registry values as a help to resolve domain names into IP addresses. Hijacking these values can cause all programs that use the Internet to be redirected to other pages.
+     Lop.com use this method, together with a (huge) list of cryptic domains.
+
+     DHCP DNS in this section displays the DNS address issued by the router by DHCP, i.e. when the "Automatically receive DNS address" checkbox is selected in the network connection settings.
      
      >>> Action taken by HiJackThis:
       - Registry value is deleted.
+      - When fixing DHCP DNS, DNS Resolver Cache is flushed. The user must configure the router himself by entering the address specified in the contract with the provider before fixing this item in HiJackThis. 
 ; [O18]
 0426=A protocol is a 'language' Windows uses to 'talk' to programs, servers or itself. Webservers use the 'http:' protocol, FTP servers use the 'ftp:' protocol, Windows Explorer uses the 'file:' protocol. Introducing a new protocol to Windows or changing an existing one can burrow deep into how Windows handles files.
      CommonName and Lop.com both register a new protocol when installed (cn: and ayb:).
@@ -896,7 +905,8 @@
      The filters are content types accepted by Internet Explorer (and internally by Windows). If a filter exists for a content type, it passes through the file handling that content type first. Several variants of the CWS trojan add a text/html and text/plain filters, allowing them to hook all of the webpage content passed through Internet Explorer.
      
      >>> Action taken by HiJackThis:
-      - Registry key is deleted, with everything in it.
+      - Registry key is deleted.
+      - Default CLSID value for filter and protocol is restored.
 ; [O19]
 0427=IE has an option to use a user-defined stylesheet for all pages instead of the default one, to enable handicapped users to better view the pages.
      An especially vile hijacking method made by Datanotary has surfaced, which overwrites any stylesheet the user has setup and replaces it with one that causes popups, as well a system slowdown when typing or loading pages with many pictures.
@@ -904,49 +914,61 @@
      >>> Action taken by HiJackThis:
       - Registry value is deleted.
 ; [O20]
-0428=Files specified in the AppInit_DLLs Registry value are loaded very early in Windows startup and stay in memory until system shutdown. This way of loading a .dll is hardly ever used, except by trojans.
-     The WinLogon Notify Registry subkeys load dll files into memory at about the same point in the boot process, keeping them loaded into memory until the session ends. Apart from several Windows system components, the programs VX2, ABetterInternet and Look2Me use this Registry key.
+0428=Files specified in the AppInit_DLLs Registry value are loaded very early in Windows startup and stay in memory until system shutdown. This way of loading a .dll is hardly ever used, except by trojans. Examples of legitimate records here can be libraries of video drivers and cryptographic systems.
+     The WinLogon Notify Registry subkeys load dll files into memory at about the same point in the boot process, keeping them loaded into memory until the session ends. Apart from several Windows system components, the adware like VX2, ABetterInternet and Look2Me use this Registry key.
      Since both methods ensure the dll file stays loaded in memory the entire time, fixing this won't help if the dll puts back the Registry value or key immediately. In such cases, the use of the 'Delete file on reboot' function or KillBox is recommended to first delete the file.
      
      >>> Action taken by HiJackThis:
       - for AppInit_DLLs: Registry value is cleared, but NOT deleted.
       - for Winlogon Notify: Registry key is deleted.
 ; [O21]
-0429=This is an undocumented Registry key that contains a list of references to CLSIDs, which in turn reference .dll files that are then loaded by Explorer.exe at system startup. The .dll files stay in memory until Explorer.exe quits, which is achieved either by shutting down the system or killing the shell process.
+0429=This is an undocumented Registry key that contains a list of references to CLSIDs, which in turn reference .dll files that are then loaded by Explorer.exe to its address space at system startup. The dll files stay in memory until Explorer.exe quits, which is achieved either by shutting down the system or killing the shell process.
+     ShellIconOverlayIdentifiers - works similarly. This registry key contains several subkeys with identifiers referring to the files that are loaded to Explorer.exe. Usually, one program registers several such handlers at once. Name of the key often starts with a few spaces. These libraries are responsible for selecting the type of drawing the file icon in Windows Explorer, depending on certain conditions (the name of this file or other factors). An example of a legitimate program can be a client for cloud storage of Yandex.Disk, which changes the appearance of the icon depending on the state of file synchronization. The malicious program that installed the handler can execute any arbitrary code via dll.
      
      Action taken by HiJackThis:
-      - Registry value is deleted;
-      - CLSID key is deleted.
+      - Registry value or key is deleted together with CLSID identifier key.
+      - dll file is deleted.
 ; [O22]
-0430=This is an undocumented Registry key that contains a list of CLSIDs, which in turn reference .dll files that are loaded by Explorer.exe at system startup. The .dll files stay in memory until Explorer.exe quits, which is achieved either by shutting down the system or killing the shell process.
-     
-     >>> Action taken by HiJackThis:
-      - Registry value is deleted;
-      - CLSID key is deleted.
+0430=Task Scheduler is a service that can be configured to run an arbitrary process at a specified time or at a certain periodicity. One such setting is called a Job. Job (task) can be run with elevated privileges without requesting UAC, be bound to a specific user, contain the path to the process, arguments, state, and so on. Malware often uses tasks to provide autorun and survive after the process is restarted.
+     Tasks can be managed through the Task Scheduler snap-in (taskschd.msc).
+     
+     >>> Action taken by HiJackThis:
+      - The task is disabled.
+      - Tasks' process is killed.
+      - The task file and all associated registry keys are deleted.
+      - The executable file of task is NOT deleted.
 ; [O23]
-0431=The 'Services' in Windows NT4, Windows 2000, Windows XP and Windows 2003 are a special type of programs that are essential to the system and are required for proper functioning of the system. Service processes are started before the user logs in and are protected by Windows. They can only be stopped from the services dialog in the Administrative Tools window.
+0431=The 'Services' are a special type of programs that are essential to the system and are required for proper functioning of the system. Service processes are started before the user logs in and are protected by Windows. They can only be stopped from the services dialog in the Administrative Tools window.
      Malware that registers itself as a service is subsequently also harder to kill.
      
      >>> Action taken by HiJackThis:
-      - Services is disabled, stopped and removed. Sometimes reboot required to complete operation.
+      - Services is disabled, stopped and removed.
+      - In some cases reboot will be prompted to complete operation.
 ; [O24]
-0432=Desktop Components are ActiveX objects that can be made part of the desktop whenever Active Desktop is enabled (introduced in Windows 98), where it runs as a (small) website widget.
+0432=Desktop Components are ActiveX objects that can be made part of the desktop whenever Active Desktop is enabled. It runs as a (small) website widget.
      Malware misuses this feature by setting the desktop background to a local HTML file with a large, bogus warning.
      
      >>> Action taken by HiJackThis:
-      - ActiveX object is deleted from Registry.
+      - Registry key and HTML file are deleted.
+      - Desktop background is being updated.
 ; [O25]
-0433=Windows Management Instrumentation is a default Windows service. It can be used to create permanent event consumer for both legitimate and malicious purposes. These events can collect hardware and software data to automate malware activities like spying. They can create a pipe to connect beetween machines, execute external script file or script code stored inside (fileless). Events can be triggered by WMI subsystem at intervals of time (like Task Scheduler) or manually when some application executes a special query to WMI.
+0433=Windows Management Instrumentation is a default Windows service. It can be used to create permanent event consumer for both legitimate and malicious purposes. These events can collect hardware and software data to automate malware activities like spying. They can create a pipe to connect between machines, execute external script file or script code stored inside (fileless). Events can be triggered by WMI subsystem at intervals of time (like Task Scheduler) or manually when some application executes a special query to WMI.
 
      >>> Action taken by HiJackThis:
       - event consumer, filter, timer and binding are deleted in WMI database;
       - associated file is also deleted.
 ; [R4]
-0434=Internet Explorer browser uses search provider (DefaultScope) to show list of tips in the search bar when you are typing search query in the address bar. IE allows to replace default provider with any from the list (SearchScopes).
+0434=Internet Explorer browser uses search provider (DefaultScope) to show list of tips in the search bar when you are typing search query in the address bar. IE allows replacing default provider with any from the list (SearchScopes).
 
      >>> Action taken by HiJackThis:
       - key of particular provider is deleted;
       - default value of DefaultScope (Microsoft Bing) and provider parameters are recovered.
+; [O26]
+0435=In the 'Image File Execution' Registry key, a program can be setup to be used together with a debugger. Whenever the host program is started, the 'debugger' program is loaded instead.
+     Note: when a debugger file deleted but still set, the host program will not start!
+
+     >>> Action taken by HiJackThis:
+      - registry value is deleted.
 0490=Detailed information on sections:
 ;
 ; ========== Delete Service ==========
@@ -962,7 +984,7 @@
 0508=Owner
 0509=Access denied during removing the service '[]'. Make sure the service is not running.
 0510=Unable to delete the service '[]'. Make sure the name is correct.
-0511=Unknown error occured during deletion of the service '[]'.
+0511=Unknown error occurred during deletion of the service '[]'.
 0512=Library or registry entries are damaged
 ;
 ; ================== Errors, Error window ===================
@@ -1043,7 +1065,7 @@
      [Windows NT4/2000/XP/2003/Vista/7/8/8.1/10]
 0620=When a user logs on, winlogon.exe performs a number of actions. A number of DLL libraries and programs are started and will stay loaded until the user logs off. The Notify subkey contains links to dll libraries that are loaded when a particular event occurs, like logging on/off, starting up, shutting down, or activating the screensaver.
      [Windows NT4/2000/XP/2003/Vista/7/8/8.1/10]
-0621=Browser Helper Objects are loaded with Internet Explorer (and sometimes Windows Explorer) and can view, control and modify everything that MSIE does.
+0621=Browser Helper Objects are loaded with Internet Explorer (and sometimes Windows Explorer) and can view, control and modify everything that Internet Explorer does.
      [Internet Explorer 4.0 and newer]
 0622=ActiveX objects. When loaded for the first time, these objects will run before the user logs on.
      [All Windows versions]
@@ -1063,7 +1085,7 @@
      [Internet Explorer 4.0 and newer]
 0630=Due to the way Windows looks up paths for files, putting a file Explorer.exe in folders other than the Windows folder can cause them to be executed instead of the normal Explorer.exe file. There should be only an Explorer.exe file in the Windows directory.
      [All Windows versions]
-0631=In the 'Image File Execution' Registry key, a program can be setup to be used together with a debugger. Whenever the host program is started, the 'debugger' program is loaded as well.
+0631=In the 'Image File Execution' Registry key, a program can be setup to be used together with a debugger. Whenever the host program is started, the 'debugger' program is loaded instead.
      Note: when a debugger file deleted but still set, the host program will not start!
      [Windows NT4/2000/XP/2003/Vista/7/8/8.1/10]
 0632=When an item is added to the right-click menu of certain items, the associated dll library is loaded into memory when the system starts.
@@ -1207,7 +1229,7 @@
 0744=On-reboot actions
 0745=Policies
 0746=Print monitors
-0747=Protocol handers/filters
+0747=Protocol handlers/filters
 0748=Registry-mapped .ini files
 0749=Registry 'Run' keys
 0750=Registry 'Run' subkeys

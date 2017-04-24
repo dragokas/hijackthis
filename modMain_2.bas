@@ -544,3 +544,69 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
+
+Public Sub CheckO26Item()
+    'O26 - Image File Execution Options:
+    
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "CheckO26Item - Begin"
+    
+    Dim sKeys$(), i&, sIFE$, sFile$, sHit$, Result As TYPE_Scan_Results
+    
+    sIFE = "Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options"
+    'key is x64-shared
+    'no HKCU
+    
+    sKeys = Split(RegEnumSubKeys(HKEY_LOCAL_MACHINE, sIFE), "|")
+    For i = 0 To UBound(sKeys)
+        sFile = RegGetString(HKEY_LOCAL_MACHINE, sIFE & "\" & sKeys(i), "Debugger")
+        If sFile <> vbNullString Then
+            sFile = FindOnPath(UnQuote(EnvironW(sFile)), True)
+            
+            sHit = "O26 - Image File Execution Options: " & sKeys(i) & " - " & sFile
+            
+            If Not IsOnIgnoreList(sHit) Then
+                If bMD5 Then sHit = sHit & GetFileMD5(sFile)
+                
+                If FileExists(sFile) Then
+                    sFile = GetLongPath(sFile) '8.3 -> Full
+                Else
+                    sHit = sHit & " (file missing)"
+                End If
+                
+                With Result
+                    .Section = "O26"
+                    .HitLineW = sHit
+                    ReDim .RegKey(0)
+                    .RegKey(0) = "HKLM\" & sIFE & "\" & sKeys(i)
+                    .RegParam = "Debugger"
+                End With
+                AddToScanResults Result
+            End If
+            
+        End If
+    Next i
+    
+    AppendErrorLogCustom "CheckO26Item - End"
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "modMain2_CheckO26Item"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Public Sub FixO26Item(sItem$)
+    
+    On Error GoTo ErrorHandler
+
+    Dim Result As TYPE_Scan_Results
+    If Not GetScanResults(sItem, Result) Then Exit Sub
+
+    With Result
+        RegDelVal 0, .RegKey(0), .RegParam
+    End With
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "modMain2_FixO26Item"
+    If inIDE Then Stop: Resume Next
+End Sub

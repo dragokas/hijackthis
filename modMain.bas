@@ -30,14 +30,20 @@ Attribute VB_Name = "modMain"
 'O18 - Protocol & Filter enum
 'O19 - User style sheet hijack
 'O20 - AppInit_DLLs registry value + Winlogon Notify subkeys
-'O21 - ShellServiceObjectDelayLoad enum
+'O21 - ShellServiceObjectDelayLoad / ShellIconOverlayIdentifiers enum
 'O22 - SharedTaskScheduler enum
 'O23 - Windows Services
 'O24 - Active desktop components
 'O25 - Windows Management Instrumentation (WMI) event consumers
+'O26 - Image File Execution Options
 
-'// Do not forget to add prefix to Backup module (2 times) and Fix, and increase count on Sections' sort function
-'// or you will be shot :)
+'If you added new section, you also must:
+' - add prefix to Backup module (2 times)
+' - and prefix to Fix module
+' - append progressbar max value - var. g_HJT_Items_Count
+' - add procedure CheckOxxItem to 'StartScan'
+' - check max.value in 'for' - function "SortSectionsOfResultList"
+' - add translation strings: after # 31, 261, 435
 
 'Next possible methods:
 '* SearchAccurates 'URL' method in a InitPropertyBag (??)
@@ -414,6 +420,7 @@ Public bSkipErrorMsg    As Boolean
 Public bMinToTray       As Boolean
 Public bStartupList     As Boolean
 Public bStartupListSilent As Boolean
+Public bScanExecuted    As Boolean
 Public sHostsFile$
 Public bIsWin9x As Boolean
 Public bIsWinNT As Boolean
@@ -601,13 +608,17 @@ Public Sub LoadStuff()
     'F1, F3 - if param. created
     
     With colFileVals
-        .Add "system.ini,boot,Shell,explorer.exe,"        'F0
-        .Add "win.ini,windows,load,,"                     'F1
-        .Add "win.ini,windows,run,,"                      'F1
-        .Add "REG:system.ini,boot,Shell,explorer.exe|%WINDIR%\explorer.exe,"    '\Software\Microsoft\Windows NT\CurrentVersion\WinLogon   'F2
-        .Add "REG:win.ini,windows,load,,"                                       '\Software\Microsoft\Windows NT\CurrentVersion\Windows    'F3
-        .Add "REG:win.ini,windows,run,,"                                        '\Software\Microsoft\Windows NT\CurrentVersion\Windows    'F3
-        .Add "REG:system.ini,boot,UserInit,%WINDIR%\System32\UserInit.exe,"     '\Software\Microsoft\Windows NT\CurrentVersion\WinLogon   'F2
+        .Add "system.ini;boot;Shell;explorer.exe;"        'F0 (boot;Shell)
+        .Add "win.ini;windows;load;;"                     'F1 (windows;load)
+        .Add "win.ini;windows;run;;"                      'F1 (windows;run)
+        '\Software\Microsoft\Windows NT\CurrentVersion\WinLogon   'F2 (boot;Shell)
+        .Add "REG:system.ini;boot;Shell;explorer.exe|%WINDIR%\explorer.exe;"
+        '\Software\Microsoft\Windows NT\CurrentVersion\WinLogon   'F2 (boot;UserInit)
+        .Add "REG:system.ini;boot;UserInit;%WINDIR%\System32\UserInit.exe|%WINDIR%\system32\userinit.exe,userinit.exe;"
+        '\Software\Microsoft\Windows NT\CurrentVersion\Windows    'F3 (windows;load)
+        .Add "REG:win.ini;windows;load;;"
+        '\Software\Microsoft\Windows NT\CurrentVersion\Windows    'F3 (windows;run)
+        .Add "REG:win.ini;windows;run;;"
     End With
     ReDim sFileVals(colFileVals.Count - 1)
     For i = 1 To colFileVals.Count
@@ -1065,7 +1076,7 @@ Public Sub StartScan()
     
     frmMain.txtNothing.Visible = False
     'frmMain.shpBackground.Tag = iItems
-    SetProgressBar g_HJT_Items_Count   'R + F + O25
+    SetProgressBar g_HJT_Items_Count   'R + F + O26
     
     Call GetProcesses(gProcess)
     
@@ -1153,6 +1164,8 @@ Public Sub StartScan()
     '2.0.7 - WMI Events
     UpdateProgressBar "O25"
     CheckO25Item
+    UpdateProgressBar "O26"
+    CheckO26Item
     UpdateProgressBar "ProcList"
     
     
@@ -1292,6 +1305,7 @@ Public Sub UpdateProgressBar(Section As String, Optional sAppendText As String)
             Case "O23": .lblStatus.Caption = Translate(255) & "..."
             Case "O24": .lblStatus.Caption = Translate(257) & "..."
             Case "O25": .lblStatus.Caption = Translate(258) & "..."
+            Case "O26": .lblStatus.Caption = Translate(261) & "..."
             
             Case "ProcList": .lblStatus.Caption = Translate(260) & "..."
             Case "Backup":   .lblStatus.Caption = Translate(259) & "...": .shpProgress.Width = 255
@@ -1961,7 +1975,7 @@ End Sub
 Private Sub CheckFileItems(ByVal sRule$)
     Dim vRule As Variant, iMode&, sHit$, Result As TYPE_Scan_Results
     Dim sFile$, sSection$, sParam$, sData$, sLegitData$, UseWow, Wow6432Redir As Boolean
-    Dim aHive
+    Dim aHive, sTmp$, arr$(), i&
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "CheckFileItems - Begin", "Rule: " & sRule
     'IniFile rule syntax:
@@ -1979,7 +1993,7 @@ Private Sub CheckFileItems(ByVal sRule$)
     '1-st token should contains .ini
     'total number of tokens should be 5 (0 to 4)
     
-    vRule = Split(sRule, ",")
+    vRule = Split(sRule, ";")
     If UBound(vRule) <> 4 Or InStr(CStr(vRule(0)), ".ini") = 0 Then
         'spelling error or decrypting error
         Exit Sub
@@ -2020,8 +2034,15 @@ Private Sub CheckFileItems(ByVal sRule$)
     'if 4-th token is empty -> check if value is present, in the Registry      (F3)
     'if 4-th token is present -> check if value is infected, in the Registry   (F2)
     
-    ' adding char "," to value 'UserInit'
-    If InStr(1, sLegitData, "UserInit", 1) <> 0 Then sLegitData = sLegitData & "|" & sLegitData & ","
+'    ' adding char "," to each value 'UserInit'
+'    If InStr(1, sLegitData, "UserInit", 1) <> 0 Then
+'        arr = Split(sLegitData, "|")
+'        For i = 0 To UBound(arr)
+'            sTmp = sTmp & arr(i) & ",|"
+'        Next
+'        sTmp = Left$(sTmp, Len(sTmp) - 1)
+'        sLegitData = sLegitData & "|" & sTmp
+'    End If
     
     If Left$(sFile, 3) = "REG" Then
         'skip Win9x
@@ -2106,8 +2127,10 @@ Private Sub CheckFileItems(ByVal sRule$)
             Wow6432Redir = False
             
             sData = RegGetString(0&, aHive & "\Software\Microsoft\Windows NT\CurrentVersion\WinLogon", sParam, Wow6432Redir)
+            sTmp = sData
+            If Right(sData, 1) = "," Then sTmp = Left$(sTmp, Len(sTmp) - 1)
             
-            If Not inArraySerialized(sData, sLegitData, "|", , , vbTextCompare) Then
+            If Not inArraySerialized(sTmp, sLegitData, "|", , , vbTextCompare) Then
                 sHit = IIf(bIsWin32, "F2 - ", IIf(Wow6432Redir, "F2-32 - ", "F2 - ")) & sFile & ": " & aHive & "\..\" & sParam & "=" & sData
                 If Not IsOnIgnoreList(sHit) Then
                     If bMD5 Then sHit = sHit & " (" & GetFileMD5(sData) & ")"
@@ -2251,7 +2274,7 @@ Private Sub CheckO1Item_DNSApi()
                 
                     p = InArrSign_NoCase(buf, bufExample, bufExample_2)
                     
-                    If p = -1 Then                      'add isMicrosoftFile() ?
+                    If p = -1 Then                      '//TODO: add isMicrosoftFile() ?
                         ' if signature not found
                         sHit = "O1 - DNSApi: File is patched - " & vFile
                         If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O1", sHit
@@ -8226,7 +8249,7 @@ Public Sub FixO23Item(sItem$)
             DeleteNTService sName
             If sName <> sDisplayName Then DeleteNTService sDisplayName
             
-            'bRebootNeeded = True
+            'bRebootNeeded = True '=> moved to DeleteNTService
         End If
     Next i
     Exit Sub
@@ -8515,7 +8538,8 @@ Public Sub ErrorMsg(ErrObj As ErrObject, sProcedure$, ParamArray CodeModule())
     ErrReport = ErrReport & vbCrLf & _
         "- " & DateTime & ErrText
     
-    AppendErrorLogCustom ErrReport
+    AppendErrorLogCustom ">>> ERROR:" & vbCrLf & _
+        "- " & DateTime & ErrText
     
     'If Not bAutoLogSilent Then
     
@@ -8546,6 +8570,57 @@ Public Sub ErrorMsg(ErrObj As ErrObject, sProcedure$, ParamArray CodeModule())
 '            End If
 '        End If
     End If
+End Sub
+
+Public Sub AppendErrorLogNoErr(ErrObj As ErrObject, sProcedure As String, ParamArray CodeModule())
+    'to append error log without displaying error message to user
+    
+    On Error Resume Next
+    
+    Dim i           As Long
+    Dim DateTime    As String
+    Dim ErrText     As String
+    Dim sErrDesc    As String
+    Dim iErrNum     As Long
+    Dim iErrLastDll As Long
+    Dim HRESULT     As String
+    Dim HRESULT_LastDll As String
+    Dim sParameters As String
+
+    DateTime = Right$("0" & Day(Now), 2) & _
+        "." & Right$("0" & Month(Now), 2) & _
+        "." & Year(Now) & _
+        " " & Right$("0" & Hour(Now), 2) & _
+        ":" & Right$("0" & Minute(Now), 2) & _
+        ":" & Right$("0" & Second(Now), 2)
+    
+    sErrDesc = ErrObj.Description
+    iErrNum = ErrObj.Number
+    iErrLastDll = ErrObj.LastDllError
+    
+    If iErrNum <> 33333 And iErrNum <> 0 Then    'error defined by HJT
+        HRESULT = ErrMessageText(CLng(iErrNum))
+    End If
+    
+    If iErrLastDll <> 0 Then
+        HRESULT_LastDll = ErrMessageText(iErrLastDll)
+    End If
+    
+    For i = 0 To UBound(CodeModule)
+        sParameters = sParameters & CodeModule(i) & " "
+    Next
+
+    ErrText = " - " & sProcedure & " - #" & iErrNum
+    If iErrNum <> 0 Then ErrText = ErrText & " (" & sErrDesc & ")" & IIf(Len(HRESULT) <> 0, " (" & HRESULT & ")", "")
+    ErrText = ErrText & " LastDllError = " & iErrLastDll
+    If iErrLastDll <> 0 Then ErrText = ErrText & " (" & HRESULT_LastDll & ")"
+    If Len(sParameters) <> 0 Then ErrText = ErrText & " " & sParameters
+    
+    ErrReport = ErrReport & vbCrLf & _
+        "- " & DateTime & ErrText
+    
+    AppendErrorLogCustom ">>> ERROR:" & vbCrLf & _
+        "- " & DateTime & ErrText
 End Sub
 
 Public Function ErrMessageText(lCode As Long) As String
@@ -8675,13 +8750,16 @@ Public Function HasSpecialCharacters(sName$) As Boolean
 End Function
 
 Public Sub CheckForReadOnlyMedia()
-    Dim sMsg$, hFile As Long
-    On Error Resume Next
+    Dim sMsg$, hFile As Long, sTempFile$
+    
     AppendErrorLogCustom "CheckForReadOnlyMedia - Begin"
 
     '// TODO: replace by token privilages checking
     
-    OpenW BuildPath(AppPath(), "~dummy.tmp"), FOR_OVERWRITE_CREATE, hFile
+    sTempFile = BuildPath(AppPath(), "~dummy.tmp")
+    
+    hFile = CreateFile(StrPtr(sTempFile), GENERIC_WRITE, FILE_SHARE_READ, ByVal 0&, CREATE_ALWAYS, ByVal 0&, ByVal 0&)
+    
     If hFile <= 0 Then
     
     'If Err.Number Then     'Some strange error happens here, if we delete .Number property
@@ -8698,7 +8776,7 @@ Public Sub CheckForReadOnlyMedia()
     Else
         CloseW hFile
     End If
-    DeleteFileWEx (StrPtr(BuildPath(AppPath(), "~dummy.tmp")))
+    DeleteFileWEx (StrPtr(sTempFile))
     
     AppendErrorLogCustom "CheckForReadOnlyMedia - End"
 End Sub
@@ -8927,7 +9005,7 @@ Public Sub RestartSystem(Optional sExtraPrompt$)
     End If
 End Sub
 
-Public Sub DeleteFileOnReboot(sFile$, Optional bDeleteBlindly As Boolean = False)
+Public Sub DeleteFileOnReboot(sFile$, Optional bDeleteBlindly As Boolean = False, Optional bNoReboot As Boolean = False)
     On Error GoTo ErrorHandler:
 
     'If Not bIsWinNT Then Exit Sub
@@ -8945,9 +9023,15 @@ Public Sub DeleteFileOnReboot(sFile$, Optional bDeleteBlindly As Boolean = False
             Print #ff,
         Close #ff
     End If
-    RestartSystem Replace$(Translate(342), "[]", sFile)
-    'RestartSystem "The file '" & sFile & "' will be deleted by Windows when the system restarts."
     
+    bRebootNeeded = True
+    
+    If Not bNoReboot Then
+        'RestartSystem "The file '" & sFile & "' will be deleted by Windows when the system restarts."
+        RestartSystem Replace$(Translate(342), "[]", sFile)
+    End If
+    
+    '// TODO:
     'Windows Server 2003 Note:
     'https://support.microsoft.com/en-us/kb/948601
     

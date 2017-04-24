@@ -1,7 +1,6 @@
 VERSION 5.00
 Begin VB.Form frmEULA 
    BorderStyle     =   4  'Fixed ToolWindow
-   Caption         =   "HiJackThis Fork v."
    ClientHeight    =   7200
    ClientLeft      =   4785
    ClientTop       =   4830

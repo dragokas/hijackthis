@@ -93,7 +93,10 @@ Private Sub cmdGo_Click()
         End If
     Next
     
+    '// TODO: add unicode support
+    
     ff = FreeFile()
+    FixLog = BuildPath(AppPath(), "FixReg.log")
     Open FixLog For Append As #ff
     Print #ff, FixLines
     Close ff

@@ -1,6 +1,5 @@
 VERSION 5.00
 Begin VB.Form frmMain 
-   Caption         =   "HiJackThis"
    ClientHeight    =   7380
    ClientLeft      =   4365
    ClientTop       =   1500
@@ -1574,6 +1573,9 @@ Begin VB.Form frmMain
       Begin VB.Menu mnuResultDelim2 
          Caption         =   "-"
       End
+      Begin VB.Menu mnuSaveReport 
+         Caption         =   "Save Report..."
+      End
       Begin VB.Menu mnuResultReScan 
          Caption         =   "ReScan"
       End
@@ -1679,7 +1681,7 @@ Private Sub Form_Load()
     ADSspyVer = "1.13"
     ProcManVer = "2.06"
     
-    g_HJT_Items_Count = 27 'R + F + O25 (for progressbar)
+    g_HJT_Items_Count = 28 'R + F + O26 (for progressbar)
 
     DisableSubclassing = False
     If inIDE Then DisableSubclassing = True
@@ -1740,7 +1742,9 @@ Private Sub Form_Load()
     'FixLog = BuildPath(AppPath(), "\HJT_Fix.log")           'not used yet
     'If FileExists(FixLog) Then DeleteFileWEx StrPtr(FixLog)
     
-    Me.Caption = AppVer
+    If InStr(1, AppExeName(), "_poly", 1) = 0 And StrComp(GetExtensionName(AppExeName(True)), ".pif", 1) <> 0 Then
+        Me.Caption = AppVer
+    End If
     
     'test stuff
     If inIDE Or InStr(1, AppExeName(), "test", 1) <> 0 Then
@@ -2843,6 +2847,7 @@ Private Sub cmdFix_Click()
                 Case "O23":            FixO23Item lstResults.List(i)
                 Case "O24":            FixO24Item lstResults.List(i)
                 Case "O25":            FixO25Item lstResults.List(i)
+                Case "O26":            FixO26Item lstResults.List(i)
                 Case Else
                    ' msgboxW "Fixing of " & Rtrim$(left$(lstResults.List(i), 3)) & _
                            " is not implemented yet. Bug me about it at " & _
@@ -2857,6 +2862,7 @@ Private Sub cmdFix_Click()
     Next i
     UpdateProgressBar "Finish"
     lstResults.Clear
+    bScanExecuted = False
     cmdFix.Enabled = False
     cmdFix.FontBold = False
     cmdScan.Caption = Translate(11)
@@ -2987,6 +2993,8 @@ Private Sub cmdScan_Click()
     'If cmdScan.Caption = "Scan" Then
     
     If cmdScan.Caption = Translate(11) Then
+    
+        bScanExecuted = True
     
         ' Erase main W array of scan results
         ReInitScanResults
@@ -3123,24 +3131,45 @@ Private Sub SaveReport()
             
             If Not OpenW(sLogFile, FOR_OVERWRITE_CREATE, ffLog) Then
 
-                If Not bAutoLogSilent Then
+                If Not bAutoLogSilent Then 'not via AutoLogger
                     'try another name
 
                     sLogFile = sLogFile & "_2.log"
 
                     Call OpenW(sLogFile, FOR_OVERWRITE_CREATE, ffLog)
-
                 End If
             End If
-
+            
             If ffLog <= 0 Then
-                If Not bAutoLogSilent Then
+                If bAutoLogSilent Then 'via AutoLogger
+                    Exit Sub
+                Else
+                
+                    If bAutoLog Then ' if user clicked 1-st button (and HJT on ReadOnly media) => try another folder
+                    
+                        bGlobalDontFocusListBox = True
+                        'sLogFile = CmnDlgSaveFile("Save logfile...", "Log files (*.log)|*.log|All files (*.*)|*.*", "HiJackThis.log")
+                        sLogFile = CmnDlgSaveFile(Translate(1001), Translate(1002) & " (*.log)|*.log|" & Translate(1003) & " (*.*)|*.*", "HiJackThis.log")
+                        bGlobalDontFocusListBox = False
+                        
+                        If 0 <> Len(sLogFile) Then
+                            If Not OpenW(sLogFile, FOR_OVERWRITE_CREATE, ffLog) Then    '2-nd try
+                                MsgBoxW Translate(26), vbExclamation
+                                Exit Sub
+                            End If
+                        Else
+                            Exit Sub
+                        End If
+                        
+                    Else 'if user already clicked button "Save report"
+                    
 '                   msgboxW "Write access was denied to the " & _
 '                       "location you specified. Try a " & _
 '                       "different location please.", vbExclamation
-                    MsgBoxW Translate(26), vbExclamation
+                        MsgBoxW Translate(26), vbExclamation
+                        Exit Sub
+                    End If
                 End If
-                Exit Sub
             End If
 
             PutW ffLog, 1&, VarPtr(b(0)), UBound(b) + 1, doAppend:=False
@@ -3694,18 +3723,25 @@ MakeLog:
     
     sLog = sLog & vbCrLf & sProcessList
     
-    ' Adding empty lines beetween sections (cancelled)
-    For i = 0 To UBound(HitSorted)
+    If IsArrDimmed(HitSorted) Then
+      For i = 0 To UBound(HitSorted)
+        ' Adding empty lines beetween sections (cancelled)
         'sPrefix = RTrim(Splitsafe(HitSorted(i), "-")(0))
         'If sPrefixLast <> "" And sPrefixLast <> sPrefix Then sLog = sLog & vbCrLf
         'sPrefixLast = sPrefix
         sLog = sLog & HitSorted(i) & vbCrLf
-    Next
+      Next
+    End If
     
     Dim IgnoreCnt&
     IgnoreCnt = RegReadHJT("IgnoreNum", "0")
     If IgnoreCnt <> 0 Then
-        sLog = sLog & vbCrLf & vbCrLf & "Warning: Ignore list contains " & IgnoreCnt & " items." & vbCrLf
+        'sLog = sLog & vbCrLf & vbCrLf & "Warning: Ignore list contains " & IgnoreCnt & " items." & vbCrLf
+        sLog = sLog & vbCrLf & vbCrLf & Replace$(Translate(1011), "[]", IgnoreCnt) & vbCrLf
+    End If
+    If Not bScanExecuted Then
+        'sLog = sLog & vbCrLf & vbCrLf & "Warning: General scanning was not performed." & vbCrLf
+        sLog = sLog & vbCrLf & vbCrLf & Translate(1012) & vbCrLf
     End If
     
     'Append by Error Log
@@ -3793,7 +3829,7 @@ Private Sub SortSectionsOfResultList()
     SectNames(6) = "F1"
     SectNames(7) = "F2"
     SectNames(8) = "F3"
-    For i = 1 To 30
+    For i = 1 To 30     ' <<<<<<<<<<< increase here in case you added new section !!!
         SectNames(8 + i) = "O" & i
     Next
     
@@ -4511,6 +4547,10 @@ Private Sub mnuResultReScan_Click()       'ReScan
     cmdScan_Click
 End Sub
 
+Private Sub mnuSaveReport_Click()       'Save report...
+    Call SaveReport
+End Sub
+
 'test stuff - BUTTON: enum tasks to CSV
 Private Sub cmdTaskScheduler_Click()
     Call EnumTasks(True)
@@ -4545,7 +4585,7 @@ Private Sub chkHelp_Click(index As Integer)
     
     Case 0: 'Sections
         aSect = Array("R0", "R1", "R2", "R3", "R4", "F0", "F1", "F2", "F3", "O1", "O2", "O3", "O4", "O5", "O6", "O7", "O8", "O9", "O10", _
-            "O11", "O12", "O13", "O14", "O15", "O16", "O17", "O18", "O19", "O20", "O21", "O22", "O23", "O24", "O25")
+            "O11", "O12", "O13", "O14", "O15", "O16", "O17", "O18", "O19", "O20", "O21", "O22", "O23", "O24", "O25", "O26")
         
         sText = Translate(31) & vbCrLf & vbCrLf & Translate(490)
         sSeparator = String$(100, "-")
@@ -4587,6 +4627,7 @@ Private Sub chkHelp_Click(index As Integer)
                 Case "O23": J = 431
                 Case "O24": J = 432
                 Case "O25": J = 433
+                Case "O26": J = 435
             End Select
 
             sText = sText & vbCrLf & sSeparator & vbCrLf & FindLine(aSect(i) & " -", Translate(31)) & vbCrLf & sSeparator & vbCrLf & Translate(J) & vbCrLf

@@ -277,7 +277,8 @@ if %errorlevel% neq 0 (pause & exit /B)
 
 copy /y MSCOMCTL.OCX.bak MSCOMCTL.OCX
 copy /y HiJackThis.zip HiJackThis_test.zip
-del /f /a /q *.tmp
+del /f /a /q *.tmp 2>NUL
+del tools\VersionPatcher\EnumResReport.txt
 
 ::ping -n 2 127.1 >NUL
 

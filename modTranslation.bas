@@ -820,6 +820,8 @@ Public Sub GetInfo(ByVal sItem$)
             sMsg = Translate(432)
         Case "O25"
             sMsg = Translate(433)
+        Case "O26"
+            sMsg = Translate(435)
         Case Else
             Exit Sub
     End Select

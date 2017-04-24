@@ -1655,23 +1655,24 @@ Private Sub WriteError(ByVal ErrObj As ErrObject, SignResult As SignResult_TYPE,
         ' https://chentiangemalc.wordpress.com/2014/08/01/case-of-the-server-returned-a-referral/
         
         With SignResult
-          If IsSignPresent(, .FilePathVerified) Then
-            'SignResult.ShortMessage = "Digital signature is present, but damaged (probably, file is patched)." ' overwrite
-            
-            'ErrReport = ErrReport & vbCrLf & "Digital signature is present, but damaged (probably, file is patched)." & ": " & SignResult.FilePathVerified
-            'ErrReport = ErrReport & vbCrLf & Translate(1866) & ": " & SignResult.FilePathVerified & GetFileMD5(SignResult.FilePathVerified)
-            
+        
             .ReturnCode = TRUST_E_BAD_DIGEST
             .ShortMessage = "TRUST_E_BAD_DIGEST"
             .FullMessage = ErrMessageText(TRUST_E_BAD_DIGEST) 'damaged signature
-            .isSigned = True
-            .isEmbedded = True
-            Exit Sub
-          End If
+        
+            If IsSignPresent(, .FilePathVerified) Then
+                'SignResult.ShortMessage = "Digital signature is present, but damaged (probably, file is patched)." ' overwrite
+            
+                'ErrReport = ErrReport & vbCrLf & "Digital signature is present, but damaged (probably, file is patched)." & ": " & SignResult.FilePathVerified
+                'ErrReport = ErrReport & vbCrLf & Translate(1866) & ": " & SignResult.FilePathVerified & GetFileMD5(SignResult.FilePathVerified)
+            
+                .isSigned = True
+                .isEmbedded = True
+            End If
         End With
+    Else
+        ErrorMsg SaveError, FunctionName, SignResult.ShortMessage, "File: ", SignResult.FilePathVerified
     End If
-    
-    ErrorMsg SaveError, FunctionName, SignResult.ShortMessage, "File: ", SignResult.FilePathVerified
 End Sub
 
 'Public Function inIDE() As Boolean

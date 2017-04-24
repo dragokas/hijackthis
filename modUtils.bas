@@ -93,6 +93,7 @@ Private Declare Function IsWow64Process Lib "kernel32.dll" (ByVal hProcess As Lo
 Private Declare Function GetSystemMetrics Lib "user32.dll" (ByVal nIndex As Long) As Long
 Private Declare Function GetVersionEx Lib "kernel32.dll" Alias "GetVersionExW" (lpVersionInformation As OSVERSIONINFOEX) As Long
 Private Declare Function GetPrivateProfileString Lib "kernel32.dll" Alias "GetPrivateProfileStringW" (ByVal lpApplicationName As Long, ByVal lpKeyName As Long, ByVal lpDefault As Long, ByVal lpReturnedString As Long, ByVal nSize As Long, ByVal lpFileName As Long) As Long
+Private Declare Function MoveFile Lib "kernel32.dll" Alias "MoveFileW" (ByVal lpExistingFileName As Long, ByVal lpNewFileName As Long) As Long
 
 Private Const LOAD_LIBRARY_AS_DATAFILE As Long = &H2   'Read Only      ( do not execute DllMain )
 
@@ -757,7 +758,7 @@ Public Function DeleteFileWEx(lpSTR As Long, Optional ForceDeleteMicrosoft As Bo
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "DeleteFileWEx - Begin"
 
-    Dim iAttr As Long, lr As Long, sExt As String
+    Dim iAttr As Long, lr As Long, sExt As String, sNewName As String
     Dim Redirect As Boolean, bOldStatus As Boolean
 
     Dim FileName$
@@ -784,7 +785,7 @@ Public Function DeleteFileWEx(lpSTR As Long, Optional ForceDeleteMicrosoft As Bo
     If iAttr And FILE_ATTRIBUTE_READONLY Then SetFileAttributes lpSTR, iAttr And Not FILE_ATTRIBUTE_READONLY
     lr = DeleteFileW(lpSTR)
     
-    If lr <> 0 Then
+    If lr <> 0 Then 'success
         DeleteFileWEx = lr
         GoTo Finalize
     End If
@@ -798,6 +799,14 @@ Public Function DeleteFileWEx(lpSTR As Long, Optional ForceDeleteMicrosoft As Bo
         TryUnlock FileName
         If iAttr And FILE_ATTRIBUTE_READONLY Then SetFileAttributes lpSTR, iAttr And Not FILE_ATTRIBUTE_READONLY
         lr = DeleteFileW(lpSTR)
+    End If
+    
+    If lr = 0 Then 'if process still run, try rename file
+        sNewName = GetEmptyName(FileName & ".bak")
+        
+        If 0 = MoveFile(StrPtr(FileName), StrPtr(sNewName)) Then
+            DeleteFileOnReboot FileName, bNoReboot:=True
+        End If
     End If
     
 Finalize:

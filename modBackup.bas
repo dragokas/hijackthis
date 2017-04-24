@@ -56,7 +56,7 @@ Public Sub MakeBackup(ByVal sItem$)
         Case "O1", "O3", "O5"
         Case "O7", "O8", "O13", "O14"
         Case "O15", "O17", "O18", "O19"
-        Case "O23", "O25"
+        Case "O23", "O25", "O26"
         
         'below items that DO need something else
         'backed up

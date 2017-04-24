@@ -70,8 +70,9 @@ HiJackThis Fork is distributed under GPLv2 license.
 
 ## Donate
 
-I have been maintain this project for almost 2 years at my free time.
-So, if you find it usefull, you can support me by WebMoney:
+I have been maintaining this project for more than 2 years at my free time.
+So, if you find it useful, you can support me by WebMoney:
  * Z389963582741
  * R963062285529
  * U255991192954
+or Yandex.Money: https://money.yandex.ru/to/410011191892975
