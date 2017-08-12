@@ -1,6 +1,8 @@
 
 # HiJackThis Fork v3
 
+![](https://dragokas.com/tools/img/hjt/Icon.png)
+
 Hi, I am Polshyn Stanislav from Ukraine. And I glad to present you a continuation of Trend Micro HiJackThis development.
 
 ## Overview
@@ -8,6 +10,8 @@ Hi, I am Polshyn Stanislav from Ukraine. And I glad to present you a continuatio
 HiJackThis Fork is a free utility for Microsoft Windows that generates a report of non-standard parameters of registry and file system for selectively removal of items related to the activities of malware, adware and security risks.
 
 HJT primarily rely on hijacking methods rather than a database, that's why it makes no separation between safe and unsafe items, giving you the ability to selectively remove items from your machine.
+
+![](https://dragokas.com/tools/img/hjt/Scanning.png)
 
 ## Features
 
@@ -27,25 +31,27 @@ HJT primarily rely on hijacking methods rather than a database, that's why it ma
  * More securely
 
 Also HiJackThis comes with several tools useful in manually removing malware from a computer:
- * StartupList 2 (*new*)
+ * StartupList 2 **(\*new\*)**
  * Process Manager
  * Uninstall manager
  * Hosts file manager
  * Alternative Data Spy
  * Delete file / service staff
- * Digital Signature Checker (*new*)
- * Registry key unlocker (*new*)
+ * Digital Signature Checker **(\*new\*)**
+ * Registry key unlocker **(\*new\*)**
 
 ## Log analysis
 
-IMPORTANT: HiJackThis does not make value based calls between what is considered good or bad.
+**IMPORTANT**: HiJackThis does not make value based calls between what is considered good or bad.
 It is important to exercise caution and avoid making changes to your computer settings, unless you have expert knowledge.
 
 If you are not expert, we recommend you to submit your case to online helper forums such as:
+- English: [Our GitHub](https://github.com/dragokas/hijackthis/issues) (coming soon) ; [GeeksToGo](http://www.geekstogo.com/forum/topic/2852-malware-and-spyware-cleaning-guide/) ;  [BleepingComputer](https://www.bleepingcomputer.com/forums/t/34773/preparation-guide-for-use-before-using-malware-removal-tools-and-requesting-help/)
 - Russian: [SafeZone](http://safezone.cc/pravila/) ; [CyberForum](http://www.cyberforum.ru/viruses/thread49792.html) ; [OSZone](http://forum.oszone.net/thread-98169.html) ; [SoftBoard](https://softboard.ru/topic/51343-правила-подраздела/) ; [THG](http://www.thg.ru/forum/showthread.php?t=92236) ; [VirusInfo](https://virusinfo.info/showthread.php?t=1235) ; [KasperskyClub](https://forum.kasperskyclub.ru/index.php?showtopic=43640)
-- English: [GeeksToGo](http://www.geekstogo.com/forum/topic/2852-malware-and-spyware-cleaning-guide/) ;  [BleepingComputer](https://www.bleepingcomputer.com/forums/t/34773/preparation-guide-for-use-before-using-malware-removal-tools-and-requesting-help/)
 
-However, currently only Russian anti-malware supporting team (e.g., VIRUSNET association) provide analysis of HiJackThis Fork logs. Feel free to ask help there.
+> However, currently only Russian anti-malware supporting team (e.g., VIRUSNET association) provide analysis of HiJackThis Fork logs. Feel free to ask help there.
+
+> Also, soon we'll open support for PC cure in our ['Issues' section](https://github.com/dragokas/hijackthis/issues) directly on GitHub.
 
 ## Technical help
 
@@ -61,13 +67,13 @@ Operating System
 
 ## Copyrights
 
- * Polshyn Stanislav { Alex Dragokas } - author of fork (major update 3), refactoring, additions, tools integration
- * Merijn Bellekom - original author
- * Trend Micro - the owner of the [original version](https://sourceforge.net/projects/hjt/) (2.0.5)
+ * **Polshyn Stanislav** { Alex Dragokas } - author of fork (major update 3), refactoring, additions, tools integration
+ * **Merijn Bellekom** - original author
+ * **Trend Micro** - the owner of the [original version](https://sourceforge.net/projects/hjt/) (2.0.5)
 ### Thanks to:
- * regist (VIRUSNET) - coordinator of HJT Fork project
- * Fernando Mercês (Trend Micro) - coordinator of original HJT
- * Loucif Kharouni (Trend Micro) - coordinator of original HJT
+ * **regist** (VIRUSNET) - coordinator of HJT Fork project
+ * **Fernando Mercês** (Trend Micro) - coordinator of original HJT
+ * **Loucif Kharouni** (Trend Micro) - coordinator of original HJT
 
 HiJackThis Fork by Alex Dragokas is a continuation of Trend Micro HiJackThis development, initially supported officially, but further Trend Micro refused any supporting and closed its GitHub repository.
 HiJackThis Fork is distributed under GPLv2 license.
