@@ -64,6 +64,10 @@ Operating System
  * Polshyn Stanislav { Alex Dragokas } - author of fork (major update 3), refactoring, additions, tools integration
  * Merijn Bellekom - original author
  * Trend Micro - the owner of the [original version](https://sourceforge.net/projects/hjt/) (2.0.5)
+### Thanks to:
+ * regist (VIRUSNET) - coordinator of HJT Fork project
+ * Fernando Mercês (Trend Micro) - coordinator of original HJT
+ * Loucif Kharouni (Trend Micro) - coordinator of original HJT
 
 HiJackThis Fork by Alex Dragokas is a continuation of Trend Micro HiJackThis development, initially supported officially, but further Trend Micro refused any supporting and closed its GitHub repository.
 HiJackThis Fork is distributed under GPLv2 license.
