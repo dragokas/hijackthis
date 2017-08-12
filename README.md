@@ -9,8 +9,8 @@ HiJackThis Fork is a free utility for Microsoft Windows that generates a report 
 HJT primarily rely on hijacking methods rather than a database, that's why it makes no separation between safe and unsafe items, giving you the ability to selectively remove items from your machine.
 
 ## Download
-[![](https://dragokas.com/tools/img/hjt/Icon_mini.png)](https://github.com/dragokas/hijackthis/raw/devel/HiJackThis.exe)
-[Pre-builded binary for OS Widows](https://github.com/dragokas/hijackthis/raw/devel/HiJackThis.exe)
+[![](https://dragokas.com/tools/img/hjt/Icon_mini.png)](https://github.com/dragokas/hijackthis/raw/devel/binary/HiJackThis.exe)
+[Pre-builded binary for OS Widows](https://github.com/dragokas/hijackthis/raw/devel/binary/HiJackThis.exe)
 
 ![](https://dragokas.com/tools/img/hjt/Scanning.png)
 
