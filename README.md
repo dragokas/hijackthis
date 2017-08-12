@@ -1,6 +1,5 @@
 
 # HiJackThis Fork v3
-
 ![](https://dragokas.com/tools/img/hjt/Icon.png)
 
 Hi, I am Polshyn Stanislav from Ukraine. And I glad to present you a continuation of Trend Micro HiJackThis development.
@@ -82,8 +81,15 @@ HiJackThis Fork is distributed under GPLv2 license.
 
 I have been maintaining this project for more than 2 years at my free time.
 If you find it useful, you can support me with any amount by:
- * BTC: 17hkU3eKPngHrG3P9uqXwMLE3ztmtfGDZ4
+ * BTC: [17hkU3eKPngHrG3P9uqXwMLE3ztmtfGDZ4](https://dragokas.com/tools/img/BTC_QR.png)
  * WebMoney: Z389963582741
  * WebMoney: R963062285529
  * WebMoney: U255991192954
  * [Yandex.Money](https://money.yandex.ru/to/410011191892975)
+
+## Another projects
+
+You also may want to look on my another programs:
+- [Check Browsers' LNK](https://toolslib.net/downloads/viewdownload/80-check-browsers-lnk/) & [ClearLNK](https://toolslib.net/downloads/viewdownload/81-clearlnk/) to cure shortcuts
+- [different tools](https://safezone.cc/resources/authors/dragokas.6966/) at SafeZone repository.
+- [my articles, tutorials and research](http://www.cyberforum.ru/blogs/218284/blog3628.html)
