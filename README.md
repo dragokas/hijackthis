@@ -20,8 +20,15 @@ HJT primarily rely on hijacking methods rather than a database, that's why it ma
  * Generate reports and presents them in an organized fashion
  * Does not target specific programs and URLs
  * Detects only the methods used by hijackers to force you onto their sites
- * The possibility of adding to autostart scanning at system boot (coming soon)
- * No need constant updates
+ 
+## Advantages
+
+ * Short log
+ * Fast scan
+ * No need to script for fixing
+ * No need internet or constant database updates
+ * Well-familiar to many people
+ * Portable
 
 ## New on version 3
 
@@ -54,11 +61,13 @@ If you are not expert, we recommend you to submit your case to online helper for
 
 > Also, soon we'll open support for PC cure in our ['Issues' section](https://github.com/dragokas/hijackthis/issues) directly on GitHub.
 
-## Technical help
+## Technical support
 
- * [Actual User's manual](https://safezone.cc/threads/25184/) for this fork (on Russian).
- * [Hot additions from the author](https://safezone.cc/threads/27470/) (on Russian)
- * Discussion and news are in [this topic](https://safezone.cc/threads/hijackthis-fork-i-voprosy-k-razrabotchikam.28770/) (on Russian) or on [GeeksToGo](http://www.geekstogo.com/forum/topic/361755-hijackthisfork-improvement-development-bug-reports/) (on English; students and expert access only)
+ * [Short sections' description](https://github.com/dragokas/hijackthis/wiki/HJT:-Tutorial) (on English)
+ * [Actual User's manual](https://safezone.cc/threads/25184/) for this fork (on Russian)
+ * [Hot additions by the author](https://safezone.cc/threads/27470/) (on Russian)
+ * [Different instructions on Wiki-pages](https://github.com/dragokas/hijackthis/wiki)
+ * Discussion and news are in [this topic](https://safezone.cc/threads/hijackthis-fork-i-voprosy-k-razrabotchikam.28770/) (on Russian) or on [GeeksToGo](http://www.geekstogo.com/forum/topic/361755-hijackthisfork-improvement-development-bug-reports/) (on English; restricted to experts access only) or on [GitHub page](https://github.com/dragokas/hijackthis/issues/4) (for everyone).
  * You can also freely ask question, report a bug or propose innovation by [creating issue](https://github.com/dragokas/hijackthis/issues)
 
 ## System Requirements
@@ -76,8 +85,8 @@ Operating System
  * **Fernando Mercês** { [@merces](https://github.com/merces) } (Trend Micro) - coordinator of original HJT
  * **Loucif Kharouni** { [@loucifkharouni](https://github.com/loucifkharouni) } (Trend Micro) - coordinator of original HJT
 
-HiJackThis Fork by Alex Dragokas is a continuation of Trend Micro HiJackThis development, initially supported officially, but further Trend Micro refused any supporting and closed its GitHub repository.
-HiJackThis Fork is distributed under GPLv2 license.
+HiJackThis Fork by Alex Dragokas is a continuation of Trend Micro HiJackThis development, based on [v.2.0.6](https://sourceforge.net/p/hjt/code/HEAD/tree/beta/2.0.6/), initially supported officially, but further Trend Micro refused any supporting and closed its GitHub repository.
+HiJackThis Fork is distributed under GPLv2 license and includes several tools as plugins available as freeware.
 
 ## Donate
 
