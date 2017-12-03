@@ -14,12 +14,12 @@ Begin VB.Form frmEULA
    ShowInTaskbar   =   0   'False
    StartUpPosition =   2  'CenterScreen
    Begin VB.TextBox txtText1 
-      Height          =   4935
+      Height          =   4695
       Left            =   0
       MultiLine       =   -1  'True
       ScrollBars      =   2  'Vertical
       TabIndex        =   2
-      Top             =   1680
+      Top             =   1920
       Width           =   6735
    End
    Begin VB.CommandButton cmdNotAgree 
@@ -76,44 +76,32 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+'
+' License agreement form
+'
+' (main entry point)
+'
+
 Option Explicit
-
-Private Type tagINITCOMMONCONTROLSEX
-    dwSize  As Long
-    dwICC   As Long
-End Type
-
-Private Declare Sub InitCommonControls Lib "comctl32.dll" ()
-Private Declare Function InitCommonControlsEx Lib "comctl32.dll" (lpInitCtrls As tagINITCOMMONCONTROLSEX) As Boolean
-Private Declare Function GetVersionEx Lib "kernel32.dll" Alias "GetVersionExW" (lpVersionInformation As Any) As Long
-Private Declare Function SetCurrentProcessExplicitAppUserModelID Lib "shell32.dll" (ByVal pAppID As Long) As Long
-Private Declare Function LoadLibrary Lib "kernel32.dll" Alias "LoadLibraryW" (ByVal lpLibFileName As Long) As Long
-Private Declare Function FreeLibrary Lib "kernel32.dll" (ByVal hLibModule As Long) As Long
-Private Declare Function OpenProcess Lib "kernel32.dll" (ByVal dwDesiredAccess As Long, ByVal bInheritHandle As Long, ByVal dwProcessId As Long) As Long
-Private Declare Function WaitForSingleObject Lib "kernel32.dll" (ByVal hHandle As Long, ByVal dwMilliseconds As Long) As Long
-Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
-Private Declare Function DeleteFileW Lib "kernel32.dll" (ByVal lpFileName As Long) As Long
 
 Private Const ICC_STANDARD_CLASSES As Long = &H4000&
 
-Private ControlsEvent As New clsEvents
-Private hModShell As Long
+Private ControlsEvent As clsEvents
 
 Private Sub Form_Initialize()
+    On Error GoTo ErrorHandler:
 
-    On Error Resume Next
     Dim ICC         As tagINITCOMMONCONTROLSEX
     Dim lr          As Long
-    Dim MajorMinor  As Single
-    
-    Dim inf(68) As Long: inf(0) = 276: GetVersionEx inf(0)
-    MajorMinor = inf(1) + inf(2) / 10
+    Dim hModShell   As Long
     
     ' Code launched from IDE ?
     Debug.Assert CheckIDE(inIDE)
     
-    ' Enable visual styles
+    ' boost priority
+    Call SetPriorityProcess(GetCurrentProcess(), HIGH_PRIORITY_CLASS)
     
+    ' Enable visual styles
     If Not inIDE Then
         hModShell = LoadLibrary(StrPtr("shell32.dll"))
     End If
@@ -136,70 +124,112 @@ Private Sub Form_Initialize()
         FreeLibrary hModShell
     End If
     
-    If MajorMinor >= 6.1 Then ' Windows 7 and Later
+    Set Reg = New clsRegistry
+    Set ErrLogCustomText = New clsStringBuilder 'tracing
+    
+    If InStr(1, Command$(), "/debug ", 1) <> 0 Or _
+        StrEndWith(Command$(), "/debug") Or _
+        InStr(1, AppExeName(), "_debug", 1) <> 0 Or _
+        InStr(1, AppExeName(), "_dbg", 1) <> 0 Then
+        bDebugMode = True
+    End If
+    
+    If InStr(Command(), "/days:") <> 0 Then
+        ABR_RunBackup
+        End 'do crash ^_^
+    End If
+    
+    Set OSver = New clsOSInfo
+    
+    If OSver.MajorMinor >= 6.1 Then ' Windows 7 and Later
         lr = SetCurrentProcessExplicitAppUserModelID(StrPtr("Alex.Dragokas.HiJackThis"))
     End If
     
-    Set ErrLogCustomText = New clsStringBuilder 'tracing
     Set oDictFileExist = New clsTrickHashTable  'file exists cache
     oDictFileExist.CompareMode = 1
     
-    'If InStr(1, Command(), "/debugtofile", 1) <> 0 Then
-    If InStr(1, Command(), "/debug", 1) <> 0 Then
-        DebugToFile = True
+    If InStr(1, Command(), "/nogui", 1) <> 0 _
+      Or InStr(1, Command(), "/StartupScan", 1) <> 0 _
+      Or InStr(1, Command(), "/install", 1) <> 0 Then
+        gNoGUI = True
+    End If
+    
+    'If InStr(1, command$(), "/bDebugToFile", 1) <> 0 Then
+    If InStr(1, Command$(), "/debug", 1) <> 0 Then
+        bDebugToFile = True
         OpenDebugLogHandle
     End If
+    
+    Exit Sub
+ErrorHandler:
+    MsgBoxW "Error in frmEULA.Form_Initialize. Err. number = " & Err.Number & " - " & Err.Description & ". LastDllErr = " & Err.LastDllError
+    If inIDE Then Stop
+    Resume Next
 End Sub
 
 Private Sub Form_Load()
+    On Error GoTo ErrorHandler:
+
     AppendErrorLogCustom "frmEULA.Form_Load - Begin"
 
-    If InStr(1, Command(), "/release", 1) <> 0 Then
+    If InStr(1, Command$(), "/release", 1) <> 0 Then
         'Если мы - клон, ожидать завершения PID, переданного через аргументы командной строки, после чего удалить файлы
         WatchForProcess
         Unload Me
         Exit Sub
     End If
 
-    AppVerString = GetFilePropVersion(AppPath(True))
+    If inIDE Then
+        AppVerString = GetVersionFromVBP(BuildPath(AppPath(), App.EXEName & ".vbp")) '_HijackThis.vbp"
+    Else
+        AppVerString = GetFilePropVersion(AppPath(True))
+    End If
     
-    Me.Caption = Me.Caption & AppVerString
+    'Me.Caption = Me.Caption & AppVerString
 
-    bForceRU = InStr(1, AppExeName(), "_RU", 1) Or InStr(1, Command(), "/langRU", 1)
-    bForceEN = InStr(1, AppExeName(), "_EN", 1) Or InStr(1, Command(), "/langEN", 1)
-    
-    '// TODO:
-    'Add to help this keys:
-    '/langRU
-    '/langEN
+    bForceRU = InStr(1, AppExeName(), "_RU", 1) Or InStr(1, Command$(), "/langRU", 1)
+    bForceEN = InStr(1, AppExeName(), "_EN", 1) Or InStr(1, Command$(), "/langEN", 1)
+
+    bIsWOW64 = IsWow64()
 
     If InStr(1, Command$, "/accepteula", 1) <> 0 Or _
-        RegKeyExists(HKEY_LOCAL_MACHINE, "Software\TrendMicro\HiJackThis", False) Or _
-        RegKeyExists(HKEY_LOCAL_MACHINE, "Software\TrendMicro\HiJackThis", True) Then
-            Localize
+        InStr(1, Command$, "/uninstall", 1) <> 0 Or _
+        Reg.KeyExists(HKEY_LOCAL_MACHINE, "Software\TrendMicro\HiJackThisFork") Then
             EULA_Agree
             Me.Hide
-            frmMain.Show vbModeless
+            'frmMain.Show vbModeless
+            Load frmMain
+            Unload Me
     Else
+        Localize
         txtText1.Text = GetEULA()
+        Set ControlsEvent = New clsEvents
         Set ControlsEvent.txtBoxInArr = txtText1   'focus on txtbox to add scrolling support
+        bFirstRun = True
     End If
     
     AppendErrorLogCustom "frmEULA.Form_Load - End"
+    Exit Sub
+ErrorHandler:
+    MsgBoxW "Error in frmEULA.Form_Load. Err. number = " & Err.Number & " - " & Err.Description & ". LastDllErr = " & Err.LastDllError
+    If inIDE Then Stop: Resume Next
 End Sub
 
 Private Sub cmdAgree_Click()
     EULA_Agree
     Me.Hide
     Set ControlsEvent = Nothing
-    frmMain.Show
-End Sub
-
-Private Sub cmdNotAgree_Click()
+    'frmMain.Show
+    Load frmMain
     Unload Me
 End Sub
 
-Function CheckIDE(value As Boolean) As Boolean: value = True: CheckIDE = True: End Function
+Private Sub cmdNotAgree_Click()
+    Set ControlsEvent = Nothing
+    Unload Me
+End Sub
+
+Function CheckIDE(Value As Boolean) As Boolean: Value = True: CheckIDE = True: End Function
 
 Sub WatchForProcess()   'waiting for process completion to release unpacked resources
     On Error GoTo ErrorHandler
@@ -210,14 +240,14 @@ Sub WatchForProcess()   'waiting for process completion to release unpacked reso
     
     Dim ProcessID As Long
     Dim hProc As Long
-    Dim lret As Long
+    Dim lRet As Long
     Dim sPathComCtl1 As String
     Dim sPathComCtl2 As String
     
     sPathComCtl1 = BuildPath(AppPath(), "MSComCtl.ocx")
     sPathComCtl2 = BuildPath(AppPath(), "MSComCtl.oca")
     
-    ProcessID = Val(Mid$(Command(), InStr(1, Command(), "/release:", 1) + Len("/release:")))
+    ProcessID = Val(Mid$(Command$(), InStr(1, Command$(), "/release:", 1) + Len("/release:")))
     
     If ProcessID <> 0 Then
         
@@ -228,21 +258,25 @@ Sub WatchForProcess()   'waiting for process completion to release unpacked reso
             CloseHandle hProc
         End If
         
-        lret = DeleteFileW(StrPtr(sPathComCtl1))
-        lret = DeleteFileW(StrPtr(sPathComCtl2))
+        lRet = DeleteFileW(StrPtr(sPathComCtl1))
+        lRet = DeleteFileW(StrPtr(sPathComCtl2))
     End If
-
+    
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "WatchForProcess", "PID:", ProcessID
+    If inIDE Then Stop: Resume Next
 End Sub
 
 Sub EULA_Agree()
-    RegCreateKey HKEY_LOCAL_MACHINE, "Software\TrendMicro\HiJackThis", False
-    RegCreateKey HKEY_LOCAL_MACHINE, "Software\TrendMicro\HiJackThis", True
+    Reg.CreateKey HKEY_LOCAL_MACHINE, "Software\TrendMicro\HiJackThis", False
+    Reg.CreateKey HKEY_LOCAL_MACHINE, "Software\TrendMicro\HiJackThis", True
+    Reg.CreateKey HKEY_LOCAL_MACHINE, "Software\TrendMicro\HiJackThisFork"
 End Sub
 
 Sub Localize()
+    On Error GoTo ErrorHandler
+
     'pre-loading native OS UI language
     If bForceEN Then
         LoadLanguage &H409, True, PreLoadNativeLang:=True
@@ -269,6 +303,10 @@ Sub Localize()
     ' I Do Not Accept
     cmdNotAgree.Caption = TranslateNative(1094)
     
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "Localize"
+    If inIDE Then Stop: Resume Next
 End Sub
 
 Function GetEULA() As String
@@ -618,3 +656,7 @@ Function GetEULA() As String
     
     GetEULA = Replace$(sText, "\n", vbCrLf)
 End Function
+
+Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
+    Set ControlsEvent = Nothing
+End Sub

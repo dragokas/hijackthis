@@ -27,21 +27,19 @@ Type PPROTECT_FILE_ENTRY
     InfName As Long         'pointer PWSTR
 End Type
 
-Private Declare Function GetMem4 Lib "msvbvm60.dll" (src As Any, dst As Any) As Long
-Private Declare Function VirtualProtect Lib "kernel32.dll" (ByVal lpAddress As Long, ByVal dwSize As Long, ByVal flNewProtect As Long, lpflOldProtect As Long) As Long
-Private Declare Sub EbGetExecutingProj Lib "vba6.dll" (hProject As Long)
-Private Declare Function TipGetFunctionId Lib "vba6.dll" (ByVal hProj As Long, ByVal bstrName As Long, ByRef bstrId As Long) As Long
-Private Declare Function TipGetLpfnOfFunctionId Lib "vba6.dll" (ByVal hProject As Long, ByVal bstrId As Long, ByRef lpAddress As Long) As Long
-Private Declare Sub SysFreeString Lib "oleaut32.dll" (ByVal lpbstr As Long)
-Private Declare Function LoadLibrary Lib "kernel32.dll" Alias "LoadLibraryW" (ByVal lpLibFileName As Long) As Long
-Private Declare Function FreeLibrary Lib "kernel32.dll" (ByVal hLibModule As Long) As Long
-Private Declare Function GetProcAddress Lib "kernel32.dll" (ByVal hModule As Long, ByVal lpProcName As String) As Long
-Private Declare Function GetProcAddressByOrd Lib "kernel32.dll" Alias "GetProcAddress" (ByVal hModule As Long, ByVal lpProcName As Long) As Long
-Private Declare Function GetWindowsDirectory Lib "kernel32.dll" Alias "GetWindowsDirectoryW" (ByVal lpBuffer As Long, ByVal nSize As Long) As Long
-'Private Declare Function GetVersionEx Lib "kernel32.dll" Alias "GetVersionExW" (lpVersionInformation As Any) As Long
-Private Declare Function lstrlen Lib "kernel32.dll" Alias "lstrlenW" (ByVal lpString As Long) As Long
-Private Declare Function lstrcpyn Lib "kernel32.dll" Alias "lstrcpynW" (ByVal lpString1 As Long, ByVal lpString2 As Long, ByVal iMaxLength As Long) As Long
-Private Declare Function GlobalFree Lib "kernel32.dll" (ByVal hMem As Long) As Long
+Private Declare Function GetMem4 Lib "msvbvm60" (src As Any, dst As Any) As Long
+Private Declare Function VirtualProtect Lib "kernel32" (ByVal lpAddress As Long, ByVal dwSize As Long, ByVal flNewProtect As Long, lpflOldProtect As Long) As Long
+Private Declare Sub EbGetExecutingProj Lib "vba6" (hProject As Long)
+Private Declare Function TipGetFunctionId Lib "vba6" (ByVal hProj As Long, ByVal bstrName As Long, ByRef bstrId As Long) As Long
+Private Declare Function TipGetLpfnOfFunctionId Lib "vba6" (ByVal hProject As Long, ByVal bstrId As Long, ByRef lpAddress As Long) As Long
+Private Declare Sub SysFreeString Lib "oleaut32" (ByVal lpbstr As Long)
+Private Declare Function LoadLibrary Lib "kernel32" Alias "LoadLibraryW" (ByVal lpLibFileName As Long) As Long
+Private Declare Function GetProcAddress Lib "kernel32" (ByVal hModule As Long, ByVal lpProcName As String) As Long
+'Private Declare Function GetProcAddressByOrd Lib "kernel32" Alias "GetProcAddress" (ByVal hModule As Long, ByVal lpProcName As Long) As Long
+Private Declare Function GetWindowsDirectory Lib "kernel32" Alias "GetWindowsDirectoryW" (ByVal lpBuffer As Long, ByVal nSize As Long) As Long
+Private Declare Function lstrlen Lib "kernel32" Alias "lstrlenW" (ByVal lpString As Long) As Long
+Private Declare Function lstrcpyn Lib "kernel32" Alias "lstrcpynW" (ByVal lpString1 As Long, ByVal lpString2 As Long, ByVal iMaxLength As Long) As Long
+Private Declare Function GlobalFree Lib "kernel32" (ByVal hMem As Long) As Long
 
 'Private Declare Function SfcGetNextProtectedFile Lib "sfc_os.dll" (ByVal RpcHandle As Long, ProtFileData As PROTECTED_FILE_DATA) As Long
 
@@ -50,7 +48,7 @@ Private Const ERROR_INSUFFICIENT_BUFFER = &H7A&
 Private Const ERROR_NO_MORE_FILES = &H12&
 
 Dim SystemRoot      As String
-
+Dim inIDE           As Boolean
 
 ' Прототипы функций, вызов которых перенаправляется по адресу Addr
 Private Function BeginFileMapEnumeration(ByVal Addr As Long, ByVal Reserved0 As Long, ByVal Reserved1 As Long, Handle As Long) As Long: End Function
@@ -62,9 +60,10 @@ Private Function SfcGetFiles(ByVal Addr As Long, ProtFileData As PPROTECT_FILE_E
 
 Private Sub InitVars()
     Dim ret             As Long
-    SystemRoot = Space(MAX_PATH)
+    SystemRoot = Space$(MAX_PATH)
     ret = GetWindowsDirectory(StrPtr(SystemRoot), Len(SystemRoot))
     SystemRoot = Left$(SystemRoot, ret) & "\"
+    Debug.Assert CheckIDE(inIDE)
 End Sub
 
 Public Function SFCList_XP() As String()
@@ -83,7 +82,7 @@ Public Function SFCList_XP() As String()
     PatchFunc "SfcGetNextProtectedFile", AddressOf SfcGetNextProtectedFile
     
     SfcGetNextProtFileAddr = GetProcAddress(hSfc_Lib, "SfcGetNextProtectedFile")
-    If SfcGetNextProtFileAddr = 0 Then Debug.Print "Error: cannot get SfcGetNextProtectedFile function address!": FreeLibrary hSfc_Lib: Exit Function
+    If SfcGetNextProtFileAddr = 0 Then Debug.Print "Error: cannot get SfcGetNextProtectedFile function address!": Exit Function
     
     ReDim SFCList(300)
     
@@ -109,8 +108,6 @@ Public Function SFCList_XP() As String()
         ReDim Preserve SFCList(i - 1)
     End If
     SFCList_XP = SFCList
-    
-    FreeLibrary hSfc_Lib
     
     Exit Function
 ErrorHandler:
@@ -140,30 +137,29 @@ Public Function SFCList_XP_0() As String()  ' with SFCFILES.dll
     PatchFunc "SfcGetFiles", AddressOf SfcGetFiles
     
     SfcGetFilesAddr = GetProcAddress(hSfcFil_Lib, "SfcGetFiles")
-    If SfcGetFilesAddr = 0 Then Debug.Print "Error: cannot get SfcGetFiles function address!": FreeLibrary hSfcFil_Lib: Exit Function
+    If SfcGetFilesAddr = 0 Then Debug.Print "Error: cannot get SfcGetFiles function address!": Exit Function
     
+    FileCount = 0
     ret = SfcGetFiles(SfcGetFilesAddr, pfe, FileCount)
 
     'Debug.Print "FileName=" & pfe.FileName
     'Debug.Print "InfName=" & pfe.InfName
     'Debug.Print "SourceFileName=" & pfe.SourceFileName
         
-    If pfe.SourceFileName = 0 Then Debug.Print "Error! Can't get a pointer to FileNames with SfcGetFiles function !": FreeLibrary hSfcFil_Lib: Exit Function
+    If pfe.SourceFileName = 0 Then Debug.Print "Error! Can't get a pointer to FileNames with SfcGetFiles function !": Exit Function
             
     ReDim SFCList(FileCount - 1)
     
     For index = 0 To FileCount - 1
         GetMem4 ByVal pfe.SourceFileName + 4 + index * 12, strAdr
         strLen = lstrlen(strAdr)
-        FileName = Space(strLen)
+        FileName = Space$(strLen)
         lstrcpyn StrPtr(FileName), strAdr, strLen + 1
-        SFCList(index) = EnvironW(FileName) 'Replace$(FileName, "%systemroot%\", SystemRoot, , , 1)
+        SFCList(index) = Replace$(FileName, "%systemroot%\", SystemRoot, , , 1)
     Next
     GlobalFree pfe.SourceFileName
 
     SFCList_XP_0 = SFCList
-    
-    FreeLibrary hSfcFil_Lib
     
     Exit Function
 ErrorHandler:
@@ -203,10 +199,10 @@ Public Function SFCList_Vista() As String()
     PatchFunc "GetNextFileMapContent", AddressOf GetNextFileMapContent
 
     BeginFileMapAddr = GetProcAddress(hSfc_os_Lib, "BeginFileMapEnumeration")
-    If BeginFileMapAddr = 0 Then Debug.Print "Error: cannot get BeginFileMapEnumeration function address!": FreeLibrary hSfc_os_Lib: Exit Function
+    If BeginFileMapAddr = 0 Then Debug.Print "Error: cannot get BeginFileMapEnumeration function address!": Exit Function
     
     ret = BeginFileMapEnumeration(BeginFileMapAddr, 0&, 0&, hSFC)
-    If hSFC = 0 Then Debug.Print "Error! Cannot get handle of first element of BeginFileMapEnumeration.": FreeLibrary hSfc_os_Lib: Exit Function
+    If hSFC = 0 Then Debug.Print "Error! Cannot get handle of first element of BeginFileMapEnumeration."
     
     dwBufferSize = Len(pData)
     
@@ -237,11 +233,9 @@ Public Function SFCList_Vista() As String()
     Loop
     
     CloseFileMapAddr = GetProcAddress(hSfc_os_Lib, "CloseFileMapEnumeration")
-    If CloseFileMapAddr = 0 Then
-        Debug.Print "Error: cannot get CloseFileMapEnumeration function address!"
-    Else
-        CloseFileMapEnumeration CloseFileMapAddr, hSFC
-    End If
+    If CloseFileMapAddr = 0 Then Debug.Print "Error: cannot get CloseFileMapEnumeration function address!": Exit Function
+    
+    CloseFileMapEnumeration CloseFileMapAddr, hSFC
     
     If i = 0 Then
         ReDim SFCList(0)
@@ -249,8 +243,6 @@ Public Function SFCList_Vista() As String()
         ReDim Preserve SFCList(i - 1)
     End If
     SFCList_Vista = SFCList
-    
-    FreeLibrary hSfc_os_Lib
     
     Exit Function
 ErrorHandler:
@@ -260,9 +252,7 @@ End Function
  
 ' Пропатчивание функции
 Private Sub PatchFunc(FuncName As String, ByVal Addr As Long)
-    Dim lpAddr As Long, hProj As Long, SID As Long, inIDE As Boolean
- 
-    Debug.Assert MakeTrue(inIDE)
+    Dim lpAddr As Long, hProj As Long, SID As Long
  
     ' Получаем адрес функции
     If inIDE Then
@@ -288,6 +278,5 @@ End Sub
 Private Function GetAddr(ByVal Addr As Long) As Long
     GetAddr = Addr
 End Function
-Public Function MakeTrue(ByRef bvar As Boolean) As Boolean
-    bvar = True: MakeTrue = True
-End Function
+Function CheckIDE(Value As Boolean) As Boolean: Value = True: CheckIDE = True: End Function
+

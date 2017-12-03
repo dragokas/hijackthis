@@ -3,7 +3,7 @@ Begin VB.Form frmSysTray
    Caption         =   "Form1"
    ClientHeight    =   3015
    ClientLeft      =   225
-   ClientTop       =   870
+   ClientTop       =   855
    ClientWidth     =   4560
    BeginProperty Font 
       Name            =   "Tahoma"
@@ -47,7 +47,7 @@ Attribute VB_Exposed = False
 
 Option Explicit
 
-Private Declare Function SetForegroundWindow Lib "user32.dll" (ByVal hWnd As Long) As Long
+Private Declare Function SetForegroundWindow Lib "user32.dll" (ByVal hwnd As Long) As Long
 Private Declare Function Shell_NotifyIcon Lib "shell32.dll" Alias "Shell_NotifyIconA" (ByVal dwMessage As Long, pnid As NOTIFYICONDATA) As Boolean
 
 Private Const NIM_ADD = &H0
@@ -67,7 +67,7 @@ Private Const WM_MBUTTONUP = &H208
 
 Private Type NOTIFYICONDATA
     cbSize As Long
-    hWnd As Long
+    hwnd As Long
     uID As Long
     uFlags As Long
     uCallbackMessage As Long
@@ -82,25 +82,25 @@ Public Event Click(ClickWhat As String)
 Private nid As NOTIFYICONDATA
 Private LastWindowState As Integer
 
-Public Property Let Tooltip(value As String)
-   nid.szTip = value & vbNullChar
+Public Property Let Tooltip(Value As String)
+   nid.szTip = Value & vbNullChar
 End Property
 
 Public Property Get Tooltip() As String
    Tooltip = nid.szTip
 End Property
 
-Public Property Let TrayIcon(value)
+Public Property Let TrayIcon(Value As Variant)
    On Error Resume Next
    ' Value can be a picturebox, image, form or string
-   Select Case TypeName(value)
+   Select Case TypeName(Value)
       Case "PictureBox", "Image"
-         Me.Icon = value.Picture
+         Me.Icon = Value.Picture
       Case "String"
-        Me.Icon = LoadPicture(value)
+        Me.Icon = LoadPicture(Value)
       Case Else
          ' Is it a form ?
-         Me.Icon = value.Icon
+         Me.Icon = Value.Icon
    End Select
    UpdateIcon NIM_MODIFY
 End Property
@@ -112,15 +112,14 @@ Private Sub Form_Load()
     UpdateIcon NIM_ADD
 End Sub
 
-Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
-   Dim Result As Long
+Private Sub Form_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
    Dim msg As Long
    
    ' The Form_MouseMove is intercepted to give systray mouse events.
    If Me.ScaleMode = vbPixels Then
-      msg = X
+      msg = x
    Else
-      msg = X / Screen.TwipsPerPixelX
+      msg = x / Screen.TwipsPerPixelX
    End If
       
    Select Case msg
@@ -130,7 +129,7 @@ Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, Y A
          RaiseEvent Click("RBUTTONDOWN")
       Case WM_RBUTTONUP
          ' Popup menu: selectively enable items dependent on context.
-         SetForegroundWindow FSys.hWnd
+         SetForegroundWindow FSys.hwnd
          RaiseEvent Click("RBUTTONUP")
          PopupMenu mPopupMenu
       Case WM_LBUTTONDBLCLK
@@ -175,20 +174,20 @@ Private Sub Restore_Window()
    ' Restore LastWindowState
    FSys.WindowState = LastWindowState
    FSys.Visible = True
-   SetForegroundWindow FSys.hWnd
+   SetForegroundWindow FSys.hwnd
 End Sub
 
-Private Sub UpdateIcon(value As Long)
+Private Sub UpdateIcon(Value As Long)
    ' Used to add, modify and delete icon.
    With nid
       .cbSize = Len(nid)
-      .hWnd = Me.hWnd
+      .hwnd = Me.hwnd
       .uID = vbNull
       .uFlags = NIM_DELETE Or NIF_TIP Or NIM_MODIFY
       .uCallbackMessage = WM_MOUSEMOVE
       .hIcon = Me.Icon
    End With
-   Shell_NotifyIcon value, nid
+   Shell_NotifyIcon Value, nid
 End Sub
 
 Public Sub MeQueryUnload(ByRef F As Form, Cancel As Integer, UnloadMode As Integer)

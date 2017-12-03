@@ -122,7 +122,7 @@ Private Enum SECURITY_INFORMATION                       'required access - to qu
 End Enum
 
 
-Private Declare Sub GetNativeSystemInfo Lib "kernel32.dll" (ByVal lpSystemInfo As Long)
+'Private Declare Sub GetNativeSystemInfo Lib "kernel32.dll" (ByVal lpSystemInfo As Long)
 Private Declare Function GetVersionEx Lib "kernel32.dll" Alias "GetVersionExW" (lpVersionInformation As Any) As Long
 Private Declare Function GetCurrentProcess Lib "kernel32.dll" () As Long
 Private Declare Function GetCurrentThread Lib "kernel32.dll" () As Long
@@ -145,11 +145,11 @@ Private Declare Function MakeAbsoluteSD Lib "advapi32.dll" (ByVal pSelfRelativeS
 Private Declare Function IsValidSecurityDescriptor Lib "advapi32.dll" (ByVal pSecurityDescriptor As Long) As Long
 Private Declare Function SetEntriesInAcl Lib "advapi32.dll" Alias "SetEntriesInAclW" (ByVal cCountOfExplicitEntries As Long, ByVal pListOfExplicitEntries As Long, ByVal pOldAcl As Long, NewAcl As Long) As Long
 Private Declare Function SetSecurityInfo Lib "advapi32.dll" (ByVal Handle As Long, ByVal ObjectType As SE_OBJECT_TYPE, ByVal SecurityInfo As SECURITY_INFORMATION, ByVal psidOwner As Long, ByVal psidGroup As Long, ByVal pDacl As Long, ByVal pSacl As Long) As Long
-Private Declare Function SetNamedSecurityInfo Lib "advapi32.dll" Alias "SetNamedSecurityInfoW" (ByVal pObjectName As Long, ByVal ObjectType As Long, ByVal SecurityInfo As Long, ByVal psidOwner As Long, ByVal psidGroup As Long, ByVal pDacl As Long, ByVal pSacl As Long) As Long
+'Private Declare Function SetNamedSecurityInfo Lib "advapi32.dll" Alias "SetNamedSecurityInfoW" (ByVal pObjectName As Long, ByVal ObjectType As SE_OBJECT_TYPE, ByVal SecurityInfo As Long, ByVal psidOwner As Long, ByVal psidGroup As Long, ByVal pDacl As Long, ByVal pSacl As Long) As Long
 Private Declare Function GetAclInformation Lib "advapi32.dll" (ByVal pAcl As Long, ByVal pAclInformation As Long, ByVal nAclInformationLength As Long, ByVal dwAclInformationClass As ACL_INFORMATION_CLASS) As Long
 Private Declare Function GetAce Lib "advapi32.dll" (ByVal pAcl As Long, ByVal dwAceIndex As Long, pAce As Long) As Long
 Private Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal length As Long) As Long
-Private Declare Function GetExplicitEntriesFromAcl Lib "advapi32.dll" Alias "GetExplicitEntriesFromAclW" (ByVal pAcl As Long, pcCountOfExplicitEntries As Long, pListOfExplicitEntries As Long) As Long
+'Private Declare Function GetExplicitEntriesFromAcl Lib "advapi32.dll" Alias "GetExplicitEntriesFromAclW" (ByVal pAcl As Long, pcCountOfExplicitEntries As Long, pListOfExplicitEntries As Long) As Long
 Private Declare Function DeleteAce Lib "advapi32.dll" (ByVal pAcl As Long, ByVal dwAceIndex As Long) As Long
 Private Declare Function InitializeAcl Lib "advapi32.dll" (ByVal pAcl As Long, ByVal nAclLength As Long, ByVal dwAclRevision As Long) As Long
 Private Declare Function LocalAlloc Lib "kernel32.dll" (ByVal uFlags As Long, ByVal uBytes As Long) As Long
@@ -157,6 +157,7 @@ Private Declare Function IsValidAcl Lib "advapi32.dll" (ByVal pAcl As Long) As L
 'Private Declare Function TreeResetNamedSecurityInfo Lib "advapi32.dll" Alias "TreeResetNamedSecurityInfoW" (ByVal pObjectName As Long, ByVal ObjectType As SE_OBJECT_TYPE, ByVal SecurityInfo As SECURITY_INFORMATION, ByVal pOwner As Long, ByVal pGroup As Long, ByVal pDacl As Long, ByVal pSacl As Long, ByVal KeepExplicit As Long, ByVal fnProgress As Long, ByVal ProgressInvokeSetting As Long, ByVal Args As Long) As Long
 Private Declare Function RegEnumKeyEx Lib "advapi32.dll" Alias "RegEnumKeyExW" (ByVal hKey As Long, ByVal dwIndex As Long, ByVal lpName As Long, lpcbName As Long, ByVal lpReserved As Long, ByVal lpClass As Long, lpcbClass As Long, lpftLastWriteTime As Any) As Long
 Private Declare Function lstrlen Lib "kernel32.dll" Alias "lstrlenW" (ByVal lpString As Long) As Long
+Private Declare Function CreateFile Lib "kernel32.dll" Alias "CreateFileW" (ByVal lpFileName As Long, ByVal dwDesiredAccess As Long, ByVal dwShareMode As Long, lpSecurityAttributes As Any, ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, ByVal hTemplateFile As Long) As Long
 
 Private Const MAX_KEYNAME            As Long = 255&
 
@@ -204,9 +205,7 @@ Private Const HKEY_DYN_DATA          As Long = &H80000006
 ' Creates array of EXPLICIT_ACCESS structures with access rights needed
 Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT_ACCESS()
     
-    Dim i As Long
-    Dim cntAces As Long
-    Dim idx As Long
+    Dim Idx As Long
     Dim pSid As Long
     Dim inf(68) As Long: inf(0) = 276: GetVersionEx inf(0)
     Dim MajorMinor As Single: MajorMinor = inf(1) + inf(2) / 10
@@ -267,10 +266,10 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
     ReDim Ace_Explicit(10) As EXPLICIT_ACCESS   '// now used 5-8/10
     
     '1. Local System:F (OI)(CI)
-    idx = 0
+    Idx = 0
     pSid = VarPtr(bufSidSystem(0))
     If IsValidSid(pSid) Then
-      With Ace_Explicit(idx)
+      With Ace_Explicit(Idx)
         .grfAccessPermissions = GENERIC_ALL
         .grfAccessMode = SET_ACCESS
         .grfInheritance = OBJECT_INHERIT_ACE Or CONTAINER_INHERIT_ACE
@@ -280,13 +279,13 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
             .ptstrName = pSid
         End With
       End With
-      idx = idx + 1
+      Idx = Idx + 1
     End If
     
     '2. Administrators:F (OI)(CI)
     pSid = VarPtr(bufSidAdmin(0))
     If IsValidSid(pSid) Then
-      With Ace_Explicit(idx)
+      With Ace_Explicit(Idx)
         .grfAccessPermissions = GENERIC_ALL
         .grfAccessMode = SET_ACCESS
         .grfInheritance = OBJECT_INHERIT_ACE Or CONTAINER_INHERIT_ACE
@@ -296,17 +295,17 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
             .ptstrName = pSid
         End With
       End With
-      idx = idx + 1
+      Idx = Idx + 1
     End If
     
     '3. Service:F (OI)(CI) (optional), depends on Key name
     If lHive = HKEY_LOCAL_MACHINE And InStr(1, KeyName, "SYSTEM\CurrentControlSet\services\", 1) = 1 Then
     
-      Dim Tok, SrvName As String
+      Dim Tok() As String, SrvName As String
       Tok = Split(KeyName, "\")
       If UBound(Tok) >= 3 Then SrvName = Tok(3)
     
-      With Ace_Explicit(idx)
+      With Ace_Explicit(Idx)
         .grfAccessPermissions = GENERIC_ALL
         .grfAccessMode = SET_ACCESS
         .grfInheritance = OBJECT_INHERIT_ACE Or CONTAINER_INHERIT_ACE
@@ -316,14 +315,14 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
             .ptstrName = StrPtr("NT SERVICE\" & SrvName)
         End With
       End With
-      idx = idx + 1
+      Idx = Idx + 1
     End If
     
     '4. Trusted Installer:F (OI)(CI) (optional) (Vista+)
     If MajorMinor >= 6 Then
       pSid = VarPtr(bufSidTI(0))
       If IsValidSid(pSid) Then
-        With Ace_Explicit(idx)
+        With Ace_Explicit(Idx)
           .grfAccessPermissions = GENERIC_ALL
           .grfAccessMode = SET_ACCESS
           .grfInheritance = OBJECT_INHERIT_ACE Or CONTAINER_INHERIT_ACE
@@ -333,7 +332,7 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
             .ptstrName = pSid
           End With
         End With
-        idx = idx + 1
+        Idx = Idx + 1
       End If
     End If
     
@@ -341,7 +340,7 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
     If MajorMinor >= 6.2 Then
       pSid = VarPtr(bufSidAppX(0))
       If IsValidSid(pSid) Then
-        With Ace_Explicit(idx)
+        With Ace_Explicit(Idx)
           .grfAccessPermissions = GENERIC_READ
           .grfAccessMode = SET_ACCESS
           .grfInheritance = OBJECT_INHERIT_ACE Or CONTAINER_INHERIT_ACE
@@ -351,7 +350,7 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
             .ptstrName = pSid
           End With
         End With
-        idx = idx + 1
+        Idx = Idx + 1
       End If
     End If
     
@@ -363,7 +362,7 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
       'Restricted:R (OI)(CI)
       pSid = VarPtr(bufSidUsers(0))
       If IsValidSid(pSid) Then
-        With Ace_Explicit(idx)
+        With Ace_Explicit(Idx)
           .grfAccessPermissions = GENERIC_ALL
           .grfAccessMode = SET_ACCESS
           .grfInheritance = OBJECT_INHERIT_ACE Or CONTAINER_INHERIT_ACE
@@ -373,12 +372,12 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
             .ptstrName = pSid
           End With
         End With
-        idx = idx + 1
+        Idx = Idx + 1
       End If
       
       pSid = VarPtr(bufSidRestricted(0))
       If IsValidSid(pSid) Then
-        With Ace_Explicit(idx)
+        With Ace_Explicit(Idx)
           .grfAccessPermissions = GENERIC_READ
           .grfAccessMode = SET_ACCESS
           .grfInheritance = OBJECT_INHERIT_ACE Or CONTAINER_INHERIT_ACE
@@ -388,7 +387,7 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
             .ptstrName = pSid
           End With
         End With
-        idx = idx + 1
+        Idx = Idx + 1
       End If
       
     Else
@@ -398,7 +397,7 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
       'PowerUsers:R (OI)(CI) (XP only)
       pSid = VarPtr(bufSidCreator(0))
       If IsValidSid(pSid) Then
-        With Ace_Explicit(idx)
+        With Ace_Explicit(Idx)
           .grfAccessPermissions = GENERIC_ALL
           .grfAccessMode = SET_ACCESS
           .grfInheritance = CONTAINER_INHERIT_ACE
@@ -408,12 +407,12 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
             .ptstrName = pSid
           End With
         End With
-        idx = idx + 1
+        Idx = Idx + 1
       End If
       
       pSid = VarPtr(bufSidUsers(0))
       If IsValidSid(pSid) Then
-        With Ace_Explicit(idx)
+        With Ace_Explicit(Idx)
           .grfAccessPermissions = GENERIC_READ
           .grfAccessMode = SET_ACCESS
           .grfInheritance = OBJECT_INHERIT_ACE Or CONTAINER_INHERIT_ACE
@@ -423,13 +422,13 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
             .ptstrName = pSid
           End With
         End With
-        idx = idx + 1
+        Idx = Idx + 1
       End If
       
       If MajorMinor < 6 Then
         pSid = VarPtr(bufSidPowerUsers(0))
         If IsValidSid(pSid) Then
-          With Ace_Explicit(idx)
+          With Ace_Explicit(Idx)
             .grfAccessPermissions = GENERIC_READ
             .grfAccessMode = SET_ACCESS
             .grfInheritance = OBJECT_INHERIT_ACE Or CONTAINER_INHERIT_ACE
@@ -439,14 +438,14 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
               .ptstrName = pSid
             End With
           End With
-          idx = idx + 1
+          Idx = Idx + 1
         End If
       End If
       
     End If
     
-    If idx > 0 Then
-        ReDim Preserve Ace_Explicit(idx - 1)
+    If Idx > 0 Then
+        ReDim Preserve Ace_Explicit(Idx - 1)
     End If
     
     Make_Default_Ace_Explicit = Ace_Explicit
@@ -457,11 +456,13 @@ End Function
 Public Function CreateBufferedSID(SidString As String) As Byte()
     Dim pSid        As Long
     Dim cbSID       As Long
-
+    
     ReDim bufSid(0) As Byte
-
+    
     If 0 = ConvertStringSidToSid(StrPtr(SidString), pSid) Then  ' * -> *
-        Debug.Print "ErrorHandler: ConvertStringSidToSidW failed. Input buffer: " & SidString
+        If Not StrBeginWith(SidString, "Sandbox_") Then
+            Debug.Print "ErrorHandler: ConvertStringSidToSidW failed with code: " & Err.LastDllError & ". Input buffer: " & SidString
+        End If
     Else
         If IsValidSid(pSid) Then
             cbSID = GetLengthSid(pSid)
@@ -478,15 +479,15 @@ Public Function CreateBufferedSID(SidString As String) As Byte()
 
 End Function
 
-' if main hive handle wasn't defined, assigns handle according to hive's name defined by Full key name directed
-Sub NormalizeKeyNameAndHiveHandle(ByRef lHive As Long, ByRef KeyName As String)
-    Dim iPos        As Long
-    If lHive = 0 Then
-        lHive = GetHKey(KeyName)
-        iPos = InStr(KeyName, "\")
-        If (iPos <> 0&) Then KeyName = Mid$(KeyName, iPos + 1&) Else KeyName = vbNullString
-    End If
-End Sub
+'' if main hive handle wasn't defined, assigns handle according to hive's name defined by Full key name directed
+'Sub NormalizeKeyNameAndHiveHandle(ByRef lHive As Long, ByRef KeyName As String)
+'    Dim iPos        As Long
+'    If lHive = 0 Then
+'        lHive = GetHKey(KeyName)
+'        iPos = InStr(KeyName, "\")
+'        If (iPos <> 0&) Then KeyName = Mid$(KeyName, iPos + 1&) Else KeyName = vbNullString
+'    End If
+'End Sub
 
 ''concat structure 'EXPLICIT_ACCESS' to array in consistent order
 'Function Add_Ace_Explicit(ByRef Ace_Explicit() As EXPLICIT_ACCESS, New_Ace_Explicit As EXPLICIT_ACCESS)
@@ -518,9 +519,9 @@ Public Function RegKeySetOwnerShip(lHive&, ByVal KeyName$, SidString As String, 
     Dim flagDisposition As Long
     Dim bufSid()    As Byte
     Dim hKey        As Long
-    Dim lret        As Long
+    Dim lRet        As Long
     
-    Call NormalizeKeyNameAndHiveHandle(lHive, KeyName)
+    Call Reg.NormalizeKeyNameAndHiveHandle(lHive, KeyName)
     
     ' -->>> moved to main form
 '
@@ -550,16 +551,16 @@ Public Function RegKeySetOwnerShip(lHive&, ByVal KeyName$, SidString As String, 
         
         'IIf(bUseWow64 And isWin64(), SE_REGISTRY_WOW64_32KEY, SE_REGISTRY_KEY)
         
-        lret = SetSecurityInfo(hKey, SE_REGISTRY_KEY, OWNER_SECURITY_INFORMATION, VarPtr(bufSid(0)), 0&, 0&, 0&)
+        lRet = SetSecurityInfo(hKey, SE_REGISTRY_KEY, OWNER_SECURITY_INFORMATION, VarPtr(bufSid(0)), 0&, 0&, 0&)
         
-        If lret = ERROR_SUCCESS Then
+        If lRet = ERROR_SUCCESS Then
             
             RegKeySetOwnerShip = True
             Debug.Print KeyName & " - OwnerShip granted successfully."
         
         Else
 
-            Debug.Print KeyName & " - Error in SetSecurityInfo: " & lret
+            Debug.Print KeyName & " - Error in SetSecurityInfo: " & lRet
             
         End If
         
@@ -579,7 +580,7 @@ Public Function RegKeyResetDACL(lHive&, ByVal KeyName$, Optional bUseWow64 As Bo
     'Parameters:
     '
     'lHive - pseudohandle to root key (hive). This value can be 0.
-    'KeyName - Path to registry key. Is lHive is 0, this path must be Full, otherwise it must be relative to hive.
+    'KeyName - Path to registry key. If lHive is 0, this path must be Full, otherwise it must be relative to hive.
     'bUseWow64 - (optional) if true, this function use registry redirector, so all calls will be directed to 32-bit keys on 64-bit machine
     'Recursive - (optional) apply action to all subkeys.
 
@@ -609,26 +610,24 @@ Public Function RegKeyResetDACL(lHive&, ByVal KeyName$, Optional bUseWow64 As Bo
     Dim cbRelSD     As Long
     Dim cbAbsSD     As Long
     Dim oldDACL()   As Byte
-    Dim newDACL()   As Byte
+    'Dim newDACL()   As Byte
     Dim cbDACL      As Long
     Dim cbSACL      As Long
     Dim cbSID_Owner As Long
     Dim cbPrimGrp   As Long
     Dim pNewDacl    As Long
     Dim AclInfo     As ACL_SIZE_INFORMATION
-    Dim AceDenied   As ACCESS_DENIED_ACE
+    'Dim AceDenied   As ACCESS_DENIED_ACE
     Dim AceHead     As ACE_HEADER
     Dim i           As Long
     Dim pAce        As Long
-    Dim lret        As Long
-    Dim Revoke_Ace_Explicit As EXPLICIT_ACCESS
-    Dim cExplicit   As Long
-    Dim pListExplicit As Long
+    Dim lRet        As Long
+    'Dim Revoke_Ace_Explicit As EXPLICIT_ACCESS
     Dim pAcl        As Long
     Dim hKeyEnum    As Long
     Dim sSubKeyName As String
     
-    Call NormalizeKeyNameAndHiveHandle(lHive, KeyName)
+    Call Reg.NormalizeKeyNameAndHiveHandle(lHive, KeyName)
     
     RegKeySetOwnerShip lHive, KeyName, "S-1-5-32-544", bUseWow64
     
@@ -721,7 +720,7 @@ Public Function RegKeyResetDACL(lHive&, ByVal KeyName$, Optional bUseWow64 As Bo
 
                                     If AceHead.AceType = ACCESS_DENIED_ACE_TYPE Then
 
-                                        lret = DeleteAce(VarPtr(oldDACL(0)), i)
+                                        lRet = DeleteAce(VarPtr(oldDACL(0)), i)
 
                                         'old routine - revoking access (but SetEntriesInAcl doesn't support it for ACCESS_DENIED_ACE type)
 '                                        'memcpy AceDenied, ByVal pAce, LenB(AceDenied)
@@ -752,7 +751,7 @@ Public Function RegKeyResetDACL(lHive&, ByVal KeyName$, Optional bUseWow64 As Bo
                           End If
                         End If
                         
-                        lret = -1
+                        lRet = -1
                         
                         If cbDACL = 0 Then
                             pAcl = CreateEmptyACL(Ace_Explicit)
@@ -762,24 +761,24 @@ Public Function RegKeyResetDACL(lHive&, ByVal KeyName$, Optional bUseWow64 As Bo
                         
                         'merging ACE descriptions with existed DACL
                         If IsValidAcl(pAcl) Then
-                            lret = SetEntriesInAcl(UBound(Ace_Explicit) + 1, VarPtr(Ace_Explicit(0)), pAcl, pNewDacl)
+                            lRet = SetEntriesInAcl(UBound(Ace_Explicit) + 1, VarPtr(Ace_Explicit(0)), pAcl, pNewDacl)
                         End If
                         
                         If cbDACL = 0 Then LocalFree pAcl
                         
-                        If cbDACL > 0 And ERROR_SUCCESS <> lret Then
+                        If cbDACL > 0 And ERROR_SUCCESS <> lRet Then
                             'for instance, not enough quota -> making DACL from default ACE_EXPLICIT
                             
                             pAcl = CreateEmptyACL(Ace_Explicit)
                             
                             If IsValidAcl(pAcl) Then
-                                lret = SetEntriesInAcl(UBound(Ace_Explicit) + 1, VarPtr(Ace_Explicit(0)), pAcl, pNewDacl)
+                                lRet = SetEntriesInAcl(UBound(Ace_Explicit) + 1, VarPtr(Ace_Explicit(0)), pAcl, pNewDacl)
                             End If
                         
                             LocalFree pAcl
                         End If
                         
-                        If ERROR_SUCCESS = lret Then
+                        If ERROR_SUCCESS = lRet Then
                             
                             'apply it
                     
@@ -979,4 +978,36 @@ Function IsWin64() As Boolean
     Dim si(35) As Byte
     GetNativeSystemInfo VarPtr(si(0))
     If si(0) And PROCESSOR_ARCHITECTURE_AMD64 Then IsWin64 = True
+End Function
+
+Public Function CheckAccessWrite(sFilePath As String, Optional bDeleteFile As Boolean) As Boolean
+    On Error GoTo ErrorHandler:
+    Dim hFile As Long
+    Dim bRedirect As Boolean
+    Dim bOldStatus As Boolean
+    
+    bRedirect = ToggleWow64FSRedirection(False, sFilePath, bOldStatus)
+    
+    If FileExists(sFilePath) Then
+        hFile = CreateFile(StrPtr(sFilePath), GENERIC_READ Or GENERIC_WRITE, FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, ByVal 0&, OPEN_EXISTING, ByVal 0&, ByVal 0&)
+    Else
+        hFile = CreateFile(StrPtr(sFilePath), GENERIC_READ Or GENERIC_WRITE, FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, ByVal 0&, CREATE_NEW, ByVal 0&, ByVal 0&)
+    End If
+    
+    If hFile > 0 Then
+        CloseHandle hFile
+        CheckAccessWrite = True
+    End If
+        
+    If bRedirect Then Call ToggleWow64FSRedirection(bOldStatus)
+    
+    If bDeleteFile Then
+        If FileExists(sFilePath) Then
+            DeleteFileWEx StrPtr(sFilePath)
+        End If
+    End If
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "CheckAccessWrite"
+    If inIDE Then Stop: Resume Next
 End Function

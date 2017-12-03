@@ -1,7 +1,21 @@
 Attribute VB_Name = "modMain_2"
+'
+' Core check / Fix Engine
+'
+' (part 2: O25 - O26)
+
+'
+' O25, O26 by Alex Dragokas
+'
+
+'O25 - Windows Management Instrumentation (WMI) event consumers
+'O26 - Image File Execution Options (IFEO)
+
 Option Explicit
 
 Const MAX_CODE_LENGTH As Long = 300&
+
+Private Declare Function VerifierIsPerUserSettingsEnabled Lib "Verifier.dll" () As Long
 
 ' Get array of namespaces
 ' Note: you should initialize aNameSpaces variable-length array with '0' element first.
@@ -32,7 +46,7 @@ Sub WMI_GetNamespaces(sNamespace As String, aNameSpaces() As String)
             
             If InStr(1, SubNameSpace, "Root\directory\LDAP", 1) <> 1 Then
             
-                DoEvents
+                If Not bAutoLogSilent Then DoEvents
             
                 ReDim Preserve aNameSpaces(UBound(aNameSpaces) + 1)
                 aNameSpaces(UBound(aNameSpaces)) = SubNameSpace
@@ -74,10 +88,11 @@ Public Sub CheckO25Item()
     Dim objServiceFilter As Object, objFilter As Object, sFilterQuery As String
     Dim objTimerNamespace As Object, objTimer As Object, sTimerClassName As String, sTimerName As String
     Dim sHit As String, sScriptFile As String, sAdditionalInfo As String, sEventName As String, sScriptText As String
-    Dim cmdExecute As String, cmdWorkDir As String, cmdArguments As String, sConsumerFileName As String, sConsumerText As String
+    Dim cmdExecute As String, cmdWorkDir As String, cmdArguments As String
     'Dim O25() As O25_Info: ReDim O25(0)
-    Dim Result As TYPE_Scan_Results
+    Dim Result As SCAN_RESULT
     Dim Stady As Single, ComeBack As Boolean, NoConsumer As Boolean, NoFilter As Boolean, bOtherConsumerClass As Boolean
+    Dim bDangerScript As Boolean
     
     If GetServiceRunState("winmgmt") <> SERVICE_RUNNING Then Exit Sub
     If OSver.MajorMinor <= 5 Then Exit Sub 'XP+ only
@@ -107,7 +122,7 @@ Public Sub CheckO25Item()
         Stady = 3
         Set objService = GetObject("winmgmts:{impersonationLevel=Impersonate, (Security, Backup)}!\\.\" & aNameSpaces(i))
 
-        DoEvents
+        If Not bAutoLogSilent Then DoEvents
     
         'get binding info ( Filter <-> Consumer )
         Stady = 4
@@ -123,8 +138,8 @@ Public Sub CheckO25Item()
             FilterName = GetStringInsideQt(FilterPath)
             ConsumerName = GetStringInsideQt(ConsumerPath)
             
-            Call ExtractNameSpaceAndClassNameFromString(FilterPath, FilterNameSpace)
-            Call ExtractNameSpaceAndClassNameFromString(ConsumerPath, ConsumerNameSpace, ConsumerClassName)
+            Call ExtractNameSpaceAndClassNameFromstring(FilterPath, FilterNameSpace)
+            Call ExtractNameSpaceAndClassNameFromstring(ConsumerPath, ConsumerNameSpace, ConsumerClassName)
             
             If 0 = Len(FilterNameSpace) Then FilterNameSpace = aNameSpaces(i)
             If 0 = Len(ConsumerNameSpace) Then ConsumerNameSpace = aNameSpaces(i)
@@ -304,10 +319,28 @@ Public Sub CheckO25Item()
                 'WhiteList
                 Stady = 18
                 'If Not (StrComp(ConsumerClassName, "NTEventLogEventConsumer", 1) = 0 And StrComp(FilterName, "SCM Event Log Filter", 1) = 0) Then
+                
+                bDangerScript = True
+                
                 If Not bOtherConsumerClass Then
-                If bIgnoreAllWhitelists Or _
-                    (Not (StrComp(ConsumerName, "BVTConsumer", 1) = 0 And cmdExecute = "" And cmdWorkDir = SysDisk & "\\tools\\kernrate" And cmdArguments = "cscript KernCap.vbs" And Not FileExists(SysDisk & "\tools\kernrate\KernCap.vbs")) _
-                    And Not (FilterName = "BVTFilter") And sEventName = "__InstanceModificationEvent WITHIN 60 WHERE TargetInstance ISA ""Win32_Processor"" AND TargetInstance.LoadPercentage > 99") Then
+                    If Not bIgnoreAllWhitelists Then
+                        If bHideMicrosoft Then
+                            If ConsumerName = "BVTConsumer" And cmdExecute = "" And cmdArguments = "cscript KernCap.vbs" Then
+                                If cmdWorkDir <> "" Then
+                                    If Not FileExists(BuildPath(cmdWorkDir, "KernCap.vbs")) Then bDangerScript = False
+                                Else
+                                    If FindOnPath("KernCap.vbs") = "" Then bDangerScript = False
+                                End If
+                            
+                            ElseIf FilterName = "BVTFilter" And sEventName = "__InstanceModificationEvent WITHIN 60 WHERE TargetInstance ISA ""Win32_Processor"" AND TargetInstance.LoadPercentage > 99" Then
+                        
+                                bDangerScript = False
+                            End If
+                        End If
+                    End If
+                End If
+                
+                If bDangerScript And Not bOtherConsumerClass Then 'skip other consumer classes, except "ActiveScriptEventConsumer" and "CommandLineEventConsumer"
                 
                     'added more safely cheking
                     NoConsumer = False: NoFilter = False
@@ -323,34 +356,33 @@ Public Sub CheckO25Item()
                         If objFilter Is Nothing Then NoFilter = True
                     End If
                     
-                        sHit = "O25 - WMI Event: " & _
-                            IIf(NoConsumer, " (no consumer)", ConsumerName) & " - " & _
+                    sHit = "O25 - WMI Event: " & _
+                            "[" & IIf(NoConsumer, " (no consumer)", ConsumerName) & "] " & _
                             IIf(NoFilter, " (no filter)", FilterName) & " - " & _
                             sAdditionalInfo
                         
-                        If Not IsOnIgnoreList(sHit) Then
-                            If bMD5 And 0 <> Len(sScriptFile) Then sHit = sHit & GetFileMD5(sScriptFile)
+                    If Not IsOnIgnoreList(sHit) Then
+                        If bMD5 And 0 <> Len(sScriptFile) Then sHit = sHit & GetFileMD5(sScriptFile)
                 
-                            With Result
-                                .Section = "O25"
-                                .HitLineW = sHit
-                                With .O25
-                                    .sScriptFile = sScriptFile
-                                    .ConsumerName = ConsumerName
-                                    .ConsumerNameSpace = ConsumerNameSpace
-                                    .ConsumerPath = ConsumerPath
-                                    .FilterName = FilterName
-                                    .FilterNameSpace = FilterNameSpace
-                                    .FilterPath = FilterPath
-                                    .sTimerClassName = sTimerClassName
-                                    .TimerID = sTimerName
-                                End With
+                        With Result
+                            .Section = "O25"
+                            .HitLineW = sHit
+                            With .O25
+                                .sScriptFile = sScriptFile
+                                .ConsumerName = ConsumerName
+                                .ConsumerNameSpace = ConsumerNameSpace
+                                .ConsumerPath = ConsumerPath
+                                .FilterName = FilterName
+                                .FilterNameSpace = FilterNameSpace
+                                .FilterPath = FilterPath
+                                .sTimerClassName = sTimerClassName
+                                .TimerID = sTimerName
                             End With
-                            AddToScanResults Result
-                        End If
+                        End With
+                        AddToScanResults Result
+                    End If
+                
                 End If
-                End If
-                'End If
                 
                 Set objConsumer = Nothing
                 Set objFilter = Nothing
@@ -360,7 +392,7 @@ Public Sub CheckO25Item()
         
         Set objBinding = Nothing: Set colBindings = Nothing: Set objService = Nothing
     Next
-
+    
     Set objTimerNamespace = Nothing
 
     AppendErrorLogCustom "CheckO25Item - End"
@@ -387,15 +419,12 @@ End Function
 
 
 'cure WMI infection
-Public Sub FixO25Item(sItem$)
+Public Sub FixO25Item(sItem$, Result As SCAN_RESULT)
     
     On Error GoTo ErrorHandler
     
-    Dim objService As Object, objInstance As Object, Finish As Boolean, i As Long
+    Dim objService As Object, Finish As Boolean, i As Long
     Dim colBindings As Object, objBinding As Object, objBindingToDelete As Object
-    Dim Result As TYPE_Scan_Results
-    
-    If Not GetScanResults(sItem, Result) Then Exit Sub
     
     With Result.O25
     
@@ -468,12 +497,12 @@ Public Sub FixO25Item(sItem$)
     
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "modMain2_FixO25Item"
+    ErrorMsg Err, "modMain2_FixO25Item", Result.HitLineW
     If inIDE Then Stop: Resume Next
 End Sub
 
 ' strip string to length defined
-Function StripCode(ByVal sCode, Optional Max_Characters As Long = MAX_CODE_LENGTH, Optional AddActualLength As Boolean = True) As String
+Function StripCode(ByVal sCode As String, Optional Max_Characters As Long = MAX_CODE_LENGTH, Optional AddActualLength As Boolean = True) As String
     On Error GoTo ErrorHandler
 
     sCode = Replace$(sCode, vbCr, "")
@@ -495,7 +524,7 @@ End Function
 ' \\ALEX-PC\ROOT\subscription:ActiveScriptEventConsumer.Name="Dragokas_consumer"
 ' out_NameSpace <- ROOT\subscription
 ' out_ClassName <- ActiveScriptEventConsumer
-Sub ExtractNameSpaceAndClassNameFromString(sComplexString As String, out_NameSpace As String, Optional out_ClassName As String)
+Sub ExtractNameSpaceAndClassNameFromstring(sComplexString As String, out_NameSpace As String, Optional out_ClassName As String)
     On Error GoTo ErrorHandler
     Dim pos As Long, pos2 As Long, pos3 As Long
     out_NameSpace = ""
@@ -548,44 +577,168 @@ End Function
 Public Sub CheckO26Item()
     'O26 - Image File Execution Options:
     
+    'https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/gflags-overview
+    'http://www.alex-ionescu.com/Estoteric%20Hooks.pdf
+    
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "CheckO26Item - Begin"
     
-    Dim sKeys$(), i&, sIFE$, sFile$, sHit$, Result As TYPE_Scan_Results
+    Const FLG_APPLICATION_VERIFIER As Long = &H100&
+    
+    Dim sKeys$(), i&, sIFE$, sFile$, sHit$, Result As SCAN_RESULT
+    Dim bDisabled As Boolean, vGFlag As Variant, vHive As Variant, lHive As Long, UseWow As Variant, Wow6432Redir As Boolean
+    Dim bPerUser As Boolean, bIsSafe As Boolean, aTmp() As String, sNonSafe As String, bMissing As Boolean, sAlias As String
     
     sIFE = "Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options"
-    'key is x64-shared
-    'no HKCU
+    'key is redirected (XP-Vista)
+    'key is x64-shared (Win 7+)
     
-    sKeys = Split(RegEnumSubKeys(HKEY_LOCAL_MACHINE, sIFE), "|")
-    For i = 0 To UBound(sKeys)
-        sFile = RegGetString(HKEY_LOCAL_MACHINE, sIFE & "\" & sKeys(i), "Debugger")
-        If sFile <> vbNullString Then
-            sFile = FindOnPath(UnQuote(EnvironW(sFile)), True)
+    If bIsWinVistaAndNewer Then
+        If IsProcedureAvail("VerifierIsPerUserSettingsEnabled", "Verifier.dll") Then
+            bPerUser = VerifierIsPerUserSettingsEnabled()
+        Else
+            bPerUser = CBool(1 And Reg.GetDword(0&, "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager", "ImageExecutionOptions"))
+        End If
+    End If
+    
+    For Each vHive In Array(HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER)
+        lHive = vHive
+  
+        If (lHive = HKEY_CURRENT_USER) And Not bPerUser Then Exit For
+        
+        For Each UseWow In Array(False, True)
+            Wow6432Redir = UseWow
+  
+            If bIsWin7AndNewer And UseWow Then Exit For
+            sAlias = IIf(bIsWin32, "O26", IIf(Wow6432Redir And Not bIsWin7AndNewer, "O26-32", "O26"))
+    
+            sKeys = Split(Reg.EnumSubKeys(lHive, sIFE, Wow6432Redir), "|") 'for each image
+    
+            For i = 0 To UBound(sKeys)
+    
+                sFile = Reg.GetString(lHive, sIFE & "\" & sKeys(i), "Debugger", Wow6432Redir)
+        
+                If sFile <> vbNullString Then
+                    sFile = FindOnPath(UnQuote(EnvironW(sFile)), True)
             
-            sHit = "O26 - Image File Execution Options: " & sKeys(i) & " - " & sFile
+                    If FileExists(sFile) Then
+                        sFile = GetLongPath(sFile) '8.3 -> Full
+                        bMissing = False
+                    Else
+                        bMissing = True
+                    End If
+
+                    sHit = sAlias & " - IFEO: [Debugger] " & IIf(lHive = HKCU, "HKCU", "HKLM") & "\...\" & sKeys(i) & " - " & sFile & IIf(bMissing, " (file missing)", "")
             
-            If Not IsOnIgnoreList(sHit) Then
-                If bMD5 Then sHit = sHit & GetFileMD5(sFile)
+                    If Not IsOnIgnoreList(sHit) And _
+                      Not (OSver.MajorMinor <= 5.2 And sFile = "ntsd -d" And Not FileExists("ntsd") And bHideMicrosoft And Not bIgnoreAllWhitelists) Then
+              
+                        'exclude default line for WinXP:
+                        'O26 - Image File Execution Options: Your Image File Name Here without a path - ntsd -d (file missing)
+              
+                        If bMD5 Then sHit = sHit & GetFileMD5(sFile)
                 
-                If FileExists(sFile) Then
-                    sFile = GetLongPath(sFile) '8.3 -> Full
-                Else
-                    sHit = sHit & " (file missing)"
+                        With Result
+                            .Section = "O26"
+                            .HitLineW = sHit
+                            AddRegToFix .Reg, REMOVE_VALUE, lHive, sIFE & "\" & sKeys(i), "Debugger", , CLng(Wow6432Redir)
+                            .CureType = REGISTRY_BASED
+                        End With
+                        AddToScanResults Result
+                    End If
+            
                 End If
+        
+                'Detecting AVRF Hook
+        
+                sFile = Reg.GetString(lHive, sIFE & "\" & sKeys(i), "VerifierDlls", Wow6432Redir)
+        
+                If sFile <> vbNullString Then
+        
+                    bDisabled = False
+                    vGFlag = Reg.GetString(lHive, sIFE & "\" & sKeys(i), "GlobalFlag", Wow6432Redir)
+            
+                    If IsNumeric(vGFlag) Then
+                        If Not CBool(CLng(vGFlag) And FLG_APPLICATION_VERIFIER) Then bDisabled = True
+                    Else
+                        If CStr(vGFlag) <> "0x100" Then bDisabled = True
+                    End If
+            
+                    sFile = FindOnPath(UnQuote(EnvironW(sFile)), True)
+            
+                    If FileExists(sFile) Then
+                        sFile = GetLongPath(sFile) '8.3 -> Full
+                        bMissing = False
+                    Else
+                        bMissing = True
+                    End If
+            
+                    sHit = sAlias & " - IFEO: [VerifierDlls] " & IIf(lHive = HKCU, "HKCU", "HKLM") & "\...\" & _
+                        sKeys(i) & " - " & sFile & IIf(bMissing, " (file missing)", "") & IIf(bDisabled, " (disabled)", "")
+            
+                    If Not IsOnIgnoreList(sHit) Then
+              
+                        If bMD5 Then sHit = sHit & GetFileMD5(sFile)
                 
-                With Result
-                    .Section = "O26"
-                    .HitLineW = sHit
-                    ReDim .RegKey(0)
-                    .RegKey(0) = "HKLM\" & sIFE & "\" & sKeys(i)
-                    .RegParam = "Debugger"
-                End With
-                AddToScanResults Result
+                        With Result
+                            .Section = "O26"
+                            .HitLineW = sHit
+                            AddRegToFix .Reg, REMOVE_VALUE, vHive, sIFE & "\" & sKeys(i), "VerifierDlls", , CLng(Wow6432Redir)
+                            If Not bDisabled Then
+                                AddRegToFix .Reg, REMOVE_KEY, vHive, sIFE & "\" & sKeys(i), , , CLng(Wow6432Redir)
+                            End If
+                            .CureType = REGISTRY_BASED
+                        End With
+                        AddToScanResults Result
+                    End If
+                
+                End If
+        
+            Next i
+    
+            'AVRF Global Hook
+    
+            sFile = Reg.GetString(lHive, sIFE & "\" & "{ApplicationVerifierGlobalSettings}", "VerifierProviders", Wow6432Redir)
+            
+            bIsSafe = True
+            sNonSafe = ""
+            
+            If sFile <> "" Then
+                If bIgnoreAllWhitelists Then
+                    sNonSafe = sFile
+                    bIsSafe = False
+                Else
+                    aTmp = Split(sFile)
+                    For i = 0 To UBound(aTmp)
+                        If InStr(1, sSafeIfeVerifier, aTmp(i), 1) = 0 Then bIsSafe = False: sNonSafe = sNonSafe & aTmp(i) & " "
+                    Next
+                    sNonSafe = RTrim$(sNonSafe)
+                End If
             End If
             
-        End If
-    Next i
+            '// TODO: remove only non-safe dlls
+            
+            If Not bIsSafe Then
+        
+                sHit = sAlias & " - IFEO: {Global} " & IIf(lHive = HKCU, "HKCU", "HKLM") & " - " & sNonSafe
+            
+                If Not IsOnIgnoreList(sHit) Then
+              
+                    'If bMD5 Then sHit = sHit & GetFileMD5(sFile)
+                
+                    With Result
+                        .Section = "O26"
+                        .HitLineW = sHit
+                        AddRegToFix .Reg, REMOVE_VALUE, vHive, sIFE & "\" & "{ApplicationVerifierGlobalSettings}", "VerifierProviders", , CLng(Wow6432Redir)
+                        .CureType = REGISTRY_BASED
+                    End With
+                    AddToScanResults Result
+                End If
+        
+            End If
+    
+        Next UseWow
+    Next vHive
     
     AppendErrorLogCustom "CheckO26Item - End"
     Exit Sub
@@ -594,19 +747,11 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Public Sub FixO26Item(sItem$)
-    
+Public Sub FixO26Item(sItem$, Result As SCAN_RESULT)
     On Error GoTo ErrorHandler
-
-    Dim Result As TYPE_Scan_Results
-    If Not GetScanResults(sItem, Result) Then Exit Sub
-
-    With Result
-        RegDelVal 0, .RegKey(0), .RegParam
-    End With
-    
+    FixRegistryHandler Result
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "modMain2_FixO26Item"
+    ErrorMsg Err, "modMain2_FixO26Item", Result.HitLineW
     If inIDE Then Stop: Resume Next
 End Sub

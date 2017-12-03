@@ -1,5 +1,7 @@
+﻿# HiJackThis Fork v3
+<a href="https://github.com/dragokas/hijackthis/releases/latest"><img src="https://mybadges.herokuapp.com/github/release/dragokas/hijackthis.svg?label=download%20latest%20binaries%20%20%20%20&style=social"></a>
+<a href="http://www.somsubhra.com/github-release-stats/?username=dragokas&repository=hijackthis"><img src="https://mybadges.herokuapp.com/github/downloads/dragokas/hijackthis/total.svg" align="right" target="_blank"></a>
 
-# HiJackThis Fork v3
 Hi, I am Polshyn Stanislav from Ukraine. And I glad to present you a continuation of Trend Micro HiJackThis development.
 
 ## Overview
@@ -19,7 +21,8 @@ HJT primarily rely on hijacking methods rather than a database, that's why it ma
  * Lists the contents of key areas of the registry and hard drive
  * Generate reports and presents them in an organized fashion
  * Does not target specific programs and URLs
- * Detects only the methods used by hijackers to force you onto their sites
+ * Detects only the methods used by hijackers
+ * Can be set for automatically scan at system boot up
  
 ## Advantages
 
@@ -47,6 +50,7 @@ Also HiJackThis comes with several tools useful in manually removing malware fro
  * Delete file / service staff
  * Digital Signature Checker **(\*new\*)**
  * Registry key unlocker **(\*new\*)**
+ * Check Browsers' LNK & ClearLNK (as downloadable component) **(\*new\*)**
 
 ## Log analysis
 
@@ -93,10 +97,11 @@ HiJackThis Fork is distributed under GPLv2 license and includes several tools as
 I have been maintaining this project for more than 2 years at my free time.
 If you find it useful, you can support me with any amount by:
  * BTC: [17hkU3eKPngHrG3P9uqXwMLE3ztmtfGDZ4](https://dragokas.com/tools/img/BTC_QR.png)
- * WebMoney: Z389963582741
- * WebMoney: R963062285529
- * WebMoney: U255991192954
  * [Yandex.Money](https://money.yandex.ru/to/410011191892975)
+ * WebMoney:
+ - Z389963582741
+ - R963062285529
+ - U255991192954
 
 ## Another projects
 

@@ -15,17 +15,64 @@ Attribute VB_Ext_KEY = "SavedWithClassBuilder6" ,"Yes"
 Attribute VB_Ext_KEY = "Top_Level" ,"Yes"
 Option Explicit
 
-' Класс OSInfo by Alex Dragokas
-' ver 1.4.14
+' OSInfo class by Alex Dragokas
+' ver 1.5
 '
 
-Private Type OSVERSIONINFOEX
+'Tips:
+
+' Versions:
+
+' 10.0* | Windows Server 2016
+' 10.0* | Windows 10 (builds 9885+, Insider Preview)
+' 6.4*  | Windows 10 Technical Preview (builds 9879-)
+' 6.3*  | Windows Server 2012 R2
+' 6.3*  | Windows 8.1
+' 6.2   | Windows Server 2012
+' 6.2   | Windows 8
+' 6.1   | Windows Server 2008 R2
+' 6.1   | Windows 7
+' 6.0   | Windows Server 2008
+' 6.0   | Windows Vista
+' 5.2   | Windows Server 2003 R2
+' 5.2   | Windows Server 2003
+' 5.2   | Windows XP 64-Bit Edition
+' 5.1   | Windows XP
+' 5.0   | Windows 2000
+' 4.90  | Windows Me
+' 4.10  | Windows 98
+' 4.0   | Windows NT Workstation 4.0
+' 4.0/4.03 | Windows 95
+
+' Last Service Packs:
+
+' 10     | SP0, ReleaseId=1703+, Build=16176+ (Creators Update)
+' 8.1    | SP0, Update 1+, Build=9600
+' 8      | SP0, Build=9200
+' 7      | SP1, Build=7601
+' Vista  | SP2, Build=6002
+' XP x64 | SP2, Build=3790
+' XP x32 | SP3, Build=2600
+' 2000   | SP4, Build=2195
+' ME     | Build=3000
+' NT 4.0 | SP6a, Build=1381
+' 98     | Build=2222 A
+' 95     | Build=950
+
+Private Enum ePlatformID
+    Win32S = 0
+    Win32Windows = 1
+    Win32NT = 2
+    WinCE = 3
+End Enum
+
+Private Type RTL_OSVERSIONINFOEXW
     dwOSVersionInfoSize As Long
     dwMajorVersion As Long
     dwMinorVersion As Long
     dwBuildNumber As Long
     dwPlatformId As Long
-    szCSDVersion(255) As Byte
+    szCSDVersion(127) As Integer
     wServicePackMajor As Integer
     wServicePackMinor As Integer
     wSuiteMask As Integer
@@ -34,7 +81,7 @@ Private Type OSVERSIONINFOEX
 End Type
 
 Private Type SID_IDENTIFIER_AUTHORITY
-    value(0 To 5) As Byte
+    Value(0 To 5) As Byte
 End Type
 
 Private Type SID_AND_ATTRIBUTES
@@ -47,23 +94,31 @@ Private Type TOKEN_GROUPS
     Groups(20) As SID_AND_ATTRIBUTES
 End Type
 
+Private Type TOKEN_PRIVILEGES
+    PrivilegeCount  As Long
+    LuidLowPart     As Long
+    LuidHighPart    As Long
+    Attributes      As Long
+End Type
+
 Private Declare Function GetLocaleInfo Lib "kernel32.dll" Alias "GetLocaleInfoW" (ByVal lcid As Long, ByVal LCTYPE As Long, ByVal lpLCData As Long, ByVal cchData As Long) As Long
 Private Declare Function GetUserDefaultUILanguage Lib "kernel32.dll" () As Long
 Private Declare Function GetSystemDefaultUILanguage Lib "kernel32.dll" () As Long
 Private Declare Function GetSystemDefaultLCID Lib "kernel32.dll" () As Long
-Private Declare Function GetUserDefaultLCID Lib "kernel32.dll" () As Long
+'Private Declare Function GetUserDefaultLCID Lib "kernel32.dll" () As Long
 Private Declare Function IsWow64Process Lib "kernel32.dll" (ByVal hProc As Long, bWow64Process As Long) As Long
-Private Declare Function GetVersionEx Lib "kernel32.dll" Alias "GetVersionExW" (lpVersionInformation As OSVERSIONINFOEX) As Long
+'Private Declare Function GetVersionEx Lib "kernel32.dll" Alias "GetVersionExW" (lpVersionInformation As OSVERSIONINFOEX) As Long
+Private Declare Function RtlGetVersion Lib "NTDLL.DLL" (lpVersionInformation As RTL_OSVERSIONINFOEXW) As Long
 Private Declare Function GetSystemMetrics Lib "user32.dll" (ByVal nIndex As Long) As Long
 Private Declare Function GetProductInfo Lib "kernel32.dll" (ByVal dwOSMajorVersion As Long, ByVal dwOSMinorVersion As Long, ByVal dwSpMajorVersion As Long, ByVal dwSpMinorVersion As Long, pdwReturnedProductType As Long) As Long
-Private Declare Function CheckTokenMembership Lib "advapi32.dll" (ByVal TokenHandle As Long, ByVal SidToCheck As Long, IsMember As Long) As Long
+'Private Declare Function CheckTokenMembership Lib "advapi32.dll" (ByVal TokenHandle As Long, ByVal SidToCheck As Long, IsMember As Long) As Long
 Private Declare Function OpenProcessToken Lib "advapi32.dll" (ByVal ProcessHandle As Long, ByVal DesiredAccess As Long, TokenHandle As Long) As Long
 Private Declare Function GetTokenInformation Lib "advapi32.dll" (ByVal TokenHandle As Long, ByVal TokenInformationClass As Long, TokenInformation As Any, ByVal TokenInformationLength As Long, ReturnLength As Long) As Long
-Private Declare Function OpenThreadToken Lib "advapi32.dll" (ByVal ThreadHandle As Long, ByVal DesiredAccess As Long, ByVal OpenAsSelf As Long, TokenHandle As Long) As Long
-Private Declare Function GetCurrentThread Lib "kernel32.dll" () As Long
+'Private Declare Function OpenThreadToken Lib "advapi32.dll" (ByVal ThreadHandle As Long, ByVal DesiredAccess As Long, ByVal OpenAsSelf As Long, TokenHandle As Long) As Long
+'Private Declare Function GetCurrentThread Lib "kernel32.dll" () As Long
 Private Declare Function GetCurrentProcess Lib "kernel32.dll" () As Long
 Private Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (Dest As Any, Source As Any, ByVal lSize As Long)
-Private Declare Function GetMem4 Lib "msvbvm60.dll" (src As Any, dst As Any) As Long
+Private Declare Function GetMem4 Lib "msvbvm60.dll" (Src As Any, Dst As Any) As Long
 Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
 Private Declare Function LocalFree Lib "kernel32.dll" (ByVal hMem As Long) As Long
 Private Declare Sub FreeSid Lib "advapi32.dll" (ByVal pSid As Long)
@@ -82,6 +137,11 @@ Private Declare Function GetProcAddress Lib "kernel32.dll" (ByVal hModule As Lon
 Private Declare Function lstrlenW Lib "kernel32.dll" (ByVal lpString As Long) As Long
 Private Declare Function lstrcpyW Lib "kernel32.dll" (ByVal lpStrDest As Long, ByVal lpStrSrc As Long) As Long
 Private Declare Function ConvertSidToStringSid Lib "advapi32.dll" Alias "ConvertSidToStringSidW" (ByVal pSid As Long, StringSid As Long) As Long
+Private Declare Function GetModuleHandle Lib "kernel32.dll" Alias "GetModuleHandleW" (ByVal lpModuleName As Long) As Long
+Private Declare Sub RtlGetNtVersionNumbers Lib "NTDLL.DLL" (Major As Long, Minor As Long, Build As Long)
+Private Declare Function LookupPrivilegeValue Lib "advapi32.dll" Alias "LookupPrivilegeValueW" (ByVal lpSystemName As Long, ByVal lpName As Long, lpLuid As Long) As Long
+Private Declare Function AdjustTokenPrivileges Lib "advapi32.dll" (ByVal TokenHandle As Long, ByVal DisableAllPrivileges As Long, NewState As TOKEN_PRIVILEGES, ByVal BufferLength As Long, ByVal PreviousState As Long, ByVal ReturnLength As Long) As Long
+Private Declare Function OpenThreadToken Lib "advapi32.dll" (ByVal ThreadHandle As Long, ByVal DesiredAccess As Long, ByVal OpenAsSelf As Long, TokenHandle As Long) As Long
 
 Private Const SM_SERVERR2               As Long = 89&
 Private Const SM_MEDIACENTER            As Long = 87&
@@ -109,23 +169,34 @@ Private Const LOCALE_SYSTEM_DEFAULT     As Long = &H800&
 Private Const LOCALE_USER_DEFAULT       As Long = &H400&
 Private Const LOCALE_SENGLANGUAGE       As Long = &H1001&
 Private Const HKEY_LOCAL_MACHINE        As Long = &H80000002
+Private Const KEY_WOW64_64KEY           As Long = &H100&
 
 Private Const TOKEN_QUERY               As Long = &H8&
+Private Const ERROR_NO_TOKEN            As Long = 1008&
 Private Const TokenElevation            As Long = 20&
+Private Const TOKEN_ADJUST_PRIVILEGES   As Long = &H20
+Private Const SE_PRIVILEGE_ENABLED      As Long = 2&
 
-Dim osi As OSVERSIONINFOEX
+Dim osi As RTL_OSVERSIONINFOEXW
 
 Dim OSName_                 As String
-Dim Family_                 As String
 Dim Bitness_                As String
 Dim Edition_                As String
 Dim MajorMinor_             As Single
+Dim MajorMinorNTDLL_        As Single
+Dim NtDllVersion_           As String
+Dim Revision_               As Long
 Dim SPver_                  As Single
 Dim IsSafeBoot_             As Boolean
 Dim IsElevated_             As Boolean
 Dim IntegrityLevel_         As String
 Dim UserType_               As String
-Dim IsVistaOrLater_         As Boolean
+Dim IsWindowsXPOrGreater_   As Boolean
+Dim IsWindowsVistaOrGreater_ As Boolean
+Dim IsWindows7OrGreater_    As Boolean
+Dim IsWindows8OrGreater_    As Boolean
+Dim IsWindows8Point1OrGreater_ As Boolean
+Dim IsWindows10OrGreater_   As Boolean
 Dim LangSystemName_         As String
 Dim LangSystemNameFull_     As String
 Dim LangSystemCode_         As Long
@@ -145,20 +216,29 @@ Dim SID_CurrentProcess_     As String
 Dim SafeBootMode_           As String
 Dim Platform_               As String 'Win9x / WinNT
 Dim ReleaseId_              As Long
-
-Dim t ' not used
+Dim IsServer_               As Boolean
+Dim inIDE                   As Boolean
+Dim IsWin64_                As Boolean
+Dim SecureBoot_             As Boolean
+Dim PlatformID_             As Long
 
 
 Private Sub Class_Initialize()
     On Error GoTo ErrorHandler
     
-    AppendErrorLogCustom "clsOSInfo.Class_Initialize - Begin"
+    AppendErrorLogCustom "clsOSver.Class_Initialize - Begin"
     
     Dim dec             As Single
     Dim ProductType     As Long
-    Dim lret            As Long
+    Dim lRet            As Long
     Dim pos             As Long
     Dim tmp             As String
+    Dim hLib            As Long
+    Dim dwMajor         As Long
+    Dim dwMinor         As Long
+    Dim dwBuild         As Long
+    
+    inIDE = (App.LogMode = 0)
     
     LangDisplayCode_ = GetUserDefaultUILanguage Mod &H10000
     LangDisplayName_ = GetLangNameByCultureCode(LangDisplayCode_)
@@ -173,7 +253,7 @@ Private Sub Class_Initialize()
     LangNonUnicodeNameFull_ = GetLangNameFullByCultureCode(LangNonUnicodeCode_)
     
     osi.dwOSVersionInfoSize = Len(osi)
-    GetVersionEx osi
+    RtlGetVersion osi
     
     If inIDE Then
         'query correct OS version without manifest
@@ -209,14 +289,13 @@ Private Sub Class_Initialize()
         Set oWMI = Nothing
     End If
     
-    Family_ = IIf(osi.dwMajorVersion >= 6, "Vista", "NT")
-    IsVistaOrLater_ = (osi.dwMajorVersion >= 6)
+    Bitness_ = IIf(IsWow64(), "x64", "x32") 'VB6 is always x86
     
-    Bitness_ = IIf(IsWow64(), "x64", "x32")
+    IsWin64_ = (Bitness_ = "x64")
     
-    lret = GetSystemMetrics(SM_CLEANBOOT)
-    IsSafeBoot_ = (lret > 0)
-    Select Case lret
+    lRet = GetSystemMetrics(SM_CLEANBOOT)
+    IsSafeBoot_ = (lRet > 0)
+    Select Case lRet
         Case 1
             SafeBootMode_ = "Safe mode"
         Case 2
@@ -225,98 +304,137 @@ Private Sub Class_Initialize()
             SafeBootMode_ = "Normal"
     End Select
     
-    If MajorMinor_ = 0 Then
-        ' OS Major + Minor
-        dec = osi.dwMinorVersion
-        If dec <> 0 Then Do: dec = dec / 10: Loop Until dec < 1
-        MajorMinor_ = osi.dwMajorVersion + dec
-    End If
+    ' OS Major + Minor
+    dec = osi.dwMinorVersion
+    If dec <> 0 Then Do: dec = dec / 10: Loop Until dec < 1
+    MajorMinor_ = osi.dwMajorVersion + dec
     
     ' Service Pack Major + Minor
     dec = osi.wServicePackMinor
     If dec <> 0 Then Do: dec = dec / 10: Loop Until dec < 1
     SPver_ = osi.wServicePackMajor + dec
-           
+    
+    'getting ntdll.dll version
+    hLib = GetProcAddress(GetModuleHandle(StrPtr("ntdll.dll")), "RtlGetNtVersionNumbers")
+    
+    If hLib <> 0 Then
+        RtlGetNtVersionNumbers dwMajor, dwMinor, dwBuild
+        
+        dwBuild = dwBuild And &H3FFF&
+        
+        NtDllVersion_ = dwMajor & "." & dwMinor & "." & dwBuild
+        dec = dwMinor
+        If dec <> 0 Then Do: dec = dec / 10: Loop Until dec < 1
+        MajorMinorNTDLL_ = dwMajor + dec
+    End If
+    
+    IsWindowsXPOrGreater_ = (MajorMinor_ >= 5.1)
+    IsWindowsVistaOrGreater_ = (MajorMinor_ >= 6)
+    IsWindows7OrGreater_ = (MajorMinor_ >= 6.1)
+    IsWindows8OrGreater_ = (MajorMinor_ >= 6.2)
+    IsWindows8Point1OrGreater_ = (MajorMinor_ >= 6.3)
+    IsWindows10OrGreater_ = (MajorMinor_ >= 6.4)
+    
     'https://msdn.microsoft.com/en-us/library/windows/desktop/ms724833(v=vs.85).aspx
     
-    If osi.dwPlatformId = 0 Then
-        OSName_ = "Windows 3.x"
+    PlatformID_ = osi.dwPlatformId
+    
+    If osi.dwPlatformId = Win32S Then
+        OSName_ = "Windows 3.1"
+        Platform_ = "Win3x"
         
-    ElseIf osi.dwPlatformId = 1 Then
+    ElseIf osi.dwPlatformId = Win32Windows Then
         'Win 9x
+        Platform_ = "Win9x"
+        
         If osi.dwMajorVersion = 4 Then
-            Platform_ = "Win9x"
-            
             Select Case osi.dwMinorVersion
                 '4.0
                 Case 0 'Windows 95 [A/B/C]
                     OSName_ = "Windows 95"
+                    If ChrW$(osi.szCSDVersion(0)) = "B" Or ChrW$(osi.szCSDVersion(0)) = "C" Then
+                        Edition_ = "OSR2"
+                    End If
                 '4.10
                 Case 10 'Windows 98 [Gold/SE]
                     OSName_ = "Windows 98"
-                    Edition_ = IIf(SPver_ <> 0, "SE", "Gold")
+                    If ChrW$(osi.szCSDVersion(0)) = "B" Or ChrW$(osi.szCSDVersion(0)) = "C" Then
+                        Edition_ = "Second Edition"
+                    Else
+                        Edition_ = "Gold"
+                    End If
                 '4.90
                 Case 90 'Windows Millennium Edition
                     OSName_ = "Windows ME"
             End Select
         End If
-    Else
+    ElseIf osi.dwPlatformId = Win32NT Then
         Platform_ = "WinNT"
         
         Select Case MajorMinor_
         Case 10
             If osi.wProductType = VER_NT_WORKSTATION Then
                 OSName_ = "Windows 10"
-            Else
+            ElseIf osi.wProductType = VER_NT_SERVER Then
                 OSName_ = "Windows Server 2016"
             End If
         Case 6.4
-            OSName_ = "Windows 10 Technical Preview"
+            OSName_ = "Windows 10"
+            Edition_ = "Technical Preview"
         Case 6.3
             If osi.wProductType = VER_NT_WORKSTATION Then
                 OSName_ = "Windows 8.1"
-            Else
+            ElseIf osi.wProductType = VER_NT_SERVER Then
                 OSName_ = "Windows Server 2012 R2"
             End If
         Case 6.2
             If osi.wProductType = VER_NT_WORKSTATION Then
                 OSName_ = "Windows 8"
-            Else
+            ElseIf osi.wProductType = VER_NT_SERVER Then
                 OSName_ = "Windows Server 2012"
             End If
         Case 6.1
             If osi.wProductType = VER_NT_WORKSTATION Then
                 OSName_ = "Windows 7"
-            Else
+            ElseIf osi.wProductType = VER_NT_SERVER Then
                 OSName_ = "Windows Server 2008 R2"
             End If
         Case 6
             If osi.wProductType = VER_NT_WORKSTATION Then
                 OSName_ = "Windows Vista"
-            Else
+            ElseIf osi.wProductType = VER_NT_SERVER Then
                 OSName_ = "Windows Server 2008"
             End If
         Case 5.2
-            If GetSystemMetrics(SM_SERVERR2) Then
-                OSName_ = "Windows Server 2003 R2"
-            ElseIf osi.wSuiteMask And VER_SUITE_STORAGE_SERVER Then
-                OSName_ = "Windows Storage Server 2003"
-            ElseIf osi.wSuiteMask And VER_SUITE_WH_SERVER Then
-                OSName_ = "Windows 2003 Home Server"
+            If osi.wProductType = VER_NT_SERVER Then
+                OSName_ = "Windows Server 2003"
+                If GetSystemMetrics(SM_SERVERR2) Then
+                    Edition_ = "R2"
+                ElseIf osi.wSuiteMask And VER_SUITE_DATACENTER Then
+                    Edition_ = "Datacenter"
+                ElseIf osi.wSuiteMask And VER_SUITE_ENTERPRISE Then
+                    Edition_ = "Enterprise"
+                ElseIf osi.wSuiteMask And VER_SUITE_BLADE Then
+                    Edition_ = "Web Edition"
+                ElseIf osi.wSuiteMask And VER_SUITE_STORAGE_SERVER Then
+                    Edition_ = "Storage"
+                ElseIf osi.wSuiteMask And VER_SUITE_WH_SERVER Then
+                    Edition_ = "Home"
+                Else
+                    Edition_ = "Standard"
+                End If
             ElseIf osi.wProductType = VER_NT_WORKSTATION And Bitness_ = "x64" Then
                 OSName_ = "Windows XP"
                 Edition_ = "Professional"
-            Else
-                OSName_ = "Windows Server 2003"
             End If
         Case 5.1
             OSName_ = "Windows XP"
             If GetSystemMetrics(SM_MEDIACENTER) Then
-                Edition_ = "Windows XP Media Center Edition"
+                Edition_ = "Media Center Edition"
             ElseIf GetSystemMetrics(SM_STARTER) Then
-                Edition_ = "Windows XP Starter Edition"
+                Edition_ = "Starter Edition"
             ElseIf GetSystemMetrics(SM_TABLETPC) Then
-                Edition_ = "Windows XP Tablet PC Edition"
+                Edition_ = "Tablet PC Edition"
             ElseIf osi.wSuiteMask = VER_SUITE_PERSONAL Then
                 Edition_ = "Home Edition"
             Else
@@ -325,8 +443,14 @@ Private Sub Class_Initialize()
         Case 5
             OSName_ = "Windows 2000"
             If osi.wProductType = VER_NT_WORKSTATION Then
-                Edition_ = "Professional"
-            Else
+                If osi.wSuiteMask And VER_SUITE_PERSONAL Then
+                    Edition_ = "Home"
+                ElseIf GetSystemMetrics(SM_TABLETPC) = 0 Then
+                    Edition_ = "Professional"
+                Else
+                    Edition_ = "Tablet Edition"
+                End If
+            ElseIf osi.wProductType = VER_NT_SERVER Then
                 If osi.wSuiteMask And VER_SUITE_DATACENTER Then
                     Edition_ = "Datacenter Server"
                 ElseIf osi.wSuiteMask And VER_SUITE_ENTERPRISE Then
@@ -336,16 +460,32 @@ Private Sub Class_Initialize()
                 End If
             End If
         Case 4
-            OSName_ = "Windows NT"
-        Case Else
-            OSName_ = "Windows Unknown" & "(ver. " & MajorMinor_ & ") (" & "Build: " & osi.dwBuildNumber & ")" & " Registry's data: " & _
-                RegRead_REG_SZ(HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName")
+            OSName_ = "Windows NT 4.0"
+            If osi.wProductType = VER_NT_WORKSTATION Then
+                Edition_ = "Workstation"
+            ElseIf osi.wProductType = VER_NT_SERVER Then
+                If osi.wSuiteMask And VER_SUITE_ENTERPRISE Then
+                    Edition_ = "Enterprise Server"
+                Else
+                    Edition_ = "Standard Server"
+                End If
+            End If
+        Case 3
+            OSName_ = "Windows NT 3.51"
         End Select
+    ElseIf osi.dwPlatformId = WinCE Then
+        OSName_ = "Windows CE"
+        Platform_ = "WinCE"
+    End If
+    
+    If OSName_ = "" Then
+        OSName_ = "Windows Unknown" & "(ver. " & MajorMinor_ & ") (" & "Build: " & osi.dwBuildNumber & ")" & " Registry's data: " & _
+            RegRead_REG_SZ("SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName")
     End If
     
     If MajorMinor_ >= 10 Then
         'Get ReleaseId for Windows 10
-        tmp = RegRead_REG_SZ(HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ReleaseId")
+        tmp = RegRead_REG_SZ("SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ReleaseId")
         If IsNumeric(tmp) Then ReleaseId_ = CLng(tmp)
     End If
     
@@ -357,6 +497,10 @@ Private Sub Class_Initialize()
             End If
         End If
     End If
+    
+    Revision_ = RegRead_REG_DWORD("SOFTWARE\Microsoft\Windows NT\CurrentVersion", "UBR")
+    
+    IsServer_ = (osi.wProductType <> VER_NT_WORKSTATION)
     
     IsElevated_ = IsProcessElevated()
     
@@ -395,48 +539,50 @@ Private Sub Class_Initialize()
     
     SID_CurrentProcess_ = GetCurrentProcessSID()
     
-    AppendErrorLogCustom "clsOSInfo.Class_Initialize - End"
+    SecureBoot_ = SecureBootState()
+    
+    AppendErrorLogCustom "clsOSver.Class_Initialize - End"
     
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "clsOSInfo.Class_Initialize"
+    ErrorMsg Err, "clsOSver.Class_Initialize"
     Resume Next
 End Sub
 
-Function GetCodePageInfo()
+Sub GetCodePageInfo()
     On Error GoTo ErrorHandler
 
     AppendErrorLogCustom "GetCodePageInfo - Begin"
 
-    CodepageOEM_ = RegRead_REG_SZ(HKEY_LOCAL_MACHINE, "SYSTEM\CurrentControlSet\Control\Nls\CodePage", "OEMCP")
+    CodepageOEM_ = RegRead_REG_SZ("SYSTEM\CurrentControlSet\Control\Nls\CodePage", "OEMCP")
  
     If 0 <> Len(CodepageOEM_) Then
-        CodepageOEM_File_ = RegRead_REG_SZ(HKEY_LOCAL_MACHINE, "SYSTEM\CurrentControlSet\Control\Nls\CodePage", CodepageOEM_)
+        CodepageOEM_File_ = RegRead_REG_SZ("SYSTEM\CurrentControlSet\Control\Nls\CodePage", CodepageOEM_)
     End If
     
-    CodepageANSI_ = RegRead_REG_SZ(HKEY_LOCAL_MACHINE, "SYSTEM\CurrentControlSet\Control\Nls\CodePage", "ACP")
+    CodepageANSI_ = RegRead_REG_SZ("SYSTEM\CurrentControlSet\Control\Nls\CodePage", "ACP")
  
     If 0 <> Len(CodepageANSI_) Then
-        CodepageANSI_File_ = RegRead_REG_SZ(HKEY_LOCAL_MACHINE, "SYSTEM\CurrentControlSet\Control\Nls\CodePage", CodepageANSI_)
+        CodepageANSI_File_ = RegRead_REG_SZ("SYSTEM\CurrentControlSet\Control\Nls\CodePage", CodepageANSI_)
     End If
     
     AppendErrorLogCustom "GetCodePageInfo - End"
-    Exit Function
+    Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "clsOSInfo.GetCodePageInfo"
-End Function
+    ErrorMsg Err, "clsOSver.GetCodePageInfo"
+End Sub
 
 Function GetLangNameFullByCultureCode(lcid As Long) As String
     Dim buf As String
     Dim lr  As Long
-    buf = String(1000, vbNullChar)
+    buf = String$(1000, vbNullChar)
     lr = GetLocaleInfo(lcid, LOCALE_SENGLANGUAGE, StrPtr(buf), ByVal 1000&)
     If lr Then
         GetLangNameFullByCultureCode = Left$(buf, lr - 1)
     End If
 End Function
 
-Function RegRead_REG_SZ(hHive As Long, strKey As String, strParam As String) As String
+Function RegRead_REG_SZ(strKey As String, strParam As String) As String
     On Error GoTo ErrorHandler
     
     Const KEY_QUERY_VALUE       As Long = &H1&
@@ -446,7 +592,7 @@ Function RegRead_REG_SZ(hHive As Long, strKey As String, strParam As String) As 
     Dim ordType As Long
     Dim cData As Long
 
-    RegOpenKeyEx HKEY_LOCAL_MACHINE, StrPtr(strKey), 0&, KEY_QUERY_VALUE, hKey
+    RegOpenKeyEx HKEY_LOCAL_MACHINE, StrPtr(strKey), 0&, KEY_QUERY_VALUE Or (IsWin64_ And KEY_WOW64_64KEY), hKey
     If hKey = 0 Then Exit Function
     
     RegQueryValueExLong hKey, StrPtr(strParam), 0&, ordType, 0&, cData
@@ -460,7 +606,34 @@ Function RegRead_REG_SZ(hHive As Long, strKey As String, strParam As String) As 
     If hKey <> 0 Then RegCloseKey hKey
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "clsOSInfo.RegRead_REG_SZ"
+    ErrorMsg Err, "clsOSver.RegRead_REG_SZ"
+    If hKey <> 0 Then RegCloseKey hKey
+End Function
+
+Function RegRead_REG_DWORD(strKey As String, strParam As String) As Long
+    On Error GoTo ErrorHandler
+    
+    Const KEY_QUERY_VALUE       As Long = &H1&
+    
+    Dim lData As Long
+    Dim hKey As Long
+    Dim ordType As Long
+    Dim cData As Long
+
+    RegOpenKeyEx HKEY_LOCAL_MACHINE, StrPtr(strKey), 0&, KEY_QUERY_VALUE Or (IsWin64_ And KEY_WOW64_64KEY), hKey
+    If hKey = 0 Then Exit Function
+    
+    RegQueryValueExLong hKey, StrPtr(strParam), 0&, ordType, 0&, cData
+    If cData = 4 Then
+        If ERROR_SUCCESS = RegQueryValueEx(hKey, StrPtr(strParam), 0&, ordType, VarPtr(lData), cData) Then
+            RegRead_REG_DWORD = lData
+        End If
+    End If
+    
+    If hKey <> 0 Then RegCloseKey hKey
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "clsOSver.RegRead_REG_SZ"
     If hKey <> 0 Then RegCloseKey hKey
 End Function
 
@@ -490,7 +663,7 @@ Function IsProcessElevated(Optional hProcess As Long) As Boolean
     AppendErrorLogCustom "IsProcessElevated - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Now, "clsOSInfo.IsProcessElevated"
+    ErrorMsg Now, "clsOSver.IsProcessElevated"
     If hToken Then CloseHandle hToken: hToken = 0
 End Function
 
@@ -514,13 +687,13 @@ Public Function GetUserType(Optional hProcess As Long) As String
     Dim psidPower       As Long
     Dim psidUser        As Long
     Dim psidGuest       As Long
-    Dim lResult         As Long
     Dim i               As Long
+    Dim lResult         As Long
     Dim tpTokens        As TOKEN_GROUPS
     Dim tpSidAuth       As SID_IDENTIFIER_AUTHORITY
     
     GetUserType = "Unknown"
-    tpSidAuth.value(5) = SECURITY_NT_AUTHORITY
+    tpSidAuth.Value(5) = SECURITY_NT_AUTHORITY
     
     ' в идеале, сначала нужно проверять токен, полученный от потока
     ' If Not OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, True, hProcessToken) Then
@@ -579,7 +752,7 @@ Public Function GetUserType(Optional hProcess As Long) As String
     AppendErrorLogCustom "GetUserType - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "clsOSInfo.GetUserType"
+    ErrorMsg Err, "clsOSver.GetUserType"
     If hProcessToken Then CloseHandle hProcessToken: hProcessToken = 0
     If psidAdmin Then FreeSid psidAdmin
     If psidPower Then FreeSid psidPower
@@ -634,7 +807,7 @@ Function GetCurrentProcessSID() As String
     AppendErrorLogCustom "GetCurrentProcessSID - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "clsOSInfo.GetCurrentProcessSID"
+    ErrorMsg Err, "clsOSver.GetCurrentProcessSID"
 End Function
 
 Function GetIntegrityLevel(Optional hProcess As Long) As String
@@ -730,7 +903,7 @@ Function GetIntegrityLevel(Optional hProcess As Long) As String
     AppendErrorLogCustom "GetIntegrityLevel - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "clsOSInfo.GetIntegrityLevel"
+    ErrorMsg Err, "clsOSver.GetIntegrityLevel"
     'If pILSid Then FreeSid pILSid
     If hToken Then CloseHandle hToken: hToken = 0
 End Function
@@ -930,13 +1103,13 @@ Function GetProductName(ProductType As Long) As String
     Case 0
         ProductName = "An unknown product"
     Case Else
-        ProductName = "Unknown Edition (0x" & Hex(ProductType) & ")"
+        ProductName = "Unknown Edition (0x" & Hex$(ProductType) & ")"
     End Select
 
     GetProductName = ProductName
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "clsOSInfo.GetProductName"
+    ErrorMsg Err, "clsOSver.GetProductName"
 End Function
 
 
@@ -1246,9 +1419,38 @@ Function IsWow64() As Boolean   ' Разрядность ОС
     End If
 End Function
 
-Public Property Get Family() As String
-    Family = Family_
-End Property
+Private Function SecureBootState() As Boolean
+    Dim lState As Long
+    If MajorMinor_ >= 6.2 Then ' Win8+
+        lState = RegRead_REG_DWORD("SYSTEM\CurrentControlSet\Control\SecureBoot\State", "UEFISecureBootEnabled")
+        If lState = 1 Then SecureBootState = True
+    End If
+End Function
+
+Public Function SetCurrentProcessPrivileges(PrivilegeName As String) As Boolean
+    
+    Dim tp As TOKEN_PRIVILEGES, hToken&
+    
+    If LookupPrivilegeValue(0&, StrPtr(PrivilegeName), tp.LuidLowPart) Then
+    
+        If 0 = OpenThreadToken(GetCurrentThread(), TOKEN_ADJUST_PRIVILEGES Or TOKEN_QUERY, 1&, hToken) Then
+        
+            If Err.LastDllError = ERROR_NO_TOKEN Then
+            
+                If 0 = OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES Or TOKEN_QUERY, hToken) Then
+                    Exit Function
+                End If
+            Else
+                Exit Function
+            End If
+        End If
+
+        tp.PrivilegeCount = 1
+        tp.Attributes = SE_PRIVILEGE_ENABLED
+        SetCurrentProcessPrivileges = AdjustTokenPrivileges(hToken, 0&, tp, 0&, 0&, 0&)
+        CloseHandle hToken
+    End If
+End Function
 
 Public Property Get Bitness() As String
     Bitness = Bitness_
@@ -1266,8 +1468,20 @@ Public Property Get MajorMinor() As Single
     MajorMinor = MajorMinor_
 End Property
 
+Public Property Get MajorMinorNTDLL() As Single
+    MajorMinorNTDLL = MajorMinorNTDLL_
+End Property
+
+Public Property Get NtDllVersion() As String
+    NtDllVersion = NtDllVersion_
+End Property
+
 Public Property Get Build() As Long
     Build = osi.dwBuildNumber
+End Property
+
+Public Property Get Revision() As Long
+    Revision = Revision_
 End Property
 
 Public Property Get SPVer() As Single
@@ -1334,8 +1548,28 @@ Public Property Get LangDisplayNameFull() As String
     LangDisplayNameFull = LangDisplayNameFull_
 End Property
 
-Public Property Get IsVistaOrLater() As Boolean
-    IsVistaOrLater = IsVistaOrLater_
+Public Property Get IsWindowsXPOrGreater() As Boolean
+    IsWindowsXPOrGreater = IsWindowsXPOrGreater_
+End Property
+
+Public Property Get IsWindowsVistaOrGreater() As Boolean
+    IsWindowsVistaOrGreater = IsWindowsVistaOrGreater_
+End Property
+
+Public Property Get IsWindows7OrGreater() As Boolean
+    IsWindows7OrGreater = IsWindows7OrGreater_
+End Property
+
+Public Property Get IsWindows8OrGreater() As Boolean
+    IsWindows8OrGreater = IsWindows8OrGreater_
+End Property
+
+Public Property Get IsWindows8Point1OrGreater() As Boolean
+    IsWindows8Point1OrGreater = IsWindows8Point1OrGreater_
+End Property
+
+Public Property Get IsWindows10OrGreater() As Boolean
+    IsWindows10OrGreater = IsWindows10OrGreater_
 End Property
 
 Public Property Get CodepageOEM() As String
@@ -1354,15 +1588,15 @@ Public Property Get CodepageANSI_File() As String
     CodepageANSI_File = CodepageANSI_File_
 End Property
 
-Public Property Get SuiteMask() As String 'Integer
+Public Property Get SuiteMask() As String
     SuiteMask = SuiteMask_
 End Property
 
-Public Property Get ProductType() As String 'Byte
+Public Property Get ProductType() As String
     ProductType = ProductType_
 End Property
 
-Public Property Get SID_CurrentProcess() As String 'Byte
+Public Property Get SID_CurrentProcess() As String
     SID_CurrentProcess = SID_CurrentProcess_
 End Property
 
@@ -1377,3 +1611,21 @@ End Property
 Public Property Get ReleaseId() As Long
     ReleaseId = ReleaseId_
 End Property
+
+Public Property Get IsServer() As Boolean
+    IsServer = IsServer_
+End Property
+
+Public Property Get IsWin64() As Boolean
+    IsWin64 = IsWin64_
+End Property
+
+Public Property Get PlatformID() As Long
+    PlatformID = PlatformID_
+End Property
+
+Public Property Get SecureBoot() As Boolean
+    SecureBoot = SecureBoot_
+End Property
+
+

@@ -5,31 +5,52 @@ Attribute VB_Name = "modShortcut"
 
 Option Explicit
 
+Private Type EXP_SZ_LINK
+    cbSize                      As Long
+    dwSignature                 As Long
+    szTarget(0 To MAX_PATH - 1) As Byte
+    swzTarget                   As String * MAX_PATH
+End Type
+
+Private Type UUID
+    Data1 As Long
+    Data2 As Integer
+    Data3 As Integer
+    Data4(0 To 7) As Byte
+End Type
+
 Private Declare Function GetLongPathName Lib "kernel32.dll" Alias "GetLongPathNameW" (ByVal lpszShortPath As Long, ByVal lpszLongPath As Long, ByVal cchBuffer As Long) As Long
-Private Declare Function CreateFile Lib "kernel32.dll" Alias "CreateFileW" (ByVal lpFileName As Long, ByVal dwDesiredAccess As Long, ByVal dwShareMode As Long, lpSecurityAttributes As Any, ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, ByVal hTemplateFile As Long) As Long
+'Private Declare Function CreateFile Lib "kernel32.dll" Alias "CreateFileW" (ByVal lpFileName As Long, ByVal dwDesiredAccess As Long, ByVal dwShareMode As Long, lpSecurityAttributes As Any, ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, ByVal hTemplateFile As Long) As Long
 Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
 
 Private Declare Function CLSIDFromString Lib "ole32.dll" (ByVal lpszGuid As Long, pGuid As UUID) As Long
 Private Declare Function CoCreateInstance Lib "ole32.dll" (rclsid As Any, ByVal pUnkOuter As Long, ByVal dwClsContext As Long, riid As Any, pvarResult As Object) As Long
 Private Declare Function GetFullPathName Lib "kernel32.dll" Alias "GetFullPathNameW" (ByVal lpFileName As Long, ByVal nBufferLength As Long, ByVal lpBuffer As Long, ByVal lpFilePart As Long) As Long
 Private Declare Function lstrlen Lib "kernel32.dll" Alias "lstrlenW" (ByVal lpString As Long) As Long
-Private Declare Function lstrcpyn Lib "kernel32.dll" Alias "lstrcpynW" (ByVal lpString1 As Long, ByVal lpString2 As Long, ByVal iMaxLength As Long) As Long
-Private Declare Sub CoTaskMemFree Lib "ole32.dll" (ByVal pv As Long)
+'Private Declare Function lstrcpyn Lib "kernel32.dll" Alias "lstrcpynW" (ByVal lpString1 As Long, ByVal lpString2 As Long, ByVal iMaxLength As Long) As Long
+'Private Declare Sub CoTaskMemFree Lib "ole32.dll" (ByVal pv As Long)
+Private Declare Function SysReAllocString Lib "oleaut32.dll" (ByVal pBSTR As Long, ByVal pszStrPtr As Long) As Long
 
-Private Declare Function GetModuleHandle Lib "kernel32.dll" Alias "GetModuleHandleW" (ByVal lpModuleName As Long) As Long
-Private Declare Function GetModuleFileName Lib "kernel32.dll" Alias "GetModuleFileNameW" (ByVal hModule As Long, ByVal lpFileName As Long, ByVal nSize As Long) As Long
-Private Declare Function GetModuleFileNameEx Lib "psapi.dll" Alias "GetModuleFileNameExW" (ByVal hProcess As Long, ByVal hModule As Long, ByVal lpFileName As Long, ByVal nSize As Long) As Long
-Private Declare Function LoadLibrary Lib "kernel32.dll" Alias "LoadLibraryW" (ByVal lpFileName As Long) As Long
-Private Declare Function FreeLibrary Lib "kernel32.dll" (ByVal hLibModule As Long) As Long
-Private Declare Function GetProcAddress Lib "kernel32.dll" (ByVal hModule As Long, ByVal lpProcName As String) As Long
+Private Declare Function CallWindowProcA Lib "user32.dll" (ByVal pFunc As Long, ByVal pESL As Long, ByVal pStrOut As Long, Optional ByVal Reserved1 As Long, Optional ByVal Reserved2 As Long) As Long
+'Private Declare Function GetModuleHandle Lib "kernel32.dll" Alias "GetModuleHandleW" (ByVal lpModuleName As Long) As Long
+'Private Declare Function GetModuleFileName Lib "kernel32.dll" Alias "GetModuleFileNameW" (ByVal hModule As Long, ByVal lpFileName As Long, ByVal nSize As Long) As Long
+'Private Declare Function GetModuleFileNameEx Lib "psapi.dll" Alias "GetModuleFileNameExW" (ByVal hProcess As Long, ByVal hModule As Long, ByVal lpFileName As Long, ByVal nSize As Long) As Long
+'Private Declare Function LoadLibrary Lib "kernel32.dll" Alias "LoadLibraryW" (ByVal lpFileName As Long) As Long
+'Private Declare Function FreeLibrary Lib "kernel32.dll" (ByVal hLibModule As Long) As Long
+'Private Declare Function GetProcAddress Lib "kernel32.dll" (ByVal hModule As Long, ByVal lpProcName As String) As Long
 Private Declare Function GetPrivateProfileString Lib "kernel32.dll" Alias "GetPrivateProfileStringW" (ByVal lpApplicationName As Long, ByVal lpKeyName As Long, ByVal lpDefault As Long, ByVal lpReturnedString As Long, ByVal nSize As Long, ByVal lpFileName As Long) As Long
+Private Declare Function GetWindowsDirectory Lib "kernel32.dll" Alias "GetWindowsDirectoryW" (ByVal lpBuffer As Long, ByVal uSize As Long) As Long
 
-Const MAX_PATH_W    As Long = 32767&
+Private Const MAX_PATH_W            As Long = 32767&
+Private Const ERROR_MORE_DATA       As Long = 234&
 
 Dim oPFile          As IPersistFile
 Dim oSLink          As IShellLinkW
+Dim oSLDL           As IShellLinkDataList
 
 Dim CLSID_InternetShortcut  As UUID
+
+Private LnkHeader(19)        As Byte
 
 
 Public Function GetFileFromShortcut(Path As String, Optional out_Args As String, Optional ForceLNK As Boolean) As String
@@ -79,14 +100,14 @@ End Function
 Public Function GetPathFromIDL(sIDL As String) As String
     On Error Resume Next
     
-    Dim shl     As Object
+    Dim Shl     As Object
     Dim fld     As Object
     Dim Path    As String
     Dim itm     As Variant
     
     AppendErrorLogCustom "GetPathFromIDL - Begin", "IDL: " & sIDL
     
-    Set shl = CreateObject("shell.application")
+    Set Shl = CreateObject("shell.application")
     If Err.Number <> 0 Then
         'Library or registry entries are damaged
         ErrorMsg Err, "Parser.GetPathFromIDL", Translate(512) & ": Shell32.dll"
@@ -94,7 +115,7 @@ Public Function GetPathFromIDL(sIDL As String) As String
     End If
     If Left$(sIDL, 4) = "::\{" Then sIDL = "::" & Mid$(sIDL, 4) 'trim \
     
-    Set fld = shl.Namespace(CVar(sIDL))
+    Set fld = Shl.Namespace$(CVar(sIDL))
     
     If (Err.Number <> 0) Or (fld Is Nothing) Then Exit Function
     
@@ -111,7 +132,7 @@ Public Function GetPathFromIDL(sIDL As String) As String
         Next
     End If
     Set fld = Nothing
-    Set shl = Nothing
+    Set Shl = Nothing
     
     AppendErrorLogCustom "GetPathFromIDL - End"
     Exit Function
@@ -121,31 +142,84 @@ ErrorHandler:
 End Function
 
 
-' получает цель и аргументы, как есть (IShellLink интерфейс)
+' получает цель и аргументы LNK
 Public Sub GetTargetShellLinkW(LNK_file As String, Optional Target As String, Optional Argument As String)
     On Error GoTo ErrorHandler
     AppendErrorLogCustom "GetTargetShellLinkW - Begin", "File: " & LNK_file
     
     Dim fd              As WIN32_FIND_DATAW
+    Dim ptr             As Long
+    Dim lr              As Long
     
+    Static bTerminalServerEmulation As Boolean
+    Static SysRoot2                 As String
+    Static IsInit                   As Boolean
+    
+    If Not IsInit Then
+        IsInit = True
+        If OSver.IsServer Then
+            SysRoot2 = String$(MAX_PATH, 0&)
+            lr = GetWindowsDirectory(StrPtr(SysRoot2), MAX_PATH)
+            If lr Then SysRoot2 = Left$(SysRoot2, lr)
+            If StrComp(sWinDir, SysRoot2, 1) <> 0 Then bTerminalServerEmulation = True
+        End If
+    End If
+
     If Not FileExists(LNK_file) Then Exit Sub
+
+    ' Проверяем целостность заголовка LNK
     
-    If isFileFilledByNUL(LNK_file) Then
+    Dim FileHeader() As Byte
+    
+    FileHeader = GetHeaderFromFile(LNK_file, 20&)
+    
+    If StrComp(LnkHeader, FileHeader) <> 0 Then
+
         Argument = ""
         Target = "(lnk is corrupted)"
+
         Exit Sub
     End If
     
     oPFile.Load LNK_file, STGM_READ
+
+    If oSLDL.GetFlags And SLDF_HAS_EXP_SZ Then
     
-    Target = String$(MAX_PATH_W, vbNullChar)
-    oSLink.GetPath Target, MAX_PATH_W, fd, SLGP_UNCPRIORITY
-    Target = GetFullPath(Left$(Target, lstrlen(StrPtr(Target))))  ' НЕ ЗАМЕНЯТЬ http -> hxxp !!!
+        ptr = oSLDL.CopyDataBlock(EXP_SZ_LINK_SIG)
+
+        If ptr Then
+            CallWindowProcA AddressOf DerefDataBlock, ptr, VarPtr(Target)
+
+            ptr = LocalFree(ptr)
+
+            Target = EnvironW(Target)
+        End If
+    End If
     
-    Argument = String$(MAX_PATH_W, vbNullChar)
+    If 0 = Len(Target) Then
+        Target = String$(MAX_PATH_W, vbNullChar)
+    
+        oSLink.GetPath Target, MAX_PATH_W, fd, SLGP_UNCPRIORITY
+        
+        If bTerminalServerEmulation Then
+        
+            If StrBeginWith(Target, SysRoot2) Then
+                Target = Replace$(Target, SysRoot2, sWinDir, 1, 1, vbTextCompare)
+            End If
+        End If
+    End If
+    
+    Target = GetFullPath(Left$(Target, lstrlen(StrPtr(Target))))
+
+    Argument = String$(MAX_PATH_W, 0)
+    
     oSLink.GetArguments Argument, MAX_PATH_W
+
     Argument = Left$(Argument, lstrlen(StrPtr(Argument)))
-    
+
+    'добавил trim пробелов (приём игры в прятки вирмейкеров :)
+    If 0 <> Len(Argument) Then Argument = Trim$(Argument)
+
     AppendErrorLogCustom "GetTargetShellLinkW - End"
     Exit Sub
 ErrorHandler:
@@ -153,28 +227,59 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
+Private Function DerefDataBlock(ByRef ESL As EXP_SZ_LINK, ByRef StrOut As String, Optional ByVal Reserved1 As Long, Optional ByVal Reserved2 As Long) As Long
+    SysReAllocString VarPtr(StrOut), StrPtr(ESL.swzTarget)
+End Function
+
+
+
+' Возвращает заголовок файла
+Public Function GetHeaderFromFile(FileName As String, BytesCnt As Long) As Byte()
+    On Error GoTo ErrorHandler
+    
+    Dim ff As Long
+    Dim Size As Currency
+    Dim Data() As Byte
+    
+    OpenW FileName, FOR_READ, ff
+    If ff < 1 Then Exit Function
+    
+    Size = LOFW(ff)
+    If Size = 0@ Then CloseW ff: ff = 0: Exit Function
+    If BytesCnt > Size Then BytesCnt = Size
+    
+    ReDim Data(BytesCnt - 1)
+    GetW ff, 1&, , VarPtr(Data(0)), BytesCnt
+    CloseW ff: ff = 0
+    
+    GetHeaderFromFile = Data
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "Parser.GetHeaderFromFile", "File:", FileName
+    If ff <> 0 Then CloseW ff: ff = 0
+End Function
 
 Private Function isFileFilledByNUL(FileName As String) As Boolean
     On Error GoTo ErrorHandler
     
     Dim ff As Long
-    Dim size As Currency
+    Dim Size As Currency
     Dim Data As String
     Dim i As Long
     
     OpenW FileName, FOR_READ, ff
     If ff < 1 Then Exit Function
     
-    size = LOFW(ff)
-    If size = 0@ Then CloseW ff: ff = 0: Exit Function
-    Data = String$(size, vbNullChar)
+    Size = LOFW(ff)
+    If Size = 0@ Then CloseW ff: ff = 0: Exit Function
+    Data = String$(Size, vbNullChar)
     GetW ff, 1&, Data    ' читаем файл целиком
     
     CloseW ff: ff = 0
     
     isFileFilledByNUL = True
     
-    For i = 1 To size
+    For i = 1 To Size
         If Asc(Mid$(Data, i, 1)) <> 0& Then isFileFilledByNUL = False: Exit For
     Next
     Exit Function
@@ -188,6 +293,10 @@ Public Sub ISL_Init()
     On Error GoTo ErrorHandler
     AppendErrorLogCustom "ISL_Init - Begin"
     
+    Const CLSIDSTR_ShellLink As String = "{00021401-0000-0000-C000-000000000046}"
+    Const IIDSTR_IUnknown As String = "{00000000-0000-0000-C000-000000000046}"
+    Const CLSCTX_INPROC_SERVER As Long = 1
+    
     Dim CLSID_ShellLink As UUID
     Dim IID_IUnknown    As UUID
     Dim oUnknown        As IUnknown
@@ -196,8 +305,16 @@ Public Sub ISL_Init()
     CLSIDFromString StrPtr(IIDSTR_IUnknown), IID_IUnknown
     CoCreateInstance CLSID_ShellLink, 0&, CLSCTX_INPROC_SERVER, IID_IUnknown, oUnknown
  
+    LnkHeader(0) = &H4C
+    LnkHeader(4) = 1
+    LnkHeader(5) = &H14
+    LnkHeader(6) = 2
+    LnkHeader(12) = &HC0
+    LnkHeader(19) = &H46
+ 
     Set oPFile = oUnknown
     Set oSLink = oUnknown
+    Set oSLDL = oUnknown
     
     AppendErrorLogCustom "ISL_Init - End"
     Exit Sub
@@ -210,6 +327,7 @@ End Sub
 Public Sub ISL_Dispatch()
     Set oPFile = Nothing
     Set oSLink = Nothing
+    Set oSLDL = Nothing
 End Sub
 
 Public Function GetUrlTargetW(URLpathW As String) As String
@@ -285,13 +403,13 @@ End Function
 ' Нормализация пути
 Public Function GetFullPath(sFileName As String) As String
     On Error GoTo ErrorHandler
-    Dim Cnt        As Long
+    Dim cnt        As Long
     Dim sFullName  As String
     
     sFullName = String$(MAX_PATH_W, 0)
-    Cnt = GetFullPathName(StrPtr(sFileName), MAX_PATH_W, StrPtr(sFullName), 0&)
-    If Cnt Then
-        GetFullPath = Left$(sFullName, Cnt)
+    cnt = GetFullPathName(StrPtr(sFileName), MAX_PATH_W, StrPtr(sFullName), 0&)
+    If cnt Then
+        GetFullPath = Left$(sFullName, cnt)
     Else
         GetFullPath = sFileName
     End If
@@ -299,12 +417,6 @@ Public Function GetFullPath(sFileName As String) As String
 ErrorHandler:
     ErrorMsg Err, "Parser.GetFullPath"
     If inIDE Then Stop: Resume Next
-End Function
-
-Public Function GetPathName(Path As String) As String   ' получить родительский каталог
-    Dim pos As Long
-    pos = InStrRev(Path, "\")
-    If pos <> 0 Then GetPathName = Left$(Path, pos - 1)
 End Function
 
 ' Раскрытие цели и аргумента ярлыков PIF
@@ -322,7 +434,7 @@ Public Function GetPIF_target(FileName As String, Target As String, Argument As 
     Dim sBuffer As String
     Dim Header  As String
     Dim FLen    As Currency
-    Dim Cnt     As Long
+    Dim cnt     As Long
     Dim ff      As Long
     
     pif_Target = String$(63&, vbNullChar)
@@ -355,9 +467,9 @@ Public Function GetPIF_target(FileName As String, Target As String, Argument As 
     
     If FileExists(pif_Target) Then    'DOS -> to Full name
         sBuffer = String$(MAX_PATH_W, vbNullChar)
-        Cnt = GetLongPathName(StrPtr(pif_Target), StrPtr(sBuffer), Len(sBuffer))
-        If Cnt Then
-            pif_Target = Left$(sBuffer, Cnt)
+        cnt = GetLongPathName(StrPtr(pif_Target), StrPtr(sBuffer), Len(sBuffer))
+        If cnt Then
+            pif_Target = Left$(sBuffer, cnt)
         End If
     End If
     
@@ -379,9 +491,9 @@ Public Function GetEncoding(aBytes() As Byte, Optional Percent As Long, Optional
     Dim IMLang2     As IMultiLanguage2
     Dim Encoding()  As tagDetectEncodingInfo
     Dim encCount    As Long
-    Dim inp()       As Byte
+    'Dim inp()       As Byte
     Dim index       As Long
-    Dim J           As Long
+    'Dim J           As Long
     
 '    Open file For Binary As #1
 '    ReDim inp(LOF(1) - 1)
@@ -480,10 +592,65 @@ ErrorHandler:
 End Function
 
 Public Function ByteArrayToHex(arr() As Byte) As String
-    Dim i&, s&
+    Dim i&, S&
     For i = 0 To UBound(arr)
-        s = s & Right$("0" & Hex(arr(i)), 2)
+        S = S & Right$("0" & Hex$(arr(i)), 2)
     Next
-    ByteArrayToHex = s
+    ByteArrayToHex = S
 End Function
 
+
+Public Function CreateHJTShortcuts(HJT_Location As String) As Boolean
+    Dim bSuccess As Boolean
+    bSuccess = True
+    Call MkDirW(BuildPath(StartMenuPrograms, "HiJackThis Fork"))
+    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis Fork\HiJackThis.lnk"), HJT_Location)
+    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis Fork\Uninstall HJT.lnk"), HJT_Location, "/uninstall")
+    CreateHJTShortcuts = bSuccess
+End Function
+
+Public Function CreateHJTShortcutDesktop(HJT_Location As String) As Boolean
+    CreateHJTShortcutDesktop = CreateShortcut(BuildPath(Desktop, "HiJackThis Fork.lnk"), HJT_Location)
+End Function
+
+Public Function RemoveHJTShortcuts() As Boolean
+    Dim bSuccess As Boolean
+    bSuccess = True
+    Dim aFile(3) As String
+    Dim i As Long
+    aFile(0) = BuildPath(StartMenuPrograms, "HiJackThis Fork\HiJackThis.lnk")
+    aFile(1) = BuildPath(StartMenuPrograms, "HiJackThis Fork\Uninstall HJT.lnk")
+    aFile(2) = BuildPath(StartMenuPrograms, "HiJackThis Fork\Uninstall HJT.lnk")
+    aFile(3) = BuildPath(Desktop, "HiJackThis Fork.lnk")
+    For i = 0 To UBound(aFile)
+        If FileExists(aFile(i)) Then
+            bSuccess = bSuccess And CBool(DeleteFileW(StrPtr(aFile(i))))
+        End If
+    Next
+    bSuccess = bSuccess And CBool(RemoveDirectory(StrPtr(BuildPath(StartMenuPrograms, "HiJackThis Fork"))))
+    RemoveHJTShortcuts = bSuccess
+End Function
+
+Public Function CreateShortcut( _
+    sPathLnk As String, _
+    sTarget As String, _
+    Optional sArg As String = "", _
+    Optional sIcon As String = "", _
+    Optional iShowCmd As Long = 1, _
+    Optional sDescription As String = "") As Boolean
+    
+    If sIcon = "" Then sIcon = sTarget
+    
+    With oSLink
+        .SetPath sTarget
+        .SetArguments sArg
+        .SetWorkingDirectory GetParentDir(sTarget)
+        .SetIconLocation sIcon, 0
+        .SetShowCmd iShowCmd
+        .SetDescription sDescription
+    End With
+    oPFile.Save sPathLnk, 1&
+    oPFile.SaveCompleted sPathLnk
+    
+    CreateShortcut = FileExists(sPathLnk)
+End Function

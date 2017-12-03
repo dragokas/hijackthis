@@ -1,5 +1,13 @@
 Attribute VB_Name = "modHosts"
+'
+' Hosts file module by Merijn Bellekom
+'
+
 Option Explicit
+
+'Private Declare Function GetFileAttributes Lib "kernel32.dll" Alias "GetFileAttributesW" (ByVal lpFileName As Long) As Long
+'Private Declare Function SetFileAttributes Lib "kernel32.dll" Alias "SetFileAttributesW" (ByVal lpFileName As Long, ByVal dwFileAttributes As Long) As Long
+
 
 Public Sub ListHostsFile(objList As ListBox, objInfo As Label)
     On Error GoTo ErrorHandler:
@@ -39,9 +47,9 @@ Public Sub ListHostsFile(objList As ListBox, objInfo As Label)
         sDummy = Input(FileLenW(sHostsFile), #ff)
     Close #ff
     vContent = Split(sDummy, vbCrLf)
-    If UBound(vContent) = 0 And InStr(vContent(0), Chr(10)) > 0 Then
+    If UBound(vContent) = 0 And InStr(vContent(0), Chr$(10)) > 0 Then
         'unix style hosts file
-        vContent = Split(sDummy, Chr(10))
+        vContent = Split(sDummy, Chr$(10))
     End If
     
     objList.Clear
@@ -183,9 +191,9 @@ Public Sub HostsDeleteLine(objList As ListBox)
         sDummy = Input(FileLenW(sHostsFile), #ff)
     Close #ff
     vContent = Split(sDummy, vbCrLf)
-    If UBound(vContent) = 0 And InStr(vContent(0), Chr(10)) > 0 Then
+    If UBound(vContent) = 0 And InStr(vContent(0), Chr$(10)) > 0 Then
         'unix style hosts file
-        vContent = Split(sDummy, Chr(10))
+        vContent = Split(sDummy, Chr$(10))
     End If
     
     ff = FreeFile()
@@ -225,9 +233,9 @@ Public Sub HostsToggleLine(objList As ListBox)
         sDummy = Input(FileLenW(sHostsFile), #ff)
     Close #ff
     vContent = Split(sDummy, vbCrLf)
-    If UBound(vContent) = 0 And InStr(vContent(0), Chr(10)) > 0 Then
+    If UBound(vContent) = 0 And InStr(vContent(0), Chr$(10)) > 0 Then
         'unix style hosts file
-        vContent = Split(sDummy, Chr(10))
+        vContent = Split(sDummy, Chr$(10))
     End If
     
     With objList

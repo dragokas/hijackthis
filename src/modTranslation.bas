@@ -1,4 +1,8 @@
 Attribute VB_Name = "modTranslation"
+'
+' Translation module by Alex Dragokas
+'
+
 Option Explicit
 
 Private Const MAX_LOCALE_LINES As Long = 9999
@@ -11,11 +15,11 @@ Enum idCodePage
     UTF8 = 65001
 End Enum
 
-Private Declare Function GetUserDefaultUILanguage Lib "kernel32.dll" () As Long
-Private Declare Function GetSystemDefaultUILanguage Lib "kernel32.dll" () As Long
-Private Declare Function GetSystemDefaultLCID Lib "kernel32.dll" () As Long
-Private Declare Function GetUserDefaultLCID Lib "kernel32.dll" () As Long
-Private Declare Function GetLocaleInfo Lib "kernel32.dll" Alias "GetLocaleInfoW" (ByVal lcid As Long, ByVal LCTYPE As Long, ByVal lpLCData As Long, ByVal cchData As Long) As Long
+'Private Declare Function GetUserDefaultUILanguage Lib "kernel32.dll" () As Long
+'Private Declare Function GetSystemDefaultUILanguage Lib "kernel32.dll" () As Long
+'Private Declare Function GetSystemDefaultLCID Lib "kernel32.dll" () As Long
+'Private Declare Function GetUserDefaultLCID Lib "kernel32.dll" () As Long
+'Private Declare Function GetLocaleInfo Lib "kernel32.dll" Alias "GetLocaleInfoW" (ByVal lcid As Long, ByVal LCTYPE As Long, ByVal lpLCData As Long, ByVal cchData As Long) As Long
 Private Declare Function MultiByteToWideChar Lib "kernel32.dll" (ByVal CodePage As Long, ByVal dwFlags As Long, ByVal lpMultiByteStr As String, ByVal cchMultiByte As Long, ByVal lpWideCharStr As Long, ByVal cchWideChar As Long) As Long
 
 Private Const LOCALE_SENGLANGUAGE = &H1001&
@@ -40,20 +44,6 @@ Public TranslateNative() As String  'language selected in OS Control Panel as UI
 '            Helper functions
 ' -----------------------------------------------------------------------------
 
-'// Get locale codes
-Public Sub LoadLanguageSettings()
-    With OSver
-        .LangDisplayCode = GetUserDefaultUILanguage Mod &H10000
-        .LangDisplayName = GetLangNameByCultureCode(.LangDisplayCode)
-    
-        .LangSystemCode = GetSystemDefaultUILanguage Mod &H10000
-        .LangSystemName = GetLangNameByCultureCode(.LangSystemCode)
-    
-        .LangNonUnicodeCode = GetSystemDefaultLCID Mod &H10000
-        .LangNonUnicodeName = GetLangNameByCultureCode(.LangNonUnicodeCode)
-    End With
-End Sub
-
 '// check if languages with Cyrillic alphabet
 Function IsSlavianCultureCode(CultureCode As Long) As Boolean
     Select Case CultureCode
@@ -70,16 +60,6 @@ Public Function IsRussianLangCode(CultureCode As Long) As Boolean
     End Select
 End Function
 
-'// convert language code to name
-Function GetLangNameByCultureCode(lcid As Long) As String
-    Dim buf As String
-    Dim lr  As Long
-    buf = String(1000, 0)
-    lr = GetLocaleInfo(lcid, LOCALE_SENGLANGUAGE, StrPtr(buf), ByVal 1000&)
-    If lr Then
-        GetLangNameByCultureCode = Left$(buf, lr - 1)
-    End If
-End Function
 ' -----------------------------------------------------------------------------
 
 '// parse Lang file contents into -> gLines(). It's a temp array.
@@ -87,7 +67,7 @@ Sub ExtractLanguage(sLangFileContents As String, Optional sFileName As String) '
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "ExtractLanguage - Begin", "File: " & sFileName
 
-    Dim Lines, i As Long, idx&, ch$, pos&
+    Dim Lines() As String, i As Long, Idx&, ch$, pos&
     
     ReDim gLines(MAX_LOCALE_LINES) ' erase
     
@@ -96,14 +76,14 @@ Sub ExtractLanguage(sLangFileContents As String, Optional sFileName As String) '
     'parser of language file
     
     For i = 0 To UBound(Lines)
-        If Left(Lines(i), 1) <> ";" Then 'comment char
+        If Left$(Lines(i), 1) <> ";" Then 'comment char
             ch = Left$(Lines(i), 4)
             If Not IsNumeric(ch) Then
-                If Left$(Lines(i), 4) = "    " Then Lines(i) = Mid$(Lines(i), 5)
-                gLines(idx) = gLines(idx) & vbCrLf & Lines(i) ' continuance of last line
+                If Left$(Lines(i), 5) = "     " Then Lines(i) = Mid$(Lines(i), 6)
+                gLines(Idx) = gLines(Idx) & vbCrLf & Lines(i) ' continuance of last line
             Else
-                idx = CLng(ch)
-                If idx > UBound(Translate) Or idx < LBound(Translate) Then
+                Idx = CLng(ch)
+                If Idx > UBound(Translate) Or Idx < LBound(Translate) Then
                     'current is 9999 (look at the top of this module)
                     If 0 <> Len(Translate(570)) Then
                         MsgBoxW Replace$(Translate(570), "[]", sFileName)
@@ -115,7 +95,7 @@ Sub ExtractLanguage(sLangFileContents As String, Optional sFileName As String) '
                     Exit Sub
                 Else
                     pos = InStr(Lines(i), "=")
-                    gLines(idx) = Mid$(Lines(i), pos + 1)
+                    gLines(Idx) = Mid$(Lines(i), pos + 1)
                 End If
             End If
         End If
@@ -137,8 +117,6 @@ Public Sub LoadLanguage(lCode As Long, Force As Boolean, Optional PreLoadNativeL
     
     ReDim Translate(MAX_LOCALE_LINES)
     ReDim TranslateNative(MAX_LOCALE_LINES)
-    
-    LoadLanguageSettings
     
     'If the language for programs that do not support Unicode controls set such
     'that does not contain Cyrillic, we need to use the English localization
@@ -240,7 +218,7 @@ Sub LoadLangFile(sFileName As String, Optional ResID As Long, Optional UseResour
             End If
         End If
     End If
-    sText = ConvertCodePageW(sText, 65001) ' UTF8
+    sText = ConvertCodePageW(sText, 65001)  ' UTF8
     ExtractLanguage sText, sFileName  ' parse sText -> gLines()
     
     AppendErrorLogCustom "LoadLangFile - End"
@@ -268,7 +246,7 @@ Public Sub ReloadLanguage()
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "ReloadLanguage - Begin"
     
-    Dim i&, Translation$, pos&, ID As String
+    Dim i&, Translation$, ID As String
     Static SecondChance As Boolean
     
     Translate() = gLines()
@@ -291,7 +269,7 @@ Public Sub ReloadLanguage()
                     Case "1115": .cmdN00bTools.Caption = Translation
                     Case "1116": .cmdN00bHJTQuickStart.Caption = Translation
                     Case "1117": .cmdN00bClose.Caption = Translation
-                    Case "1118": .chkShowN00b.Caption = Translation
+                    Case "1118": .chkSkipIntroFrame.Caption = Translation
                     Case "1119": .lblInfo(9).Caption = Translation
                     
                     '; ============ Scan results window =====================
@@ -330,11 +308,11 @@ Public Sub ReloadLanguage()
                     Case "1204": .mnuTools.Caption = Translation
                     Case "1205": .mnuToolsProcMan.Caption = Translation
                     Case "1206": .mnuToolsHosts.Caption = Translation
-                    Case "1207": .mnuToolsDelFile.Caption = Translation
+                    'Case "1207": .mnuToolsDelFile.Caption = Translation
                     Case "1208": .mnuToolsUnlockAndDelFile.Caption = Translation
                     Case "1209": .mnuToolsDelFileOnReboot.Caption = Translation
                     Case "1210": .mnuToolsDelServ.Caption = Translation
-                    Case "1211": .mnuToolsUnlockRegKey.Caption = Translation
+                    Case "1211": .mnuToolsRegUnlockKey.Caption = Translation
                     Case "1212": .mnuToolsADSSpy.Caption = Translation
                     Case "1213": .mnuToolsDigiSign.Caption = Translation
                     Case "1214": .mnuToolsUninst.Caption = Translation
@@ -349,6 +327,19 @@ Public Sub ReloadLanguage()
                     Case "1223": .mnuHelpManualDutch.Caption = Translation
                     Case "1224": .mnuHelpUpdate.Caption = Translation
                     Case "1225": .mnuHelpAbout.Caption = Translation
+                    Case "1226": .mnuHelpSupport.Caption = Translation
+                    Case "1227": .mnuHelpManualSections.Caption = Translation
+                    Case "1228": .mnuHelpManualCmdKeys.Caption = Translation
+                    Case "1229": .mnuToolsReg.Caption = Translation
+                    Case "1230": .mnuToolsFiles.Caption = Translation
+                    Case "1231": .mnuToolsService.Caption = Translation
+                    Case "1232": .mnuToolsStartupList.Caption = Translation
+                    Case "1233": .mnuHelpManualBasic.Caption = Translation
+                    Case "1234": .mnuHelpManualAddition.Caption = Translation
+                    Case "1235": .mnuFileInstallHJT.Caption = Translation
+                    Case "1236": .mnuToolsShortcuts.Caption = Translation
+                    Case "1237": .mnuToolsShortcutsChecker.Caption = Translation
+                    Case "1238": .mnuToolsShortcutsFixer.Caption = Translation
                     
                     '; ========= Context menu (result window) ==========
                     
@@ -357,6 +348,9 @@ Public Sub ReloadLanguage()
                     Case "1162": .mnuResultInfo.Caption = Translation
                     Case "1163": .mnuResultSearch.Caption = Translation
                     Case "1164": .mnuResultReScan.Caption = Translation
+                    Case "1165": .mnuResultAddALLToIgnore.Caption = Translation
+                    Case "1166": .mnuResultJump.Caption = Translation
+                    Case "1167": .mnuSaveReport.Caption = Translation
                     
                     '; =========== Misc Tools (tab) ===========
                     Case "0044": .chkConfigTabs(3).Caption = Translation
@@ -394,6 +388,7 @@ Public Sub ReloadLanguage()
                     
                     Case "0140": .lblConfigInfo(18).Caption = Translation
                     Case "0141": .cmdCheckUpdate.Caption = Translation
+                    Case "0142": .chkCheckUpdatesOnStart.Caption = Translation
 
                     Case "0150": .cmdUninstall.Caption = Translation
                     Case "0152": .lblUninstallHJT.Caption = Translation
@@ -405,6 +400,9 @@ Public Sub ReloadLanguage()
                     Case "0081": .cmdConfigBackupRestore.Caption = Translation
                     Case "0082": .cmdConfigBackupDelete.Caption = Translation
                     Case "0083": .cmdConfigBackupDeleteAll.Caption = Translation
+                    Case "1570": .cmdConfigBackupCreateRegBackup.Caption = Translation
+                    Case "1571": .cmdConfigBackupCreateSRP.Caption = Translation
+                    Case "1572": .chkShowSRP.Caption = Translation
                     
                     '; ============= IgnoreList ============
                     
@@ -421,9 +419,9 @@ Public Sub ReloadLanguage()
                     Case "0050": .chkAutoMark.Caption = Translation
                     Case "0051": .chkBackup.Caption = Translation
                     Case "0052": .chkConfirm.Caption = Translation
-                    Case "0053": .chkIgnoreSafe.Caption = Translation
+                    Case "0053": .chkIgnoreSafeDomains.Caption = Translation
                     Case "0054": .chkLogProcesses.Caption = Translation
-                    Case "0055": .chkShowN00bFrame.Caption = Translation
+                    Case "0055": .chkSkipIntroFrameSettings.Caption = Translation
                     Case "0056": .chkConfigStartupScan.Caption = Translation
                     Case "0058": .chkSkipErrorMsg.Caption = Translation
                     Case "0059": .chkConfigMinimizeToTray.Caption = Translation
@@ -510,7 +508,7 @@ Public Sub ReloadLanguage()
                                     Case "1855": .optPlainText.Caption = Translation
                                     Case "1856": .OptCSV.Caption = Translation
                                     Case "1857": .cmdGo.Caption = Translation
-                                    Case "1858": .CmdExit.Caption = Translation
+                                    Case "1858": .cmdExit.Caption = Translation
                                     Case "1863": .fraFilter.Caption = Translation
                                     Case "1864": .OptAllFiles.Caption = Translation
                                     Case "1865": .OptExtension.Caption = Translation
@@ -682,6 +680,9 @@ Public Sub ReloadLanguage()
                                     Case "0764": .chkSectionHardware.Caption = Translation
                                     Case "0765": .cmdRefresh.Caption = Translation
                                     Case "0766": .cmdAbort.Caption = Translation
+                                    Case "0767": .lblInfo(0).Caption = Translation
+                                    Case "0768": .cmdSaveOK.Caption = Translation
+                                    Case "0769": .cmdSaveCancel.Caption = Translation
                                 End Select
                             End With
                         End If
@@ -705,7 +706,7 @@ Public Sub ReloadLanguage()
                                     Case "1901": .lblWhatToDo.Caption = Translation
                                     Case "1902": .chkRecur.Caption = Translation
                                     Case "1903": .cmdGo.Caption = Translation
-                                    Case "1904": .CmdExit.Caption = Translation
+                                    Case "1904": .cmdExit.Caption = Translation
                                 End Select
                             End With
                         End If
@@ -766,6 +767,8 @@ Public Sub GetInfo(ByVal sItem$)
             sMsg = Translate(403)
         Case "R3"
             sMsg = Translate(404)
+        Case "R4"
+            sMsg = Translate(434)
         Case "F0"
             sMsg = Translate(405)
         Case "F1"
@@ -1067,24 +1070,25 @@ Public Function IsRunningInIDE() As Boolean
 End Function
 
 '// converting specified CodePage to UTF-16
-Public Function ConvertCodePageW(src As String, inPage As idCodePage) As String
+Public Function ConvertCodePageW(Src As String, inPage As idCodePage) As String
     On Error GoTo ErrorHandler
     AppendErrorLogCustom "ConvertCodePageW - Begin"
     
     Dim buf   As String
-    Dim size  As Long
+    Dim Size  As Long
     
-    size = MultiByteToWideChar(inPage, 0&, src, Len(src), 0&, 0&)
-    If size > 0 Then
-        buf = String$(size, 0)
-        size = MultiByteToWideChar(inPage, 0&, src, Len(src), StrPtr(buf), Len(src))
+    Size = MultiByteToWideChar(inPage, 0&, Src, Len(Src), 0&, 0&)
+    If Size > 0 Then
+        buf = String$(Size, 0)
+        Size = MultiByteToWideChar(inPage, 0&, Src, Len(Src), StrPtr(buf), Len(Src))
     
-        If size <> 0 Then ConvertCodePageW = Left$(buf, size)
+        If Size <> 0 Then ConvertCodePageW = Left$(buf, Size)
     End If
     
     AppendErrorLogCustom "ConvertCodePageW - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "ConvertCodePageW", "src: " & src
+    ErrorMsg Err, "ConvertCodePageW", "src: " & Src
     If inIDE Then Stop: Resume Next
 End Function
+

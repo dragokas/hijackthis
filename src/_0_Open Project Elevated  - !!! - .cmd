@@ -9,7 +9,7 @@ set "ProjFile=_HijackThis.vbp"
 set "TaskName=Run HJT Project"
 
 echo.
-echo ---  Loading HiJackthis Project ...
+echo ---  Loading HiJackthis Fork Project ...
 echo.
 echo.
 
@@ -25,8 +25,8 @@ if defined TaskExist (
 ) else (
   if "%~1" neq "Admin" (
     call :GetPrivileges
-    tools\REGTLIB.EXE %SystemRoot%\System32\msdatsrc.tlb
-    tools\REGTLIB.EXE %SystemRoot%\SysWow64\msdatsrc.tlb
+    tools\RegTLib\REGTLIB.EXE %SystemRoot%\System32\msdatsrc.tlb
+    tools\RegTLib\REGTLIB.EXE %SystemRoot%\SysWow64\msdatsrc.tlb
     regsvr32.exe /s MSCOMCTL.OCX
   ) else (
     call :CreateTask

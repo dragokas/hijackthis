@@ -62,37 +62,37 @@ Public Sub Main()
         Using
         End
     End If
-    
+
     If UBound(argv) < 1 Then
         Using "Недостаточно аргументов."
         End
     End If
-        
+
     aVer = Split(argv(1), ".")
-        
+
     If UBound(aVer) < 3 Then
         Using "Версия указана в неверном формате."
         End
     End If
-    
+
     PathToResourceFile = argv(0)
-    
+
     If 0 = Len(Dir$(PathToResourceFile)) Then
         Using "Указанный файл не существует."
         End
     End If
-    
+
     Ver.Major = aVer(0)
     Ver.Minor = aVer(1)
     Ver.Build = aVer(2)
     Ver.Revision = aVer(3)
-    
+
     LogPath = App.Path & "\EnumResReport.txt"
-    
+
     ff = FreeFile()
     Open LogPath For Output As #ff
-    
-    'GetManifestLangCodeFromFile = -1
+
+    GetManifestLangCodeFromFile = -1
     
     hModule = LoadLibrary(PathToResourceFile)
     

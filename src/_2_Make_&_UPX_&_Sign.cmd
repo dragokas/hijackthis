@@ -1,7 +1,7 @@
 
 :: Project builder by Alex Dragokas
 
-:: This is visual Basic 6 project builder                               [ ver. 1.6 private ]
+:: This is visual Basic 6 project builder                               [ ver. 1.9 private ]
 :: which provide backup system with local version management
 
 :: Script contains third party software:
@@ -40,7 +40,7 @@ set ProjFile=
 set AppName=
 
 :: Do not use UPX (false - use it)
-set NoUPX=false
+set NoUPX=true
 
 :: List of file extensions and additional folders in project's directory to include in zip-backup
 set arcList=*.vbp *.vbw *.res *.exe *.frm *.frx *.lvw *.cmd *.csi *.csv *.txt *.log *.PDM *.SCC *.lng *.pdb *.tlb *.ocx *.dll *.md *.gitignore *.bak
@@ -66,7 +66,17 @@ set SignScript_2=
 :: Version Patcher EXE (support for 'build' field of PE EXE version)
 set VerPatcher=Tools\VersionPatcher\VersionPatcher.exe
 
+:: Dll characteristics flags patcher => ASLR + DEP + Terminal Services aware
+set FlagsPatcher=Tools\TSAwarePatch\TSAwarePatch.exe
 
+:: Check debug symbols for matching? (true / false)
+set CheckPDB=true
+set CheckPDB_tool=tools\ChkMatch\ChkMatch.exe
+
+:: Check for viruses via Virustotal
+set CheckVT=true
+set VTScanToolPath=tools\Aitotal\Aitotal.exe
+set VTScanToolArg=/min /scan
 
 :: -------------------------------------------------------------------------------------------
 
@@ -199,6 +209,9 @@ call :UpdateProject
 "%VerPatcher%" "%cd%\%AppName%" %newVersion%
 :::::::::::::::::::::::::::::::
 
+:: TS aware + ASLR + DEP
+"%FlagsPatcher%" "%cd%\%AppName%"
+
 :: for update checker (in future)
 > "%cd%\HiJackThis-update.txt" set /p "=%newVersion%"<NUL
 
@@ -226,6 +239,19 @@ ping -n 2 127.1 >NUL
 if exist "%SignScript_1%" call "%SignScript_1%" "%cd%\%AppName%" /silent
 if exist "%SignScript_2%" call "%SignScript_2%" "%cd%\%AppName%" /silent
 
+For /F "delims=" %%a in ("%AppName%") do set "AppTitle=%%~na"
+
+:: Checking debug. symbols for matching the image
+if /i "%CheckPDB%"=="true" (
+  echo Checking debug. symbols ...
+  "%CheckPDB_tool%" -c "%cd%\%AppTitle%.exe" "%cd%\%AppTitle%.pdb" | find /i "Result: Matched" || (
+    "%CheckPDB_tool%" -c "%cd%\%AppTitle%.exe" "%cd%\%AppTitle%.pdb"
+    echo.
+    pause
+    echo.
+  )
+)
+
 :: Creating backup
 echo.
 2>NUL md "%ArcFolder%"
@@ -237,8 +263,6 @@ Tools\7zip\7za.exe a -mx9 -y -o"%ArcFolder%" "%ArcFolder%\%ProjTitle%_%newVersio
   echo.
   pause
 )
-
-For /F "delims=" %%a in ("%AppName%") do set "AppTitle=%%~na"
 
 :: For server uploading
 
@@ -255,18 +279,24 @@ if %errorlevel% neq 0 (pause & exit /B)
 copy /y "%cd%\%AppTitle%.exe" "%AppTitle%_dbg.exe"
 Tools\7zip\7za.exe a -mx9 -y -o"%cd%" "%AppTitle%_dbg.zip" "%AppTitle%_dbg.exe"
 
+:: Pseudo-polymorph
+copy /y "%cd%\%AppTitle%.exe" "HJT_poly.pif"
+:: remove signature
+Tools\RemoveSign\RemSign.exe "%cd%\HJT_poly.pif"
+:: pack
+Tools\7zip\7za.exe a -mx9 -y -o"%cd%" "%AppTitle%_poly.zip" "HJT_poly.pif"
+
 :: For Vir Labs
-del %AppTitle%.ex_ 2>NUL
-ren "%cd%\%AppTitle%.exe" %AppTitle%.ex_
+copy /y "%cd%\%AppTitle%.exe" %AppTitle%.ex_
 
 if exist "_%AppTitle%_pass_infected.zip" del /f "_%AppTitle%_pass_infected.zip"
 if exist "_%AppTitle%_pass_virus.zip" del /f "_%AppTitle%_pass_virus.zip"
 if exist "_%AppTitle%_pass_clean.zip" del /f "_%AppTitle%_pass_clean.zip"
 :: Pack
-Tools\7zip\7za.exe a -mx9 -pinfected -y -o"%cd%" "_%AppTitle%_pass_infected.zip" "%cd%\%AppTitle%.ex_"
-Tools\7zip\7za.exe a -mx9 -pvirus -y -o"%cd%" "_%AppTitle%_pass_virus.zip" "%cd%\%AppTitle%.ex_"
-Tools\7zip\7za.exe a -mx9 -pclean -y -o"%cd%" "_%AppTitle%_pass_clean.zip" "%cd%\%AppTitle%.ex_"
-ren "%cd%\%AppTitle%.ex_" %AppTitle%.exe
+Tools\7zip\7za.exe a -mx1 -pinfected -y -o"%cd%" "_%AppTitle%_pass_infected.zip" "%cd%\%AppTitle%.ex_"
+Tools\7zip\7za.exe a -mx1 -pvirus -y -o"%cd%" "_%AppTitle%_pass_virus.zip" "%cd%\%AppTitle%.ex_"
+Tools\7zip\7za.exe a -mx1 -pclean -y -o"%cd%" "_%AppTitle%_pass_clean.zip" "%cd%\%AppTitle%.ex_"
+del "%cd%\%AppTitle%.ex_"
 :: Test
 Tools\7zip\7za.exe t -pinfected "%cd%\_%AppTitle%_pass_infected.zip"
 if %errorlevel% neq 0 (pause & exit /B)
@@ -279,6 +309,11 @@ copy /y MSCOMCTL.OCX.bak MSCOMCTL.OCX
 copy /y HiJackThis.zip HiJackThis_test.zip
 del /f /a /q *.tmp 2>NUL
 del tools\VersionPatcher\EnumResReport.txt
+
+set ch=Y
+if /i "%CheckVT%"=="true" set /p "ch=Check on VirusTotal? (Y/N) "
+if /i "%ch%"=="N" set CheckVT=false
+if /i "%CheckVT%"=="true" start "" /min "%VTScanToolPath%" %VTScanToolArg% "%cd%\%AppTitle%.exe"
 
 ::ping -n 2 127.1 >NUL
 
@@ -392,13 +427,14 @@ Exit /B
     ) || (
     call :IsBeginWith "%%~d" "%SystemRoot%\System32" "%SystemRoot%\SysWOW64" && (
       rem substitute correct bitness
-      if "%OSBitness%"=="x32" (
-        echo %%a#%%b#%%c#%SystemRoot%\System32\%%~nxd#%%e
-      ) else (
-        echo %%a#%%b#%%c#%SystemRoot%\SysWOW64\%%~nxd#%%e
-      )
+      rem if "%OSBitness%"=="x32" (
+      rem  echo %%a#%%b#%%c#%SystemRoot%\System32\%%~nxd#%%e
+      rem ) else (
+      rem  echo %%a#%%b#%%c#%SystemRoot%\SysWOW64\%%~nxd#%%e
+      rem )
+      echo %%a#%%b#%%c#%%~nxd#%%e
     ) || (
-      echo %%a#%%b#%%c#%%d#%%e      
+      echo %%a#%%b#%%c#%%d#%%e
     ))
   )) >> "%ProjFile%_"
   :: skip 1-st line (Type=Exe) and References lines

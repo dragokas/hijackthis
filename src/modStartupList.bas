@@ -11,74 +11,10 @@ Attribute VB_Name = "modStartupList"
 
 Option Explicit
 
-Private Declare Function ReadFile Lib "kernel32.dll" (ByVal hFile As Long, lpBuffer As Any, ByVal nNumberOfBytesToRead As Long, lpNumberOfBytesRead As Long, lpOverlapped As Any) As Long
-Private Declare Function CreateFile Lib "kernel32.dll" Alias "CreateFileA" (ByVal lpFileName As String, ByVal dwDesiredAccess As Long, ByVal dwShareMode As Long, lpSecurityAttributes As Any, ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, ByVal hTemplateFile As Long) As Long
-Private Declare Function GetFileSize Lib "kernel32.dll" (ByVal hFile As Long, lpFileSizeHigh As Long) As Long
-Private Declare Function SetFilePointer Lib "kernel32.dll" (ByVal hFile As Long, ByVal lDistanceToMove As Long, lpDistanceToMoveHigh As Long, ByVal dwMoveMethod As Long) As Long
-Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
-Private Declare Function GetFileAttributes Lib "kernel32.dll" Alias "GetFileAttributesA" (ByVal lpFileName As String) As Long
-
-Private Declare Function GetSaveFileName Lib "comdlg32.dll" Alias "GetSaveFileNameA" (pOpenfilename As OPENFILENAME) As Long
-
-Private Declare Function SetForegroundWindow Lib "user32.dll" (ByVal hWnd As Long) As Long
-Private Declare Function WaitForInputIdle Lib "user32.dll" (ByVal hProcess As Long, ByVal dwMilliseconds As Long) As Long
-Private Declare Function SendMessage Lib "user32.dll" Alias "SendMessageA" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, lParam As Any) As Long
-Private Declare Function ShellExecuteEx Lib "shell32.dll" (SEI As SHELLEXECUTEINFO) As Long
-'Private Declare Function SendInput Lib "user32.dll" (ByVal nInputs As Long, pInputs As GENERALINPUT, ByVal cbSize As Long) As Long
-Private Declare Function FindWindow Lib "user32.dll" Alias "FindWindowA" (ByVal lpClassName As String, ByVal lpWindowName As String) As Long
-Private Declare Function FindWindowEx Lib "user32.dll" Alias "FindWindowExA" (ByVal hWnd1 As Long, ByVal hWnd2 As Long, ByVal lpsz1 As String, ByVal lpsz2 As String) As Long
-
-Public Declare Sub Sleep Lib "kernel32.dll" (ByVal dwMilliseconds As Long)
-Public Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (ByRef pDest As Any, ByRef pSource As Any, ByVal length As Long)
-Public Declare Function GetTickCount Lib "kernel32.dll" () As Long
-
-Private Declare Function LoadString Lib "user32.dll" Alias "LoadStringA" (ByVal hInstance As Long, ByVal wID As Long, ByVal lpBuffer As String, ByVal nBufferMax As Long) As Long
-Private Declare Function LoadLibrary Lib "kernel32.dll" Alias "LoadLibraryA" (ByVal lpLibFileName As String) As Long
-Private Declare Function FreeLibrary Lib "kernel32.dll" (ByVal hLibModule As Long) As Long
-
-Private Declare Function CLSIDFromString Lib "ole32.dll" (ByVal lpszProgID As Long, pCLSID As GUID) As Long
-
-Private Declare Function RegOpenKeyEx Lib "advapi32.dll" Alias "RegOpenKeyExA" (ByVal hKey As Long, ByVal lpSubKey As String, ByVal ulOptions As Long, ByVal samDesired As Long, phkResult As Long) As Long
-Private Declare Function RegCloseKey Lib "advapi32.dll" (ByVal hKey As Long) As Long
-Private Declare Function RegEnumKeyEx Lib "advapi32.dll" Alias "RegEnumKeyExA" (ByVal hKey As Long, ByVal dwIndex As Long, ByVal lpName As String, lpcbName As Long, ByVal lpReserved As Long, ByVal lpClass As String, lpcbClass As Long, lpftLastWriteTime As Any) As Long
-Private Declare Function RegEnumValue Lib "advapi32.dll" Alias "RegEnumValueA" (ByVal hKey As Long, ByVal dwIndex As Long, ByVal lpValueName As String, lpcbValueName As Long, ByVal lpReserved As Long, lpType As Long, lpData As Byte, lpcbData As Long) As Long
-Private Declare Function RegQueryValueEx Lib "advapi32.dll" Alias "RegQueryValueExA" (ByVal hKey As Long, ByVal lpValueName As String, ByVal lpReserved As Long, lpType As Long, lpData As Any, lpcbData As Long) As Long
-Private Declare Function RegQueryInfoKey Lib "advapi32.dll" Alias "RegQueryInfoKeyA" (ByVal hKey As Long, ByVal lpClass As String, lpcbClass As Long, ByVal lpReserved As Long, lpcSubKeys As Long, lpcbMaxSubKeyLen As Long, lpcbMaxClassLen As Long, lpcValues As Long, lpcbMaxValueNameLen As Long, lpcbMaxValueLen As Long, lpcbSecurityDescriptor As Long, lpftLastWriteTime As Any) As Long
-
-Private Const HKEY_CLASSES_ROOT = &H80000000
-Private Const HKEY_CURRENT_USER = &H80000001
-Private Const HKEY_LOCAL_MACHINE = &H80000002
-Private Const HKEY_USERS = &H80000003
-
-Private Const KEY_QUERY_VALUE = &H1
-Private Const KEY_ENUMERATE_SUB_KEYS = &H8
-Private Const KEY_NOTIFY = &H10
-Private Const SYNCHRONIZE = &H100000
-Private Const READ_CONTROL = &H20000
-Private Const STANDARD_RIGHTS_READ = (READ_CONTROL)
-Private Const KEY_READ = ((STANDARD_RIGHTS_READ Or KEY_QUERY_VALUE Or KEY_ENUMERATE_SUB_KEYS Or KEY_NOTIFY) And (Not SYNCHRONIZE))
-
-Private Const REG_NONE = 0
-Private Const REG_SZ = 1
-Private Const REG_EXPAND_SZ = 2
-Private Const REG_BINARY = 3
-Private Const REG_DWORD = 4
-Private Const REG_DWORD_LITTLE_ENDIAN = 4
-Private Const REG_DWORD_BIG_ENDIAN = 5
-Private Const REG_LINK = 6
-Private Const REG_MULTI_SZ = 7
-
-Private Type GUID
-    Data1 As Long
-    Data2 As Integer
-    Data3 As Integer
-    Data4(7) As Byte
-End Type
-
 Private Type SHELLEXECUTEINFO
     cbSize As Long
     fMask As Long
-    hWnd As Long
+    hwnd As Long
     lpVerb As String
     lpFile As String
     lpParameters As String
@@ -108,7 +44,7 @@ Private Type OPENFILENAME
     nMaxFileTitle As Long
     lpstrInitialDir As String
     lpstrTitle As String
-    flags As Long
+    Flags As Long
     nFileOffset As Integer
     nFileExtension As Integer
     lpstrDefExt As String
@@ -125,10 +61,67 @@ Private Type KEYBDINPUT
     dwExtraInfo As Long
 End Type
 
-Private Type GENERALINPUT
-    dwType As Long
-    xi(0 To 23) As Byte
-End Type
+'Private Type GENERALINPUT
+'    dwType As Long
+'    xi(0 To 23) As Byte
+'End Type
+
+Private Declare Function ReadFile Lib "kernel32.dll" (ByVal hFile As Long, lpBuffer As Any, ByVal nNumberOfBytesToRead As Long, lpNumberOfBytesRead As Long, lpOverlapped As Any) As Long
+Private Declare Function CreateFile Lib "kernel32.dll" Alias "CreateFileA" (ByVal lpFileName As String, ByVal dwDesiredAccess As Long, ByVal dwShareMode As Long, lpSecurityAttributes As Any, ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, ByVal hTemplateFile As Long) As Long
+Private Declare Function GetFileSize Lib "kernel32.dll" (ByVal hFile As Long, lpFileSizeHigh As Long) As Long
+'Private Declare Function SetFilePointer Lib "kernel32.dll" (ByVal hFile As Long, ByVal lDistanceToMove As Long, lpDistanceToMoveHigh As Long, ByVal dwMoveMethod As Long) As Long
+Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
+Private Declare Function GetFileAttributes Lib "kernel32.dll" Alias "GetFileAttributesA" (ByVal lpFileName As String) As Long
+
+Private Declare Function GetSaveFileName Lib "comdlg32.dll" Alias "GetSaveFileNameA" (pOpenfilename As OPENFILENAME) As Long
+
+Private Declare Function SetForegroundWindow Lib "user32.dll" (ByVal hwnd As Long) As Long
+Private Declare Function WaitForInputIdle Lib "user32.dll" (ByVal hProcess As Long, ByVal dwMilliseconds As Long) As Long
+Private Declare Function SendMessage Lib "user32.dll" Alias "SendMessageA" (ByVal hwnd As Long, ByVal wMsg As Long, ByVal wParam As Long, lParam As Any) As Long
+Private Declare Function ShellExecuteEx Lib "shell32.dll" (SEI As SHELLEXECUTEINFO) As Long
+'Private Declare Function SendInput Lib "user32.dll" (ByVal nInputs As Long, pInputs As GENERALINPUT, ByVal cbSize As Long) As Long
+Private Declare Function FindWindow Lib "user32.dll" Alias "FindWindowA" (ByVal lpClassName As String, ByVal lpWindowName As String) As Long
+Private Declare Function FindWindowEx Lib "user32.dll" Alias "FindWindowExA" (ByVal hWnd1 As Long, ByVal hWnd2 As Long, ByVal lpsz1 As String, ByVal lpsz2 As String) As Long
+
+'Private Declare Sub Sleep Lib "kernel32.dll" (ByVal dwMilliseconds As Long)
+'Private Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (ByRef pDest As Any, ByRef pSource As Any, ByVal length As Long)
+Private Declare Function GetTickCount Lib "kernel32.dll" () As Long
+
+Private Declare Function LoadString Lib "user32.dll" Alias "LoadStringA" (ByVal hInstance As Long, ByVal wID As Long, ByVal lpBuffer As String, ByVal nBufferMax As Long) As Long
+Private Declare Function LoadLibrary Lib "kernel32.dll" Alias "LoadLibraryA" (ByVal lpLibFileName As String) As Long
+Private Declare Function FreeLibrary Lib "kernel32.dll" (ByVal hLibModule As Long) As Long
+
+'Private Declare Function CLSIDFromString Lib "ole32.dll" (ByVal lpszProgID As Long, pCLSID As GUID) As Long
+
+Private Declare Function RegOpenKeyEx Lib "advapi32.dll" Alias "RegOpenKeyExA" (ByVal hKey As Long, ByVal lpSubKey As String, ByVal ulOptions As Long, ByVal samDesired As Long, phkResult As Long) As Long
+Private Declare Function RegCloseKey Lib "advapi32.dll" (ByVal hKey As Long) As Long
+Private Declare Function RegEnumKeyEx Lib "advapi32.dll" Alias "RegEnumKeyExA" (ByVal hKey As Long, ByVal dwIndex As Long, ByVal lpName As String, lpcbName As Long, ByVal lpReserved As Long, ByVal lpClass As String, lpcbClass As Long, lpftLastWriteTime As Any) As Long
+Private Declare Function RegEnumValue Lib "advapi32.dll" Alias "RegEnumValueA" (ByVal hKey As Long, ByVal dwIndex As Long, ByVal lpValueName As String, lpcbValueName As Long, ByVal lpReserved As Long, lpType As Long, lpData As Byte, lpcbData As Long) As Long
+Private Declare Function RegQueryValueEx Lib "advapi32.dll" Alias "RegQueryValueExA" (ByVal hKey As Long, ByVal lpValueName As String, ByVal lpReserved As Long, lpType As Long, lpData As Any, lpcbData As Long) As Long
+Private Declare Function RegQueryInfoKey Lib "advapi32.dll" Alias "RegQueryInfoKeyA" (ByVal hKey As Long, ByVal lpClass As String, lpcbClass As Long, ByVal lpReserved As Long, lpcSubKeys As Long, lpcbMaxSubKeyLen As Long, lpcbMaxClassLen As Long, lpcValues As Long, lpcbMaxValueNameLen As Long, lpcbMaxValueLen As Long, lpcbSecurityDescriptor As Long, lpftLastWriteTime As Any) As Long
+
+'Private Const HKEY_CLASSES_ROOT = &H80000000
+'Private Const HKEY_CURRENT_USER = &H80000001
+'Private Const HKEY_LOCAL_MACHINE = &H80000002
+'Private Const HKEY_USERS = &H80000003
+
+Private Const KEY_QUERY_VALUE = &H1
+Private Const KEY_ENUMERATE_SUB_KEYS = &H8
+Private Const KEY_NOTIFY = &H10
+Private Const SYNCHRONIZE = &H100000
+Private Const READ_CONTROL = &H20000
+Private Const STANDARD_RIGHTS_READ = (READ_CONTROL)
+Private Const KEY_READ = ((STANDARD_RIGHTS_READ Or KEY_QUERY_VALUE Or KEY_ENUMERATE_SUB_KEYS Or KEY_NOTIFY) And (Not SYNCHRONIZE))
+
+Private Const REG_NONE = 0
+Private Const REG_SZ = 1
+Private Const REG_EXPAND_SZ = 2
+Private Const REG_BINARY = 3
+Private Const REG_DWORD = 4
+Private Const REG_DWORD_LITTLE_ENDIAN = 4
+Private Const REG_DWORD_BIG_ENDIAN = 5
+Private Const REG_LINK = 6
+Private Const REG_MULTI_SZ = 7
 
 Private Const FILE_ATTRIBUTE_DIRECTORY = &H10
 
@@ -261,8 +254,8 @@ Public Function StartupList_UpdateCaption(frm As Form) As Long
 End Function
     
 
-Public Sub Status(s$)
-    frmStartupList2.stbStatus.SimpleText = s
+Public Sub Status(S$)
+    frmStartupList2.stbStatus.SimpleText = S
     DoEvents
 End Sub
 
@@ -294,13 +287,13 @@ Public Function CmnDialogSave$(sTitle$, sDefFile$, sFilter$)
     Dim uOFN As OPENFILENAME
     With uOFN
         .lStructSize = Len(uOFN)
-        .hWndOwner = frmStartupList2.hWnd
-        .lpstrFile = sDefFile & String$(260 - Len(sDefFile), 0)
+        .hWndOwner = frmStartupList2.hwnd
+        .lpstrFile = sDefFile & String$(MAX_PATH - Len(sDefFile), 0)
         .lpstrFilter = Replace$(sFilter, "|", Chr$(0)) & Chr$(0) & Chr$(0)
         .lpstrInitialDir = App.Path
         .lpstrTitle = sTitle
         .nMaxFile = Len(.lpstrFile)
-        .flags = OFN_HIDEREADONLY Or OFN_NONETWORKBUTTON Or OFN_PATHMUSTEXIST Or OFN_OVERWRITEPROMPT
+        .Flags = OFN_HIDEREADONLY Or OFN_NONETWORKBUTTON Or OFN_PATHMUSTEXIST Or OFN_OVERWRITEPROMPT
         GetSaveFileName uOFN
         CmnDialogSave = TrimNull(.lpstrFile)
     End With
@@ -312,7 +305,7 @@ Public Sub ShowFile(sFile$)
     If Not FileExists(sFile) Then Exit Sub
     With sSEI
         .cbSize = Len(sSEI)
-        .hWnd = frmStartupList2.hWnd
+        .hwnd = frmStartupList2.hwnd
         .lpFile = sWinDir & "\explorer.exe"
         .lpParameters = "/select," & sFile
         .lpVerb = "open"
@@ -325,8 +318,8 @@ End Sub
 Public Sub SendToNotepad(sFile$)
     If Not FileExists(sFile) Then Exit Sub
     Dim sNotepad$
-    sNotepad = RegGetString(HKEY_CLASSES_ROOT, ".txt", vbNullString)
-    sNotepad = EnvironW(RegGetString(HKEY_CLASSES_ROOT, sNotepad & "\shell\open\command", vbNullString))
+    sNotepad = Reg.GetString(HKEY_CLASSES_ROOT, ".txt", vbNullString)
+    sNotepad = EnvironW(Reg.GetString(HKEY_CLASSES_ROOT, sNotepad & "\shell\open\command", vbNullString))
     If sNotepad <> vbNullString Then
         sNotepad = Left$(sNotepad, InStr(1, sNotepad, ".exe", vbTextCompare) + 3)
         If Not FileExists(sNotepad) Then sNotepad = sWinDir & "\notepad.exe"
@@ -335,7 +328,7 @@ Public Sub SendToNotepad(sFile$)
     Dim sSEI As SHELLEXECUTEINFO
     With sSEI
         .cbSize = Len(sSEI)
-        .hWnd = frmStartupList2.hWnd
+        .hwnd = frmStartupList2.hwnd
         '.lpFile = sWinDir & "\notepad.exe"
         .lpFile = sNotepad
         .lpVerb = "open"
@@ -396,22 +389,24 @@ End Function
 Public Sub GetUsernames()
     ReDim sUsernames(0)
     Dim sKeys$(), i%
-    sKeys = Split(RegEnumSubKeys(HKEY_USERS, vbNullString), "|")
+    sKeys = Split(Reg.EnumSubKeys(HKEY_USERS, vbNullString), "|")
     For i = 0 To UBound(sKeys)
         If InStr(1, sKeys(i), "_Classes", vbTextCompare) = 0 Then
             ReDim Preserve sUsernames(UBound(sUsernames) + 1)
             sUsernames(UBound(sUsernames) - 1) = sKeys(i)
         End If
     Next i
+    If UBound(sUsernames) > 0 Then
     ReDim Preserve sUsernames(UBound(sUsernames) - 1)
+    End If
 End Sub
 
 Public Sub GetHardwareCfgs()
     Dim lDefault&, lCurrent&, lLastKnownGood&, lFailed&
-    lDefault = RegGetDword(HKEY_LOCAL_MACHINE, "System\Select", "Default")
-    lCurrent = RegGetDword(HKEY_LOCAL_MACHINE, "System\Select", "Current")
-    lLastKnownGood = RegGetDword(HKEY_LOCAL_MACHINE, "System\Select", "LastKnownGood")
-    lFailed = RegGetDword(HKEY_LOCAL_MACHINE, "System\Select", "Failed")
+    lDefault = Reg.GetDword(HKEY_LOCAL_MACHINE, "System\Select", "Default")
+    lCurrent = Reg.GetDword(HKEY_LOCAL_MACHINE, "System\Select", "Current")
+    lLastKnownGood = Reg.GetDword(HKEY_LOCAL_MACHINE, "System\Select", "LastKnownGood")
+    lFailed = Reg.GetDword(HKEY_LOCAL_MACHINE, "System\Select", "Failed")
     
     ReDim sHardwareCfgs(0)
     sHardwareCfgs(0) = "ControlSet" & Format$(lCurrent, "000")
@@ -433,10 +428,10 @@ Public Function MapControlSetToHardwareCfg$(sControlSet$)
     Dim lThisCS&, lDefault&, lCurrent&, lFailed&, lLKG&
     lThisCS = Val(Right$(sControlSet, 3))
     
-    lDefault = RegGetDword(HKEY_LOCAL_MACHINE, "System\Select", "Default")
-    lCurrent = RegGetDword(HKEY_LOCAL_MACHINE, "System\Select", "Current")
-    lFailed = RegGetDword(HKEY_LOCAL_MACHINE, "System\Select", "Failed")
-    lLKG = RegGetDword(HKEY_LOCAL_MACHINE, "System\Select", "LastKnownGood")
+    lDefault = Reg.GetDword(HKEY_LOCAL_MACHINE, "System\Select", "Default")
+    lCurrent = Reg.GetDword(HKEY_LOCAL_MACHINE, "System\Select", "Current")
+    lFailed = Reg.GetDword(HKEY_LOCAL_MACHINE, "System\Select", "Failed")
+    lLKG = Reg.GetDword(HKEY_LOCAL_MACHINE, "System\Select", "LastKnownGood")
     
     Select Case lThisCS
         Case lDefault: MapControlSetToHardwareCfg = "Default"
@@ -446,70 +441,12 @@ Public Function MapControlSetToHardwareCfg$(sControlSet$)
     End Select
 End Function
 
-Public Sub RegistryJump(sRegKey$)
-    Dim i&, lHive&, sKey$, uSEI As SHELLEXECUTEINFO
-    Dim hwndRegedit&, hwndTreeView&, hwndListView&
-    'verify the key actually exists
-    Select Case UCase$(Left$(sRegKey, InStr(sRegKey, "\") - 1))
-        Case "HKEY_CLASSES_ROOT": lHive = HKEY_CLASSES_ROOT
-        Case "HKEY_CURRENT_USER": lHive = HKEY_CURRENT_USER
-        Case "HKEY_LOCAL_MACHINE": lHive = HKEY_LOCAL_MACHINE
-        Case "HKEY_USERS": lHive = HKEY_USERS
-        Case Else: Exit Sub
-    End Select
-    sKey = Mid$(sRegKey, InStr(sRegKey, "\") + 1)
-    If Not RegKeyExists(lHive, sKey) Then Exit Sub
-    
-    'start regedit and wait until it's done loading
-    With uSEI
-        .cbSize = Len(uSEI)
-        .lpVerb = "open"
-        .lpFile = BuildPath(sWinDir, "regedit.exe")
-        .fMask = SEE_MASK_NOCLOSEPROCESS
-        .nShow = SW_SHOWNORMAL
-    End With
-    If ShellExecuteEx(uSEI) = 0 Then
-        Status "Unable to start Regedit."
-        Exit Sub
-    End If
-    WaitForInputIdle uSEI.hProcess, 10000
-    
-    'find the regedit window and it's components
-    hwndRegedit = FindWindow("RegEdit_RegEdit", vbNullString)
-    hwndTreeView = FindWindowEx(hwndRegedit, 0, "SysTreeView32", vbNullString)
-    hwndListView = FindWindowEx(hwndRegedit, 0, "SysListView32", vbNullString)
-    If hwndTreeView = 0 Or hwndListView = 0 Then
-        'Unable to start Regedit.
-        Status Translate(2100)
-        Exit Sub
-    End If
-    SetForegroundWindow hwndRegedit
-    
-    'if regedit was already open, collapse any open keys
-    For i = 0 To 20
-        SendMessage hwndTreeView, WM_KEYDOWN, VK_LEFT, 0
-    Next i
-    SendMessage hwndTreeView, WM_KEYDOWN, VK_HOME, 0
-    SendMessage hwndTreeView, WM_KEYDOWN, VK_RIGHT, 0
-    
-    'type out the key we want to jump to
-    For i = 1 To Len(sRegKey)
-        Select Case Mid$(sRegKey, i, 1)
-            Case "\": SendMessage hwndTreeView, WM_KEYDOWN, VK_RIGHT, 0
-            Case Else: SendMessage hwndTreeView, WM_CHAR, Asc(UCase$(Mid$(sRegKey, i, 1))), 0
-        End Select
-        DoEvents
-        Sleep 50
-    Next i
-    SendMessage hwndTreeView, WM_KEYDOWN, VK_RIGHT, 0
-End Sub
-
-Public Sub RegistryJump_(sRegKey$)
+Public Sub Jump_(sRegKey$)
     'this sub has a bug! if regkeys exist similar to the target that
     'contain spaces, things are screwed up. e.g. a jump to any
     '"Internet Explorer" key will fail if there is also a key
     '"Internet Account Manager" present. the space is somehow to blame.
-    Dim i&, lHive&, sKey$, sKeyStrokes$
+    Dim lHive&, sKey$, sKeyStrokes$
     'verify the key actually exists
     Select Case UCase$(Left$(sRegKey, InStr(sRegKey, "\") - 1))
         Case "HKEY_CLASSES_ROOT": lHive = HKEY_CLASSES_ROOT
@@ -519,7 +456,7 @@ Public Sub RegistryJump_(sRegKey$)
         Case Else: Exit Sub
     End Select
     sKey = Mid$(sRegKey, InStr(sRegKey, "\") + 1)
-    If Not RegKeyExists(lHive, sKey) Then Exit Sub
+    If Not Reg.KeyExists(lHive, sKey) Then Exit Sub
     
     Shell BuildPath(sWinDir, "regedit.exe"), vbNormalFocus
     'Shell "notepad.exe", vbNormalFocus
@@ -588,7 +525,7 @@ Public Function GetStringResFromDLL$(sFile$, iResID%)
     If FileExists(sFile) Then
         hMod = LoadLibrary(sFile)
         If hMod > 0 Then
-            sBuf = String$(260, 0)
+            sBuf = String$(MAX_PATH, 0)
             lLen = LoadString(hMod, Abs(iResID), sBuf, Len(sBuf))
             If lLen > 0 Then GetStringResFromDLL = TrimNull(sBuf)
             FreeLibrary hMod
@@ -613,7 +550,7 @@ Public Sub RunScannerGetMD5(sFile$, sKey$)
     sAppVer = "StartupList" & App.Major & "." & Format$(App.Minor, "00") & "." & App.Revision
     sSection = GetRunScannerItem(GetSectionFromKey(sKey), sKey)
         
-    ShellRun "http://www.runscanner.net/getMD5.aspx?" & _
+    ShellRun "https://www.runscanner.net/getMD5.aspx?" & _
       "MD5=" & sMD5 & _
       "&source=" & sAppVer & _
       "&item=" & sSection
@@ -624,7 +561,7 @@ Public Sub RunScannerGetCLSID(sCLSID$, sKey$)
     sAppVer = "StartupList" & App.Major & "." & Format$(App.Minor, "00") & "." & App.Revision
     sSection = GetRunScannerItem(GetSectionFromKey(sKey), sKey)
     
-    ShellRun "http://www.runscanner.net/getGUID.aspx?GUID=" & sCLSID & _
+    ShellRun "https://www.runscanner.net/getGUID.aspx?GUID=" & sCLSID & _
           "&source=StartupList" & App.Major & "." & Format$(App.Minor, "00") & "." & App.Revision
 End Sub
 
@@ -667,7 +604,7 @@ Private Function GetRunScannerItem$(sSection$, sKey$)
             If sKey = "IniMapping0" Then
                 GetRunScannerItem = "034"
             Else
-                If CInt(Right(sKey, 1)) Mod 2 = 0 Then
+                If CInt(Right$(sKey, 1)) Mod 2 = 0 Then
                     GetRunScannerItem = "140"
                 Else
                     GetRunScannerItem = "139"
@@ -820,9 +757,9 @@ Public Function NodeIsValidRegkey(objNode As Node) As Boolean
 End Function
 
 Public Function NodeExists(sKey$) As Boolean
-    Dim s$
+    Dim S$
     On Error Resume Next
-    s = frmStartupList2.tvwMain.Nodes(sKey).Text
+    S = frmStartupList2.tvwMain.Nodes(sKey).Text
     If Err Then
     'If s <> vbNullString Then
         NodeExists = False
@@ -853,14 +790,14 @@ Public Sub RegEnumIEBands(tvwMain As TreeView)
     If RegOpenKeyEx(HKEY_CLASSES_ROOT, "CLSID", 0, KEY_READ, hKey) = 0 Then
         RegQueryInfoKey hKey, vbNullString, 0, 0, lNumItems, 0, 0, 0, 0, 0, 0, ByVal 0
         
-        sCLSID = String$(260, 0)
+        sCLSID = String$(MAX_PATH, 0)
         Do Until RegEnumKeyEx(hKey, i, sCLSID, Len(sCLSID), 0, vbNullString, 0, ByVal 0) <> 0
             sCLSID = TrimNull(sCLSID)
     
-            If RegKeyExists(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\Implemented Categories\{00021493-0000-0000-C000-000000000046}") Or _
-               RegKeyExists(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\Implemented Categories\{00021494-0000-0000-C000-000000000046}") Then
-                sName = RegGetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, vbNullString)
-                sFile = EnvironW(RegGetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InprocServer32", vbNullString))
+            If Reg.KeyExists(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\Implemented Categories\{00021493-0000-0000-C000-000000000046}") Or _
+               Reg.KeyExists(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\Implemented Categories\{00021494-0000-0000-C000-000000000046}") Then
+                sName = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, vbNullString)
+                sFile = EnvironW(Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InprocServer32", vbNullString))
                 sFile = GetLongFilename(sFile)
                 If bShowCLSIDs Then
                     tvwMain.Nodes.Add "IEBands", tvwChild, "IEBands" & i, sName & " - " & sCLSID & " - " & sFile, "dll"
@@ -870,7 +807,7 @@ Public Sub RegEnumIEBands(tvwMain As TreeView)
                 tvwMain.Nodes("IEBands" & i).Tag = GuessFullpathFromAutorun(sFile)
             End If
     
-            sCLSID = String$(260, 0)
+            sCLSID = String$(MAX_PATH, 0)
             i = i + 1
             If i Mod 100 = 0 And lNumItems > 0 Then
                 'Loading... Internet Explorer Bands
@@ -901,7 +838,7 @@ Public Sub RegEnumKillBits(tvwMain As TreeView)
     'HKLM\Software\Microsoft\Internet Explorer\ActiveXCompatibility
     'note: this sub will not show all set Killbits - only those that
     'are actually blocking a CLSID+File that exists on the system.
-    Dim sKey$, lNumItems&
+    Dim sKey$
     sKey = "Software\Microsoft\Internet Explorer\ActiveX Compatibility"
     tvwMain.Nodes.Add "DisabledEnums", tvwChild, "Killbits", SEC_KILLBITS, "msie"
     tvwMain.Nodes("Killbits").Tag = "HKEY_LOCAL_MACHINE\" & sKey
@@ -910,14 +847,14 @@ Public Sub RegEnumKillBits(tvwMain As TreeView)
     If RegOpenKeyEx(HKEY_LOCAL_MACHINE, sKey, 0, KEY_READ, hKey) = 0 Then
         'RegQueryInfoKey hKey, vbNullString, 0, 0, lNumItems, 0, 0, 0, 0, 0, 0, ByVal 0
         
-        sCLSID = String$(260, 0)
+        sCLSID = String$(MAX_PATH, 0)
         Do Until RegEnumKeyEx(hKey, i, sCLSID, Len(sCLSID), 0, vbNullString, 0, ByVal 0) <> 0
             sCLSID = TrimNull(sCLSID)
         
-            lKill = RegGetDword(HKEY_LOCAL_MACHINE, sKey & "\" & sCLSID, "Compatibility Flags")
+            lKill = Reg.GetDword(HKEY_LOCAL_MACHINE, sKey & "\" & sCLSID, "Compatibility Flags")
             If lKill = 1024 Then
-                sName = RegGetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, vbNullString)
-                sFile = ExpandEnvironmentVars(RegGetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InprocServer32", vbNullString))
+                sName = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, vbNullString)
+                sFile = ExpandEnvironmentVars(Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InprocServer32", vbNullString))
                 sFile = GetLongFilename(sFile)
                 If sFile <> vbNullString Then
                     If sName = vbNullString Then sName = "(no name)"
@@ -930,7 +867,7 @@ Public Sub RegEnumKillBits(tvwMain As TreeView)
                 End If
             End If
             
-            sCLSID = String$(260, 0)
+            sCLSID = String$(MAX_PATH, 0)
             i = i + 1
             'If i Mod 100 = 0 And lNumItems<> 0Then
             '    Status "Loading... ActiveX killbits (" & CInt(CLng(i) * 100 / lNumItems) & "%, " & i & " CLSIDs)"
@@ -954,7 +891,7 @@ End Sub
 
 Public Sub RegEnumZones(tvwMain As TreeView)
     Dim sKey$, sZoneNames$(), i&, lNumItems&
-    Dim hKey&, sDomain$, lZone&, sIcon$, sSubkeys$(), J&, sRange$
+    Dim hKey&, sDomain$, lZone&, sIcon$, sSubkeys$(), j&, sRange$
     If bAbort Then Exit Sub
     'Loading... Trusted sites & Restricted sites
     Status Translate(923)
@@ -963,9 +900,9 @@ Public Sub RegEnumZones(tvwMain As TreeView)
     
     'Loading... Trusted sites & Restricted sites (this user)
     Status Translate(924)
-    sZoneNames = Split(RegEnumSubKeys(HKEY_CURRENT_USER, sKey & "\Zones"), "|")
+    sZoneNames = Split(Reg.EnumSubKeys(HKEY_CURRENT_USER, sKey & "\Zones"), "|")
     For i = 0 To UBound(sZoneNames)
-        sZoneNames(i) = RegGetString(HKEY_CURRENT_USER, sKey & "\Zones\" & sZoneNames(i), "DisplayName")
+        sZoneNames(i) = Reg.GetString(HKEY_CURRENT_USER, sKey & "\Zones\" & sZoneNames(i), "DisplayName")
     Next i
     tvwMain.Nodes.Add "Zones", tvwChild, "ZonesUser", "This user", "user"
     'add root keys for zones
@@ -981,15 +918,15 @@ Public Sub RegEnumZones(tvwMain As TreeView)
             RegCloseKey hKey
             GoTo CheckHKCURanges:
         End If
-        sDomain = String$(260, 0)
+        sDomain = String$(MAX_PATH, 0)
         i = 0
         'loop through subkeys and add them to proper zone
         Do Until RegEnumKeyEx(hKey, i, sDomain, Len(sDomain), 0, vbNullString, 0, ByVal 0) <> 0
             If RegValExists(HKEY_CURRENT_USER, sKey & "\ZoneMap\Domains\" & sDomain, "http") Then
-                lZone = RegGetDword(HKEY_CURRENT_USER, sKey & "\ZoneMap\Domains\" & sDomain, "http")
+                lZone = Reg.GetDword(HKEY_CURRENT_USER, sKey & "\ZoneMap\Domains\" & sDomain, "http")
             Else
                 If RegValExists(HKEY_CURRENT_USER, sKey & "\ZoneMap\Domains\" & sDomain, "*") Then
-                    lZone = RegGetDword(HKEY_CURRENT_USER, sKey & "\ZoneMap\Domains\" & sDomain, "*")
+                    lZone = Reg.GetDword(HKEY_CURRENT_USER, sKey & "\ZoneMap\Domains\" & sDomain, "*")
                 End If
             End If
             
@@ -1005,19 +942,19 @@ Public Sub RegEnumZones(tvwMain As TreeView)
                 tvwMain.Nodes.Add "ZonesUser" & CStr(lZone), tvwChild, "ZonesUser" & CStr(lZone) & i, sDomain, sIcon
             End If
             'check for subdomains
-            sSubkeys = Split(RegEnumSubKeys(HKEY_CURRENT_USER, sKey & "\ZoneMap\Domains\" & sDomain), "|")
+            sSubkeys = Split(Reg.EnumSubKeys(HKEY_CURRENT_USER, sKey & "\ZoneMap\Domains\" & sDomain), "|")
             If UBound(sSubkeys) > -1 Then
-                For J = 0 To UBound(sSubkeys)
-                    If RegValExists(HKEY_CURRENT_USER, sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(J), "http") Then
-                        lZone = RegGetDword(HKEY_CURRENT_USER, sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(J), "http")
+                For j = 0 To UBound(sSubkeys)
+                    If RegValExists(HKEY_CURRENT_USER, sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(j), "http") Then
+                        lZone = Reg.GetDword(HKEY_CURRENT_USER, sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(j), "http")
                     Else
-                        If RegValExists(HKEY_CURRENT_USER, sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(J), "*") Then
-                            lZone = RegGetDword(HKEY_CURRENT_USER, sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(J), "*")
+                        If RegValExists(HKEY_CURRENT_USER, sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(j), "*") Then
+                            lZone = Reg.GetDword(HKEY_CURRENT_USER, sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(j), "*")
                         End If
                     End If
                     
-                    If RegValExists(HKEY_CURRENT_USER, sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(J), "http") Or _
-                       RegValExists(HKEY_CURRENT_USER, sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(J), "*") Then
+                    If RegValExists(HKEY_CURRENT_USER, sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(j), "http") Or _
+                       RegValExists(HKEY_CURRENT_USER, sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(j), "*") Then
                         Select Case lZone
                             Case 0, 1: sIcon = "system"
                             Case 2: sIcon = "good"
@@ -1025,11 +962,11 @@ Public Sub RegEnumZones(tvwMain As TreeView)
                             Case 4: sIcon = "bad"
                             Case Else: sIcon = "internet"
                         End Select
-                        tvwMain.Nodes.Add "ZonesUser" & CStr(lZone), tvwChild, "ZonesUser" & CStr(lZone) & i & "s" & J, sSubkeys(J) & "." & sDomain, sIcon
+                        tvwMain.Nodes.Add "ZonesUser" & CStr(lZone), tvwChild, "ZonesUser" & CStr(lZone) & i & "s" & j, sSubkeys(j) & "." & sDomain, sIcon
                     End If
-                Next J
+                Next j
             End If
-            sDomain = String$(260, 0)
+            sDomain = String$(MAX_PATH, 0)
             i = i + 1
             If bShowLargeZones And i Mod 100 = 0 And lNumItems > 0 Then
                 'Loading... Trusted sites & Restricted sites (this user,
@@ -1046,12 +983,12 @@ Public Sub RegEnumZones(tvwMain As TreeView)
 CheckHKCURanges:
     If RegOpenKeyEx(HKEY_CURRENT_USER, sKey & "\ZoneMap\Ranges", 0, KEY_READ, hKey) = 0 Then
         'RegQueryInfoKey hKey, vbNullString, 0, 0, lNumItems, 0, 0, 0, 0, 0, 0, ByVal 0
-        sDomain = String$(260, 0)
+        sDomain = String$(MAX_PATH, 0)
         i = 0
         Do Until RegEnumKeyEx(hKey, i, sDomain, Len(sDomain), 0, vbNullString, 0, ByVal 0) <> 0
             sDomain = TrimNull(sDomain)
-            sRange = RegGetString(HKEY_CURRENT_USER, sKey & "\ZoneMap\Ranges\" & sDomain, ":Range")
-            lZone = RegGetDword(HKEY_CURRENT_USER, sKey & "\ZoneMap\Ranges\" & sDomain, "*")
+            sRange = Reg.GetString(HKEY_CURRENT_USER, sKey & "\ZoneMap\Ranges\" & sDomain, ":Range")
+            lZone = Reg.GetDword(HKEY_CURRENT_USER, sKey & "\ZoneMap\Ranges\" & sDomain, "*")
             
             If Trim$(sRange) <> vbNullString Then
                 Select Case lZone
@@ -1064,7 +1001,7 @@ CheckHKCURanges:
                 tvwMain.Nodes.Add "ZonesUser" & CStr(lZone), tvwChild, "ZonesUser" & CStr(lZone) & "Range" & i, sRange, sIcon
             End If
             
-            sDomain = String$(260, 0)
+            sDomain = String$(MAX_PATH, 0)
             i = i + 1
             If bShowLargeZones And i Mod 100 = 0 And lNumItems > 0 Then
                 'Loading... Trusted sites & Restricted sites (this user,
@@ -1096,9 +1033,9 @@ CheckHKCURanges:
     
     'Loading... Trusted sites & Restricted sites (all users)
     Status Translate(925)
-    sZoneNames = Split(RegEnumSubKeys(HKEY_LOCAL_MACHINE, sKey & "\Zones"), "|")
+    sZoneNames = Split(Reg.EnumSubKeys(HKEY_LOCAL_MACHINE, sKey & "\Zones"), "|")
     For i = 0 To UBound(sZoneNames)
-        sZoneNames(i) = RegGetString(HKEY_LOCAL_MACHINE, sKey & "\Zones\" & sZoneNames(i), "DisplayName")
+        sZoneNames(i) = Reg.GetString(HKEY_LOCAL_MACHINE, sKey & "\Zones\" & sZoneNames(i), "DisplayName")
     Next i
     tvwMain.Nodes.Add "Zones", tvwChild, "ZonesSystem", "All users", "users"
     For i = 0 To UBound(sZoneNames)
@@ -1114,14 +1051,14 @@ CheckHKCURanges:
             GoTo CheckHKLMRanges:
         End If
         
-        sDomain = String$(260, 0)
+        sDomain = String$(MAX_PATH, 0)
         i = 0
         Do Until RegEnumKeyEx(hKey, i, sDomain, Len(sDomain), 0, vbNullString, 0, ByVal 0) <> 0
             If RegValExists(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Domains\" & sDomain, "http") Then
-                lZone = RegGetDword(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Domains\" & sDomain, "http")
+                lZone = Reg.GetDword(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Domains\" & sDomain, "http")
             Else
                 If RegValExists(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Domains\" & sDomain, "*") Then
-                    lZone = RegGetDword(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Domains\" & sDomain, "*")
+                    lZone = Reg.GetDword(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Domains\" & sDomain, "*")
                 End If
             End If
             
@@ -1137,19 +1074,19 @@ CheckHKCURanges:
                 tvwMain.Nodes.Add "ZonesSystem" & CStr(lZone), tvwChild, "ZonesSystem" & CStr(lZone) & i, sDomain, sIcon
             End If
             'check for subdomains
-            sSubkeys = Split(RegEnumSubKeys(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Domains\" & sDomain), "|")
+            sSubkeys = Split(Reg.EnumSubKeys(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Domains\" & sDomain), "|")
             If UBound(sSubkeys) > -1 Then
-                For J = 0 To UBound(sSubkeys)
-                    If RegValExists(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(J), "http") Then
-                        lZone = RegGetDword(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(J), "http")
+                For j = 0 To UBound(sSubkeys)
+                    If RegValExists(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(j), "http") Then
+                        lZone = Reg.GetDword(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(j), "http")
                     Else
-                        If RegValExists(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(J), "*") Then
-                            lZone = RegGetDword(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(J), "*")
+                        If RegValExists(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(j), "*") Then
+                            lZone = Reg.GetDword(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(j), "*")
                         End If
                     End If
                     
-                    If RegValExists(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(J), "http") Or _
-                       RegValExists(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(J), "*") Then
+                    If RegValExists(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(j), "http") Or _
+                       RegValExists(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(j), "*") Then
                         Select Case lZone
                             Case 0, 1: sIcon = "system"
                             Case 2: sIcon = "good"
@@ -1157,12 +1094,12 @@ CheckHKCURanges:
                             Case 4: sIcon = "bad"
                             Case Else: sIcon = "internet"
                         End Select
-                        tvwMain.Nodes.Add "ZonesSystem" & CStr(lZone), tvwChild, "ZonesUser" & CStr(lZone) & i & "s" & J, sSubkeys(J) & "." & sDomain, sIcon
+                        tvwMain.Nodes.Add "ZonesSystem" & CStr(lZone), tvwChild, "ZonesUser" & CStr(lZone) & i & "s" & j, sSubkeys(j) & "." & sDomain, sIcon
                     End If
-                Next J
+                Next j
             End If
             
-            sDomain = String$(260, 0)
+            sDomain = String$(MAX_PATH, 0)
             i = i + 1
             If bShowLargeZones And i Mod 100 = 0 And lNumItems > 0 Then
                 'Loading... Trusted sites & Restricted sites (all users,
@@ -1179,12 +1116,12 @@ CheckHKCURanges:
 CheckHKLMRanges:
     If RegOpenKeyEx(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Ranges", 0, KEY_READ, hKey) = 0 Then
         'RegQueryInfoKey hKey, vbNullString, 0, 0, lNumItems, 0, 0, 0, 0, 0, 0, ByVal 0
-        sDomain = String$(260, 0)
+        sDomain = String$(MAX_PATH, 0)
         i = 0
         Do Until RegEnumKeyEx(hKey, i, sDomain, Len(sDomain), 0, vbNullString, 0, ByVal 0) <> 0
             sDomain = TrimNull(sDomain)
-            sRange = RegGetString(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Ranges\" & sDomain, ":Range")
-            lZone = RegGetDword(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Ranges\" & sDomain, "*")
+            sRange = Reg.GetString(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Ranges\" & sDomain, ":Range")
+            lZone = Reg.GetDword(HKEY_LOCAL_MACHINE, sKey & "\ZoneMap\Ranges\" & sDomain, "*")
             
             If Trim$(sRange) <> vbNullString Then
                 Select Case lZone
@@ -1197,7 +1134,7 @@ CheckHKLMRanges:
                 tvwMain.Nodes.Add "ZonesSystem" & CStr(lZone), tvwChild, "ZonesSystem" & CStr(lZone) & "Range" & i, sRange, sIcon
             End If
             
-            sDomain = String$(260, 0)
+            sDomain = String$(MAX_PATH, 0)
             i = i + 1
             If bShowLargeZones And i Mod 100 = 0 And lNumItems > 0 Then
                 'Loading... Trusted sites & Restricted sites (all users,
@@ -1252,14 +1189,14 @@ CheckHKLMRanges:
                 End If
                 
                 'loop through subkeys and add them to proper zone
-                sDomain = String$(260, 0)
+                sDomain = String$(MAX_PATH, 0)
                 i = 0
                 Do Until RegEnumKeyEx(hKey, i, sDomain, Len(sDomain), 0, vbNullString, 0, ByVal 0) <> 0
                     If RegValExists(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Domains\" & sDomain, "http") Then
-                        lZone = RegGetDword(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Domains\" & sDomain, "http")
+                        lZone = Reg.GetDword(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Domains\" & sDomain, "http")
                     Else
                         If RegValExists(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Domains\" & sDomain, "*") Then
-                            lZone = RegGetDword(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Domains\" & sDomain, "*")
+                            lZone = Reg.GetDword(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Domains\" & sDomain, "*")
                         End If
                     End If
                     
@@ -1275,20 +1212,20 @@ CheckHKLMRanges:
                         tvwMain.Nodes.Add sUsernames(l) & "ZonesUser" & CStr(lZone), tvwChild, sUsernames(l) & "ZonesUser" & CStr(lZone) & i, sDomain, sIcon
                     End If
                     'check for subdomains
-                    sSubkeys = Split(RegEnumSubKeys(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Domains\" & sDomain), "|")
+                    sSubkeys = Split(Reg.EnumSubKeys(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Domains\" & sDomain), "|")
                     If UBound(sSubkeys) > -1 Then
-                        For J = 0 To UBound(sSubkeys)
+                        For j = 0 To UBound(sSubkeys)
                             
-                            If RegValExists(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(J), "http") Then
-                                lZone = RegGetDword(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(J), "http")
+                            If RegValExists(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(j), "http") Then
+                                lZone = Reg.GetDword(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(j), "http")
                             Else
-                                If RegValExists(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(J), "*") Then
-                                    lZone = RegGetDword(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(J), "*")
+                                If RegValExists(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(j), "*") Then
+                                    lZone = Reg.GetDword(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(j), "*")
                                 End If
                             End If
                             
-                            If RegValExists(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(J), "http") Or _
-                               RegValExists(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(J), "*") Then
+                            If RegValExists(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(j), "http") Or _
+                               RegValExists(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Domains\" & sDomain & "\" & sSubkeys(j), "*") Then
                                 Select Case lZone
                                     Case 0, 1: sIcon = "system"
                                     Case 2: sIcon = "good"
@@ -1296,13 +1233,13 @@ CheckHKLMRanges:
                                     Case 4: sIcon = "bad"
                                     Case Else: sIcon = "internet"
                                 End Select
-                                tvwMain.Nodes.Add sUsernames(l) & "ZonesUser" & CStr(lZone), tvwChild, sUsernames(l) & "ZonesUser" & CStr(lZone) & i & "s" & J, sSubkeys(J) & "." & sDomain, sIcon
+                                tvwMain.Nodes.Add sUsernames(l) & "ZonesUser" & CStr(lZone), tvwChild, sUsernames(l) & "ZonesUser" & CStr(lZone) & i & "s" & j, sSubkeys(j) & "." & sDomain, sIcon
                             End If
-                        Next J
+                        Next j
                     End If
                     
                     i = i + 1
-                    sDomain = String$(260, 0)
+                    sDomain = String$(MAX_PATH, 0)
                     If bShowLargeZones And i Mod 100 = 0 And lNumItems > 0 Then
                         'Loading... Trusted sites & Restricted sites
                         Status Translate(925) & " (" & sUsername & ", " & CInt(CLng(i) * 100 / lNumItems) & "%, " & i & " domains)"
@@ -1318,12 +1255,12 @@ CheckHKLMRanges:
 CheckUserRanges:
             If RegOpenKeyEx(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Ranges", 0, KEY_READ, hKey) = 0 Then
                 'RegQueryInfoKey hKey, vbNullString, 0, 0, lNumItems, 0, 0, 0, 0, 0, 0, ByVal 0
-                sDomain = String$(260, 0)
+                sDomain = String$(MAX_PATH, 0)
                 i = 0
                 Do Until RegEnumKeyEx(hKey, i, sDomain, Len(sDomain), 0, vbNullString, 0, ByVal 0) <> 0
                     sDomain = TrimNull(sDomain)
-                    sRange = RegGetString(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Ranges\" & sDomain, ":Range")
-                    lZone = RegGetDword(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Ranges\" & sDomain, "*")
+                    sRange = Reg.GetString(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Ranges\" & sDomain, ":Range")
+                    lZone = Reg.GetDword(HKEY_USERS, sUsernames(l) & "\" & sKey & "\ZoneMap\Ranges\" & sDomain, "*")
                     
                     If lZone > 0 And Trim$(sRange) <> vbNullString Then
                         Select Case lZone
@@ -1336,7 +1273,7 @@ CheckUserRanges:
                         tvwMain.Nodes.Add sUsernames(l) & "ZonesUser" & CStr(lZone), tvwChild, sUsernames(l) & "ZonesUser" & CStr(lZone) & "Range" & i, sRange, sIcon
                     End If
                     
-                    sDomain = String$(260, 0)
+                    sDomain = String$(MAX_PATH, 0)
                     i = i + 1
                     If bShowLargeZones And i Mod 100 = 0 And lNumItems > 0 Then
                         'Loading... Trusted sites & Restricted sites
@@ -1376,7 +1313,7 @@ Public Sub RegEnumDriverFilters(tvwMain As TreeView)
     If bAbort Then Exit Sub
     tvwMain.Nodes.Add "System", tvwChild, "DriverFilters", SEC_DRIVERFILTERS, "dll"
     
-    Dim hKey&, i&, J&, sKey$, sName$, sLFilters$(), sUFilters$()
+    Dim hKey&, i&, j&, sKey$, sName$, sLFilters$(), sUFilters$()
     Dim sClassKey$, sDeviceKey$
     sClassKey = "System\CurrentControlSet\Control\Class"
     sDeviceKey = "System\CurrentControlSet\Enum"
@@ -1385,13 +1322,13 @@ Public Sub RegEnumDriverFilters(tvwMain As TreeView)
     tvwMain.Nodes("DriverFiltersClass").Tag = "HKEY_LOCAL_MACHINE\" & sClassKey
     tvwMain.Nodes("DriverFiltersClass").Sorted = True
     If RegOpenKeyEx(HKEY_LOCAL_MACHINE, sClassKey, 0, KEY_READ, hKey) = 0 Then
-        sKey = String$(260, 0)
+        sKey = String$(MAX_PATH, 0)
         Do Until RegEnumKeyEx(hKey, i, sKey, Len(sKey), 0, vbNullString, 0, ByVal 0) <> 0
             sKey = TrimNull(sKey)
-            sName = RegGetString(HKEY_LOCAL_MACHINE, sClassKey & "\" & sKey, vbNullString)
+            sName = Reg.GetString(HKEY_LOCAL_MACHINE, sClassKey & "\" & sKey, vbNullString)
             If sName = vbNullString Then sName = "(no name)"
-            sLFilters = Split(RegGetString(HKEY_LOCAL_MACHINE, sClassKey & "\" & sKey, "LowerFilters", False), Chr$(0))
-            sUFilters = Split(RegGetString(HKEY_LOCAL_MACHINE, sClassKey & "\" & sKey, "UpperFilters", False), Chr$(0))
+            sLFilters = Split(Reg.GetString(HKEY_LOCAL_MACHINE, sClassKey & "\" & sKey, "LowerFilters", False), Chr$(0))
+            sUFilters = Split(Reg.GetString(HKEY_LOCAL_MACHINE, sClassKey & "\" & sKey, "UpperFilters", False), Chr$(0))
             'root key for device
             If UBound(sLFilters) > 0 Or UBound(sUFilters) > 0 Then
                 tvwMain.Nodes.Add "DriverFiltersClass", tvwChild, "DriverFiltersClass" & i, sName, "hardware"
@@ -1401,39 +1338,39 @@ Public Sub RegEnumDriverFilters(tvwMain As TreeView)
             If UBound(sUFilters) > 0 Then
                 tvwMain.Nodes.Add "DriverFiltersClass" & i, tvwChild, "DriverFiltersClass" & i & "Upper", "Upper filters", "dll"
                 tvwMain.Nodes("DriverFiltersClass" & i & "Upper").Tag = "HKEY_LOCAL_MACHINE\" & sClassKey & "\" & sKey
-                For J = 0 To UBound(sUFilters)
-                    If Trim$(sUFilters(J)) <> vbNullString Then
-                        sName = sUFilters(J) & ".sys"
+                For j = 0 To UBound(sUFilters)
+                    If Trim$(sUFilters(j)) <> vbNullString Then
+                        sName = sUFilters(j) & ".sys"
                         If FileExists(sSysDir & "\drivers\" & sName) Then
                             sName = BuildPath(sSysDir & "\drivers\", sName)
                         Else
                             sName = GuessFullpathFromAutorun(sName)
                         End If
-                        tvwMain.Nodes.Add "DriverFiltersClass" & i & "Upper", tvwChild, "DriverFiltersClass" & i & "Upper" & J, sUFilters(J) & ".sys", "dll"
-                        tvwMain.Nodes("DriverFiltersClass" & i & "Upper" & J).Tag = sName
+                        tvwMain.Nodes.Add "DriverFiltersClass" & i & "Upper", tvwChild, "DriverFiltersClass" & i & "Upper" & j, sUFilters(j) & ".sys", "dll"
+                        tvwMain.Nodes("DriverFiltersClass" & i & "Upper" & j).Tag = sName
                     End If
-                Next J
+                Next j
             End If
             'lower filters
             If UBound(sLFilters) > 0 Then
                 tvwMain.Nodes.Add "DriverFiltersClass" & i, tvwChild, "DriverFiltersClass" & i & "Lower", "Lower filters", "dll"
                 tvwMain.Nodes("DriverFiltersClass" & i & "Lower").Tag = "HKEY_LOCAL_MACHINE\" & sClassKey & "\" & sKey
-                For J = 0 To UBound(sLFilters)
-                    If Trim$(sLFilters(J)) <> vbNullString Then
-                        sName = sLFilters(J) & ".sys"
+                For j = 0 To UBound(sLFilters)
+                    If Trim$(sLFilters(j)) <> vbNullString Then
+                        sName = sLFilters(j) & ".sys"
                         If FileExists(sSysDir & "\drivers\" & sName) Then
                             sName = BuildPath(sSysDir & "\drivers\", sName)
                         Else
                             sName = GuessFullpathFromAutorun(sName)
                         End If
-                        tvwMain.Nodes.Add "DriverFiltersClass" & i & "Lower", tvwChild, "DriverFiltersClass" & i & "Lower" & J, sLFilters(J) & ".sys", "dll"
-                        tvwMain.Nodes("DriverFiltersClass" & i & "Lower" & J).Tag = sName
+                        tvwMain.Nodes.Add "DriverFiltersClass" & i & "Lower", tvwChild, "DriverFiltersClass" & i & "Lower" & j, sLFilters(j) & ".sys", "dll"
+                        tvwMain.Nodes("DriverFiltersClass" & i & "Lower" & j).Tag = sName
                     End If
-                Next J
+                Next j
             End If
             
             
-            sKey = String$(260, 0)
+            sKey = String$(MAX_PATH, 0)
             i = i + 1
             If bAbort Then
                 RegCloseKey hKey
@@ -1450,23 +1387,23 @@ Public Sub RegEnumDriverFilters(tvwMain As TreeView)
     tvwMain.Nodes.Add "DriverFilters", tvwChild, "DriverFiltersDevice", "Device filters", "dll"
     tvwMain.Nodes("DriverFiltersDevice").Tag = "HKEY_LOCAL_MACHINE\" & sDeviceKey
     tvwMain.Nodes("DriverFiltersDevice").Sorted = True
-    Dim sSections$(), sDevices$(), sSubkeys$(), k&, M&
+    Dim sSections$(), sDevices$(), sSubkeys$(), K&, M&
     'this fucking sucks
-    sSections = Split(RegEnumSubKeys(HKEY_LOCAL_MACHINE, sDeviceKey), "|")
+    sSections = Split(Reg.EnumSubKeys(HKEY_LOCAL_MACHINE, sDeviceKey), "|")
     For i = 0 To UBound(sSections)
-        sDevices = Split(RegEnumSubKeys(HKEY_LOCAL_MACHINE, sDeviceKey & "\" & sSections(i)), "|")
-        For J = 0 To UBound(sDevices)
-            sSubkeys = Split(RegEnumSubKeys(HKEY_LOCAL_MACHINE, sDeviceKey & "\" & sSections(i) & "\" & sDevices(J)), "|")
-            For k = 0 To UBound(sSubkeys)
-                sName = RegGetString(HKEY_LOCAL_MACHINE, sDeviceKey & "\" & sSections(i) & "\" & sDevices(J) & "\" & sSubkeys(k), "DeviceDesc")
+        sDevices = Split(Reg.EnumSubKeys(HKEY_LOCAL_MACHINE, sDeviceKey & "\" & sSections(i)), "|")
+        For j = 0 To UBound(sDevices)
+            sSubkeys = Split(Reg.EnumSubKeys(HKEY_LOCAL_MACHINE, sDeviceKey & "\" & sSections(i) & "\" & sDevices(j)), "|")
+            For K = 0 To UBound(sSubkeys)
+                sName = Reg.GetString(HKEY_LOCAL_MACHINE, sDeviceKey & "\" & sSections(i) & "\" & sDevices(j) & "\" & sSubkeys(K), "DeviceDesc")
                 If sName = vbNullString Then sName = "(no name)"
-                sUFilters = Split(RegGetString(HKEY_LOCAL_MACHINE, sDeviceKey & "\" & sSections(i) & "\" & sDevices(J) & "\" & sSubkeys(k), "UpperFilters", False), Chr$(0))
-                sLFilters = Split(RegGetString(HKEY_LOCAL_MACHINE, sDeviceKey & "\" & sSections(i) & "\" & sDevices(J) & "\" & sSubkeys(k), "LowerFilters", False), Chr$(0))
+                sUFilters = Split(Reg.GetString(HKEY_LOCAL_MACHINE, sDeviceKey & "\" & sSections(i) & "\" & sDevices(j) & "\" & sSubkeys(K), "UpperFilters", False), Chr$(0))
+                sLFilters = Split(Reg.GetString(HKEY_LOCAL_MACHINE, sDeviceKey & "\" & sSections(i) & "\" & sDevices(j) & "\" & sSubkeys(K), "LowerFilters", False), Chr$(0))
                 If UBound(sUFilters) > 0 Or UBound(sLFilters) > 0 Then
-                    tvwMain.Nodes.Add "DriverFiltersDevice", tvwChild, "DriverFiltersDevice" & i & "." & J & "." & k, sName, "hardware"
+                    tvwMain.Nodes.Add "DriverFiltersDevice", tvwChild, "DriverFiltersDevice" & i & "." & j & "." & K, sName, "hardware"
                 End If
                 If UBound(sUFilters) > 0 Then
-                    tvwMain.Nodes.Add "DriverFiltersDevice" & i & "." & J & "." & k, tvwChild, "DriverFiltersDevice" & i & "." & J & "." & k & "Upper", "Upper filters", "dll"
+                    tvwMain.Nodes.Add "DriverFiltersDevice" & i & "." & j & "." & K, tvwChild, "DriverFiltersDevice" & i & "." & j & "." & K & "Upper", "Upper filters", "dll"
                     For M = 0 To UBound(sUFilters)
                         If Trim$(sUFilters(M)) <> vbNullString Then
                             sName = sUFilters(M) & ".sys"
@@ -1475,13 +1412,13 @@ Public Sub RegEnumDriverFilters(tvwMain As TreeView)
                             Else
                                 sName = GuessFullpathFromAutorun(sName)
                             End If
-                            tvwMain.Nodes.Add "DriverFiltersDevice" & i & "." & J & "." & k & "Upper", tvwChild, "DriverFiltersDevice" & i & "." & J & "." & k & "Upper" & M, sUFilters(M) & ".sys", "dll"
-                            tvwMain.Nodes("DriverFiltersDevice" & i & "." & J & "." & k & "Upper" & M).Tag = sName
+                            tvwMain.Nodes.Add "DriverFiltersDevice" & i & "." & j & "." & K & "Upper", tvwChild, "DriverFiltersDevice" & i & "." & j & "." & K & "Upper" & M, sUFilters(M) & ".sys", "dll"
+                            tvwMain.Nodes("DriverFiltersDevice" & i & "." & j & "." & K & "Upper" & M).Tag = sName
                         End If
                     Next M
                 End If
                 If UBound(sLFilters) > 0 Then
-                    tvwMain.Nodes.Add "DriverFiltersDevice" & i & "." & J & "." & k, tvwChild, "DriverFiltersDevice" & i & "." & J & "." & k & "Lower", "Lower filters", "dll"
+                    tvwMain.Nodes.Add "DriverFiltersDevice" & i & "." & j & "." & K, tvwChild, "DriverFiltersDevice" & i & "." & j & "." & K & "Lower", "Lower filters", "dll"
                     For M = 0 To UBound(sLFilters)
                         If Trim$(sLFilters(M)) <> vbNullString Then
                             sName = sLFilters(M) & ".sys"
@@ -1490,14 +1427,14 @@ Public Sub RegEnumDriverFilters(tvwMain As TreeView)
                             Else
                                 sName = GuessFullpathFromAutorun(sName)
                             End If
-                            tvwMain.Nodes.Add "DriverFiltersDevice" & i & "." & J & "." & k & "Lower", tvwChild, "DriverFiltersDevice" & i & "." & J & "." & k & "Lower" & M, sLFilters(M) & ".sys", "dll"
-                            tvwMain.Nodes("DriverFiltersDevice" & i & "." & J & "." & k & "Lower" & M).Tag = sName
+                            tvwMain.Nodes.Add "DriverFiltersDevice" & i & "." & j & "." & K & "Lower", tvwChild, "DriverFiltersDevice" & i & "." & j & "." & K & "Lower" & M, sLFilters(M) & ".sys", "dll"
+                            tvwMain.Nodes("DriverFiltersDevice" & i & "." & j & "." & K & "Lower" & M).Tag = sName
                         End If
                     Next M
                 End If
                 If bAbort Then Exit Sub
-            Next k
-        Next J
+            Next K
+        Next j
     Next i
     If tvwMain.Nodes("DriverFiltersDevice").Children = 0 And Not bShowEmpty Then
         tvwMain.Nodes.Remove "DriverFiltersDevice"
@@ -1519,13 +1456,13 @@ Public Sub RegEnumDriverFilters(tvwMain As TreeView)
         tvwMain.Nodes(sHardwareCfgs(l) & "DriverFiltersClass").Tag = "HKEY_LOCAL_MACHINE\" & sClassKey
         tvwMain.Nodes(sHardwareCfgs(l) & "DriverFiltersClass").Sorted = True
         If RegOpenKeyEx(HKEY_LOCAL_MACHINE, sClassKey, 0, KEY_READ, hKey) = 0 Then
-            sKey = String$(260, 0)
+            sKey = String$(MAX_PATH, 0)
             Do Until RegEnumKeyEx(hKey, i, sKey, Len(sKey), 0, vbNullString, 0, ByVal 0) <> 0
                 sKey = TrimNull(sKey)
-                sName = RegGetString(HKEY_LOCAL_MACHINE, sClassKey & "\" & sKey, vbNullString)
+                sName = Reg.GetString(HKEY_LOCAL_MACHINE, sClassKey & "\" & sKey, vbNullString)
                 If sName = vbNullString Then sName = "(no name)"
-                sLFilters = Split(RegGetString(HKEY_LOCAL_MACHINE, sClassKey & "\" & sKey, "LowerFilters", False), Chr$(0))
-                sUFilters = Split(RegGetString(HKEY_LOCAL_MACHINE, sClassKey & "\" & sKey, "UpperFilters", False), Chr$(0))
+                sLFilters = Split(Reg.GetString(HKEY_LOCAL_MACHINE, sClassKey & "\" & sKey, "LowerFilters", False), Chr$(0))
+                sUFilters = Split(Reg.GetString(HKEY_LOCAL_MACHINE, sClassKey & "\" & sKey, "UpperFilters", False), Chr$(0))
                 'root key for device
                 If UBound(sLFilters) > 0 Or UBound(sUFilters) > 0 Then
                     tvwMain.Nodes.Add sHardwareCfgs(l) & "DriverFiltersClass", tvwChild, sHardwareCfgs(l) & "DriverFiltersClass" & i, sName, "hardware"
@@ -1535,39 +1472,39 @@ Public Sub RegEnumDriverFilters(tvwMain As TreeView)
                 If UBound(sUFilters) > 0 Then
                     tvwMain.Nodes.Add sHardwareCfgs(l) & "DriverFiltersClass" & i, tvwChild, sHardwareCfgs(l) & "DriverFiltersClass" & i & "Upper", "Upper filters", "dll"
                     tvwMain.Nodes(sHardwareCfgs(l) & "DriverFiltersClass" & i & "Upper").Tag = "HKEY_LOCAL_MACHINE\" & sClassKey & "\" & sKey
-                    For J = 0 To UBound(sUFilters)
-                        If Trim$(sUFilters(J)) <> vbNullString Then
-                            sName = sUFilters(J) & ".sys"
+                    For j = 0 To UBound(sUFilters)
+                        If Trim$(sUFilters(j)) <> vbNullString Then
+                            sName = sUFilters(j) & ".sys"
                             If FileExists(sSysDir & "\drivers\" & sName) Then
                                 sName = BuildPath(sSysDir & "\drivers\", sName)
                             Else
                                 sName = GuessFullpathFromAutorun(sName)
                             End If
-                            tvwMain.Nodes.Add sHardwareCfgs(l) & "DriverFiltersClass" & i & "Upper", tvwChild, sHardwareCfgs(l) & "DriverFiltersClass" & i & "Upper" & J, sUFilters(J) & ".sys", "dll"
-                            tvwMain.Nodes(sHardwareCfgs(l) & "DriverFiltersClass" & i & "Upper" & J).Tag = sName
+                            tvwMain.Nodes.Add sHardwareCfgs(l) & "DriverFiltersClass" & i & "Upper", tvwChild, sHardwareCfgs(l) & "DriverFiltersClass" & i & "Upper" & j, sUFilters(j) & ".sys", "dll"
+                            tvwMain.Nodes(sHardwareCfgs(l) & "DriverFiltersClass" & i & "Upper" & j).Tag = sName
                         End If
-                    Next J
+                    Next j
                 End If
                 'lower filters
                 If UBound(sLFilters) > 0 Then
                     tvwMain.Nodes.Add sHardwareCfgs(l) & "DriverFiltersClass" & i, tvwChild, sHardwareCfgs(l) & "DriverFiltersClass" & i & "Lower", "Lower filters", "dll"
                     tvwMain.Nodes(sHardwareCfgs(l) & "DriverFiltersClass" & i & "Lower").Tag = "HKEY_LOCAL_MACHINE\" & sClassKey & "\" & sKey
-                    For J = 0 To UBound(sLFilters)
-                        If Trim$(sLFilters(J)) <> vbNullString Then
-                            sName = sLFilters(J) & ".sys"
+                    For j = 0 To UBound(sLFilters)
+                        If Trim$(sLFilters(j)) <> vbNullString Then
+                            sName = sLFilters(j) & ".sys"
                             If FileExists(sSysDir & "\drivers\" & sName) Then
                                 sName = BuildPath(sSysDir & "\drivers\", sName)
                             Else
                                 sName = GuessFullpathFromAutorun(sName)
                             End If
-                            tvwMain.Nodes.Add sHardwareCfgs(l) & "DriverFiltersClass" & i & "Lower", tvwChild, sHardwareCfgs(l) & "DriverFiltersClass" & i & "Lower" & J, sLFilters(J) & ".sys", "dll"
-                            tvwMain.Nodes(sHardwareCfgs(l) & "DriverFiltersClass" & i & "Lower" & J).Tag = sName
+                            tvwMain.Nodes.Add sHardwareCfgs(l) & "DriverFiltersClass" & i & "Lower", tvwChild, sHardwareCfgs(l) & "DriverFiltersClass" & i & "Lower" & j, sLFilters(j) & ".sys", "dll"
+                            tvwMain.Nodes(sHardwareCfgs(l) & "DriverFiltersClass" & i & "Lower" & j).Tag = sName
                         End If
-                    Next J
+                    Next j
                 End If
                 
                 
-                sKey = String$(260, 0)
+                sKey = String$(MAX_PATH, 0)
                 i = i + 1
                 If bAbort Then
                     RegCloseKey hKey
@@ -1584,21 +1521,21 @@ Public Sub RegEnumDriverFilters(tvwMain As TreeView)
         tvwMain.Nodes(sHardwareCfgs(l) & "DriverFiltersDevice").Tag = "HKEY_LOCAL_MACHINE\" & sDeviceKey
         tvwMain.Nodes(sHardwareCfgs(l) & "DriverFiltersDevice").Sorted = True
         'this fucking sucks - again
-        sSections = Split(RegEnumSubKeys(HKEY_LOCAL_MACHINE, sDeviceKey), "|")
+        sSections = Split(Reg.EnumSubKeys(HKEY_LOCAL_MACHINE, sDeviceKey), "|")
         For i = 0 To UBound(sSections)
-            sDevices = Split(RegEnumSubKeys(HKEY_LOCAL_MACHINE, sDeviceKey & "\" & sSections(i)), "|")
-            For J = 0 To UBound(sDevices)
-                sSubkeys = Split(RegEnumSubKeys(HKEY_LOCAL_MACHINE, sDeviceKey & "\" & sSections(i) & "\" & sDevices(J)), "|")
-                For k = 0 To UBound(sSubkeys)
-                    sName = RegGetString(HKEY_LOCAL_MACHINE, sDeviceKey & "\" & sSections(i) & "\" & sDevices(J) & "\" & sSubkeys(k), "DeviceDesc")
+            sDevices = Split(Reg.EnumSubKeys(HKEY_LOCAL_MACHINE, sDeviceKey & "\" & sSections(i)), "|")
+            For j = 0 To UBound(sDevices)
+                sSubkeys = Split(Reg.EnumSubKeys(HKEY_LOCAL_MACHINE, sDeviceKey & "\" & sSections(i) & "\" & sDevices(j)), "|")
+                For K = 0 To UBound(sSubkeys)
+                    sName = Reg.GetString(HKEY_LOCAL_MACHINE, sDeviceKey & "\" & sSections(i) & "\" & sDevices(j) & "\" & sSubkeys(K), "DeviceDesc")
                     If sName = vbNullString Then sName = "(no name)"
-                    sUFilters = Split(RegGetString(HKEY_LOCAL_MACHINE, sDeviceKey & "\" & sSections(i) & "\" & sDevices(J) & "\" & sSubkeys(k), "UpperFilters", False), Chr$(0))
-                    sLFilters = Split(RegGetString(HKEY_LOCAL_MACHINE, sDeviceKey & "\" & sSections(i) & "\" & sDevices(J) & "\" & sSubkeys(k), "LowerFilters", False), Chr$(0))
+                    sUFilters = Split(Reg.GetString(HKEY_LOCAL_MACHINE, sDeviceKey & "\" & sSections(i) & "\" & sDevices(j) & "\" & sSubkeys(K), "UpperFilters", False), Chr$(0))
+                    sLFilters = Split(Reg.GetString(HKEY_LOCAL_MACHINE, sDeviceKey & "\" & sSections(i) & "\" & sDevices(j) & "\" & sSubkeys(K), "LowerFilters", False), Chr$(0))
                     If UBound(sUFilters) > 0 Or UBound(sLFilters) > 0 Then
-                        tvwMain.Nodes.Add sHardwareCfgs(l) & "DriverFiltersDevice", tvwChild, sHardwareCfgs(l) & "DriverFiltersDevice" & i & "." & J & "." & k, sName, "hardware"
+                        tvwMain.Nodes.Add sHardwareCfgs(l) & "DriverFiltersDevice", tvwChild, sHardwareCfgs(l) & "DriverFiltersDevice" & i & "." & j & "." & K, sName, "hardware"
                     End If
                     If UBound(sUFilters) > 0 Then
-                        tvwMain.Nodes.Add sHardwareCfgs(l) & "DriverFiltersDevice" & i & "." & J & "." & k, tvwChild, sHardwareCfgs(l) & "DriverFiltersDevice" & i & "." & J & "." & k & "Upper", "Upper filters", "dll"
+                        tvwMain.Nodes.Add sHardwareCfgs(l) & "DriverFiltersDevice" & i & "." & j & "." & K, tvwChild, sHardwareCfgs(l) & "DriverFiltersDevice" & i & "." & j & "." & K & "Upper", "Upper filters", "dll"
                         For M = 0 To UBound(sUFilters)
                             If Trim$(sUFilters(M)) <> vbNullString Then
                                 sName = sUFilters(M) & ".sys"
@@ -1607,13 +1544,13 @@ Public Sub RegEnumDriverFilters(tvwMain As TreeView)
                                 Else
                                     sName = GuessFullpathFromAutorun(sName)
                                 End If
-                                tvwMain.Nodes.Add sHardwareCfgs(l) & "DriverFiltersDevice" & i & "." & J & "." & k & "Upper", tvwChild, sHardwareCfgs(l) & "DriverFiltersDevice" & i & "." & J & "." & k & "Upper" & M, sUFilters(M) & ".sys", "dll"
-                                tvwMain.Nodes(sHardwareCfgs(l) & "DriverFiltersDevice" & i & "." & J & "." & k & "Upper" & M).Tag = sName
+                                tvwMain.Nodes.Add sHardwareCfgs(l) & "DriverFiltersDevice" & i & "." & j & "." & K & "Upper", tvwChild, sHardwareCfgs(l) & "DriverFiltersDevice" & i & "." & j & "." & K & "Upper" & M, sUFilters(M) & ".sys", "dll"
+                                tvwMain.Nodes(sHardwareCfgs(l) & "DriverFiltersDevice" & i & "." & j & "." & K & "Upper" & M).Tag = sName
                             End If
                         Next M
                     End If
                     If UBound(sLFilters) > 0 Then
-                        tvwMain.Nodes.Add sHardwareCfgs(l) & "DriverFiltersDevice" & i & "." & J & "." & k, tvwChild, sHardwareCfgs(l) & "DriverFiltersDevice" & i & "." & J & "." & k & "Lower", "Lower filters", "dll"
+                        tvwMain.Nodes.Add sHardwareCfgs(l) & "DriverFiltersDevice" & i & "." & j & "." & K, tvwChild, sHardwareCfgs(l) & "DriverFiltersDevice" & i & "." & j & "." & K & "Lower", "Lower filters", "dll"
                         For M = 0 To UBound(sLFilters)
                             If Trim$(sLFilters(M)) <> vbNullString Then
                                 sName = sLFilters(M) & ".sys"
@@ -1622,14 +1559,14 @@ Public Sub RegEnumDriverFilters(tvwMain As TreeView)
                                 Else
                                     sName = GuessFullpathFromAutorun(sName)
                                 End If
-                                tvwMain.Nodes.Add sHardwareCfgs(l) & "DriverFiltersDevice" & i & "." & J & "." & k & "Lower", tvwChild, sHardwareCfgs(l) & "DriverFiltersDevice" & i & "." & J & "." & k & "Lower" & M, sLFilters(M) & ".sys", "dll"
-                                tvwMain.Nodes(sHardwareCfgs(l) & "DriverFiltersDevice" & i & "." & J & "." & k & "Lower" & M).Tag = sName
+                                tvwMain.Nodes.Add sHardwareCfgs(l) & "DriverFiltersDevice" & i & "." & j & "." & K & "Lower", tvwChild, sHardwareCfgs(l) & "DriverFiltersDevice" & i & "." & j & "." & K & "Lower" & M, sLFilters(M) & ".sys", "dll"
+                                tvwMain.Nodes(sHardwareCfgs(l) & "DriverFiltersDevice" & i & "." & j & "." & K & "Lower" & M).Tag = sName
                             End If
                         Next M
                     End If
                     If bAbort Then Exit Sub
-                Next k
-            Next J
+                Next K
+            Next j
         Next i
         If tvwMain.Nodes(sHardwareCfgs(l) & "DriverFiltersDevice").Children = 0 And Not bShowEmpty Then
             tvwMain.Nodes.Remove sHardwareCfgs(l) & "DriverFiltersDevice"
@@ -1649,7 +1586,7 @@ Public Sub RegEnumPolicies(tvwMain As TreeView)
     ' SOFTWARE\Microsoft\Security Center
     'and then enum all values (REG_SZ, REG_DWORD) in there
     
-    Dim sPolicyKeys$(), sPolicyNames$(), k&
+    Dim sPolicyKeys$(), sPolicyNames$(), K&
     ReDim sPolicyNames(1)
     sPolicyNames(0) = "Primary policies"
     sPolicyNames(1) = "Alternate policies"
@@ -1659,60 +1596,60 @@ Public Sub RegEnumPolicies(tvwMain As TreeView)
     sPolicyKeys(1) = "Software\Microsoft\Windows\CurrentVersion\policies"
     'sPolicyKeys(2) = "Software\Microsoft\Security Center" - moved to XPSecurityCenter
     
-    Dim sRegKeysUser$(), sRegKeysSystem$(), sValues$(), i&, J&
+    Dim sRegKeysUser$(), sRegKeysSystem$(), sValues$(), i&, j&
     
-    For k = 0 To UBound(sPolicyKeys)
-        tvwMain.Nodes.Add "PoliciesUser", tvwChild, "Policies" & k & "User", sPolicyNames(k), "winlogon"
-        tvwMain.Nodes.Add "PoliciesSystem", tvwChild, "Policies" & k & "System", sPolicyNames(k), "winlogon"
-        tvwMain.Nodes("Policies" & k & "User").Tag = "HKEY_CURRENT_USER\" & sPolicyKeys(k)
-        tvwMain.Nodes("Policies" & k & "System").Tag = "HKEY_LOCAL_MACHINE\" & sPolicyKeys(k)
+    For K = 0 To UBound(sPolicyKeys)
+        tvwMain.Nodes.Add "PoliciesUser", tvwChild, "Policies" & K & "User", sPolicyNames(K), "winlogon"
+        tvwMain.Nodes.Add "PoliciesSystem", tvwChild, "Policies" & K & "System", sPolicyNames(K), "winlogon"
+        tvwMain.Nodes("Policies" & K & "User").Tag = "HKEY_CURRENT_USER\" & sPolicyKeys(K)
+        tvwMain.Nodes("Policies" & K & "System").Tag = "HKEY_LOCAL_MACHINE\" & sPolicyKeys(K)
         
-        sValues = Split(RegEnumValues(HKEY_CURRENT_USER, sPolicyKeys(k), , , False), "|")
-        For J = 0 To UBound(sValues)
-            tvwMain.Nodes.Add "Policies" & k & "User", tvwChild, "Policies" & k & "User" & J, sValues(J), "reg"
-        Next J
+        sValues = Split(RegEnumValues(HKEY_CURRENT_USER, sPolicyKeys(K), , , False), "|")
+        For j = 0 To UBound(sValues)
+            tvwMain.Nodes.Add "Policies" & K & "User", tvwChild, "Policies" & K & "User" & j, sValues(j), "reg"
+        Next j
         
-        sValues = Split(RegEnumValues(HKEY_LOCAL_MACHINE, sPolicyKeys(k), , , False), "|")
-        For J = 0 To UBound(sValues)
-            tvwMain.Nodes.Add "Policies" & k & "System", tvwChild, "Policies" & k & "System" & J, sValues(J), "reg"
-        Next J
+        sValues = Split(RegEnumValues(HKEY_LOCAL_MACHINE, sPolicyKeys(K), , , False), "|")
+        For j = 0 To UBound(sValues)
+            tvwMain.Nodes.Add "Policies" & K & "System", tvwChild, "Policies" & K & "System" & j, sValues(j), "reg"
+        Next j
         
-        sRegKeysUser = Split(RegEnumSubKeysTree(HKEY_CURRENT_USER, sPolicyKeys(k)), "|")
-        sRegKeysSystem = Split(RegEnumSubKeysTree(HKEY_LOCAL_MACHINE, sPolicyKeys(k)), "|")
+        sRegKeysUser = Split(EnumSubKeysTree(HKEY_CURRENT_USER, sPolicyKeys(K)), "|")
+        sRegKeysSystem = Split(EnumSubKeysTree(HKEY_LOCAL_MACHINE, sPolicyKeys(K)), "|")
         
         For i = 0 To UBound(sRegKeysUser)
             sValues = Split(RegEnumValues(HKEY_CURRENT_USER, sRegKeysUser(i), , , False), "|")
             If UBound(sValues) > -1 Then
-                tvwMain.Nodes.Add "Policies" & k & "User", tvwChild, "Policies" & k & "User" & i, sRegKeysUser(i), "registry"
-                tvwMain.Nodes("Policies" & k & "User" & i).Tag = "HKEY_CURRENT_USER\" & sRegKeysUser(i)
-                For J = 0 To UBound(sValues)
-                    tvwMain.Nodes.Add "Policies" & k & "User" & i, tvwChild, "Policies" & k & "User" & i & "." & J, sValues(J), "reg"
-                Next J
-                tvwMain.Nodes("Policies" & k & "User" & i).Text = tvwMain.Nodes("Policies" & k & "User" & i).Text & " (" & tvwMain.Nodes("Policies" & k & "User" & i).Children & ")"
+                tvwMain.Nodes.Add "Policies" & K & "User", tvwChild, "Policies" & K & "User" & i, sRegKeysUser(i), "registry"
+                tvwMain.Nodes("Policies" & K & "User" & i).Tag = "HKEY_CURRENT_USER\" & sRegKeysUser(i)
+                For j = 0 To UBound(sValues)
+                    tvwMain.Nodes.Add "Policies" & K & "User" & i, tvwChild, "Policies" & K & "User" & i & "." & j, sValues(j), "reg"
+                Next j
+                tvwMain.Nodes("Policies" & K & "User" & i).Text = tvwMain.Nodes("Policies" & K & "User" & i).Text & " (" & tvwMain.Nodes("Policies" & K & "User" & i).Children & ")"
             End If
             If bAbort Then Exit Sub
         Next i
         For i = 0 To UBound(sRegKeysSystem)
             sValues = Split(RegEnumValues(HKEY_LOCAL_MACHINE, sRegKeysSystem(i), , , False), "|")
             If UBound(sValues) > -1 Then
-                tvwMain.Nodes.Add "Policies" & k & "System", tvwChild, "Policies" & k & "System" & i, sRegKeysSystem(i), "registry"
-                tvwMain.Nodes("Policies" & k & "System" & i).Tag = "HKEY_LOCAL_MACHINE\" & sRegKeysSystem(i)
-                For J = 0 To UBound(sValues)
-                    tvwMain.Nodes.Add "Policies" & k & "System" & i, tvwChild, "Policies" & k & "System" & i & "." & J, sValues(J), "reg"
-                Next J
-                tvwMain.Nodes("Policies" & k & "System" & i).Text = tvwMain.Nodes("Policies" & k & "System" & i).Text & " (" & tvwMain.Nodes("Policies" & k & "System" & i).Children & ")"
+                tvwMain.Nodes.Add "Policies" & K & "System", tvwChild, "Policies" & K & "System" & i, sRegKeysSystem(i), "registry"
+                tvwMain.Nodes("Policies" & K & "System" & i).Tag = "HKEY_LOCAL_MACHINE\" & sRegKeysSystem(i)
+                For j = 0 To UBound(sValues)
+                    tvwMain.Nodes.Add "Policies" & K & "System" & i, tvwChild, "Policies" & K & "System" & i & "." & j, sValues(j), "reg"
+                Next j
+                tvwMain.Nodes("Policies" & K & "System" & i).Text = tvwMain.Nodes("Policies" & K & "System" & i).Text & " (" & tvwMain.Nodes("Policies" & K & "System" & i).Children & ")"
             End If
             If bAbort Then Exit Sub
         Next i
         
-        If tvwMain.Nodes("Policies" & k & "User").Children = 0 And Not bShowEmpty Then
-            tvwMain.Nodes.Remove "Policies" & k & "User"
+        If tvwMain.Nodes("Policies" & K & "User").Children = 0 And Not bShowEmpty Then
+            tvwMain.Nodes.Remove "Policies" & K & "User"
         End If
-        If tvwMain.Nodes("Policies" & k & "System").Children = 0 And Not bShowEmpty Then
-            tvwMain.Nodes.Remove "Policies" & k & "System"
+        If tvwMain.Nodes("Policies" & K & "System").Children = 0 And Not bShowEmpty Then
+            tvwMain.Nodes.Remove "Policies" & K & "System"
         End If
         If bAbort Then Exit Sub
-    Next k
+    Next K
     
     If tvwMain.Nodes("PoliciesUser").Children = 0 And Not bShowEmpty Then
         tvwMain.Nodes.Remove "PoliciesUser"
@@ -1733,34 +1670,34 @@ Public Sub RegEnumPolicies(tvwMain As TreeView)
         If sUsername <> GetUser() And sUsername <> vbNullString Then
             tvwMain.Nodes.Add "Users" & sUsernames(l), tvwChild, sUsernames(l) & "PoliciesUser", SEC_POLICIES, "policy"
 
-            For k = 0 To UBound(sPolicyKeys)
-                tvwMain.Nodes.Add sUsernames(l) & "PoliciesUser", tvwChild, sUsernames(l) & "Policies" & k & "User", sPolicyNames(k), "winlogon"
-                tvwMain.Nodes(sUsernames(l) & "Policies" & k & "User").Tag = "HKEY_USERS\" & sUsernames(l) & "\" & sPolicyKeys(k)
+            For K = 0 To UBound(sPolicyKeys)
+                tvwMain.Nodes.Add sUsernames(l) & "PoliciesUser", tvwChild, sUsernames(l) & "Policies" & K & "User", sPolicyNames(K), "winlogon"
+                tvwMain.Nodes(sUsernames(l) & "Policies" & K & "User").Tag = "HKEY_USERS\" & sUsernames(l) & "\" & sPolicyKeys(K)
                 
-                sValues = Split(RegEnumValues(HKEY_USERS, sUsernames(l) & "\" & sPolicyKeys(k), , , False), "|")
-                For J = 0 To UBound(sValues)
-                    tvwMain.Nodes.Add sUsernames(l) & "Policies" & k & "User", tvwChild, sUsernames(l) & "Policies" & k & "User" & J, sValues(J), "reg"
-                Next J
+                sValues = Split(RegEnumValues(HKEY_USERS, sUsernames(l) & "\" & sPolicyKeys(K), , , False), "|")
+                For j = 0 To UBound(sValues)
+                    tvwMain.Nodes.Add sUsernames(l) & "Policies" & K & "User", tvwChild, sUsernames(l) & "Policies" & K & "User" & j, sValues(j), "reg"
+                Next j
                 
-                sRegKeysUser = Split(RegEnumSubKeysTree(HKEY_USERS, sUsernames(l) & "\" & sPolicyKeys(k)), "|")
+                sRegKeysUser = Split(EnumSubKeysTree(HKEY_USERS, sUsernames(l) & "\" & sPolicyKeys(K)), "|")
                 
                 For i = 0 To UBound(sRegKeysUser)
                     sValues = Split(RegEnumValues(HKEY_USERS, sRegKeysUser(i), , , False), "|")
                     If UBound(sValues) > -1 Then
-                        tvwMain.Nodes.Add sUsernames(l) & "Policies" & k & "User", tvwChild, sUsernames(l) & "Policies" & k & "User" & i, Mid$(sRegKeysUser(i), Len(sUsernames(l)) + 2), "registry"
-                        tvwMain.Nodes(sUsernames(l) & "Policies" & k & "User" & i).Tag = "HKEY_USERS\" & sRegKeysUser(i)
-                        For J = 0 To UBound(sValues)
-                            tvwMain.Nodes.Add sUsernames(l) & "Policies" & k & "User" & i, tvwChild, sUsernames(l) & "Policies" & k & "User" & i & "." & J, sValues(J), "reg"
-                        Next J
-                        tvwMain.Nodes(sUsernames(l) & "Policies" & k & "User" & i).Text = tvwMain.Nodes(sUsernames(l) & "Policies" & k & "User" & i).Text & " (" & tvwMain.Nodes(sUsernames(l) & "Policies" & k & "User" & i).Children & ")"
+                        tvwMain.Nodes.Add sUsernames(l) & "Policies" & K & "User", tvwChild, sUsernames(l) & "Policies" & K & "User" & i, Mid$(sRegKeysUser(i), Len(sUsernames(l)) + 2), "registry"
+                        tvwMain.Nodes(sUsernames(l) & "Policies" & K & "User" & i).Tag = "HKEY_USERS\" & sRegKeysUser(i)
+                        For j = 0 To UBound(sValues)
+                            tvwMain.Nodes.Add sUsernames(l) & "Policies" & K & "User" & i, tvwChild, sUsernames(l) & "Policies" & K & "User" & i & "." & j, sValues(j), "reg"
+                        Next j
+                        tvwMain.Nodes(sUsernames(l) & "Policies" & K & "User" & i).Text = tvwMain.Nodes(sUsernames(l) & "Policies" & K & "User" & i).Text & " (" & tvwMain.Nodes(sUsernames(l) & "Policies" & K & "User" & i).Children & ")"
                     End If
                     If bAbort Then Exit Sub
                 Next i
                 
-                If tvwMain.Nodes(sUsernames(l) & "Policies" & k & "User").Children = 0 And Not bShowEmpty Then
-                    tvwMain.Nodes.Remove sUsernames(l) & "Policies" & k & "User"
+                If tvwMain.Nodes(sUsernames(l) & "Policies" & K & "User").Children = 0 And Not bShowEmpty Then
+                    tvwMain.Nodes.Remove sUsernames(l) & "Policies" & K & "User"
                 End If
-            Next k
+            Next K
             
             If tvwMain.Nodes(sUsernames(l) & "PoliciesUser").Children = 0 And Not bShowEmpty Then
                 tvwMain.Nodes.Remove sUsernames(l) & "PoliciesUser"
@@ -1781,7 +1718,7 @@ Public Sub RegEnumDrivers32(tvwMain As TreeView)
     sDriverKeys = Split(RegEnumValues(HKEY_LOCAL_MACHINE, sDrivers), "|")
     For i = 0 To UBound(sDriverKeys)
         tvwMain.Nodes.Add "Drivers32", tvwChild, "Drivers32" & i, sDriverKeys(i), "dll", "dll"
-        tvwMain.Nodes("Drivers32" & i).Tag = GuessFullpathFromAutorun(Mid(sDriverKeys(i), InStrRev(sDriverKeys(i), " = ") + 3))
+        tvwMain.Nodes("Drivers32" & i).Tag = GuessFullpathFromAutorun(Mid$(sDriverKeys(i), InStrRev(sDriverKeys(i), " = ") + 3))
         If bAbort Then Exit Sub
     Next i
     
@@ -1791,7 +1728,7 @@ Public Sub RegEnumDrivers32(tvwMain As TreeView)
     sDriverKeys = Split(RegEnumValues(HKEY_LOCAL_MACHINE, sDrivers & "\Terminal Server\RDP"), "|")
     For i = 0 To UBound(sDriverKeys)
         tvwMain.Nodes.Add "Drivers32RDP", tvwChild, "Drivers32RDP" & i, sDriverKeys(i), "dll", "dll"
-        tvwMain.Nodes("Drivers32RDP" & i).Tag = GuessFullpathFromAutorun(Mid(sDriverKeys(i), InStrRev(sDriverKeys(i), " = ") + 3))
+        tvwMain.Nodes("Drivers32RDP" & i).Tag = GuessFullpathFromAutorun(Mid$(sDriverKeys(i), InStrRev(sDriverKeys(i), " = ") + 3))
     Next i
     
     If tvwMain.Nodes("Drivers32RDP").Children > 0 Then
@@ -1806,19 +1743,19 @@ Public Sub RegEnumDrivers32(tvwMain As TreeView)
     End If
 End Sub
 
-Private Function RegEnumSubKeysTree$(lHive&, sRootKey$)
+Private Function EnumSubKeysTree$(lHive&, sRootKey$)
     Dim hKey&, i&, sName$, sList$
     If bAbort Then Exit Function
     If RegOpenKeyEx(lHive, sRootKey, 0, KEY_READ, hKey) = 0 Then
-        sName = String$(260, 0)
+        sName = String$(MAX_PATH, 0)
         Do Until RegEnumKeyEx(hKey, i, sName, Len(sName), 0, vbNullString, 0, ByVal 0) <> 0
             sName = TrimNull(sName)
             
             sList = sList & "|" & sRootKey & "\" & sName
-            sList = sList & "|" & RegEnumSubKeysTree(lHive, sRootKey & "\" & sName)
+            sList = sList & "|" & EnumSubKeysTree(lHive, sRootKey & "\" & sName)
             
             i = i + 1
-            sName = String$(260, 0)
+            sName = String$(MAX_PATH, 0)
             If bAbort Then
                 RegCloseKey hKey
                 Exit Function
@@ -1826,14 +1763,14 @@ Private Function RegEnumSubKeysTree$(lHive&, sRootKey$)
         Loop
         RegCloseKey hKey
     End If
-    If sList <> vbNullString Then RegEnumSubKeysTree = Mid$(Replace$(sList, "||", "|"), 2)
+    If sList <> vbNullString Then EnumSubKeysTree = Mid$(Replace$(sList, "||", "|"), 2)
 End Function
 
 Public Function ExpandEnvironmentVars(sEnvStr As String) As String
     ExpandEnvironmentVars = EnvironW(sEnvStr)
 End Function
 
-Private Function RegGetString$(lHive&, sKey$, sVal$, Optional bTrimNull As Boolean = True)
+Private Function GetString(lHive&, sKey$, sVal$, Optional bTrimNull As Boolean = True)
     Dim hKey&, uData() As Byte, lDataLen&, sData$
     If RegOpenKeyEx(lHive, sKey, 0, KEY_READ, hKey) = 0 Then
         RegQueryValueEx hKey, sVal, 0, 0, ByVal 0, lDataLen
@@ -1848,26 +1785,26 @@ Private Function RegGetString$(lHive&, sKey$, sVal$, Optional bTrimNull As Boole
                     sData = StrConv(uData, vbUnicode)
                 End If
             End If
-            RegGetString = sData
+            GetString = sData
         End If
         RegCloseKey hKey
     End If
 End Function
 
-Private Function RegGetDword&(lHive$, sKey$, sVal$)
+Private Function GetDword&(lHive$, sKey$, sVal$)
     Dim hKey&, lData&
     If RegOpenKeyEx(lHive, sKey, 0, KEY_READ, hKey) = 0 Then
         If RegQueryValueEx(hKey, sVal, 0, 0, lData, 4) = 0 Then
-            RegGetDword = lData
+            GetDword = lData
         End If
         RegCloseKey hKey
     End If
 End Function
 
-Private Function RegKeyExists(lHive&, sKey$) As Boolean
+Private Function KeyExists(lHive&, sKey$) As Boolean
     Dim hKey&
     If RegOpenKeyEx(lHive, sKey, 0, KEY_READ, hKey) = 0 Then
-        RegKeyExists = True
+        KeyExists = True
         RegCloseKey hKey
     End If
 End Function
@@ -1882,15 +1819,15 @@ Private Function RegValExists(lHive&, sKey$, sVal$) As Boolean
     End If
 End Function
 
-Private Function RegEnumSubKeys$(lHive&, sKey$)
+Private Function EnumSubKeys$(lHive&, sKey$)
     Dim hKey&, i&, sName$, sList$
     If RegOpenKeyEx(lHive, sKey, 0, KEY_READ, hKey) = 0 Then
-        sName = String$(260, 0)
+        sName = String$(MAX_PATH, 0)
         Do Until RegEnumKeyEx(hKey, i, sName, Len(sName), 0, vbNullString, 0, ByVal 0) <> 0
             sName = TrimNull(sName)
             sList = sList & "|" & sName
             i = i + 1
-            sName = String$(260, 0)
+            sName = String$(MAX_PATH, 0)
             If bAbort Then
                 RegCloseKey hKey
                 Exit Function
@@ -1898,7 +1835,7 @@ Private Function RegEnumSubKeys$(lHive&, sKey$)
         Loop
         RegCloseKey hKey
     End If
-    If sList <> vbNullString Then RegEnumSubKeys = Mid$(sList, 2)
+    If sList <> vbNullString Then EnumSubKeys = Mid$(sList, 2)
 End Function
 
 Private Function RegEnumValues$(lHive&, sKey$, Optional bNullSep As Boolean = False, Optional bIgnoreBinaries As Boolean = True, Optional bIgnoreDwords As Boolean = True)

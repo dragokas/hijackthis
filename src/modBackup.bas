@@ -1,1354 +1,1651 @@
 Attribute VB_Name = "modBackup"
+'
+' Backup module by Alex Dragokas
+'
+
 Option Explicit
 
-Private Declare Function RegCloseKey Lib "advapi32.dll" (ByVal hKey As Long) As Long
-Private Declare Function RegOpenKeyExW Lib "advapi32.dll" (ByVal hKey As Long, ByVal lpSubKey As Long, ByVal ulOptions As Long, ByVal samDesired As Long, phkResult As Long) As Long
-Private Declare Function RegEnumKeyExW Lib "advapi32.dll" (ByVal hKey As Long, ByVal dwIndex As Long, ByVal lpName As Long, lpcbName As Long, ByVal lpReserved As Long, ByVal lpClass As Long, lpcbClass As Long, lpftLastWriteTime As Any) As Long
+#Const DontHexString = False
 
-Public Sub MakeBackup(ByVal sItem$)
-    On Error GoTo ErrorHandler:
-    
-    AppendErrorLogCustom "MakeBackup - Begin", sItem
+Public Const BACKUP_COMMAND_FILE_NAME As String = "_cmd.ini"
 
-    Dim sPath$, lHive&, sKey$, sValue$, sSID$, sUsername$
-    Dim sData$, sDummy$, sBackup$, sLine$
-    Dim sDPFKey$, sCLSID$, sOSD$, sInf$, sInProcServer32$
-    Dim sNum$, sFile1$, sFile2$, ff%, sPrefix$, Wow64Redir As Boolean
-    Dim sFullPrefix$
-    
-    sPath = AppPath() & IIf(Right$(AppPath(), 1) = "\", vbNullString, "\")
-    
-    If bNoWriteAccess Then Exit Sub
-    If Not FolderExists(sPath) Then Exit Sub 'running from zip in XP
-    If Not FolderExists(sPath & "backups") Then MkDir sPath & "backups"
-    If Not FolderExists(sPath & "backups") Then
-        'MsgBoxW "Unable to create folder to place backups in. Backups of fixed items cannot be saved!", vbExclamation
-        MsgBoxW Translate(530), vbExclamation
-        bNoWriteAccess = True
-        Exit Sub
+Public Const ABR_BACKUP_TITLE      As String = "REGISTRY BACKUP (ABR)"
+Public Const SRP_BACKUP_TITLE      As String = "SYSTEM RESTORE POINT"
+
+Public LIST_BACKUP_FILE As String
+
+Public cBackupIni As clsIniFile
+
+Private Type T_LIST_BACKUP
+    Total           As Long
+    LastFixID       As Long
+    LastBackupID    As Long
+    CurrentBackupID As Long
+    LastHitW        As String
+    cLastCMD        As clsIniFile
+End Type
+
+Private tBackupList As T_LIST_BACKUP
+
+Private Enum ENUM_RESTORE_VERBS
+    VERB_FILE_COPY = 1
+    VERB_GENERAL_RESTORE = 2
+    VERB_RESTORE_INI_VALUE = 4
+    VERB_RESTORE_REG_VALUE = 8
+    VERB_RESTORE_REG_KEY = 16
+End Enum
+
+Private Enum ENUM_RESTORE_OBJECT_TYPES
+    OBJ_FILE = 1
+    OBJ_ABR_BACKUP = 2
+    OBJ_REG_VALUE = 4
+    OBJ_REG_KEY = 8
+End Enum
+
+Private Type BACKUP_COMMAND
+    Full        As String
+    RecovType   As ENUM_CURE_BASED
+    Verb        As ENUM_RESTORE_VERBS
+    ObjType     As ENUM_RESTORE_OBJECT_TYPES
+    Args        As String
+End Type
+
+Private Const MAX_DESC As Long = 64
+Private Const ERROR_SUCCESS As Long = 0
+Private Const DEVICE_DRIVER_INSTALL As Long = 10
+Private Const MODIFY_SETTINGS As Long = 12
+Private Const BEGIN_SYSTEM_CHANGE As Long = 100
+Private Const END_SYSTEM_CHANGE As Long = 101
+Private Const S_OK As Long = 0
+Private Const ERROR_SERVICE_DISABLED As Long = 1058
+
+Private Type RESTOREPOINTINFOA
+    dwEventType As Long
+    dwRestorePtType As Long
+    llSequenceNumber As Currency
+    szDescription(MAX_DESC - 1) As Byte
+End Type
+
+Private Type STATEMGRSTATUS
+    nStatus As Long
+    llSequenceNumber As Currency
+End Type
+
+Private Declare Function SRRemoveRestorePoint Lib "SrClient.dll" (ByVal dwRPNum As Long) As Long
+Private Declare Function SRSetRestorePoint Lib "SrClient.dll" Alias "SRSetRestorePointA" (pRestorePtSpec As RESTOREPOINTINFOA, pSMgrStatus As STATEMGRSTATUS) As Long
+Private Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal length As Long) As Long
+
+' -------------------------------------
+'    Plan on reworking Backup module
+' -------------------------------------
+' .\Backups\
+'           List.ini  ---> list of backups
+'
+'          \1\  ---> separate folder of one backup
+'             _cmd.ini ---> list of commands to recover from backup
+'
+'             ... some files of backup ...
+'
+'          \2 - ... - N\
+'
+' STRUCTURE OF INIs:
+'
+' --------------------
+' .\Backups\List.ini
+' --------------------
+'
+' [main]
+' Total=4 (total entries (backups))
+' List=1,2,3,4,... (can contain gaps). This mumber (BackupID) = name of <Subfolder>. See below.
+' LastFixID=1 (FixID - is a number of 'Fix'-es made by user. It's increase each time user click 'Fix It')
+' LastBackupID=2
+'
+' [1] <- BackupID
+' Name=O1 - Hosts
+' Date=13.09.2017 19:42
+' FixID=1
+'
+' [2]
+' Name=O23 - Service: MyService - my.dll ...
+' Date=13.09.2017 19:43
+' FixID=1
+'
+' [...]
+'
+' ------------------------------
+' .\Backups\<Sufolder>\_cmd.ini
+' ------------------------------
+' [cmd]
+' Total=3
+' 1=COPY "hosts" "%SystemRoot%\System32\drivers\etc\hosts"
+' 2=REG_IMPORT "1.reg"
+' 3=OTHER FLUSH_DNS /POST
+'
+' List of all commands:
+' COPY 1 <- FileID
+' REG_IMPORT "file.reg"
+' REG_ADD "LONG _opt_ hive_handle = 0" "STRING key" "STRING parameter" "ENUM_REG_HIVE type_of_parameter" "STRING data" "LONG WowRedirection"
+'
+' Switches:
+' /POST - post actions
+' /INIT - initialization (start) actions
+'
+' Note: switch can be appended to any command
+'
+' [files]
+' Total=5
+'
+' [1] <- FileID
+' name=hosts
+' orig=%SystemRoot%\System32\drivers\etc\hosts
+' hash=XXX <- MD5
+'
+' [2]
+' name=my.dll
+' orig=...
+' hash=XXX
+'
+' [3]
+' name=my(2).dll
+' orig=...
+' hash=XXX
+'
+' [...]
+'
+
+'
+' Backup Tab window
+'
+' ID; Date; Section; Item
+
+
+Public Sub InitBackupIni()
+    If cBackupIni Is Nothing Then
+        Set cBackupIni = New clsIniFile
+        cBackupIni.InitFile LIST_BACKUP_FILE, 1200
+        tBackupList.Total = cBackupIni.ReadParam("main", "Total", 0)
+        tBackupList.LastFixID = cBackupIni.ReadParam("main", "LastFixID", 0)
+        tBackupList.LastBackupID = cBackupIni.ReadParam("main", "LastBackupID", 0)
+        Set tBackupList.cLastCMD = New clsIniFile
     End If
-    
-    'create backup file name
-    Randomize
-    sBackup = "backup-" & Format(Date, "yyyymmdd") & "-" & Format(time, "HhNnSs") & "-" & CStr(1000 * Format(Rnd(), "0.000"))
-    If DirW$(sPath & "backups\" & sBackup & "*.*") <> vbNullString Or _
-       InStrRev(sBackup, "-") <> Len(sBackup) - 3 Then
-        Do
-            sBackup = "backup-" & Format(Date, "yyyymmdd") & "-" & Format(time, "HhNnSs") & "-"
-            Randomize
-            sBackup = sBackup & CStr(1000 * Format(Rnd(), "0.000"))
-        Loop Until DirW$(sPath & "backups\" & sBackup & "*.*") = vbNullString And _
-                   InStrRev(sBackup, "-") = Len(sBackup) - 3
-    End If
-    
-    sFullPrefix = Left$(sItem, InStr(sItem, " - ") - 1)
-    sPrefix = Trim(Left$(sItem, InStr(sItem, "-") - 1))
-    
-    If StrEndWith(sFullPrefix, "-32") Then Wow64Redir = True
-    
-    On Error GoTo ErrorHandler:
-    Select Case sPrefix 'Trim$(Left$(sItem, 3))
-        'these lot don't need any additional stuff
-        'backed up, everything is in the sItem line
-        Case "R0", "R3"
-        Case "F0", "F1", "F2", "F3"
-        'Case "N1", "N2", "N3", "N4"
-        Case "O1", "O3", "O5"
-        Case "O7", "O8", "O13", "O14"
-        Case "O15", "O17", "O18", "O19"
-        Case "O23", "O25", "O26"
-        
-        'below items that DO need something else
-        'backed up
-        
-        Case "R1" ', "R1-32"
-            'R1 - Created Registry value
-            'R1 - HKCU\Software\..\Subkey,Value[=Data]
-            
-            'need to get sData if not in sItem
-            If InStr(sItem, "=") = 0 Or Right$(sItem, 1) = "=" Then
-                sDummy = Mid$(sItem, 6)
-                Select Case Left$(sDummy, 4)
-                    Case "HKCU": lHive = HKEY_CURRENT_USER
-                    Case "HKCR": lHive = HKEY_CLASSES_ROOT
-                    Case "HKLM": lHive = HKEY_LOCAL_MACHINE
-                    Case "HKU\": lHive = HKEY_USERS
-                End Select
-                sDummy = Mid$(sDummy, 6)
-                sKey = Left$(sDummy, InStr(sDummy, ",") - 1)
-                sValue = Mid$(sDummy, InStr(sDummy, ",") + 1)
-                If InStr(sValue, "=") > 0 Then sValue = Left$(sValue, InStr(sValue, "=") - 1)
-                sData = RegGetString(lHive, sKey, sValue, Wow64Redir)
-                sItem = sItem & "=" & sData
-                sData = vbNullString
-            End If
-            
-        Case "R2"
-            'R2 - Created Registry key
-            'R2 - HKCU\Software\..\Subkey
-            
-            'don't have rules with R2 yet...
-            'getting one would mean enumerating
-            'all values in key and save them
-            'in sData
-            
-            'MsgBoxW "Not implemented yet, item '" & sItem & "' will not be backed up!", vbExclamation, "bad coder - no donuts"
-            MsgBoxW Replace$(Translate(531), "[]", sItem), vbExclamation, Translate(532)
-        
-        Case "R4"
-            'R4 - (DefaultScope, SearchScopes)
-            
-        Case "O2" ', "O2-32"
-            'O2 - BHO
-            'O2 - BHO: BhoName - CLSID - Filename
-            
-            'backup BHO dll
-            Dim vDummy As Variant
-            vDummy = Split(sItem, " - ")
-            If UBound(vDummy) <> 3 Then
-                If InStr(sItem, "}") > 0 And _
-                   InStr(sItem, "- ") > 0 Then
-                    sDummy = Mid$(sItem, InStr(InStr(sItem, "}"), sItem, "- ") + 2)
-                End If
-            Else
-                sDummy = CStr(vDummy(3))
-            End If
-            If FileExists(sDummy) Then FileCopyW sDummy, sPath & "backups\" & sBackup & ".dll"
-            
-        Case "O4" ', "O4-32"
-            'O4 - Regrun and Startup run, also for other users
-            'O4 - Common Startup: Bla.lnk = c:\dummy.exe
-            
-            '// TODO: MSConfig
-            
-            If InStr(sItem, "[") = 0 Then
-                'need to backup link
-                sData = Mid$(sItem, 6)
-                If InStr(sItem, " (User '") = 0 Then 'normal item
-                    sData = Left$(sData, InStr(sData, ":") - 1)
-                    Select Case sData
-                        Case "Startup":                sData = RegGetString(HKEY_CURRENT_USER, "Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders", "Startup")
-                        Case "AltStartup":             sData = RegGetString(HKEY_CURRENT_USER, "Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders", "AltStartup")
-                        Case "User Startup":           sData = RegGetString(HKEY_CURRENT_USER, "Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders", "Startup")
-                        Case "User AltStartup":        sData = RegGetString(HKEY_CURRENT_USER, "Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders", "AltStartup")
-                        Case "Global Startup":         sData = RegGetString(HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders", "Common Startup")
-                        Case "Global AltStartup":      sData = RegGetString(HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders", "Common AltStartup")
-                        Case "Global User Startup":    sData = RegGetString(HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders", "Common Startup")
-                        Case "Global User AltStartup": sData = RegGetString(HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders", "Common AltStartup")
-                    End Select
-                Else 'item from other user account
-                    sSID = Left$(sData, InStr(sData, " ") - 1)
-                    sUsername = MapSIDToUsername(sSID)
-                    sData = Mid$(sData, InStr(sData, " ") + 1)
-                    sData = Left$(sData, InStr(sData, ":") - 1)
-                    Select Case sData
-                        Case "Startup":                sData = RegGetString(HKEY_USERS, sSID & "\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders", "Startup")
-                        Case "AltStartup":             sData = RegGetString(HKEY_USERS, sSID & "\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders", "AltStartup")
-                        Case "User Startup":           sData = RegGetString(HKEY_USERS, sSID & "\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders", "Startup")
-                        Case "User AltStartup":        sData = RegGetString(HKEY_USERS, sSID & "\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders", "AltStartup")
-                    End Select
-                    If sData <> vbNullString And FolderExists(sData) Then
-                        sDummy = Mid$(sItem, InStr(sItem, ": ") + 2)
-                        If InStr(sDummy, " = ") > 0 Then
-                            sDummy = Left$(sDummy, InStr(sDummy, " = ") - 1)
-                        End If
-                        sData = sData & IIf(Right$(sData, 1) = "\", vbNullString, "\") & sDummy
-                        On Error Resume Next
-                        If FileExists(sData) Then FileCopyW sData, sPath & "backups\" & sBackup & "-" & sDummy
-                        On Error GoTo ErrorHandler:
-                        'sdata had no relevant backup data, just dummy
-                        sData = vbNullString
-                    End If
-                End If
-                'attempt backup the file, same for both
-                If sData <> vbNullString And FolderExists(sData) Then
-                    sDummy = Mid$(sItem, InStr(sItem, ": ") + 2)
-                    If InStr(sDummy, " = ") > 0 Then
-                        sDummy = Left$(sDummy, InStr(sDummy, " = ") - 1)
-                    End If
-                    sData = sData & IIf(Right$(sData, 1) = "\", vbNullString, "\") & sDummy
-                    On Error Resume Next
-                    If FileExists(sData) Then
-                        If (GetFileAttributes(StrPtr(sData)) And vbDirectory) Then
-                            CopyFolder sData, sPath & "backups\" & sBackup & "-" & sDummy
-                        Else
-                            FileCopyW sData, sPath & "backups\" & sBackup & "-" & sDummy
-                        End If
-                    End If
-                    On Error GoTo ErrorHandler:
-                    'sdata had no relevant backup data, just dummy
-                    sData = vbNullString
-                End If
-            Else
-                'registry autorun, nothing to backup
-            End If
-            
-        Case "O6"
-            'O6 - IE Policies block
-            'O6 - HKCU\Software\Policies\Microsoft\Internet Explorer\Restrictions
-            
-            'need to back up everything in those keys
-            '"-policy.reg"
-            If InStr(sItem, "HKCU") > 0 And InStr(sItem, "Restrictions") > 0 Then
-                sData = RegExportKeyToVariable(0&, "HKEY_CURRENT_USER\Software\Policies\Microsoft\Internet Explorer\Restrictions")
-            ElseIf InStr(sItem, "HKCU") > 0 And InStr(sItem, "Control Panel") > 0 Then
-                sData = RegExportKeyToVariable(0&, "HKEY_CURRENT_USER\Software\Policies\Microsoft\Internet Explorer\Control Panel")
-            ElseIf InStr(sItem, "HKLM") > 0 And InStr(sItem, "Restrictions") > 0 Then
-                sData = RegExportKeyToVariable(0&, "HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Internet Explorer\Restrictions")
-            ElseIf InStr(sItem, "HKLM") > 0 And InStr(sItem, "Control Panel") > 0 Then
-                sData = RegExportKeyToVariable(0&, "HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Internet Explorer\Control Panel")
-            End If
-            
-        Case "O9" ', "O9-32"
-            'O9 - IE Tools menu item/button
-            'O9 - Extra button: Offline
-            'O9 - Extra 'Tools' menuitem: Add to T&rusted Zone
-            
-            'O9 - Extra 'Tools' menuitem: Related - {000...000} - c:\file.dll [(HKCU)]
-            
-            'need to backup all values in regkey
-            sDummy = Mid$(sItem, InStr(sItem, ": ") + 2)
-            sDummy = Mid$(sDummy, InStr(sDummy, " - ") + 3)
-            sDummy = Left$(sDummy, InStr(sDummy, " - ") - 1)
-            
-            'If InStr(sItem, "Extra button:") > 0 Then
-            '    sDummy = GetCLSIDOfMSIEExtension(mid$(sItem, InStr(sItem, ":") + 2), True)
-            'Else
-            '    sDummy = GetCLSIDOfMSIEExtension(mid$(sItem, InStr(sItem, ":") + 2), False)
-            'End If
-            If sDummy = vbNullString Then Exit Sub
-            
-            '"-extension.reg"
-            If InStr(sItem, "HKLM") > 0 Then
-                sData = RegExportKeyToVariable(0&, "HKEY_LOCAL_MACHINE\Software\Microsoft\Internet Explorer\Extensions\" & sDummy, Wow64Redir)
-            Else
-                sData = RegExportKeyToVariable(0&, "HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\Extensions\" & sDummy)
-            End If
-            
-        Case "O10"
-            'O10 - Winsock hijack
-            'O10 - Broken Internet access because of missing LSP provider: 'file'
-            'O10 - Broken Internet access because of LSP chain gap (#2 in chain of 8 missing)"
-            
-            'backup even possible??
-            'msgboxW "Backup of LSP hijackers is not possible " & _
-            '       "because of technical limitations. (IOW, " & _
-            '       "I don't know how.) Since only two programs " & _
-            '       "hijack the LSP (New.Net and WebHancer) and " & _
-            '       "both, this should not pose a problem." & vbCrLf & _
-            '       "Should you wish to restore either for testing " & _
-            '       "purposes or complete insanity, you need to " & _
-            '       "reinstall the program.", vbExclamation
-            Exit Sub
-            
-        Case "O11" ', "O11-32"
-            'O11 - Extra options in MSIE 'Advanced' settings tab
-            'O11 - Options group: [COMMONNAME] CommonName
-            
-            'need to backup everything in that key
-            sDummy = Left$(sItem, InStr(sItem, "]") - 1)
-            sDummy = Mid$(sItem, InStr(sItem, "[") + 1)
-            '"-advopt.reg"
-            sData = RegExportKeyToVariable(0&, "HKEY_LOCAL_MACHINE\Software\Microsoft\Internet Explorer\AdvancedOptions\" & sDummy, Wow64Redir)
-            
-        Case "O12" ', "O12-32"
-            'O12 - MSIE plugins for file extensions or MIME types
-            'O12 - Plugin for .spop: NAV.DLL
-            'O12 - Plugin for text/html: NAV.DLL
-            
-            'need to backup subkey + 'Location' value
-            If InStr(sItem, "Plugin for .") > 0 Then
-                'plugin for file extension
-                sDummy = Left$(sItem, InStr(sItem, ":") - 1)
-                sDummy = Mid$(sDummy, InStr(sDummy, "."))
-                sDummy = "Extension\" & sDummy
-            Else
-                'plugin for MIME type
-                sDummy = Left$(sItem, InStr(sItem, ":") - 1)
-                sDummy = Mid$(sItem, InStr(sItem, " for ") + 5)
-                sDummy = "MIME\" & sDummy
-            End If
-            '"-plugin.reg"
-            sData = RegExportKeyToVariable(0&, "HKEY_LOCAL_MACHINE\Software\Microsoft\Internet Explorer\Plugins\" & sDummy, Wow64Redir)
-            
-        Case "O16" ', "O16-32"
-            'O16 - Download Program Files item
-            'O16 - DPF: Plugin name - http://bla.com/bla.cab
-            'O16 - DPF: {000000} (name) - http://bla.com/bla.cab
-            
-            'need to export key from HKLM\..\Dist Units
-            'and (if applic) HKCR\CLSID\{0000}
-            'need to backup files OSD, INF, InProcServer32
-            
-            sDummy = Mid$(sItem, InStr(sItem, ": ") + 2)
-            If Left$(sDummy, 1) = "{" Then
-                'name is CLSID
-                sDummy = Left$(sDummy, InStr(sDummy, "}"))
-            Else
-                'name is just name
-                sDummy = Left$(sDummy, InStr(sDummy, " - ") - 1)
-            End If
-            '"-dpf1.reg"
-            sData = RegExportKeyToVariable(0&, "HKEY_LOCAL_MACHINE\Software\Microsoft\Code Store Database\Distribution Units\" & sDummy, Wow64Redir)
-            If Left$(sDummy, 1) = "{" Then
-                '"-dpf2.reg"
-                sData = sData & RegExportKeyToVariable(0&, "HKEY_CLASSES_ROOT\CLSID\" & sDummy, Wow64Redir, False) 'no header
-            End If
-            
-            sCLSID = sDummy
-            sDPFKey = "Software\Microsoft\Code Store Database\Distribution Units"
-            'backup INF
-            sLine = RegGetString(HKEY_LOCAL_MACHINE, sDPFKey & "\" & sCLSID & "\DownloadInformation", "INF", Wow64Redir)
-            If sLine <> vbNullString Then
-                If FileExists(sLine) Then
-                    FileCopyW sLine, sPath & "backups\" & sBackup & ".inf"
-                End If
-            End If
-            
-            'backup OSD
-            sLine = RegGetString(HKEY_LOCAL_MACHINE, sDPFKey & "\" & sCLSID & "\DownloadInformation", "OSD", Wow64Redir)
-            If sLine <> vbNullString Then
-                If FileExists(sLine) Then
-                    FileCopyW sLine, sPath & "backups\" & sBackup & ".osd"
-                End If
-            End If
-            
-            'backup InProcServer32
-            If Left$(sCLSID, 1) = "{" And Right$(sCLSID, 1) = "}" Then
-                sLine = RegGetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InProcServer32", vbNullString, Wow64Redir)
-                If sLine <> vbNullString Then
-                    If FileExists(sLine) Then
-                        FileCopyW sLine, sPath & "backups\" & sBackup & ".dll"
-                    End If
-                End If
-            End If
-            
-        Case "O20" ', "O20-32"
-            'O20 - AppInit_DLLs: file.dll (do nothing)
-            'O20 - Winlogon Notify: bla - c:\file.dll
-            'todo:
-            'backup regkey
-            If InStr(sItem, "Winlogon Notify:") > 0 Then
-                sDummy = Mid$(sItem, InStr(sItem, ": ") + 2)
-                sDummy = Left$(sDummy, InStr(sDummy, " - ") - 1)
-                
-                '"-notify.reg"
-                sData = RegExportKeyToVariable(0&, "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\Notify\" & sDummy, Wow64Redir)
-            End If
-        
-        Case "O21" ', "O21-32"
-            'O21 - ShellServiceObjectDelayLoad
-            'O21 - SSODL: webcheck - {000....000} - c:\file.dll
-            'todo:
-            'backup CLSID regkey
-            sCLSID = Mid$(sItem, 14)
-            sCLSID = Mid$(sCLSID, InStr(sCLSID, " - ") + 3)
-            sCLSID = Left$(sCLSID, InStr(sCLSID, " - ") - 1)
-            
-            '"-ssodl.reg"
-            sData = RegExportKeyToVariable(0&, "HKEY_CLASSES_ROOT\CLSID\" & sCLSID, Wow64Redir)
-
-            sDummy = Mid$(sItem, 14)
-            sDummy = Left$(sDummy, InStr(sDummy, " - ") - 1)
-            '"-ssodl_2.reg"
-            sData = sData & RegExportKeyToVariable(0&, "HKLM\Software\Microsoft\Windows\CurrentVersion\ShellServiceObjectDelayLoad\" & sDummy, Wow64Redir, False) 'no header
-        
-        Case "O22"
-            'O22 - ScheduledTask: blah - {000...000} - file.dll
-            'todo:
-            'backup CLSID regkey
-            'sCLSID = Mid$(sItem, InStr(sItem, ": ") + 2)
-            'sCLSID = Mid$(sCLSID, InStr(sCLSID, " - ") + 3)
-            'sCLSID = Left$(sCLSID, InStr(sCLSID, " - ") - 1)
-            
-            '"-sts.reg"
-            'sData = RegExportKeyToVariable(0&, "HKEY_CLASSES_ROOT\CLSID\" & sCLSID)
-        
-        Case "O24"
-            'O24 - Desktop Component N: blah - c:\windows\index.html
-            
-            sNum = Mid$(sItem, InStr(sItem, ":") - 1, 1)
-            sFile1 = RegGetString(HKEY_CURRENT_USER, "Software\Microsoft\Internet Explorer\Desktop\Components\" & sNum, "Source")
-            sFile2 = RegGetString(HKEY_CURRENT_USER, "Software\Microsoft\Internet Explorer\Desktop\Components\" & sNum, "SubscribedURL")
-            If LCase$(sFile2) = LCase$(sFile1) Then sFile2 = vbNullString
-            
-            '"-dc.reg"
-            sData = RegExportKeyToVariable(0&, "HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\Desktop\Components\" & sNum)
-
-            If FileExists(sFile1) Then FileCopyW sFile1, sPath & "backups\" & sBackup & "-source.html"
-            If FileExists(sFile2) Then FileCopyW sFile2, sPath & "backups\" & sBackup & "-suburl.html"
-            
-        Case Else
-            'MsgBoxW "I'm so stupid I forgot to implement this. Bug me about it." & vbCrLf & sItem, vbExclamation, "d'oh!"
-            MsgBoxW Translate(533) & vbCrLf & sItem, vbExclamation, Translate(534) ':)
-    End Select
-        
-    'winNT/2000/XP reg data workaround
-    If Left$(sData, 2) = "€ю" Or Left$(sData, 2) = ChrW(&HFF) & ChrW(&HFE) Then sData = Mid$(sData, 3)
-    sData = StrConv(sData, vbFromUnicode)
-    
-    'write item + any data to file
-    ff = FreeFile()
-    Open sPath & "backups\" & sBackup For Output As #ff
-        Print #ff, sItem
-        If sData <> vbNullString Then Print #ff, vbCrLf & sData
-    Close #ff
-    
-    AppendErrorLogCustom "MakeBackup - End"
-    Exit Sub
-ErrorHandler:
-    Close #ff
-    ErrorMsg Err, "modBackup_MakeBackup", "sItem=", sItem
-    If inIDE Then Stop: Resume Next
 End Sub
 
-Public Sub RestoreBackup(ByVal sItem$)
-    'format of backup files:
-    'line 1: original item, e.g. O1 - Hosts: auto.search.msn
-    'line 2: blank if 3 != blank
-    'line 3+: any Registry data
-    'format of sItem:
-    ' [short date], [long time]: [original item name]
-    Dim sPath$, sDate$, stime$, sFile$, sBackup$, sSID$, ff%
-    Dim sName$, sDummy$, i&, sKey1$, sKey2$
-    Dim sRegKey$, sRegKey2$, sRegKey3$, sRegKey4$, sRegKey5$
-    Dim Wow64Redir As Boolean, sPrefix$, sFullPrefix$
-    Dim bBackupHasRegData As Boolean, bBackupHasDLL As Boolean
+Public Sub BackupFlush()
+    If Not tBackupList.cLastCMD Is Nothing Then
+        tBackupList.cLastCMD.Flush
+    End If
+    If Not cBackupIni Is Nothing Then
+        cBackupIni.Flush
+    End If
+'    With tBackupList
+'        Set .cLastCMD = Nothing
+'        Set .cLastCMD = New clsIniFile
+'        .LastBackupID = 0
+'        .LastFixID = 0
+'        .Total = 0
+'        .LastHitW = ""
+'    End With
+End Sub
+
+'// number of fixes +1
+Public Sub IncreaseFixID()
+    'This ID has increased on each pressing 'Fix it' button.
+    '
+    'It is intended for identifying the same item in List.ini file, which corresponds to current curing item.
+    '
+    'If l_FixID == item's FixID and Items names matches, record will be appended to existent (+1 command), if no, new item will be created.
+    
+    tBackupList.LastFixID = tBackupList.LastFixID + 1
+    
+    If cBackupIni Is Nothing Then
+        InitBackupIni
+    End If
+    cBackupIni.WriteParam "main", "LastFixID", tBackupList.LastFixID
+End Sub
+
+Public Function MakeBackup(Result As SCAN_RESULT) As Boolean
     On Error GoTo ErrorHandler:
     
-    AppendErrorLogCustom "RestoreBackup - Begin", sItem
+    Dim aFiles() As String
+    Dim lRegID As Long
+    Dim i As Long, n As Long
     
-    sPath = AppPath() & IIf(Right$(AppPath(), 1) = "\", vbNullString, "\")
-    If Not FolderExists(sPath & "backups") Then Exit Sub
+    MakeBackup = True
     
-    sDate = Left$(sItem, InStr(sItem, ", ") - 1)
-    stime = Mid$(sItem, InStr(sItem, ", ") + 2)
-    sName = Mid$(stime, InStr(stime, ": ") + 2)
-    stime = Left$(stime, InStr(stime, ": ") - 1)
+    'if no backup required / possible
+    If Result.NoNeedBackup Then Exit Function
     
-    sItem = Mid$(sItem, InStr(sItem, ": ") + 2)
-    
-    If Not bIsUSADateFormat Then
-        sDate = Format(sDate, "yyyymmdd")
-    Else
-        'use stupid workaround for USA data format
-        sDate = Format(sDate, "yyyyddmm")
-    End If
-    stime = Format(stime, "HhNnSs")
-    
-    'sBackup = "backup-" & sDate & "-" & sTime '& "*.*"
-    sBackup = "backup-*.*"
-    
-    'get first file for this filemask
-    'multiple backups can exist, so open each file
-    'and check the first line against the item
-    'we are looking for
-    sFile = DirW$(sPath & "backups\" & sBackup, vbFile)
-    If sFile = vbNullString Then
-        'note the small difference with the next msg
-        'MsgBoxW "The backup files for this item were not found. It could not be restored.", vbExclamation
-        MsgBoxW Translate(535), vbExclamation
-        
-        'msgboxW "DirW$(" & sPath & "backups\" & sBackup & "*.*) = vbNullString"
-        Exit Sub
-    End If
-    Do
-        If InStr(sFile, ".") = 0 Then
-            ff = FreeFile()
-            Open sPath & "backups\" & sFile For Input As #ff
-                Line Input #ff, sDummy
-                If sDummy = sName Then
-                    sBackup = sFile
-                    Close #ff
-                    Exit Do
-                End If
-            Close #ff
-        End If
-        sFile = DirW$()
-    Loop Until Len(sFile) = 0
-    If sDummy <> sName Then
-        'things like this help troubleshooting stupid bugs
-        'MsgBoxW "The backup file for this item was not found. It could not be restored.", vbExclamation
-        MsgBoxW Translate(536), vbExclamation
-        
-        'msgboxW "sDummy = " & sDummy & vbCrLf & _
-        '       "sName = " & sName
-        Exit Sub
+    If cBackupIni Is Nothing Then
+        InitBackupIni
     End If
     
-    'file types:
-    'backup*. = actual backup file /w item name + reg data
-    'backup*.dll = backup of BHO file
-    If FileExists(sPath & "backups\" & sFile & ".dll") Then bBackupHasDLL = True
-    ff = FreeFile()
-    Open sPath & "backups\" & sFile For Input As #ff
-        Line Input #ff, sDummy
-        On Error Resume Next
-        sDummy = vbNullString
-        Line Input #ff, sDummy
-        Line Input #ff, sDummy
-        On Error GoTo ErrorHandler:
-        If sDummy <> vbNullString Then bBackupHasRegData = True
-    Close #ff
+    UpdateBackupEntry Result
     
-    Dim lHive&, sKey$, sVal$, sData$
-    Dim sIniFile$, sSection$
-    Dim sMyFile$, sMyName$, sCLSID$, sLine$
-    Dim sDPFKey$, sInf$, sOSD$, sInProcServer32$
-    
-    'sPrefix = Trim$(Left$(sName, 3))
-    sPrefix = Trim(Left$(sItem, InStr(sItem, "-") - 1))
-    sFullPrefix = Left$(sItem, InStr(sItem, " - ") - 1)
-    
-    If StrEndWith(sFullPrefix, "-32") Then Wow64Redir = True
-    
-    Select Case sPrefix
-        Case "R0", "R1" 'Changed/Created Regval
-            'R0 - HKCU\Software\..\Subkey,Value=Data
-            'R1 - HKCU\Software\..\Subkey,Value=Data
-            sDummy = Mid$(sName, 6)
-            Select Case Left$(sDummy, 4)
-                Case "HKCU": lHive = HKEY_CURRENT_USER
-                Case "HKLM": lHive = HKEY_LOCAL_MACHINE
-            End Select
-            sKey = Mid$(sDummy, 6)
-            sVal = Mid$(sKey, InStr(sKey, ",") + 1)
-            sKey = Left$(sKey, InStr(sKey, ",") - 1)
-            sData = Mid$(sVal, InStr(sVal, " = ") + 3)
-            sVal = Left$(sVal, InStr(sVal, " = ") - 1)
-            If sVal = "(Default)" Then sVal = vbNullString
-            If InStr(sData, " (obfuscated)") > 0 Then
-                sData = Left$(sData, InStr(sData, " (obfuscated)") - 1)
-            End If
-            RegSetStringVal lHive, sKey, sVal, sData
-            If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
-            
-        Case "R2" 'Created Regkey
-            'don't have this yet
-            
-        Case "R3" 'URLSearchHoook
-            'R3 - URLSearchHook: blah - {0000} - bla.dll
-            sDummy = Mid$(sName, InStr(sName, "- {") + 2)
-            sDummy = Left$(sDummy, InStr(sDummy, "}"))
-            RegSetStringVal HKEY_CURRENT_USER, "Software\Microsoft\Internet Explorer\URLSearchHooks", sDummy, vbNullString
-            If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
-            
-        Case "F0", "F1" 'Changed/Created Inifile val
-            'F0 - system.ini: Shell=Explorer.exe openme.exe
-            sDummy = Mid$(sName, 6)
-            'sMyFile = left$(sDummy, InStr(sDummy, ":") - 1)
-            If InStr(sDummy, "system.ini") = 1 Then
-                sSection = "boot"
-                sMyFile = "system.ini"
-            ElseIf InStr(sDummy, "win.ini") = 1 Then
-                sSection = "windows"
-                sMyFile = "win.ini"
-            End If
-            sVal = Mid$(sDummy, InStr(sDummy, ": ") + 2)
-            'sMyFile = left$(sDummy, InStr(sDummy, ":") - 1)
-            sData = Mid$(sVal, InStr(sVal, "=") + 1)
-            sVal = Left$(sVal, InStr(sVal, "=") - 1)
-            'WritePrivateProfileString sSection, sVal, sData, sMyFile
-            IniSetString sMyFile, sSection, sVal, sData
-            If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
-            
-        Case "F2", "F3"
-            'F2 - REG:system.ini: Shell=Explorer.exe blah
-            'F2 - REG:system.ini: Userinit=c:\windows\system32\userinit.exe,blah
-            'F3 - REG:win.ini: load=blah or run=blah
-            sData = Mid$(sName, InStr(sName, "=") + 1)
-            If InStr(sName, "system.ini") > 0 Then
-                If InStr(1, sName, "Shell=", vbTextCompare) > 0 Then
-                    RegSetStringVal HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows NT\CurrentVersion\WinLogon", "Shell", sData
-                ElseIf InStr(1, sName, "Userinit", vbTextCompare) > 0 Then
-                    RegSetStringVal HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows NT\CurrentVersion\WinLogon", "UserInit", sData
-                End If
-            ElseIf InStr(sName, "win.ini") > 0 Then
-                If InStr(sName, "load=") > 0 Then
-                    RegSetStringVal HKEY_CURRENT_USER, "Software\Microsoft\Windows NT\CurrentVersion\Windows", "load", sData
-                ElseIf InStr(sName, "run=") > 0 Then
-                    RegSetStringVal HKEY_CURRENT_USER, "Software\Microsoft\Windows NT\CurrentVersion\Windows", "run", sData
-                End If
-            End If
-'        Case "N1", "N2", "N3", "N4"
-'            'Changed NS4.x homepage
-'            'N1 - Netscape 4: user_pref("browser.startup.homepage", "http://url"); (c:\..\prefs.js)
-'            'Changed NS6 homepage
-'            'N2 - Netscape 6: user_pref("browser.startup.homepage", "http://url"); (c:\..\prefs.js)
-'            'Changed NS7 homepage/searchpage
-'            'N3 - Netscape 7: user_pref("browser.startup.homepage", "http://url"); (c:\..\prefs.js)
-'            'Changed Moz homepage/searchpage
-'            'N4 - Mozilla: user_pref("browser.startup.homepage", "http://url"); (c:\..\prefs.js)
-'            '               user_pref("browser.search.defaultengine", "http://url"); (c:\..\prefs.js)
-'
-'            'get user_pref line + prefs.js location
-'            sDummy = Mid$(sItem, InStr(sItem, ": ") + 2)
-'            sMyFile = Mid$(sDummy, InStrRev(sDummy, "(") + 1)
-'            sMyFile = Left$(sMyFile, Len(sMyFile) - 1)
-'            sDummy = Left$(sDummy, InStrRev(sDummy, "(") - 2)
-'
-'            If Not FileExists(sMyFile) Then
-'                'MsgBoxW "Could not find prefs.js file for Netscape/Mozilla, homepage has not been restored.", vbExclamation
-'                MsgBoxW Translate(537), vbExclamation
-'                Exit Sub
-'            End If
-'
-'            'read old file, replacing relevant line
-'            sData = vbNullString
-'            ff = FreeFile()
-'            Open sMyFile For Input As #ff
-'                Do
-'                    Line Input #ff, sLine
-'                    If InStr(sLine, sDummy) > 0 Then
-'                        sData = sData & sDummy & vbCrLf
-'                    Else
-'                        sData = sData & sLine & vbCrLf
-'                    End If
-'                Loop Until EOF(ff)
-'            Close #ff
-'
-'            'write new file
-'            If FileExists(sMyFile) Then deletefileWEx (StrPtr(sMyFile))
-'            ff = FreeFile()
-'            Open sMyFile For Output As #ff
-'                Print #ff, sData
-'            Close #ff
-'
-'            If FileExists(sPath & "backups\" & sFile) Then deletefileWEx (StrPtr(sPath & "backups\" & sFile))
-            
-        Case "O1" 'Hosts file hijack
-            'O1 - Hosts file: 66.123.204.8 auto.search.msn.com
-            'If InStr(sName, "Hosts file is located at") > 0 Then
-            If InStr(sName, Translate(271)) > 0 Then
-                sDummy = Mid$(sName, InStr(sName, Translate(271)) + Len(Translate(271)) + 2)
-                sDummy = Left$(sDummy, Len(sDummy) - 6)
-                RegSetStringVal HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\Tcpip\Parameters", "DatabasePath", sDummy
-            Else
-                sDummy = Mid$(sName, InStr(sName, ": ") + 2)
-                i = GetFileAttributes(StrPtr(sHostsFile))
-                If (i And 2048) Then i = i - 2048
-                SetFileAttributes StrPtr(sHostsFile), vbNormal
-                ff = FreeFile()
-                Open sHostsFile For Append As #ff
-                    Print #ff, sDummy
-                Close #ff
-                SetFileAttributes StrPtr(sHostsFile), i
-            End If
-            If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
-            
-        Case "O2"
-            'O2 - BHO: [bhoname] - [clsid] - [file]
-            
-            sDummy = Mid$(sItem, InStr(sItem, ": ") + 2)
-            sMyName = Left$(sDummy, InStr(sDummy, " - ") - 1)
-            sCLSID = Mid$(sDummy, InStr(sDummy, " - ") + 3)
-            sMyFile = Mid$(sCLSID, InStr(sCLSID, " - ") + 3)
-            If InStr(sMyFile, "(file missing)") > 0 Then
-                sMyFile = Left$(sMyFile, InStr(sMyFile, "(file missing)") - 1)
-            End If
-            sCLSID = Left$(sCLSID, InStr(sCLSID, " - ") - 1)
-            
-            RegCreateKey HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\explorer\Browser Helper Objects\" & sCLSID, Wow64Redir
-            If sMyName <> "(no name)" Then RegSetStringVal HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\explorer\Browser Helper Objects\" & sCLSID, vbNullString, sMyName, Wow64Redir
-            If Not RegKeyExists(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InprocServer32", Wow64Redir) Then
-                RegCreateKey HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, Wow64Redir
-                RegCreateKey HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InprocServer32", Wow64Redir
-                If sMyFile <> vbNullString And sMyFile <> "(no file)" Then
-                    RegSetStringVal HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InprocServer32", vbNullString, sMyFile, Wow64Redir
-                End If
-            End If
-            
-            If Not bBackupHasDLL Then
-                'MsgBoxW "BHO file for '" & sName & "' was not found. The Registry data was restored, but the file was not.", vbExclamation
-                MsgBoxW Replace$(Translate(538), "[]", sName), vbExclamation
-            Else
-                'skip errors - app could have restored
-                'BHO dll by itself
-                On Error Resume Next
-                FileCopyW sPath & "backups\" & sBackup & ".dll", sMyFile
-                On Error GoTo ErrorHandler:
-                If OSver.Bitness = "x64" And FolderExists(sWinDir & "\sysnative") Then
-                    Shell sWinDir & "\sysnative\regsvr32.exe /s """ & sMyFile & """", vbHide
-                Else
-                    Shell sWinDir & IIf(bIsWinNT, "\system32", "\system") & "\regsvr32.exe /s """ & sMyFile & """", vbHide
-                End If
-            End If
-            If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
-            If FileExists(sPath & "backups\" & sFile & ".dll") Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile & ".dll"))
-            
-        Case "O3"
-            'O3 - Toolbar: Radio - {00000000-0000-0000-0000-000000000000}
-            
-            sMyName = Mid$(sItem, InStr(sItem, ": ") + 2)
-            sCLSID = Mid$(sMyName, InStr(sMyName, " - ") + 3)
-            sCLSID = Left$(sCLSID, InStr(sCLSID, "}"))
-            sMyName = Left$(sMyName, InStr(sMyName, " - ") - 1)
-            'If sMyName = "(no name)" Then sMyName = vbNullString
-            
-            RegSetStringVal HKEY_LOCAL_MACHINE, "Software\Microsoft\Internet Explorer\Toolbar", sCLSID, sMyName, Wow64Redir
-            If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
-            
-        Case "O4" 'Regrun entry
-            'O4 - HKLM\..\Run: [valuename] rundll shit.dll,LoadEtc
-            'O4 - Startup: bla.lnk = c:\bla.exe
-            
-            'O4 - HKCU\SID\Run: [bla] bla.exe (User 'bla')
-            'O4 - SID Startup: bla.lnk = c:\bla.exe (User 'bla')
-                
-            If InStr(sItem, "[") > 0 Then
-                'registry autorun
-                sDummy = Mid$(sItem, 6)
-                Select Case Left$(sDummy, 4)
-                    Case "HKLM": lHive = HKEY_LOCAL_MACHINE
-                    Case "HKCU": lHive = HKEY_CURRENT_USER
-                    Case "HKU\": lHive = HKEY_USERS
-                End Select
-                If Not lHive = HKEY_USERS Then
-                    sDummy = Mid$(sDummy, 9)
-                Else
-                    sDummy = Mid$(sDummy, 6)
-                    sSID = Left$(sDummy, InStr(sDummy, "\") - 1)
-                    sDummy = Mid$(sDummy, Len(sSID) + 5)
-                End If
-                If InStr(sDummy, "RunOnce:") = 1 Then
-                    sKey = "Software\Microsoft\Windows\CurrentVersion\RunOnce"
-                ElseIf InStr(sDummy, "RunServices:") = 1 Then
-                    sKey = "Software\Microsoft\Windows\CurrentVersion\RunServices"
-                ElseIf InStr(sDummy, "RunServicesOnce:") = 1 Then
-                    sKey = "Software\Microsoft\Windows\CurrentVersion\RunServicesOnce"
-                Else
-                    If InStr(1, sDummy, "Policies\", vbTextCompare) = 0 Then
-                        sKey = "Software\Microsoft\Windows\CurrentVersion\Run"
-                    Else
-                        sKey = "Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run"
-                    End If
-                End If
-                sDummy = Mid$(sDummy, InStr(sDummy, "[") + 1)
-                sVal = Left$(sDummy, InStrRev(sDummy, "]") - 1)
-                sData = Mid$(sDummy, InStrRev(sDummy, "]") + 2)
-                
-                If lHive <> HKEY_USERS Then
-                    RegSetStringVal lHive, sKey, sVal, sData
-                Else
-                    sData = Left$(sData, InStr(sData, "(User '") - 2)
-                    RegSetStringVal lHive, sSID & "\" & sKey, sVal, sData
-                End If
-            Else
-                'O4 - Startup: bla.lnk = c:\bla.exe
-                'backup file is sPath & "backups\" & sBackup & "-" & filename
-                sDummy = Mid$(sItem, InStr(sItem, ": ") + 2)
-                If InStr(sDummy, " = ") > 0 Then
-                    sDummy = Left$(sDummy, InStr(sDummy, " = ") - 1)
-                End If
-                sData = Mid$(sItem, 6)
-                sData = Left$(sData, InStr(sData, ": ") - 1)
-                Select Case sData
-                    Case "Startup":                sData = RegGetString(HKEY_CURRENT_USER, "Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders", "Startup")
-                    Case "User Startup":           sData = RegGetString(HKEY_CURRENT_USER, "Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders", "Startup")
-                    Case "Global Startup":         sData = RegGetString(HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders", "Common Startup")
-                    Case "Global User Startup":    sData = RegGetString(HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders", "Common Startup")
-                    Case "Global User AltStartup": sData = RegGetString(HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders", "Common AltStartup")
-                End Select
-                If sData <> vbNullString Then
-                    If (GetFileAttributes(StrPtr(sData)) And vbDirectory) Then
-                        CopyFolder sPath & "backups\" & sBackup & "-" & sDummy, sData & IIf(Right$(sData, 1) = "\", vbNullString, "\") & sDummy
-                    Else
-                        On Error Resume Next
-                        FileCopyW sPath & "backups\" & sBackup & "-" & sDummy, sData & IIf(Right$(sData, 1) = "\", vbNullString, "\") & sDummy
-                        On Error GoTo ErrorHandler:
-                    End If
-                End If
-            End If
-            If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
-            If FileExists(sData) Then
-                If (GetFileAttributes(StrPtr(sData)) And vbDirectory) Then
-                    DeleteFolder sPath & "backups\" & sFile & "-" & sDummy
-                Else
-                    If FileExists(sPath & "backups\" & sFile & "-" & sDummy) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile & "-" & sDummy))
-                End If
-            Else
-                If FileExists(sPath & "backups\" & sFile & "-" & sDummy) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile & "-" & sDummy))
-            End If
-            
-        Case "O5" 'Control.ini IE Options block
-            'O5 - control.ini: inetcpl.cpl=no
-            
-            'WritePrivateProfileString "don't load", "inetcpl.cpl", "no", "control.ini"
-            IniSetString "control.ini", "don't load", "inetcpl.cpl", "no"
-            If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
-                        
-        Case "O6", "O7", "O9", "O11", "O12"
-            'Policies IE Options/Control Panel block
-            'O6 - HKCU\Software\Policies\Microsoft\Internet Explorer\Restrictions present
-            'Policies Regedit block
-            'O7 - HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\System, DisableRegedit=1
-            'Extra IE 'Tools' menuitem / button
-            'O9 - Extra button: Offline
-            'O9 - Extra 'Tools' menuitem: Add to T&rusted Zone
-            'IE Advanced Options group
-            'O11 - Options group: [COMMONNAME] CommonName
-            'IE Plugin
-            'O12 - Plugin for .spop: NAV.DLL
-            'O12 - Plugin for text/html: NAV.DLL
-            
-            ff = FreeFile()
-            Open sPath & "backups\" & sFile For Input As #ff
-                Line Input #ff, sDummy
-                Line Input #ff, sDummy
-                sMyFile = vbNullString
-                Do
-                    Line Input #ff, sDummy
-                    sMyFile = sMyFile & sDummy & vbCrLf
-                Loop Until EOF(ff)
-            Close #ff
-            
-            'regedit in 2000/XP tends to prefix €ю
-            'to .reg files - they won't merge then
-            If Left$(sMyFile, 2) = "€ю" Then sMyFile = Mid$(sMyFile, 3)
-            
-            ff = FreeFile()
-            Open sPath & "backups\" & sFile & ".reg" For Output As #ff
-                Print #ff, sMyFile
-            Close #ff
-            Shell sWinDir & "\regedit.exe /s """ & sPath & "backups\" & sFile & ".reg""", vbHide
-            DoEvents
-            If FileExists(sPath & "backups\" & sFile & ".reg") Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile & ".reg"))
-            If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
-            
-        Case "O8" 'IE Context menuitem
-            'O8 - Extra context menu item: &Title - C:\Windows\web\dummy.htm
-            sDummy = Mid$(sItem, InStr(sItem, ": ") + 2)
-            sMyFile = Mid$(sDummy, InStr(sDummy, " - ") + 3)
-            sDummy = Left$(sDummy, InStr(sDummy, " - ") - 1)
-            
-            RegCreateKey HKEY_CURRENT_USER, "Software\Microsoft\Internet Explorer\MenuExt\" & sDummy
-            RegSetStringVal HKEY_CURRENT_USER, "Software\Microsoft\Internet Explorer\MenuExt\" & sDummy, vbNullString, sMyFile
-            If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
-                        
-        Case "O10" 'Winsock hijack
-            'O10 - Broken Internet access because of missing LSP provider: 'file'
-            'O10 - Broken Internet access because of LSP chain gap (#2 in chain of 8 missing)"
-            
-            'should not trigger
-                                                
-        Case "O13" 'IE DefaultPrefix hijack
-            'O13 - DefaultPrefix: http://www.prolivation.com/cgi?
-            'O13 - WWW Prefix: http://www.prolivation.com/cgi?
-            
-            sMyName = Mid$(sItem, InStr(sItem, ": ") + 2)
-            sDummy = Mid$(sItem, 7)
-            sDummy = Left$(sDummy, InStr(sDummy, ": ") - 1)
-            Select Case sDummy
-                Case "DefaultPrefix": RegSetStringVal HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\URL\DefaultPrefix", vbNullString, sMyName
-                Case "WWW Prefix":    RegSetStringVal HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\URL\Prefixes", "www", sMyName
-                Case "WWW. Prefix":   RegSetStringVal HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\URL\Prefixes", "www.", sMyName
-                Case "Home Prefix":   RegSetStringVal HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\URL\Prefixes", "home", sMyName
-                Case "Mosaic Prefix": RegSetStringVal HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\URL\Prefixes", "mosaic", sMyName
-                Case "FTP Prefix":    RegSetStringVal HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\URL\Prefixes", "ftp", sMyName
-                Case "Gopher Prefix": RegSetStringVal HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\URL\Prefixes", "gopher", sMyName
-            End Select
-            If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
-            
-        Case "O14" 'IERESET.INF hijack
-            'O14 - IERESET.INF: START_PAGE_URL="http://www.searchalot.com"
-            
-            'get value + URL to revert from sItem
-            sName = Mid$(sItem, InStr(sItem, ": ") + 2)
-            sDummy = Mid$(sItem, InStr(sItem, "=") + 1)
-            sName = Left$(sName, InStr(sName, "=") - 1)
-            If sName <> "SearchAssistant" And sName <> "CustomizeSearch" Then sName = sName & "="
-            
-            sMyFile = vbNullString
-            ff = FreeFile()
-            Open sWinDir & "\INF\iereset.inf" For Input As #ff
-                Do
-                    Line Input #ff, sMyName
-                    If InStr(sMyName, sName) > 0 Then
-                        Select Case sName
-                            Case "SearchAssistant": sMyFile = sMyFile & "HKLM,""Software\Microsoft\Internet Explorer\Search"",""SearchAssistant"",0,""" & sDummy & """" & vbCrLf
-                            Case "CustomizeSearch": sMyFile = sMyFile & "HKLM,""Software\Microsoft\Internet Explorer\Search"",""CustomizeSearch"",0,""" & sDummy & """" & vbCrLf
-                            Case "START_PAGE_URL=": If InStr(sMyName, "MS_START_PAGE_URL=") = 0 Then sMyFile = sMyFile & "START_PAGE_URL=""" & sDummy & """" & vbCrLf
-                            Case "SEARCH_PAGE_URL=": sMyFile = sMyFile & "SEARCH_PAGE_URL=""" & sDummy & """" & vbCrLf
-                            Case "MS_START_PAGE_URL=": sMyFile = sMyFile & "MS_START_PAGE_URL=""" & sDummy & """" & vbCrLf
-                        End Select
-                    Else
-                        sMyFile = sMyFile & sMyName & vbCrLf
-                    End If
-                Loop Until EOF(ff)
-            Close #ff
-            If FileExists(sWinDir & "\INF\iereset.inf") Then DeleteFileWEx (StrPtr(sWinDir & "\INF\iereset.inf"))
-            ff = FreeFile()
-            Open sWinDir & "\INF\iereset.inf" For Output As #ff
-                Print #ff, sMyFile
-            Close #ff
-            If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
-            
-        Case "O15" 'Trusted Zone Autoadd
-            'O15 - Trusted Zone: http://free.aol.com (HKLM)
-            'O15 - Trusted IP range: http://66.66.66.* (HKLM)
-            'O15 - ProtocolDefaults: 'http' protocol is in Trusted Zone, should be Internet Zone (HKLM)
-            
-            sRegKey = "Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\Domains\"
-            sRegKey2 = "Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\Ranges\"
-            sRegKey3 = "Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\ProtocolDefaults"
-            sRegKey4 = "Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\EscDomains\"
-            sRegKey5 = "Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\EscRanges\"
-            
-            sDummy = Mid$(sItem, InStr(sItem, ": ") + 2)
-            If InStr(sItem, "ProtocolDefaults:") > 0 Then GoTo ProtDefs:
-            If InStr(sDummy, "//") > 0 Then sDummy = Mid$(sDummy, InStr(sDummy, "//") + 2)
-            If InStr(sDummy, "*.") > 0 Then
-                sDummy = Mid$(sDummy, InStr(sDummy, "*.") + 2)
-                If InStr(sDummy, ".") <> InStrRev(sDummy, ".") Then sDummy = "*." & sDummy
-            End If
-            
-            If InStr(sItem, "HKLM") > 0 Then
-                lHive = HKEY_LOCAL_MACHINE
-            Else
-                lHive = HKEY_CURRENT_USER
-            End If
-            If InStr(sItem, " (HKLM)") > 0 Then
-                sDummy = Left$(sDummy, InStr(sDummy, " (HKLM)") - 1)
-            End If
-            
-            If InStr(sItem, "http://") > 0 Then
-                sVal = "http"
-            Else
-                sVal = "*"
-            End If
-            
-            If InStr(sItem, "Trusted Zone:") > 0 Then
-                If InStr(sDummy, ".") = InStrRev(sDummy, ".") Then
-                    'domain.com
-                    sKey2 = sDummy
-                    sKey1 = vbNullString
-                Else
-                    'sub.domain.com
-                    i = InStrRev(sDummy, ".")
-                    i = InStrRev(sDummy, ".", i - 1)
-                    If DomainHasDoubleTLD(sDummy) Then
-                        i = InStrRev(sDummy, ".", i - 1)
-                    End If
-                    sKey2 = Mid$(sDummy, i + 1)
-                    sKey1 = sKey2 & "\" & Left$(sDummy, i - 1)
-                End If
-                If InStr(sItem, "ESC Trusted") = 0 Then
-                    RegCreateKey lHive, sRegKey & sKey2
-                    RegCreateKey lHive, sRegKey & sKey1
-                    RegSetDwordVal lHive, sRegKey & sKey2, sVal, 2
-                Else
-                MsgBoxW sRegKey & sKey2
-                MsgBoxW sRegKey & sKey1
-                    RegCreateKey lHive, sRegKey4 & sKey2
-                    RegCreateKey lHive, sRegKey4 & sKey1
-                    RegSetDwordVal lHive, sRegKey4 & sKey2, sVal, 2
-                End If
-            Else
-                If InStr(sItem, "ESC Trusted") = 0 Then
-                    For i = 1 To 9999
-                        If Not RegKeyExists(lHive, sRegKey2 & "Range" & i) Then
-                            RegCreateKey lHive, sRegKey2 & "Range" & i
-                            RegSetDwordVal lHive, sRegKey2 & "Range" & i, sVal, 2
-                            RegSetStringVal lHive, sRegKey2 & "Range" & i, ":Range", sDummy
-                            Exit For
-                        End If
-                    Next i
-                Else
-                    For i = 1 To 9999
-                        If Not RegKeyExists(lHive, sRegKey5 & "Range" & i) Then
-                            RegCreateKey lHive, sRegKey5 & "Range" & i
-                            RegSetDwordVal lHive, sRegKey5 & "Range" & i, sVal, 2
-                            RegSetStringVal lHive, sRegKey5 & "Range" & i, ":Range", sDummy
-                            Exit For
-                        End If
-                    Next i
-                End If
-                If i = 10000 Then
-                    'problem!
-                    'MsgBoxW "Unable to restore this backup: too many items in your Trusted Zone!", vbCritical
-                    MsgBoxW Translate(539), vbCritical
-                    Exit Sub
-                End If
-            End If
-            If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
-            Exit Sub
-            
-ProtDefs:
-            'O15 - ProtocolDefaults: 'http' protocol is in Trusted Zone, should be Internet Zone (HKLM)
-            Dim sProt$, sZone$, lZone&
-            sProt = Mid$(sItem, InStr(sItem, ": ") + 3)
-            sProt = Left$(sProt, InStr(sProt, "'") - 1)
-            sZone = Mid$(sItem, InStr(sItem, "is in ") + 6)
-            sZone = Left$(sZone, InStr(sZone, ",") - 1)
-            Select Case sZone
-                Case "My Computer Zone": lZone = 0
-                Case "Intranet Zone": lZone = 1
-                Case "Trusted Zone": lZone = 2
-                Case "Internet Zone": lZone = 3
-                Case "Restricted Zone": lZone = 4
-                Case Else
-                    'MsgBoxW "Unable to restore item: Protocol '" & sProt & "' was set to unknown zone.", vbExclamation
-                    MsgBoxW Replace$(Translate(540), "[]", sProt), vbExclamation
-                    Exit Sub
-            End Select
-            If InStr(sItem, "(HKLM)") > 0 Then
-                lHive = HKEY_LOCAL_MACHINE
-            Else
-                lHive = HKEY_CURRENT_USER
-            End If
-            RegSetDwordVal lHive, sRegKey3, sProt, lZone
-            
-            If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
-            
-        Case "O16" ' - Download Program Files item
-            'O16 - DPF: Plugin name - http://bla.com/bla.cab
-            'O16 - DPF: {0000} (name) - http://bla.com/bla.cab
-            
-            'backup has extra info with reg data
-            sData = vbNullString
-            ff = FreeFile()
-            Open sPath & "backups\" & sFile For Input As #ff
-                Line Input #ff, sLine
-                Line Input #ff, sLine
-                Do
-                    Line Input #ff, sLine
-                    sData = sData & sLine & vbCrLf
-                Loop Until EOF(ff)
-            Close #ff
-            
-            'regedit in 2000/XP tends to prepend €ю
-            'to .reg files - they won't merge then
-            If Left$(sData, 2) = "€ю" Then sData = Mid$(sData, 3)
-            ff = FreeFile()
-            Open sPath & "backups\" & sFile & ".reg" For Output As #ff
-                Print #ff, sData
-            Close #ff
-            Shell sWinDir & "\regedit.exe /s """ & sPath & "backups\" & sFile & ".reg""", vbHide
-            DoEvents
-            If FileExists(sPath & "backups\" & sFile & ".reg") Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile & ".reg"))
-            
-            'restore all the files
-            sDPFKey = "Software\Microsoft\Code Store Database\Distribution Units"
-            sCLSID = Mid$(sName, 12)
-            If Left$(sCLSID, 1) = "{" Then
-                sCLSID = Left$(sCLSID, InStr(sCLSID, "}"))
-            Else
-                sCLSID = Left$(sCLSID, InStr(sCLSID, " - ") - 1)
-            End If
-            sInf = RegGetString(HKEY_LOCAL_MACHINE, sDPFKey & "\" & sCLSID & "\DownloadInformation", "INF")
-            If sInf <> vbNullString Then
-                If FileExists(sPath & "backups\" & sFile & ".inf") Then
-                    On Error Resume Next
-                    FileCopyW sPath & "backups\" & sFile & ".inf", sInf
-                    On Error GoTo ErrorHandler:
-                End If
-            End If
-            sOSD = RegGetString(HKEY_LOCAL_MACHINE, sDPFKey & "\" & sCLSID & "\DownloadInformation", "OSD")
-            If sOSD <> vbNullString Then
-                If FileExists(sPath & "backups\" & sFile & ".osd") Then
-                    On Error Resume Next
-                    FileCopyW sPath & "backups\" & sFile & ".osd", sOSD
-                    On Error GoTo ErrorHandler:
-                End If
-            End If
-            sInProcServer32 = RegGetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InProcServer32", vbNullString)
-            If sInProcServer32 <> vbNullString Then
-                If FileExists(sPath & "backups\" & sFile & ".dll") Then
-                    On Error Resume Next
-                    FileCopyW sPath & "backups\" & sFile & ".dll", LCase$(sInProcServer32)
-                    On Error GoTo ErrorHandler:
-                    Shell sWinDir & IIf(bIsWinNT, "\system32", "\system") & "\regsvr32.exe /s """ & sInProcServer32 & """", vbHide
-                End If
-            End If
-            If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
-            If FileExists(sPath & "backups\" & sFile & ".dll") Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile & ".dll"))
-            If FileExists(sPath & "backups\" & sFile & ".inf") Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile & ".inf"))
-            If FileExists(sPath & "backups\" & sFile & ".osd") Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile & ".osd"))
-            
-        Case "O17" 'Domain hijack
-            'O17 - HKLM\Software\..\Telephony: DomainName = blah
-            'O17 - HKLM\System\CS1\Services\Tcpip\..\{00000}: Domain = blah
-            
-            sVal = Mid$(sItem, InStrRev(sItem, ": ") + 2)
-            sData = Mid$(sVal, InStr(sVal, " = ") + 3)
-            sVal = Left$(sVal, InStr(sVal, " = ") - 1)
-            sKey = Mid$(sItem, 12)
-            sKey = Left$(sKey, InStr(sKey, ": ") - 1)
-            sKey = Replace$(sKey, "\CCS\", "\CurrentControlSet\")
-            If InStr(sKey, "System\CS") > 0 Then
-                For i = 1 To 20
-                    sKey = Replace$(sKey, "System\CS" & CStr(i), "System\ControlSet" & String$(3 - Len(CStr(i)), "0") & CStr(i))
-                Next i
-            End If
-            If InStr(sKey, "\..\") > 0 Then
-                If InStr(sKey, "Software\") > 0 Then
-                    sKey = Replace$(sKey, "\..\", "\Microsoft\Windows\CurrentVersion\")
-                ElseIf InStr(sKey, "\Tcpip\..\") > 0 Then
-                    sKey = Replace$(sKey, "\Tcpip\..\", "\Tcpip\Parameters\Interfaces\")
-                End If
-            End If
-            RegSetStringVal HKEY_LOCAL_MACHINE, sKey, sVal, sData
-            If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
-            
-        Case "O18" 'Protocol
-            'O18 - Protocol: cn - {0000000000}
-            'O18 - Protocol hijack: res - {000000000}
-            'O18 - Filter: text/html - {000} - file.dll
-            'O18 - Filter hijack: text/xml - {000} - file.dll
-            sCLSID = Mid$(sItem, InStr(sItem, " - {") + 3)
-            sCLSID = Left$(sCLSID, InStr(sCLSID, " - ") - 1)
-            sDummy = Mid$(sItem, InStr(sItem, ": ") + 2)
-            sDummy = Left$(sDummy, InStr(sDummy, " - {") - 1)
-            If InStr(sItem, "Protocol: ") > 0 Then
-                RegCreateKey HKEY_CLASSES_ROOT, "Protocols\Handler\" & sDummy
-                RegSetStringVal HKEY_CLASSES_ROOT, "Protocols\Handler\" & sDummy, "CLSID", sCLSID
-            ElseIf InStr(sItem, "Filter: ") > 0 Then
-                RegCreateKey HKEY_CLASSES_ROOT, "Protocols\Filter\" & sDummy
-                RegSetStringVal HKEY_CLASSES_ROOT, "Protocols\Filter\" & sDummy, "CLSID", sCLSID
-            End If
-            If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
-            
-        Case "O19" 'user stylesheet
-            'O19 - User stylesheet: c:\file.css (file missing) (HKLM)
-            
-            sDummy = Mid$(sItem, InStr(sItem, ": ") + 2)
-            If InStr(sDummy, " (HKLM)") = 0 Then
-                lHive = HKEY_CURRENT_USER
-            Else
-                lHive = HKEY_LOCAL_MACHINE
-            End If
-            If InStr(sDummy, "(file missing)") > 0 Then
-                sDummy = Left$(sDummy, InStr(sDummy, " (file missing)") - 1)
-            End If
-            RegSetDwordVal lHive, "Software\Microsoft\Internet Explorer\Styles", "Use My Stylesheet", 1
-            RegSetStringVal lHive, "Software\Microsoft\Internet Explorer\Styles", "User Stylesheet", sDummy
-            If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
-        
-        Case "O20" 'appinit_dlls
-            'O20 - AppInit_DLLs: file.dll
-            'O20 - Winlogon Notify: blaat - c:\file.dll
-            If InStr(sItem, "AppInit_DLLs") > 0 Then
-                sDummy = Mid$(sItem, InStr(sItem, ": ") + 2)
-                sDummy = Replace$(sDummy, "|", vbNullChar)
-                RegSetStringVal HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows NT\CurrentVersion\Windows", "AppInit_DLLs", sDummy
-            Else
-                'backup has extra reg data
-                sData = vbNullString
-                ff = FreeFile()
-                Open sPath & "backups\" & sFile For Input As #ff
-                    Line Input #ff, sLine
-                    Line Input #ff, sLine
-                    Do
-                        Line Input #ff, sLine
-                        sData = sData & sLine & vbCrLf
-                    Loop Until EOF(ff)
-                Close #ff
-                If Left$(sData, 2) = "€ю" Then sData = Mid$(sData, 3)
-                ff = FreeFile()
-                Open sPath & "backups\" & sFile & ".reg" For Output As #ff
-                    Print #ff, sData
-                Close #ff
-                Shell sWinDir & "\regedit.exe /s """ & sPath & "backups\" & sFile & ".reg""", vbHide
-                DoEvents
-                If FileExists(sPath & "backups\" & sFile & ".reg") Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile & ".reg"))
+    With Result
+        If .CureType And FILE_BASED Then
+            If AryPtr(.File) Then
+                For i = 0 To UBound(.File)
+                    Select Case .File(i).ActionType
                     
+                    Case REMOVE_FILE, RESTORE_FILE
+                        MakeBackup = MakeBackup And BackupFile(Result, .File(i).Path)
+                    
+                    Case REMOVE_FOLDER
+                        'enum all files
+                        aFiles = ListFiles(.File(i).Path, , True)
+                        If IsArrDimmed(aFiles) Then
+                            For n = 0 To UBound(aFiles)
+                                MakeBackup = MakeBackup And BackupFile(Result, aFiles(n))
+                            Next
+                        End If
+                        
+                    Case Else
+                        MsgBoxW "Error! MakeBackup: unknown action: " & .File(i).ActionType, vbExclamation
+                        MakeBackup = False
+                    End Select
+                Next
             End If
-            If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
-            
-        Case "O21" 'ssodl
-            'O21 - SSODL: webcheck - {000....000} - c:\file.dll
-            'todo:
-            'get, print and merge .reg data for clsid regkey
-            'reconstruct reg value at SSODL regkey
-            
-            sName = Mid$(sItem, InStr(sItem, ": ") + 2)
-            sCLSID = Mid$(sName, InStr(sName, " - ") + 3)
-            sName = Left$(sName, InStr(sName, " - ") - 1)
-            sCLSID = Left$(sCLSID, InStr(sCLSID, " - ") - 1)
-            RegSetStringVal HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\ShellServiceObjectDelayLoad", sName, sCLSID
-            
-            'backup has extra info with reg data
-            sData = vbNullString
-            ff = FreeFile()
-            Open sPath & "backups\" & sFile For Input As #ff
-                Line Input #ff, sLine
-                Line Input #ff, sLine
-                Do
-                    Line Input #ff, sLine
-                    sData = sData & sLine & vbCrLf
-                Loop Until EOF(ff)
-            Close #ff
-            
-            'regedit in 2000/XP tends to prepend €ю
-            'to .reg files - they won't merge then
-            If Left$(sData, 2) = "€ю" Then sData = Mid$(sData, 3)
-            
-            ff = FreeFile()
-            Open sPath & "backups\" & sFile & ".reg" For Output As #ff
-                Print #ff, sData
-            Close #ff
-            Shell sWinDir & "\regedit.exe /s """ & sPath & "backups\" & sFile & ".reg""", vbHide
-            DoEvents
-            If FileExists(sPath & "backups\" & sFile & ".reg") Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile & ".reg"))
-            If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
-            
-        Case "O22" 'ScheduledTask
-            'O22 - ScheduledTask: blah - {000...000} - file.dll
-            'todo:
-            'restore sts regval
-            'restore clsid regkey
-            
-            sName = Mid$(sItem, InStr(sItem, ": ") + 2)
-            sCLSID = Mid$(sName, InStr(sName, " - ") + 3)
-            sName = Left$(sName, InStr(sName, " - ") - 1)
-            sCLSID = Left$(sCLSID, InStr(sCLSID, " - ") - 1)
-            RegSetStringVal HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\Explorer\SharedTaskScheduler", sCLSID, sName
-            
-            'backup has extra info with reg data
-            sData = vbNullString
-            ff = FreeFile()
-            Open sPath & "backups\" & sFile For Input As #ff
-                Line Input #ff, sLine
-                Line Input #ff, sLine
-                Do
-                    Line Input #ff, sLine
-                    sData = sData & sLine & vbCrLf
-                Loop Until EOF(ff)
-            Close #ff
-            
-            'regedit in 2000/XP tends to prepend €ю
-            'to .reg files - they won't merge then
-            If Left$(sData, 2) = "€ю" Then sData = Mid$(sData, 3)
-            ff = FreeFile()
-            Open sPath & "backups\" & sFile & ".reg" For Output As #ff
-                Print #ff, sData
-            Close #ff
-            Shell sWinDir & "\regedit.exe /s """ & sPath & "backups\" & sFile & ".reg""", vbHide
-            DoEvents
-            If FileExists(sPath & "backups\" & sFile & ".reg") Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile & ".reg"))
-            If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
+        End If
         
-        Case "O23"
-            'O23 - Service: bla bla - blacorp - bla.exe
-            'todo:
-            'enable & start service
-            Dim sServices$(), sDisplayName$
-            sDisplayName = Mid$(sItem, InStr(sItem, ": ") + 2)
-            sDisplayName = Left$(sDisplayName, InStr(sDisplayName, " - ") - 1)
-            sServices = Split(RegEnumSubKeys(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services"), "|")
-            If UBound(sServices) <> 0 And UBound(sServices) <> -1 Then
-                For i = 0 To UBound(sServices)
-                    If sDisplayName = RegGetString(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\" & sServices(i), "DisplayName") Then
-                        sName = sServices(i)
-                        RegSetDwordVal HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\" & sName, "Start", 2
-                        Shell sWinSysDir & "\NET.exe START """ & sDisplayName & """", vbHide
-                        Exit For
-                    End If
-                Next i
+        If .CureType And INI_BASED Then
+            If AryPtr(.Reg) Then
+                For i = 0 To UBound(.Reg)
+                    Select Case .Reg(i).ActionType
+                    
+                    Case RESTORE_VALUE_INI, REMOVE_VALUE_INI
+                        
+                        lRegID = BackupAllocReg(.Reg(i))
+                        BackupAddCommand INI_BASED, VERB_RESTORE_INI_VALUE, OBJ_FILE, lRegID
+                    
+                    Case Else
+                        MsgBoxW "Error! MakeBackup: unknown action: " & .Reg(i).ActionType, vbExclamation
+                        MakeBackup = False
+                    End Select
+                Next
             End If
-            If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
-            
-        Case "O24"
-            'O24 - Desktop Component N: blah - c:\windows\index.html
-            'todo:
-            'restore reg key
-            Dim sSource$
-            'copy file back to Source and SubscribedURL
-            sSource = Mid$(sItem, InStr(sItem, ":"))
-            sSource = Mid$(sSource, InStr(sSource, " - ") + 3)
-            If sSource <> "(no file)" Then
-                'only one is backed up if they are the same
-                If FileExists(sPath & "backups\" & sFile & "-source.html") Then
-                    FileCopyW sPath & "backups\" & sFile & "-source.html", sSource
-                End If
-                If FileExists(sPath & "backups\" & sFile & "-suburl.html") Then
-                    FileCopyW sPath & "backups\" & sFile & "-suburl.html", sSource
-                End If
-            End If
-            
-            'backup has extra info with reg data
-            sData = vbNullString
-            ff = FreeFile()
-            Open sPath & "backups\" & sFile For Input As #ff
-                Line Input #ff, sLine
-                Line Input #ff, sLine
-                Do
-                    Line Input #ff, sLine
-                    sData = sData & sLine & vbCrLf
-                Loop Until EOF(ff)
-            Close #ff
-            
-            'regedit in 2000/XP tends to prepend €ю
-            'to .reg files - they won't merge then
-            If Left$(sData, 2) = "€ю" Then sData = Mid$(sData, 3)
-            ff = FreeFile()
-            Open sPath & "backups\" & sFile & ".reg" For Output As #ff
-                Print #ff, sData
-            Close #ff
-            Shell sWinDir & "\regedit.exe /s """ & sPath & "backups\" & sFile & ".reg""", vbHide
-            DoEvents
-            If FileExists(sPath & "backups\" & sFile & ".reg") Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile & ".reg"))
-            If FileExists(sPath & "backups\" & sFile) Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile))
-            If FileExists(sPath & "backups\" & sFile & "-source.html") Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile & "-source.html"))
-            If FileExists(sPath & "backups\" & sFile & "-suburl.html") Then DeleteFileWEx (StrPtr(sPath & "backups\" & sFile & "-suburl.html"))
-        Case Else
-            'Restore for this item is not implemented:
-            MsgBoxW Translate(89) & vbCrLf & vbCrLf & sItem
+        End If
         
-    End Select
+        If .CureType And REGISTRY_BASED Then
+            If AryPtr(.Reg) Then
+                For i = 0 To UBound(.Reg)
+                    With .Reg(i)
+                        If (.ActionType And REMOVE_KEY) Or (.ActionType And BACKUP_KEY) Then
+                            'whole key
+                            BackupKey Result, .Hive, .Key, , .Redirected
+                        Else
+                            'parameter
+                            BackupKey Result, .Hive, .Key, .Param, .Redirected
+                        End If
+                    End With
+                Next
+            End If
+        End If
+        
+        If .CureType And SERVICE_BASED Then
+            
+        End If
+        
+        If .CureType And PROCESS_BASED Then
+            'nothing
+        End If
     
-    AppendErrorLogCustom "RestoreBackup - End"
+        If .CureType And CUSTOM_BASED Then
+            
+        End If
+    End With
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "MakeBackup", "sItem=", Result.HitLineW
+    If inIDE Then Stop: Resume Next
+End Function
+
+Private Sub UpdateBackupEntry(Result As SCAN_RESULT, Optional bForceCreateNewEntry As Boolean)
+    
+    On Error GoTo ErrorHandler:
+    
+    'creating backup entry in List.ini
+    
+    ' [1]
+    ' Name=O1 - Hosts
+    ' Date=13.09.2017 19:42
+    ' FixID=1
+    
+    If cBackupIni Is Nothing Then
+        InitBackupIni
+    End If
+    
+    Dim lBackupID As Long
+    
+    lBackupID = BackupFindBackupIDByFixID(tBackupList.LastFixID, Result.HitLineW)
+    
+    If lBackupID = 0 Or bForceCreateNewEntry Then
+    
+    'If Result.HitLineW <> tBackupList.LastHitW Or bForceCreateNewEntry Then
+        
+        If Not tBackupList.cLastCMD Is Nothing Then
+            tBackupList.cLastCMD.Flush
+        End If
+        
+        '+1 backup
+        tBackupList.LastBackupID = tBackupList.LastBackupID + 1
+        tBackupList.CurrentBackupID = tBackupList.LastBackupID
+        tBackupList.Total = tBackupList.Total + 1
+        'tBackupList.List = tBackupList.List & IIf(tBackupList.List = "", "", ",") & tBackupList.LastBackupID
+        
+        cBackupIni.WriteParam tBackupList.LastBackupID, "Name", EscapeSpecialChars(Result.HitLineW)
+        cBackupIni.WriteParam tBackupList.LastBackupID, "Date", BackupFormatDate(Now())
+        cBackupIni.WriteParam tBackupList.LastBackupID, "FixID", tBackupList.LastFixID
+        
+        cBackupIni.WriteParam "main", "Total", tBackupList.Total
+        'cBackupIni.WriteParam "main", "List", tBackupList.List
+        cBackupIni.WriteParam "main", "LastBackupID", tBackupList.LastBackupID
+        'cBackupIni.Flush
+        
+        tBackupList.LastHitW = Result.HitLineW
+        
+        Set tBackupList.cLastCMD = New clsIniFile
+        tBackupList.cLastCMD.InitFile BuildPath(AppPath, "Backups\" & tBackupList.LastBackupID & "\" & BACKUP_COMMAND_FILE_NAME), 1200
+        'tBackupList.cLastCMD.Flush
+        
+        MkDirW BuildPath(AppPath, "Backups\" & tBackupList.LastBackupID)
+    Else
+        tBackupList.CurrentBackupID = lBackupID
+        Set tBackupList.cLastCMD = New clsIniFile
+        tBackupList.cLastCMD.InitFile BuildPath(AppPath, "Backups\" & lBackupID & "\" & BACKUP_COMMAND_FILE_NAME), 1200
+    End If
+    
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "modBackup_RestoreBackup", "sItem=", sItem
-    Close #ff
+    ErrorMsg Err, "UpdateBackupEntry", Result.HitLineW
     If inIDE Then Stop: Resume Next
 End Sub
+
+Public Function BackupFormatDate(dDate As Date) As String
+    BackupFormatDate = Format$(dDate, "yyyy\/mm\/dd  -  hh:nn")
+End Function
+
+Public Function BackupDateToDate(dBackupDate As String) As Date
+    On Error GoTo ErrorHandler
+    BackupDateToDate = CDate(Replace$(dBackupDate, "  -  ", " "))
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "BackupDateToDate", dBackupDate
+    If inIDE Then Stop: Resume Next
+End Function
+
+Private Function BackupAllocFile(sFilePath As String, out_FileID As Long) As String
+    On Error GoTo ErrorHandler
+    'returns empty file name in backup folder: .\backups\<BackupID>\
+    
+    Dim sFileName As String
+    Dim numEntries As Long
+    
+    sFileName = GetFileName(sFilePath, True)
+    
+    If LCase(GetExtensionName(sFilePath)) <> ".reg" Then
+        sFileName = sFileName & ".bak"
+    End If
+    
+    BackupAllocFile = GetEmptyName(BuildPath(AppPath, "Backups\" & tBackupList.CurrentBackupID & "\" & sFileName))
+    
+    numEntries = tBackupList.cLastCMD.ReadParam("files", "Total", 0)
+    numEntries = numEntries + 1
+    
+    out_FileID = tBackupList.cLastCMD.ReadParam("cmd", "numSections", 0)
+    out_FileID = out_FileID + 1
+    
+    tBackupList.cLastCMD.WriteParam "files", "Total", numEntries
+    tBackupList.cLastCMD.WriteParam "cmd", "numSections", out_FileID
+    tBackupList.cLastCMD.WriteParam out_FileID, "name", GetFileName(BackupAllocFile, True)
+    tBackupList.cLastCMD.WriteParam out_FileID, "orig", EnvironUnexpand(sFilePath)
+    tBackupList.cLastCMD.WriteParam out_FileID, "hash", GetFileMD5(sFilePath, , True)
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "BackupAllocFile", sFilePath
+    If inIDE Then Stop: Resume Next
+End Function
+
+Private Function BackupAllocReg(FixReg As FIX_REG_KEY) As Long
+    On Error GoTo ErrorHandler
+    'returns RegID
+    
+    Dim lRegID As Long
+    Dim sData As String
+    Dim lHive As Long
+    Dim bIni As Boolean
+    Dim lParamType As Long
+    Dim sPath As String
+    Dim sDataDec As String
+    Dim bEmpty As Boolean
+    Dim numEntries As Long
+    
+  With FixReg
+  
+    numEntries = tBackupList.cLastCMD.ReadParam("reg", "Total", 0)
+    numEntries = numEntries + 1
+    
+    lRegID = tBackupList.cLastCMD.ReadParam("cmd", "numSections", 0)
+    lRegID = lRegID + 1
+    
+    BackupAllocReg = lRegID
+    
+    bIni = (FixReg.IniFile <> "")
+    
+    If bIni Then
+        'ini
+        sPath = EnvironUnexpand(.IniFile)
+        sData = IniGetString(.IniFile, .Key, .Param)
+        sDataDec = sData
+        sData = HexStringW(sData)
+    Else
+        'reg
+        lHive = .Hive
+        sData = CStr(Reg.GetData(.Hive, .Key, .Param, .Redirected, True, True, lParamType))
+        sDataDec = sData
+        
+        'If Reg.Param = "" And lParamType = 0 Then 'if default value and not set
+        If lParamType = 0 Then 'if value is not set
+            lParamType = REG_SZ
+            bEmpty = True
+        End If
+        
+        .ParamType = lParamType
+        
+        Select Case lParamType
+        
+        Case REG_SZ, REG_EXPAND_SZ, REG_MULTI_SZ
+            sData = HexStringW(sData)
+        End Select
+    End If
+    
+    tBackupList.cLastCMD.WriteParam "reg", "Total", numEntries
+    tBackupList.cLastCMD.WriteParam "cmd", "numSections", lRegID
+    
+    If bIni Then
+        tBackupList.cLastCMD.WriteParam lRegID, "path", sPath
+    Else
+        tBackupList.cLastCMD.WriteParam lRegID, "hive", Reg.GetShortHiveName(Reg.GetHiveNameByHandle(lHive))
+        tBackupList.cLastCMD.WriteParam lRegID, "type", Reg.MapRegTypeToString(lParamType)
+        tBackupList.cLastCMD.WriteParam lRegID, "redir", CLng(.Redirected)
+        tBackupList.cLastCMD.WriteParam lRegID, "empty", CLng(bEmpty)
+    End If
+    tBackupList.cLastCMD.WriteParam lRegID, "key", .Key
+    tBackupList.cLastCMD.WriteParam lRegID, "param", .Param
+    tBackupList.cLastCMD.WriteParam lRegID, "data", sData
+    tBackupList.cLastCMD.WriteParam lRegID, "dataDecoded", sDataDec
+    tBackupList.cLastCMD.WriteParam lRegID, "hash", CalcCRC(sData)
+  End With
+
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "BackupAllocReg"
+    If inIDE Then Stop: Resume Next
+End Function
+
+Private Sub BackupAddCommand(RecovType As ENUM_CURE_BASED, RecovVerb As ENUM_RESTORE_VERBS, RecovObj As ENUM_RESTORE_OBJECT_TYPES, sArgs As Variant)
+    Dim lTotal As Long
+    lTotal = tBackupList.cLastCMD.ReadParam("cmd", "Total", 0)
+    lTotal = lTotal + 1
+    tBackupList.cLastCMD.WriteParam "cmd", lTotal, _
+      MapRecoveryTypeToString(RecovType) & " " & MapRecoveryVerbToString(RecovVerb) & " " & MapRecoveryObjectToString(RecovObj) & " " & CStr(sArgs)
+    tBackupList.cLastCMD.WriteParam "cmd", "Total", lTotal
+End Sub
+
+Public Function BackupFile(Result As SCAN_RESULT, sFile As String) As Boolean
+    On Error GoTo ErrorHandler
+    
+    Dim sFileInBackup As String
+    Dim lFileID As Long
+    
+    If Not FileExists(sFile) Then Exit Function
+    
+    UpdateBackupEntry Result
+    
+    sFileInBackup = BackupAllocFile(sFile, lFileID)
+    
+    BackupFile = FileCopyW(sFile, sFileInBackup)
+    
+    BackupAddCommand FILE_BASED, VERB_FILE_COPY, OBJ_FILE, lFileID
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "BackupFile", sFile
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function BackupKey(Result As SCAN_RESULT, ByVal hHive As ENUM_REG_HIVE, ByVal sKey As String, Optional sValue As Variant, Optional bUseWow64 As Boolean = False) As Boolean
+    On Error GoTo ErrorHandler
+    
+    Dim lRegID As Long
+    Dim aSubKeys() As String
+    Dim aValues() As String
+    Dim MyReg As FIX_REG_KEY
+    Dim i As Long, j As Long, K As Long
+    
+    BackupKey = True
+    
+    Call Reg.NormalizeKeyNameAndHiveHandle(hHive, sKey)
+    
+    MyReg.Hive = hHive
+    MyReg.Redirected = bUseWow64
+    
+    If IsMissing(sValue) Then
+        'reg. key
+        
+        'commented because we need provide a case where key is not exist, but it will be created by the fix (by the code, not included in SCAN_RESULT base),
+        'so backup module should remove such key after restoring the backup entry ("empty" param will be used).
+        
+        'however, I can't do such a way, bacause I can accidentally catch legitimate value, created further by system (beetween the time,
+        'when fix done and when restoring is called).
+        
+        'So, ideally, I need to compare the list of all values in operated keys recursively before fixing and after fixing.
+        'If there are newly created values (by fix) that didn't seen by backup yet, I need to include such values in backup as required to be removed.
+        
+        'temporarily uncommented
+        '-----------------------
+        
+        If Not Reg.KeyExists(hHive, sKey, bUseWow64) Then
+            BackupKey = False
+            Exit Function
+        End If
+        
+        '-----------------------
+        
+        'enumerate all values
+        Erase aSubKeys
+        For j = 1 To Reg.EnumSubKeysToArray(hHive, sKey, aSubKeys(), bUseWow64, True, True)
+            Erase aValues
+            For K = 1 To Reg.EnumValuesToArray(hHive, aSubKeys(j), aValues(), bUseWow64)
+                MyReg.Key = aSubKeys(j)
+                MyReg.Param = aValues(K)
+                lRegID = BackupAllocReg(MyReg)
+                BackupAddCommand REGISTRY_BASED, VERB_RESTORE_REG_VALUE, OBJ_REG_VALUE, lRegID
+            Next
+
+            'backup default value of the key
+            MyReg.Key = aSubKeys(j)
+            MyReg.Param = ""
+            lRegID = BackupAllocReg(MyReg)
+            BackupAddCommand REGISTRY_BASED, VERB_RESTORE_REG_VALUE, OBJ_REG_VALUE, lRegID
+        Next
+        
+        'backup default value of the root key
+        MyReg.Key = sKey
+        MyReg.Param = ""
+        lRegID = BackupAllocReg(MyReg)
+        BackupAddCommand REGISTRY_BASED, VERB_RESTORE_REG_VALUE, OBJ_REG_VALUE, lRegID
+        
+        'backup values of root key
+        Erase aValues
+        For K = 1 To Reg.EnumValuesToArray(hHive, sKey, aValues(), bUseWow64)
+            MyReg.Key = sKey
+            MyReg.Param = aValues(K)
+            lRegID = BackupAllocReg(MyReg)
+            BackupAddCommand REGISTRY_BASED, VERB_RESTORE_REG_VALUE, OBJ_REG_VALUE, lRegID
+        Next
+    Else
+        'reg. value
+        
+        'commented because we need provide a case where value is not exist, but it will be created by the fix,
+        'so backup module should remove such value after restoring the backup entry ("empty" param will be used).
+        
+        'such machanism is already done in 'BackupAllocReg' routine
+        
+'        If Not Reg.ValueExists(hHive, sKey, CStr(sValue), bUseWow64) Then
+'            'not a default empty value of key ?
+'            If Not (sValue = "" And Reg.KeyExists(hHive, sKey)) Then
+'                BackupKey = False
+'                Exit Function
+'            End If
+'        End If
+        
+        MyReg.Key = sKey
+        MyReg.Param = sValue
+        lRegID = BackupAllocReg(MyReg)
+        BackupAddCommand REGISTRY_BASED, VERB_RESTORE_REG_VALUE, OBJ_REG_VALUE, lRegID
+    End If
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "BackupKey", hHive, sKey, sValue, bUseWow64
+    If inIDE Then Stop: Resume Next
+End Function
+
+
+'==================  Autobackup registry (ABR) ==================
+
+Public Function ABR_CreateBackup(bForceIgnoreDays As Boolean) As Boolean
+    On Error GoTo ErrorHandler:
+    
+    'пока что вот такой жЄсткий котыль: запуск процесса,
+    '  который после отработки сразу грохнетс€ из-за того, что загрузчик попытаетс€ выгрузить msvbvm60.dll, который не загружен в C++ приложение
+    
+    '//TODO: нужно будет доработать загрузчик:
+    '
+    ' 1. „тобы не крешилс€ при завершении приложени€, запущенного из-под загрузчика, в который загружен рантайм:
+    ' - Ћибо не выгружать EXE, а сделать его с базой отличной от базы EXE в ресурсах
+    ' - либо не выгружать EXE и добавить релокации к EXEшнику в ресурсах
+    ' - можно поступить более жестко: пропатчить ABR.exe, воткнув рантайм в список импорта :)
+    '
+    ' 2. „тобы хватало пам€ти дл€ распавки образа:
+    ' - нужно обновить поле SizeOfImage равное упакованному и соответственную разницу прибавить к VirtualSize секции ресурсов),
+    ' - либо добавить новую секцию с неинициализированнми данными и "добить" ее чтобы SizeOfImage был равен упаковываемому.
+    '
+    
+    Const sMarker As String = "Backup created via 'HiJackThis Fork' using 'Autobackup registry (ABR)' by D.Kuznetsov"
+    
+    Dim sBackup_Folder As String
+    Dim aDate_Folder() As String
+    Dim dBackup As Date
+    Dim dLastBackup As Date
+    Dim dToday As Date
+    Dim i As Long
+    Dim bBackupRequired As Boolean
+    Dim ResID As Long
+    Dim hFile As Long
+    Dim bLowSpace As Boolean
+    Dim sCurDate As String
+    Dim bResult1 As Boolean
+    Dim bResult2 As Boolean
+    Dim bResult3 As Boolean
+    Dim bOverwrote As Boolean
+    Dim sUtilPath As String
+    
+    bBackupRequired = True
+    
+    sBackup_Folder = sWinDir & "\ABR"
+    
+    If Not bForceIgnoreDays Then
+      ' провер€ю существуют ли бекапы за последние N дней (g_Backup_Do_Every_Days)
+      aDate_Folder = modFile.ListSubfolders(sBackup_Folder, False)
+    
+      If IsArrDimmed(aDate_Folder) Then
+        'Format YYYY-MM-DD
+        For i = 0 To UBound(aDate_Folder)
+            aDate_Folder(i) = GetFileName(aDate_Folder(i))
+            If aDate_Folder(i) Like "####-##-##" Then
+                On Error Resume Next
+                dBackup = CDate(aDate_Folder(i))
+                If Err.Number = 0 Then
+                    On Error GoTo 0
+                    If dLastBackup < dBackup Then dLastBackup = dBackup
+                End If
+                On Error GoTo 0
+            End If
+        Next
+        
+        dToday = CDate(Year(Now) & "-" & Month(Now) & "-" & Day(Now))
+        
+        If DateDiff("d", dLastBackup, dToday) < g_Backup_Do_Every_Days Then bBackupRequired = False
+        
+      End If
+    End If
+    
+    Dim cFreeSpace As Currency
+    
+    cFreeSpace = GetFreeDiscSpace(SysDisk, False)
+    
+    ' < 1 GB ?
+    If (cFreeSpace < cMath.MBToInt64(1& * 1024)) And (cFreeSpace <> 0@) Then bLowSpace = True
+    
+    If bLowSpace Then
+        'Not enough free disk space. Required at least 1 GB.
+        MsgBoxW Translate(1555) & " 1 GB.", vbExclamation
+        Exit Function
+    End If
+    
+    If (bBackupRequired Or bForceIgnoreDays) And Not bLowSpace Then
+    
+        sCurDate = Year(Now) & "-" & Right("0" & Month(Now), 2) & "-" & Right$("0" & Day(Now), 2)
+    
+        'C:\Windows\ABR + \Date
+        sBackup_Folder = sBackup_Folder & "\" & sCurDate
+        
+        If bForceIgnoreDays Then
+            'twice a day ?
+            If FolderExists(sBackup_Folder) Then
+                'You already have a backup for this day. Do you want to overwrite it?
+                If MsgBoxW(Translate(1562), vbYesNo Or vbExclamation) = vbNo Then Exit Function
+                DeleteFolder sBackup_Folder
+                bOverwrote = True
+            End If
+        End If
+        
+        If inIDE Then
+            sUtilPath = BuildPath(AppPath(), "abr.exe")
+            UnpackResource 302, sUtilPath
+        Else
+            sUtilPath = AppPath(True)
+            DisableWER
+        End If
+        
+        '  аргументы процесса задаЄм в соответствии с документацией к ABR
+        If Proc.ProcessRun(sUtilPath, "/days:" & g_Backup_Erase_Every_Days, , vbHide) Then
+            Proc.WaitForTerminate , , , 60000
+            
+            If OSver.IsWin64 Then
+                ResID = 304
+            Else
+                ResID = 303
+            End If
+            
+            If FolderExists(sBackup_Folder) Then
+                bResult1 = True
+            Else
+                'Failure while creating the registry backup.
+                MsgBoxW Translate(1561), vbCritical
+                Exit Function
+            End If
+            
+            ' unpacking restore.exe
+            bResult2 = UnpackResource(ResID, sBackup_Folder & "\restore.exe")
+            
+            ' add to HJT backup list
+            If bResult2 Then
+                If bOverwrote Then 'remove previous record for today
+                    ABR_RemoveBackupFromListByDate Now()
+                End If
+                Dim Result As SCAN_RESULT
+                Result.HitLineW = ABR_BACKUP_TITLE
+                UpdateBackupEntry Result, True
+                BackupAddCommand CUSTOM_BASED, VERB_GENERAL_RESTORE, OBJ_ABR_BACKUP, sCurDate
+                'add to Listbox and move to the top position
+                frmMain.lstBackups.AddItem BackupConcatLine(tBackupList.LastBackupID, tBackupList.LastFixID, Now(), Result.HitLineW), 0
+                BackupFlush
+            End If
+            
+            ' adding HJT marker for backup
+            OpenW sBackup_Folder & "\HJT.txt", FOR_OVERWRITE_CREATE, hFile
+            If hFile <> 0 Then
+                bResult3 = PutW(hFile, 1, StrPtr(sMarker), LenB(sMarker))
+                CloseW hFile
+            End If
+        Else
+            MsgBoxW "Error while creating registry backup (ABR)"
+        End If
+        
+        Sleep 2000&
+        
+        If Not inIDE Then
+            DisableWER bRevert:=True
+        End If
+    End If
+    
+    If inIDE Then
+        DeleteFile StrPtr(sUtilPath)
+    End If
+    
+    ABR_CreateBackup = bResult1 And bResult2 And bResult3
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "ABR_CreateBackup"
+    If inIDE Then Stop: Resume Next
+End Function
+
+Private Sub ABR_RemoveBackupFromListByDate(dDate As Date)
+    
+    Dim lBackupID As Long
+    Dim lstIndex As Long
+    
+    lBackupID = BackupFindBackupIDByDateOrName(dDate, ABR_BACKUP_TITLE, False)
+    
+    If lBackupID <> 0 Then
+        cBackupIni.RemoveSection CStr(lBackupID)
+        DeleteFolderForce BuildPath(AppPath(), "backups\" & lBackupID)
+        lstIndex = GetListIndexByBackupID(lBackupID)
+        If lstIndex <> -1 Then
+            frmMain.lstBackups.RemoveItem lstIndex
+        End If
+    End If
+    
+End Sub
+
+Public Sub ABR_RunBackup()
+    On Error GoTo ErrorHandler:
+    'DANGER! Will crash program! See CreateRegistryBackup()
+    
+    '
+    ' WARNING! Manual in case: backup function is stop working !!!
+    '
+    ' First off all:
+    ' 1) check if you somewhere declared delayed-loading API function as global (public) from the list of functions used in ModLoader.bas
+    '    These functions should not be declared as delayed-loaded at all !!! Only tlb.
+    '
+    ' 2) Run HJT with /debug /days:15 and run SysInternals DbgView to see what part of code is failed.
+    '
+    
+    Dim b()     As Byte
+    b = LoadResData(302, "CUSTOM")
+    Dbg "Res. size = " & UBound(b)
+    RunExeFromMemory VarPtr(b(0)), UBound(b) + 1
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "ABR_RunBackup"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Public Function ABR_RecoverFromBackup(sFolderDateName As String, Optional out_NoBackup As Boolean) As Boolean
+    On Error GoTo ErrorHandler:
+    Dim sRestorer As String
+    sRestorer = sWinDir & "\ABR\" & sFolderDateName
+    
+    If Not FolderExists(sRestorer) Then
+        'Error! This backup is no longer exists.
+        MsgBoxW Translate(1566), vbCritical
+        out_NoBackup = True
+        Exit Function
+    End If
+    
+    If OSver.IsWin64 And FileExists(sRestorer & "\restore_x64.exe") Then
+        sRestorer = sRestorer & "\" & "restore_x64.exe"
+        
+    ElseIf FileExists(sRestorer & "\restore.exe") Then
+        sRestorer = sRestorer & "\" & "restore.exe"
+    
+    Else
+        UnpackResource IIf(OSver.IsWin64, 304, 303), sRestorer & "\restore.exe"
+        sRestorer = sRestorer & "\" & "restore.exe"
+    End If
+    
+    'If MsgBoxW("Are you sure, you want to recover registry saved on: [] ? System will be rebooted automatically.", vbQuestion Or vbYesNo) = vbNo Then Exit Sub
+    If MsgBoxW(Replace$(Translate(1560), "[]", sFolderDateName), vbQuestion Or vbYesNo) = vbNo Then Exit Function
+    
+    ABR_RecoverFromBackup = Proc.ProcessRun(sRestorer, "", , vbHide)
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "ABR_RecoverFromBackup"
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function ABR_EnumBackups(aBackupDates() As String, aIsHJT() As Boolean, Optional bHJTOnly As Boolean, Optional bCustomOnly As Boolean) As Long
+    'returns the number of reg. backups
+    On Error GoTo ErrorHandler:
+    
+    Dim sBackup_Folder  As String
+    Dim aDate_Folder()  As String
+    Dim sDate           As String
+    Dim nItems          As Long
+    Dim i               As Long
+    Dim bAllowHJT       As Boolean
+    Dim bAllowCustom    As Boolean
+    Dim bHJT            As Boolean
+    
+    bAllowHJT = True
+    bAllowCustom = True
+    If bHJTOnly Then bAllowCustom = False
+    If bCustomOnly Then bAllowHJT = False
+    
+    sBackup_Folder = sWinDir & "\ABR"
+    
+    aDate_Folder = modFile.ListSubfolders(sBackup_Folder, False)
+    
+    If IsArrDimmed(aDate_Folder) Then
+        'Format YYYY-MM-DD
+        For i = 0 To UBound(aDate_Folder)
+            sDate = GetFileName(aDate_Folder(i))
+            If sDate Like "####-##-##" Then
+                If FileExists(BuildPath(aDate_Folder(i), "sysdir.txt")) Then
+                    bHJT = FileExists(BuildPath(aDate_Folder(i), "HJT.txt"))
+                    If (bHJT And bAllowHJT) Or ((Not bHJT) And bAllowCustom) Then
+                        ReDim Preserve aIsHJT(nItems)
+                        ReDim Preserve aBackupDates(nItems)
+                        aBackupDates(nItems) = sDate
+                        aIsHJT(nItems) = bHJT
+                        nItems = nItems + 1
+                    End If
+                End If
+            End If
+        Next
+    End If
+    ABR_EnumBackups = nItems
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "ABR_EnumBackups"
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function ABR_RemoveBackup(sBackupDate As String, bSilent As Boolean) As Boolean
+    On Error GoTo ErrorHandler:
+    
+    Dim bResult         As Boolean
+    Dim sBackup_Folder  As String
+    
+    If Len(sBackupDate) = 0 Then Exit Function
+    
+    If Not bSilent Then
+        'This will delete registry backup: <DATE>. Continue?
+        If MsgBoxW(Replace$(Translate(1563), "[]", sBackupDate), vbYesNo Or vbQuestion) = vbNo Then Exit Function
+    End If
+    
+    sBackup_Folder = sWinDir & "\ABR"
+    
+    bResult = DeleteFolderForce(sBackup_Folder & "\" & sBackupDate)
+    
+    If (Not bResult) And (Not bSilent) Then
+        'Could not remove backup.
+        MsgBoxW Translate(1565), vbCritical
+    End If
+    
+    RemoveDirectory StrPtr(sBackup_Folder) 'remove main dir. if it is empty
+    
+    ABR_RemoveBackup = bResult
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "ABR_RemoveBackup"
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function ABR_RemoveBackupALL(bSilent As Boolean) As Boolean 'only those, created by HJT (!)
+    
+    On Error GoTo ErrorHandler:
+    
+    Dim sBackup_Folder  As String
+    Dim aDate_Folder()  As String
+    Dim sDate           As String
+    Dim nItems          As Long
+    Dim bResult         As Boolean
+    Dim i               As Long
+    
+    If Not bSilent Then
+        'You are about to remove ALL registry backups! Are you sure?
+        If MsgBoxW(Translate(1564), vbYesNo Or vbQuestion) = vbNo Then Exit Function
+    End If
+    
+    bResult = True
+    sBackup_Folder = sWinDir & "\ABR"
+    
+    aDate_Folder = modFile.ListSubfolders(sBackup_Folder, False)
+    
+    If IsArrDimmed(aDate_Folder) Then
+        'Format YYYY-MM-DD
+        For i = 0 To UBound(aDate_Folder)
+            sDate = GetFileName(aDate_Folder(i))
+            If sDate Like "####-##-##" Then
+                If FileExists(BuildPath(aDate_Folder(i), "HJT.txt")) Then
+                    bResult = bResult And DeleteFolder(aDate_Folder(i))
+                End If
+            End If
+        Next
+    End If
+    
+    If Not bResult Then
+        If Not bSilent Then
+            'Could not remove backup.
+            MsgBoxW Translate(1565), vbCritical
+        End If
+    End If
+    
+    ABR_RemoveBackupALL = bResult
+    
+    RemoveDirectory StrPtr(sBackup_Folder) 'remove main dir. if it is empty
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "RemoveRegistryBackupALL"
+    If inIDE Then Stop: Resume Next
+End Function
+
+Private Function ABR_RemoveByBackupID(lBackupID As Long) As Boolean
+    On Error GoTo ErrorHandler:
+    Dim sBackupDate As String
+    Dim Cmd As BACKUP_COMMAND
+    
+    If Not BackupLoadBackupByID(lBackupID) Then Exit Function
+    
+    Cmd.Full = tBackupList.cLastCMD.ReadParam("cmd", "1")
+    BackupExtractCommand Cmd
+    If Cmd.ObjType = OBJ_ABR_BACKUP Then
+        sBackupDate = Cmd.Args
+        ABR_RemoveByBackupID = ABR_RemoveBackup(sBackupDate, True)
+    End If
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "ABR_RemoveByBackupID", "lBackupID=", lBackupID
+    If inIDE Then Stop: Resume Next
+End Function
+
+Private Function ABR_RestoreByBackupID(lBackupID As Long, Optional out_NoBackup As Boolean) As Boolean
+    On Error GoTo ErrorHandler:
+    Dim sBackupDate As String
+    Dim Cmd As BACKUP_COMMAND
+    
+    If Not BackupLoadBackupByID(lBackupID) Then Exit Function
+    
+    Cmd.Full = tBackupList.cLastCMD.ReadParam("cmd", "1")
+    BackupExtractCommand Cmd
+    If Cmd.ObjType = OBJ_ABR_BACKUP Then
+        sBackupDate = Cmd.Args
+        ABR_RestoreByBackupID = ABR_RecoverFromBackup(sBackupDate, out_NoBackup)
+    End If
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "ABR_RestoreByBackupID", "lBackupID=", lBackupID
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Sub DisableWER(Optional bRevert As Boolean = False) 'to prevent WER / Dr.Watson window from been displayed
+    On Error GoTo ErrorHandler:
+    Static lDisabled As Long
+    Static lDontShowUI As Long
+    Static lLoggingDisabled As Long
+    
+    If OSver.MajorMinor >= 6 Then
+      If Not bRevert Then
+        If Not Reg.ValueExists(HKCU, "Software\Microsoft\Windows\Windows Error Reporting", "Disabled") Then
+            lDisabled = -1
+        Else
+            lDisabled = Reg.GetDword(HKCU, "Software\Microsoft\Windows\Windows Error Reporting", "Disabled")
+        End If
+        If Not Reg.ValueExists(HKCU, "Software\Microsoft\Windows\Windows Error Reporting", "DontShowUI") Then
+            lDontShowUI = -1
+        Else
+            lDontShowUI = Reg.GetDword(HKCU, "Software\Microsoft\Windows\Windows Error Reporting", "DontShowUI")
+        End If
+        If Not Reg.ValueExists(HKCU, "Software\Microsoft\Windows\Windows Error Reporting", "LoggingDisabled") Then
+            lLoggingDisabled = -1
+        Else
+            lLoggingDisabled = Reg.GetDword(HKCU, "Software\Microsoft\Windows\Windows Error Reporting", "LoggingDisabled")
+        End If
+        Reg.SetDwordVal HKCU, "Software\Microsoft\Windows\Windows Error Reporting", "Disabled", 1
+        Reg.SetDwordVal HKCU, "Software\Microsoft\Windows\Windows Error Reporting", "DontShowUI", 1
+        Reg.SetDwordVal HKCU, "Software\Microsoft\Windows\Windows Error Reporting", "LoggingDisabled", 1
+      Else
+        If lDisabled = -1 Then
+            Reg.DelVal HKCU, "Software\Microsoft\Windows\Windows Error Reporting", "Disabled"
+        Else
+            Reg.SetDwordVal HKCU, "Software\Microsoft\Windows\Windows Error Reporting", "Disabled", lDisabled
+        End If
+        If lDontShowUI = -1 Then
+            Reg.DelVal HKCU, "Software\Microsoft\Windows\Windows Error Reporting", "DontShowUI"
+        Else
+            Reg.SetDwordVal HKCU, "Software\Microsoft\Windows\Windows Error Reporting", "DontShowUI", lDontShowUI
+        End If
+        If lLoggingDisabled = -1 Then
+            Reg.DelVal HKCU, "Software\Microsoft\Windows\Windows Error Reporting", "LoggingDisabled"
+        Else
+            Reg.SetDwordVal HKCU, "Software\Microsoft\Windows\Windows Error Reporting", "LoggingDisabled", lLoggingDisabled
+        End If
+      End If
+    Else
+      If Not bRevert Then
+        If Not Reg.ValueExists(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\AeDebug", "Auto") Then
+            lDisabled = -1
+        Else
+            lDisabled = Reg.GetDword(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\AeDebug", "Auto")
+        End If
+        Reg.SetDwordVal HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\AeDebug", "Auto", 0
+      Else
+        If lDisabled = -1 Then
+            Reg.DelVal HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\AeDebug", "Auto"
+        Else
+            Reg.SetDwordVal HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\AeDebug", "Auto", lDisabled
+        End If
+      End If
+    End If
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "DisableWER"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+'==================  System Restore Points ==================
+
+'SRP
+'http://msdn.microsoft.com/en-us/library/windows/desktop/aa378987(v=vs.85).aspx
+'https://msdn.microsoft.com/en-us/library/windows/desktop/aa378955(v=vs.85).aspx
+'
+'Note:
+'Applications should not call System Restore functions using load-time dynamic linking.
+'Instead, use the LoadLibrary function to load SrClient.dll and GetProcAddress to call the function.
+'
+'//TODO: Replace load-time dynamic linking by DispCallFunc (func RemoveSRP / CreateSRP_API)
+
+Private Function SRP_Restore(nSeqNum As Long, Optional SRP_Description As String) As Boolean
+    On Error GoTo ErrorHandler:
+    
+    'If MsgBoxW("Are you sure, you want to restore system from this restore point: [] ?", vbQuestion Or vbYesNo) = vbNo Then Exit Function
+    If MsgBoxW(Replace$(Translate(1551), "[]", SRP_Description), vbQuestion Or vbYesNo) = vbNo Then Exit Function
+    
+    If Not RunWMI_Service(bWait:=True, bAskBeforeLaunch:=False, bSilent:=False) Then Exit Function
+    
+    Dim oSR              As Object
+    Set oSR = GetObject("winmgmts:{impersonationLevel=impersonate}!root\default:SystemRestore")
+    
+    If S_OK = oSR.Restore(nSeqNum) Then
+        SRP_Restore = True
+        RestartSystem
+    End If
+    
+    Set oSR = Nothing
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "SRP_Restore"
+    If inIDE Then Stop: Resume Next
+End Function
+
+Private Function SRP_Remove(nSeqNum As Long, bSilent As Boolean) As Boolean
+    On Error GoTo ErrorHandler:
+    If Not bSilent Then
+        'If MsgBoxW("Are you sure, you want to remove this restore point?", vbQuestion Or vbYesNo) = vbNo Then Exit Function
+        If MsgBoxW(Translate(1552), vbQuestion Or vbYesNo) = vbNo Then Exit Function
+    End If
+    SRP_Remove = (ERROR_SUCCESS = SRRemoveRestorePoint(nSeqNum))
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "SRP_Remove"
+    If inIDE Then Stop: Resume Next
+End Function
+
+Private Function SRP_IsService_Available(bSilent As Boolean) As Boolean
+    On Error GoTo ErrorHandler:
+    If IsProcedureAvail("SRSetRestorePointA", "SrClient.dll") Then
+        SRP_IsService_Available = True
+    Else
+        'MsgBoxW "Cannot execute requested operation!" & vbCrLf & "The system restore via restore points is not available for this system.", vbCritical
+        If Not bSilent Then
+            MsgBoxW Translate(1550), vbCritical
+        End If
+        frmMain.chkShowSRP.Value = 0
+        frmMain.chkShowSRP.Enabled = False
+        RegSaveHJT "ShowSRP", CLng(0)
+    End If
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "SRP_IsService_Available"
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function SRP_Create_API() As Long
+    On Error GoTo ErrorHandler:
+    'returns Sequence number on success
+    'or 0 on failure
+    
+    'Note: that SR service needs some time (~ 15 sec.) to update list with newly created points
+    'So, you will not see point if you create it a second ago
+    
+    Dim rpi As RESTOREPOINTINFOA
+    Dim sms As STATEMGRSTATUS
+    Dim sDescr As String
+    Dim lSRFreq As Long
+    Dim bStateAltered As Boolean
+    
+    If GetFreeDiscSpace(SysDisk, False) < cMath.MBToInt64(2& * 1024) Then ' < 2 GB ?
+        'Not enough free disk space. Required at least 2 GB
+        MsgBox Translate(1555) & " 2 GB.", vbExclamation
+        Exit Function
+    End If
+    
+    If Not SRP_IsService_Available(False) Then Exit Function
+    If Not RunWMI_Service(bWait:=True, bAskBeforeLaunch:=False, bSilent:=False) Then Exit Function
+    
+    SRP_EnableService SysDisk
+    
+    'backup state
+    lSRFreq = Reg.GetDword(HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore", "SystemRestorePointCreationFrequency")
+    'set Frequency to 0
+    Reg.SetDwordVal HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore", "SystemRestorePointCreationFrequency", 0
+    bStateAltered = True
+    
+    With rpi
+        .dwEventType = BEGIN_SYSTEM_CHANGE
+        .dwRestorePtType = MODIFY_SETTINGS
+        .llSequenceNumber = 0
+        sDescr = "Restore Point by HiJackThis"
+        sDescr = StrConv(sDescr, vbFromUnicode)
+        memcpy .szDescription(0), ByVal StrPtr(sDescr), LenB(sDescr)
+    End With
+    
+    '//TODO: add LoadLibrary / DispCallFunc
+    
+    If (0 = SRSetRestorePoint(rpi, sms)) Then
+        If sms.nStatus = ERROR_SERVICE_DISABLED Then
+            Debug.Print "System Restore is turned off."
+        End If
+        'Debug.Print "Failure to create the restore point. Error = " & Err.LastDllError
+        MsgBoxW Translate(1556) & " Error = " & Err.LastDllError, vbExclamation
+        GoTo Finally
+    End If
+    
+    rpi.dwEventType = END_SYSTEM_CHANGE
+    rpi.llSequenceNumber = sms.llSequenceNumber
+    
+    If (0 = SRSetRestorePoint(rpi, sms)) Then
+        Debug.Print "Failure to end the restore point. Error = " & Err.LastDllError
+    End If
+    
+    SRP_Create_API = cMath.Int64ToInt(sms.llSequenceNumber)
+    
+    If SRP_Create_API <> 0 Then
+        'MsgBoxw "System restore point is successfully created.", vbInformation
+        MsgBoxW Translate(1557), vbInformation
+    End If
+    
+Finally:
+    'recover state
+    Reg.SetDwordVal HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore", "SystemRestorePointCreationFrequency", lSRFreq
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "SRP_Create_API"
+    If inIDE Then Stop: Resume Next
+    If bStateAltered Then GoTo Finally
+End Function
+
+Private Function SRP_Create() As Boolean 'WMI based
+    On Error GoTo ErrorHandler
+    
+    'Note: that SR service needs some time (~ 15 sec.) to update list with newly created points
+    'So, you will not see point if you create it a second ago
+    
+    If GetFreeDiscSpace(SysDisk, False) < cMath.MBToInt64(2& * 1024) Then ' < 2 GB ?
+        'Not enough free disk space. Required at least 2 GB
+        MsgBox Translate(1555) & " 2 GB.", vbExclamation
+        Exit Function
+    End If
+    
+    If Not SRP_IsService_Available(False) Then Exit Function
+    If Not RunWMI_Service(bWait:=True, bAskBeforeLaunch:=False, bSilent:=False) Then Exit Function
+    
+    Dim lSRFreq          As Long
+    Dim bStateAltered    As Boolean
+    Dim oSR              As Object
+    Set oSR = GetObject("winmgmts:{impersonationLevel=impersonate}!root\default:SystemRestore")
+    
+    SRP_EnableService SysDisk
+    
+    'backup state
+    lSRFreq = Reg.GetDword(HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore", "SystemRestorePointCreationFrequency")
+    'set Frequency to 0
+    Reg.SetDwordVal HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore", "SystemRestorePointCreationFrequency", 0
+    bStateAltered = True
+    
+    SRP_Create = (S_OK = oSR.CreateRestorePoint("Restore Point by HiJackThis", MODIFY_SETTINGS, BEGIN_SYSTEM_CHANGE))
+    oSR.CreateRestorePoint "Restore Point by HiJackThis", MODIFY_SETTINGS, END_SYSTEM_CHANGE
+    
+    If SRP_Create Then
+        'MsgBoxw "System restore point is successfully created.", vbInformation
+        MsgBoxW Translate(1557), vbInformation
+    Else
+        'Failure to create the restore point.
+        MsgBoxW Translate(1556), vbExclamation
+    End If
+    
+    Set oSR = Nothing
+    
+Finally:
+    'recover state
+    Reg.SetDwordVal HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore", "SystemRestorePointCreationFrequency", lSRFreq
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "SRP_Create"
+    If inIDE Then Stop: Resume Next
+    If bStateAltered Then GoTo Finally
+End Function
+
+Private Function SRP_EnableService(sDrive As String) As Boolean
+    On Error GoTo ErrorHandler
+    
+    If Not RunWMI_Service(bWait:=True, bAskBeforeLaunch:=False, bSilent:=False) Then Exit Function
+    
+    Dim oSR          As Object
+    Dim objInParam   As Object
+    Dim objServices  As Object
+    Dim objOutParams As Object
+    Set objServices = GetObject("winmgmts:{impersonationLevel=impersonate}!root\default")
+    Set oSR = objServices.Get("SystemRestore")
+    Set objInParam = oSR.Methods_("Enable").inParameters.SpawnInstance_()
+    objInParam.Properties_.Item("Drive") = sDrive
+    objInParam.Properties_.Item("WaitTillEnabled") = True
+    Set objOutParams = oSR.ExecMethod_("Enable", objInParam)
+    SRP_EnableService = (0 = objOutParams.ReturnValue)
+    'If Not EnableSR Then MsgBoxW "Error! Could not enable system restore."
+    If Not SRP_EnableService Then MsgBoxW Translate(1553), vbExclamation
+    
+    Set objOutParams = Nothing
+    Set objInParam = Nothing
+    Set oSR = Nothing
+    Set objServices = Nothing
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "SRP_EnableService"
+    If Not SRP_EnableService Then MsgBoxW Translate(1553), vbExclamation
+    If inIDE Then Stop: Resume Next
+End Function
+
+Private Function SRP_Enum(aSeqNum() As Long, aDate() As Date, aDescr() As String) As Long
+    On Error GoTo ErrorHandler
+    'returns a number of SRPs
+    Dim objServices      As Object
+    Dim colSRP           As Object
+    Dim oSRP             As Object
+    Dim nSRP             As Long
+    Dim objSWbemDateTime As Object
+    
+    If Not SRP_IsService_Available(False) Then Exit Function
+    If Not RunWMI_Service(bWait:=True, bAskBeforeLaunch:=True, bSilent:=False) Then Exit Function
+    
+    Set objSWbemDateTime = CreateObject("WbemScripting.SWbemDateTime")
+    Set objServices = GetObject("winmgmts:{impersonationLevel=impersonate}!root\default")
+    Set colSRP = objServices.ExecQuery("Select * from SystemRestore")
+    
+    If colSRP Is Nothing Then Exit Function
+    
+    If colSRP.Count > 0 Then
+        ReDim aSeqNum(colSRP.Count - 1)
+        ReDim aDate(colSRP.Count - 1)
+        ReDim aDescr(colSRP.Count - 1)
+    
+        For Each oSRP In colSRP
+            aSeqNum(nSRP) = oSRP.SequenceNumber
+            aDescr(nSRP) = oSRP.Description
+            objSWbemDateTime.Value = oSRP.CreationTime
+            aDate(nSRP) = objSWbemDateTime.GetVarDate(True) 'true: UTC -> Local zone
+            nSRP = nSRP + 1
+        Next
+    End If
+    SRP_Enum = colSRP.Count
+    
+    Set objSWbemDateTime = Nothing
+    Set oSRP = Nothing
+    Set colSRP = Nothing
+    Set objServices = Nothing
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "EnumSRP"
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function BackupConcatLine(lBackupID As Long, lFixID As Long, vDate As Variant, sDescription As String) As String
+    Const DELIM As String = vbTab
+    Dim sDate As String
+    
+    If VarType(vDate) = VbVarType.vbDate Then
+        sDate = BackupFormatDate(CDate(vDate))
+    Else
+        sDate = CStr(vDate)
+    End If
+    
+    BackupConcatLine = lBackupID & DELIM & lFixID & DELIM & sDate & DELIM & sDescription
+End Function
+
+Public Sub BackupSplitLine( _
+    sBackupLine As String, _
+    Optional out_BackupID As Long, _
+    Optional out_FixID As Long, _
+    Optional out_Date As String, _
+    Optional out_Description As String)
+    
+    On Error GoTo ErrorHandler:
+    
+    Const DELIM As String = vbTab
+    Dim Part() As String
+    
+    If 0 <> Len(sBackupLine) Then
+        Part = Split(sBackupLine, DELIM, 4)
+        If UBound(Part) = 3 Then
+            out_BackupID = CLng(Part(0))
+            out_FixID = CLng(Part(1))
+            out_Date = CStr(Part(2))
+            out_Description = CStr(Part(3))
+        End If
+    End If
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "modBackup_BackupSplitLine", "sBackupLine=", sBackupLine
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Private Function BackupLoadBackupByID(lBackupID As Long) As Boolean
+    On Error GoTo ErrorHandler:
+    Dim CmdFile As String
+    CmdFile = BuildPath(AppPath, "Backups\" & lBackupID & "\" & BACKUP_COMMAND_FILE_NAME)
+    If FileExists(CmdFile) Then
+        tBackupList.cLastCMD.InitFile CmdFile, 1200
+        BackupLoadBackupByID = True
+    Else
+        MsgBoxW "Error! Backup entry for this item is no longer exists. Cannot continue.", vbCritical
+    End If
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "BackupLoadBackupByID", "lBackupID=", lBackupID
+    If inIDE Then Stop: Resume Next
+End Function
+
+Private Function BackupFindBackupIDByDateOrName(dDateExample As Date, sDecriptionExample As String, bIsFullDate As Boolean) As Long
+    
+    On Error GoTo ErrorHandler:
+    
+    'bIsFullDate -> 30.12.2017 23:59
+    'not full    -> 30.12.2017
+    
+    Dim i As Long
+    Dim sBackup As String
+    Dim lBackupID As Long
+    Dim sDate As String
+    Dim sDecription As String
+    Dim bMatch As Boolean
+    Dim dDateEmpty As Date
+    Dim iSect As Long
+    Dim aSection() As Variant
+    
+    'If cBackupIni.CountSections > 1 Then Exit Function '[main] + 1
+    If frmMain.lstBackups.ListCount = -1 Then Exit Function
+    aSection = cBackupIni.GetSections()
+    
+    For i = 0 To UBound(aSection)
+        
+      bMatch = False
+      If IsNumeric(aSection(i)) Then 'exclude [main]
+        lBackupID = CLng(aSection(i))
+        sDate = cBackupIni.ReadParam(lBackupID, "Date")
+        sDecription = cBackupIni.ReadParam(lBackupID, "Name") 'HitLineW
+        
+        'BackupSplitLine sBackup, lBackupID, , sDate, sDecription
+        
+        If sDecriptionExample <> "" Then
+            If sDecription = sDecriptionExample Then bMatch = True
+        End If
+        If dDateExample <> dDateEmpty Then
+            If bIsFullDate Then
+                If sDate <> BackupFormatDate(dDateExample) Then bMatch = False
+            Else
+                If CDate(Left$(sDate, 10)) <> CDate(Format$(dDateExample, "yyyy-mm-dd")) Then bMatch = False
+            End If
+        End If
+        If bMatch Then
+            BackupFindBackupIDByDateOrName = lBackupID
+            Exit Function
+        End If
+      End If
+    Next
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "BackupFindBackupIDByDateOrName"
+    If inIDE Then Stop: Resume Next
+End Function
+
+Private Function BackupFindBackupIDByFixID(lFixID As Long, sHitLineW As String) As Long
+    On Error GoTo ErrorHandler:
+    
+    BackupFindBackupIDByFixID = 0 'default
+    
+    Dim i As Long
+    Dim sBackup As String
+    Dim lBackupID As Long
+    Dim iSect As Long
+    Dim l_out_FixID As Long
+    Dim aSection() As Variant
+    Dim sDecription As String
+    
+    'If cBackupIni.CountSections > 1 Then Exit Function '[main] + 1
+    If frmMain.lstBackups.ListCount = -1 Then Exit Function
+    aSection = cBackupIni.GetSections()
+    
+    For i = 0 To UBoundSafe(aSection)
+      If aSection(i) <> "Name" And IsNumeric(aSection(i)) Then
+        lBackupID = aSection(i)
+        l_out_FixID = cBackupIni.ReadParam(lBackupID, "FixID")
+        sDecription = cBackupIni.ReadParam(lBackupID, "Name") 'HitLineW
+        
+        If lFixID = l_out_FixID Then
+            If sHitLineW = sDecription Then
+                BackupFindBackupIDByFixID = lBackupID
+                Exit Function
+            End If
+        End If
+      End If
+    Next
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "BackupFindBackupIDByFixID", lFixID, sHitLineW
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function GetListIndexByBackupID(p_lBackupID As Long) As Long
+    On Error GoTo ErrorHandler:
+    Dim i As Long
+    Dim sBackup As String
+    Dim lBackupID As Long
+    If frmMain.lstBackups.ListIndex = -1 Then
+        GetListIndexByBackupID = -1
+        Exit Function
+    End If
+    For i = 0 To frmMain.lstBackups.ListCount - 1
+        sBackup = frmMain.lstBackups.List(i)
+        BackupSplitLine sBackup, lBackupID
+        If lBackupID = p_lBackupID Then
+            GetListIndexByBackupID = i
+            Exit Function
+        End If
+    Next
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetListIndexByBackupID", p_lBackupID
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function SerializeStringArray(sArr() As String) As String
+    Dim i&
+    If Not IsArrDimmed(sArr) Then Exit Function
+    For i = LBound(sArr) To UBound(sArr)
+        SerializeStringArray = SerializeStringArray & sArr(i) & vbNullChar
+    Next
+    SerializeStringArray = Left$(SerializeStringArray, Len(SerializeStringArray) - 1)
+End Function
+
+Public Function DeSerializeToStringArray(sSerialArray As String) As String()
+    If Len(sSerialArray) <> 0 Then
+        DeSerializeToStringArray = Split(sSerialArray, vbNullChar)
+    End If
+End Function
+
+'Public Function SerializeByteArray(bArr() As Byte) As String
+'    Dim i&
+'    If Not IsArrDimmed(bArr) Then Exit Function
+'    For i = LBound(bArr) To UBound(bArr)
+'        SerializeByteArray = SerializeByteArray & Right$("0" & Hex(bArr(i)), 2)
+'    Next
+'End Function
+'
+'Public Function DeSerializeToByteArray(sSerialArray As String) As Byte()
+'    If Len(sSerialArray) < 2 Then Exit Function
+'    ReDim bArr(Len(sSerialArray) \ 2 - 1) As Byte
+'    Dim i As Long
+'    For i = 1 To Len(sSerialArray) Step 2
+'        bArr((i - 1) \ 2) = CLng("&H" & Mid$(sSerialArray, i, 2))
+'    Next
+'    DeSerializeToByteArray = bArr
+'End Function
+
+Public Function HasBOM_UTF16(sText As String) As Boolean
+    If Left$(sText, 2) = Chr$(&HFF) & Chr$(&HFE) Or Left$(sText, 2) = ChrW$(&HFF) & ChrW$(&HFE) Then HasBOM_UTF16 = True
+End Function
 
 Public Sub ListBackups()
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "ListBackups - Begin"
+
+    Dim i As Long
+    Dim aBackupID() As Variant
+    Dim lFixID As Long
+    Dim sName As String
+    Dim sDate As String
+    Dim nTotal As Long
+    Dim aBackupDatesHJT() As String
     
-    Dim sPath$, sFile$, vDummy As Variant, ff%
-    Dim sBackup$, sDate$, stime$, aBackup() As String, Cnt&, i&
+    ReDim aBackupDatesHJT(0)
     
-    ReDim aBackup(100)
-    
-    sPath = AppPath() & IIf(Right$(AppPath(), 1) = "\", vbNullString, "\")
-    sFile = DirW$(sPath & "backups\" & "backup*", vbFile)
-    If Len(sFile) = 0 Then Exit Sub
     frmMain.lstBackups.Clear
     
-    Do
-        vDummy = Split(sFile, "-")
-        If InStr(sFile, ".") = 0 And UBound(vDummy) = 3 Then
-            'backup-20021024-181841-901
-            '0      1        2      3
-            'duh    date     time   random
-            ff = FreeFile()
-            Open sPath & "backups\" & sFile For Input As #ff
-                Line Input #ff, sBackup
-            Close #ff
-            
-            sDate = Right$(vDummy(1), 2) & "-" & Mid$(vDummy(1), 5, 2) & "-" & Mid$(vDummy(1), 1, 4)
-            stime = Left$(vDummy(2), 2) & ":" & Mid$(vDummy(2), 3, 2) & ":" & Right$(vDummy(2), 2)
-            
-            sBackup = Format(sDate, "Short Date") & ", " & _
-                      Format(stime, "Long Time") & ": " & _
-                      sBackup
-                      
-            Cnt = Cnt + 1
-            If UBound(aBackup) < Cnt Then ReDim Preserve aBackup(UBound(aBackup) + 100)
-            aBackup(Cnt) = sBackup
-        End If
-        sFile = DirW$()
-    Loop Until sFile = vbNullString
+    If cBackupIni Is Nothing Then Exit Sub
     
-    If Cnt <> 0 Then
-        For i = Cnt To 1 Step -1
-            frmMain.lstBackups.AddItem aBackup(i)
-        Next
+    aBackupID = cBackupIni.GetSections()
+    
+    If IsArrDimmed(aBackupID) Then
+      For i = UBound(aBackupID) To 0 Step -1
+        If Not aBackupID(i) = "main" Then
+            sName = cBackupIni.ReadParam(aBackupID(i), "Name")
+            sDate = cBackupIni.ReadParam(aBackupID(i), "Date")
+            lFixID = cBackupIni.ReadParam(aBackupID(i), "FixID")
+            
+            frmMain.lstBackups.AddItem BackupConcatLine(CLng(aBackupID(i)), lFixID, sDate, sName)
+            
+            If ABR_BACKUP_TITLE = sName Then
+                ReDim Preserve aBackupDatesHJT(UBound(aBackupDatesHJT) + 1)
+                aBackupDatesHJT(UBound(aBackupDatesHJT)) = Format$(BackupDateToDate(sDate), "yyyy-mm-dd")
+            End If
+        End If
+      Next
     End If
+    
+    'appending with ABR backups made not by HJT
+    '+ also include ABR backups, made earlier by HJT, but not included in "backups" folder, because been manually deleted
+    Dim aBackupDates() As String
+    Dim aIsHJT() As Boolean
+    Dim bDoInclude As Boolean
+    nTotal = ABR_EnumBackups(aBackupDates, aIsHJT)
+    If nTotal > 0 Then
+        If IsArrDimmed(aBackupDates) Then
+            For i = UBound(aBackupDates) To 0 Step -1
+                bDoInclude = False
+                If aIsHJT(i) Then 'HJT backup?
+                    If Not inArray(aBackupDates(i), aBackupDatesHJT) Then 'not included in "backups" ?
+                        bDoInclude = True
+                    End If
+                Else ' not HJT backup ?
+                    bDoInclude = True
+                End If
+                If bDoInclude Then
+                    frmMain.lstBackups.AddItem BackupConcatLine(0&, 0&, CDate(aBackupDates(i)), ABR_BACKUP_TITLE)
+                End If
+            Next
+        End If
+    End If
+    
+    Dim aSeqNum() As Long
+    Dim aDate() As Date
+    Dim aDescr() As String
+    
+    'List SRP
+    If bShowSRP Then
+        nTotal = SRP_Enum(aSeqNum, aDate, aDescr)
+        If nTotal > 0 Then
+            For i = nTotal - 1 To 0 Step -1
+                frmMain.lstBackups.AddItem BackupConcatLine(0&, 0&, BackupFormatDate(aDate(i)), SRP_BACKUP_TITLE & " - " & aSeqNum(i) & " - " & aDescr(i))
+            Next
+        End If
+    End If
+    
+    AddHorizontalScrollBarToResults frmMain.lstBackups
+    frmMain.lstBackups.ListIndex = -1
+    frmMain.lstBackups.Refresh
     
     AppendErrorLogCustom "ListBackups - End"
     Exit Sub
@@ -1357,33 +1654,47 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Public Sub DeleteBackup(sBackup$)
+Public Sub DeleteBackup(sBackup As String, Optional bRemoveAll As Boolean)
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "DeleteBackup - Begin", sBackup
     
-    Dim sFile$, sDate$, stime$
+    Dim lBackupID As Long
+    Dim sDecription As String
+    Dim sDate As String
+    Dim i As Long
+    Dim nSeqID As Long
     
-    If sBackup = vbNullString Then
-        '// TODO
-        'DeleteFileWEx StrPtr(BuildPath(AppPath(), "backups\backup-*.*"))
-        Exit Sub
-    End If
-    
-    sDate = Left$(sBackup, InStr(sBackup, ", ") - 1)
-    stime = Mid$(sBackup, InStr(sBackup, ", ") + 2)
-    stime = Left$(stime, InStr(stime, ": ") - 1)
-    
-    If Not bIsUSADateFormat Then
-        sDate = Format(sDate, "yyyymmdd")
+    If bRemoveAll Then
+'        For i = frmMain.lstBackups.ListCount - 1 To 0 Step -1 'analyze each individual backup
+'            DeleteBackup frmMain.lstBackups.List(i)
+'        Next i
+        ABR_RemoveBackupALL True
+        DeleteFolderForce BuildPath(AppPath(), "backups") 'delete root
+        frmMain.lstBackups.Clear
+        Set cBackupIni = Nothing
     Else
-        'use stupid workaround for USA date format
-        sDate = Format(sDate, "yyyyddmm")
+        BackupSplitLine sBackup, lBackupID, , sDate, sDecription
+        
+        If sDecription = ABR_BACKUP_TITLE Then 'if ABR backup
+            If lBackupID = 0 Then
+                'not HJT backup
+                DeleteFolderForce sWinDir & "\ABR\" & Format$(CDate(Left$(sDate, 10)), "yyyy-mm-dd")
+                RemoveDirectory StrPtr(sWinDir & "\ABR") 'del root, if empty
+            Else
+                ABR_RemoveByBackupID lBackupID
+            End If
+            
+        ElseIf StrBeginWith(sDecription, SRP_BACKUP_TITLE) Then 'if SRP backup
+            nSeqID = SRP_ExtractSeqIDFromDescription(sDecription)
+            SRP_Remove nSeqID, True
+        End If
+        If cBackupIni.RemoveSection(CStr(lBackupID)) Then
+            tBackupList.Total = cBackupIni.ReadParam("main", "Total", 0)
+            tBackupList.Total = tBackupList.Total - 1
+            cBackupIni.WriteParam "main", "Total", tBackupList.Total
+        End If
+        DeleteFolderForce BuildPath(AppPath(), "backups\" & lBackupID)
     End If
-    stime = Format(stime, "HhNnSs")
-    
-    sFile = "backup-" & sDate & "-" & stime & "*.*"
-    
-    DeleteFileWEx StrPtr(BuildPath(AppPath(), "backups\" & sFile))
     
     AppendErrorLogCustom "DeleteBackup - End"
     Exit Sub
@@ -1392,75 +1703,416 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Public Function GetCLSIDOfMSIEExtension(ByVal sName$, bButtonOrMenu As Boolean)
-    Dim hKey&, i&, sCLSID$
+Public Function RestoreBackup(sItem As String) As Boolean
     On Error GoTo ErrorHandler:
-    AppendErrorLogCustom "GetCLSIDOfMSIEExtension - Begin"
+    Dim lBackupID As Long
+    Dim sDecription As String
+    Dim lFixID As Long
+    Dim sDate As String
+    Dim bNoBackup As Boolean
+    Dim nSeqID As Long
+    Dim Cmd As BACKUP_COMMAND
+    Dim i As Long
+    Dim sBackupFile As String
+    Dim sSystemFile As String
+    Dim lFileID As Long
+    Dim lRegID As Long
+    Dim lstIdx As Long
+    Dim FixReg As FIX_REG_KEY
     
-    sName = Left$(sName, InStr(sName, " (HK") - 1)
+    RestoreBackup = True
     
-    If RegOpenKeyExW(HKEY_LOCAL_MACHINE, StrPtr("Software\Microsoft\Internet Explorer\Extensions"), 0, KEY_ENUMERATE_SUB_KEYS, hKey) = 0 Then
-        sCLSID = String$(255, 0)
-        If RegEnumKeyExW(hKey, i, StrPtr(sCLSID), 255, 0, 0, ByVal 0, ByVal 0) <> 0 Then
-            RegCloseKey hKey
-            GetCLSIDOfMSIEExtension = vbNullString
-            Exit Function
+    BackupSplitLine sItem, lBackupID, lFixID, sDate, sDecription
+    
+    'check for ABR
+    If sDecription = ABR_BACKUP_TITLE Then
+        If lBackupID = 0 Then 'not HJT backup
+            RestoreBackup = ABR_RecoverFromBackup(Format$(CDate(Left$(sDate, 10)), "yyyy-mm-dd"), bNoBackup)
+        Else
+            RestoreBackup = ABR_RestoreByBackupID(lBackupID, bNoBackup)
         End If
-        Do
-            sCLSID = Left$(sCLSID, InStr(sCLSID, vbNullChar) - 1)
-            If bButtonOrMenu Then
-                If sName = RegGetString(HKEY_LOCAL_MACHINE, "Software\Microsoft\Internet Explorer\Extensions\" & sCLSID, "ButtonText") Then
-                    GetCLSIDOfMSIEExtension = sCLSID
-                    Exit Do
-                End If
-            Else
-                If sName = RegGetString(HKEY_LOCAL_MACHINE, "Software\Microsoft\Internet Explorer\Extensions\" & sCLSID, "MenuText") Then
-                    GetCLSIDOfMSIEExtension = sCLSID
-                    Exit Do
-                End If
+        If bNoBackup Then
+            'backup is no longer exists -> remove backup from the list
+            DeleteBackup sItem
+            lstIdx = GetListIndexByBackupID(lBackupID)
+            If lstIdx <> -1 Then
+                frmMain.lstBackups.RemoveItem lstIdx
             End If
-            
-            sCLSID = String$(255, 0)
-            i = i + 1
-        Loop Until RegEnumKeyExW(hKey, i, StrPtr(sCLSID), 255, 0, 0, ByVal 0, ByVal 0) <> 0
-        RegCloseKey hKey
+        End If
+        Exit Function
     End If
     
-    If RegOpenKeyExW(HKEY_CURRENT_USER, StrPtr("Software\Microsoft\Internet Explorer\Extensions"), 0, KEY_ENUMERATE_SUB_KEYS, hKey) = 0 Then
-        sCLSID = String$(255, 0)
-        If RegEnumKeyExW(hKey, i, StrPtr(sCLSID), 255, 0, 0, ByVal 0, ByVal 0) <> 0 Then
-            RegCloseKey hKey
-            GetCLSIDOfMSIEExtension = vbNullString
-            Exit Function
+    'check for SRP
+    If StrBeginWith(sDecription, SRP_BACKUP_TITLE) Then
+        nSeqID = SRP_ExtractSeqIDFromDescription(sDecription)
+        If nSeqID <> 0 Then
+            RestoreBackup = SRP_Restore(nSeqID, sDecription & " (" & sDate & ")")
         End If
-        Do
-            sCLSID = Left$(sCLSID, InStr(sCLSID, vbNullChar) - 1)
-            If bButtonOrMenu Then
-                If sName = RegGetString(HKEY_CURRENT_USER, "Software\Microsoft\Internet Explorer\Extensions\" & sCLSID, "ButtonText") Then
-                    GetCLSIDOfMSIEExtension = sCLSID
-                    Exit Do
-                End If
-            Else
-                If sName = RegGetString(HKEY_CURRENT_USER, "Software\Microsoft\Internet Explorer\Extensions\" & sCLSID, "MenuText") Then
-                    GetCLSIDOfMSIEExtension = sCLSID
-                    Exit Do
-                End If
-            End If
-            
-            sCLSID = String$(255, 0)
-            i = i + 1
-        Loop Until RegEnumKeyExW(hKey, i, StrPtr(sCLSID), 255, 0, 0, ByVal 0, ByVal 0) <> 0
-        RegCloseKey hKey
+        Exit Function
     End If
     
-    AppendErrorLogCustom "GetCLSIDOfMSIEExtension - End"
+    'load _cmd.ini
+    If Not BackupLoadBackupByID(lBackupID) Then
+        'entry is not exist -> remove from backup
+        DeleteBackup sItem
+        lstIdx = GetListIndexByBackupID(lBackupID)
+        If lstIdx <> -1 Then
+            frmMain.lstBackups.RemoveItem lstIdx
+        End If
+        RestoreBackup = False
+        Exit Function
+    End If
+    
+    RestoreBackup = True
+    
+    For i = 1 To tBackupList.cLastCMD.ReadParam("cmd", "Total", 0)
+        Cmd.Full = tBackupList.cLastCMD.ReadParam("cmd", i)
+        BackupExtractCommand Cmd
+        
+        Select Case Cmd.RecovType
+        
+        Case FILE_BASED
+            If Cmd.Verb = VERB_FILE_COPY Then
+                If Cmd.ObjType = OBJ_FILE Then
+                    lFileID = CLng(Cmd.Args)
+                    sBackupFile = tBackupList.cLastCMD.ReadParam(lFileID, "name")
+                    sBackupFile = BuildPath(AppPath(), "Backups\" & lBackupID & "\" & sBackupFile)
+                    sSystemFile = EnvironW(tBackupList.cLastCMD.ReadParam(lFileID, "orig"))
+                    If BackupValidateFileHash(lBackupID, lFileID) Then
+                        RestoreBackup = RestoreBackup And FileCopyW(sBackupFile, sSystemFile, True)
+                    Else
+                        RestoreBackup = False
+                    End If
+                Else
+                    MsgBoxW "Error! RestoreBackup: unknown object type: " & Cmd.ObjType, vbExclamation
+                    RestoreBackup = False
+                End If
+            Else
+                MsgBoxW "Error! RestoreBackup: unknown verb: " & Cmd.Verb, vbExclamation
+                RestoreBackup = False
+            End If
+            
+        Case REGISTRY_BASED
+            If Cmd.Verb = VERB_RESTORE_REG_VALUE Then
+                If Cmd.ObjType = OBJ_REG_VALUE Then
+                    lRegID = CLng(Cmd.Args)
+                    With FixReg
+                    
+                        If BackupExtractFixRegKeyByRegID(lRegID, REGISTRY_BASED, FixReg) Then
+
+                            'If IsEmpty(.DefaultData) And .Param = "" Then
+                            If IsEmpty(.DefaultData) Then
+                                'it is an empty default value (or value that should not exist)
+                                'to make default value of a key become empty, we have to delete default value
+                                RestoreBackup = RestoreBackup And Reg.DelVal(.Hive, .Key, .Param, .Redirected)
+                            Else
+                                Select Case .ParamType
+        
+                                Case REG_SZ, REG_EXPAND_SZ, REG_MULTI_SZ
+                                    .DefaultData = UnHexStringW(CStr(.DefaultData))
+                                End Select
+                            
+                                RestoreBackup = RestoreBackup And Reg.SetData(.Hive, .Key, .Param, .ParamType, .DefaultData, .Redirected)
+                            End If
+                        Else
+                            RestoreBackup = False
+                        End If
+                    End With
+                Else
+                    MsgBoxW "Error! RestoreBackup: unknown object type: " & Cmd.ObjType, vbExclamation
+                    RestoreBackup = False
+                End If
+            Else
+                MsgBoxW "Error! RestoreBackup: unknown verb: " & Cmd.Verb, vbExclamation
+                RestoreBackup = False
+            End If
+            
+        Case INI_BASED
+            If Cmd.Verb = VERB_RESTORE_INI_VALUE Then
+                If Cmd.ObjType = OBJ_FILE Then
+                    lRegID = CLng(Cmd.Args)
+                     With FixReg
+                        If BackupExtractFixRegKeyByRegID(lRegID, INI_BASED, FixReg) Then
+                        
+                            RestoreBackup = RestoreBackup And IniSetString(.IniFile, .Key, .Param, UnHexStringW(.DefaultData))
+                        End If
+                    End With
+                Else
+                    MsgBoxW "Error! RestoreBackup: unknown object type: " & Cmd.ObjType, vbExclamation
+                    RestoreBackup = False
+                End If
+            Else
+                MsgBoxW "Error! RestoreBackup: unknown verb: " & Cmd.Verb, vbExclamation
+                RestoreBackup = False
+            End If
+            
+        Case CUSTOM_BASED
+            If Cmd.Verb = 1 Then
+                If Cmd.ObjType = 1 Then
+                
+                Else
+                    MsgBoxW "Error! RestoreBackup: unknown object type: " & Cmd.ObjType, vbExclamation
+                    RestoreBackup = False
+                End If
+            Else
+                MsgBoxW "Error! RestoreBackup: unknown verb: " & Cmd.Verb, vbExclamation
+                RestoreBackup = False
+            End If
+        Case Else
+            MsgBoxW "Oh! I forgot to implement this recovery type: " & Cmd.RecovType & ". Remind me about this.", vbExclamation
+            RestoreBackup = False
+        End Select
+        
+    Next
     Exit Function
 ErrorHandler:
-    RegCloseKey hKey
-    ErrorMsg Err, "modBackup_GetCLSIDOfMSIEExtension", "sName=", sName, "bButtonOrMenu=", CStr(bButtonOrMenu)
+    ErrorMsg Err, "RestoreBackup", "Item=", sItem
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function HasBOM_UTF16(sText As String) As Boolean
-    If Left$(sText, 2) = Chr$(&HFF) & Chr$(&HFE) Or Left$(sText, 2) = ChrW$(&HFF) & ChrW$(&HFE) Then HasBOM_UTF16 = True
+Private Function BackupExtractFixRegKeyByRegID(lRegID As Long, RecovType As ENUM_CURE_BASED, FixReg As FIX_REG_KEY) As Boolean
+    On Error GoTo ErrorHandler:
+    Dim sHash As String
+    
+    If RecovType <> REGISTRY_BASED And RecovType <> INI_BASED Then
+        MsgBox "Invalid using BackupExtractFixRegKeyByRegID! RecovType = " & RecovType, vbExclamation
+        Exit Function
+    End If
+    
+    With FixReg
+        If RecovType = REGISTRY_BASED Then
+        
+            .Hive = Reg.GetHKey(tBackupList.cLastCMD.ReadParam(lRegID, "hive"))                     'reg only
+            .ParamType = Reg.MapStringToRegType(tBackupList.cLastCMD.ReadParam(lRegID, "type"))     'reg only
+            .Redirected = CBool(tBackupList.cLastCMD.ReadParam(lRegID, "redir"))                'reg only
+            
+        ElseIf RecovType = INI_BASED Then
+        
+            .IniFile = EnvironW(tBackupList.cLastCMD.ReadParam(lRegID, "path"))
+        End If
+        .Key = tBackupList.cLastCMD.ReadParam(lRegID, "key")
+        .Param = tBackupList.cLastCMD.ReadParam(lRegID, "param")
+        .DefaultData = tBackupList.cLastCMD.ReadParam(lRegID, "data")
+        If .Param = "" Then
+            If CBool(tBackupList.cLastCMD.ReadParam(lRegID, "empty")) Then
+                .DefaultData = Empty 'empty default value
+            End If
+        End If
+        sHash = tBackupList.cLastCMD.ReadParam(lRegID, "hash")
+        
+        If CalcCRC(CStr(.DefaultData)) <> sHash Then
+            'MsgBoxW "Error! Registry entry to be restored from backup is corrupted. Cannot continue repairing.", vbCritical
+            MsgBoxW Translate(1573), vbCritical
+        Else
+            BackupExtractFixRegKeyByRegID = True
+        End If
+    End With
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "BackupExtractFixRegKeyByRegID", "lRegID=", lRegID
+    If inIDE Then Stop: Resume Next
+End Function
+
+Private Function BackupValidateFileHash(lBackupID As Long, lFileID As Long) As Boolean
+    On Error GoTo ErrorHandler:
+    Dim sSavedHash As String
+    Dim sRealHash As String
+    Dim sBackupFile As String
+    Dim sCmdFilename As String
+    '// load current cmd ini file, if manually doesn't done yet
+    If (tBackupList.cLastCMD Is Nothing) Then
+        BackupLoadBackupByID lBackupID
+    Else
+        sCmdFilename = BuildPath(AppPath(), "Backups\" & lBackupID & "\" & BACKUP_COMMAND_FILE_NAME)
+        If StrComp(sCmdFilename, tBackupList.cLastCMD.FileName, 1) <> 0 Then
+            BackupLoadBackupByID lBackupID
+        End If
+    End If
+    sBackupFile = tBackupList.cLastCMD.ReadParam(lFileID, "name")
+    sBackupFile = BuildPath(AppPath(), "Backups\" & lBackupID & "\" & sBackupFile)
+    If Not FileExists(sBackupFile) Then
+        'MsgBoxW "Error! File to be restored is no longer exists in backup. Cannot continue repairing.", vbCritical
+        MsgBoxW Translate(1568), vbCritical
+        Exit Function
+    End If
+    sSavedHash = tBackupList.cLastCMD.ReadParam(lFileID, "hash")
+    sRealHash = GetFileMD5(sBackupFile, , True)
+    If StrComp(sSavedHash, sRealHash, vbTextCompare) = 0 Then
+        BackupValidateFileHash = True
+    Else
+        'MsgBoxW "Error! File to be restored from backup is corrupted. Cannot continue repairing."
+        MsgBoxW Translate(1569), vbCritical
+    End If
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "BackupValidateFileHash", "lBackupID=", lBackupID, "lFileID=", lFileID
+    If inIDE Then Stop: Resume Next
+End Function
+
+Private Sub BackupExtractCommand(Cmd As BACKUP_COMMAND)
+    On Error GoTo ErrorHandler:
+    Dim Part() As String
+    If InStr(Cmd.Full, " ") <> 0 Then
+        Part = Split(Cmd.Full, " ", 4)
+        If UBound(Part) >= 0 Then Cmd.RecovType = MapStringToRecoveryType(Part(0))
+        If UBound(Part) >= 1 Then Cmd.Verb = MapStringToRecoveryVerb(Part(1))
+        If UBound(Part) >= 2 Then Cmd.ObjType = MapStringToRecoveryObject(Part(2))
+        If UBound(Part) >= 3 Then Cmd.Args = Part(3)
+    End If
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "BackupExtractCommand"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Private Function SRP_ExtractSeqIDFromDescription(sDescr As String) As Long
+    On Error GoTo ErrorHandler:
+    Dim Part() As String
+    If InStr(sDescr, "-") <> 0 Then
+        Part = Split(sDescr, "-")
+        If UBound(Part) > 0 Then
+            SRP_ExtractSeqIDFromDescription = CLng(Trim$(Part(1)))
+        End If
+    End If
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "SRP_ExtractSeqIDFromDescription", "sDescr=", sDescr
+    If inIDE Then Stop: Resume Next
+End Function
+
+Private Function MapRecoveryTypeToString(RecovType As ENUM_CURE_BASED) As String
+    Dim sRet$
+    If RecovType And FILE_BASED Then
+        sRet = "FILE_BASED"
+    ElseIf RecovType And REGISTRY_BASED Then
+        sRet = "REGISTRY_BASED"
+    ElseIf RecovType And INI_BASED Then
+        sRet = "INI_BASED"
+    ElseIf RecovType And SERVICE_BASED Then
+        sRet = "SERVICE_BASED"
+    ElseIf RecovType And CUSTOM_BASED Then
+        sRet = "CUSTOM_BASED"
+    Else
+        MsgBoxW "Error! Unknown RecovType mapping! - " & RecovType, vbExclamation
+    End If
+    MapRecoveryTypeToString = sRet
+End Function
+Private Function MapStringToRecoveryType(sRecovType As String) As ENUM_CURE_BASED
+    Dim RecovType As ENUM_CURE_BASED
+    If sRecovType = "FILE_BASED" Then
+        RecovType = FILE_BASED
+    ElseIf sRecovType = "REGISTRY_BASED" Then
+        RecovType = REGISTRY_BASED
+    ElseIf sRecovType = "INI_BASED" Then
+        RecovType = INI_BASED
+    ElseIf sRecovType = "SERVICE_BASED" Then
+        RecovType = SERVICE_BASED
+    ElseIf sRecovType = "CUSTOM_BASED" Then
+        RecovType = CUSTOM_BASED
+    Else
+        MsgBoxW "Error! Unknown RecovType mapping! - " & sRecovType, vbExclamation
+    End If
+    MapStringToRecoveryType = RecovType
+End Function
+Private Function MapRecoveryVerbToString(RecovVerb As ENUM_RESTORE_VERBS) As String
+    Dim sRet$
+    If RecovVerb And VERB_FILE_COPY Then
+        sRet = "VERB_FILE_COPY"
+    ElseIf RecovVerb And VERB_GENERAL_RESTORE Then
+        sRet = "VERB_GENERAL_RESTORE"
+    ElseIf RecovVerb And VERB_RESTORE_INI_VALUE Then
+        sRet = "VERB_RESTORE_INI_VALUE"
+    ElseIf RecovVerb And VERB_RESTORE_REG_VALUE Then
+        sRet = "VERB_RESTORE_REG_VALUE"
+    ElseIf RecovVerb And VERB_RESTORE_REG_KEY Then
+        sRet = "VERB_RESTORE_REG_KEY"
+    Else
+        MsgBoxW "Error! Unknown VerbType mapping! - " & RecovVerb, vbExclamation
+    End If
+    MapRecoveryVerbToString = sRet
+End Function
+Private Function MapStringToRecoveryVerb(sRecovVerb As String) As ENUM_RESTORE_VERBS
+    Dim RecovVerb As ENUM_RESTORE_VERBS
+    If sRecovVerb = "VERB_FILE_COPY" Then
+        RecovVerb = VERB_FILE_COPY
+    ElseIf sRecovVerb = "VERB_GENERAL_RESTORE" Then
+        RecovVerb = VERB_GENERAL_RESTORE
+    ElseIf sRecovVerb = "VERB_RESTORE_INI_VALUE" Then
+        RecovVerb = VERB_RESTORE_INI_VALUE
+    ElseIf sRecovVerb = "VERB_RESTORE_REG_VALUE" Then
+        RecovVerb = VERB_RESTORE_REG_VALUE
+    ElseIf sRecovVerb = "VERB_RESTORE_REG_KEY" Then
+        RecovVerb = VERB_RESTORE_REG_KEY
+    Else
+        MsgBoxW "Error! Unknown VerbType mapping! - " & sRecovVerb, vbExclamation
+    End If
+    MapStringToRecoveryVerb = RecovVerb
+End Function
+Private Function MapRecoveryObjectToString(RecovObject As ENUM_RESTORE_OBJECT_TYPES) As String
+    Dim sRet$
+    If RecovObject And OBJ_FILE Then
+        sRet = "OBJ_FILE"
+    ElseIf RecovObject And OBJ_ABR_BACKUP Then
+        sRet = "OBJ_ABR_BACKUP"
+    ElseIf RecovObject And OBJ_REG_VALUE Then
+        sRet = "OBJ_REG_VALUE"
+    ElseIf RecovObject And OBJ_REG_KEY Then
+        sRet = "OBJ_REG_KEY"
+    Else
+        MsgBoxW "Error! Unknown ObjectType mapping! - " & RecovObject, vbExclamation
+    End If
+    MapRecoveryObjectToString = sRet
+End Function
+Private Function MapStringToRecoveryObject(sRecovObject As String) As ENUM_RESTORE_OBJECT_TYPES
+    Dim RecovObject As ENUM_RESTORE_OBJECT_TYPES
+    If sRecovObject = "OBJ_FILE" Then
+        RecovObject = OBJ_FILE
+    ElseIf sRecovObject = "OBJ_ABR_BACKUP" Then
+        RecovObject = OBJ_ABR_BACKUP
+    ElseIf sRecovObject = "OBJ_REG_VALUE" Then
+        RecovObject = OBJ_REG_VALUE
+    ElseIf sRecovObject = "OBJ_REG_KEY" Then
+        RecovObject = OBJ_REG_KEY
+    Else
+        MsgBoxW "Error! Unknown ObjectType mapping! - " & sRecovObject, vbExclamation
+    End If
+    MapStringToRecoveryObject = RecovObject
+End Function
+
+Public Function EscapeSpecialChars(sText As String) As String 'used to view on listbox and in .ini for the 'Name' parameter
+    Dim i As Long
+    Dim sResult As String
+    sResult = sText
+    For i = 1 To 31
+        If i <> 9 Then 'exclude tab
+            sResult = Replace$(sResult, Chr(i), Right$("\x0" & i, 4))
+        End If
+    Next
+    EscapeSpecialChars = sResult
+End Function
+
+Public Function HexStringW(sStr As Variant) As String 'used to serialize and store string values in _cmd.ini
+    Dim i As Long
+    Dim sOut As String
+    #If DontHexString Then
+        HexStringW = sStr
+    #Else
+        For i = 1 To Len(sStr)
+            sOut = sOut & "\u" & Right$("000" & Hex(AscW(Mid$(sStr, i, 1))), 4)
+        Next
+        HexStringW = sOut
+    #End If
+End Function
+
+Public Function UnHexStringW(sStr As Variant) As String 'used to deserialize string values from _cmd.ini
+    Dim i As Long
+    Dim sOut As String
+    #If DontHexString Then
+        UnHexStringW = sStr
+    #Else
+        For i = 1 To Len(sStr) Step 6
+            sOut = sOut & ChrW(CLng("&H" & Mid$(sStr, i + 2, 4)))
+        Next
+        UnHexStringW = sOut
+    #End If
 End Function

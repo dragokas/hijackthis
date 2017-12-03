@@ -1,0 +1,722 @@
+[
+	uuid(0000000B-0000-0000-0000-000000000AAB),
+	helpstring("WinAPI functions for TrickVB6Launcher v1.23"),
+	version(1.23)
+ ]
+
+library TrickVB6LauncherTypeLibrary
+{
+	const int MAX_PATH					= 260;
+	const int STANDARD_RIGHTS_READ		= 0x20000;
+	const int STANDARD_RIGHTS_WRITE		= 0x20000;
+	const int STANDARD_RIGHTS_EXECUTE	= 0x20000;
+	const int STANDARD_RIGHTS_REQUIRED	= 0xF0000;
+	const int SYNCHRONIZE				= 0x100000;
+	const int INVALID_HANDLE_VALUE  	= -1;
+	typedef enum{
+		SW_HIDE							= 0,
+		SW_SHOWMINIMIZED				= 2,
+		SW_MAXIMIZE						= 3,
+		SW_SHOWNOACTIVATE				= 4,
+		SW_SHOW							= 5,
+		SW_MINIMIZE						= 6,
+		SW_SHOWMINNOACTIVE				= 7,
+		SW_SHOWNA						= 8,
+		SW_RESTORE						= 9,
+		SW_SHOWDEFAULT					= 10
+	} SHOWCMDCONSTANTS;
+	typedef enum{
+		RT_CURSOR						= 1,
+		RT_BITMAP						= 2,
+		RT_ICON							= 3,
+		RT_MENU							= 4,
+		RT_DIALOG						= 5,
+		RT_STRING						= 6,
+		RT_FONTDIR						= 7,
+		RT_FONT							= 8,
+		RT_ACCELERATOR					= 9,
+		RT_RCDATA						= 10,
+		RT_MESSAGETABLE					= 11,
+		RT_GROUP_CURSOR					= RT_CURSOR + 11,
+		RT_GROUP_ICON					= RT_ICON + 11,
+		RT_VERSION						= 16,
+		RT_DLGINCLUDE					= 17,
+		RT_PLUGPLAY						= 19,
+		RT_VXD							= 20,
+		RT_ANICURSOR					= 21,
+		RT_ANIICON						= 22,
+		RT_HTML							= 23,
+		RT_MANIFEST						= 24
+	} RESOURCETYPE;
+	typedef enum{
+		MEM_COMMIT						= 0x00001000,
+		MEM_RESERVE						= 0x00002000,
+		MEM_RESET						= 0x00080000,
+		MEM_RESET_UNDO					= 0x01000000,
+		MEM_LARGE_PAGES					= 0x20000000, 
+		MEM_PHYSICAL					= 0x00400000,
+		MEM_TOP_DOWN					= 0x00100000,
+		MEM_WRITE_WATCH					= 0x00200000
+	} ALLOCATIONTYPE;
+	typedef enum{
+		MEM_DECOMMIT					= 0x4000,
+		MEM_RELEASE						= 0x8000
+	} FREETYPE;
+	typedef enum{
+		PAGE_EXECUTE					= 0x10,
+		PAGE_EXECUTE_READ				= 0x20,
+		PAGE_EXECUTE_READWRITE			= 0x40,
+		PAGE_EXECUTE_WRITECOPY			= 0x80,
+		PAGE_NOACCESS					= 0x01,
+		PAGE_READONLY					= 0x02,
+		PAGE_READWRITE					= 0x04,
+		PAGE_WRITECOPY					= 0x08
+	} MEMPROTECT,* LPMEMPROTECT;
+	typedef enum{
+		CP_ACP							= 0,
+		CP_MACCP						= 2,
+		CP_OEMCP						= 1,
+		CP_SYMBOL						= 42,
+		CP_THREAD_ACP					= 3,
+		CP_UTF7							= 65000,
+		CP_UTF8							= 65001,
+	} CODEPAGE;
+	typedef enum{
+		CSIDL_DESKTOP					= 0x0000,
+		CSIDL_INTERNET					= 0x0001,
+		CSIDL_PROGRAMS					= 0x0002,
+		CSIDL_CONTROLS					= 0x0003,
+		CSIDL_PRINTERS					= 0x0004,
+		CSIDL_PERSONAL					= 0x0005,
+		CSIDL_FAVORITES					= 0x0006,
+		CSIDL_STARTUP					= 0x0007,
+		CSIDL_RECENT					= 0x0008,
+		CSIDL_SENDTO					= 0x0009,
+		CSIDL_BITBUCKET					= 0x000a,
+		CSIDL_STARTMENU					= 0x000b,
+		CSIDL_DESKTOPDIRECTORY			= 0x0010,
+		CSIDL_DRIVES					= 0x0011,
+		CSIDL_NETWORK					= 0x0012,
+		CSIDL_NETHOOD					= 0x0013,
+		CSIDL_FONTS						= 0x0014,
+		CSIDL_TEMPLATES					= 0x0015,
+		CSIDL_COMMON_STARTMENU			= 0x0016,
+		CSIDL_COMMON_PROGRAMS			= 0X0017,
+		CSIDL_COMMON_STARTUP			= 0x0018,
+		CSIDL_COMMON_DESKTOPDIRECTORY	= 0x0019,
+		CSIDL_APPDATA					= 0x001a,
+		CSIDL_PRINTHOOD					= 0x001b,
+		CSIDL_ALTSTARTUP				= 0x001d,
+		CSIDL_COMMON_ALTSTARTUP			= 0x001e,
+		CSIDL_COMMON_FAVORITES			= 0x001f,
+		CSIDL_INTERNET_CACHE			= 0x0020,
+		CSIDL_COOKIES					= 0x0021,
+		CSIDL_HISTORY					= 0x0022,
+		CSIDL_SYSTEM					= 0x0025,
+		CSIDL_SYSTEMX86					= 0x0029
+	} CSIDL;
+	typedef enum{
+		SHGFP_TYPE_CURRENT				= 0,
+		SHGFP_TYPE_DEFAULT				= 1
+	} SHGFPTYPE;
+	typedef enum{
+		MB_ABORTRETRYIGNORE				= 0x00000002,
+		MB_CANCELTRYCONTINUE			= 0x00000006,
+		MB_HELP							= 0x00004000,
+		MB_OK							= 0x00000000,
+		MB_OKCANCEL						= 0x00000001,
+		MB_RETRYCANCEL					= 0x00000005,
+		MB_YESNO						= 0x00000004,
+		MB_YESNOCANCEL					= 0x00000003,
+		MB_ICONEXCLAMATION				= 0x00000030,
+		MB_ICONWARNING					= 0x00000030,
+		MB_ICONINFORMATION				= 0x00000040,
+		MB_ICONASTERISK					= 0x00000040,
+		MB_ICONQUESTION					= 0x00000020,
+		MB_ICONSTOP						= 0x00000010,
+		MB_ICONERROR					= 0x00000010,
+		MB_ICONHAND						= 0x00000010,
+		MB_DEFBUTTON1					= 0x00000000,
+		MB_DEFBUTTON2					= 0x00000100,
+		MB_DEFBUTTON3					= 0x00000200,
+		MB_DEFBUTTON4					= 0x00000300,
+		MB_APPLMODAL					= 0x00000000,
+		MB_SYSTEMMODAL					= 0x00001000,
+		MB_TASKMODAL					= 0x00002000,
+		MB_DEFAULT_DESKTOP_ONLY			= 0x00020000,
+		MB_RIGHT						= 0x00080000,
+		MB_RTLREADING					= 0x00100000,
+		MB_SETFOREGROUND    			= 0x00010000,
+		MB_TOPMOST						= 0x00040000,
+		MB_SERVICE_NOTIFICATION			= 0x00200000,
+	} MESSAGEBOXCONSTANTS;
+	typedef enum{
+		IDOK							= 0x01,
+		IDCANCEL						= 0x02,
+		IDABORT							= 0x03,
+		IDRETRY							= 0x04,
+		IDIGNORE						= 0x05,
+		IDYES							= 0x06,
+		IDNO							= 0x07,
+		IDTRYAGAIN						= 0x0A,
+		IDCONTINUE						= 0x0B
+	} MESSAGEBOXRETURN;
+
+	typedef enum{
+		FILE_SHARE_DELETE				= 4,
+		FILE_SHARE_READ					= 1,
+		FILE_SHARE_WRITE				= 2
+	} SHAREMODE;
+	typedef enum{
+		CREATE_NEW						= 1,
+		CREATE_ALWAYS					= 2,
+		OPEN_EXISTING					= 3,
+		OPEN_ALWAYS						= 4,
+		TRUNCATE_EXISTING				= 5
+	} CREATIONDISPOSITION;
+	typedef enum{
+		FILE_ATTRIBUTE_READONLY				= 1,
+		FILE_ATTRIBUTE_HIDDEN				= 2,
+		FILE_ATTRIBUTE_SYSTEM				= 4,
+		FILE_ATTRIBUTE_DIRECTORY			= 16,
+		FILE_ATTRIBUTE_ARCHIVE				= 32,
+		FILE_ATTRIBUTE_DEVICE				= 64,
+		FILE_ATTRIBUTE_NORMAL				= 128,
+		FILE_ATTRIBUTE_TEMPORARY			= 256,
+		FILE_ATTRIBUTE_SPARSE_FILE			= 512,
+		FILE_ATTRIBUTE_REPARSE_POINT		= 1024,
+		FILE_ATTRIBUTE_COMPRESSED			= 2048,
+		FILE_ATTRIBUTE_OFFLINE				= 4096,
+		FILE_ATTRIBUTE_NOT_CONTENT_INDEXED	= 8192,
+		FILE_ATTRIBUTE_ENCRYPTED			= 16384,
+		FILE_ATTRIBUTE_INTEGRITY_STREAM		= 32768,
+		FILE_ATTRIBUTE_VIRTUAL				= 65536,
+		FILE_ATTRIBUTE_NO_SCRUB_DATA		= 131072
+	} FILEATTRIBUTECONSTANTS;
+	typedef enum{
+		FILE_READ_DATA					= 0x0001,
+		FILE_LIST_DIRECTORY				= 0x0001,
+
+		FILE_WRITE_DATA					= 0x0002,
+		FILE_ADD_FILE					= 0x0002,
+
+		FILE_APPEND_DATA				= 0x0004,
+		FILE_ADD_SUBDIRECTORY			= 0x0004,
+		FILE_CREATE_PIPE_INSTANCE		= 0x0004,
+
+
+		FILE_READ_EA					= 0x0008,
+
+		FILE_WRITE_EA					= 0x0010,
+
+		FILE_EXECUTE					= 0x0020,
+		FILE_TRAVERSE					= 0x0020,
+
+		FILE_DELETE_CHILD				= 0x0040,
+
+		FILE_READ_ATTRIBUTES			= 0x0080,
+
+		FILE_WRITE_ATTRIBUTES			= 0x0100,
+
+		FILE_ALL_ACCESS					= (STANDARD_RIGHTS_REQUIRED | SYNCHRONIZE | 0x3FF),
+
+		FILE_GENERIC_READ				= (STANDARD_RIGHTS_READ     |\
+										FILE_READ_DATA           |\
+										FILE_READ_ATTRIBUTES     |\
+										FILE_READ_EA             |\
+										SYNCHRONIZE),
+
+
+		FILE_GENERIC_WRITE				= (STANDARD_RIGHTS_WRITE    |\
+										FILE_WRITE_DATA          |\
+										FILE_WRITE_ATTRIBUTES    |\
+										FILE_WRITE_EA            |\
+										FILE_APPEND_DATA         |\
+										SYNCHRONIZE),
+
+
+		FILE_GENERIC_EXECUTE			= (STANDARD_RIGHTS_EXECUTE  |\
+										FILE_READ_ATTRIBUTES     |\
+										FILE_EXECUTE             |\
+										SYNCHRONIZE)
+	} FILEACCESSRIGHTCONSTANTS;
+	typedef enum{
+		SEE_MASK_DEFAULT				= 0x00000000,
+		SEE_MASK_CLASSNAME				= 0x00000001,
+		SEE_MASK_CLASSKEY				= 0x00000003,
+		SEE_MASK_IDLIST					= 0x00000004,
+		SEE_MASK_INVOKEIDLIST			= 0x0000000C,
+		SEE_MASK_ICON					= 0x00000010,
+		SEE_MASK_HOTKEY					= 0x00000020,
+		SEE_MASK_NOCLOSEPROCESS			= 0x00000040,
+		SEE_MASK_CONNECTNETDRV			= 0x00000080,
+		SEE_MASK_NOASYNC				= 0x00000100,
+		SEE_MASK_FLAG_DDEWAIT			= 0x00000100,
+		SEE_MASK_DOENVSUBST				= 0x00000200,
+		SEE_MASK_FLAG_NO_UI				= 0x00000400,
+		SEE_MASK_UNICODE				= 0x00004000,
+		SEE_MASK_NO_CONSOLE				= 0x00008000,
+		SEE_MASK_ASYNCOK				= 0x00100000,
+		SEE_MASK_NOQUERYCLASSSTORE		= 0x01000000,
+		SEE_MASK_HMONITOR				= 0x00200000,
+		SEE_MASK_NOZONECHECKS			= 0x00800000,
+		SEE_MASK_WAITFORINPUTIDLE		= 0x02000000,
+		SEE_MASK_FLAG_LOG_USAGE			= 0x04000000,
+		SEE_MASK_FLAG_HINST_IS_SITE		= 0x08000000
+	} SHELEXECUTEEXFLAGS;
+	typedef enum {
+		ICC_LISTVIEW_CLASSES			= 0x1,		 // listview, header
+        ICC_TREEVIEW_CLASSES			= 0x2,       // treeview, tooltips
+        ICC_BAR_CLASSES					= 0x4,       // toolbar, statusbar, trackbar, tooltips
+        ICC_TAB_CLASSES					= 0x8,       // tab, tooltips
+        ICC_UPDOWN_CLASS				= 0x10,      // updown
+        ICC_PROGRESS_CLASS				= 0x20,      // progress
+        ICC_HOTKEY_CLASS				= 0x40,      // hotkey
+        ICC_ANIMATE_CLASS				= 0x80,      // animate
+        ICC_WIN95_CLASSES				= 0xFF,
+        ICC_DATE_CLASSES				= 0x100,     // month picker, date picker, time picker, updown
+        ICC_USEREX_CLASSES				= 0x200,     // comboex
+        ICC_COOL_CLASSES				= 0x400,     // rebar (coolbar) control
+        ICC_INTERNET_CLASSES			= 0x800,
+        ICC_PAGESCROLLER_CLASS			= 0x1000,    // page scroller
+        ICC_NATIVEFNTCTL_CLASS			= 0x2000     // native font control
+	} ICCCLASSES;
+	typedef struct{
+		int					cbSize;
+		SHELEXECUTEEXFLAGS	fMask;
+		int					hWnd;
+		int					lpVerb;
+		int					lpFile;
+		int					lpParameters;
+		int					lpDirectory;
+		SHOWCMDCONSTANTS	nShow;
+		int					hInstApp;
+		int					lpIDList;
+		int					lpClass;
+		int					hkeyClass;
+		int					dwHotKey;
+		int					hIconhMonitor;
+		int					hProcess;
+	} SHELLEXECUTEINFO, *LPSHELLEXECUTEINFO;
+	typedef struct{ 
+		int		cb;
+		int		lpReserved;
+		int		lpDesktop;
+		int		lpTitle;
+		int		dwX;
+		int		dwY;
+		int		dwXSize;
+		int		dwYSize;
+		int		dwXCountChars;
+		int		dwYCountChars;
+		int		dwFillAttribute;
+		int		dwFlags;
+		short	wShowWindow;
+		short	cbReserved2;
+		int		lpReserved2;
+		int		hStdInput;
+		int		hStdOutput;
+		int		hStdError;
+	} STARTUPINFO, *LPSTARTUPINFO;
+	typedef struct{
+		int			dwSize;
+		ICCCLASSES	dwICC;
+	} tagINITCOMMONCONTROLSEX, *LPINITCOMMONCONTROLSEX;
+	[dllname("kernel32.dll")] 
+	module kernel32
+	{ 
+			const int MAX_PATH					= 260;
+			const int STANDARD_RIGHTS_READ		= 0x20000;
+			const int STANDARD_RIGHTS_WRITE		= 0x20000;
+			const int STANDARD_RIGHTS_EXECUTE	= 0x20000;
+			const int STANDARD_RIGHTS_REQUIRED	= 0xF0000;
+			const int SYNCHRONIZE				= 0x100000;
+			const int INVALID_HANDLE_VALUE  	= -1;
+			const int ERROR_ALREADY_EXISTS      = 183;
+			const int ERROR_FILE_EXISTS			= 80;
+			const int INFINITE					= -1;
+			const int HEAP_NO_SERIALIZE			= 0x00000001;
+
+			[entry("GetLastError")]
+			int GetLastError(void); 
+
+			[entry("GetModuleFileNameW")]
+			int GetModuleFileName(
+				int hModule, 
+				int lpFilename, 
+				int nSize); 
+
+			[entry("GetSystemDirectoryW")]
+			int GetSystemDirectory(
+				int lpBuffer, 
+				int nSize);
+
+			[entry("GetWindowsDirectoryW")]
+			int GetWindowsDirectory(
+				int lpBuffer, 
+				int nSize);
+
+			[entry("GetTempPathW")]
+			int GetTempPath(
+				int nSize, 
+				int lpBuffer);
+
+			[entry("RtlMoveMemory")]
+			void CopyMemory(
+				void* Dst, 
+				void* Src,
+				int Length);
+
+			[entry("GetModuleHandleW")]
+			int GetModuleHandle(
+				void* lpModuleName); 
+
+			[entry("GetProcAddress")]
+			int GetProcAddress(
+				int hModule, 
+				int lpProcName); 
+
+			[entry("GetCommandLineW")]
+			int GetCommandLine(void); 
+
+			[entry("GetStartupInfoW")]
+			void GetStartupInfo(
+				LPSTARTUPINFO lpStartupInfo); 
+
+			[entry("FindResourceW")]
+			int FindResource(
+				int hModule, 
+				int lpName, 
+				RESOURCETYPE lpType);
+
+			[entry("LoadResource")]
+			int LoadResource(
+				int hModule, 
+				int hResInfo); 
+
+			[entry("SizeofResource")]
+			int SizeofResource(
+				int hModule, 
+				int hResInfo); 
+
+			[entry("LockResource")]
+			int LockResource(
+				int hResData); 
+
+			[entry("GetUserDefaultLCID")]
+			int GetUserDefaultLCID(void); 
+
+			[entry("lstrlenW")]
+			int lstrlen(
+				void* Src);
+
+			[entry("lstrcpynW")]
+			int lstrcpyn(
+				void* lpString1, 
+				void* lpString2, 
+				int iMaxLength);
+
+			[entry("lstrcatW")]
+			int lstrcat(
+				void* lpString1, 
+				void* lpString2);
+
+			[entry("GetCurrentProcess")]
+			int GetCurrentProcess(void);
+
+			[entry("VirtualAlloc")]
+			int VirtualAlloc(
+				void* lpAddress, 
+				int dwSize, 
+				ALLOCATIONTYPE flAllocationType, 
+				MEMPROTECT flProtect); 
+
+			[entry("VirtualFree")]
+			int VirtualFree(
+				void* lpAddress, 
+				int dwSize, 
+				FREETYPE dwFreeType); 
+
+			[entry("VirtualProtect")]
+			int VirtualProtect(
+				void* lpAddress, 
+				int dwSize, 
+				MEMPROTECT flNewProtect, 
+				LPMEMPROTECT flOldProtect);
+
+			[entry("WideCharToMultiByte")]
+			int WideCharToMultiByte(
+				CODEPAGE CodePage, 
+				int dwFlags, 
+				int lpWideCharStr, 
+				int cchWideChar, 
+				int lpMultiByteStr,
+				int cbMultiByte, 
+				int lpDefaultChar,
+				int* lpUsedDefaultChar);
+			
+			[entry("CreateFileW")]
+			int CreateFile(
+				int lpFileName, 
+				FILEACCESSRIGHTCONSTANTS dwDesiredAccess,
+				SHAREMODE dwShareMode, 
+				void* lpSecurityAttributes, 
+				CREATIONDISPOSITION dwCreationDisposition, 
+				FILEATTRIBUTECONSTANTS dwFlagsAndAttributes, 
+				int hTemplateFile);
+
+			[entry("WriteFile")]
+			int WriteFile(
+				int hFile, 
+				void* lpBuffer, 
+				int nNumberOfBytesToWrite, 
+				int* lpNumberOfBytesWritten, 
+				void* lpOverlapped);
+
+			[entry("DeleteFileW")]
+			int DeleteFile(
+				int lpFileName);
+
+			[entry("CreateDirectoryW")]
+			int CreateDirectory(
+				int lpPathName, 
+				void* lpSecurityAttributes);
+			
+			[entry("CloseHandle")]
+			int CloseHandle(
+				int hObject);
+
+			[entry("WaitForSingleObject")]
+			int WaitForSingleObject(
+				int hObject, 
+				int dwMilliseconds);
+
+			[entry("ExitProcess")]
+				int ExitProcess(
+				int uExitCode);
+
+			[entry("GetProcessHeap")]
+			int GetProcessHeap(void);
+
+    		[entry("HeapCreate")]
+			int HeapCreate (
+				int	flOptions, 
+				int dwInitialSize,
+				int dwMaximumSize);
+
+    		[entry("HeapDestroy")]
+			int HeapDestroy (
+				int hHeap);
+
+    		[entry("HeapAlloc")]
+			int HeapAlloc (
+				int	hHeap, 
+				int dwFlags,
+				int dwBytes);
+
+    		[entry("HeapReAlloc")]
+			int HeapReAlloc (
+				int	hHeap, 
+				int dwFlags,
+				void* lpMem,
+				int dwBytes);
+
+	    	[entry("HeapFree")]
+			int HeapFree (
+				int	hHeap, 
+				int dwFlags,
+				int lpMem);
+			
+			[entry("InterlockedExchange")]
+			int __cdecl InterlockedExchange (
+				void* pTarget,
+				void* Value);
+
+	};
+	[dllname("oleaut32.dll")] 
+	module oleaut32
+	{ 
+			[entry("SysAllocString")]
+			int SysAllocString(
+				int psz); 
+
+			[entry("SysAllocStringLen")]
+			int SysAllocStringLen(
+				int strIn, 
+				int ui); 
+
+			[entry("SysAllocStringByteLen")]
+			int SysAllocStringByteLen(
+				int strIn, 
+				int ui); 
+
+			[entry("SysReAllocString")]
+			int SysReAllocString(
+				void* pbstr, 
+				int psz); 
+
+			[entry("SysReAllocStringLen")]
+			int SysReAllocStringLen(
+				void* pbstr, 
+				int psz, 
+				int len); 
+
+			[entry("SysStringLen")]
+			int SysStringLen(
+				int str); 
+
+			[entry("SysStringByteLen")]
+			int SysStringByteLen(
+				int str); 
+
+			[entry("SysFreeString")]
+			int SysFreeString(
+				int strIn);
+
+			[entry("VarBstrFromI4")]
+			int VarBstrFromI4(
+				int Value, 
+				int LCID, 
+				int Flags, 
+				void* pbstrOut); 
+
+			[entry("VarBstrCat")]
+			int VarBstrCat(
+				int bstrLeft, 
+				int bstrRight, 
+				int* pbstrOut);
+
+			[entry("SafeArrayRedim")]
+			int SafeArrayRedim(
+				void* psa, 
+				LPSAFEARRAYBOUND psaboundNew); 
+
+	};
+	[dllname("user32.dll")] 
+	module user32
+	{ 
+			[entry("MessageBoxW")]
+			MESSAGEBOXRETURN MessageBox(
+				int hWnd, 
+				int lpText, 
+				int lpCaption, 
+				MESSAGEBOXCONSTANTS uType);
+
+			[entry("LoadStringW")]
+			int LoadString(
+				int hInstance,
+				int uID, 
+				int lpBuffer, 
+				int nBufferMax); 
+
+	};
+	[dllname("ntdll.dll")] 
+	module ntdll
+	{ 
+			const int COMPRESSION_FORMAT_LZNT1		= 0x00000002;
+			const int STATUS_BAD_COMPRESSION_BUFFER = 0xC0000242;
+
+			[entry("RtlGetCompressionWorkSpaceSize")]
+			int RtlGetCompressionWorkSpaceSize(
+				short CompressionFormatAndEngine, 
+				int* CompressBufferWorkSpaceSize, 
+				int* CompressFragmentWorkSpaceSize);
+
+			[entry("RtlDecompressBuffer")]
+			int RtlDecompressBuffer(
+				short CompressionFormat, 
+				void* UncompressedBuffer, 
+				int UncompressedBufferSize, 
+				void* CompressedBuffer, 
+				int CompressedBufferSize, 
+				int* FinalUncompressedSize);
+
+			[entry("ZwUnmapViewOfSection")]
+			int ZwUnmapViewOfSection(
+				int ProcessHandle, 
+				int BaseAddress); 
+
+			[entry("RtlImageNtHeader")]
+			int RtlImageNtHeader(
+				int ModuleAddress); 
+
+	};
+	[dllname("Shlwapi.dll")] 
+	module Shlwapi
+	{ 
+			[entry("PathRemoveFileSpecW")]
+			int PathRemoveFileSpec(
+				int pszPath); 
+
+			[entry("PathStripToRootW")]
+			int PathStripToRoot(
+				int pszPath); 
+
+			[entry("PathCanonicalizeW")]
+			int PathCanonicalize(
+				int lpszDst, 
+				int lpszSrc); 
+
+			[entry("PathIsRootW")]
+			int PathIsRoot(
+				int lpszSrc); 
+
+			[entry("PathIsDirectoryW")]
+			int PathIsDirectory(
+				int pszPath); 
+
+			[entry("PathFindNextComponentW")]
+			int PathFindNextComponent(
+				int pszPath); 
+
+			[entry("PathAddBackslashW")]
+			int PathAddBackslash(
+				int pszPath); 
+
+			[entry("PathGetArgsW")]
+			int PathGetArgs(
+				int pszPath); 
+
+			[entry("StrStrIW")]
+			int StrStrI(
+				int pszFirst, 
+				int pszSrch); 
+			[entry("IntlStrEqWorkerW")]
+			int IntlStrEqWorker(
+				int fCaseSens, 
+				int pszStr1, 
+				int pszStr2, 
+				int NCHAR); 
+	};
+	[dllname("Shell32.dll")] 
+	module Shell32
+	{ 
+			const BSTR SHVERB_EDIT = "edit";
+			const BSTR SHVERB_OPEN = "open";
+			const BSTR SHVERB_EXPLORE = "explore";
+			const BSTR SHVERB_FIND = "find";
+			const BSTR SHVERB_PRINT = "print";
+			const BSTR SHVERB_PROPERTIES = "properties";
+
+			[entry("SHGetFolderPathW")]
+			int SHGetFolderPath(
+				int hwndOwner, 
+				CSIDL nFolder, 
+				int hToken, 
+				SHGFPTYPE dwFlags, 
+				int pszPath); 
+
+			[entry("ShellExecuteExW")]
+			int ShellExecuteEx(
+				LPSHELLEXECUTEINFO pExecInfo);
+
+	};
+	[dllname("comctl32.dll")] 
+	module comctl32
+	{ 
+			[entry("InitCommonControlsEx")]
+			int InitCommonControlsEx(
+				LPINITCOMMONCONTROLSEX lpInitCtrls);
+
+	};
+}

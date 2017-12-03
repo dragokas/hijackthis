@@ -3,8 +3,9 @@ Option Explicit
 
 ''
 '' CRC-32 calculation by CatsTail
-''
+'' XOR DeCryptor by The Trick
 '' Recover CRC by Alex Dragokas (algorithm - Anarchriz). Thanks for help to Riuson.
+'' Base64 encoder/decoder by Comintern (vbforums.com) (Fork by Dragokas)
 ''
 
 Private Const MAX_HASH_FILE_SIZE As Currency = 10485760@ '10 MB. (maximum file size to calculate hash)
@@ -17,13 +18,14 @@ Private Declare Function CryptCreateHash Lib "advapi32.dll" (ByVal hProv As Long
 Private Declare Function CryptDestroyHash Lib "advapi32.dll" (ByVal hHash As Long) As Long
 Private Declare Function CryptGetHashParam Lib "advapi32.dll" (ByVal pCryptHash As Long, ByVal dwParam As Long, ByRef pbData As Any, ByRef pcbData As Long, ByVal dwFlags As Long) As Long
 Private Declare Function CryptHashData_Array Lib "advapi32.dll" Alias "CryptHashData" (ByVal hHash As Long, pbData As Any, ByVal dwDataLen As Long, ByVal dwFlags As Long) As Long
-Private Declare Function CryptHashData_Str Lib "advapi32.dll" Alias "CryptHashData" (ByVal hHash As Long, ByVal pbData As String, ByVal dwDataLen As Long, ByVal dwFlags As Long) As Long
+'Private Declare Function CryptHashData_Str Lib "advapi32.dll" Alias "CryptHashData" (ByVal hHash As Long, ByVal pbData As String, ByVal dwDataLen As Long, ByVal dwFlags As Long) As Long
 Private Declare Function CryptReleaseContext Lib "advapi32.dll" (ByVal hProv As Long, ByVal dwFlags As Long) As Long
-Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
-Private Declare Function CryptGetProvParam Lib "advapi32.dll" (ByVal hProv As Long, ByVal dwParam As Long, ByVal pbData As Long, pdwDataLen As Long, ByVal dwFlags As Long) As Long
+'Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
+'Private Declare Function CryptGetProvParam Lib "advapi32.dll" (ByVal hProv As Long, ByVal dwParam As Long, ByVal pbData As Long, pdwDataLen As Long, ByVal dwFlags As Long) As Long
 
 Private CRC_32_Tab(0 To 255)    As Long
 Private pTable(255)             As Long
+Private seq()                   As Byte
 
 Private Const ALG_TYPE_ANY As Long = 0
 Private Const ALG_SID_MD5 As Long = 3
@@ -37,6 +39,32 @@ Private Const CRYPT_VERIFYCONTEXT = &HF0000000
 
 Private Const PROV_RSA_FULL As Long = 1
 Private Const MS_ENHANCED_PROV As String = "Microsoft Enhanced Cryptographic Provider v1.0"
+
+'<<-- For Base64 encoder/decoder
+
+Private Const clOneMask = 16515072          '000000 111111 111111 111111
+Private Const clTwoMask = 258048            '111111 000000 111111 111111
+Private Const clThreeMask = 4032            '111111 111111 000000 111111
+Private Const clFourMask = 63               '111111 111111 111111 000000
+
+Private Const clHighMask = 16711680         '11111111 00000000 00000000
+Private Const clMidMask = 65280             '00000000 11111111 00000000
+Private Const clLowMask = 255               '00000000 00000000 11111111
+
+Private Const cl2Exp18 = 262144             '2 to the 18th power
+Private Const cl2Exp12 = 4096               '2 to the 12th
+Private Const cl2Exp6 = 64                  '2 to the 6th
+Private Const cl2Exp8 = 256                 '2 to the 8th
+Private Const cl2Exp16 = 65536              '2 to the 16th
+
+Private cbTransTo(63) As Byte
+Private cbTransFrom(255) As Byte
+Private clPowers8(255) As Long
+Private clPowers16(255) As Long
+Private clPowers6(63) As Long
+Private clPowers12(63) As Long
+Private clPowers18(63) As Long
+
 
 Public Function GetFileMD5(sFileName$, Optional lFileSize&, Optional JustMD5 As Boolean) As String
     On Error GoTo ErrorHandler:
@@ -61,6 +89,8 @@ Public Function GetFileMD5(sFileName$, Optional lFileSize&, Optional JustMD5 As 
     
     If Not OpenW(sFileName, FOR_READ, ff) Then GoTo Finalize
     
+    If Redirect Then Call ToggleWow64FSRedirection(OldRedir)
+    
     If lFileSize = 0 Then lFileSize = LOFW(ff)
     If lFileSize = 0 Then
         'speed tweak :) 0-byte file always has the same MD5
@@ -84,7 +114,7 @@ Public Function GetFileMD5(sFileName$, Optional lFileSize&, Optional JustMD5 As 
       CloseW ff
     End If
     
-    DoEvents
+    If Not bAutoLogSilent Then DoEvents
 
     frmMain.lblMD5.Caption = "Calculating checksum of " & sFileName & "..."
     
@@ -104,7 +134,7 @@ Public Function GetFileMD5(sFileName$, Optional lFileSize&, Optional JustMD5 As 
                     If CryptGetHashParam(hHash, HP_HASHVAL, uMD5(0), UBound(uMD5) + 1, 0) <> 0 Then
 
                         For i = 0 To lMD5Len - 1
-                            sMD5 = sMD5 & Right$("0" & Hex(uMD5(i)), 2)
+                            sMD5 = sMD5 & Right$("0" & Hex$(uMD5(i)), 2)
                         Next i
                     End If
                 End If
@@ -129,7 +159,7 @@ Public Function GetFileMD5(sFileName$, Optional lFileSize&, Optional JustMD5 As 
         End If
     End If
     
-    DoEvents
+    If Not bAutoLogSilent Then DoEvents
     
 Finalize:
     If Redirect Then Call ToggleWow64FSRedirection(OldRedir)
@@ -167,6 +197,8 @@ Public Function GetFileSHA1(sFileName$, Optional lFileSize&, Optional JustSHA1 A
     
     If Not OpenW(sFileName, FOR_READ, ff) Then GoTo Finalize
     
+    If Redirect Then Call ToggleWow64FSRedirection(OldRedir)
+    
     If lFileSize = 0 Then lFileSize = LOFW(ff)
     If lFileSize = 0 Then
         'speed tweak :) 0-byte file always has the same MD5
@@ -190,7 +222,7 @@ Public Function GetFileSHA1(sFileName$, Optional lFileSize&, Optional JustSHA1 A
       CloseW ff
     End If
     
-    DoEvents
+    If Not bAutoLogSilent Then DoEvents
 
     frmMain.lblMD5.Caption = "Calculating checksum of " & sFileName & "..."
     
@@ -208,7 +240,7 @@ Public Function GetFileSHA1(sFileName$, Optional lFileSize&, Optional JustSHA1 A
                     If CryptGetHashParam(hHash, HP_HASHVAL, uSHA1(0), UBound(uSHA1) + 1, 0) <> 0 Then
 
                         For i = 0 To lSHA1Len - 1
-                            sSHA1 = sSHA1 & Right$("0" & Hex(uSHA1(i)), 2)
+                            sSHA1 = sSHA1 & Right$("0" & Hex$(uSHA1(i)), 2)
                         Next i
                     End If
                 End If
@@ -233,7 +265,7 @@ Public Function GetFileSHA1(sFileName$, Optional lFileSize&, Optional JustSHA1 A
         End If
     End If
     
-    DoEvents
+    If Not bAutoLogSilent Then DoEvents
     
 Finalize:
     If Redirect Then Call ToggleWow64FSRedirection(OldRedir)
@@ -273,57 +305,79 @@ End Function
 'End Sub
 
 
-Public Function Crypt$(sMsg$, sPhrase$, Optional doCrypt As Boolean = False)  'if Crypt = False then we do decryption
-    Dim sEncryptionPhrase$
+' Шифрование/дешифровка строки
+Public Function DeCrypt(sMsg$) As String
+    DeCrypt = Crypt(sMsg)
+End Function
+
+Public Function Crypt(sMsg$) As String    'Crypt v2
+    'doCrypt - no matter
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "Crypt - Begin"
-    
-    'if one error happens, don't screw up everything following
-    
-    'like, NOT!
-    sEncryptionPhrase = "FUCK YOU SPYWARENUKER AND BPS SPYWARE REMOVER!"
-    
-    'bEnOrDec = false -> decrypt
-    'bEnOrDec = true -> encrypt
-    
-    Dim i&, J&, sChar$, iChar&, sOut$
-    J = 1
-    For i = 1 To Len(sMsg)
-        sChar = Mid$(sMsg, i, 1)
-        If doCrypt Then
-            'encrypt
-            sChar = Chr(Asc(sChar) + Asc(Mid$(sPhrase, J, 1)))
-            If iChar > 255 Then Exit Function 'Wrong Pass phrase
-            If Asc(sChar) > 126 Then
-                'make sure encrypted char is within
-                'normal range (space to ~)
-                sChar = Chr(Asc(sChar) - 94)
-            End If
-        Else
-            'decrypt
-            iChar = Asc(sChar) - Asc(Mid$(sPhrase, J, 1))
-            If iChar < -94 Then Exit Function 'Wrong Pass phrase
-            If iChar < 32 Then
-                'make sure decrypted char is within
-                'normal range (space to ~)
-                sChar = Chr(iChar + 94)
-            Else
-                'old encrypter doesn't encrypt chars above 126 :(
-                If Asc(sChar) < 192 Then
-                    sChar = Chr(iChar)
-                End If
-            End If
-        End If
-        sOut = sOut & sChar
-        J = J + 1
-        If J > Len(sPhrase) Then J = 1
-    Next i
-    Crypt = sOut
+
+    If bCryptDisable Then Crypt = sMsg: Exit Function
+
+    Dim i As Long, bIn() As Byte, index As Long
+    bIn = sMsg
+    For i = 0 To UBound(bIn)
+        index = (index + 1 + Len(sMsg)) And &HFF&
+        bIn(i) = bIn(i) Xor seq(index)
+    Next
+    Crypt = bIn
     
     AppendErrorLogCustom "Crypt - End"
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "Crypt", sMsg
+    If inIDE Then Stop: Resume Next
+End Function
+
+
+Public Function CryptV1(sMsg$, Optional doCrypt As Boolean = False) As String  'if Crypt = False then we do decryption
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "CryptV1 - Begin"
+    
+    'doCrypt = false -> decrypt
+    'doCrypt = true -> encrypt
+    
+    Dim i&, j&, sChar$, iChar&, sOut$
+    j = 1
+    For i = 1 To Len(sMsg)
+        sChar = Mid$(sMsg, i, 1)
+        If doCrypt Then
+            'encrypt
+            sChar = Chr$(Asc(sChar) + Asc(Mid$(sProgramVersion, j, 1))) ' <<< OVERFLOW !!!
+            If iChar > 255 Then Exit Function 'Wrong Pass phrase
+            If Asc(sChar) > 126 Then
+                'make sure encrypted char is within
+                'normal range (space to ~)
+                sChar = Chr$(Asc(sChar) - 94)
+            End If
+        Else
+            'decrypt
+            iChar = Asc(sChar) - Asc(Mid$(sProgramVersion, j, 1))
+            If iChar < -94 Then Exit Function 'Wrong Pass phrase
+            If iChar < 32 Then
+                'make sure decrypted char is within
+                'normal range (space to ~)
+                sChar = Chr$(iChar + 94)
+            Else
+                'old encrypter doesn't encrypt chars above 126 :(
+                If Asc(sChar) < 192 Then
+                    sChar = Chr$(iChar)
+                End If
+            End If
+        End If
+        sOut = sOut & sChar
+        j = j + 1
+        If j > Len(sProgramVersion) Then j = 1
+    Next i
+    CryptV1 = sOut
+    
+    AppendErrorLogCustom "CryptV1 - End"
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "CryptV1", sMsg
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -645,7 +699,7 @@ Public Function CalcCRC(Stri As String) As String '// Dragokas - добавил перевод
 
     Next i
 
-    CalcCRC = Hex(-(CRC + 1&))
+    CalcCRC = Hex$(-(CRC + 1&))
 
     If Len(CalcCRC) < 8& Then
         CalcCRC = Right$("0000000" & CalcCRC, 8&)
@@ -665,6 +719,7 @@ Public Function CalcFileCRC(FileName As String) As String '// Added by Dragokas
     Redirect = ToggleWow64FSRedirection(False, FileName, bOldStatus)
 
     If OpenW(FileName, FOR_READ, ff) Then
+        If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
         str = String$(LOFW(ff), vbNullChar)
         GetW ff, 1&, str
         CloseW ff: ff = 0
@@ -697,11 +752,11 @@ End Function
 '    Next
 'End Sub
 
-Sub SplitInto4bytes(src As Long, bit3 As Byte, bit2 As Byte, bit1 As Byte, bit0 As Byte)
-    bit3 = ((src And &HFF000000) \ &H1000000) And &HFF
-    bit2 = ((src And &HFF0000) \ &H10000) And &HFF
-    bit1 = ((src And &HFF00) \ &H100) And &HFF
-    bit0 = src And &HFF
+Sub SplitInto4bytes(Src As Long, bit3 As Byte, bit2 As Byte, bit1 As Byte, bit0 As Byte)
+    bit3 = ((Src And &HFF000000) \ &H1000000) And &HFF
+    bit2 = ((Src And &HFF0000) \ &H10000) And &HFF
+    bit1 = ((Src And &HFF00) \ &H100) And &HFF
+    bit0 = Src And &HFF
 End Sub
 
 ' Восстанавливает CRC до указанной.
@@ -711,7 +766,7 @@ End Sub
 Public Function RecoverCRC(ForwardCRC As Long, newCRC As Long) As String
     
     'Dim newCRC&, InitStri$, ForwardCRC&
-    Dim oldCRC&, ChkCRC&, a(3) As Byte, b(3) As Byte, c(3) As Byte, d(3) As Byte, e(3) As Byte, F(3) As Byte, r(3) As Byte, i&
+    Dim oldCRC&, ChkCRC&, a(3) As Byte, b(3) As Byte, c(3) As Byte, d(3) As Byte, e(3) As Byte, F(3) As Byte, r(3) As Byte
     Dim NewStri$, PatchAddr&, BackwardCRC&, AddBytes$
     
     ' Исходные данные
@@ -728,8 +783,8 @@ Public Function RecoverCRC(ForwardCRC As Long, newCRC As Long) As String
     'newCRC = &H12345678
     'oldCRC = CalcCRCLong(InitStri)
     
-    'Debug.Print "Initial CRC: " & Hex(oldCRC)
-    'Debug.Print "New CRC:     " & Hex(newCRC)
+    'Debug.Print "Initial CRC: " & hex$(oldCRC)
+    'Debug.Print "New CRC:     " & hex$(newCRC)
     
     'ForwardCRC = CalcCRCLong(Left$(InitStri, PatchAddr)) Xor -1
     BackwardCRC = newCRC Xor -1
@@ -763,11 +818,11 @@ Public Function RecoverCRC(ForwardCRC As Long, newCRC As Long) As String
     ' Если КС не совпадает
     'If ChkCRC <> newCRC Then Err.Raise 17
     
-    'Debug.Print "Check CRC:   " & Hex(ChkCRC)
+    'Debug.Print "Check CRC:   " & hex$(ChkCRC)
     'Debug.Print "Исходная строка: " & InitStri
     'Debug.Print "Новая строка:    " & NewStri
     'Debug.Print "Адрес для вставки: " & PatchAddr
-    'Debug.Print "Корректирующие байты: " & Hex(Mul(r(3), 0, &H1000000, 0) Or Mul(r(2), 0, &H10000, 0) Or Mul(r(1), 0, &H100, 0) Or r(0))
+    'Debug.Print "Корректирующие байты: " & hex$(Mul(r(3), 0, &H1000000, 0) Or Mul(r(2), 0, &H10000, 0) Or Mul(r(1), 0, &H100, 0) Or r(0))
 End Function
 
 Public Function CalcCRCLong(Stri As String) As Long
@@ -803,7 +858,7 @@ Public Function CalcArrayCRCLong(arr() As Byte, Optional prevValue As Long = -1)
 End Function
 
 Public Function CalcCRCReverse(Stri As String, Optional nextValue As Long = -1) As Long
-    Dim CRC&, i&, M&, n&, prevValueL&, prevValueH&, b3 As Byte
+    Dim CRC&, i&, M&, prevValueL&, prevValueH&, b3 As Byte
 
     'If CRC_32_Tab(1) = 0 Then Make_CRC_32_Table
 
@@ -818,5 +873,174 @@ Public Function CalcCRCReverse(Stri As String, Optional nextValue As Long = -1) 
     Next
     
     CalcCRCReverse = CRC
+End Function
+
+' Инициализация таблицы для шифровки/дешифровки
+Public Sub cryptInit(Optional ByVal seed As Long)
+    On Error GoTo ErrorHandler
+    Dim i As Long, b() As Byte
+    ReDim seq(255)
+    If seed = 0 Then
+        b() = sProgramVersion
+        For i = 0 To UBound(b)
+            seed = seed + b(i)
+        Next
+        seed = seed + Val(Split(sProgramVersion)(5))
+    End If
+    Randomize seed
+    For i = 0 To 255
+        seq(i) = Rnd * 255&
+    Next
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "Crypt.cryptInit"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+
+'Base64 encoder/decoder by Comintern (vbforums.com)
+
+'Fork by Dragokas
+'fixed bug: Encode64 incorrectly handle 2-bytes strings.
+
+Public Sub Base64_Init()
+
+    Dim lTemp As Long
+
+    For lTemp = 0 To 63                             'Fill the translation table.
+        Select Case lTemp
+            Case 0 To 25
+                cbTransTo(lTemp) = 65 + lTemp       'A - Z
+            Case 26 To 51
+                cbTransTo(lTemp) = 71 + lTemp       'a - z
+            Case 52 To 61
+                cbTransTo(lTemp) = lTemp - 4        '1 - 0
+            Case 62
+                cbTransTo(lTemp) = 43               'chr$(43) = "+"
+            Case 63
+                cbTransTo(lTemp) = 47               'chr$(47) = "/"
+        End Select
+    Next lTemp
+
+    For lTemp = 0 To 255                            'Fill the lookup tables.
+        clPowers8(lTemp) = lTemp * cl2Exp8
+        clPowers16(lTemp) = lTemp * cl2Exp16
+    Next lTemp
+    
+    For lTemp = 0 To 63
+        clPowers6(lTemp) = lTemp * cl2Exp6
+        clPowers12(lTemp) = lTemp * cl2Exp12
+        clPowers18(lTemp) = lTemp * cl2Exp18
+    Next lTemp
+
+    For lTemp = 0 To 255                            'Fill the translation table.
+        Select Case lTemp
+            Case 65 To 90
+                cbTransFrom(lTemp) = lTemp - 65     'A - Z
+            Case 97 To 122
+                cbTransFrom(lTemp) = lTemp - 71     'a - z
+            Case 48 To 57
+                cbTransFrom(lTemp) = lTemp + 4      '1 - 0
+            Case 43
+                cbTransFrom(lTemp) = 62             'chr$(43) = "+"
+            Case 47
+                cbTransFrom(lTemp) = 63             'chr$(47) = "/"
+        End Select
+    Next lTemp
+
+End Sub
+
+Public Function Encode64(sString As String) As String
+
+    Dim bOut() As Byte, bIn() As Byte, lOutSize As Long
+    Dim lChar As Long, lTrip As Long, iPad As Integer, lLen As Long, lTemp As Long, lPos As Long
+
+
+    iPad = Len(sString) Mod 3                           'See if the length is divisible by 3
+    If iPad Then                                        'If not, figure out the end pad and resize the input.
+        iPad = 3 - iPad
+        sString = sString & String$(iPad, Chr$(0))
+    End If
+    
+    'bIn = StrConv(sString, vbFromUnicode)               'Load the input string.
+    bIn = sString
+    lLen = ((UBound(bIn) + 1) \ 3) * 4                  'Length of resulting string.
+    lTemp = lLen \ 72                                   'Added space for vbCrLfs.
+    lOutSize = ((lTemp * 2) + lLen) - 1                 'Calculate the size of the output buffer.
+    ReDim bOut(lOutSize)                                'Make the output buffer.
+    
+    lLen = 0                                            'Reusing this one, so reset it.
+    
+    For lChar = LBound(bIn) To UBound(bIn) Step 3
+        lTrip = clPowers16(bIn(lChar)) + clPowers8(bIn(lChar + 1)) + bIn(lChar + 2)    'Combine the 3 bytes
+        lTemp = lTrip And clOneMask                     'Mask for the first 6 bits
+        bOut(lPos) = cbTransTo(lTemp \ cl2Exp18)        'Shift it down to the low 6 bits and get the value
+        lTemp = lTrip And clTwoMask                     'Mask for the second set.
+        bOut(lPos + 1) = cbTransTo(lTemp \ cl2Exp12)    'Shift it down and translate.
+        lTemp = lTrip And clThreeMask                   'Mask for the third set.
+        bOut(lPos + 2) = cbTransTo(lTemp \ cl2Exp6)     'Shift it down and translate.
+        bOut(lPos + 3) = cbTransTo(lTrip And clFourMask) 'Mask for the low set.
+        If lLen = 68 Then                               'Ready for a newline
+            bOut(lPos + 4) = 13                         'chr$(13) = vbCr
+            bOut(lPos + 5) = 10                         'chr$(10) = vbLf
+            lLen = 0                                    'Reset the counter
+            lPos = lPos + 6
+        Else
+            lLen = lLen + 4
+            lPos = lPos + 4
+        End If
+    Next lChar
+    
+    If bOut(lOutSize) = 10 Then lOutSize = lOutSize - 2 'Shift the padding chars down if it ends with CrLf.
+    
+    If iPad = 1 Then                                    'Add the padding chars if any.
+        bOut(lOutSize) = 61                             'chr$(61) = "="
+    ElseIf iPad = 2 Then
+        bOut(lOutSize) = 61
+        bOut(lOutSize - 1) = 61
+    End If
+    
+    Encode64 = StrConv(bOut, vbUnicode)                   'Convert back to a string and return it.
+    
+End Function
+
+Public Function Decode64(sString As String) As String
+
+    Dim bOut() As Byte, bIn() As Byte, lQuad As Long, iPad As Integer, lChar As Long, lPos As Long, sOut As String
+    Dim lTemp As Long
+
+    sString = Replace(sString, vbCr, vbNullString)      'Get rid of the vbCrLfs.  These could be in...
+    sString = Replace(sString, vbLf, vbNullString)      'either order.
+
+    lTemp = Len(sString) Mod 4                          'Test for valid input.
+    If lTemp Then
+        Call Err.Raise(vbObjectError, "MyDecode", "Input string is not valid Base64.")
+    End If
+    
+    If InStrRev(sString, "==") Then                     'InStrRev is faster when you know it's at the end.
+        iPad = 2                                        'Note:  These translate to 0, so you can leave them...
+    ElseIf InStrRev(sString, "=") Then                  'in the string and just resize the output.
+        iPad = 1
+    End If
+
+    bIn = StrConv(sString, vbFromUnicode)               'Load the input byte array.
+    ReDim bOut((((UBound(bIn) + 1) \ 4) * 3) - 1)       'Prepare the output buffer.
+    
+    For lChar = 0 To UBound(bIn) Step 4
+        lQuad = clPowers18(cbTransFrom(bIn(lChar))) + clPowers12(cbTransFrom(bIn(lChar + 1))) + _
+                clPowers6(cbTransFrom(bIn(lChar + 2))) + cbTransFrom(bIn(lChar + 3))           'Rebuild the bits.
+        lTemp = lQuad And clHighMask                    'Mask for the first byte
+        bOut(lPos) = lTemp \ cl2Exp16                   'Shift it down
+        lTemp = lQuad And clMidMask                     'Mask for the second byte
+        bOut(lPos + 1) = lTemp \ cl2Exp8                'Shift it down
+        bOut(lPos + 2) = lQuad And clLowMask            'Mask for the third byte
+        lPos = lPos + 3
+    Next lChar
+
+    'sOut = StrConv(bOut, vbUnicode)                     'Convert back to a string.
+    sOut = bOut
+    If iPad Then sOut = Left$(sOut, Len(sOut) - iPad)   'Chop off any extra bytes.
+    Decode64 = sOut
+
 End Function
 

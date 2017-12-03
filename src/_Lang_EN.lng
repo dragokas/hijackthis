@@ -15,12 +15,16 @@
 ;
 ; (1-29, 1000-1089)
 ;
-0001=Welcome to HiJackThis. This program will generate a report of unusual items
+0001=Welcome to HiJackThis Fork.
+     This program will generate a report of unusual items
      (files, registry modifications etc.) in the most vulnerable areas of the operating system
      commonly manipulated by malware as well as good software.
 0002=HiJackThis is already run.
      Are you sure you want to launch one more copy?
-0004=Below are the results of the HiJackThis scan. Be careful what you delete with the 'Fix checked' button. Scan results do not determine whether an item is bad or not. The best thing to do is to press 'Analyze report' and show the log file to knowledgeable folks.
+0004=Below are the results of HiJackThis scan. Be careful what you delete with 'Fix checked' button.
+     Scan results do not determine whether an item is bad or not. If you think that your machine is infected,
+     press 'Analyze report' button, sign up, read instruction, make required logs
+     and show them to our consultants by creating new thread.
 0007=It looks like you're running HiJackThis from a read-only device like a CD-ROM. If you want to make backups of items you fix, you must copy HiJackThis.exe to your hard disk first, and run it from there.
      
      If you continue, you might get 'Path/File Access' errors.
@@ -53,18 +57,34 @@
 1005=Unable to connect to the Internet.
 1006=Done.
 1007=Could not unzip file to Desktop! Please, unzip it manually.
-1008=The value '[*]' could not be written to the settings file '[**]'. Please verify that write access is allowed to that file.
+1008=The value '[*]' could not be written to the settings file '[**]'. Please, verify that write access is allowed to that file.
 1009=Analyze report
 1010=Scanning is not finished yet! Are you really sure you want to forcibly close the program?
 1011=Warning: Ignore list contains [] items.
 1012=Warning: General scanning was not performed.
+1013=You have the most fresh version.
+1014=Update is available.
+1015=Do you want to open download page?
+1016=Visit product description page?
+1020=Number
+1021=Path
+1022=Could not create folder '[]'. Please, verify that write access is allowed to this location.
+1023=Warning! Integrity of HiJackThis program is corrupted.
+     Perhaps, file is patched or infected by file virus.
+     It is recommended to download the program again from official source: https://github.com/dragokas/hijackthis
+     If error repeats, check your PC on viruses by boot disk LiveCD, e.g.: https://support.kaspersky.com/viruses/rescuedisk
+1024=Download the program via Internet?
+1025=Error has occured while downloading!
+1026=Downloading is completed. Run the program?
 ;
 ; ============== EULA ============
 ;
 ; (1090-1099)
 ;
 1090=Welcome to HiJackThis Fork 3
-1091=    HiJackThis is a free and open source tool designed to combat against malware and unwanted adware. It is provided "AS IS" without warranty of any kind. You may use this software at your own risk.
+1091=    HiJackThis is a free and open source tool designed to combat against malware and unwanted adware. It is provided "AS IS"
+
+     without warranty of any kind. You may use this software at your own risk.
          This software is not permitted for commercial purposes.
          You need to read and accept license agreement to continue:
 1092=HiJackThis Fork - License Agreement
@@ -95,6 +115,9 @@
 1162=Info on selected
 1163=Search on Google
 1164=ReScan
+1165=Add ALL to ignore list
+1166=Jump to Registry / File
+1167=Save Report...
 ;
 ; =============== System Tray ================
 ;
@@ -117,7 +140,7 @@
 1208=Unlock && Delete File...
 1209=Plan to Delete File on Reboot...
 1210=Delete Service
-1211=Registry - Key Unlocker
+1211=Key Unlocker
 1212=Alternative Data Streams Spy
 1213=Digital Signatures Checker
 1214=Uninstall Manager
@@ -130,8 +153,21 @@
 1221=Spanish (outdated)
 1222=Portuguese (outdated)
 1223=Dutch (outdated)
-1224=Download new version
+1224=Check for updates
 1225=About HJT...
+1226=Support
+1227=Sections' description
+1228=Command line keys
+1229=Registry
+1230=Files
+1231=Services
+1232=StartupList
+1233=Basic manual
+1234=Additions to manual
+1235=Install HJT
+1236=Shortcuts
+1237=Verify shortcuts via Check Browsers' LNK
+1238=Fix shortcuts via ClearLNK
 ;
 ; ============== Help window: About, Sections, Keys  =============
 ;
@@ -142,7 +178,7 @@
      Sections
      ----------
      
-     The different sections of hijacking influences have been separated into the following groups.
+     The different sections of hijacking influences have been separated into the following groups:
      
       R - Changes in basic Internet Explorer settings:
          R0 - Changed registry value
@@ -177,11 +213,11 @@
          O19 - User stylesheet hijack
          O20 - AppInit_DLLs, Winlogon Notify
          O21 - Shell Service Object Delay Load (SSODL) and Shell Icon Overlay (SIOI)
-         O22 - Shared Task Scheduler jobs
+         O22 - Task Scheduler jobs
          O23 - Windows Services
          O24 - ActiveX Desktop Components
          O25 - WMI permanent event consumers
-         O26 - Image File Execution Options
+         O26 - Image File Execution Options (IFEO)
 0032=
      Command-line parameters:
      --------------------------------
@@ -196,20 +232,22 @@
      ---------------
      
        /startupscan	- automatically scan the system (the same as button "Do a system scan only")
-       /autolog	- automatically scan the system, save a logfile and open it
+       /autolog		- automatically scan the system, save a logfile and open it
        /silentautolog	- the same as /autolog, except with no required user intervention
        /StartupList	- run scan by 'StartupList' module
-       /ihatewhitelists - ignore all internal whitelists
+       /ihatewhitelists 	- ignore all internal whitelists
        /md5		- calculate md5 hash of files
+       /install     	- install HiJackThis to 'Program Files' folder and create shortcuts
+       /autostart   	- set task scheduler for automatical run the HJT scanning after system boot up (use with /install key)
        /uninstall	- remove all HiJackThis Registry entries, backups and quit
        /deleteonreboot "c:\file.sys" - delete the specified file after system rebooting using PendingFileRenameOperations mechanism
        /accepteula 	- accept the agreement. It will not be displayed when program start
        /noGUI		- do not show program window during the scan
        /SysTray	- run program minimized in notification area (system tray)
-       /LangEN	- force use English language for user interface
-       /LangRU	- force use Russian language for user interface
-       /debug		- tracing mode. Sequence of functions execution will be appended to main log and HiJackThis_debug.log file. You can also rename file to HiJackThis_debug.exe.
-       /debugtofile	- trace info will be saved to HiJackThis_debug.log file only.
+       /LangEN		- force use English language for user interface
+       /LangRU		- force use Russian language for user interface
+       /debug		- tracing mode. Sequence of functions execution will be appended to main log and HiJackThis_debug.log file. You can also rename file to HiJackThis_debug.exe
+       /debugtofile	- trace info will be saved to HiJackThis_debug.log file only
      
      
      2. StartupList
@@ -239,7 +277,6 @@
      
      Example of .bat file code:
      
-     cd /d "%~dps0"
      HiJackThis.exe /autolog /ihatewhitelists
      
      Launch file run.bat.
@@ -264,8 +301,8 @@
        - Locked files removing tool
        - Registry Key Unlocker
        - Batch Digital Signatures Checker
+       - Check Browsers' LNK & ClearLNK (as downloadable component)
 
-     
      System Compatibility
      -------------------------
      
@@ -283,31 +320,42 @@
      
      Consulting:
      
-     - regist - VIRUSNET association - updates, user's manual
+     - regist -= VIRUSNET association =- updates, user's manual
      - SafeZone.cc team - updates
      
      Coordination:
-     
+
+     - regist 
      - Fernando Mercês -= Trend Micro =-
      - Loucif Kharouni -= Trend Micro =-
      
      Translations:
      
      Russian: Dragokas, ScriptMakeR, Boris, fseto (SafeZone.cc), wylek.ru team
+     English: Dragokas
      
      Third-party development:
 
      HJT uses code snippets and third-party developments written by:
      
-     - Anatolii Krivous { The Trick } - 'TrickHashTable' class
+     - Anatolii Krivous { The Trick } - 'HashTable' class, 'UnregCOM', 'EXE loader' modules
      - Boris Fayfel { Catstail } - 'Process' and 'CRC32' classes
      - VolteFace - 'StringBuilder' class
-     
-     
+     - Jason Peter Brown - wrapper for regular expressions library PCRE2
+     - Philip Hazel - regular expressions library PCRE2
+     - Dmitriy Kuznetsov - Autobackup registry (ABR)
+
      License
      -------------
-     
      HiJackThis Fork is a fork of Trend Micro HiJackThis program, made by Alex Dragokas and SafeZone.cc team, and distributed as open source under original GPLv2 license.
+
+     Donation
+     -------------
+     If you liked my HiJackThis modification and you want to donate me
+     for creative inspiration and further active development of the project, I'll be always glad:
+
+0034=
+     BTC: 17hkU3eKPngHrG3P9uqXwMLE3ztmtfGDZ4
 
 0035=Sections
 0036=Keys
@@ -324,8 +372,9 @@
 ;
 ; (40-69, 1400-1499)
 ;
-0040=Configuration
-0041=Main
+;40 - title of frame in the settings window (absent, by default)
+0040=
+0041=Settings
 0042=Ignorelist
 0043=Backups
 0044=Misc Tools
@@ -334,19 +383,27 @@
 0052=Confirm fixing && ignoring of items (safe mode)
 0053=Ignore non-standard but safe domains in IE (e.g. msn.com, microsoft.com)
 0054=Include list of running processes in logfiles
-0055=Do not show intro frame at startup
-0056=Run HiJackThis scan at Windows startup and show results only if items are found
+0055=Do not show main menu at startup
+0056=Run HiJackThis scan at Windows startup and show results (if only items are found)
 0057=Are you sure you want to enable this option?
      HiJackThis is not a 'click & fix' program. Because it targets *general* hijacking methods, false positives are a frequent occurrence.
      If you enable this option, you might disable programs or drivers you need. However, it is highly unlikely you will break your system beyond repair. So you should only enable this option if you know what you're doing!
 0058=Do not show error messages
-0059=Minimize program to system tray by clicking 'X'
+0059=Minimize program to system tray by clicking _ button
 0060=Below URLs will be used when fixing hijacked/unwanted Internet Explorer pages:
 0061=Default Start Page:
 0062=Default Search Page:
 0063=Default Search Assistant:
 0064=Default Search Customize:
 0065=Sorry! Not implemented yet.
+0066=This will install HJT to 'Program Files' folder and set task scheduler for automatically run the scanning after system startup.
+
+     Continue?
+
+     Note: it is recommended that you add all safe items to ignore list (e.g. with context menu -> Add ALL to ignore list), so the results window will appear after system startup if only new item will be found.
+0067=Task scheduler service is required to be run for this action. Do you want to run it now and set for automatically start at system boot?
+0068=Error! Could not launch Task scheduler service.
+0069=Do you want to create shortcut in Desktop?
 ;
 ; ============= IgnoreList ============
 ;
@@ -372,6 +429,39 @@
 0087=Restore these [] items?
 0088=Are you sure you want to delete ALL backups?
 0089=Restore for this item is not implemented:
+1550=Cannot execute requested operation!
+     The system restore via restore points is not available for this system.
+1551=Are you sure, you want to restore system from this restore point:
+     [] ?
+
+     System will be rebooted automatically.
+1552=Are you sure, you want to remove this restore point?
+1553=Error! Could not enable system restore.
+1554=Error! Could not launch WMI service.
+1555=Not enough free disk space. Required at least
+1556=Failure while creating the restore point.
+1557=System restore point is successfully created.
+1558=WMI service is required to be run for this action. Do you want to run it now?
+1560=Are you sure, you want to recover registry saved on: [] ?
+
+     System will be rebooted automatically.
+1561=Failure while creating the registry backup.
+1562=You already have a backup for this day.
+     Continue with overwriting it?
+1563=This will delete registry backup: [].
+     Continue?
+1564=You are about to remove ALL registry backups!
+     Are you sure?
+1565=Could not remove backup.
+1566=Error! This backup is no longer exists.
+1567=Full registry backup is successfully created.
+1568=Error! File to be restored is no longer exists in backup. Cannot continue repairing.
+1569=Error! File to be restored from backup is corrupted. Cannot continue repairing.
+1570=Create registry backup
+1571=Create restore point
+1572=Show System Restore Points
+1573=Error! Registry entry to be restored from backup is corrupted. Cannot continue repairing.
+1574=Unknown error happened during restore item: []. Item is restored partially only.
 ;
 ; ============= Misc Tools =============
 ;
@@ -401,17 +491,20 @@
 0117=The following service was found:
 0118=Are you absolutely sure you want to delete this service?
 0120=Advanced settings
-0121=Calculate MD5 of files if possible
+0121=Calculate checksum of files (MD5)
 0122=Include environment variables in logfile
 0123=Ignore Microsoft files
 0124=Ignore all Whitelists
-0140=Update check
+0140=Updates
 0141=Check for update online
+0142=Check updates automatically on program startup
+0143=Use this proxy server (host:port) :
 0150=Uninstall HiJackThis
-0152=Removes all Registry settings and exits.
-0153=This will remove HiJackThis' settings from the Registry and exit. Note that you will have to delete the HiJackThis.exe file manually.
+0152=Removes all HJT settings, backups and quit.
+0153=This will remove HiJackThis' settings and backups. Note that you will have to delete the HiJackThis.exe file manually.
      
      Continue with uninstall?
+0154=This will completely remove HiJackThis, including settings and backups. Continue?
 ;
 ; ================ Process Manager =============
 ;
@@ -567,9 +660,9 @@
 0249=O17 - DNS && DNS Suffix settings
 0250=O18 - Protocol && Filter enumeration
 0251=O19 - User stylesheet hijack
-0252=O20 - AppInit_DLLs and Winlogon Notify Registry values
-0253=O21 - ShellServiceObjectDelayLoad Registry key
-0254=O22 - SharedTaskScheduler Registry key
+0252=O20 - AppInit_DLLs and Winlogon Notify
+0253=O21 - Shell Service Object Delay Load
+0254=O22 - Task Scheduler Jobs
 0255=O23 - NT Services
 0256=Completed!
 0257=O24 - ActiveX Desktop Components
@@ -577,6 +670,7 @@
 0259=Making backup
 0260=Processes checking
 0261=O26 - Image File Execution Options
+0262=Saving report
 ;
 ; ================ Hosts ==================
 ;
@@ -606,7 +700,7 @@
 1850=Authenticode EDS checker (created by Dragokas)
 1851=This tool will create a detail report about digital signature of files/folders you specify below:
 1852=Recursively (include subfolders)
-1853=Include files in Windows\System32 (SysWOW64) folder
+1853=Include files in Windows folder
 1854=Report format:
 1855=Plain Text (Short log in Unicode)
 1856=CSV (Full log in ANSI)
@@ -620,6 +714,9 @@
 1864=All Files
 1865=by extension
 1866=Digital signature is present, but damaged (probably, file is patched)
+1867=Enumerating files. Please, wait...
+1868=Preparing a report. Please, wait...
+1869=Cannot open report file. Write access is restricted by another program.
 ;
 ; ============= Registry Key Unlocker =========
 ;
@@ -676,6 +773,9 @@
 0349=Cure for this object is not provided: []
 
      You need to manually set the DNS address on the router specified in the contract with your internet provider.
+0350=HiJackThis needs to restart the system.
+     Please, save your work and press 'OK'.
+0351=Please, wait until Microsoft disk cleanup manager finish its work and press OK.
 ;
 ; ============ Help on selected item (Sections) ================
 ;
@@ -783,7 +883,7 @@
       - For hosts and hosts.ics entries - Line is deleted from file.
       - For DNSApi - dll file is recovered if available using SFC subsystem.
       - For altered hosts location - default registry value is restored.
-      - Also, DNS cache entries are flushes.
+      - Also, DNS cache entries are flushes and DNS chaching service will be restarted.
 ; [O2]
 0410=A BHO (Browser Helper Object) is a specially crafted program that integrates into IE, and has virtually unlimited access rights on your system. Though BHO's can be helpful (like the Google Toolbar), hijackers often use them for malicious purposes such as tracking your online behavior, displaying popup ads etc.
      
@@ -833,12 +933,17 @@
      IP Security Policies provides the ability to allow or block network data packets, as well as fine-tune the source and destination packet filter, for instance, IP address (including subnet), type, port number and more.
 
      O7 - TroubleShoot
-     Here, incorrect OS settings are displayed, which potentially lead to various malfunctions in the software and the system as generally. These include incorrect values of environment variables, such as %TEMP%, %TMP%.
+     Here, incorrect OS settings are displayed, which potentially lead to various malfunctions in the software and the system as generally. These include:
+     1. [EV] Incorrect value and/or type of environment variable, such as %TEMP%, %TMP%.
+     2. [Disk] Lack of free space on the system disk (less than 1 GB.)
+     3. [Network] Wrong network settings, e.g. empty name of computer.
 
      >>> Action taken by HiJackThis:
       - for O7 - Policies: registry value is deleted.
       - for O7 - IPSec: all registry keys associated with the marked policy are deleted, including all the filters that apply to it.
-      - for O7 - TroubleShoot: settings are restored to defaults.
+      - for O7 - TroubleShoot: [EV] variables will be reset to defaults.
+      - for O7 - TroubleShoot: [Disk] Microsoft disk cleanup manager CleanMgr will be launched in automatically mode.
+      - for O7 - TroubleShoot: [Network] standard settings will be applied.
 ; [O8]
 0416=Extra items in the context (right-click) menu can prove helpful or annoying. Some recent hijackers add an item to the context menu. The Internet Explorer PowerTweaks Web Accessory adds several useful items, among which "Highlight", "Zoom In/Out", "Links list", "Images list" and "Web Search".
      
@@ -914,7 +1019,7 @@
      >>> Action taken by HiJackThis:
       - Registry value is deleted.
 ; [O20]
-0428=Files specified in the AppInit_DLLs Registry value are loaded very early in Windows startup and stay in memory until system shutdown. This way of loading a .dll is hardly ever used, except by trojans. Examples of legitimate records here can be libraries of video drivers and cryptographic systems.
+0428=Files specified in the AppInit_DLLs Registry value are loaded very early in Windows startup and stay in memory until system shutdown. This way of loading a .dll is hardly ever used, except by trojans. Examples of legitimate records here can be libraries of video drivers and cryptographic systems. AppInit_DLLs will not load if Secure Boot is enabled.
      The WinLogon Notify Registry subkeys load dll files into memory at about the same point in the boot process, keeping them loaded into memory until the session ends. Apart from several Windows system components, the adware like VX2, ABetterInternet and Look2Me use this Registry key.
      Since both methods ensure the dll file stays loaded in memory the entire time, fixing this won't help if the dll puts back the Registry value or key immediately. In such cases, the use of the 'Delete file on reboot' function or KillBox is recommended to first delete the file.
      
@@ -977,15 +1082,16 @@
 ;
 0502=Unknown owner
 0503=file missing
-0504=The service you entered is system-critical! It can't be deleted.
+0504=The service [] is system-critical! It can't be deleted.
 0505=Short name
 0506=Full name
 0507=File
 0508=Owner
 0509=Access denied during removing the service '[]'. Make sure the service is not running.
-0510=Unable to delete the service '[]'. Make sure the name is correct.
+0510=Unable to delete the service '[]'. Make sure the name is entered correctly.
 0511=Unknown error occurred during deletion of the service '[]'.
 0512=Library or registry entries are damaged
+0513=The service [] belongs to Microsoft! Are you really sure you want to delete it?
 ;
 ; ================== Errors, Error window ===================
 ;
@@ -1005,6 +1111,7 @@
 0551=Do not show this message again
 0552=Yes
 0553=No
+0554=First you have to mark a checkbox next to at least one item!
 0570=The language file '[]' is invalid (ambiguous id numbers).
 0572=Invalid language File. Reset to default (English)?
 0580=HiJackThis cannot repair O10 Winsock LSP entries.
@@ -1022,6 +1129,8 @@
      Error at function:
 0591=Error
 0592=Cannot find appropriate cure routine for:
+0593=Error while installing HiJackThis to 'Program files' folder. Cannot copy. Error =
+0594=Error while creating task. Error =
 ;
 ; ==================== StatupList ===================
 ;
@@ -1056,7 +1165,7 @@
 0616=Windows can be setup to perform actions (such as deleting or renaming a file) when the system is restarted. These instructions can be present in the Registry or in the wininit.ini file. The wininit.bak file is a backup of the wininit.ini used last time and is created by Windows itself.
      [wininit.ini: Windows 9x/ME]
      [other: Windows NT4/2000/XP/2003/Vista]
-0617=These settings control what Windows does when a certain filetype is opened - if it is run by itself or if some application is used to open it. This setting can be altered to load a different or additional program.
+0617=These settings control what Windows does when a certain filetype is opened - if it is run by itself or if some application is used to open it. This setting can be hijacked to load a different or additional program.
      [All Windows versions]
 0618=The Windows services play an important role in Windows NT4, 2000 and XP (and newer), and a smaller one in Windows 95, 98 and ME. All listed items are started on system startup.
      [NT Services: Windows NT4/2000/XP/2003/Vista/7/8/8.1/10]
@@ -1249,6 +1358,9 @@
 0764=Items for other hardware cfgs
 0765=Refresh (F5)
 0766=Abort (Esc)
+0767=Please select which sections you want to include in the log file. Disabled sections are not present on your system. Note: you can right-click nodes in the treeview and save only that branch in a log file.
+0768=OK
+0769=Cancel
 ;
 ; StartupList (menu)
 ;
@@ -1404,6 +1516,7 @@
 0971=not done yet :/
 0972=Winsock 2 is not installed
 0973=Verifying file signature of:
+0974=Ready.
 ;
 ; StartupList (module)
 ;

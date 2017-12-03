@@ -3,40 +3,37 @@ Option Explicit
 
 '
 ' Authenticode digital signature verifier / Driver's WHQL signature verifier
-' revision 2.5. (28.11.2016)
+' revision 2.11. (29.09.2017)
 '
 ' Copyrights: (с) Polshyn Stanislav Viktorovich aka Alex Dragokas
 '
 
-'Some code examples:
-'https://msdn.microsoft.com/en-us/library/windows/desktop/aa382384%28v=vs.85%29.aspx
-'https://support.microsoft.com/en-us/kb/323809
-'http://rsdn.org/account/info/69015
-'http://rsdn.org/forum/src/3152752.all
-'http://processhacker.sourceforge.net/doc/verify_8c_source.html
-'http://eternalwindows.jp/crypto/certverify/certverify03.html
-'http://forum.sysinternals.com/howto-verify-the-digital-signature-of-a-file_topic19247.html
-'http://blog.airesoft.co.uk/code/verifysign.cpp
-'http://research32.blogspot.com/2016/03/pe-file-signing.html
-'http://download.microsoft.com/download/9/c/5/9c5b2167-8017-4bae-9fde-d599bac8184a/authenticode_pe.docx
-'http://stackoverflow.com/questions/24892531/reading-multiple-signatures-from-executable-file
+' 2.8. (14.09.2017)
+' SV_LightCheck:
+'  - skip non-essential fields of SignResult_TYPE
 
-'CERT_CHAIN_POLICY_STATUS structure
-'https://msdn.microsoft.com/en-us/library/windows/desktop/aa377188%28v=vs.85%29.aspx?f=255
+' 2.9. (20.09.2017)
+' SV_SelfTest:
+'  - returns additional debug data
 
-'Error information:
-'https://msdn.microsoft.com/en-us/library/windows/desktop/aa378137(v=vs.85).aspx
+' 2.10 (26.09.2017)
+' SV_PreferInternalSign:
+'  - made checking by internal signature in priority
 
-'SignerInfo extraction examples:
-'https://support.microsoft.com/en-us/kb/323809
-'https://www.sysadmins.lv/blog-ru/certificate-trust-list-ctl-v-powershell.aspx
-'https://www.sysadmins.lv/blog-ru/chto-v-oide-tebe-moem.aspx
-'certmgr.msc
-'certmgr.exe (require Windows SDK)
+' To manage certificates enter to 'Win + R' window:
+' certmgr.msc
+' certmgr.exe (require Windows SDK)
 
-#Const UseHashTable = True ' use hash-tables by Кривоус Анатолий ?
+#Const UseSimpleCatCheck = True  ' Use it only if you want to improve speed on batch checking of Microsoft files.
+                                 ' When you successfully check any file signed by Windows security catalogue,
+                                 ' this staff will automatically includes ALL catalogue tags (hashes) of that catalogue to cache,
+                                 ' so the next checking will compare SHA authenticode hash of file with cache only, instead of calling WinVerifyTrust function.
+                                 ' For such files, some fields of SignResult_TYPE structure about certificate will be not filled.
+
+#Const UseHashtable = True       ' Use hash-tables by Krivous Anatoly Anatolevich ? (if enable, you should also include clsTrickHashTable class to the project)
 
 Private Const MAX_FILE_SIZE As Currency = 157286400@ '150 MB. limit for file size to check
+
 Private Const MAX_PATH As Long = 260&
 
 Public Type SignResult_TYPE ' out. Digital signature data
@@ -44,6 +41,7 @@ Public Type SignResult_TYPE ' out. Digital signature data
     isLegit           As Boolean ' is signature legitimate ?
     isSignedByCert    As Boolean ' is signed by Windows security catalogue ?
     CatalogPath       As String  ' path to catalogue file
+    isMicrosoftSign   As Boolean ' is signed by Microsoft ?
     isEmbedded        As Boolean ' is signed by internal (embedded) signature? (SV_CheckEmbeddedPresence flag should be specified)
     isSelfSigned      As Boolean ' is signed by self-signed certificate ?
     AlgorithmCertHash As String  ' hash algorithm of the certificate's signature
@@ -51,28 +49,33 @@ Public Type SignResult_TYPE ' out. Digital signature data
     Issuer            As String  ' certificate's issuer name
     SubjectName       As String  ' signer name
     SubjectEmail      As String  ' signer email
-    HashRootCert      As String  ' SHA1 hash of Thumbprint of root certificate in the chain
+    HashRootCert      As String  ' SHA1 hash of root certificate in the chain
     HashFileCode      As String  ' Authenticode (PE256) hash of file
     DateCertBegin     As Date    ' certificate is valid since ...
     DateCertExpired   As Date    ' certificate is valid until ...
+    DateTimeStamp     As Date    ' time when file was signed by Time stamp server
     NumberOfSigns     As Long    ' number of signatures
     ShortMessage      As String  ' short description of checking results
     FullMessage       As String  ' full description of checking results
-    ReturnCode        As String  ' result error code of WinVerifyTrust
+    ReturnCode        As Long    ' result error code of WinVerifyTrust
     FilePathVerified  As String  ' path to file provided for verification
 End Type
 
 Public Enum FLAGS_SignVerify
-    SV_CheckRevocation = 1         ' - check whole trust chain for certificate revocation ( require internet connection )
-    SV_DisableCatalogVerify = 2    ' - do not use checking by security catalogue ( check internal signature only )
-    SV_isDriver = 4                ' - verify WHQL signature of driver
-    SV_CacheDoNotLoad = 8          ' - do not read last cached result
-    SV_CacheDoNotSave = 16         ' - do not save results of verification to cache (memory savings)
-    SV_AllowSelfSigned = 32        ' - self-signed certificates should be considered as legitimate
-    SV_AllowExpired = 64           ' - allow signatures with expired date of certificate
-    SV_CheckEmbeddedPresence = 128 ' - always check presence of internal signature ( even if verification performed by catalogue )
-    SV_CheckSecondarySignature = 256 ' (this flag automatically set SV_DisableCatalogVerify flag)
-    SV_NoFileSizeLimit = 512       ' - check file with any size ( default limit = 100 MB. )
+    SV_CheckRevocation = 1           ' check whole trust chain for certificate revocation ( require internet connection )
+    SV_DisableCatalogVerify = 2      ' do not use checking by security catalogue ( check internal signature only )
+    SV_isDriver = 4                  ' verify WHQL signature of driver
+    SV_CacheDoNotLoad = 8            ' do not read last cached result
+    SV_CacheDoNotSave = 16           ' do not save results of verification to cache (memory savings)
+    SV_CacheFree = 32                ' free memory, used by cache subsystem
+    SV_AllowSelfSigned = 64          ' self-signed certificates should be considered as legitimate
+    SV_AllowExpired = 128            ' allow signatures with expired date of certificate
+    SV_CheckEmbeddedPresence = 256   ' always check presence of internal signature ( even if verification performed by catalogue )
+    SV_CheckSecondarySignature = 512 ' (this flag automatically set SV_DisableCatalogVerify flag)
+    SV_NoFileSizeLimit = 1024        ' check file with any size ( default limit = 100 MB. )
+    SV_LightCheck = 2048             ' skip filling non-essential fields (speed optimization)
+    SV_SelfTest = 4096               ' more debugging info
+    SV_PreferInternalSign = 8192     ' check internal signature first, if present
 End Enum
 
 Private Type GUID
@@ -179,19 +182,19 @@ Private Type SYSTEMTIME
     wMilliseconds       As Integer
 End Type
 
-Private Type OSVERSIONINFOEX
-    dwOSVersionInfoSize As Long
-    dwMajorVersion      As Long
-    dwMinorVersion      As Long
-    dwBuildNumber       As Long
-    dwPlatformId        As Long
-    szCSDVersion(255)   As Byte
-    wServicePackMajor   As Integer
-    wServicePackMinor   As Integer
-    wSuiteMask          As Integer
-    wProductType        As Byte
-    wReserved           As Byte
-End Type
+'Private Type OSVERSIONINFOEX
+'    dwOSVersionInfoSize As Long
+'    dwMajorVersion      As Long
+'    dwMinorVersion      As Long
+'    dwBuildNumber       As Long
+'    dwPlatformId        As Long
+'    szCSDVersion(255)   As Byte
+'    wServicePackMajor   As Integer
+'    wServicePackMinor   As Integer
+'    wSuiteMask          As Integer
+'    wProductType        As Byte
+'    wReserved           As Byte
+'End Type
 
 Private Type CRYPTOAPI_BLOB
     cbData              As Long
@@ -275,7 +278,13 @@ End Type
 
 Private Type CRYPT_ATTRIBUTES
     cAttr                   As Long
-    rgAttr                  As Long 'ptr -> CRYPT_ATTRIBUTE
+    rgAttr                  As Long ' ptr -> CRYPT_ATTRIBUTE
+End Type
+
+Private Type CRYPT_ATTRIBUTE
+    pszObjId                As Long
+    cValue                  As Long
+    rgValue                 As Long ' ptr -> CRYPT_INTEGER_BLOB
 End Type
 
 Private Type CMSG_SIGNER_INFO
@@ -325,12 +334,18 @@ Private Type CRYPT_PROVIDER_DATA
     pUnknown2               As Long 'undocumented (Win 7+)
 End Type
 
-Private Type Data
-    Enable  As Boolean
-    lpFunc  As Long
-    lpHook  As Long
-    Prev    As Long
-    old     As Currency
+Private Type CRYPTCATMEMBER
+    cbStruct                As Long
+    pwszReferenceTag        As Long
+    pwszFileName            As Long
+    gSubjectType            As GUID
+    fdwMemberFlags          As Long
+    pIndirectData           As Long ' ptr -> SIP_INDIRECT_DATA_
+    dwCertVersion           As Long
+    dwReserved              As Long
+    hReserved               As Long
+    sEncodedIndirectData    As CRYPTOAPI_BLOB
+    sEncodedMemberInfo      As CRYPTOAPI_BLOB
 End Type
 
 Private Declare Function CryptCATAdminAcquireContext Lib "Wintrust.dll" (hCatAdmin As Long, ByVal pgSubsystem As Long, ByVal dwFlags As Long) As Long
@@ -341,7 +356,10 @@ Private Declare Function CryptCATAdminCalcHashFromFileHandle2 Lib "Wintrust.dll"
 Private Declare Function CryptCATAdminEnumCatalogFromHash Lib "Wintrust.dll" (ByVal hCatAdmin As Long, pbHash As Byte, ByVal cbHash As Long, ByVal dwFlags As Long, phPrevCatInfo As Long) As Long
 Private Declare Function CryptCATCatalogInfoFromContext Lib "Wintrust.dll" (ByVal hCatInfo As Long, psCatInfo As CATALOG_INFO, ByVal dwFlags As Long) As Long
 Private Declare Function CryptCATAdminReleaseCatalogContext Lib "Wintrust.dll" (ByVal hCatAdmin As Long, ByVal hCatInfo As Long, ByVal dwFlags As Long) As Long
-Private Declare Function WinVerifyTrust Lib "Wintrust.dll" (ByVal hWnd As Long, pgActionID As GUID, ByVal pWVTData As Long) As Long
+Private Declare Function CryptCATOpen Lib "Wintrust.dll" (ByVal pwszFileName As Long, ByVal fdwOpenFlags As Long, ByVal hProv As Long, ByVal dwPublicVersion As Long, ByVal dwEncodingType As Long) As Long
+Private Declare Function CryptCATClose Lib "Wintrust.dll" (ByVal hCatalog As Long) As Long
+Private Declare Function CryptCATEnumerateMember Lib "Wintrust.dll" (ByVal hCatalog As Long, ByVal pPrevMember As Long) As Long
+Private Declare Function WinVerifyTrust Lib "Wintrust.dll" (ByVal hwnd As Long, pgActionID As GUID, ByVal pWVTData As Long) As Long
 'Signer info extractor
 Private Declare Function WTHelperProvDataFromStateData Lib "Wintrust.dll" (ByVal StateData As Long) As Long
 Private Declare Function WTHelperGetProvSignerFromChain Lib "Wintrust.dll" (ByVal pProvData As Long, ByVal idxSigner As Long, ByVal fCounterSigner As Long, ByVal idxCounterSigner As Long) As Long
@@ -353,11 +371,12 @@ Private Declare Function CertGetNameString Lib "Crypt32.dll" Alias "CertGetNameS
 
 'Private Declare Sub GetNativeSystemInfo Lib "kernel32.dll" (ByVal lpSystemInfo As Long)
 Private Declare Function GetVersionEx Lib "kernel32.dll" Alias "GetVersionExW" (lpVersionInformation As Any) As Long
-Private Declare Function FormatMessage Lib "kernel32.dll" Alias "FormatMessageW" (ByVal dwFlags As Long, ByVal lpSource As Long, ByVal dwMessageId As Long, ByVal dwLanguageId As Long, ByVal lpBuffer As Long, ByVal nSize As Long, Arguments As Any) As Long
-Private Declare Function GetProcAddress Lib "kernel32.dll" (ByVal hModule As Long, ByVal lpProcName As String) As Long
+'Private Declare Function FormatMessage Lib "kernel32.dll" Alias "FormatMessageW" (ByVal dwFlags As Long, ByVal lpSource As Long, ByVal dwMessageId As Long, ByVal dwLanguageId As Long, ByVal lpBuffer As Long, ByVal nSize As Long, Arguments As Any) As Long
+Private Declare Function GetProcAddress Lib "kernel32" (ByVal hModule As Long, ByVal lpProcName As String) As Long
 Private Declare Function GetCurrentProcess Lib "kernel32.dll" () As Long
-Private Declare Function IsWow64Process Lib "kernel32.dll" (ByVal hProcess As Long, ByRef Wow64Process As Long) As Long
-Private Declare Function GetWindowsDirectory Lib "kernel32.dll" Alias "GetWindowsDirectoryW" (ByVal lpBuffer As Long, ByVal uSize As Long) As Long
+Private Declare Function IsWow64Process Lib "kernel32" (ByVal hProcess As Long, ByRef Wow64Process As Long) As Long
+'Private Declare Function GetWindowsDirectory Lib "kernel32.dll" Alias "GetWindowsDirectoryW" (ByVal lpBuffer As Long, ByVal uSize As Long) As Long
+Private Declare Function GetSystemWindowsDirectory Lib "kernel32.dll" Alias "GetSystemWindowsDirectoryW" (ByVal lpBuffer As Long, ByVal uSize As Long) As Long
 
 Private Declare Function LoadLibrary Lib "kernel32.dll" Alias "LoadLibraryW" (ByVal lpFileName As Long) As Long
 Private Declare Function FreeLibrary Lib "kernel32.dll" (ByVal hLibModule As Long) As Long
@@ -365,35 +384,30 @@ Private Declare Function CLSIDFromString Lib "ole32.dll" (ByVal lpszGuid As Long
 
 Private Declare Function CreateFile Lib "kernel32.dll" Alias "CreateFileW" (ByVal lpFileName As Long, ByVal dwDesiredAccess As Long, ByVal dwShareMode As Long, lpSecurityAttributes As Any, ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, ByVal hTemplateFile As Long) As Long
 Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
-Private Declare Function SetFilePointer Lib "kernel32.dll" (ByVal hFile As Long, ByVal lDistanceToMove As Long, lpDistanceToMoveHigh As Long, ByVal dwMoveMethod As Long) As Long
-Private Declare Function ReadFile Lib "kernel32.dll" (ByVal hFile As Long, ByVal lpBuffer As Long, ByVal nNumberOfBytesToRead As Long, lpNumberOfByConstesRead As Long, ByVal lpOverlapped As Long) As Long
+'Private Declare Function SetFilePointer Lib "kernel32.dll" (ByVal hFile As Long, ByVal lDistanceToMove As Long, lpDistanceToMoveHigh As Long, ByVal dwMoveMethod As Long) As Long
+'Private Declare Function ReadFile Lib "kernel32" (ByVal hFile As Long, ByVal lpBuffer As Long, ByVal nNumberOfBytesToRead As Long, lpNumberOfByConstesRead As Long, ByVal lpOverlapped As Long) As Long
 Private Declare Function GetFileAttributes Lib "kernel32.dll" Alias "GetFileAttributesW" (ByVal lpFileName As Long) As Long
-Private Declare Function GetFileSizeEx Lib "kernel32.dll" (ByVal hFile As Long, lpFileSize As Any) As Long
+'Private Declare Function GetFileSizeEx Lib "kernel32.dll" (ByVal hFile As Long, lpFileSize As Any) As Long
 'Private Declare Function Wow64DisableWow64FsRedirection Lib "kernel32.dll" (OldValue As Long) As Long
 'Private Declare Function Wow64RevertWow64FsRedirection Lib "kernel32.dll" (ByVal OldValue As Long) As Long
 
 Private Declare Function HeapFree Lib "kernel32.dll" (ByVal hHeap As Long, ByVal dwFlags As Long, ByVal lpMem As Long) As Long
 Private Declare Function GetProcessHeap Lib "kernel32.dll" () As Long
-Private Declare Function ArrPtr Lib "msvbvm60.dll" Alias "VarPtr" (arr() As Any) As Long
+'Private Declare Function ArrPtr Lib "msvbvm60.dll" Alias "VarPtr" (arr() As Any) As Long
 Private Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal length As Long) As Long
+'Private Declare Function GetMem1 Lib "msvbvm60.dll" (pSrc As Any, pDst As Any) As Long
 Private Declare Function GetMem4 Lib "msvbvm60.dll" (pSrc As Any, pDst As Any) As Long
+'Private Declare Function GetMem8 Lib "msvbvm60.dll" (pSrc As Any, pDst As Any) As Long
 Private Declare Function lstrlen Lib "kernel32.dll" Alias "lstrlenW" (ByVal lpString As Long) As Long
 Private Declare Function lstrlenA Lib "kernel32.dll" (ByVal lpString As Long) As Long
 Private Declare Function lstrcpyn Lib "kernel32.dll" Alias "lstrcpynW" (ByVal lpDst As Long, ByVal lpSrc As Long, ByVal iMaxLength As Long) As Long
+'Private Declare Function lstrcpynA Lib "kernel32.dll" (ByVal lpDst As Long, ByVal lpSrc As Long, ByVal iMaxLength As Long) As Long
 Private Declare Function SysAllocStringByteLen Lib "oleaut32.dll" (ByVal pszStrPtr As Long, ByVal length As Long) As String
 Private Declare Function FileTimeToSystemTime Lib "kernel32.dll" (lpFileTime As FILETIME, lpSystemTime As SYSTEMTIME) As Long
 Private Declare Function FileTimeToLocalFileTime Lib "kernel32.dll" (lpFileTime As FILETIME, lpLocalFileTime As FILETIME) As Long
 Private Declare Function SystemTimeToVariantTime Lib "oleaut32.dll" (lpSystemTime As SYSTEMTIME, vtime As Date) As Long
-'API interceptor
-'Private Declare Function LoadLibrary Lib "kernel32.dll" Alias "LoadLibraryW" (ByVal lpLibFileName As Long) As Long
-'Private Declare Function GetProcAddress Lib "kernel32.dll" (ByVal hModule As Long, ByVal lpProcName As String) As Long
-Private Declare Function VirtualProtect Lib "kernel32.dll" (lpAddress As Any, ByVal dwSize As Long, ByVal flNewProtect As Long, lpflOldProtect As Long) As Long
-Private Declare Function GetMem8 Lib "msvbvm60.dll" (src As Any, dst As Any) As Long
-
-
-Dim func()  As Data, Count   As Long
-
-Private Const PAGE_EXECUTE_READWRITE As Long = &H40&
+'Private Declare Function SystemTimeToTzSpecificLocalTime Lib "kernel32.dll" (ByVal lpTimeZone As Any, lpUniversalTime As SYSTEMTIME, lpLocalTime As SYSTEMTIME) As Long
+'Private Declare Function GetTimeZoneInformation Lib "kernel32.dll" (ByVal lpTimeZoneInformation As Long) As Long
 
 Private Const X509_ASN_ENCODING             As Long = 1&
 Private Const PKCS_7_ASN_ENCODING           As Long = &H10000
@@ -443,20 +457,26 @@ Private Const TRUST_E_EXPLICIT_DISTRUST     As Long = &H800B0111
 Private Const CRYPT_E_SECURITY_SETTINGS     As Long = &H80092026
 Private Const CERT_E_UNTRUSTEDROOT          As Long = &H800B0109
 Private Const CERT_E_PURPOSE                As Long = &H800B0106
-'OID
+Private Const CRYPT_E_BAD_MSG               As Long = &H8009200D
+' OID
 Private Const szOID_CERT_STRONG_SIGN_OS_1   As String = "1.3.6.1.4.1.311.72.1.1"
 Private Const szOID_CERT_STRONG_KEY_OS_1    As String = "1.3.6.1.4.1.311.72.2.1"
-'Crypt Algorithms
+Private Const szOID_RFC5652_TIMESTAMP       As String = "1.2.840.113549.1.9.5"
+' Crypt Algorithms
 Private Const BCRYPT_SHA1_ALGORITHM         As String = "SHA1"      '160-bit
 Private Const BCRYPT_SHA256_ALGORITHM       As String = "SHA256"    '256-bit
-'Secondary signatures
+' Secondary signatures
 Private Const WSS_VERIFY_SPECIFIC           As Long = 1&
 Private Const WSS_GET_SECONDARY_SIG_COUNT   As Long = 2&
 Private Const CERT_STRONG_SIGN_OID_INFO_CHOICE As Long = 2&
+' security catalog
+Private Const CRYPTCAT_VERSION_1            As Long = &H100&
+Private Const CRYPTCAT_VERSION_2            As Long = &H200&
 ' other
 Private Const INVALID_HANDLE_VALUE          As Long = -1&
 Private Const ERROR_INSUFFICIENT_BUFFER     As Long = 122&
 Private Const GENERIC_READ                  As Long = &H80000000
+Private Const FILE_READ_ATTRIBUTES          As Long = &H80&
 Private Const FILE_SHARE_READ               As Long = 1&
 Private Const FILE_SHARE_WRITE              As Long = 2&
 Private Const FILE_SHARE_DELETE             As Long = 4&
@@ -470,7 +490,6 @@ Private Const VER_NT_WORKSTATION            As Long = 1&
 Dim WINTRUST_ACTION_GENERIC_VERIFY_V2   As GUID
 Dim DRIVER_ACTION_VERIFY                As GUID
 
-
 Public Sub WipeSignResult(SignResult As SignResult_TYPE)
     With SignResult     'clear results of checking
         .ReturnCode = TRUST_E_NOSIGNATURE
@@ -482,6 +501,7 @@ Public Sub WipeSignResult(SignResult As SignResult_TYPE)
         .isSigned = False
         .isLegit = False
         .isSignedByCert = False
+        .isMicrosoftSign = False
         .CatalogPath = vbNullString
         .isEmbedded = False
         .isSelfSigned = False
@@ -492,6 +512,7 @@ Public Sub WipeSignResult(SignResult As SignResult_TYPE)
         .SubjectEmail = vbNullString
         .DateCertBegin = #12:00:00 AM#
         .DateCertExpired = #12:00:00 AM#
+        .DateTimeStamp = #12:00:00 AM#
         .NumberOfSigns = 0
         .FilePathVerified = vbNullString
     End With
@@ -499,7 +520,7 @@ End Sub
 
 Public Function SignVerify( _
     sFilePath As String, _
-    ByVal flags As FLAGS_SignVerify, _
+    ByVal Flags As FLAGS_SignVerify, _
     SignResult As SignResult_TYPE) As Boolean
     
     On Error GoTo ErrorHandler
@@ -511,15 +532,10 @@ Public Function SignVerify( _
 '        tim(4).Start 'WinVerifyTrust
 '        tim(5).Start 'GetSignerInfo
 '        tim(6).Start 'release
-'        tim(7).Start 'GetSignaturesFromStateData
-'        tim(8).Start 'ExtractPropertyFromCertificateByID
-'        tim(9).Start 'Signer
-'        tim(10).Start 'hash algo
-    
-    tim(0).Start
-    
-    AppendErrorLogCustom "SignVerify - Begin", "File: " & sFilePath
-    
+'        tim(7).Start 'CryptCATEnumerateMember
+
+    If bDebugMode Then tim(0).Start 'Total time
+
     ' in.  sFilePath - path to PE EXE file for validation
     ' in.  Flags - options for checking
     ' out. SignResult struct
@@ -541,7 +557,7 @@ Public Function SignVerify( _
     Dim WintrustData        As WINTRUST_DATA
     Dim WintrustCatalog     As WINTRUST_CATALOG_INFO
     Dim WintrustFile        As WINTRUST_FILE_INFO
-    Dim CertSignPara        As CERT_STRONG_SIGN_PARA
+    'Dim CertSignPara        As CERT_STRONG_SIGN_PARA
     Dim SignSettings        As WINTRUST_SIGNATURE_SETTINGS
     Dim verInfo             As DRIVER_VER_INFO
     
@@ -550,7 +566,7 @@ Public Function SignVerify( _
     Static IsWin8AndNewer   As Boolean
     Static SignCache()      As SignResult_TYPE
     Static SC_pos           As Long
-    #If UseHashTable Then
+    #If UseHashtable Then
         Static oSignIndex As clsTrickHashTable
     #Else
         Static oSignIndex As Object
@@ -562,7 +578,6 @@ Public Function SignVerify( _
     Dim FileSize        As Currency
     Dim HashSize        As Long
     Dim aFileHash()     As Byte
-    Dim sBuf            As String
     Dim CatalogContext  As Long
     Dim sMemberTag      As String
     Dim ReturnFlag      As Boolean
@@ -571,17 +586,44 @@ Public Function SignVerify( _
     Dim Success         As Boolean
     Dim RedirResult     As Boolean
     Dim bOldRedir       As Boolean
-      
+    Dim bWinTrustVerified As Boolean
+    Dim sExtension      As String
+    Dim bCacheTaken     As Boolean
+    
+    #If UseSimpleCatCheck Then
+        Dim hCatStore       As Long
+        Dim pCatMember      As Long
+        Dim sTag            As String
+        Dim sTagOld         As String
+        'Dim CatMember       As CRYPTCATMEMBER
+        Dim CatIndex        As Long
+        Static aCatCache()   As SignResult_TYPE
+        #If UseHashtable Then
+            Static oCatalogTag As clsTrickHashTable
+        #Else
+            Static oCatalogTag As Object
+        #End If
+    #End If
+    
+    If Flags And SV_CacheFree Then
+        Set oSignIndex = Nothing
+        Erase SignCache
+        #If UseSimpleCatCheck Then
+            Set oCatalogTag = Nothing
+            Erase aCatCache
+        #End If
+        Exit Function
+    End If
     
     WipeSignResult SignResult
     
     ToggleWow64FSRedirection True, , bOldRedir
     
-    If (flags And SV_CheckSecondarySignature) Then flags = flags Or SV_CacheDoNotLoad Or SV_CacheDoNotSave Or SV_DisableCatalogVerify
+    If (Flags And SV_CheckSecondarySignature) Then Flags = Flags Or SV_CacheDoNotLoad Or SV_CacheDoNotSave Or SV_DisableCatalogVerify
     
     If 0 = ObjPtr(oSignIndex) Then                              'init. cache subsystem
-        If Not CBool(flags And SV_CacheDoNotSave) Then
-            #If UseHashTable Then
+        If Not CBool(Flags And SV_CacheDoNotSave) Then
+            #If UseHashtable Then
                 Set oSignIndex = New clsTrickHashTable
             #Else
                 Set oSignIndex = CreateObject("Scripting.Dictionary")
@@ -589,14 +631,27 @@ Public Function SignVerify( _
             oSignIndex.CompareMode = vbTextCompare
             ReDim SignCache(100)
         End If
-    ElseIf Not CBool(flags And SV_CacheDoNotLoad) Then
+    ElseIf Not CBool(Flags And SV_CacheDoNotLoad) Then
         If oSignIndex.Exists(sFilePath) Then
             SignResult = SignCache(oSignIndex(sFilePath))
+            bCacheTaken = True
             GoTo Finalize
         End If
     End If
     
-    If Not CBool(flags And SV_CacheDoNotSave) Then
+    #If UseSimpleCatCheck Then
+        If 0 = ObjPtr(oCatalogTag) Then
+            #If UseHashtable Then
+                Set oCatalogTag = New clsTrickHashTable
+            #Else
+                Set oCatalogTag = CreateObject("Scripting.Dictionary")
+            #End If
+            oCatalogTag.CompareMode = vbTextCompare
+            ReDim aCatCache(100)
+        End If
+    #End If
+    
+    If Not CBool(Flags And SV_CacheDoNotSave) Then
         SC_pos = SC_pos + 1
         If UBound(SignCache) < SC_pos Then ReDim Preserve SignCache(UBound(SignCache) + 100)
         If oSignIndex.Exists(sFilePath) Then
@@ -618,9 +673,7 @@ Public Function SignVerify( _
         Else
             FreeLibrary hLib: hLib = 0
         End If
-        
-        '// TODO: make revision:  inf(2) / 10 ' (!!!)
-        
+
         Dim inf(68) As Long, MajorMinor As Single
         inf(0) = 276: GetVersionEx inf(0): MajorMinor = inf(1) + inf(2) / 10: IsVistaAndNewer = (MajorMinor >= 6): IsWin8AndNewer = (MajorMinor >= 6.2)
         
@@ -628,7 +681,7 @@ Public Function SignVerify( _
         CLSIDFromString StrPtr("{00AAC56B-CD44-11D0-8CC2-00C04FC295EE}"), WINTRUST_ACTION_GENERIC_VERIFY_V2
     End If
     
-    If (flags And SV_isDriver) Then
+    If (Flags And SV_isDriver) Then
         ActionGuid = DRIVER_ACTION_VERIFY
     Else
         ActionGuid = WINTRUST_ACTION_GENERIC_VERIFY_V2
@@ -636,14 +689,11 @@ Public Function SignVerify( _
     
     SignResult.FilePathVerified = sFilePath
     
-    'If Not FileExists(sFilePath) Then GoTo Finalize
-    
     'redir. OFF
     RedirResult = ToggleWow64FSRedirection(False, sFilePath)
     'opening the file
     hFile = CreateFile(StrPtr(sFilePath), GENERIC_READ, FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, ByVal 0&, OPEN_EXISTING, ByVal 0&, ByVal 0&)
-    
-    If hFile = INVALID_HANDLE_VALUE Then GoTo Finalize
+    If (INVALID_HANDLE_VALUE = hFile) Then GoTo Finalize
     'redir. ON
     If RedirResult Then ToggleWow64FSRedirection True
     
@@ -659,7 +709,7 @@ Public Function SignVerify( _
 '        .pszOID = StrPtr(szOID_CERT_STRONG_KEY_OS_1)
 '    End With
     
-    tim(1).Start 'CryptCATAdminAcquireContext
+    If bDebugMode Then tim(1).Start
     
     If IsWin8AndNewer Then
         ' obtain context for procedure of signature verification
@@ -675,8 +725,6 @@ Public Function SignVerify( _
         
         ' if future OS will not support sha256, you can pass 0, so system will choose lowest allowed algorithm:
         'CryptCATAdminAcquireContext2 hCatAdmin, VarPtr(DRIVER_ACTION_VERIFY), 0&, 0&, 0&
-        
-        
     End If
     
     If hCatAdmin = 0 Then
@@ -687,20 +735,32 @@ Public Function SignVerify( _
         End If
     End If
     
-    tim(1).Freeze
+    If bDebugMode Then tim(1).Freeze
     
     FileSize = FileLenW(, hFile) ' file size == 0 ?
     
-    If FileSize = 0@ Or (FileSize > MAX_FILE_SIZE And Not CBool(flags And SV_NoFileSizeLimit)) Then
+    If Flags And SV_SelfTest Then Dbg "FileSize = " & FileSize
+    
+    If FileSize = 0@ Or (FileSize > MAX_FILE_SIZE And Not CBool(Flags And SV_NoFileSizeLimit)) Then
         GoTo Finalize
     End If
     
-    tim(2).Start 'CryptCATAdminCalcHashFromFileHandle
+    If Flags And SV_PreferInternalSign Then
+        sExtension = modFile.GetExtensionName(sFilePath)
+        If StrInParamArray(sExtension, ".exe", ".sys", ".dll", ".ocx") Then
+            If IsInternalSignPresent(hFile) Then
+                If Flags And SV_SelfTest Then Dbg "SkipCatCheck"
+                GoTo SkipCatCheck
+            End If
+        End If
+    End If
+    
+    If bDebugMode Then tim(2).Start 'CryptCATAdminCalcHashFromFileHandle
     
     If IsWin8AndNewer Then
         ' obtain size needed for hash (Win8+)
         Success = CryptCATAdminCalcHashFromFileHandle2(hCatAdmin, hFile, HashSize, ByVal 0&, 0&)
-
+        
         If Err.LastDllError = ERROR_INSUFFICIENT_BUFFER Then
             Success = False
             ReDim aFileHash(HashSize - 1&)
@@ -728,38 +788,57 @@ Public Function SignVerify( _
         End If
     End If
     
-    tim(2).Freeze
-    
     ' Converting hash into string
     For i = 0& To UBound(aFileHash)
         sMemberTag = sMemberTag & Right$("0" & Hex$(aFileHash(i)), 2&)
     Next
     SignResult.HashFileCode = sMemberTag
     
-    tim(3).Start 'CryptCATAdminEnumCatalogFromHash
+    If bDebugMode Then tim(2).Freeze
+    If bDebugMode Then tim(3).Start 'CryptCATAdminEnumCatalogFromHash
     
-    ' Search sec. catalogue by hash
-    If Not HasCatRootVulnerability() Then 'avoid M$ bug with C:\WINDOWS\system32\catroot2\{GUID} file
-    
-        'Win8+: hCatAdmin should be obtained using DRIVER_ACTION_VERIFY provider
-        CatalogContext = CryptCATAdminEnumCatalogFromHash(hCatAdmin, aFileHash(0), HashSize, 0&, ByVal 0&)
-    End If
-    
-    '//TODO: add searching of any user-supplied catalogs
-    'ActionGuid should be WINTRUST_ACTION_GENERIC_VERIFY_V2 in this case
-    
-    If (CatalogContext) Then
-        If CryptCATCatalogInfoFromContext(CatalogContext, CatalogInfo, 0&) Then
+    If Not CBool(Flags And SV_DisableCatalogVerify) Then
+        ' Simple checking tag by cache
+        #If UseSimpleCatCheck Then
+            If oCatalogTag.Exists(sMemberTag) Then
+                SignResult = aCatCache(oCatalogTag(sMemberTag))
+                SignResult.HashFileCode = sMemberTag    'actualize
+                SignResult.FilePathVerified = sFilePath 'actualize
+                If Flags And SV_SelfTest Then Dbg "Found in catalogue cache (!)"
+                GoTo Finalize
+            End If
+        #End If
         
-            SignResult.CatalogPath = StringFromPtrW(VarPtr(CatalogInfo.wszCatalogFile(0)))
+        ' Searching tag (hash) in security catalogues
+        If Not HasCatRootVulnerability() Then 'avoid M$ bug with C:\WINDOWS\system32\catroot2\{GUID} file
+        
+            'Win8+: hCatAdmin should be obtained using DRIVER_ACTION_VERIFY provider
+            CatalogContext = CryptCATAdminEnumCatalogFromHash(hCatAdmin, aFileHash(0), HashSize, 0&, ByVal 0&)
+            
+            If Flags And SV_SelfTest Then Dbg "CryptCATAdminEnumCatalogFromHash: CatalogContext = " & CatalogContext
         Else
-            WriteError Err, SignResult, "CryptCATCatalogInfoFromContext"
-            CryptCATAdminReleaseCatalogContext hCatAdmin, CatalogContext, 0&
-            CatalogContext = 0&
+            If Flags And SV_SelfTest Then Dbg "HasCatRootVulnerability (!!!)"
+        End If
+        
+        '//TODO: add searching of any user-supplied catalogs
+        'ActionGuid should be WINTRUST_ACTION_GENERIC_VERIFY_V2 in this case
+        
+        If (CatalogContext) Then
+            
+            If CryptCATCatalogInfoFromContext(CatalogContext, CatalogInfo, 0&) Then
+            
+                SignResult.CatalogPath = StringFromPtrW(VarPtr(CatalogInfo.wszCatalogFile(0)))
+            Else
+                WriteError Err, SignResult, "CryptCATCatalogInfoFromContext"
+                CryptCATAdminReleaseCatalogContext hCatAdmin, CatalogContext, 0&
+                CatalogContext = 0&
+            End If
         End If
     End If
     
-    tim(3).Freeze
+    If bDebugMode Then tim(3).Freeze
+    
+SkipCatCheck:
     
     ' preparing WINTRUST_DATA
     
@@ -770,7 +849,7 @@ Public Function SignVerify( _
         .dwUIChoice = WTD_UI_NONE
         .dwStateAction = WTD_STATEACTION_VERIFY
         
-        If flags And SV_CheckRevocation Then
+        If Flags And SV_CheckRevocation Then
             .dwProvFlags = .dwProvFlags Or WTD_REVOCATION_CHECK_CHAIN
             .fdwRevocationChecks = WTD_REVOKE_WHOLECHAIN
         Else
@@ -780,21 +859,21 @@ Public Function SignVerify( _
         End If
         
         '.dwProvFlags = .dwProvFlags Or WTD_NO_POLICY_USAGE_FLAG                                          ' do not check certificate purpose (disabled)
-        If flags And SV_AllowExpired Then .dwProvFlags = .dwProvFlags Or WTD_LIFETIME_SIGNING_FLAG        ' invalidate expired signatures
-        .dwProvFlags = .dwProvFlags Or WTD_SAFER_FLAG                                                     ' without UI
+        If Flags And SV_AllowExpired Then .dwProvFlags = .dwProvFlags Or WTD_LIFETIME_SIGNING_FLAG        ' invalidate expired signatures
+        '.dwProvFlags = .dwProvFlags Or WTD_SAFER_FLAG                                                     ' without UI
     End With
     
     ' If we got a valid context, verify the signature through the catalog.
-    ' Otherwise (if Embedded signature is exist or flag "Ignore checking by catalogue" is set), trying to verify internal signature of the file:
+    ' Otherwise (if Embedded signature is present or flag "Ignore checking by catalogue" is set), trying to verify internal signature of the file:
     
-    If (CatalogContext = 0& Or (flags And SV_DisableCatalogVerify)) Then
+    If (CatalogContext = 0& Or (Flags And SV_DisableCatalogVerify)) Then
         'embedded signature
     
         With WintrustData                               'WINTRUST_DATA
             .dwUnionChoice = WTD_CHOICE_FILE
             .pUnion = VarPtr(WintrustFile)     'pFile
             
-            If (flags And SV_CheckSecondarySignature) Then .dwStateAction = WTD_STATEACTION_IGNORE ' hWVTStateData doesn't needed
+            If (Flags And SV_CheckSecondarySignature) Then .dwStateAction = WTD_STATEACTION_IGNORE ' hWVTStateData doesn't needed
         End With
     
         With WintrustFile                               'WINTRUST_FILE_INFO
@@ -861,6 +940,10 @@ Public Function SignVerify( _
     
     tim(4).Freeze
     
+    bWinTrustVerified = True
+    
+    If Flags And SV_SelfTest Then Dbg "WinVerifyTrust: ReturnVal = " & ReturnVal
+    
     If RedirResult Then ToggleWow64FSRedirection True
     
     If ReturnVal <> TRUST_E_NOSIGNATURE And _
@@ -872,7 +955,7 @@ Public Function SignVerify( _
         
         'verify secondary signature
         
-        If (flags And SV_CheckSecondarySignature) Then
+        If (Flags And SV_CheckSecondarySignature) Then
             If SignResult.NumberOfSigns < 2 Or Not IsWin8AndNewer Then
                 WipeSignResult SignResult
                 ReturnVal = TRUST_E_NOSIGNATURE
@@ -902,26 +985,37 @@ Public Function SignVerify( _
         ReturnVal <> TRUST_E_PROVIDER_UNKNOWN Then
     
         tim(5).Start 'GetSignerInfo
-        GetSignerInfo WintrustData.hWVTStateData, SignResult
+    
+        GetSignerInfo WintrustData.hWVTStateData, SignResult, Flags
+        
+        If Flags And SV_SelfTest Then Dbg "GetSignerInfo: HashRootCert = " & SignResult.HashRootCert
+        
         tim(5).Freeze
     End If
     
-    ' correcting result if SV_AllowSelfSigned specified to allow self-signed certificate
+    ' correcting result if SV_AllowSelfSigned specified to allow self-signed certificates based on user settings (flags)
     If ReturnVal = 0 Then
         ReturnFlag = True
-    ElseIf (flags And SV_AllowSelfSigned) And (ReturnVal = CERT_E_UNTRUSTEDROOT) Then
+    ElseIf (Flags And SV_AllowSelfSigned) And (ReturnVal = CERT_E_UNTRUSTEDROOT) Then
         ReturnFlag = True
-    ElseIf (flags And SV_AllowExpired) And (ReturnVal = CERT_E_EXPIRED) Then
+    ElseIf (Flags And SV_AllowExpired) And (ReturnVal = CERT_E_EXPIRED) Then
         ReturnFlag = True
+    End If
+    
+    'if Win7 SP0 / Win 2008 R2 Server SP0 (temporarily fix)
+    If OSver.SPVer = 0 And (OSver.MajorMinor = 6.1) Then
+        If CatalogContext <> 0 And ReturnVal = CRYPT_E_BAD_MSG Then 'Not a cryptographic message or the cryptographic message is not formatted correctly
+            ReturnVal = 0
+            ReturnFlag = True
+        End If
     End If
     
     With SignResult
         
-        .isSigned = True
-        
         Select Case ReturnVal
         Case 0
             .ShortMessage = "Legit signature."
+            .isSigned = True
         Case TRUST_E_SUBJECT_NOT_TRUSTED
             .ShortMessage = "TRUST_E_SUBJECT_NOT_TRUSTED"
             'The user clicked "No" when asked to install and run.
@@ -937,21 +1031,26 @@ Public Function SignVerify( _
         Case CERT_E_REVOKED
             .ShortMessage = "CERT_E_REVOKED"
             'A certificate was explicitly revoked by its issuer.
+            .isSigned = True
         Case CERT_E_EXPIRED
             .ShortMessage = "CERT_E_EXPIRED"
             'A required certificate is not within its validity period when verifying against the current system clock or the timestamp in the signed file
+            .isSigned = True
         Case CERT_E_PURPOSE
             .ShortMessage = "CERT_E_PURPOSE"
             'The certificate is being used for a purpose other than one specified by the issuing CA.
+            .isSigned = True
         Case TRUST_E_BAD_DIGEST
             .ShortMessage = "TRUST_E_BAD_DIGEST"
             'This will happen if the file has been modified or corruped.
+            .isSigned = True
         Case TRUST_E_NOSIGNATURE
             .isSigned = False
             If TRUST_E_NOSIGNATURE = Err.LastDllError Or _
                 TRUST_E_SUBJECT_FORM_UNKNOWN = Err.LastDllError Or _
                 TRUST_E_PROVIDER_UNKNOWN = Err.LastDllError Or _
-                Err.LastDllError = 0 Then
+                Err.LastDllError = 0 Or _
+                Err.LastDllError = 87 Then
                 .ShortMessage = "TRUST_E_NOSIGNATURE: Not signed"
             Else
                 .ShortMessage = "TRUST_E_NOSIGNATURE: Not valid signature"
@@ -961,72 +1060,137 @@ Public Function SignVerify( _
             .ShortMessage = "TRUST_E_EXPLICIT_DISTRUST: Signature is forbidden"
             'The signature Is present, but specifically disallowed
             'The hash that represents the subject or the publisher is not allowed by the admin or user.
+            .isSigned = True
         Case CRYPT_E_SECURITY_SETTINGS
             .ShortMessage = "CRYPT_E_SECURITY_SETTINGS"
             ' The hash that represents the subject or the publisher was not explicitly trusted by the admin and the
             ' admin policy has disabled user trust. No signature, publisher or time stamp errors.
+            .isSigned = True
         Case CERT_E_UNTRUSTEDROOT
-            .isSelfSigned = True
             .ShortMessage = "CERT_E_UNTRUSTEDROOT: Verified, but self-signed"
             'A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.
+            .isSelfSigned = True
+            .isSigned = True
         Case Else
             .ShortMessage = "Other error. Code = " & ReturnVal & ". LastDLLError = " & Err.LastDllError
             'The UI was disabled in dwUIChoice or the admin policy has disabled user trust. ReturnVal contains the publisher or time stamp chain error.
         End Select
-    
+        
         ' Other error codes can be found on MSDN:
         ' https://msdn.microsoft.com/en-us/library/windows/desktop/aa377188%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
         ' https://msdn.microsoft.com/en-us/library/ee488436.aspx
         ' This is not an exhaustive list.
-    
+        
         .FullMessage = ErrMessageText(ReturnVal)
         .ReturnCode = ReturnVal
         .isLegit = ReturnFlag
         SignVerify = .isLegit
         
-        If .isSignedByCert Then
-            If (flags And SV_CheckEmbeddedPresence) Then .isEmbedded = IsSignPresent(hFile)
-        Else
-            If .isSigned Then .isEmbedded = True
+        If .isSigned And Not .isSignedByCert Then .isEmbedded = True
+        
+        If Not .isEmbedded Then
+            'force checking the presence of internal signature
+            If (Flags And SV_CheckEmbeddedPresence) Then .isEmbedded = IsInternalSignPresent(hFile)
         End If
+        
+        If .isSigned Then
+            If OSver.MajorMinor = 6.1 And OSver.SPVer = 0 And CatalogContext <> 0 Then
+                .isMicrosoftSign = True
+            Else
+                .isMicrosoftSign = IsMicrosoftCertHash(.HashRootCert)
+            End If
+        End If
+        
+        If Flags And SV_SelfTest Then Dbg "isMicrosoftSign = " & .isMicrosoftSign
         
     End With
     
-    tim(6).Start 'release
+    If bDebugMode Then tim(7).Start 'CryptCATEnumerateMember
     
+    'Enumerating all tags in security catalog and save them in cache (if validation was successful)
+    #If UseSimpleCatCheck Then
+        
+        If 0 <> Len(SignResult.CatalogPath) And SignResult.isLegit Then
+            
+            hCatStore = CryptCATOpen(StrPtr(SignResult.CatalogPath), 0&, 0&, 0&, 0&)
+            
+            If hCatStore = INVALID_HANDLE_VALUE Then
+                hCatStore = CryptCATOpen(StrPtr(SignResult.CatalogPath), 0&, 0&, CRYPTCAT_VERSION_1, 0&)
+                
+                If hCatStore = INVALID_HANDLE_VALUE Then
+                    hCatStore = CryptCATOpen(StrPtr(SignResult.CatalogPath), 0&, 0&, CRYPTCAT_VERSION_2, 0&)
+                End If
+            End If
+            
+            If hCatStore <> INVALID_HANDLE_VALUE Then
+                
+                pCatMember = 0
+                Do
+                    pCatMember = CryptCATEnumerateMember(hCatStore, pCatMember)
+                    
+                    If pCatMember <> 0 Then
+                        
+                        'memcpy CatMember, ByVal pCatMember, LenB(CatMember)
+                        'sTag = StringFromPtrW(CatMember.pwszReferenceTag)
+                        sTag = StringFromPtrW(LongFromPtr(pCatMember + 4))
+                        
+                        If sTag <> sTagOld Then
+                            sTagOld = sTag
+                            
+                            CatIndex = CatIndex + 1
+                            If UBound(aCatCache) < CatIndex Then ReDim Preserve aCatCache(UBound(aCatCache) + 100)
+                            
+                            aCatCache(CatIndex) = SignResult
+                            
+                            'key = tag (hash); value = index of aCatPath array, that holds a path to catalog file
+                            If Not oCatalogTag.Exists(sTag) Then oCatalogTag.Add sTag, CatIndex
+                        End If
+                    End If
+                Loop While pCatMember <> 0
+                
+                CryptCATClose hCatStore
+            End If
+        End If
+    #End If
+    
+    If bDebugMode Then tim(7).Freeze
+    
+Finalize:
+
+    tim(6).Start 'release
+
     ' Release sec. cat. context
     If (CatalogContext) Then
         CryptCATAdminReleaseCatalogContext hCatAdmin, CatalogContext, 0&
     End If
     
     ' Free memory used by provider
-    WintrustData.dwStateAction = WTD_STATEACTION_CLOSE
-    WinVerifyTrust INVALID_HANDLE_VALUE, ActionGuid, VarPtr(WintrustData)
+    If bWinTrustVerified Then
+        WintrustData.dwStateAction = WTD_STATEACTION_CLOSE
+        WinVerifyTrust INVALID_HANDLE_VALUE, ActionGuid, VarPtr(WintrustData)
+    End If
     
+    ' Free certificate context
     If verInfo.pcSignerCertContext Then
         CertFreeCertificateContext verInfo.pcSignerCertContext
     End If
     
-    tim(6).Freeze
+    If Not CBool(Flags And SV_CacheDoNotSave) And (Not bCacheTaken) Then SignCache(SC_pos) = SignResult
     
-Finalize:
-    tim(6).Start
-
-    If Not CBool(flags And SV_CacheDoNotSave) Then SignCache(SC_pos) = SignResult
-    
-    ' closing the file, release admin. cat. context
+    ' release admin. cat. context
     If hCatAdmin <> 0 Then
         CryptCATAdminReleaseContext hCatAdmin, 0&
     End If
+    
+    ' closing the file
     If hFile <> 0 Then
         CloseHandle hFile
     End If
+    
+    'revert file system redirector to its initial state
     ToggleWow64FSRedirection bOldRedir
     
-    tim(6).Freeze
-    
-    AppendErrorLogCustom "SignVerify - End", "Legit? " & SignResult.isLegit
-    
+    'freeze all timers
     For i = 0 To UBound(tim)
         tim(i).Freeze
     Next
@@ -1034,12 +1198,8 @@ Finalize:
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "SignVerify", sFilePath
-    ToggleWow64FSRedirection bOldRedir
+    ToggleWow64FSRedirection True
     If inIDE Then Stop: Resume Next
-    
-    For i = 0 To UBound(tim)
-        tim(i).Freeze
-    Next
 End Function
 
 Private Function HasCatRootVulnerability() As Boolean
@@ -1061,7 +1221,7 @@ Private Function HasCatRootVulnerability() As Boolean
     Dim WinDir  As String
     
     WinDir = GetWindowsDir()
-    sFile = DirW$(WinDir & "\System32\catroot2\*") 'not affected by wow64
+    sFile = Dir$(WinDir & "\System32\catroot2\*") 'not affected by wow64
     Do While Len(sFile)
         If sFile Like "{????????????????????????????????????}" Then
             lr = GetFileAttributes(StrPtr(WinDir & "\System32\catroot2\" & sFile))
@@ -1069,7 +1229,7 @@ Private Function HasCatRootVulnerability() As Boolean
                 VulnStatus = True: HasCatRootVulnerability = True: Exit Function
             End If
         End If
-        sFile = DirW$()
+        sFile = Dir$()
     Loop
     Exit Function
 ErrHandler:
@@ -1081,34 +1241,35 @@ End Function
 ' ================ Signer info extractor ==================
 '
 
-Private Sub GetSignerInfo(StateData As Long, SignResult As SignResult_TYPE)
+Private Sub GetSignerInfo(StateData As Long, SignResult As SignResult_TYPE, Flags As FLAGS_SignVerify)
     On Error GoTo ErrorHandler
     
-    AppendErrorLogCustom "GetSignerInfo - Begin"
-    
-    Dim NumberOfSignatures As Long
+    'Dim NumberOfSignatures As Long
     Dim CertInfo As CERT_INFO
     Dim pCertificate As Long
     Dim i As Long
-    Dim J As Long
+    Dim j As Long
     Dim Signature() As SIGNATURE_TYPE
     Dim idxRoot As Long
     Dim idxSigner As Long
     Dim CPSigner() As CRYPT_PROVIDER_SGNR
     Dim MsgSigner As CMSG_SIGNER_INFO
     Dim AlgoDesc As String
+    Dim TimeStamp As Date
     
     'CERT_HASH_PROP_ID              'Certificate & Signature hashes
     'CERT_SHA1_HASH_PROP_ID
     'CERT_SIGNATURE_HASH_PROP_ID
     
     'For simplicity, we'll get properties only for 1-st and last certificate in the trust chain
-    'CPCERT(0): it's a final cert. in chain - we'll get timestamp and name of actual Subject / email from there
+    'CPCERT(0): it's a final cert. in chain - we'll get expiration date and the name of actual Subject / email from there
     'CPCERT(CPSigner.csCertChain - 1): it's a root cert. - we'll get hash from there to compare
-    '  with well known trusted Certification Authorities (this module contains the list of Microsoft hashes of root certs.)
+    '  with well known trusted Certification Authorities (this module contains the list of fingerprints of Microsoft root certs.)
     
-    If GetSignaturesFromStateData(StateData, Signature, CPSigner) Then
+    If GetSignaturesFromStateData(StateData, Signature, CPSigner, TimeStamp) Then
       With SignResult
+        .DateTimeStamp = TimeStamp
+        
         If Signature(0).cCert > 0 Then
             'to equire properties from all certificates
             'For i = 0 To ubound(Signature)
@@ -1121,20 +1282,18 @@ Private Sub GetSignerInfo(StateData As Long, SignResult As SignResult_TYPE)
             idxRoot = UBound(Signature(0).Certificate)
             pCertificate = Signature(0).Certificate(idxRoot)
             
-            tim(8).Start 'ExtractPropertyFromCertificateByID
             .HashRootCert = ExtractPropertyFromCertificateByID(pCertificate, CERT_HASH_PROP_ID)
-            tim(8).Freeze
+            
+            If Flags And SV_LightCheck Then GoTo Continue
             
             'Cert. index of person who sign (Subject)
             idxSigner = 0
             pCertificate = Signature(0).Certificate(idxSigner)
             
-            tim(9).Start 'Signer
-            
             If GetCertInfoFromCertificate(pCertificate, CertInfo) Then
                 
                 ' alternate method
-                '.Issuer = GetCertString(pCertificate, CERT_NAME_SIMPLE_DISPLAY_TYPE, CERT_NAME_ISSUER_FLAG)
+                '.Issuer = GetCertstring(pCertificate, CERT_NAME_SIMPLE_DISPLAY_TYPE, CERT_NAME_ISSUER_FLAG)
                 .Issuer = GetSignerNameFromBLOB(CertInfo.Issuer)
                 .SubjectName = GetSignerNameFromBLOB(CertInfo.Subject)
                 .SubjectEmail = ExtractStringFromCertificate(pCertificate, CERT_NAME_EMAIL_TYPE, CERT_NAME_STR_ENABLE_PUNYCODE_FLAG)
@@ -1144,17 +1303,14 @@ Private Sub GetSignerInfo(StateData As Long, SignResult As SignResult_TYPE)
                 
             End If
             
-            tim(9).Freeze
-            
-            tim(10).Start 'hash algo
-            
             ' Get hash algorithm of signature
             memcpy MsgSigner, ByVal CPSigner(0).psSigner, LenB(MsgSigner)
             
             .AlgorithmSignDigest = StringFromPtrA(MsgSigner.HashAlgorithm.pszObjId)
             
             AlgoDesc = GetHashNameByOID(.AlgorithmSignDigest)
-            If Len(AlgoDesc) <> 0 Then .AlgorithmSignDigest = .AlgorithmSignDigest & " " & "(" & AlgoDesc & ")"
+            'If Len(AlgoDesc) <> 0 Then .AlgorithmSignDigest = .AlgorithmSignDigest & " " & "(" & AlgoDesc & ")"
+            If Len(AlgoDesc) <> 0 Then .AlgorithmSignDigest = AlgoDesc
             
             ' Get hash algorithm of certificate
             If GetCertInfoFromCertificate(pCertificate, CertInfo) Then
@@ -1162,21 +1318,19 @@ Private Sub GetSignerInfo(StateData As Long, SignResult As SignResult_TYPE)
             End If
             
             AlgoDesc = GetHashNameByOID(.AlgorithmCertHash)
-            If Len(AlgoDesc) <> 0 Then .AlgorithmCertHash = .AlgorithmCertHash & " " & "(" & AlgoDesc & ")"
-            
-            tim(10).Freeze
-            
+            'If Len(AlgoDesc) <> 0 Then .AlgorithmCertHash = .AlgorithmCertHash & " " & "(" & AlgoDesc & ")"
+            If Len(AlgoDesc) <> 0 Then .AlgorithmCertHash = AlgoDesc
+        
+Continue:
             'release
             For i = 0 To UBound(Signature)
-                For J = 0 To UBound(Signature(i).Certificate)
-                    CertFreeCertificateContext Signature(i).Certificate(J)
+                For j = 0 To UBound(Signature(i).Certificate)
+                    CertFreeCertificateContext Signature(i).Certificate(j)
                 Next
             Next
         End If
       End With
     End If
-    
-    AppendErrorLogCustom "GetSignerInfo - End"
     
     Exit Sub
 ErrorHandler:
@@ -1215,6 +1369,8 @@ Private Function GetHashNameByOID(sOID As String) As String
         Case "2.16.840.1.101.3.4.2.2":  AlgoDesc = "SHA-384 NIST"       ' szOID_NIST_sha384
         Case "2.16.840.1.101.3.4.2.3":  AlgoDesc = "SHA-512 NIST"       ' szOID_NIST_sha512
         
+        Case "1.2.840.113549.1.1.2":    AlgoDesc = "MD2 RSA"            ' szOID_RSA_MD2RSA
+        
         Case Else:                      AlgoDesc = vbNullString
     End Select
             
@@ -1225,21 +1381,26 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Private Function GetSignaturesFromStateData(StateData As Long, Signature() As SIGNATURE_TYPE, CPSigner() As CRYPT_PROVIDER_SGNR) As Long
+Private Function GetSignaturesFromStateData(StateData As Long, Signature() As SIGNATURE_TYPE, CPSigner() As CRYPT_PROVIDER_SGNR, TimeStamp As Date) As Long
     'Signature(x).Certificate() returns array of pointers to CERT_CONTEXT
     On Error GoTo ErrorHandler
-
-    tim(7).Start 'GetSignaturesFromStateData
-
-    Dim pProvData   As Long
-    'Dim ProvData    As CRYPT_PROVIDER_DATA
-    Dim pCPSigner   As Long
-    Dim CPCERT()    As CRYPT_PROVIDER_CERT
-    Dim lpOldPt     As Long
-    Dim lpSA        As Long
-    Dim idxSign     As Long
-    Dim i           As Long
-    Dim cbCrypProvCert As Long
+    
+    Dim pProvData       As Long
+    'Dim ProvData        As CRYPT_PROVIDER_DATA
+    Dim pCPSigner       As Long
+    Dim CPCERT()        As CRYPT_PROVIDER_CERT
+    'Dim lpOldPt         As Long
+    'Dim lpSA            As Long
+    Dim idxSign         As Long
+    Dim i               As Long
+    'Dim J               As Long
+    Dim cbCrypProvCert  As Long
+    'Dim MsgSigner       As CMSG_SIGNER_INFO
+    Dim CPCounterSigner As CRYPT_PROVIDER_SGNR
+    'Dim Attr            As CRYPT_ATTRIBUTE
+    Dim CryptBlob       As CRYPTOAPI_BLOB
+    Dim SysTime         As SYSTEMTIME
+    Dim ftime           As FILETIME
     
     pProvData = WTHelperProvDataFromStateData(StateData)
     
@@ -1290,12 +1451,82 @@ Private Function GetSignaturesFromStateData(StateData As Long, Signature() As SI
                 
 '                GetMem4 lpOldPt, ByVal lpSA + 12
                 
-                'if you need CounterSigners, use this:
-                'If CPSigner.csCounterSigners <> 0 Then
-                '    'WTHelperGetProvCertFromChain with CPSigner.pasCounterSigners
-                '    'GetCertificateDescription, e.t.c.
-                'End If
-                'https://www.idrix.fr/Root/Samples/VerifyExeSignature.cpp
+                ' get CounterSigners
+                ' look also: https://www.idrix.fr/Root/Samples/VerifyExeSignature.cpp
+                
+                For i = 0 To CPSigner(idxSign).csCounterSigners - 1
+                
+                    'CRYPT_PROVIDER_SGNR -> pasCounterSigners -> CMSG_SIGNER_INFO
+                    
+                    If CPSigner(idxSign).pasCounterSigners <> 0 Then
+                        
+                        memcpy CPCounterSigner, ByVal CPSigner(idxSign).pasCounterSigners + i * LenB(CPCounterSigner), LenB(CPCounterSigner)
+                        
+                        If CPCounterSigner.psSigner <> 0 Then
+
+                            ' Getting Time of signing
+                            FileTimeToLocalFileTime CPCounterSigner.sftVerifyAsOf, ftime    'UTC shift
+                            FileTimeToSystemTime ftime, SysTime                             'FILETIME -> SYSTEMTIME
+                            SystemTimeToVariantTime SysTime, TimeStamp                      'SYSTEMTIME -> vtDate
+                            
+'                            ' alternate method (manual parsing)
+'
+'                            memcpy MsgSigner, ByVal CPCounterSigner.psSigner, LenB(MsgSigner)
+'
+'                            For j = 0 To MsgSigner.AuthAttrs.cAttr - 1
+'                                memcpy Attr, ByVal MsgSigner.AuthAttrs.rgAttr + j * LenB(Attr), LenB(Attr)
+'
+'                                If Attr.pszObjId <> 0 Then
+'                                    If StringFromPtrA(Attr.pszObjId) = szOID_RFC5652_TIMESTAMP Then 'signingTime
+'                                        If Attr.cValue > 0 And Attr.rgValue <> 0 Then
+'                                            GetMem8 ByVal Attr.rgValue, CryptBlob   'RFC5652 (11.3), in ASN.1 format
+'
+'                                            '1 byte - type (https://ru.wikipedia.org/wiki/X.690)
+'                                            '1 byte - bymber of bytes in data block
+'                                            'X byte - data block
+'
+'                                            If CryptBlob.pbData <> 0 Then
+'
+'                                                sTime = string(CryptBlob.cbData - 3, 0)
+'                                                lstrcpynA StrPtr(sTime), CryptBlob.pbData + 2, Len(sTime) + 1
+'                                                sTime = StrConv(sTime, vbUnicode)
+'
+'                                                GetMem1 ByVal CryptBlob.pbData, BlobType
+'
+'                                                With SysTime
+'                                                    If BlobType = &H17 Then ' UTCTime (YYMMDDHHMMSSZ)
+'                                                        .wYear = Val(Mid$(sTime, 1, 2))
+'                                                        If .wYear <= 49 Then '0 - 49
+'                                                            .wYear = .wYear + 2000
+'                                                        Else '50 - 99
+'                                                            .wYear = .wYear + 1900
+'                                                        End If
+'                                                        .wMonth = Val(Mid$(sTime, 3, 2))
+'                                                        .wDay = Val(Mid$(sTime, 5, 2))
+'                                                        .wHour = Val(Mid$(sTime, 7, 2))
+'                                                        .wMinute = Val(Mid$(sTime, 9, 2))
+'                                                        .wSecond = Val(Mid$(sTime, 11, 2))
+'                                                    ElseIf BlobType = &H18 Then ' GeneralizedTime (YYYYMMDDHHMMSSZ)
+'                                                        .wYear = Val(Mid$(sTime, 1, 2))
+'                                                        .wMonth = Val(Mid$(sTime, 5, 2))
+'                                                        .wDay = Val(Mid$(sTime, 7, 2))
+'                                                        .wHour = Val(Mid$(sTime, 9, 2))
+'                                                        .wMinute = Val(Mid$(sTime, 11, 2))
+'                                                        .wSecond = Val(Mid$(sTime, 13, 2))
+'                                                    End If
+'                                                End With
+'
+'                                                ' + local UTC shift
+'                                                SystemTimeToTzSpecificLocalTime 0&, SysTime, SysTime
+'                                                SystemTimeToVariantTime SysTime, TimeStamp
+'                                            End If
+'                                        End If
+'                                    End If
+'                                End If
+'                            Next
+                        End If
+                    End If
+                Next
             End If
             
             idxSign = idxSign + 1
@@ -1304,22 +1535,20 @@ Private Function GetSignaturesFromStateData(StateData As Long, Signature() As SI
         End If
     Loop While pCPSigner
     
+    'It's a not duplicated context. You should not free it.
     'WINTRUST_Free ProvData.padwTrustStepErrors
     'WINTRUST_Free ProvData.pPDSip
     'WINTRUST_Free ProvData.psPfns
     'WINTRUST_Free pProvData
-    
-    tim(7).Freeze
-    
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "GetSignaturesFromStateData"
     If inIDE Then Stop: Resume Next
 End Function
 
-Private Function WINTRUST_Free(ptr As Long) As Long
+Private Sub WINTRUST_Free(ptr As Long)
     If 0 <> ptr Then HeapFree GetProcessHeap(), 0, ptr
-End Function
+End Sub
 
 Private Function GetCertInfoFromCertificate(pCertificate As Long, out_CertInfo As CERT_INFO) As Boolean  'ptr -> CERT_CONTEXT
     On Error GoTo ErrorHandler
@@ -1348,7 +1577,7 @@ Private Function GetSignerNameFromBLOB(Crypto_BLOB As CRYPTOAPI_BLOB) As String
     Dim sName As String
     Dim pos   As Long
     
-    sName = GetCertNameString(Crypto_BLOB) ' X.509 string
+    sName = GetCertNamestring(Crypto_BLOB) ' X.500 string
     
     pos = InStr(sName, "CN=")
     If pos <> 0 Then
@@ -1388,7 +1617,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Private Function GetCertNameString(Blob As CRYPTOAPI_BLOB) As String
+Private Function GetCertNamestring(Blob As CRYPTOAPI_BLOB) As String
     On Error GoTo ErrorHandler
 
     Dim BufferSize As Long
@@ -1402,7 +1631,7 @@ Private Function GetCertNameString(Blob As CRYPTOAPI_BLOB) As String
         sName = Left$(sName, lstrlen(StrPtr(sName)))
     End If
     
-    GetCertNameString = sName
+    GetCertNamestring = sName
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "GetCertNameString"
@@ -1411,10 +1640,10 @@ End Function
 
 Private Function ExtractStringFromCertificate(pCertContext As Long, dwType As Long, Optional dwFlags As Long) As String
     On Error GoTo ErrorHandler
-
+    
     Dim bufSize As Long
     Dim sName As String
-
+    
     bufSize = CertGetNameString(pCertContext, dwType, dwFlags, 0&, 0&, 0&)
     
     If bufSize Then
@@ -1432,7 +1661,7 @@ End Function
 
 Private Function ExtractPropertyFromCertificateByID(pCertContext As Long, ID As Long) As String
     On Error GoTo ErrorHandler
-
+    
     Dim bufSize As Long
     Dim buf()   As Byte
     Dim i       As Long
@@ -1459,11 +1688,13 @@ End Function
 
 Public Function IsMicrosoftCertHash(hash As String) As Boolean
     Static IsInit As Boolean
-    Static Hashes(9) As String
+    Static Hashes(11) As String
     Dim i As Long
     
     If Not IsInit Then
         IsInit = True
+        'Issuer / Cert. hash / Cert. signature hash / public key MD5 hash
+        
         'Microsoft Root Certificate Authority;CDD4EEAE6000AC7F40C3802C171E30148030C072;391BE92883D52509155BFEAE27B9BD340170B76B;983B132635B7E91DEEF54A6780C09269
         Hashes(0) = "CDD4EEAE6000AC7F40C3802C171E30148030C072"
         'Microsoft Root Authority;A43489159A520F0D93D032CCAF37E7FE20A8B419;8B3C3087B7056F5EC5DDBA91A1B901F0;3FC8CB0BC05241E58D65E9448B2D07C2
@@ -1484,6 +1715,14 @@ Public Function IsMicrosoftCertHash(hash As String) As Boolean
         Hashes(8) = "98725873611882C17A9D478FDC46F9C172552D63"
         'Microsoft Development PCA 2014;98725873611882C17A9D478FDC46F9C172552D63
         Hashes(9) = "98725873611882C17A9D478FDC46F9C172552D63"
+        'MSIT Test CodeSign CA 3; 8A334AA8052DD244A647306A76B8178FA215F344
+        Hashes(10) = "8A334AA8052DD244A647306A76B8178FA215F344"
+        'Microsoft Development Root Certificate Authority 2014; F8DB7E1C16F1FFD4AAAD4AAD8DFF0F2445184AEB; ED55F82E1444F79CA9DCE826846FDC4E0EA3859E3D26EFEF412D2FFF0C7C8E6C; FDF830131F605511D717AE8F24143EEA
+        Hashes(11) = "F8DB7E1C16F1FFD4AAAD4AAD8DFF0F2445184AEB"
+        
+        
+        'Root Agency (MD5 digest); FEE449EE0E3965A5246F000E87FDE2A065FD89D4
+        
     End If
     
     For i = 0 To UBound(Hashes)
@@ -1491,15 +1730,15 @@ Public Function IsMicrosoftCertHash(hash As String) As Boolean
     Next
 End Function
 
-Public Function IsMicrosoftFile(sFile As String) As Boolean
+Public Function IsMicrosoftFile(sFile As String, Optional Flags As FLAGS_SignVerify) As Boolean
     Dim SignResult As SignResult_TYPE
-    SignVerify sFile, 0&, SignResult
+    SignVerify sFile, Flags, SignResult
     If SignResult.isLegit Then
-        IsMicrosoftFile = IsMicrosoftCertHash(SignResult.HashRootCert)
+        IsMicrosoftFile = SignResult.isMicrosoftSign
     End If
 End Function
     
-Public Function IsSignPresent(Optional hFile As Long, Optional sFilePath As String) As Boolean
+Public Function IsInternalSignPresent(Optional hFile As Long, Optional sFilePath As String) As Boolean
     On Error GoTo ErrorHandler:
     ' 3Ch -> PE_Header offset
     ' PE_Header offset + 18h = Optional_PE_Header
@@ -1539,7 +1778,8 @@ Public Function IsSignPresent(Optional hFile As Long, Optional sFilePath As Stri
             Case IMAGE_FILE_MACHINE_AMD64, IMAGE_FILE_MACHINE_IA64
                 DataDir_offset = PE_offset + &H88&
             Case Else
-                ErrorMsg Err, "IsSignPresent", "Unknown architecture, not PE EXE or damaged image.", "File:", sFilePath
+                'ErrorMsg Err, "IsSignPresent", "Unknown architecture, not PE EXE or damaged image.", "File:", sFilePath
+                Debug.Print "Unknown architecture, not PE EXE or damaged image."
         End Select
         If 0 <> DataDir_offset Then
             DirSecur_offset = DataDir_offset + &H20&
@@ -1547,11 +1787,11 @@ Public Function IsSignPresent(Optional hFile As Long, Optional sFilePath As Stri
         End If
     End If
     
-    IsSignPresent = (SignAddress <> 0)
+    IsInternalSignPresent = (SignAddress <> 0)
     If 0 <> Len(sFilePath) Then CloseHandle hFile
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "IsSignPresent", "File:", sFilePath
+    ErrorMsg Err, "IsInternalSignPresent", "File:", sFilePath
     If 0 <> Len(sFilePath) And 0 <> hFile Then CloseHandle hFile
     If inIDE Then Stop: Resume Next
 End Function
@@ -1560,11 +1800,135 @@ End Function
 ' ============= Helper functions ===============
 '
 
-Private Function GetWindowsDir() As String
+'Public Function ToggleWow64FSRedirection(bEnable As Boolean, Optional PathNecessity As String, Optional OldStatus As Boolean) As Boolean
+'    'Static lWow64Old        As Long    'Warning: do not use initialized variables for this API !
+'                                        'Static variables is not allowed !
+'                                        'lWow64Old is now declared globally
+'
+'    'in_bEnable: new state to apply on file system redirector
+'    'True - enable redirector
+'    'False - disable redirector
+'
+'    'in_opt_PathNecessity: check if provided path is X64, e.g. needs to be redirected before trying to change redirector state
+'
+'    'out_opt_OldStatus: current state of redirection
+'    'True - redirector was enabled
+'    'False - redirector was disabled
+'
+'    'Return value is:
+'    'true if success: specified state has been set.
+'    'false on failure, or specified state has been already set.
+'
+'    Static IsNotRedirected  As Boolean
+'    Static IsInit           As Boolean
+'    Static bIsWin64         As Boolean
+'    Static sWinSysDir       As String
+'    Dim lr                  As Long
+'
+'    OldStatus = Not IsNotRedirected
+'
+'    If Not IsInit Then
+'        IsInit = True
+'        bIsWin64 = IsWin64()
+'        sWinSysDir = GetWindowsDir() & "\System32"
+'    End If
+'
+'    If Not bIsWin64 Then Exit Function
+'
+'    If Len(PathNecessity) <> 0 Then
+'        If StrComp(Left$(Replace(Replace(PathNecessity, "/", "\"), "\\", "\"), Len(sWinSysDir)), sWinSysDir, vbTextCompare) <> 0 Then Exit Function
+'    End If
+'
+'    If bEnable Then
+'        If IsNotRedirected Then
+'            lr = Wow64RevertWow64FsRedirection(lWow64Old)
+'            ToggleWow64FSRedirection = (lr <> 0)
+'            IsNotRedirected = False
+'        End If
+'    Else
+'        If Not IsNotRedirected Then
+'            lr = Wow64DisableWow64FsRedirection(lWow64Old)
+'            ToggleWow64FSRedirection = (lr <> 0)
+'            IsNotRedirected = True
+'        End If
+'    End If
+'End Function
+
+'Function FileLenW(Optional Path As String, Optional hFileHandle As Long) As Currency
+'    Dim lr          As Long
+'    Dim hFile       As Long
+'    Dim FileSize    As Currency
+'
+'    If hFileHandle = 0 Then
+'        hFile = CreateFile(StrPtr(Path), FILE_READ_ATTRIBUTES, FILE_SHARE_READ, ByVal 0&, OPEN_EXISTING, ByVal 0&, ByVal 0&)
+'    Else
+'        hFile = hFileHandle
+'    End If
+'
+'    If hFile > 0 Then
+'        lr = GetFileSizeEx(hFile, FileSize)
+'        If lr Then
+'            If FileSize < 10000000000@ Then FileLenW = FileSize * 10000&
+'        End If
+'        If hFileHandle = 0 Then CloseHandle hFile
+'    End If
+'End Function
+'
+'                                                                  'do not change Variant type at all or you will die ^_^
+'Private Function GetW(hFile As Long, ByVal pos As Long, Optional vOut As Variant, Optional vOutPtr As Long, Optional cbToRead As Long) As Boolean
+'    Dim lBytesRead  As Long
+'    Dim lr          As Long
+'    Dim ptr         As Long
+'    Dim vType       As Long
+'    Dim UnknType    As Boolean
+'
+'    pos = pos - 1   ' VB's Get & SetFilePointer difference correction
+'
+'    If INVALID_SET_FILE_POINTER <> SetFilePointer(hFile, pos, ByVal 0&, FILE_BEGIN) Then
+'        If NO_ERROR = Err.LastDllError Then
+'            vType = VarType(vOut)
+'
+'            If 0 <> cbToRead Then   'vbError = vType
+'                lr = ReadFile(hFile, vOutPtr, cbToRead, lBytesRead, 0&)
+'
+'            ElseIf vbString = vType Then
+'                lr = ReadFile(hFile, StrPtr(vOut), Len(vOut), lBytesRead, 0&)
+'                If Err.LastDllError <> 0 Or lr = 0 Then Err.Raise 52, , "Cannot read file! Handle: " & hFile
+'
+'                vOut = StrConv(vOut, vbUnicode)
+'                If Len(vOut) <> 0 Then vOut = Left$(vOut, Len(vOut) \ 2)
+'            Else
+'                'do a bit of magik :)
+'                memcpy ptr, ByVal VarPtr(vOut) + 8, 4& 'VT_BYREF
+'                Select Case vType
+'                Case vbByte
+'                    lr = ReadFile(hFile, ptr, 1&, lBytesRead, 0&)
+'                Case vbInteger
+'                    lr = ReadFile(hFile, ptr, 2&, lBytesRead, 0&)
+'                Case vbLong
+'                    lr = ReadFile(hFile, ptr, 4&, lBytesRead, 0&)
+'                Case vbCurrency
+'                    lr = ReadFile(hFile, ptr, 8&, lBytesRead, 0&)
+'                Case Else
+'                    UnknType = True
+'                    Debug.Print "Error! GetW for type #" & VarType(vOut) & " of buffer is not supported."
+'                    Err.Raise 52, , "Error! GetW for type #" & VarType(vOut) & " of buffer is not supported."
+'                End Select
+'            End If
+'            GetW = (0 <> lr)
+'            If 0 = lr And Not UnknType Then Debug.Print "Cannot read file!": Err.Raise 52, , "Cannot read file! Handle: " & hFile
+'        Else
+'            Debug.Print "Cannot set file pointer!": Err.Raise 52, , "Cannot set file pointer! Handle: " & hFile
+'        End If
+'    Else
+'        Debug.Print "Cannot set file pointer!": Err.Raise 52, , "Cannot set file pointer! Handle: " & hFile
+'    End If
+'End Function
+
+Public Function GetWindowsDir() As String
     Static SysRoot As String
     Static IsInit As Boolean
     Dim lr As Long
-    Dim osi As OSVERSIONINFOEX
     
     If IsInit Then
         GetWindowsDir = SysRoot
@@ -1572,23 +1936,19 @@ Private Function GetWindowsDir() As String
     End If
     
     IsInit = True
-    GetVersionEx osi
     
-    If osi.wProductType = VER_NT_WORKSTATION Then
-        SysRoot = String$(MAX_PATH, 0&)
-        lr = GetWindowsDirectory(StrPtr(SysRoot), MAX_PATH)
-        If lr Then
-            SysRoot = Left$(SysRoot, lr)
-        Else
-            SysRoot = Environ$("SystemRoot")
-        End If
+    SysRoot = String$(MAX_PATH, 0&)
+    lr = GetSystemWindowsDirectory(StrPtr(SysRoot), MAX_PATH)
+    If lr Then
+        SysRoot = Left$(SysRoot, lr)
     Else
-        SysRoot = Environ$("SystemRoot") 'avoid path virtualization on Windows Server with Terminal Services
+        SysRoot = Environ$("SystemRoot")
     End If
+    
     GetWindowsDir = SysRoot
 End Function
 
-Private Function IsWow64() As Boolean
+Public Function IsWow64() As Boolean
     Dim hModule As Long, procAddr As Long, lIsWin64 As Long
     Static IsInit As Boolean, Result As Boolean
 
@@ -1609,7 +1969,7 @@ Private Function IsWow64() As Boolean
     End If
 End Function
 
-Function IsWin64() As Boolean   ' OS bittness (not supported in Win2k)
+Function IsWin64() As Boolean   ' OS bittness (GetNativeSystemInfo is not supported in Win2k)
 '    Const PROCESSOR_ARCHITECTURE_AMD64 As Long = 9&
 '    Dim si(35) As Byte
 '    GetNativeSystemInfo VarPtr(si(0))
@@ -1617,22 +1977,34 @@ Function IsWin64() As Boolean   ' OS bittness (not supported in Win2k)
     IsWin64 = IsWow64()
 End Function
 
+'Public Function FileExists(Path As String) As Boolean
+'    Dim l           As Long
+'    Dim OldStatus   As Boolean
+'
+'    Call ToggleWow64FSRedirection(False, Path, OldStatus)
+'
+'    l = GetFileAttributes(StrPtr(Path))
+'    FileExists = Not CBool(l And vbDirectory) And (l <> INVALID_HANDLE_VALUE)
+'
+'    If OldStatus Then ToggleWow64FSRedirection True
+'End Function
+
 Private Function FileTime_To_VT_Date(ftime As FILETIME) As Date
     Dim DateTime As Date
-    Dim stime As SYSTEMTIME
+    Dim sTime As SYSTEMTIME
     FileTimeToLocalFileTime ftime, ftime            ' consider time zone
-    FileTimeToSystemTime ftime, stime               ' FILETIME -> SYSTEMTIME
-    SystemTimeToVariantTime stime, DateTime         ' SYSTEMTIME -> Date
+    FileTimeToSystemTime ftime, sTime               ' FILETIME -> SYSTEMTIME
+    SystemTimeToVariantTime sTime, DateTime         ' SYSTEMTIME -> Date
     FileTime_To_VT_Date = DateTime
 End Function
 
-Private Function StringFromPtrA(ByVal ptr As Long) As String
+Private Function StringFromPtrA(ptr As Long) As String
     If 0& <> ptr Then
         StringFromPtrA = SysAllocStringByteLen(ptr, lstrlenA(ptr))
     End If
 End Function
 
-Private Function StringFromPtrW(ByVal ptr As Long) As String
+Private Function StringFromPtrW(ptr As Long) As String
     Dim strSize As Long
     If 0 <> ptr Then
         strSize = lstrlen(ptr)
@@ -1642,6 +2014,25 @@ Private Function StringFromPtrW(ByVal ptr As Long) As String
         End If
     End If
 End Function
+
+Private Function LongFromPtr(ptr As Long) As Long
+    GetMem4 ByVal ptr, LongFromPtr
+End Function
+
+'Private Function ErrMessageText(lCode As Long) As String
+'    Const FORMAT_MESSAGE_FROM_SYSTEM    As Long = &H1000&
+'    Const FORMAT_MESSAGE_IGNORE_INSERTS As Long = &H200&
+'
+'    Dim sRtrnMessage   As String
+'    Dim lret           As Long
+'
+'    sRtrnMessage = String$(MAX_PATH, vbNullChar)
+'    lret = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM Or FORMAT_MESSAGE_IGNORE_INSERTS, 0&, lCode, 0&, StrPtr(sRtrnMessage), MAX_PATH, ByVal 0&)
+'    If lret > 0 Then
+'        ErrMessageText = Left$(sRtrnMessage, lret)
+'        ErrMessageText = Replace$(ErrMessageText, vbCrLf, vbNullString)
+'    End If
+'End Function
 
 ' Proxy-wrapper for ErrorMsg
 Private Sub WriteError(ByVal ErrObj As ErrObject, SignResult As SignResult_TYPE, FunctionName As String)
@@ -1660,7 +2051,7 @@ Private Sub WriteError(ByVal ErrObj As ErrObject, SignResult As SignResult_TYPE,
             .ShortMessage = "TRUST_E_BAD_DIGEST"
             .FullMessage = ErrMessageText(TRUST_E_BAD_DIGEST) 'damaged signature
         
-            If IsSignPresent(, .FilePathVerified) Then
+            If IsInternalSignPresent(, .FilePathVerified) Then
                 'SignResult.ShortMessage = "Digital signature is present, but damaged (probably, file is patched)." ' overwrite
             
                 'ErrReport = ErrReport & vbCrLf & "Digital signature is present, but damaged (probably, file is patched)." & ": " & SignResult.FilePathVerified
@@ -1673,7 +2064,45 @@ Private Sub WriteError(ByVal ErrObj As ErrObject, SignResult As SignResult_TYPE,
     Else
         ErrorMsg SaveError, FunctionName, SignResult.ShortMessage, "File: ", SignResult.FilePathVerified
     End If
+
 End Sub
+
+'Private Function ParseDateTime(myDate As Date) As String
+'    ParseDateTime = Right$("0" & Day(myDate), 2) & _
+'        "." & Right$("0" & Month(myDate), 2) & _
+'        "." & Year(myDate) & _
+'        " " & Right$("0" & Hour(myDate), 2) & _
+'        ":" & Right$("0" & Minute(myDate), 2) & _
+'        ":" & Right$("0" & Second(myDate), 2)
+'End Function
+
+'Public Sub ErrorMsg(ByVal ErrObj As ErrObject, sProcedure As String, ParamArray CodeModule())
+'    Dim HRESULT     As String
+'    Dim Other       As String
+'    Dim i           As Long
+'    Dim sFormatted  As String
+'
+'    For i = 0 To UBound(CodeModule)
+'        Other = Other & CodeModule(i) & " "
+'    Next
+'
+'    HRESULT = ErrMessageText(IIf(ErrObj.Number = 0, ErrObj.LastDllError, ErrObj.Number))
+'
+'    sFormatted = _
+'        "- " & ParseDateTime(Now) & _
+'        " - " & sProcedure & _
+'        " - #" & ErrObj.Number & " " & _
+'        ErrObj.Description & _
+'        ". LastDllError = " & ErrObj.LastDllError & _
+'        IIf(Len(HRESULT), " (" & HRESULT & ")", "") & " " & _
+'        IIf(Len(Other), "" & Other, "")
+'
+'    Debug.Print sFormatted
+'    'MsgBoxW sFormatted
+'
+'    ErrReport = ErrReport & vbCrLf & _
+'        "- " & sFormatted
+'End Sub
 
 'Public Function inIDE() As Boolean
 '    inIDE = (App.LogMode = 0)
@@ -1735,7 +2164,7 @@ Public Sub WinTrustVerifyNode(sKey$)
     If bAbort Then Exit Sub
     If Not NodeIsValidFile(frmStartupList2.tvwMain.Nodes(sKey)) Then Exit Sub
         
-    Dim sFile$, sMD5$, sIcon$
+    Dim sFile$, sIcon$
     sFile = frmStartupList2.tvwMain.Nodes(sKey).Text
     If Not FileExists(sFile) Then
         sFile = frmStartupList2.tvwMain.Nodes(sKey).Tag
@@ -1760,3 +2189,6 @@ Private Function WinVerifyFile(sFile As String) As Boolean
     SignVerify sFile, 0&, SignResult
     WinVerifyFile = SignResult.isLegit
 End Function
+
+
+

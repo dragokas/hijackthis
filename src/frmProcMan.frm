@@ -71,7 +71,9 @@ Begin VB.Form frmProcMan
       Begin VB.ListBox lstProcessManager 
          Height          =   1185
          IntegralHeight  =   0   'False
+         ItemData        =   "frmProcMan.frx":1CFA
          Left            =   120
+         List            =   "frmProcMan.frx":1CFC
          MultiSelect     =   2  'Extended
          TabIndex        =   3
          Top             =   600
@@ -107,7 +109,7 @@ Begin VB.Form frmProcMan
       Begin VB.Image imgProcManCopy 
          Height          =   240
          Left            =   2520
-         Picture         =   "frmProcMan.frx":1CFA
+         Picture         =   "frmProcMan.frx":1CFE
          ToolTipText     =   "Copy process list to clipboard"
          Top             =   330
          Width           =   240
@@ -133,7 +135,7 @@ Begin VB.Form frmProcMan
       Begin VB.Image imgProcManSave 
          Height          =   240
          Left            =   3000
-         Picture         =   "frmProcMan.frx":1E44
+         Picture         =   "frmProcMan.frx":1E48
          ToolTipText     =   "Save process list to file.."
          Top             =   330
          Width           =   240
@@ -169,6 +171,10 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
 
+'
+' Itty Bitty Process Manager by Merijn Bellekom
+'
+
 'v1.00 - original release, later added copy to clipboard button
 'v1.01 - added label for dlls, keyboard shortcuts
 'v1.01.1 - fixed crash bug in form_resize, added version number to frame
@@ -181,25 +187,22 @@ Option Explicit
 '--
 'v1.05 - dll list is updated when browsing process list with keyboard
 
-Private Type THREADENTRY32
-    dwSize As Long
-    dwRefCount As Long
-    th32ThreadID As Long
-    th32ProcessID As Long
-    dwBasePriority As Long
-    dwCurrentPriority As Long
-    dwFlags As Long
-End Type
+'Fork by Dragokas
 
-Private Declare Function Thread32First Lib "kernel32.dll" (ByVal hSnapshot As Long, uThread As THREADENTRY32) As Long
-Private Declare Function Thread32Next Lib "kernel32.dll" (ByVal hSnapshot As Long, ByRef ThreadEntry As THREADENTRY32) As Long
-Private Declare Function TerminateProcess Lib "kernel32.dll" (ByVal hProcess As Long, ByVal uExitCode As Long) As Long
+'Replaced Process listing function by Nt version
+
+'// TODO:
+' Add viewing x64 / .NET process modules by parsing in-memory structures:
+' https://stackoverflow.com/questions/3801517/how-to-enum-modules-in-a-64bit-process-from-a-32bit-wow-process
+' http://www.ownedcore.com/forums/world-of-warcraft/world-of-warcraft-bots-programs/wow-memory-editing/364944-c-net-4-0-determining-modules-loaded-wow-process.html
+
 Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
-Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteW" (ByVal hWnd As Long, ByVal lpOperation As Long, ByVal lpFile As Long, ByVal lpParameters As Long, ByVal lpDirectory As Long, ByVal nShowCmd As Long) As Long
+Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteW" (ByVal hwnd As Long, ByVal lpOperation As Long, ByVal lpFile As Long, ByVal lpParameters As Long, ByVal lpDirectory As Long, ByVal nShowCmd As Long) As Long
 Private Declare Function SHRunDialog Lib "shell32.dll" Alias "#61" (ByVal hOwner As Long, ByVal Unknown1 As Long, ByVal Unknown2 As Long, ByVal szTitle As String, ByVal szPrompt As String, ByVal uFlags As Long) As Long
 Private Declare Sub ReleaseCapture Lib "user32.dll" ()
 
 Private Const TH32CS_SNAPPROCESS = &H2
+Private Const TH32CS_SNAPNOHEAPS = &H40000000
 Private Const TH32CS_SNAPMODULE = &H8
 Private Const TH32CS_SNAPTHREAD = &H4
 Private Const PROCESS_TERMINATE = &H1
@@ -213,13 +216,14 @@ Private Const WM_NCLBUTTONDOWN = &HA1
 Private Const HTCAPTION = 2
 
 Private lstProcessManagerHasFocus As Boolean
+Private lstProcManDLLsHasFocus As Boolean
 
 
 Public Sub RefreshProcessList(objList As ListBox)
-    Dim hSnap&, uPE32 As PROCESSENTRY32, i&
-    Dim sExeFile$, hProcess&
+    Dim hSnap&, uPE32 As PROCESSENTRY32W
+    Dim sExeFile$
 
-    hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
+    hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS Or TH32CS_SNAPNOHEAPS, 0)
     
     uPE32.dwSize = Len(uPE32)
     If Process32First(hSnap, uPE32) = 0 Then
@@ -229,7 +233,7 @@ Public Sub RefreshProcessList(objList As ListBox)
     
     objList.Clear
     Do
-        sExeFile = TrimNull(StrConv(uPE32.szExeFile, vbFromUnicode))
+        sExeFile = StringFromPtrW(VarPtr(uPE32.szExeFile(0)))
         objList.AddItem uPE32.th32ProcessID & vbTab & sExeFile
     Loop Until Process32Next(hSnap, uPE32) = 0
     CloseHandle hSnap
@@ -266,7 +270,7 @@ Public Sub RefreshProcessListNT(objList As ListBox)
 End Sub
 
 Public Sub RefreshDLLList(lPID&, objList As ListBox)
-    Dim hSnap&, uME32 As MODULEENTRY32
+    Dim hSnap&, uME32 As MODULEENTRY32W
     Dim sDllFile$
     objList.Clear
     If lPID = 0 Then Exit Sub
@@ -279,7 +283,7 @@ Public Sub RefreshDLLList(lPID&, objList As ListBox)
     End If
     
     Do
-        sDllFile = TrimNull(StrConv(uME32.szExePath, vbFromUnicode))
+        sDllFile = StringFromPtrW(VarPtr(uME32.szExePath(0)))
         objList.AddItem sDllFile
     Loop Until Module32Next(hSnap, uME32) = 0
     CloseHandle hSnap
@@ -295,7 +299,7 @@ Public Sub SaveProcessList(objProcess As ListBox, objDLL As ListBox, Optional bD
     ff = FreeFile()
     Open sFileName For Output As #ff
         'Process list saved on [*DateTime*]
-        Print #ff, Replace$(Translate(169), "[*DateTime*]", Format(time, "Long Time") & ", " & Format(Date, "Short Date"))
+        Print #ff, Replace$(Translate(169), "[*DateTime*]", Format$(time, "Long Time") & ", " & Format$(Date, "Short Date"))
         'Platform
         Print #ff, Translate(185) & ": " & sWinVersion & vbCrLf
         '[full path to filename]
@@ -310,7 +314,7 @@ Public Sub SaveProcessList(objProcess As ListBox, objDLL As ListBox, Optional bD
         Next i
        
         If bDoDLLs Then
-            Dim arList() As String, J&, lPID&       'Full image. DLLs of ALL processes.
+            Dim arList() As String, j&, lPID&       'Full image. DLLs of ALL processes.
             
             For i = 0 To objProcess.ListCount - 1
                 sProcess = objProcess.List(i)
@@ -324,8 +328,8 @@ Public Sub SaveProcessList(objProcess As ListBox, objDLL As ListBox, Optional bD
                 '[company name]
                 Print #ff, Translate(186) & vbTab & vbTab & Translate(187) & vbTab & Translate(188)
                 If IsArrDimmed(arList) Then
-                    For J = 0 To UBound(arList)
-                        sModule = arList(J)
+                    For j = 0 To UBound(arList)
+                        sModule = arList(j)
                         Print #ff, sModule & vbTab & vbTab & GetFilePropVersion(sModule) & vbTab & GetFilePropCompany(sModule)
                     Next
                 End If
@@ -348,7 +352,7 @@ Public Sub CopyProcessList(objProcess As ListBox, objDLL As ListBox, Optional bD
     '[full path to filename]
     '[file version]
     '[company name]
-    sList = Replace$(Translate(169), "[*DateTime*]", Format(time, "Long Time") & ", " & Format(Date, "Short Date")) & vbCrLf & _
+    sList = Replace$(Translate(169), "[*DateTime*]", Format$(time, "Long Time") & ", " & Format$(Date, "Short Date")) & vbCrLf & _
             Translate(185) & ": " & sWinVersion & vbCrLf & vbCrLf & _
             "[pid]" & vbTab & Translate(186) & vbTab & vbTab & Translate(187) & vbTab & Translate(188) & vbCrLf
     For i = 0 To objProcess.ListCount - 1
@@ -386,18 +390,19 @@ End Sub
 
 Private Sub SetListBoxColumns(objListBox As ListBox)
     Dim lTabStop&(1)
-    On Error GoTo 0:
-    lTabStop(0) = 70
+    lTabStop(0) = 40
     lTabStop(1) = 0
-    SendMessage objListBox.hWnd, LB_SETTABSTOPS, UBound(lTabStop), lTabStop(0)
+    SendMessage objListBox.hwnd, LB_SETTABSTOPS, UBound(lTabStop) + 1, lTabStop(0)
 End Sub
 
 Private Sub chkProcManShowDLLs_Click()
-    lstProcManDLLs.Visible = CBool(chkProcManShowDLLs.value)
+    lstProcManDLLs.Visible = CBool(chkProcManShowDLLs.Value)
     On Error Resume Next
     'lstProcessManager.ListIndex = 0
     lstProcessManager_MouseUp 1, 0, 0, 0
-    lstProcessManager.SetFocus
+    If lstProcessManager.Visible And lstProcessManager.Enabled Then
+        lstProcessManager.SetFocus
+    End If
     Form_Resize
 End Sub
 
@@ -406,7 +411,7 @@ Private Sub cmdProcManBack_Click()
 End Sub
 
 Private Sub cmdProcManKill_Click()
-    Dim sMsg$, i&, s$, HasSelectedProcess As Boolean
+    Dim sMsg$, i&, S$, HasSelectedProcess As Boolean
     sMsg = Translate(179) & vbCrLf
     'sMsg = "Are you sure you want to close the selected processes?" & vbCrLf
     For i = 0 To lstProcessManager.ListCount - 1
@@ -429,19 +434,19 @@ Private Sub cmdProcManKill_Click()
     'pause selected processes
     For i = 0 To lstProcessManager.ListCount - 1
         If lstProcessManager.Selected(i) Then
-            s = lstProcessManager.List(i)
-            s = Left$(s, InStr(s, vbTab) - 1)
-            PauseProcess CLng(s)
+            S = lstProcessManager.List(i)
+            S = Left$(S, InStr(S, vbTab) - 1)
+            PauseProcess CLng(S)
         End If
     Next i
     For i = 0 To lstProcessManager.ListCount - 1
         If lstProcessManager.Selected(i) Then
-            s = lstProcessManager.List(i)
-            s = Left$(s, InStr(s, vbTab) - 1)
+            S = lstProcessManager.List(i)
+            S = Left$(S, InStr(S, vbTab) - 1)
             If bIsWinNT Then
-                KillProcessNT CLng(s)
+                KillProcessNT CLng(S)
             Else
-                KillProcess CLng(s)
+                KillProcess CLng(S)
             End If
         End If
     Next i
@@ -449,9 +454,9 @@ Private Sub cmdProcManKill_Click()
     'resume any processes still alive
     For i = 0 To lstProcessManager.ListCount - 1
         If lstProcessManager.Selected(i) Then
-            s = lstProcessManager.List(i)
-            s = Left$(s, InStr(s, vbTab) - 1)
-            ResumeProcess CLng(s)
+            S = lstProcessManager.List(i)
+            S = Left$(S, InStr(S, vbTab) - 1)
+            ResumeProcess CLng(S)
         End If
     Next i
     
@@ -466,13 +471,13 @@ Private Sub cmdProcManRefresh_Click()
         RefreshProcessListNT lstProcessManager
         lstProcessManager.ListIndex = 0
         If lstProcManDLLs.Visible Then
-            Dim s$
-            s = lstProcessManager.List(lstProcessManager.ListIndex)
-            s = Left(s, InStr(s, vbTab) - 1)
+            Dim S$
+            S = lstProcessManager.List(lstProcessManager.ListIndex)
+            S = Left$(S, InStr(S, vbTab) - 1)
             If Not bIsWinNT Then
-                RefreshDLLList CLng(s), lstProcManDLLs
+                RefreshDLLList CLng(S), lstProcManDLLs
             Else
-                RefreshDLLListNT CLng(s), lstProcManDLLs
+                RefreshDLLListNT CLng(S), lstProcManDLLs
             End If
         End If
     End If
@@ -484,14 +489,18 @@ End Sub
 
 Private Sub cmdProcManRun_Click()
     If Not bIsWinNT Then
-        SHRunDialog Me.hWnd, 0, 0, Translate(181), Translate(182), 0
+        SHRunDialog Me.hwnd, 0, 0, Translate(181), Translate(182), 0
         'SHRunDialog Me.hWnd, 0, 0, "Run", "Type the name of a program, folder, document or Internet resource, and Windows will open it for you.", 0
     Else
-        SHRunDialog Me.hWnd, 0, 0, StrConv(Translate(181), vbUnicode), StrConv(Translate(182), vbUnicode), 0
+        SHRunDialog Me.hwnd, 0, 0, StrConv(Translate(181), vbUnicode), StrConv(Translate(182), vbUnicode), 0
         'SHRunDialog Me.hWnd, 0, 0, StrConv("Run", vbUnicode), StrConv("Type the name of a program, folder, document or Internet resource, and Windows will open it for you.", vbUnicode), 0
     End If
     Sleep 1000
     cmdProcManRefresh_Click
+End Sub
+
+Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
+    If KeyCode = 27 Then Me.Hide
 End Sub
 
 Private Sub Form_Load()
@@ -501,15 +510,22 @@ Private Sub Form_Load()
     Me.Caption = Translate(170)
     cmdProcManRefresh_Click
     'Itty Bitty Process Manager - v
-    fraProcessManager.Caption = Translate(160) & ProcManVer 'App.Major & "." & Format(App.Minor, "00") & "." & App.Revision
+    fraProcessManager.Caption = Translate(160) & ProcManVer 'App.Major & "." & format$(App.Minor, "00") & "." & App.Revision
     SetListBoxColumns lstProcessManager
     AddHorizontalScrollBarToResults lstProcessManager
 End Sub
 
-Private Sub Form_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
-    If Button = 1 Then
-        ReleaseCapture
-        SendMessage Me.hWnd, WM_NCLBUTTONDOWN, HTCAPTION, 0
+Private Sub Form_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
+'    If Button = 1 Then
+'        ReleaseCapture
+'        SendMessage Me.hwnd, WM_NCLBUTTONDOWN, HTCAPTION, 0
+'    End If
+End Sub
+
+Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
+    If UnloadMode = 0 Then 'initiated by user (clicking 'X')
+        Cancel = True
+        Me.Hide
     End If
 End Sub
 
@@ -524,7 +540,7 @@ Private Sub Form_Resize()
     imgProcManCopy.Left = Me.ScaleWidth - 3100
 
     fraProcessManager.Height = Me.ScaleHeight - 125
-    If chkProcManShowDLLs.value = 0 Then
+    If chkProcManShowDLLs.Value = 0 Then
         lstProcessManager.Height = Me.ScaleHeight - 1470
     Else
         lstProcessManager.Height = (Me.ScaleHeight - 1470) / 2 - 120
@@ -539,15 +555,15 @@ Private Sub Form_Resize()
     lblProcManDblClick.Top = Me.ScaleHeight - 720
 End Sub
 
-Private Sub fraProcessManager_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
-    ReleaseCapture
-    SendMessage Me.hWnd, WM_NCLBUTTONDOWN, HTCAPTION, 0
-End Sub
+'Private Sub fraProcessManager_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+'    ReleaseCapture
+'    SendMessage Me.hwnd, WM_NCLBUTTONDOWN, HTCAPTION, 0
+'End Sub
 
 Private Sub imgProcManCopy_Click()
     imgProcManCopy.BorderStyle = 1
     DoEvents
-    If chkProcManShowDLLs.value = 1 Then
+    If chkProcManShowDLLs.Value = 1 Then
         CopyProcessList lstProcessManager, lstProcManDLLs, True
     Else
         CopyProcessList lstProcessManager, lstProcManDLLs, False
@@ -558,7 +574,7 @@ End Sub
 Private Sub imgProcManSave_Click()
     imgProcManSave.BorderStyle = 1
     DoEvents
-    If chkProcManShowDLLs.value = 1 Then
+    If chkProcManShowDLLs.Value = 1 Then
         SaveProcessList lstProcessManager, lstProcManDLLs, True
     Else
         SaveProcessList lstProcessManager, lstProcManDLLs, False
@@ -568,39 +584,39 @@ End Sub
 
 Private Sub lstProcessManager_Click()
     If lstProcManDLLs.Visible = False Then Exit Sub
-    Dim s$
+    Dim S$
     If lstProcessManager.ListIndex = -1 Then lstProcessManager.ListIndex = 0: lstProcessManager.Selected(0) = True
-    s = lstProcessManager.List(lstProcessManager.ListIndex)
-    s = Left$(s, InStr(s, vbTab) - 1)
+    S = lstProcessManager.List(lstProcessManager.ListIndex)
+    S = Left$(S, InStr(S, vbTab) - 1)
     If Not bIsWinNT Then
-        RefreshDLLList CLng(s), lstProcManDLLs
+        RefreshDLLList CLng(S), lstProcManDLLs
     Else
-        RefreshDLLListNT CLng(s), lstProcManDLLs
+        RefreshDLLListNT CLng(S), lstProcManDLLs
     End If
     lblConfigInfo(9).Caption = Translate(178) & " (" & lstProcManDLLs.ListCount & ")"
     'lblConfigInfo(9).Caption = "Loaded DLL libraries by selected process: (" & lstProcManDLLs.ListCount & ")"
 End Sub
 
 Private Sub lstProcessManager_DblClick()
-    Dim s$
+    Dim S$
     If lstProcessManager.ListIndex = -1 Then
-        If lstProcessManager.ListCount <> 0 Then s = lstProcessManager.List(0) Else Exit Sub
+        If lstProcessManager.ListCount <> 0 Then S = lstProcessManager.List(0) Else Exit Sub
     Else
-        s = lstProcessManager.List(lstProcessManager.ListIndex)
+        S = lstProcessManager.List(lstProcessManager.ListIndex)
     End If
-    s = Mid$(s, InStr(s, vbTab) + 1)
-    ShowFileProperties s, Me.hWnd
+    S = Mid$(S, InStr(S, vbTab) + 1)
+    ShowFileProperties S, Me.hwnd
 End Sub
 
 Private Sub lstProcManDLLs_DblClick()
-    Dim s$
+    Dim S$
     If lstProcManDLLs.ListIndex = -1 Then
-        If lstProcManDLLs.ListCount <> 0 Then s = lstProcManDLLs.List(0) Else Exit Sub
+        If lstProcManDLLs.ListCount <> 0 Then S = lstProcManDLLs.List(0) Else Exit Sub
     Else
-        s = lstProcManDLLs.List(lstProcManDLLs.ListIndex)
+        S = lstProcManDLLs.List(lstProcManDLLs.ListIndex)
     End If
-    s = Mid$(s, InStr(s, vbTab) + 1)
-    ShowFileProperties s, Me.hWnd
+    S = Mid$(S, InStr(S, vbTab) + 1)
+    ShowFileProperties S, Me.hwnd
 End Sub
 
 Private Sub lstProcManDLLs_KeyDown(KeyCode As Integer, Shift As Integer)
@@ -611,19 +627,20 @@ Private Sub lstProcessManager_KeyDown(KeyCode As Integer, Shift As Integer)
     Select Case KeyCode
         Case 13: lstProcessManager_DblClick
         Case 33, 34, 35, 36, 37, 38, 40: lstProcessManager_MouseUp 1, 0, 0, 0
+        Case 27: Me.Hide
     End Select
 End Sub
 
-Private Sub lstProcessManager_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub lstProcessManager_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     If Button = 1 Then
         If lstProcManDLLs.Visible = False Then Exit Sub
-        Dim s$
-        s = lstProcessManager.List(lstProcessManager.ListIndex)
-        s = Left(s, InStr(s, vbTab) - 1)
+        Dim S$
+        S = lstProcessManager.List(lstProcessManager.ListIndex)
+        S = Left$(S, InStr(S, vbTab) - 1)
         If Not bIsWinNT Then
-            RefreshDLLList CLng(s), lstProcManDLLs
+            RefreshDLLList CLng(S), lstProcManDLLs
         Else
-            RefreshDLLListNT CLng(s), lstProcManDLLs
+            RefreshDLLListNT CLng(S), lstProcManDLLs
         End If
         'Loaded DLL libraries by selected process:
         lblConfigInfo(9).Caption = Translate(178) & " (" & lstProcManDLLs.ListCount & ")"
@@ -632,7 +649,7 @@ Private Sub lstProcessManager_MouseUp(Button As Integer, Shift As Integer, X As 
     End If
 End Sub
 
-Private Sub lstProcManDLLs_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub lstProcManDLLs_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     If Button = 2 Then
         mnuProcManKill.Enabled = False
         PopupMenu mnuProcMan, , , , mnuProcManProps
@@ -651,10 +668,14 @@ End Sub
 Private Sub lstProcessManager_LostFocus()
     lstProcessManagerHasFocus = False
 End Sub
-Private Sub lstProcessManager_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub lstProcessManager_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
     If Not lstProcessManagerHasFocus Then
-        lstProcessManagerHasFocus = True
-        'lstProcessManager.SetFocus
+        If GetForegroundWindow() = lstProcessManager.Parent.hwnd Then
+            lstProcessManagerHasFocus = True
+            If lstProcessManager.Visible And lstProcessManager.Enabled Then
+                lstProcessManager.SetFocus
+            End If
+        End If
     End If
 End Sub
 
@@ -670,3 +691,16 @@ Private Sub mnuProcManSave_Click()
     imgProcManSave_Click
 End Sub
 
+Private Sub lstProcManDLLs_LostFocus()
+    lstProcManDLLsHasFocus = False
+End Sub
+Private Sub lstProcManDLLs_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+    If Not lstProcManDLLsHasFocus Then
+        If GetForegroundWindow() = lstProcManDLLs.Parent.hwnd Then
+            lstProcManDLLsHasFocus = True
+            If lstProcManDLLs.Visible And lstProcManDLLs.Enabled Then
+                lstProcManDLLs.SetFocus
+            End If
+        End If
+    End If
+End Sub

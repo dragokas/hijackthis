@@ -8,6 +8,120 @@
 1. HiJackThis version history
 -----------------------------
 
+[2.6.4.24 (fork by Dragokas)] - 24.04.2017
+Улучшен механизм удаления файла.
+Добавлена секция O26 - Image File Execution Options
+
+[2.6.4.24 (fork by Dragokas)] - 24.04.2017
+File deletion mechanism is improved.
+Added section O26 - Image File Execution Options.
+
+[2.6.4.22 (fork by Dragokas)] - 23.04.2017
+Завершен перевод на русский язык.
+Завершена ревизия и дополнение во внутреннюю справку программы (Помощь => О программе => Секции).
+Исправлена ошибка при запуске на носителе, заблокированном от записи.
+
+[2.6.4.22 (fork by Dragokas)] - 23.04.2017
+Translation to Russian has been finished.
+Revision and additions to program's internal help is finished (Help => About program => Sections).
+Fixed error while starting program from read only drive.
+
+[2.6.4.21 (fork by Dragokas)] - 17.04.2017
+R4 - новый механизм проверки по белому списку Bing.
+R4 - улучшен fix.
+O4 - Startup other users: ранее всегда отображалось одинаковое имя папки пользователя.
+O21 - добавлена проверка ShellIconOverlayIdentifiers.
+O21 - добавлена проверка ЭЦП для предустановленных dll Microsoft.
+O7 - TroubleShoot: Новая группа. Выводит повреждённые настройки системы, которые могут приводить к нарушению функционирования ОС.
+O7 - TroubleShoot: внесена проверка переменных окружения %TEMP%, %TMP%.
+O2,O3,O22: Улучшена совместимость с x64.
+Добавлена блокировка интерфейса на время сканирования из автологгера (влияет ключ /silentautolog)
+
+[2.6.4.21 (fork by Dragokas)] - 17.04.2017
+R4 - new whitelist mechanism for Bing.
+R4 - fix is improved.
+O4 - Startup other users: earlier the same user folder name was always displayed.
+O21 - added checking ShellIconOverlayIdentifiers.
+O21 - added checking EDS for pre-installed Microsoft dll-files.
+O7 - TroubleShoot: new group. It display damaged system settings that can lead to OS malfunction.
+O7 - TroubleShoot: added checking of environment variables - %TEMP%, %TMP%.
+O2,O3,O22: improved compatiblity with x64.
+Added interface locking while scanning via AutoLogger (key /silentautolog is affect).
+
+[2.6.4.17 (fork by Dragokas)] - 05.04.2017
+Добавлена подсекция R4 - провайдеры поиска (DefaultScope, SearchScopes).
+Добавлена пометка (lnk is corrupted) для повреждённых ярлыков.
+Исправлен баг с символом NUL в списке процессов.
+Проверка ЭЦП дополнена файлами, в описании которых указано, что они принадлежат Microsoft.
+Bug fix: O22 (file missing), когда запускается через рабочий каталог, или неполный путь в CLSID.
+Пополнены белые списки O22, O23.
+
+[2.6.4.17 (fork by Dragokas)] - 05.04.2017
+Added subsection R4 - search providers (DefaultScope, SearchScopes).
+Added mark (lnk is corrupted) for damaged shortcuts.
+Fixed bug with NUL char. in processes list.
+EDS checking appended with files that have 'Microsoft' string in description.
+Bug fix: O22 (file missing), when launched via working directory or not fully qualified path in CLSID.
+O22, O23 white lists have been updated.
+
+[2.6.4.16 (fork by Dragokas)] - 05.04.2017
+Исправлены случаи, когда не удалялись файлы во время фиксов.
+O22 - Task: Backup временно отключён.
+
+[2.6.4.16 (fork by Dragokas)] - 05.04.2017
+Resolved cases where files cannot be removed by fix.
+O22 - Task: Backup is temporarily disabled.
+
+[2.6.4.15 (fork by Dragokas)] - 25.03.2017
+O22, O23 - Уменьшено число проверок ЭЦП до минимума, проверка выпоняется только для файлов, имеющихся в базе. Служба Windows Defender в лог выводится БУДЕТ.
+O22 - добавлен вывод пути к файлу для заданий типа ComHandler.
+O8 - исправлено "file missing" для записей с префиксом file://
+Добавлена базовая совместимость с Windows 2000.
+
+[2.6.4.15 (fork by Dragokas)] - 25.03.2017
+O22, O23 - reduced number of EDS checkings. It execute now on database files only. Windows Defender servcie will be in the log.
+O22 - Added displaying of path to file in ComHandler Tasks type.
+O8 - fixed "file missing" for records with file:// prefix.
+Added base compatiblity with Windows 2000.
+
+[2.6.4.14 (fork by Dragokas)] - 19.03.2017
+O2 - не работала проверка х32-битных ключей.
+O3 - не работала проверка х32-битных ключей.
+O2, O3 - улучшена зачистка.
+O23 - FindOnPath
+R0 - UnQuote
+R1 - proxy, добавлена HKU\.DEFAULT
+
+[2.6.4.14 (fork by Dragokas)] - 19.03.2017
+O2 - х32-bitness key checking is now working
+O3 - х32-bitness key checking is now working
+O2, O3 - cleaning improved
+O23 - FindOnPath
+R0 - UnQuote
+R1 - proxy, added HKU\.DEFAULT
+
+[2.6.4.13 (fork by Dragokas)] - 16.03.2017
+Усилен вывод отладочной информации.
+Добавлен ключ /debugtofile - вывод трассировки в файл HiJackThis_debug.log
+Ключ /debug теперь пишет параллельный лог трассировки в файл HiJackThis_debug.log
+
+[2.6.4.12 (fork by Dragokas)] - 15.03.2017
+Добавлено раскрытие переменных окружения для всех секций.
+
+[2.6.4.12 (fork by Dragokas)] - 15.03.2017
+All sections: Expand environment variables
+
+[2.6.4.11 (fork by Dragokas)] - 11.03.2017
+O22, O23 - Убраны названия ЭЦП из лога.
+
+[2.6.4.10 (fork by Dragokas)] - 10.03.2017
+O22, O23 - возвращены префиксы.
+O23 - вернул вывод в лог описания службы (когда оно не совпадает с её названием)
+Процессы - убрана проверка ЭЦП.
+O8, O12 - строки с "no file" не выводились в лог; также добавлено "file missing".
+Для всех секций добавлен принудительный перевод формата пути/имени файла 8.3 в полный.
+Hosts File Editor: починена кнопка "Open in editor"
+
 [2.6.4.9 (fork by Dragokas)] - 03.03.2017
 O22 - изменён формат лога: убран префикс; имя файла задания объединёно с путём.
 O23 - изменён формат лога: убран префикс и название службы.
@@ -46,7 +160,7 @@ O23 - не всегда раскрывалось отображаемое имя
 [2.6.4.5 (fork by Dragokas)] - 16.02.2017
 Исправлены ошибки в модуле проверки ЭЦП. Программа могла зависать (в основном на XP).
 Убраны пометки <-- Attention у заданий с отсутствующим объектом.
-Более детализированный прогрессбар. 
+Более детализированный прогрессбар.
 
 [2.6.4.4 (fork by Dragokas)] - 12.02.2017
 [O22] Секция "задания" дополнена проверкой ЭЦП.

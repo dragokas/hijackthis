@@ -3,10 +3,7 @@ Option Explicit
 
 ' Windows Scheduled Tasks Enumerator/Killer by Alex Dragokas
 
-' You must add reference to c:\windows\system32 (SysWow64) \taskschd.dll
-' Otherwise, specify variables with Object type instead of exact types of ITask group interfaces.
-' Current decision - extracted Microsoft Type Library. You should register it first.
-' Type Library registration tool by Steve McMahon may help.
+' To add early binding, set reference to taskschd.dll
 
 ' Action type constants
 Private Const TASK_ACTION_EXEC          As Long = 0
@@ -81,11 +78,11 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState As Boolean)
+Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder)
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "EnumTasksInITaskFolder - Begin"
     
-    Dim Result      As TYPE_Scan_Results
+    Dim Result      As SCAN_RESULT
     Dim taskState   As String
     Dim RunObj      As String
     Dim RunObjExpanded As String
@@ -95,7 +92,6 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
     Dim sHit        As String
     Dim NoFile      As Boolean
     Dim isSafe      As Boolean
-    Dim WL_ID       As Long
     Dim ActionType  As Long
     Dim taskFolder  As ITaskFolder
     Dim SignResult  As SignResult_TYPE
@@ -116,7 +112,6 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
     Dim HRESULT         As String
     Dim errN            As Long
     Dim StadyLast       As Single
-    Dim sTmp            As String
     Dim RunObjCom       As String
     
     
@@ -156,7 +151,7 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
         nTask = nTask + 1
         For Each registeredTask In taskCollection
         
-            DoEvents
+            If Not bAutoLogSilent Then DoEvents
             
             Err.Clear
             Call LogError(Err, Stady, ClearAll:=True)
@@ -212,7 +207,7 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                     Stady = 8
                     AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
                     
-                    ActionType = taskAction.Type
+                    ActionType = taskAction.type
                     Call LogError(Err, Stady)
                     
                     Select Case ActionType
@@ -272,10 +267,10 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                             
                             'If InStr(taskActionCOM.ClassId, "{DE434264-8FE9-4C0B-A83B-89EBEEBFF78E}") <> 0 Then Stop
                             
-                            RunObjCom = RegGetString(HKEY_CLASSES_ROOT, "CLSID\" & taskActionCOM.ClassId & "\InprocServer32", vbNullString)
+                            RunObjCom = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & taskActionCOM.ClassId & "\InprocServer32", vbNullString)
                             
                             If RunObjCom = "" Then
-                                RunObjCom = RegGetString(HKEY_CLASSES_ROOT, "CLSID\" & taskActionCOM.ClassId & "\InprocServer32", vbNullString, True)
+                                RunObjCom = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & taskActionCOM.ClassId & "\InprocServer32", vbNullString, True)
                             End If
                             
                             If RunObjCom <> "" Then
@@ -293,7 +288,7 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
             Stady = 15
             AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
             
-            Select Case registeredTask.State
+            Select Case registeredTask.state
                 Case "0"
                     taskState = "Unknown"
                 Case "1"
@@ -309,7 +304,7 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
             
             Err.Clear
             Stady = 16
-            lTaskState = registeredTask.State
+            lTaskState = registeredTask.state
             Call LogError(Err, Stady)
             
             AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
@@ -365,7 +360,7 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
             If ActionType = TASK_ACTION_EXEC Then
                 RunObj = PathNormalize(RunObj)
                 If isSafe Then
-                    SignVerify RunObj, 0&, SignResult
+                    SignVerify RunObj, SV_LightCheck Or SV_PreferInternalSign, SignResult
                 End If
             Else
                 WipeSignResult SignResult
@@ -381,9 +376,9 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                 'If Left$(RunObj, 1) <> "{" Then 'not CLSID-based task
                 If ActionType = TASK_ACTION_EXEC Then
                     
-                    bIsMicrosoftFile = (IsMicrosoftCertHash(SignResult.HashRootCert) And SignResult.isLegit)
+                    bIsMicrosoftFile = (SignResult.isMicrosoftSign And SignResult.isLegit)
                     
-                    isSafe = (bIsMicrosoftFile And bHideMicrosoft)
+                    isSafe = (bIsMicrosoftFile And bHideMicrosoft And Not bIgnoreAllWhitelists)
                     
                     If Not isSafe Then
                         If Not bIsMicrosoftFile Then
@@ -399,11 +394,11 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                     End If
                 ElseIf ActionType = TASK_ACTION_COM_HANDLER And Len(RunObjCom) <> 0 Then
                 
-                    SignVerify RunObjCom, 0&, SignResult
+                    SignVerify RunObjCom, SV_LightCheck Or SV_PreferInternalSign, SignResult
                 
-                    bIsMicrosoftFile = (IsMicrosoftCertHash(SignResult.HashRootCert) And SignResult.isLegit)
+                    bIsMicrosoftFile = (SignResult.isMicrosoftSign And SignResult.isLegit)
                     
-                    isSafe = (bIsMicrosoftFile And bHideMicrosoft)
+                    isSafe = (bIsMicrosoftFile And bHideMicrosoft And Not bIgnoreAllWhitelists)
                     
                     If Not isSafe Then
                         If Not bIsMicrosoftFile Then
@@ -469,10 +464,11 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
                 With Result
                     .Section = "O22"
                     .HitLineW = sHit
-                    .RunObject = RunObj
-                    .RunObjectArgs = RunArgs
-                    .AutoRunObject = DirFull
-                    .CureType = AUTORUN_BASED
+                    '.RunObject = RunObj
+                    '.RunObjectArgs = RunArgs
+                    '.AutoRunObject = DirFull
+                    AddFileToFix .File, REMOVE_TASK, DirFull
+                    .CureType = CUSTOM_BASED
                 End With
                 AddToScanResults Result
               End If
@@ -507,7 +503,7 @@ Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder, Optional isRecursiveState 
     AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
     
     For Each taskFolder In taskFolderCollection 'deep to subfolders
-        EnumTasksInITaskFolder taskFolder, True
+        EnumTasksInITaskFolder taskFolder
     Next
     
     Set taskFolder = Nothing
@@ -605,7 +601,7 @@ End Function
 ' replace \\\, -> ; (to interpret CSV)
 ' remove 1 space from left side
 Public Function UnScreenChar(sText As String) As String
-    UnScreenChar = LTrim(Replace$(sText, "\\\,", ";"))
+    UnScreenChar = LTrim$(Replace$(sText, "\\\,", ";"))
 End Function
 
 Sub LogError(objError As ErrObject, in_out_Stady As Single, Optional out_LastLoggedErrorNumber As Long, Optional in_ActionPut As Boolean = True, Optional ClearAll As Boolean)
@@ -707,7 +703,7 @@ Public Function KillTask(TaskFullPath As String) As Boolean
     
     On Error Resume Next
     Stady = 6
-    lTaskState = registeredTask.State
+    lTaskState = registeredTask.state
     If Err.Number <> 0 Then
         'ErrorMsg err, "KillTask. Stady: " & Stady
         BrokenTask = True
@@ -750,7 +746,7 @@ Public Function KillTask(TaskFullPath As String) As Boolean
       Stady = 9
       For Each taskAction In taskDefinition.Actions
         Stady = 10
-        If TASK_ACTION_EXEC = taskAction.Type Then
+        If TASK_ACTION_EXEC = taskAction.type Then
             Stady = 11
             Set taskActionExec = taskAction
             'Debug.Print taskActionExec.Path
