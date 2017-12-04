@@ -7,3 +7,5 @@ Release DLLs are built using stdcall instead of cdecl, and function names *remai
 For a ready-to-use VB6 wrapper that makes use of this DLL, please visit https://github.com/jpbro/VbPcre2
 
 PCRE is BSD-licensed.  The full source code and API documentation are available at http://www.pcre.org/
+
+For the source code of pcre2-16.dll look in repository by tannerhelland: https://github.com/tannerhelland/PCRE2-VB6-DLL/releases

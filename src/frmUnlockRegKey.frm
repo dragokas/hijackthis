@@ -70,7 +70,7 @@ Private Sub cmdGo_Click()
     Dim aKeys()     As String
     Dim vKey
     Dim Recursively As Boolean
-    Dim ff          As Long
+    Dim hFile       As Long
     Dim FixLines    As String
     Dim sHeader     As String
     Dim sLogPath    As String
@@ -87,8 +87,7 @@ Private Sub cmdGo_Click()
         Exit Sub
     End If
     
-    TimeStarted = Right$("0" & Day(Now), 2) & "." & Right$("0" & Month(Now), 2) & "." & Year(Now) & " - " & _
-        Right$("0" & Hour(Now), 2) & ":" & Right$("0" & Minute(Now), 2)
+    TimeStarted = GetTime()
     
     Recursively = (chkRecur.Value = 1)
     
@@ -108,9 +107,7 @@ Private Sub cmdGo_Click()
         End If
     Next
     
-    '// TODO: add unicode support
-    
-    If Not FileExists(sLogPath) Then
+    'If Not FileExists(sLogPath) Then
         sHeader = "Logfile of Registry Key Unlocker (HJT v." & AppVerString & ")" & vbCrLf & vbCrLf
     
         sHeader = sHeader & "Platform:  " & OSver.Bitness & " " & OSver.OSName & " (" & OSver.Edition & "), " & _
@@ -125,25 +122,23 @@ Private Sub cmdGo_Click()
             sHeader = sHeader & "Elevated:  " & IIf(OSver.IsElevated, "Yes", "No") & vbCrLf
         End If
     
-        sHeader = sHeader & "Ran by:    " & GetUser() & vbTab & "(group: " & OSver.UserType & ") on " & GetComputer() & vbCrLf & vbCrLf
+        sHeader = sHeader & "Ran by:    " & GetUser() & vbTab & "(group: " & OSver.UserType & ") on " & GetComputer()
+    'End If
+    
+    OpenW sLogPath, FOR_OVERWRITE_CREATE, hFile
+    If hFile > 0 Then
+        'If Len(sHeader) <> 0 Then Print #ff, sHeader
+        PrintW hFile, sHeader
+        PrintW hFile, ""
+        PrintW hFile, "Logging started at:      " & TimeStarted
+        PrintW hFile, ""
+        PrintW hFile, FixLines
+        TimeFinished = GetTime()
+        PrintW hFile, "Logging finished at:     " & TimeFinished & vbCrLf
+        CloseW hFile
     End If
     
-    ff = FreeFile()
-    Open sLogPath For Append As #ff
-    If Len(sHeader) <> 0 Then Print #ff, sHeader
-    Print #ff, ""
-    Print #ff, "Logging started at:      " & TimeStarted
-    Print #ff, ""
-    Print #ff, FixLines
-    Print #ff, ""
-    
-    TimeFinished = Right$("0" & Day(Now), 2) & "." & Right$("0" & Month(Now), 2) & "." & Year(Now) & " - " & _
-        Right$("0" & Hour(Now), 2) & ":" & Right$("0" & Minute(Now), 2)
-        
-    Print #ff, "Logging finished at:      " & TimeFinished & vbCrLf
-    Close ff
-    
-    Shell "notepad.exe" & " " & """" & FixLog & """", vbNormalFocus
+    Shell "notepad.exe" & " " & """" & sLogPath & """", vbNormalFocus
     
     Exit Sub
 ErrorHandler:
@@ -151,7 +146,12 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Private Sub CmdExit_Click()
+Private Function GetTime() As String
+    GetTime = Right$("0" & Day(Now), 2) & "." & Right$("0" & Month(Now), 2) & "." & Year(Now) & " - " & _
+            Right$("0" & Hour(Now), 2) & ":" & Right$("0" & Minute(Now), 2)
+End Function
+
+Private Sub cmdExit_Click()
     Me.Hide
 End Sub
 

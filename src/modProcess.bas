@@ -37,6 +37,46 @@ Public Enum THREAD_PRIORITY
     THREAD_PRIORITY_TIME_CRITICAL = 15&
 End Enum
 
+Public Enum SECURITY_IMPERSONATION_LEVEL
+    SecurityAnonymous
+    SecurityIdentification
+    SecurityImpersonation
+    SecurityDelegation
+End Enum
+
+Public Enum TOKEN_TYPE
+    TokenPrimary = 1
+    TokenImpersonation
+End Enum
+
+Private Type PROCESS_INFORMATION
+    hProcess As Long
+    hThread As Long
+    dwProcessId As Long
+    dwThreadId As Long
+End Type
+
+Private Type STARTUPINFO
+    cb As Long
+    lpReserved As Long
+    lpDesktop As Long
+    lpTitle As Long
+    dwX As Long
+    dwY As Long
+    dwXSize As Long
+    dwYSize As Long
+    dwXCountChars As Long
+    dwYCountChars As Long
+    dwFillAttribute As Long
+    dwFlags As Long
+    wShowWindow As Integer
+    cbReserved2 As Integer
+    lpReserved2 As Byte
+    hStdInput As Long
+    hStdOutput As Long
+    hStdError As Long
+End Type
+
 'Private Type LARGE_INTEGER
 '    LowPart     As Long
 '    HighPart    As Long
@@ -202,6 +242,9 @@ Public Declare Function SetThreadPriorityBoost Lib "kernel32.dll" (ByVal hThread
 Public Declare Function GetThreadPriorityBoost Lib "kernel32.dll" (ByVal hThread As Long, pDisablePriorityBoost As Long) As Long
 Public Declare Function GetProcessID Lib "kernel32.dll" (ByVal Process As Long) As Long
 
+Public Declare Function CreateProcessWithTokenW Lib "advapi32.dll" (ByVal hToken As Long, ByVal dwLogonFlags As Long, ByVal lpApplicationName As Long, ByVal lpCommandLine As Long, ByVal dwCreationFlags As Long, ByVal lpEnvironment As Long, ByVal lpCurrentDirectory As Long, lpStartupInfo As STARTUPINFO, lpProcessInfo As PROCESS_INFORMATION) As Long
+Public Declare Function OpenThreadToken Lib "advapi32.dll" (ByVal ThreadHandle As Long, ByVal DesiredAccess As Long, ByVal OpenAsSelf As Long, TokenHandle As Long) As Long
+'Public Declare Function DuplicateTokenEx  Lib "Advapi32.dll" (byval hExistingToken as Long, byval dwDesiredAccess as Long, lpTokenAttributes as SECURITY_ATTRIBUTES , byval ImpersonationLevel as SECURITY_IMPERSONATION_LEVEL
 
 'Private Const TH32CS_SNAPPROCESS = &H2
 'Private Const TH32CS_SNAPMODULE = &H8
@@ -384,8 +427,8 @@ Public Function KillProcessByFile(sPath$, Optional bForceMicrosoft As Boolean) A
         If IsMicrosoftFile(sPath) Then Exit Function
     End If
     
-    If bIsWinNT Then
-        KillProcessByFile = KillProcessNTByFile(sPath)
+    If Not bIsWinNT Then
+        KillProcessByFile = KillProcess9xByFile(sPath)
         Exit Function
     End If
     
@@ -433,8 +476,8 @@ Public Function PauseProcessByFile(sPath$) As Boolean
     Dim i&
     'Note: this sub is silent - it displays no errors !
     If sPath = vbNullString Then Exit Function
-    If bIsWinNT Then
-        KillProcessNTByFile sPath
+    If Not bIsWinNT Then
+        KillProcess9xByFile sPath
         Exit Function
     End If
     
@@ -455,7 +498,7 @@ Public Function PauseProcessByFile(sPath$) As Boolean
     End If
 End Function
 
-Public Function KillProcessNTByFile(sPath$) As Boolean
+Public Function KillProcess9xByFile(sPath$) As Boolean
     'Note: this sub is silent - it displays no errors!
     Dim lProcesses&(1 To 1024), lNeeded&, lNumProcesses&
     Dim hProc&, sProcessName$, lModules&(1 To 1024), i&
@@ -491,7 +534,7 @@ Public Function KillProcessNTByFile(sPath$) As Boolean
                         PauseProcess lProcesses(i)
                         If TerminateProcess(hProc, 0) <> 0 Then
                             DoEvents
-                            KillProcessNTByFile = True
+                            KillProcess9xByFile = True
                         End If
                         'CloseHandle hProc
                         'Exit Function
@@ -598,8 +641,8 @@ Public Function GetProcesses_Zw(ProcList() As MY_PROC_ENTRY) As Long    'Return 
                     ElseIf .ProcessID = 4 Then
                         ProcName = "System"
                     Else
-                        ProcName = Space$(.ImageName.Length \ 2)
-                        memcpy ByVal StrPtr(ProcName), ByVal .ImageName.Buffer, .ImageName.Length
+                        ProcName = Space$(.ImageName.length \ 2)
+                        memcpy ByVal StrPtr(ProcName), ByVal .ImageName.Buffer, .ImageName.length
                         ProcPath = GetFilePathByPID(.ProcessID)
                         
                         If Len(ProcPath) = 0 Then

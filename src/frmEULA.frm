@@ -154,6 +154,13 @@ Private Sub Form_Initialize()
         gNoGUI = True
     End If
     
+    If InStr(1, Command$(), "/autolog", 1) > 0 Then bAutoLog = True
+    If InStr(1, Command$(), "/silentautolog", 1) > 0 Then bAutoLog = True: bAutoLogSilent = True
+    
+    If bAutoLog Then
+        OpenLogHandle
+    End If
+    
     'If InStr(1, command$(), "/bDebugToFile", 1) <> 0 Then
     If InStr(1, Command$(), "/debug", 1) <> 0 Then
         bDebugToFile = True
@@ -184,6 +191,8 @@ Private Sub Form_Load()
     Else
         AppVerString = GetFilePropVersion(AppPath(True))
     End If
+    
+    AppendErrorLogCustom "HiJackThis version is: " & AppVerString
     
     'Me.Caption = Me.Caption & AppVerString
 

@@ -213,7 +213,7 @@
          O19 - User stylesheet hijack
          O20 - AppInit_DLLs, Winlogon Notify
          O21 - Shell Service Object Delay Load (SSODL) and Shell Icon Overlay (SIOI)
-         O22 - Task Scheduler jobs
+         O22 - Shared Task Scheduler jobs
          O23 - Windows Services
          O24 - ActiveX Desktop Components
          O25 - WMI permanent event consumers
@@ -660,9 +660,9 @@
 0249=O17 - DNS && DNS Suffix settings
 0250=O18 - Protocol && Filter enumeration
 0251=O19 - User stylesheet hijack
-0252=O20 - AppInit_DLLs and Winlogon Notify
-0253=O21 - Shell Service Object Delay Load
-0254=O22 - Task Scheduler Jobs
+0252=O20 - AppInit_DLLs and Winlogon Notify Registry values
+0253=O21 - ShellServiceObjectDelayLoad Registry key
+0254=O22 - SharedTaskScheduler Registry key
 0255=O23 - NT Services
 0256=Completed!
 0257=O24 - ActiveX Desktop Components
@@ -1589,4 +1589,4 @@
 ; Empty
 ;
 ; (2300 - ...)
-;
+; 

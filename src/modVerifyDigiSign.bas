@@ -8,6 +8,9 @@ Option Explicit
 ' Copyrights: (ñ) Polshyn Stanislav Viktorovich aka Alex Dragokas
 '
 
+' 2.9. (02.12.2017)
+' Added another one Microsoft root certificate hash
+
 ' 2.8. (14.09.2017)
 ' SV_LightCheck:
 '  - skip non-essential fields of SignResult_TYPE

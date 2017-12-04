@@ -7,9 +7,6 @@ echo GitHub Uploader by Alex Dragokas
 echo --------------------------------
 echo.
 
-cd /d "%~dp0"
-if exist "GitHub" rd /s /q "GitHub"
-
 set /p Ver=< HiJackThis-update.txt
 
 echo New HiJackThis version is: %Ver%

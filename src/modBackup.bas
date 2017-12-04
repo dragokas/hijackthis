@@ -719,6 +719,7 @@ Public Function ABR_CreateBackup(bForceIgnoreDays As Boolean) As Boolean
         Else
             sUtilPath = AppPath(True)
             DisableWER
+            g_WER_Disabled = True
         End If
         
         '  аргументы процесса задаём в соответствии с документацией к ABR
@@ -766,11 +767,11 @@ Public Function ABR_CreateBackup(bForceIgnoreDays As Boolean) As Boolean
             MsgBoxW "Error while creating registry backup (ABR)"
         End If
         
-        Sleep 2000&
-        
-        If Not inIDE Then
-            DisableWER bRevert:=True
-        End If
+'        Sleep 2000&
+'
+'        If Not inIDE Then
+'            DisableWER bRevert:=True
+'        End If
     End If
     
     If inIDE Then
@@ -1032,6 +1033,8 @@ Public Sub DisableWER(Optional bRevert As Boolean = False) 'to prevent WER / Dr.
     Static lDisabled As Long
     Static lDontShowUI As Long
     Static lLoggingDisabled As Long
+    
+    If Not bRevert And g_WER_Disabled Then Exit Sub
     
     If OSver.MajorMinor >= 6 Then
       If Not bRevert Then

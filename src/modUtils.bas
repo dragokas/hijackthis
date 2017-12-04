@@ -141,6 +141,12 @@ End Type
 '
 'Private Const RGN_OR            As Long = 2
 
+Private Const WM_NCDESTROY As Long = &H82&
+Private Const WM_UAHDESTROYWINDOW As Long = &H90&
+
+Private Declare Function SetWindowSubclass Lib "comctl32" Alias "#410" (ByVal hwnd As Long, ByVal pfnSubclass As Long, ByVal uIdSubclass As Long, ByVal dwRefData As Long) As Long
+Private Declare Function RemoveWindowSubclass Lib "comctl32" Alias "#412" (ByVal hwnd As Long, ByVal pfnSubclass As Long, ByVal uIdSubclass As Long) As Long
+Private Declare Function DefSubclassProc Lib "comctl32" Alias "#413" (ByVal hwnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
 Private Declare Function SHParseDisplayName Lib "Shell32" (ByVal pszName As Long, ByVal IBindCtx As Long, ByRef ppidl As Long, sfgaoIn As Long, sfgaoOut As Long) As Long
 Private Declare Function ILFree Lib "Shell32" (ByVal pidlFree As Long) As Long
 
@@ -162,6 +168,12 @@ Public Sub SubClassScroll(SwitchON As Boolean)
     Else
         If lpPrevWndProc Then SetWindowLong frmMain.hwnd, GWL_WNDPROC, lpPrevWndProc: lpPrevWndProc = 0
     End If
+    
+'    If SwitchON Then
+'        If lpPrevWndProc = 0 Then lpPrevWndProc = SetWindowSubclass(frmMain.hwnd, AddressOf WndProc, ObjPtr(frmMain), 0&)
+'    Else
+'        If lpPrevWndProc Then RemoveWindowSubclass frmMain.hwnd, AddressOf WndProc, ObjPtr(frmMain): lpPrevWndProc = 0
+'    End If
 End Sub
 
 Function IsMouseWithin(hwnd As Long) As Boolean
@@ -175,8 +187,14 @@ Function IsMouseWithin(hwnd As Long) As Boolean
 End Function
 
 Private Function WndProc(ByVal hwnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+'Private Function WndProc(ByVal hWnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal dwRefData As Long) As Long
     On Error Resume Next
+    
     Select Case uMsg
+    Case WM_NCDESTROY
+        SubClassScroll False
+    Case WM_UAHDESTROYWINDOW 'dilettante's trick
+        SubClassScroll False
     Case WM_MOUSEWHEEL
         If Not IsMouseWithin(frmMain.hwnd) Then Exit Function ' mouse is outside the form
         Dim MouseKeys&, Rotation&, NewValue%
@@ -190,6 +208,7 @@ Private Function WndProc(ByVal hwnd As Long, ByVal uMsg As Long, ByVal wParam As
         End With
     Case Else
         WndProc = CallWindowProc(lpPrevWndProc, hwnd, uMsg, wParam, lParam)
+        'WndProc = DefSubclassProc(hwnd, uMsg, wParam, lParam)
     End Select
 End Function
 
@@ -1184,13 +1203,27 @@ Public Sub SleepNoLock(ByVal nMSec As Long)
     Loop
 End Sub
 
-Public Sub GetFileByCLSID(sCLSID As String, out_sFile As String, Optional out_sTitle As String, Optional bRedirected As Boolean, Optional bShared As Boolean)
+Public Sub GetFileByCLSID(ByVal sCLSID As String, out_sFile As String, Optional out_sTitle As String, Optional bRedirected As Boolean, Optional bShared As Boolean)
     On Error GoTo ErrorHandler:
     
     'Note: if 'bShared' = true, function will query for both WOW states,
     'but firstly it will query for redir. state defined in 'bRedirected' argument.
     
     Dim sBuf As String
+    Dim sAppID As String
+    Dim sServiceName As String
+    Dim bRedirState As Boolean
+    Dim i As Long
+    
+    If Len(sCLSID) = 0 Then
+        out_sTitle = "(no name)"
+        out_sFile = "(no file)"
+        Exit Sub
+    End If
+    
+    If Left$(sCLSID, 1) <> "{" Then
+        sCLSID = "{" & sCLSID & "}"
+    End If
     
     out_sTitle = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, vbNullString, bRedirected)
     If bShared And 0 = Len(out_sTitle) Then
@@ -1203,13 +1236,89 @@ Public Sub GetFileByCLSID(sCLSID As String, out_sFile As String, Optional out_sT
         If 0 <> Len(sBuf) Then out_sTitle = sBuf
     End If
     
-    out_sFile = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InProcServer32", vbNullString, bRedirected)
-    If bShared And 0 = Len(out_sFile) Then
-        out_sFile = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InProcServer32", vbNullString, Not bRedirected)
+    For i = 1 To 2
+        If i = 1 Then
+            bRedirState = bRedirected
+        Else
+            If Len(out_sFile) <> 0 Then Exit For
+            If Not bShared Then Exit For
+            bRedirState = Not bRedirected
+        End If
+    
+        out_sFile = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InProcServer32", vbNullString, bRedirState)
+    
+        If 0 = Len(out_sFile) Then
+            sAppID = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, "AppID", bRedirState)
+            If 0 <> Len(sAppID) Then
+                If out_sTitle = "(no name)" Then
+                    GetFileByAppID sAppID, out_sFile, out_sTitle, bRedirState, False
+                Else
+                    GetFileByAppID sAppID, out_sFile, , bRedirState, False
+                End If
+            End If
+            If out_sFile = "" Then
+                out_sFile = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\LocalServer32", vbNullString, bRedirState)
+            End If
+        End If
+    Next
+    
+    If 0 = Len(out_sFile) Then
+        out_sFile = "(no file)"
+    Else
+        out_sFile = UnQuote(EnvironW(out_sFile))
+        '8.3 -> Full
+        If FileExists(out_sFile) Then
+            out_sFile = GetLongPath(out_sFile)
+    '    Else
+    '        out_sFile = GetLongPath(out_sFile) & " (file missing)"
+        End If
     End If
     
-    'out_sFile = "(no file)"
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "GetFileByCLSID", sCLSID, out_sFile, out_sTitle, bRedirected, bShared
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Public Sub GetFileByAppID(sAppID As String, out_sFile As String, Optional out_sTitle As String, Optional bRedirected As Boolean, Optional bShared As Boolean)
+    On Error GoTo ErrorHandler:
+
+    Dim sBuf As String
+    Dim sServiceName As String
+    Dim bRedirState As Boolean
+    Dim i As Long
     
+    out_sTitle = Reg.GetString(HKEY_CLASSES_ROOT, "AppID\" & sAppID, vbNullString, bRedirected)
+    If bShared And 0 = Len(out_sTitle) Then
+        out_sTitle = Reg.GetString(HKEY_CLASSES_ROOT, "AppID\" & sAppID, vbNullString, Not bRedirected)
+    End If
+    If 0 = Len(out_sTitle) Then out_sTitle = "(no name)"
+    
+    If Left$(out_sTitle, 1) = "@" Then
+        sBuf = GetStringFromBinary(, , out_sTitle)
+        If 0 <> Len(sBuf) Then out_sTitle = sBuf
+    End If
+    
+    For i = 1 To 2
+        If i = 1 Then
+            bRedirState = bRedirected
+        Else
+            If Len(out_sFile) <> 0 Then Exit For
+            If Not bShared Then Exit For
+            bRedirState = Not bRedirected
+        End If
+        
+        sServiceName = Reg.GetString(HKEY_CLASSES_ROOT, "AppID\" & sAppID, "LocalService", bRedirState)
+        If 0 <> Len(sServiceName) Then
+            out_sFile = GetServiceDllPath(sServiceName)
+            If 0 = Len(out_sFile) Then
+                out_sFile = GetServiceImagePath(sServiceName)
+            End If
+        Else
+            out_sFile = Reg.GetString(HKEY_CLASSES_ROOT, "AppID\" & sAppID, "DllSurrogate", bRedirState)
+        End If
+    Next
+
     If 0 <> Len(out_sFile) Then
         out_sFile = UnQuote(EnvironW(out_sFile))
         '8.3 -> Full
@@ -1220,7 +1329,7 @@ Public Sub GetFileByCLSID(sCLSID As String, out_sFile As String, Optional out_sT
     
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "GetFileByCLSID", sCLSID, out_sFile, out_sTitle, bRedirected
+    ErrorMsg Err, "GetFileByAppID", sAppID, out_sFile, out_sTitle, bRedirected, bShared
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -1498,3 +1607,10 @@ Public Function GetFontHeight(Fnt As Font) As Long
     Set frmMain.Font = FntPrev
 End Function
 
+Public Function isCLSID(sStr As String) As Boolean
+    If Left$(sStr, 1) = "{" Then
+        If sStr Like "{????????-????-????-????-????????????}*" Then isCLSID = True
+    Else
+        If sStr Like "????????-????-????-????-????????????*" Then isCLSID = True
+    End If
+End Function

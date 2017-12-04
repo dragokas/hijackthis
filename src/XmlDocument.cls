@@ -26,6 +26,7 @@ Public Function LoadFile(sFilePath As String) As Boolean
     On Error GoTo Err_Trap
 
     Dim hFile           As Integer
+    Dim sFileData       As String
     
     hFile = FreeFile()
     

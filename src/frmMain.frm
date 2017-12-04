@@ -1897,9 +1897,6 @@ Private Sub FormStart_Stady1()
         bCryptDisable = True
     #End If
     
-    If InStr(1, Command$(), "/autolog", 1) > 0 Then bAutoLog = True
-    If InStr(1, Command$(), "/silentautolog", 1) > 0 Then bAutoLog = True: bAutoLogSilent = True
-    
     If bAutoLog Then Perf.StartTime = GetTickCount()
     
     ' Result -> sWinVersion (global)
@@ -1935,8 +1932,9 @@ Private Sub FormStart_Stady1()
     SetCurrentProcessPrivileges "SeRestorePrivilege"
     SetCurrentProcessPrivileges "SeTakeOwnershipPrivilege"
     SetCurrentProcessPrivileges "SeSecurityPrivilege"       'SACL
-    'SetCurrentProcessPrivileges "SeAssignPrimaryTokenPrivilege"
-    'SetCurrentProcessPrivileges "SeIncreaseQuotaPrivilege"
+    'SetCurrentProcessPrivileges "SeAssignPrimaryTokenPrivilege" '(SYSTEM, LocalService или NetworkService) only
+    SetCurrentProcessPrivileges "SeIncreaseQuotaPrivilege"  'CreateProcessWithTokenW
+    SetCurrentProcessPrivileges "SeImpersonatePrivilege"    'CreateProcessWithTokenW
     
     InitVariables   'sWinDir, classes init. and so.
     
@@ -1953,8 +1951,8 @@ Private Sub FormStart_Stady1()
         Me.Caption = AppVer
     End If
     
-    'test stuff
-    If inIDE Or InStr(1, AppExeName(), "test", 1) <> 0 Then
+    'testing stuff
+    If inIDE Or InStr(1, AppExeName(), "test", 1) <> 0 Or bDebugMode Then
         'Task scheduler jobs log on 'misc section'.
         lblConfigInfo(22).Visible = True
         cmdTaskScheduler.Visible = True
@@ -2302,7 +2300,9 @@ Private Sub LoadResources()
     Dim Lines()     As String
     Dim sBuf        As String
     Dim i           As Long
+    Dim j           As Long
     Dim Columns()   As String
+    Dim ID          As Long
     
     'Task Scheduler white list
     sBuf = StrConv(LoadResData(101, "CUSTOM"), vbUnicode, 1049)
@@ -2312,40 +2312,49 @@ Private Sub LoadResources()
     ReDim g_TasksWL(UBound(Lines))
     
     For i = 1 To UBound(Lines)  'skip header
-        Columns = Split(Lines(i), ";")
-        '---------------------------
-        'Columns (0) 'OSver
-        'Columns (1) 'State     (not used)
-        'Columns (2) 'Name
-        'Columns (3) 'Dir
-        'Columns (4) 'RunObj
-        'Columns (5) 'Args
-        'Columns (6) 'Note      (not used)
-        'Columns (7) 'Error     (not used)
-        '---------------------------
+    
+        If 0 <> Len(Lines(i)) Then
+    
+            Columns = SplitSafe(Lines(i), ";")
+            '---------------------------
+            'Columns (0) 'OSver
+            'Columns (1) 'Dir\Name
+            'Columns (2) 'RunObj
+            'Columns (3) 'Args
+            'Columns (4) 'Note      (not used)
+            '---------------------------
         
-        If UBound(Columns) > 2 Then    ' protection: if last DB line is empty
             With g_TasksWL(i)
                 .OSver = Val(Replace$(Columns(0), ",", "."))
+                
                 'select appropriate version from DB
                 If .OSver = OSver.MajorMinor Then
-                    .Name = UnScreenChar(CStr(Columns(2)))
-                    .Directory = UnScreenChar(CStr(Columns(3)))
-                    If UBound(Columns) > 3 Then
-                        .RunObj = EnvironW(UnScreenChar(CStr(Columns(4))))
+                
+                    .Path = UnScreenChar(CStr(Columns(1)))
+                    If UBound(Columns) > 1 Then
+                        .RunObj = EnvironW(UnScreenChar(CStr(Columns(2))))
+                        If Not isCLSID(.RunObj) Then
+                            .RunObj = FindOnPath(.RunObj) 'find full path for relative name
+                        End If
                     End If
-                    If UBound(Columns) > 4 Then
-                        .Args = UnScreenChar(CStr(Columns(5)))
+                    
+                    If UBound(Columns) > 2 Then
+                        .Args = UnScreenChar(EnvironW(CStr(Columns(3))))
+                        'normalize Excel quotes
+                        .Args = Replace$(.Args, """""", """")
+                        .Args = Trim$(UnQuote(.Args))
                     End If
+                    
                     'Dictonary 'oDict.TaskWL_ID':
                     'value -> (dir + name of task)
                     'data -> id to 'g_TasksWL' user type array
-            
-                    If Not oDict.TaskWL_ID.Exists(.Directory & "\" & .Name) Then
-                        oDict.TaskWL_ID.Add .Directory & "\" & .Name, i
-                    Else
-                        Debug.Print "Critical Database error: duplicate entry key: " & .Directory & "\" & .Name
-                        ErrorMsg Err, "Critical Database error: duplicate entry key: " & .Directory & "\" & .Name
+                    
+                    If Not oDict.TaskWL_ID.Exists(.Path) Then
+                        oDict.TaskWL_ID.Add .Path, i
+                    Else 'append several lines with same paths
+                        ID = oDict.TaskWL_ID(.Path)
+                        g_TasksWL(ID).RunObj = g_TasksWL(ID).RunObj & "|" & .RunObj
+                        g_TasksWL(ID).Args = g_TasksWL(ID).Args & "|" & .Args
                     End If
                 End If
             End With
@@ -2394,6 +2403,7 @@ Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
         End If
     End If
     BackupFlush
+    If g_WER_Disabled Then DisableWER bRevert:=True
     
     Dim frm As Form
     ToggleWow64FSRedirection True
@@ -2847,7 +2857,7 @@ Private Sub chkAutoMark_Click()
     End If
 End Sub
 
-Private Sub chkConfigTabs_Click(index As Integer)
+Private Sub chkConfigTabs_Click(Index As Integer)
 
     On Error GoTo ErrorHandler:
     
@@ -2874,13 +2884,13 @@ Private Sub chkConfigTabs_Click(index As Integer)
     chkConfigTabs(1).Value = 0
     chkConfigTabs(2).Value = 0
     chkConfigTabs(3).Value = 0
-    chkConfigTabs(index).Value = 1
+    chkConfigTabs(Index).Value = 1
     
     fraConfigTabs(0).Visible = False
     fraConfigTabs(1).Visible = False
     fraConfigTabs(2).Visible = False
     fraConfigTabs(3).Visible = False
-    fraConfigTabs(index).Visible = True
+    fraConfigTabs(Index).Visible = True
     
     fraHostsMan.Visible = False
     fraUninstMan.Visible = False
@@ -2888,7 +2898,7 @@ Private Sub chkConfigTabs_Click(index As Integer)
     bSwitchingTabs = False
     fraConfig.Visible = True
     
-    Select Case index
+    Select Case Index
     
     Case 0 'main settings
         SubClassScroll False 'unSubClass
@@ -2919,11 +2929,11 @@ Private Sub chkConfigTabs_Click(index As Integer)
         
     End Select
     
-    idxLastTab = index
+    idxLastTab = Index
     
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "chkConfigTabs_Click", "idx:" & index
+    ErrorMsg Err, "chkConfigTabs_Click", "idx:" & Index
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -3601,6 +3611,7 @@ Private Sub cmdScan_Click()
         
         Idx = 5
         
+        'if no mark "No suspicious items found!"
         If txtNothing.Visible = False Then
         
             'cmdScan.Caption = "Save log"
@@ -3612,8 +3623,8 @@ Private Sub cmdScan_Click()
             Else
                 cmdFix.Enabled = False
             End If
-        Else
-            bAutoLog = False
+'        Else
+'            bAutoLog = False
         End If
         
         Idx = 6
@@ -3622,8 +3633,6 @@ Private Sub cmdScan_Click()
             If Not bAutoLogSilent Then DoEvents
             SaveReport '<<<<<< ------ Saving report
         End If
-        
-        bAutoLog = False
         
         cmdScan.Enabled = True
         cmdAnalyze.Enabled = True
@@ -3635,6 +3644,8 @@ Private Sub cmdScan_Click()
                 cmdFix.SetFocus
             End If
         End If
+        
+        bAutoLog = False
         
     Else    'Caption = Save...
 
@@ -3670,7 +3681,6 @@ End Sub
 
 Private Sub SaveReport()
     On Error GoTo ErrorHandler:
-    Dim ffLog As Long
     Dim Idx&
 
     AppendErrorLogCustom "frmMain.SaveReport - Begin"
@@ -3700,22 +3710,24 @@ Private Sub SaveReport()
             
             Idx = 12
             
-            If FileExists(sLogFile) Then DeleteFileWEx (StrPtr(sLogFile))
+            'If FileExists(sLogFile) Then DeleteFileWEx (StrPtr(sLogFile))
             
             Idx = 13
             
-            If Not OpenW(sLogFile, FOR_OVERWRITE_CREATE, ffLog) Then
-
-                If Not bAutoLogSilent Then 'not via AutoLogger
-                    'try another name
-
-                    sLogFile = sLogFile & "_2.log"
-
-                    Call OpenW(sLogFile, FOR_OVERWRITE_CREATE, ffLog)
+            If hLog <= 0 Then
+                If Not OpenW(sLogFile, FOR_OVERWRITE_CREATE, hLog) Then
+    
+                    If Not bAutoLogSilent Then 'not via AutoLogger
+                        'try another name
+    
+                        sLogFile = BuildPath(AppPath(), "HiJackThis_2.log")
+    
+                        Call OpenW(sLogFile, FOR_OVERWRITE_CREATE, hLog)
+                    End If
                 End If
             End If
             
-            If ffLog <= 0 Then
+            If hLog <= 0 Then
                 If bAutoLogSilent Then 'via AutoLogger
                     Exit Sub
                 Else
@@ -3728,7 +3740,7 @@ Private Sub SaveReport()
                         bGlobalDontFocusListBox = False
                         
                         If 0 <> Len(sLogFile) Then
-                            If Not OpenW(sLogFile, FOR_OVERWRITE_CREATE, ffLog) Then    '2-nd try
+                            If Not OpenW(sLogFile, FOR_OVERWRITE_CREATE, hLog) Then    '2-nd try
                                 MsgBoxW Translate(26), vbExclamation
                                 Exit Sub
                             End If
@@ -3747,9 +3759,9 @@ Private Sub SaveReport()
                 End If
             End If
 
-            PutW ffLog, 1&, VarPtr(b(0)), UBound(b) + 1, doAppend:=False
+            PutW hLog, 1&, VarPtr(b(0)), UBound(b) + 1, doAppend:=True
             
-            CloseW ffLog
+            CloseW hLog: hLog = 0
             
             Idx = 14
             
@@ -4911,7 +4923,7 @@ End Sub
 '    If KeyCode = 13 Then cmdFix_Click
 'End Sub
 
-Private Sub mnuResultJumpFile_Click(index As Integer)   'Context => Jump to ... => File
+Private Sub mnuResultJumpFile_Click(Index As Integer)   'Context => Jump to ... => File
     Dim sItem As String
     Dim sFile As String
     Dim sFolder As String
@@ -4921,8 +4933,8 @@ Private Sub mnuResultJumpFile_Click(index As Integer)   'Context => Jump to ... 
     
     If GetScanResults(sItem, Result) Then
         If AryPtr(Result.File) Then
-            If UBound(Result.File) >= index Then
-                sFile = Result.File(index).Path
+            If UBound(Result.File) >= Index Then
+                sFile = Result.File(Index).Path
                 sFolder = GetParentDir(sFile)
                 If FileExists(sFile) Then
                     OpenAndSelectFile sFile
@@ -4944,7 +4956,7 @@ Private Sub mnuResultJumpFile_Click(index As Integer)   'Context => Jump to ... 
     End If
 End Sub
 
-Private Sub mnuResultJumpReg_Click(index As Integer)   'Context => Jump to ... => Registry
+Private Sub mnuResultJumpReg_Click(Index As Integer)   'Context => Jump to ... => Registry
     Dim sItem As String
     Dim Result As SCAN_RESULT
     
@@ -4952,8 +4964,8 @@ Private Sub mnuResultJumpReg_Click(index As Integer)   'Context => Jump to ... =
     
     If GetScanResults(sItem, Result) Then
         If AryPtr(Result.Reg) Then
-            If UBound(Result.Reg) >= index Then
-                With Result.Reg(index)
+            If UBound(Result.Reg) >= Index Then
+                With Result.Reg(Index)
                     Reg.Jump .Hive, .Key, .Param, .Redirected
                 End With
             End If
@@ -5021,14 +5033,14 @@ End Sub
 
 'test stuff - BUTTON: enum tasks to CSV
 Private Sub cmdTaskScheduler_Click()
-    Call EnumTasks(True)
+    Call EnumTasks2(True)
 End Sub
 
 Private Sub chkConfigMinimizeToTray_Click()
     bMinToTray = chkConfigMinimizeToTray.Value
 End Sub
 
-Private Sub chkHelp_Click(index As Integer)
+Private Sub chkHelp_Click(Index As Integer)
     Static LastIdx As Long
 
     Dim i As Long, j As Long
@@ -5046,10 +5058,10 @@ Private Sub chkHelp_Click(index As Integer)
     End If
     bSwitchingTabs = True
     
-    chkHelp(index).Value = 1
+    chkHelp(Index).Value = 1
     
     For i = 0 To chkHelp.Count - 1
-        If index <> i Then
+        If Index <> i Then
             chkHelp(i).Value = 0
             'chkHelp(i).Enabled = True
             chkHelp(i).ForeColor = vbBlack
@@ -5059,7 +5071,7 @@ Private Sub chkHelp_Click(index As Integer)
         End If
     Next
     
-    Select Case index
+    Select Case Index
     
     Case 0: 'Sections
         aSect = Array("R0", "R1", "R2", "R3", "R4", "F0", "F1", "F2", "F3", "O1", "O2", "O3", "O4", "O5", "O6", "O7", "O8", "O9", "O10", _
@@ -5131,7 +5143,7 @@ Private Sub chkHelp_Click(index As Integer)
     End Select
     
     bSwitchingTabs = False
-    LastIdx = index
+    LastIdx = Index
 End Sub
 
 Function FindLine(sPartialText As String, sFullText As String) As String

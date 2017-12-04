@@ -234,8 +234,7 @@ End Type
 
 Private Type TASK_WHITELIST_ENTRY
     OSver       As Single
-    Name        As String
-    Directory   As String
+    Path        As String
     RunObj      As String
     Args        As String
 End Type
@@ -1195,7 +1194,7 @@ Public Sub UpdateProgressBar(Section As String, Optional sAppendText As String)
     
     Dim lTag As Long
     
-    If bAutoLogSilent Then Exit Sub
+    'If bAutoLogSilent Then Exit Sub
     
     With frmMain
     
@@ -1259,7 +1258,9 @@ Public Sub UpdateProgressBar(Section As String, Optional sAppendText As String)
         '.lblStatus.Refresh
         '.Refresh
     End With
-    DoEvents
+    
+    If Not bAutoLogSilent Then DoEvents
+    
     Exit Sub
     
 ErrorHandler:
@@ -1417,7 +1418,7 @@ Public Sub CheckR3Item()
     sURLHook = "Software\Microsoft\Internet Explorer\URLSearchHooks"
     
     sDefHookCLSID = "{CFBFAE00-17A6-11D0-99CB-00C04FD64497}"
-    
+
     If OSver.IsWindowsVistaOrGreater Then
         sDefHookDll = sWinSysDir & "\ieframe.dll"
     Else
@@ -3473,6 +3474,7 @@ Sub CheckO4_RegRuns()
     
     Do While HE.MoveNext
         
+        Erase aValue
         For i = 1 To Reg.EnumValuesToArray(HE.Hive, HE.Key, aValue(), HE.Redirected)
         
             isDisabledWin8 = False
@@ -3795,7 +3797,9 @@ Sub CheckO4_RegRuns()
     
     Do While HE.MoveNext
         If Reg.KeyHasSubKeys(HE.Hive, HE.Key, HE.Redirected) Then
+            Erase aSubKey
             For i = 1 To Reg.EnumSubKeysToArray(HE.Hive, HE.Key, aSubKey(), HE.Redirected, , False)
+                Erase aValue
                 For j = 1 To Reg.EnumValuesToArray(HE.Hive, HE.Key & "\" & aSubKey(i), aValue(), HE.Redirected)
                     
                     sData = Reg.GetString(HE.Hive, HE.Key & "\" & aSubKey(i), aValue(j), HE.Redirected)
@@ -3819,111 +3823,112 @@ Sub CheckO4_RegRuns()
         End If
     Loop
     
-    'Autorun.inf
-    'http://journeyintoir.blogspot.com/2011/01/autoplay-and-autorun-exploit-artifacts.html
-    Dim aDrives() As String
-    Dim sAutorun As String
-    Dim aVerb() As String
-    Dim bOnce As Boolean
-    
-    aVerb = Split("open|shellexecute|shell\open\command|shell\explore\command", "|")
-    
-    ' Mapping scheme for "inf. verb" -> to "registry" :
-    '
-    ' icon                  -> _Autorun\Defaulticon
-    ' open                  -> shell\AutoRun\command
-    ' shellexecute          -> shell\AutoRun\command
-    ' shell\open\command    -> shell\open\command
-    ' shell\explore\command -> shell\explore\command
-    
-    aDrives = GetDrives(DRIVE_BIT_FIXED Or DRIVE_BIT_REMOVABLE)
-    
-    For i = 1 To UBound(aDrives)
-        sAutorun = BuildPath(aDrives(i), "autorun.inf")
-        If FileExists(sAutorun) Then
-            
-            bOnce = False
-            
-            For j = 0 To UBound(aVerb)
-                
-                sFile = ""
-                sArgs = ""
-                sData = ReadIniA(sAutorun, "autorun", aVerb(j))
-                
-                If Len(sData) <> 0 Then
-                    SplitIntoPathAndArgs sData, sFile, sArgs, bIsRegistryData:=False
-                    sFile = FormatFileMissing(sFile)
-                    
-                    sHit = "O4 - Autorun.inf: " & sAutorun & " - " & aVerb(j) & " - " & ConcatFileArg(sFile, sArgs)
-                    
-                    If Not IsOnIgnoreList(sHit) Then
-                        With Result
-                            .Section = "O4"
-                            .HitLineW = sHit
-                            AddFileToFix .File, REMOVE_FILE, sAutorun
-                            .CureType = FILE_BASED
-                        End With
-                        AddToScanResults Result
-                    End If
-                    
-                    bOnce = True
-                End If
-            Next
-            
-            'if unknown data is inside autorun.inf
-            If Not bOnce Then
-                
-                sHit = "O4 - Autorun.inf: " & sAutorun & " - " & "(unknown target)"
-                
-                If Not IsOnIgnoreList(sHit) Then
-                    With Result
-                        .Section = "O4"
-                        .HitLineW = sHit
-                        AddFileToFix .File, REMOVE_FILE, sAutorun
-                        .CureType = FILE_BASED
-                    End With
-                    AddToScanResults Result
-                End If
-            End If
-        End If
-    Next
-    
-    'MountPoints2
-    HE.Init HE_HIVE_ALL
-    HE.AddKey "Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2"
-    
-    aVerb = Split("shell\AutoRun\command|shell\open\command|shell\explore\command", "|")
-    
-    Do While HE.MoveNext
-        For i = 1 To Reg.EnumSubKeysToArray(HE.Hive, HE.Key, aSubKey, HE.Redirected)
-            For j = 0 To UBound(aVerb)
-                sKey = HE.Key & "\" & aSubKey(i) & "\" & aVerb(j)
-                
-                If Reg.KeyExists(HE.Hive, sKey, HE.Redirected) Then
-                    
-                    sData = Reg.GetString(HE.Hive, sKey, "", HE.Redirected)
-                    
-                    SplitIntoPathAndArgs sData, sFile, sArgs, bIsRegistryData:=True
-                    sFile = FormatFileMissing(sFile)
-                    
-                    sHit = IIf(HE.Redirected, "O4-32", "O4") & " - MountPoints2: " & HE.HiveNameAndSID & "\..\" & aSubKey(i) & "\" & aVerb(j) & " - " & ConcatFileArg(sFile, sArgs)
-                    
-                    If Not IsOnIgnoreList(sHit) Then
-                        With Result
-                            .Section = "O4"
-                            .HitLineW = sHit
-                            'remove MountPoints2\{CLSID}
-                            'or
-                            'remove MountPoints2\Letter
-                            AddRegToFix .Reg, REMOVE_KEY, HE.Hive, HE.Key & "\" & aSubKey(i), , , HE.Redirected
-                            .CureType = REGISTRY_BASED
-                        End With
-                        AddToScanResults Result
-                    End If
-                End If
-            Next
-        Next
-    Loop
+'    'Autorun.inf
+'    'http://journeyintoir.blogspot.com/2011/01/autoplay-and-autorun-exploit-artifacts.html
+'    Dim aDrives() As String
+'    Dim sAutorun As String
+'    Dim aVerb() As String
+'    Dim bOnce As Boolean
+'
+'    aVerb = Split("open|shellexecute|shell\open\command|shell\explore\command", "|")
+'
+'    ' Mapping scheme for "inf. verb" -> to "registry" :
+'    '
+'    ' icon                  -> _Autorun\Defaulticon
+'    ' open                  -> shell\AutoRun\command
+'    ' shellexecute          -> shell\AutoRun\command
+'    ' shell\open\command    -> shell\open\command
+'    ' shell\explore\command -> shell\explore\command
+'
+'    aDrives = GetDrives(DRIVE_BIT_FIXED Or DRIVE_BIT_REMOVABLE)
+'
+'    For i = 1 To UBound(aDrives)
+'        sAutorun = BuildPath(aDrives(i), "autorun.inf")
+'        If FileExists(sAutorun) Then
+'
+'            bOnce = False
+'
+'            For j = 0 To UBound(aVerb)
+'
+'                sFile = ""
+'                sArgs = ""
+'                sData = ReadIniA(sAutorun, "autorun", aVerb(j))
+'
+'                If Len(sData) <> 0 Then
+'                    SplitIntoPathAndArgs sData, sFile, sArgs, bIsRegistryData:=False
+'                    sFile = FormatFileMissing(sFile)
+'
+'                    sHit = "O4 - Autorun.inf: " & sAutorun & " - " & aVerb(j) & " - " & ConcatFileArg(sFile, sArgs)
+'
+'                    If Not IsOnIgnoreList(sHit) Then
+'                        With Result
+'                            .Section = "O4"
+'                            .HitLineW = sHit
+'                            AddFileToFix .File, REMOVE_FILE, sAutorun
+'                            .CureType = FILE_BASED
+'                        End With
+'                        AddToScanResults Result
+'                    End If
+'
+'                    bOnce = True
+'                End If
+'            Next
+'
+'            'if unknown data is inside autorun.inf
+'            If Not bOnce Then
+'
+'                sHit = "O4 - Autorun.inf: " & sAutorun & " - " & "(unknown target)"
+'
+'                If Not IsOnIgnoreList(sHit) Then
+'                    With Result
+'                        .Section = "O4"
+'                        .HitLineW = sHit
+'                        AddFileToFix .File, REMOVE_FILE, sAutorun
+'                        .CureType = FILE_BASED
+'                    End With
+'                    AddToScanResults Result
+'                End If
+'            End If
+'        End If
+'    Next
+'
+'    'MountPoints2
+'    HE.Init HE_HIVE_ALL
+'    HE.AddKey "Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2"
+'
+'    aVerb = Split("shell\AutoRun\command|shell\open\command|shell\explore\command", "|")
+'
+'    Do While HE.MoveNext
+'        erase aSubKey
+'        For i = 1 To Reg.EnumSubKeysToArray(HE.Hive, HE.Key, aSubKey, HE.Redirected)
+'            For j = 0 To UBound(aVerb)
+'                sKey = HE.Key & "\" & aSubKey(i) & "\" & aVerb(j)
+'
+'                If Reg.KeyExists(HE.Hive, sKey, HE.Redirected) Then
+'
+'                    sData = Reg.GetString(HE.Hive, sKey, "", HE.Redirected)
+'
+'                    SplitIntoPathAndArgs sData, sFile, sArgs, bIsRegistryData:=True
+'                    sFile = FormatFileMissing(sFile)
+'
+'                    sHit = IIf(HE.Redirected, "O4-32", "O4") & " - MountPoints2: " & HE.HiveNameAndSID & "\..\" & aSubKey(i) & "\" & aVerb(j) & " - " & ConcatFileArg(sFile, sArgs)
+'
+'                    If Not IsOnIgnoreList(sHit) Then
+'                        With Result
+'                            .Section = "O4"
+'                            .HitLineW = sHit
+'                            'remove MountPoints2\{CLSID}
+'                            'or
+'                            'remove MountPoints2\Letter
+'                            AddRegToFix .Reg, REMOVE_KEY, HE.Hive, HE.Key & "\" & aSubKey(i), , , HE.Redirected
+'                            .CureType = REGISTRY_BASED
+'                        End With
+'                        AddToScanResults Result
+'                    End If
+'                End If
+'            Next
+'        Next
+'    Loop
     
     'ScreenSaver
     sFile = Reg.GetString(HKCU, "Control Panel\Desktop", "SCRNSAVE.EXE")
@@ -3931,7 +3936,7 @@ Sub CheckO4_RegRuns()
         bSafe = True
         sFile = FormatFileMissing(sFile)
         
-        If IsMissing(sFile) Then
+        If FileMissing(sFile) Then
             bSafe = False
         Else
             If Not IsMicrosoftFile(sFile) Then bSafe = False
@@ -3992,6 +3997,7 @@ Sub CheckO4_MSConfig(aHives() As String, aUser() As String)
                     Exit For
                 End If
             
+                Erase Values
                 For j = 1 To Reg.EnumValuesToArray(0&, sHive & "\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\" & _
                         IIf(bIsWin64 And Wow6432Redir, "Run32", "Run"), Values())
             
@@ -4110,6 +4116,7 @@ Sub CheckO4_MSConfig(aHives() As String, aUser() As String)
         
         sKey = "HKLM\SOFTWARE\Microsoft\Shared Tools\MSConfig\startupfolder"
         
+        Erase aSubKey
         For i = 1 To Reg.EnumSubKeysToArray(0&, sKey, aSubKey())
         
             sFile = Reg.GetData(0&, sKey & "\" & aSubKey(i), "backup")
@@ -4946,7 +4953,9 @@ Private Sub CheckO7Item()
     Dim bFilterData() As Byte, IP(1) As String, RuleAction As String, bMirror As Boolean, DataSerialized As String
     Dim Packet_Type(1) As String, M As Long, n As Long, PortNum(1) As Long, ProtocolType As String, idxBaseOffset As Long, IpFil As IPSEC_FILTER_RECORD, RecCnt As Byte
     Dim bRegexpInit As Boolean, oMatches As IRegExpMatchCollection, IPTypeFlag(1) As Long, b() As Byte, bAtLeastOneFilter As Boolean, bNoFilter As Boolean
+    Dim sHitTrimmed$, bSafe As Boolean
     
+    Erase KeyPolicy
     For i = 1 To Reg.EnumSubKeysToArray(0&, "HKLM\SOFTWARE\Policies\Microsoft\Windows\IPSec\Policy\Local", KeyPolicy())
     
       If StrBeginWith(KeyPolicy(i), "ipsecPolicy{") Then
@@ -5209,7 +5218,28 @@ AddItem:
         IIf((ProtocolType = "TCP" Or ProtocolType = "UDP") And PortNum(1) <> 0, " (Port " & PortNum(1) & " " & ProtocolType & ")", "") & " " & _
         IIf(bMirror, "(mirrored) ", "")) & "- Action: " & RuleAction & IIf(bEnabled, "", " (disabled)")
 
-    If Not IsOnIgnoreList(sHit) Then
+    sHitTrimmed = Mid$(sHit, Len("O7 - IPSec: " & IPSecName & " " & _
+        "[" & Format$(dModify, "yyyy\/mm\/dd") & "]" & " - ") + 1)
+    
+    bSafe = False
+    
+    'Whitelists
+    If OSver.MajorMinor = 5.1 Then 'XP
+        If sHitTrimmed = "{72385236-70fa-11d1-864c-14a300000000} - No rules - Action: Default response (disabled)" Then
+            bSafe = True
+        ElseIf sHitTrimmed = "{72385230-70fa-11d1-864c-14a300000000} - Source: my IP - Destination: Any IP (mirrored) - Action: Allow (disabled)" Then
+            bSafe = True
+        ElseIf sHitTrimmed = "{72385230-70fa-11d1-864c-14a300000000} - Source: my IP - Destination: Any IP (mirrored) - Action: Inbound pass-through (disabled)" Then
+            bSafe = True
+        ElseIf sHitTrimmed = "{7238523c-70fa-11d1-864c-14a300000000} - Source: my IP - Destination: Any IP (mirrored) - Action: Allow (disabled)" Then
+            bSafe = True
+        ElseIf sHitTrimmed = "{7238523c-70fa-11d1-864c-14a300000000} - Source: my IP - Destination: Any IP (mirrored) - Action: Inbound pass-through (disabled)" Then
+            bSafe = True
+        End If
+    End If
+    
+    If Not bSafe Then
+      If Not IsOnIgnoreList(sHit) Then
         With Result
             .Section = "O7"
             .HitLineW = sHit
@@ -5238,6 +5268,7 @@ AddItem:
             .CureType = REGISTRY_BASED
         End With
         AddToScanResults Result
+      End If
     End If
     
     Return
@@ -6569,6 +6600,7 @@ Public Sub CheckO17Item()
             
             'HKLM\System\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\.. subkeys
             'HKLM\System\CS*\Services\Tcpip\Parameters\Interfaces\.. subkeys
+            Erase aNames
             For n = 1 To Reg.EnumSubKeysToArray(HKEY_LOCAL_MACHINE, CSKey & "\Services\Tcpip\Parameters\Interfaces", aNames)
                 
                 sData = Reg.GetString(HKEY_LOCAL_MACHINE, CSKey & "\Services\Tcpip\Parameters\Interfaces\" & aNames(n), sParam)
@@ -7153,6 +7185,7 @@ Public Sub CheckO21Item()
     
     Do While HE.MoveNext
         
+        Erase aSubKey
         If Reg.EnumSubKeysToArray(HE.Hive, HE.Key, aSubKey, HE.Redirected) > 0 Then
         
             For i = 1 To UBound(aSubKey)
@@ -7170,6 +7203,15 @@ Public Sub CheckO21Item()
         '                bOnWhiteList = True
         '            End If
         '        End If
+        
+                If Not bOnWhiteList Then
+                    'C:\Users\Alex\AppData\Local\Microsoft\OneDrive\17.3.7076.1026_1\FileSyncShell.dll
+                    If StrComp(GetFileName(sFile, True), "FileSyncShell.dll", 1) = 0 Then
+                        bOnWhiteList = True
+                    ElseIf StrComp(GetFileName(sFile, True), "FileSyncShell64.dll", 1) = 0 Then
+                        bOnWhiteList = True
+                    End If
+                End If
                 
                 If bOnWhiteList Then
                     If (Not bHideMicrosoft) Or bIgnoreAllWhitelists Then
@@ -7217,6 +7259,7 @@ Public Sub CheckO21Item()
     HE.AddKey "SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\ShellExecuteHooks"
     
     Do While HE.MoveNext
+        Erase aValue
         For i = 1 To Reg.EnumValuesToArray(HE.Hive, HE.Key, aValue, HE.Redirected)
             sCLSID = aValue(i)
             
@@ -7276,7 +7319,7 @@ Public Sub CheckO22Item()
     AppendErrorLogCustom "CheckO22Item - Begin"
     
     If OSver.IsWindowsVistaOrGreater Then
-        EnumTasks   '<--- New routine
+        EnumTasks2   '<--- New routine
         Exit Sub
     End If
     
@@ -7352,74 +7395,17 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Public Sub CheckO22Item_Vista()
-    On Error GoTo ErrorHandler:
-    
-    'Vista - HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks
-    
-    Dim sTaskKey As String
-    Dim i As Long
-    Dim aSubKey() As String
-    Dim sTaskPath As String
-    
-    sTaskKey = "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks"
-    
-    If Reg.EnumSubKeysToArray(HKEY_LOCAL_MACHINE, sTaskKey, aSubKey) > 0 Then
-    
-        For i = 1 To UBound(aSubKey)
-        
-            sTaskPath = Reg.GetString(HKEY_LOCAL_MACHINE, sTaskKey & "\" & aSubKey(i), "Path")
-            
-            
-    
-'            RunObj
-'sWorkDir = EnvironW(taskActionExec.WorkingDirectory)
-'RunObjExpanded = UnQuote(EnvironW(RunObj))
-'                            If Mid$(RunObjExpanded, 2, 1) <> ":" Then
-'                                If sWorkDir <> "" Then
-'                                    RunObjExpanded = BuildPath(sWorkDir, RunObjExpanded)
-'                                End If
-'                            End If
-'RunArgs = taskActionExec.Arguments
-'NoFile = (0 = Len(FindOnPath(RunObjExpanded)))
-
-    
-        Next
-        
-    End If
-    
-'        sName = aSubKey(i)
-'        sCLSID = Reg.GetString(HKEY_LOCAL_MACHINE, sSIOI & "\" & aSubKey(i), vbNullString, Wow6432Redir)
-    
-    
-    
-    AppendErrorLogCustom "CheckO22Item_Vista - End"
-    Exit Sub
-ErrorHandler:
-    ErrorMsg Err, "CheckO22Item_Vista"
-    If inIDE Then Stop: Resume Next
-End Sub
-
 Public Sub FixO22Item(sItem$, Result As SCAN_RESULT)
     On Error GoTo ErrorHandler:
     'O22 - ScheduledTask: blah - {000...000} - file.dll
-    'todo:
-    '* kill regval
-    '* kill clsid regkey
-    
-    If OSver.IsWindowsVistaOrGreater Then
-        KillTask Result.File(0).Path
-        Exit Sub
-    End If
-    
-    FixRegistryHandler Result
+    FixIt Result
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "modMain_FixO22Item", "sItem=", sItem
     If inIDE Then Stop: Resume Next
 End Sub
 
-Public Sub CheckO23Item()   '2.0.7 fixed
+Public Sub CheckO23Item()
     'https://www.bleepingcomputer.com/tutorials/how-malware-hides-as-a-service/
     
     On Error GoTo ErrorHandler:
@@ -9209,15 +9195,12 @@ Public Function MsgBoxW(Prompt As String, Optional Buttons As VbMsgBoxStyle, Opt
 End Function
 
 Public Function UnQuote(str As String) As String   ' Trim quotes
-    Const QT = """"
-    Dim S As String: S = str
-    Do While Left$(S, 1&) = QT
-        S = Mid$(S, 2&)
-    Loop
-    Do While Right$(S, 1&) = QT
-        S = Left$(S, Len(S) - 1&)
-    Loop
-    UnQuote = S
+    If Len(str) = 0 Then Exit Function
+    If Left$(str, 1) = """" And Right$(str, 1) = """" Then
+        UnQuote = Mid$(str, 2, Len(str) - 2)
+    Else
+        UnQuote = str
+    End If
 End Function
 
 Public Sub ReInitScanResults()  'Global results structure will be cleaned
@@ -9266,7 +9249,7 @@ Public Sub InitVariables()
     ReDim tim(10)
     For i = 0 To UBound(tim)
         Set tim(i) = New clsTimer
-        tim(i).index = i
+        tim(i).Index = i
     Next
     
     SysDisk = Space$(MAX_PATH)
@@ -9727,7 +9710,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function GetCollectionKey(ByVal index As Long, Col As Collection) As String ' Thanks to 'The Trick' (А. Кривоус) for this code
+Public Function GetCollectionKey(ByVal Index As Long, Col As Collection) As String ' Thanks to 'The Trick' (А. Кривоус) for this code
     
     '//TODO: WARNING: this code can cause crash on XP !!!
     'Dragokas: Added IsBadReadPtr for assurance
@@ -9735,15 +9718,15 @@ Public Function GetCollectionKey(ByVal index As Long, Col As Collection) As Stri
     On Error GoTo ErrorHandler:
     Dim lpSTR As Long, ptr As Long, Key As String
     If Col Is Nothing Then Exit Function
-    Select Case index
+    Select Case Index
     Case Is < 1, Is > Col.Count: Exit Function
     Case Else
         ptr = ObjPtr(Col)
-        Do While index
+        Do While Index
             If 0 = IsBadReadPtr(ptr + 24, 4) Then
                 GetMem4 ByVal ptr + 24, ptr
             End If
-            index = index - 1
+            Index = Index - 1
         Loop
     End Select
     lpSTR = StrPtr(Key)
@@ -9805,6 +9788,7 @@ Public Sub GetProfiles()    'result -> in global variable 'colProfiles' (collect
     ProfileListKey = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList"
     ProfilesDirectory = Reg.GetData(0&, ProfileListKey, "ProfilesDirectory")
 
+    Erase ProfileSubKey
     If Reg.EnumSubKeysToArray(0&, ProfileListKey, ProfileSubKey()) > 0 Then
         For i = 1 To UBound(ProfileSubKey)
             If Not (ProfileSubKey(i) = "S-1-5-18" Or _
@@ -9997,13 +9981,13 @@ Public Sub OpenDebugLogHandle()
     
     sDebugLogFile = BuildPath(AppPath(), "HiJackThis_debug.log")
     
-    If FileExists(sDebugLogFile) Then DeleteFileWEx (StrPtr(sDebugLogFile))
+    If FileExists(sDebugLogFile) Then DeleteFileWEx (StrPtr(sDebugLogFile)), , True
     
     On Error Resume Next
     OpenW sDebugLogFile, FOR_OVERWRITE_CREATE, hDebugLog
     
     If hDebugLog = 0 Then
-        sDebugLogFile = sDebugLogFile & "_2.log"
+        sDebugLogFile = BuildPath(AppPath(), "HiJackThis_debug_2.log")
                     
         Call OpenW(sDebugLogFile, FOR_OVERWRITE_CREATE, hDebugLog)
         
@@ -10012,6 +9996,24 @@ Public Sub OpenDebugLogHandle()
     Dim sCurTime$
     sCurTime = vbCrLf & vbCrLf & "Logging started at: " & Now() & vbCrLf & vbCrLf
     PutW hDebugLog, 1&, StrPtr(sCurTime), LenB(sCurTime), doAppend:=True
+End Sub
+
+Public Sub OpenLogHandle()
+    Dim sLogFile$
+    
+    sLogFile = BuildPath(AppPath(), "HiJackThis.log")
+    
+    If FileExists(sLogFile) Then DeleteFileWEx (StrPtr(sLogFile)), , True
+    
+    On Error Resume Next
+    OpenW sLogFile, FOR_OVERWRITE_CREATE, hLog
+    
+    If hLog = 0 Then
+        sLogFile = BuildPath(AppPath(), "HiJackThis_2.log")
+        
+        Call OpenW(sLogFile, FOR_OVERWRITE_CREATE, hLog)
+        
+    End If
 End Sub
 
 Public Function StringFromPtrA(ByVal ptr As Long) As String
@@ -10309,7 +10311,7 @@ MakeLog:
             "Service Pack: " & OSver.SPVer & IIf(bSPOld, " <=== Attention! (outdated SP)", "") & _
             IIf(OSver.MajorMinor <> OSver.MajorMinorNTDLL And OSver.MajorMinorNTDLL <> 0, " (NTDLL.dll = " & OSver.NtDllVersion & ")", "") & _
             vbCrLf
-    sLog.Append "Time:      " & TimeCreated & "," & vbTab & "Uptime: " & TrimSeconds(GetSystemUpTime()) & vbCrLf
+    sLog.Append "Time:      " & TimeCreated & "," & vbTab & "Uptime: " & TrimSeconds(GetSystemUpTime()) & " min." & vbCrLf
     sLog.Append "Language:  " & "OS: " & OSver.LangSystemNameFull & " (" & "0x" & Hex$(OSver.LangSystemCode) & "). " & _
             "Display: " & OSver.LangDisplayNameFull & " (" & "0x" & Hex$(OSver.LangDisplayCode) & "). " & _
             "Non-Unicode: " & OSver.LangNonUnicodeNameFull & " (" & "0x" & Hex$(OSver.LangNonUnicodeCode) & ")" & vbCrLf
@@ -10865,10 +10867,27 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
+Public Sub FixIt(Result As SCAN_RESULT)
+    On Error GoTo ErrorHandler
+    
+    If Result.CureType And PROCESS_BASED Then FixProcessHandler Result
+    If Result.CureType And FILE_BASED Then FixFileHandler Result
+    If (Result.CureType And REGISTRY_BASED) Or (Result.CureType And INI_BASED) Then FixRegistryHandler Result
+    If Result.CureType And SERVICE_BASED Then FixServiceHandler Result
+    'If Result.CureType And CUSTOM_BASED Then
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "FixIt", Result.HitLineW
+    If inIDE Then Stop: Resume Next
+End Sub
+
 Public Sub FixProcessHandler(Result As SCAN_RESULT)
     On Error GoTo ErrorHandler
     
     Dim i As Long
+    
+    '// TODO: Add protection against system critical processes by full path name
     
     If Result.CureType And PROCESS_BASED Then
         If AryPtr(Result.Process) Then
@@ -11227,15 +11246,13 @@ End Sub
 Public Function CheckIntegrityHJT() As Boolean
     'Checking consistency of HiJackThis.exe
     Dim SignResult As SignResult_TYPE
-    
     CheckIntegrityHJT = True
-    
     If Not inIDE Then
-        If OSver.IsWindows7OrGreater Then 'XP / Vista doesn't support SHA2 timestamp checking without update
+        If OSver.IsWindows7OrGreater Then
             If Not (OSver.SPVer = 0 And (OSver.MajorMinor = 6.1)) Then
-                'take ntdll.dll as sample to make sure EDS subsystem working properly
+                'ensure EDS subsystem is working correctly
                 SignVerify BuildPath(sWinDir, "system32\ntdll.dll"), SV_LightCheck Or SV_SelfTest Or SV_PreferInternalSign, SignResult
-                If SignResult.isMicrosoftSign Then
+                If SignResult.HashRootCert = "CDD4EEAE6000AC7F40C3802C171E30148030C072" Then
                     SignVerify AppPath(True), SV_PreferInternalSign, SignResult
                     If SignResult.HashRootCert <> "05F1F2D5BA84CDD6866B37AB342969515E3D912E" Then
                         'not a developer machine ?
@@ -11341,7 +11358,7 @@ Public Function InstallAutorunHJT(Optional bSilent As Boolean) As Boolean
 End Function
 
 Public Function RemoveAutorunHJT() As Boolean
-    RemoveAutorunHJT = KillTask("\HiJackThis Autostart Scan")
+    RemoveAutorunHJT = KillTask2("\HiJackThis Autostart Scan")
 End Function
 
 Public Sub OpenAndSelectFile(sFile As String)

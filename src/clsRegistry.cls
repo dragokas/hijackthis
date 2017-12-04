@@ -1192,6 +1192,7 @@ Public Function DeleteAllSubKeys(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional b
     
     Flag = True
     
+    Erase aSubKeys
     For i = 1 To EnumSubKeysToArray(lHive, sKey, aSubKeys(), bUseWow64, True)
         sSubKey = sKey & "\" & aSubKeys(i)
         Flag = Flag And DeleteAllSubKeys(lHive, sSubKey, bUseWow64)   '< --- recursively
@@ -1386,6 +1387,8 @@ End Function
 
 '// return array of key names (or full key without hive name, if bRecursively == true)
 'in bounds [1 to count], when [count] is a number returned by function
+
+'Warning: the caller is responsible for erasing aSubKeys() array
 Public Function EnumSubKeysToArray( _
     lHive As ENUM_REG_HIVE, _
     ByVal sKey As String, _
@@ -1558,6 +1561,8 @@ ErrorHandler:
 End Function
 
 '// returns array [1 to count], where [count] is a number returned by this function
+
+'Warning: the caller is responsible for erasing aValues() array
 Public Function EnumValuesToArray(lHive As ENUM_REG_HIVE, ByVal KeyName$, aValues() As String, Optional bUseWow64 As Boolean) As Long
     On Error GoTo ErrorHandler:
     Dim iNameMax     As Long
@@ -2083,7 +2088,7 @@ Public Sub Jump(lHive As ENUM_REG_HIVE, ByVal sKey As String, Optional sValue As
         .nShow = SW_SHOWNORMAL
     End With
     If ShellExecuteEx(uSEI) = 0 Then
-        Status "Unable to start Regedit."
+        MsgBoxW "Unable to start Regedit."
         Exit Sub
     End If
     If uSEI.hProcess <> 0 Then
@@ -2097,7 +2102,7 @@ Public Sub Jump(lHive As ENUM_REG_HIVE, ByVal sKey As String, Optional sValue As
     hwndListView = FindWindowEx(hwndRegedit, 0, StrPtr("SysListView32"), 0)
     If hwndTreeView = 0 Or hwndListView = 0 Then
         'Unable to start Regedit.
-        Status Translate(2100)
+        MsgBoxW Translate(2100)
         Exit Sub
     End If
     
@@ -2132,12 +2137,15 @@ Public Sub Jump(lHive As ENUM_REG_HIVE, ByVal sKey As String, Optional sValue As
     
         ' Using of LVM_GETITEMTEXTW and LVM_SETITEMSTATE requires allocation LVITEM within address space of a target process
         ' together with 'string', pszText pointed to
+        
+        'PS. This routine doesn't want to work for x64, however it should work, if you'll prepare correctly x64-bit structures,
+        'like LVITEMW_64. Currently, I unable to do that, so I'm using SendMessage + WM_CHAR method instead.
     
         If OSver.MajorMinor >= 6 And OSver.Bitness = "x32" Then
         
             Dim ItemCount As Long, iItem As Long
             Dim lvi As LVITEMW
-            Dim pHandle As Long, ProcessID As Long, index As Long
+            Dim pHandle As Long, ProcessID As Long, Index As Long
             Dim pStrBufferMemory As Long, pMyItemMemory As Long, strLength As Long
             Dim strBuffer As String, Result As Long
         

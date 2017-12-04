@@ -623,11 +623,33 @@ Public Function LOFW(hFile As Long) As Currency
 ErrorHandler:
 End Function
 
+Public Function PrintW(hFile As Long, sStr As String, Optional bUnicode As Boolean) As Boolean
+    Dim bSuccess As Boolean
+    If hFile > 0 Then
+        If Len(sStr) <> 0 Then
+            If bUnicode Then
+                bSuccess = PutW(hFile, 0, StrPtr(sStr), LenB(sStr), True)
+            Else
+                bSuccess = PutW(hFile, 0, StrPtr(StrConv(sStr, vbFromUnicode)), Len(sStr), True)
+            End If
+        Else
+            bSuccess = True
+        End If
+        ' + CrLf
+        If bUnicode Then
+            bSuccess = bSuccess And PutW(hFile, 0, StrPtr(vbCrLf), 4, True)
+        Else
+            bSuccess = bSuccess And PutW(hFile, 0, StrPtr(ChrW(&HA0D&)), 2, True)
+        End If
+    End If
+End Function
+
 Public Function CloseW(hFile As Long) As Long
     AppendErrorLogCustom "CloseW", "Handle: " & hFile
     CloseW = CloseHandle(hFile)
 End Function
 
+'// TODO. I don't like it. Re-check it !!!
 Public Function LineInputW(hFile As Long, sLine As String) As Boolean
     Dim ch$, lBytesRead&, lr&
     sLine = vbNullString
@@ -2052,7 +2074,7 @@ Public Function FindOnPath(ByVal sAppName As String, Optional bUseSourceValueOnF
     AppendErrorLogCustom "FindOnPath - Begin"
 
     Static Exts() As String
-    Static IsInit As Boolean
+    Static isInit As Boolean
     Dim ProcPath$
     Dim sFile As String
     Dim sFolder As String
@@ -2061,8 +2083,8 @@ Public Function FindOnPath(ByVal sAppName As String, Optional bUseSourceValueOnF
     Dim sFileTry As String
     Dim bFullPath As Boolean
 
-    If Not IsInit Then
-        IsInit = True
+    If Not isInit Then
+        isInit = True
         Exts = Split(EnvironW("%PathExt%"), ";")
         For i = 0 To UBound(Exts)
             Exts(i) = LCase$(Exts(i))

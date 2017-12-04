@@ -124,6 +124,7 @@ Public bFirstRun        As Boolean
 Public bFirstRebootScan As Boolean
 Public gNotUserClick    As Boolean
 Public gNoGUI           As Boolean
+Public g_WER_Disabled   As Boolean
 
 Public sHostsFile$
 
@@ -218,13 +219,12 @@ Public g_ProgressMaxTags    As Long     'last progressbar tag number (count of i
 Public g_HJT_Items_Count    As Long
 Public g_CurrentLang        As String
 
-Public FixLog               As String   'future use
-
 Public ErrLogCustomText As clsStringBuilder
 Public bDebugMode As Boolean
 Public bDebugToFile As Boolean
 Public bScanMode As Boolean
 Public hDebugLog As Long
+Public hLog     As Long
 
 Public gSIDs() As String, gUsers() As String, gHives() As String
 

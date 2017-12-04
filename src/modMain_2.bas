@@ -588,6 +588,7 @@ Public Sub CheckO26Item()
     Dim sKeys$(), i&, sIFE$, sFile$, sHit$, Result As SCAN_RESULT
     Dim bDisabled As Boolean, vGFlag As Variant, vHive As Variant, lHive As Long, UseWow As Variant, Wow6432Redir As Boolean
     Dim bPerUser As Boolean, bIsSafe As Boolean, aTmp() As String, sNonSafe As String, bMissing As Boolean, sAlias As String
+    Dim bSafe As Boolean
     
     sIFE = "Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options"
     'key is redirected (XP-Vista)
@@ -627,24 +628,34 @@ Public Sub CheckO26Item()
                     Else
                         bMissing = True
                     End If
-
-                    sHit = sAlias & " - IFEO: [Debugger] " & IIf(lHive = HKCU, "HKCU", "HKLM") & "\...\" & sKeys(i) & " - " & sFile & IIf(bMissing, " (file missing)", "")
+                    
+                    bSafe = False
+                    
+                    'check by safe list
+                    If StrComp(GetFileName(sFile, True), "PROCEXP.EXE", 1) = 0 Then
+                        If IsMicrosoftFile(sFile) Then bSafe = True
+                    End If
+                    
+                    If (Not bSafe) Or bIgnoreAllWhitelists Or (Not bHideMicrosoft) Then
+                        
+                        sHit = sAlias & " - IFEO: [Debugger] " & IIf(lHive = HKCU, "HKCU", "HKLM") & "\...\" & sKeys(i) & " - " & sFile & IIf(bMissing, " (file missing)", "")
             
-                    If Not IsOnIgnoreList(sHit) And _
-                      Not (OSver.MajorMinor <= 5.2 And sFile = "ntsd -d" And Not FileExists("ntsd") And bHideMicrosoft And Not bIgnoreAllWhitelists) Then
+                        If Not IsOnIgnoreList(sHit) And _
+                          Not (OSver.MajorMinor <= 5.2 And sFile = "ntsd -d" And Not FileExists("ntsd") And bHideMicrosoft And Not bIgnoreAllWhitelists) Then
               
-                        'exclude default line for WinXP:
-                        'O26 - Image File Execution Options: Your Image File Name Here without a path - ntsd -d (file missing)
-              
-                        If bMD5 Then sHit = sHit & GetFileMD5(sFile)
+                            'exclude default line for WinXP:
+                            'O26 - Image File Execution Options: Your Image File Name Here without a path - ntsd -d (file missing)
                 
-                        With Result
-                            .Section = "O26"
-                            .HitLineW = sHit
-                            AddRegToFix .Reg, REMOVE_VALUE, lHive, sIFE & "\" & sKeys(i), "Debugger", , CLng(Wow6432Redir)
-                            .CureType = REGISTRY_BASED
-                        End With
-                        AddToScanResults Result
+                            If bMD5 Then sHit = sHit & GetFileMD5(sFile)
+                    
+                            With Result
+                                .Section = "O26"
+                                .HitLineW = sHit
+                                AddRegToFix .Reg, REMOVE_VALUE, lHive, sIFE & "\" & sKeys(i), "Debugger", , CLng(Wow6432Redir)
+                                .CureType = REGISTRY_BASED
+                            End With
+                            AddToScanResults Result
+                        End If
                     End If
             
                 End If
@@ -718,7 +729,7 @@ Public Sub CheckO26Item()
             
             '// TODO: remove only non-safe dlls
             
-            If Not bIsSafe Then
+            If (Not bIsSafe) Or bIgnoreAllWhitelists Or (Not bHideMicrosoft) Then
         
                 sHit = sAlias & " - IFEO: {Global} " & IIf(lHive = HKCU, "HKCU", "HKLM") & " - " & sNonSafe
             
