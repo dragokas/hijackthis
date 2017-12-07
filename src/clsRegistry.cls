@@ -469,11 +469,26 @@ Public Function CreateKey(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow6
     Dim hKey&, lRet&
     Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
     
+    '// TODO
+    'move by each branch of the tree (in case reset permission is required for grand-parent)
+    
+    'Note:
+    'default permissions for SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks is:
+    'SYSTEM:Full
+    'Administrators:Read + Remove
+    
+    '// TODO
+    'Add safe ACL reset:
+    '1. Save permissions
+    '2. Reset permissions
+    '3. Create key
+    '4. Restore permissions
+    
     lRet = RegCreateKeyEx(lHive, StrPtr(sKey), 0&, ByVal 0&, 0&, KEY_CREATE_SUB_KEY Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), ByVal 0&, hKey, ByVal 0&)
     
     If lRet = ERROR_ACCESS_DENIED Then
     
-        If modPermissions.RegKeyResetDACL(lHive, sKey, bUseWow64, False) Then
+        If modPermissions.RegKeyResetDACL(lHive, GetParentDir(sKey), bUseWow64, False) Then
             lRet = RegCreateKeyEx(lHive, StrPtr(sKey), 0&, ByVal 0&, 0&, KEY_CREATE_SUB_KEY Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), ByVal 0&, hKey, ByVal 0&)
         End If
     End If

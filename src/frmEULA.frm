@@ -94,6 +94,8 @@ Private Sub Form_Initialize()
     Dim ICC         As tagINITCOMMONCONTROLSEX
     Dim lr          As Long
     Dim hModShell   As Long
+    Dim pos         As Long
+    Dim sTime       As String
     
     ' Code launched from IDE ?
     Debug.Assert CheckIDE(inIDE)
@@ -124,6 +126,25 @@ Private Sub Form_Initialize()
         FreeLibrary hModShell
     End If
     
+    Perf.MAX_TimeOut = MAX_TIMEOUT_DEFAULT
+    pos = InStr(1, Command$(), "/timeout", 1)
+    If pos <> 0 Then
+        sTime = Mid$(Command$(), pos + Len("/timeout") + 1)
+        pos = InStr(sTime, " ")
+        If pos <> 0 Then
+            sTime = Left$(sTime, pos - 1)
+        End If
+        If IsNumeric(sTime) Then
+            Perf.MAX_TimeOut = CLng(sTime)
+            If Perf.MAX_TimeOut < 0 Then Perf.MAX_TimeOut = MAX_TIMEOUT_DEFAULT
+        End If
+    End If
+    
+    If InStr(1, Command$(), "/autolog", 1) > 0 Then bAutoLog = True
+    If InStr(1, Command$(), "/silentautolog", 1) > 0 Then bAutoLog = True: bAutoLogSilent = True
+    
+    If bAutoLog Then Perf.StartTime = GetTickCount()
+    
     Set Reg = New clsRegistry
     Set ErrLogCustomText = New clsStringBuilder 'tracing
     
@@ -153,9 +174,6 @@ Private Sub Form_Initialize()
       Or InStr(1, Command(), "/install", 1) <> 0 Then
         gNoGUI = True
     End If
-    
-    If InStr(1, Command$(), "/autolog", 1) > 0 Then bAutoLog = True
-    If InStr(1, Command$(), "/silentautolog", 1) > 0 Then bAutoLog = True: bAutoLogSilent = True
     
     If bAutoLog Then
         OpenLogHandle

@@ -281,6 +281,12 @@ Public Function GetStringFromBinary(Optional ByVal sFile As String, Optional ByV
             
             If StrComp(GetExtensionName(sFile), ".inf", 1) = 0 Then
                 bIsInf = True
+                '@oem28.inf,%ImcSvcDisplayName%;System Interface Foundation Service
+                '(with or without ; (semicolon) mark)
+                pos = InStr(sBuf, ";")
+                If pos <> 0 Then
+                    sBuf = Left$(sBuf, pos - 1) 'remove name part
+                End If
                 sResVar = Trim$(sBuf)
                 If Left$(sResVar, 1) = "%" And Right$(sResVar, 1) = "%" Then
                     sResVar = Mid$(sResVar, 2, Len(sResVar) - 2)
@@ -340,12 +346,12 @@ Public Sub GetBrowsersInfo()
     If IsInit Then Exit Sub
     IsInit = True
     
-    Dim Cmd As String
+    Dim cmd As String
     Dim FriendlyName As String
     Dim Path As String
     Dim Arguments As String
-    Cmd = GetDefaultApp("http", FriendlyName)
-    SplitIntoPathAndArgs Cmd, Path, Arguments
+    cmd = GetDefaultApp("http", FriendlyName)
+    SplitIntoPathAndArgs cmd, Path, Arguments
     
     With BROWSERS
         .Edge.Version = GetEdgeVersion()
@@ -353,7 +359,7 @@ Public Sub GetBrowsersInfo()
         .Chrome.Version = GetChromeVersion()
         .Firefox.Version = GetFirefoxVersion()
         .Opera.Version = GetOperaVersion()
-        .Default = Cmd & IIf(Path = "(AppID)", " " & FriendlyName, IIf(Len(FriendlyName) <> 0, " (" & FriendlyName & ")", vbNullString))
+        .Default = cmd & IIf(Path = "(AppID)", " " & FriendlyName, IIf(Len(FriendlyName) <> 0, " (" & FriendlyName & ")", vbNullString))
     End With
     AppendErrorLogCustom "GetBrowsersInfo - End"
 End Sub
@@ -1152,6 +1158,36 @@ Public Function GetSystemUpTime() As Date
 ErrorHandler:
     ErrorMsg Err, "GetSystemUpTime"
     If inIDE Then Stop: Resume Next
+End Function
+
+Public Function GetTimeZone(out_UTC As String) As Boolean
+    Dim tzi As TIME_ZONE_INFORMATION
+    Dim dt As Date
+    Dim lRet As Long
+    Dim hh As Long
+    Dim mm As Long
+    Dim dwShift As Long
+    
+    GetTimeZone = True
+    
+    Select Case GetTimeZoneInformation(VarPtr(tzi))
+    Case TIME_ZONE_ID_INVALID
+        GetTimeZone = False
+        Exit Function
+    Case TIME_ZONE_ID_DAYLIGHT
+        dwShift = tzi.Bias + tzi.DaylightBias
+    Case TIME_ZONE_ID_STANDARD
+        dwShift = tzi.Bias + tzi.StandardBias
+    Case TIME_ZONE_ID_UNKNOWN
+        dwShift = 0
+    End Select
+    
+    dwShift = dwShift * -1
+    hh = dwShift \ 60
+    mm = dwShift - (hh * 60)
+    
+    out_UTC = IIf(hh < 0 Or mm < 0, "-", "+") & Right$("0" & Abs(hh), 2) & ":" & Right$("0" & Abs(mm), 2)
+    
 End Function
 
 Public Function ScanAfterReboot() As Boolean

@@ -1,6 +1,8 @@
 Attribute VB_Name = "modGlobals"
 Option Explicit
 
+Public Const MAX_TIMEOUT_DEFAULT As Long = 180 'Standart timeout
+
 Public Const g_AppName As String = "HiJackThis Fork"
 
 Public Const g_Backup_Do_Every_Days As Long = 7
@@ -99,6 +101,8 @@ Public Declare Sub ILFree Lib "shell32.dll" (ByVal pIDL As Long)
 Public Declare Function SetCurrentDirectory Lib "kernel32.dll" Alias "SetCurrentDirectoryW" (ByVal lpPathName As Long) As Long
 
 'modmain
+Public Declare Sub ExitProcess Lib "kernel32.dll" (ByVal uExitCode As Long)
+
 Public HE           As clsHiveEnum
 Public Reg          As clsRegistry
 
@@ -125,6 +129,7 @@ Public bFirstRebootScan As Boolean
 Public gNotUserClick    As Boolean
 Public gNoGUI           As Boolean
 Public g_WER_Disabled   As Boolean
+Public g_HwndMain       As Long
 
 Public sHostsFile$
 
@@ -182,6 +187,7 @@ Public sSafeProtocols       As String
 Public aSafeRegDomains()    As String
 Public aSafeSSODL()         As String
 Public aSafeSIOI()          As String
+Public aSafeSEH()           As String
 Public aSafeFilters()       As String
 Public sSafeFilters         As String
 Public sSafeAppInit         As String
@@ -1111,6 +1117,16 @@ Public Const LOCALE_SENGLANGUAGE = &H1001&
 
 'modUtils
 
+Public Type TIME_ZONE_INFORMATION
+    Bias As Long
+    StandardName(31) As Integer
+    StandardDate As SYSTEMTIME
+    StandardBias As Long
+    DaylightName(31) As Integer
+    DaylightDate As SYSTEMTIME
+    DaylightBias As Long
+End Type
+
 Public Type RECT
     Left    As Long
     Top     As Long
@@ -1156,6 +1172,11 @@ Public Declare Function GetPixel Lib "gdi32.dll" (ByVal hdc As Long, ByVal x As 
 Public Declare Function SetWindowRgn Lib "user32.dll" (ByVal hwnd As Long, ByVal hRgn As Long, ByVal bRedraw As Boolean) As Long
 Public Declare Function CreateRectRgn Lib "gdi32.dll" (ByVal X1 As Long, ByVal Y1 As Long, ByVal X2 As Long, ByVal Y2 As Long) As Long
 Public Declare Function CombineRgn Lib "gdi32.dll" (ByVal hDestRgn As Long, ByVal hSrcRgn1 As Long, ByVal hSrcRgn2 As Long, ByVal nCombineMode As Long) As Long
+
+Public Const TIME_ZONE_ID_INVALID As Long = -1&
+Public Const TIME_ZONE_ID_DAYLIGHT As Long = 2
+Public Const TIME_ZONE_ID_STANDARD As Long = 1
+Public Const TIME_ZONE_ID_UNKNOWN As Long = 0
 
 Public Const LOAD_LIBRARY_AS_DATAFILE As Long = &H2
 

@@ -209,6 +209,7 @@ Public Function MakeBackup(Result As SCAN_RESULT) As Boolean
     Dim aFiles() As String
     Dim lRegID As Long
     Dim i As Long, n As Long
+    Dim ActionMask As Long
     
     MakeBackup = True
     
@@ -224,13 +225,25 @@ Public Function MakeBackup(Result As SCAN_RESULT) As Boolean
     With Result
         If .CureType And FILE_BASED Then
             If AryPtr(.File) Then
-                For i = 0 To UBound(.File)
-                    Select Case .File(i).ActionType
-                    
-                    Case REMOVE_FILE, RESTORE_FILE
+                 For i = 0 To UBound(.File)
+                    ActionMask = .File(i).ActionType
+                 
+                    If (.File(i).ActionType And REMOVE_FILE) Then
                         MakeBackup = MakeBackup And BackupFile(Result, .File(i).Path)
+                        ActionMask = ActionMask - REMOVE_FILE
+                    End If
                     
-                    Case REMOVE_FOLDER
+                    If (.File(i).ActionType And RESTORE_FILE) Then
+                        MakeBackup = MakeBackup And BackupFile(Result, .File(i).Path)
+                        ActionMask = ActionMask - RESTORE_FILE
+                    End If
+                    
+                    If (.File(i).ActionType And RESTORE_FILE_SFC) Then
+                        MakeBackup = MakeBackup And BackupFile(Result, .File(i).Path)
+                        ActionMask = ActionMask - RESTORE_FILE_SFC
+                    End If
+                    
+                    If (.File(i).ActionType And REMOVE_FOLDER) Then
                         'enum all files
                         aFiles = ListFiles(.File(i).Path, , True)
                         If IsArrDimmed(aFiles) Then
@@ -238,11 +251,23 @@ Public Function MakeBackup(Result As SCAN_RESULT) As Boolean
                                 MakeBackup = MakeBackup And BackupFile(Result, aFiles(n))
                             Next
                         End If
-                        
-                    Case Else
-                        MsgBoxW "Error! MakeBackup: unknown action: " & .File(i).ActionType, vbExclamation
+                        ActionMask = ActionMask - REMOVE_FOLDER
+                    End If
+                    
+                    If (.File(i).ActionType And UNREG_DLL) Then
+                        '// TODO
+                        ActionMask = ActionMask - UNREG_DLL
+                    End If
+                    
+                    If (.File(i).ActionType And BACKUP_FILE) Then
+                        MakeBackup = MakeBackup And BackupFile(Result, .File(i).Path)
+                        ActionMask = ActionMask - BACKUP_FILE
+                    End If
+                    
+                    If ActionMask <> 0 Then
+                        MsgBoxW "Error! MakeBackup: unknown action: " & ActionMask, vbExclamation
                         MakeBackup = False
-                    End Select
+                    End If
                 Next
             End If
         End If
@@ -250,17 +275,24 @@ Public Function MakeBackup(Result As SCAN_RESULT) As Boolean
         If .CureType And INI_BASED Then
             If AryPtr(.Reg) Then
                 For i = 0 To UBound(.Reg)
-                    Select Case .Reg(i).ActionType
+                    ActionMask = .Reg(i).ActionType
                     
-                    Case RESTORE_VALUE_INI, REMOVE_VALUE_INI
-                        
+                    If .Reg(i).ActionType And RESTORE_VALUE_INI Then
                         lRegID = BackupAllocReg(.Reg(i))
                         BackupAddCommand INI_BASED, VERB_RESTORE_INI_VALUE, OBJ_FILE, lRegID
+                        ActionMask = ActionMask - RESTORE_VALUE_INI
+                    End If
                     
-                    Case Else
+                    If .Reg(i).ActionType And REMOVE_VALUE_INI Then
+                        lRegID = BackupAllocReg(.Reg(i))
+                        BackupAddCommand INI_BASED, VERB_RESTORE_INI_VALUE, OBJ_FILE, lRegID
+                        ActionMask = ActionMask - REMOVE_VALUE_INI
+                    End If
+                    
+                    If ActionMask <> 0 Then
                         MsgBoxW "Error! MakeBackup: unknown action: " & .Reg(i).ActionType, vbExclamation
                         MakeBackup = False
-                    End Select
+                    End If
                 Next
             End If
         End If
@@ -993,14 +1025,14 @@ End Function
 Private Function ABR_RemoveByBackupID(lBackupID As Long) As Boolean
     On Error GoTo ErrorHandler:
     Dim sBackupDate As String
-    Dim Cmd As BACKUP_COMMAND
+    Dim cmd As BACKUP_COMMAND
     
     If Not BackupLoadBackupByID(lBackupID) Then Exit Function
     
-    Cmd.Full = tBackupList.cLastCMD.ReadParam("cmd", "1")
-    BackupExtractCommand Cmd
-    If Cmd.ObjType = OBJ_ABR_BACKUP Then
-        sBackupDate = Cmd.Args
+    cmd.Full = tBackupList.cLastCMD.ReadParam("cmd", "1")
+    BackupExtractCommand cmd
+    If cmd.ObjType = OBJ_ABR_BACKUP Then
+        sBackupDate = cmd.Args
         ABR_RemoveByBackupID = ABR_RemoveBackup(sBackupDate, True)
     End If
     Exit Function
@@ -1012,14 +1044,14 @@ End Function
 Private Function ABR_RestoreByBackupID(lBackupID As Long, Optional out_NoBackup As Boolean) As Boolean
     On Error GoTo ErrorHandler:
     Dim sBackupDate As String
-    Dim Cmd As BACKUP_COMMAND
+    Dim cmd As BACKUP_COMMAND
     
     If Not BackupLoadBackupByID(lBackupID) Then Exit Function
     
-    Cmd.Full = tBackupList.cLastCMD.ReadParam("cmd", "1")
-    BackupExtractCommand Cmd
-    If Cmd.ObjType = OBJ_ABR_BACKUP Then
-        sBackupDate = Cmd.Args
+    cmd.Full = tBackupList.cLastCMD.ReadParam("cmd", "1")
+    BackupExtractCommand cmd
+    If cmd.ObjType = OBJ_ABR_BACKUP Then
+        sBackupDate = cmd.Args
         ABR_RestoreByBackupID = ABR_RecoverFromBackup(sBackupDate, out_NoBackup)
     End If
     Exit Function
@@ -1714,7 +1746,7 @@ Public Function RestoreBackup(sItem As String) As Boolean
     Dim sDate As String
     Dim bNoBackup As Boolean
     Dim nSeqID As Long
-    Dim Cmd As BACKUP_COMMAND
+    Dim cmd As BACKUP_COMMAND
     Dim i As Long
     Dim sBackupFile As String
     Dim sSystemFile As String
@@ -1722,6 +1754,7 @@ Public Function RestoreBackup(sItem As String) As Boolean
     Dim lRegID As Long
     Dim lstIdx As Long
     Dim FixReg As FIX_REG_KEY
+    Dim bRestoreRequired As Boolean
     
     RestoreBackup = True
     
@@ -1769,36 +1802,45 @@ Public Function RestoreBackup(sItem As String) As Boolean
     RestoreBackup = True
     
     For i = 1 To tBackupList.cLastCMD.ReadParam("cmd", "Total", 0)
-        Cmd.Full = tBackupList.cLastCMD.ReadParam("cmd", i)
-        BackupExtractCommand Cmd
+        cmd.Full = tBackupList.cLastCMD.ReadParam("cmd", i)
+        BackupExtractCommand cmd
         
-        Select Case Cmd.RecovType
+        Select Case cmd.RecovType
         
         Case FILE_BASED
-            If Cmd.Verb = VERB_FILE_COPY Then
-                If Cmd.ObjType = OBJ_FILE Then
-                    lFileID = CLng(Cmd.Args)
+            If cmd.Verb = VERB_FILE_COPY Then
+                If cmd.ObjType = OBJ_FILE Then
+                    lFileID = CLng(cmd.Args)
                     sBackupFile = tBackupList.cLastCMD.ReadParam(lFileID, "name")
                     sBackupFile = BuildPath(AppPath(), "Backups\" & lBackupID & "\" & sBackupFile)
                     sSystemFile = EnvironW(tBackupList.cLastCMD.ReadParam(lFileID, "orig"))
                     If BackupValidateFileHash(lBackupID, lFileID) Then
-                        RestoreBackup = RestoreBackup And FileCopyW(sBackupFile, sSystemFile, True)
+                        bRestoreRequired = True
+                        'skip copying file, if it is already exist and has the same hash
+                        If FileExists(sSystemFile) Then
+                            If GetFileSHA1(sBackupFile) = GetFileSHA1(sSystemFile) Then
+                                bRestoreRequired = False
+                            End If
+                        End If
+                        If bRestoreRequired Then
+                            RestoreBackup = RestoreBackup And FileCopyW(sBackupFile, sSystemFile, True)
+                        End If
                     Else
                         RestoreBackup = False
                     End If
                 Else
-                    MsgBoxW "Error! RestoreBackup: unknown object type: " & Cmd.ObjType, vbExclamation
+                    MsgBoxW "Error! RestoreBackup: unknown object type: " & cmd.ObjType, vbExclamation
                     RestoreBackup = False
                 End If
             Else
-                MsgBoxW "Error! RestoreBackup: unknown verb: " & Cmd.Verb, vbExclamation
+                MsgBoxW "Error! RestoreBackup: unknown verb: " & cmd.Verb, vbExclamation
                 RestoreBackup = False
             End If
             
         Case REGISTRY_BASED
-            If Cmd.Verb = VERB_RESTORE_REG_VALUE Then
-                If Cmd.ObjType = OBJ_REG_VALUE Then
-                    lRegID = CLng(Cmd.Args)
+            If cmd.Verb = VERB_RESTORE_REG_VALUE Then
+                If cmd.ObjType = OBJ_REG_VALUE Then
+                    lRegID = CLng(cmd.Args)
                     With FixReg
                     
                         If BackupExtractFixRegKeyByRegID(lRegID, REGISTRY_BASED, FixReg) Then
@@ -1822,18 +1864,18 @@ Public Function RestoreBackup(sItem As String) As Boolean
                         End If
                     End With
                 Else
-                    MsgBoxW "Error! RestoreBackup: unknown object type: " & Cmd.ObjType, vbExclamation
+                    MsgBoxW "Error! RestoreBackup: unknown object type: " & cmd.ObjType, vbExclamation
                     RestoreBackup = False
                 End If
             Else
-                MsgBoxW "Error! RestoreBackup: unknown verb: " & Cmd.Verb, vbExclamation
+                MsgBoxW "Error! RestoreBackup: unknown verb: " & cmd.Verb, vbExclamation
                 RestoreBackup = False
             End If
             
         Case INI_BASED
-            If Cmd.Verb = VERB_RESTORE_INI_VALUE Then
-                If Cmd.ObjType = OBJ_FILE Then
-                    lRegID = CLng(Cmd.Args)
+            If cmd.Verb = VERB_RESTORE_INI_VALUE Then
+                If cmd.ObjType = OBJ_FILE Then
+                    lRegID = CLng(cmd.Args)
                      With FixReg
                         If BackupExtractFixRegKeyByRegID(lRegID, INI_BASED, FixReg) Then
                         
@@ -1841,28 +1883,28 @@ Public Function RestoreBackup(sItem As String) As Boolean
                         End If
                     End With
                 Else
-                    MsgBoxW "Error! RestoreBackup: unknown object type: " & Cmd.ObjType, vbExclamation
+                    MsgBoxW "Error! RestoreBackup: unknown object type: " & cmd.ObjType, vbExclamation
                     RestoreBackup = False
                 End If
             Else
-                MsgBoxW "Error! RestoreBackup: unknown verb: " & Cmd.Verb, vbExclamation
+                MsgBoxW "Error! RestoreBackup: unknown verb: " & cmd.Verb, vbExclamation
                 RestoreBackup = False
             End If
             
         Case CUSTOM_BASED
-            If Cmd.Verb = 1 Then
-                If Cmd.ObjType = 1 Then
+            If cmd.Verb = 1 Then
+                If cmd.ObjType = 1 Then
                 
                 Else
-                    MsgBoxW "Error! RestoreBackup: unknown object type: " & Cmd.ObjType, vbExclamation
+                    MsgBoxW "Error! RestoreBackup: unknown object type: " & cmd.ObjType, vbExclamation
                     RestoreBackup = False
                 End If
             Else
-                MsgBoxW "Error! RestoreBackup: unknown verb: " & Cmd.Verb, vbExclamation
+                MsgBoxW "Error! RestoreBackup: unknown verb: " & cmd.Verb, vbExclamation
                 RestoreBackup = False
             End If
         Case Else
-            MsgBoxW "Oh! I forgot to implement this recovery type: " & Cmd.RecovType & ". Remind me about this.", vbExclamation
+            MsgBoxW "Oh! I forgot to implement this recovery type: " & cmd.RecovType & ". Remind me about this.", vbExclamation
             RestoreBackup = False
         End Select
         
@@ -1952,15 +1994,15 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Private Sub BackupExtractCommand(Cmd As BACKUP_COMMAND)
+Private Sub BackupExtractCommand(cmd As BACKUP_COMMAND)
     On Error GoTo ErrorHandler:
     Dim Part() As String
-    If InStr(Cmd.Full, " ") <> 0 Then
-        Part = Split(Cmd.Full, " ", 4)
-        If UBound(Part) >= 0 Then Cmd.RecovType = MapStringToRecoveryType(Part(0))
-        If UBound(Part) >= 1 Then Cmd.Verb = MapStringToRecoveryVerb(Part(1))
-        If UBound(Part) >= 2 Then Cmd.ObjType = MapStringToRecoveryObject(Part(2))
-        If UBound(Part) >= 3 Then Cmd.Args = Part(3)
+    If InStr(cmd.Full, " ") <> 0 Then
+        Part = Split(cmd.Full, " ", 4)
+        If UBound(Part) >= 0 Then cmd.RecovType = MapStringToRecoveryType(Part(0))
+        If UBound(Part) >= 1 Then cmd.Verb = MapStringToRecoveryVerb(Part(1))
+        If UBound(Part) >= 2 Then cmd.ObjType = MapStringToRecoveryObject(Part(2))
+        If UBound(Part) >= 3 Then cmd.Args = Part(3)
     End If
     Exit Sub
 ErrorHandler:

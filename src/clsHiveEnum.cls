@@ -14,7 +14,10 @@ Attribute VB_Exposed = False
 '
 ' Hives Enumerator class by Alex Dragokas
 '
-' v.1.1 (20.11.2017)
+' v.1.2 (06.12.2017)
+
+'1.2.
+'Added recognition of NetShowServices' SID on Win2k
 
 'intended to replace several 'for each' statements while iterating:
 '1. HKLM / HKCU / HKU + each sid
@@ -70,6 +73,7 @@ Private lb_User_dimmed    As Boolean
 Private la_predefHive()   As ENUM_REG_HIVE
 Private lb_KeysPredefined As Boolean
 Private lb_OS_32          As Boolean
+Private ls_SID_NetShowServices As String
 
 'State
 Private la_Keys()         As String
@@ -420,10 +424,16 @@ Private Function NextHive() As Boolean
             End If
             state_SID = state_SID + 1
             
-            If state_SID = -3 Then state_SID = state_SID + 1
+            If OSver.MajorMinor = 5 And Len(ls_SID_NetShowServices) <> 0 Then
+                'do nothing
+            Else
+                'skip state '-3'
+                If state_SID = -3 Then state_SID = state_SID + 1
+            End If
             
             Select Case state_SID
-            Case -3: 'sSID = "S-1-5-18": ls_UserName = "System" 'removed, since HKU\S-1-5-18 -> is a symlink to HKU\.DEFAULT
+            Case -3: sSID = ls_SID_NetShowServices: ls_UserName = "NetShowServices"
+                        'HKU\S-1-5-18 -> is a symlink to HKU\.DEFAULT
             Case -2: sSID = "S-1-5-19": ls_UserName = "Local service"
             Case -1: sSID = "S-1-5-20": ls_UserName = "Network service"
             End Select
@@ -537,7 +547,11 @@ Private Sub GetHKU_Sids()
         If aTmpSID(i) Like "S-#-#-#*" And (Not StrEndWith(aTmpSID(i), "_Classes")) And _
           aTmpSID(i) <> "S-1-5-18" And aTmpSID(i) <> "S-1-5-19" And aTmpSID(i) <> "S-1-5-20" Then
           
-            sUsername = MapSIDToUsername(aTmpSID(i))
+          sUsername = MapSIDToUsername(aTmpSID(i))
+            
+          If OSver.MajorMinor = 5 And sUsername = "NetShowServices" Then 'Win2k
+            ls_SID_NetShowServices = aTmpSID(i)
+          Else
             
             If StrComp(sUsername, ls_CurUser, 1) <> 0 Then
                 K = K + 1
@@ -550,6 +564,7 @@ Private Sub GetHKU_Sids()
                 'current user
                 ls_CurSID = aTmpSID(i)
             End If
+          End If
         End If
     Next i
     

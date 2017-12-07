@@ -76,6 +76,8 @@
 1024=Download the program via Internet?
 1025=Error has occured while downloading!
 1026=Downloading is completed. Run the program?
+1027=!!! HiJackThis was shut down due to exceeding the maximum allowed timeout: [] sec. !!! Report file will be incomplete!
+     Please, restart the program manually (not via Autologger).
 ;
 ; ============== EULA ============
 ;
@@ -234,9 +236,12 @@
        /startupscan	- automatically scan the system (the same as button "Do a system scan only")
        /autolog		- automatically scan the system, save a logfile and open it
        /silentautolog	- the same as /autolog, except with no required user intervention
+       /timeout:sec	- number of seconds allowed for HiJackThis to be run in /silentautolog mode (180 by default; 0 - to disable).
        /StartupList	- run scan by 'StartupList' module
        /ihatewhitelists 	- ignore all internal whitelists
+       /skipIgnoreList	- do not load ignore list
        /md5		- calculate md5 hash of files
+       /default		- load default settings (they will not be saved)
        /install     	- install HiJackThis to 'Program Files' folder and create shortcuts
        /autostart   	- set task scheduler for automatical run the HJT scanning after system boot up (use with /install key)
        /uninstall	- remove all HiJackThis Registry entries, backups and quit
@@ -1036,12 +1041,12 @@
 ; [O22]
 0430=Task Scheduler is a service that can be configured to run an arbitrary process at a specified time or at a certain periodicity. One such setting is called a Job. Job (task) can be run with elevated privileges without requesting UAC, be bound to a specific user, contain the path to the process, arguments, state, and so on. Malware often uses tasks to provide autorun and survive after the process is restarted.
      Tasks can be managed through the Task Scheduler snap-in (taskschd.msc).
-     
-     >>> Action taken by HiJackThis:
-      - The task is disabled.
-      - Tasks' process is killed.
-      - The task file and all associated registry keys are deleted.
-      - The executable file of task is NOT deleted.
+
+     >>> Action taken by HiJackThis:
+      - The task is disabled.
+      - Tasks' process is killed.
+      - The task file and all associated registry keys are deleted.
+      - The executable file of task is NOT deleted.
 ; [O23]
 0431=The 'Services' are a special type of programs that are essential to the system and are required for proper functioning of the system. Service processes are started before the user logs in and are protected by Windows. They can only be stopped from the services dialog in the Administrative Tools window.
      Malware that registers itself as a service is subsequently also harder to kill.
@@ -1589,4 +1594,4 @@
 ; Empty
 ;
 ; (2300 - ...)
-; 
+;      

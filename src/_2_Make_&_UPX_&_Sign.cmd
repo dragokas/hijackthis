@@ -80,6 +80,8 @@ set VTScanToolArg=/min /scan
 
 :: -------------------------------------------------------------------------------------------
 
+if "%~1"=="Fast" set bFast=true
+
 :: Searching for non-screened STOP statements
 call _5_Check_Stop_Statements.cmd
 
@@ -252,6 +254,8 @@ if /i "%CheckPDB%"=="true" (
   )
 )
 
+if defined bFast goto skipBackup
+
 :: Creating backup
 echo.
 2>NUL md "%ArcFolder%"
@@ -305,10 +309,14 @@ if %errorlevel% neq 0 (pause & exit /B)
 Tools\7zip\7za.exe t -pclean "%cd%\_%AppTitle%_pass_clean.zip"
 if %errorlevel% neq 0 (pause & exit /B)
 
+:skipBackup
+
 copy /y MSCOMCTL.OCX.bak MSCOMCTL.OCX
 copy /y HiJackThis.zip HiJackThis_test.zip
 del /f /a /q *.tmp 2>NUL
 del tools\VersionPatcher\EnumResReport.txt
+
+if defined bFast goto skipVT
 
 set ch=Y
 if /i "%CheckVT%"=="true" set /p "ch=Check on VirusTotal? (Y/N) "
@@ -317,14 +325,19 @@ if /i "%CheckVT%"=="true" start "" /min "%VTScanToolPath%" %VTScanToolArg% "%cd%
 
 ::ping -n 2 127.1 >NUL
 
+:skipVT
+if defined bFast goto skipAskHotUpdate
+
 echo.
 set "ch="
 set /p "ch=Would you like to write hot-update.txt ? (Y/N)"
 if /i "%ch%" neq "n" (
   start "" hot-changelog.txt
+  start "" ChangeLog\ChangeLog_en.txt
   start "" ChangeLog\ChangeLog.txt
 )
 
+:skipAskHotUpdate
 exit /B
 
 :GetOSBitness

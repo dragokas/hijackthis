@@ -1,5 +1,6 @@
 OSver;Dir\Name;RunObj;Args;Note
 5; {438755C2-A8BA-11D1-B96B-00A0C90312E1}\Browseui preloader; %windir%\system32\browseui.dll;
+5; {8C7461EF-2B13-11d2-BE35-3078302C2030}\Component Categories cache daemon; %windir%\system32\browseui.dll;
 5,1; {8C7461EF-2B13-11d2-BE35-3078302C2030}\Демон кэша категорий компонентов; %windir%\system32\browseui.dll;
 5,1; {438755C2-A8BA-11D1-B96B-00A0C90312E1}\Предзагрузчик Browseui; %windir%\system32\browseui.dll;
 5,1; {438755C2-A8BA-11D1-B96B-00A0C90312E1}\Browseui preloader; %windir%\system32\browseui.dll;
@@ -28,6 +29,23 @@ OSver;Dir\Name;RunObj;Args;Note
 6; \Microsoft\Windows\Tcpip\IpAddressConflict1; rundll32; ndfapi.dll,NdfRunDllDuplicateIPOffendingSystem
 6; \Microsoft\Windows\Tcpip\IpAddressConflict2; rundll32; ndfapi.dll,NdfRunDllDuplicateIPDefendingSystem
 6; \Microsoft\Windows\UPnP\UPnPHostConfig; sc.exe; config upnphost start= auto
+6; \Microsoft\Windows\Active Directory Rights Management Services Client\AD RMS Rights Policy Template Management (Automated); {CF2CF428-325B-48D3-8CA8-7633E36E5A32}; %SystemRoot%\system32\msdrm.dll
+6; \Microsoft\Windows\CertificateServicesClient\SystemTask; {58fb76b9-ac85-4e55-ac04-427593b1d060},SYSTEM; %SystemRoot%\system32\dimsjob.dll
+6; \Microsoft\Windows\CertificateServicesClient\UserTask; {58fb76b9-ac85-4e55-ac04-427593b1d060},USER; %SystemRoot%\system32\dimsjob.dll
+6; \Microsoft\Windows\CertificateServicesClient\UserTask-Roam; {58fb76b9-ac85-4e55-ac04-427593b1d060},KEYROAMING; %SystemRoot%\system32\dimsjob.dll
+6; \Microsoft\Windows\NetworkAccessProtection\NAPStatus UI; {f09878a1-4652-4292-aa63-8c7d4fd7648f},/b; %SystemRoot%\System32\QAgent.dll
+6; \Microsoft\Windows\Shell\CrawlStartPages; {51653423-e62d-4ff7-894a-dabb2b8e21e2}; %SystemRoot%\System32\srchadmin.dll
+6; \Microsoft\Windows\SideShow\AutoWake; {E51DFD48-AA36-4B45-BB52-E831F02E8316}; %SystemRoot%\System32\AuxiliaryDisplayServices.dll
+6; \Microsoft\Windows\SideShow\SessionAgent; {45F26E9E-6199-477F-85DA-AF1EDfE067B1}; %SystemRoot%\System32\AuxiliaryDisplayServices.dll
+6; \Microsoft\Windows\SideShow\SystemDataProviders; {7CCA6768-8373-4D28-8876-83E8B4E3A969}; %SystemRoot%\System32\AuxiliaryDisplayServices.dll
+6; \Microsoft\Windows\Active Directory Rights Management Services Client\AD RMS Rights Policy Template Management (Manual); {BF5CB148-7C77-4d8a-A53E-D81C70CF743C}; %SystemRoot%\system32\msdrm.dll
+6; \Microsoft\Windows\MobilePC\HotStart; {06DA0625-9701-43da-BFD7-FBEEA2180A1E}; %SystemRoot%\System32\HotStartUserAgent.dll
+6; \Microsoft\Windows\MobilePC\TMM; {35EF4182-F900-4632-B072-8639E4478A61}; %SystemRoot%\System32\TMM.dll
+6; \Microsoft\Windows\Multimedia\SystemSoundsService; {2DEA658F-54C1-4227-AF9B-260AB5FC3543}; %SystemRoot%\System32\PlaySndSrv.dll
+6; \Microsoft\Windows\SideShow\GadgetManager; {FF87090D-4A9A-4f47-879B-29A80C355D61},$(Arg0); %SystemRoot%\System32\AuxiliaryDisplayServices.dll
+6; \Microsoft\Windows\TextServicesFramework\MsCtfMonitor; {01575cfe-9a55-4003-a5e1-f38d1ebdcbe1}; %SystemRoot%\system32\MsCtfMonitor.dll
+6; \Microsoft\Windows\WDI\ResolutionHost; {900be39d-6be8-461a-bc4d-b0fa71f5ecb1}; %SystemRoot%\System32\wdi.dll
+6; \Microsoft\Windows\Tcpip\WSHReset; %SystemRoot%\system32\netsh.exe; interface tcp set heuristic wsh=default
 6,1; \Microsoft\Windows\Media Center\VCore; %ALLUSERSPROFILE%\vCore\VCore.exe; /check
 6,1; \Microsoft\Windows Defender\MP Scheduled Scan; %ProgramFiles%\windows defender\MpCmdRun.exe; Scan -ScheduleJob -WinTask -RestrictPrivilegesScan
 6,1; \Microsoft\Windows Defender\MpIdleTask; %ProgramFiles%\windows defender\MpCmdRun.exe; -IdleTask -TaskName MpIdleTask
@@ -102,7 +120,7 @@ OSver;Dir\Name;RunObj;Args;Note
 6,1; \Microsoft\Windows\WDI\ResolutionHost; {900be39d-6be8-461a-bc4d-b0fa71f5ecb1};%SystemRoot%\System32\wdi.dll
 6,1; \Microsoft\Windows\Maintenance\WinSAT; {A9A33436-678B-4C9C-A211-7CC38785E79D};%SystemRoot%\system32\WinSATAPI.dll
 6,1; \Microsoft\Windows\WindowsColorSystem\Calibration Loader; {B210D694-C8DF-490d-9576-9E20CDBC20BD};%SystemRoot%\System32\mscms.dll
-6,1; \Microsoft\Windows\Active Directory Rights Management Services Client\AD RMS Rights Policy Template Management (Manual); {BF5CB148-7C77-4d8a-A53E-D81C70CF743C};C:\Windows\system32\msdrm.dll
+6,1; \Microsoft\Windows\Active Directory Rights Management Services Client\AD RMS Rights Policy Template Management (Manual); {BF5CB148-7C77-4d8a-A53E-D81C70CF743C};%SystemRoot%\system32\msdrm.dll
 6,1; \Microsoft\Windows\Diagnosis\Scheduled; {c1f85ef8-bcc2-4606-bb39-70c523715eb3};%SystemRoot%\System32\sdiagschd.dll
 6,1; \Microsoft\Windows\Customer Experience Improvement Program\UsbCeip; {c27f6b1d-fe0b-45e4-9257-38799fa69bc8},SYSTEM;%SystemRoot%\System32\usbceip.dll
 6,1; \Microsoft\Windows\Ras\MobilityManager; {c463a0fc-794f-4fdf-9201-01938ceacafa};%SystemRoot%\system32\rasmbmgr.dll
@@ -115,6 +133,11 @@ OSver;Dir\Name;RunObj;Args;Note
 6,1; \Microsoft\Windows\Offline Files\Logon Synchronization; {FA3F3DD9-4C1A-456B-A8FA-C76EF3ED83B8},Logon;%SystemRoot%\System32\cscui.dll
 6,1; \Microsoft\Windows\SideShow\GadgetManager; {FF87090D-4A9A-4f47-879B-29A80C355D61},$(Arg0);%SystemRoot%\System32\AuxiliaryDisplayServices.dll
 6,1; \Microsoft\Microsoft Antimalware\Microsoft Antimalware Scheduled Scan; %ProgramFiles%\Microsoft Security Client\MpCmdRun.exe;Scan -ScheduleJob -RestrictPrivileges
+6,1; \OfficeSoftwareProtectionPlatform\SvcRestartTask; %SystemRoot%\system32\sc.exe; start osppsvc
+6,1; \Microsoft\Windows\termsrv\licensing\TlsWarning; %SystemRoot%\system32\tlsbln.exe
+6,1; \Microsoft\Windows\Server Manager\ServerManager; %SystemRoot%\system32\ServerManagerLauncher.exe
+6,1; \Microsoft\Windows\Defrag\ScheduledDefrag; %SystemRoot%\system32\defrag.exe; -c -i -g
+6,1; \Microsoft\Windows\Defrag\ManualDefrag; %SystemRoot%\system32\defrag.exe; -c
 6,2; \Microsoft\Windows\Windows Defender\Windows Defender Cache Maintenance; %ProgramFiles%\Windows Defender\MpCmdRun.exe; -IdleTask -TaskName WdCacheMaintenance
 6,2; \Microsoft\Windows\Windows Defender\Windows Defender Cleanup; %ProgramFiles%\Windows Defender\MpCmdRun.exe; -IdleTask -TaskName WdCleanup
 6,2; \Microsoft\Windows\Windows Defender\Windows Defender Scheduled Scan; %ProgramFiles%\Windows Defender\MpCmdRun.exe; Scan -ScheduleJob
@@ -270,6 +293,8 @@ OSver;Dir\Name;RunObj;Args;Note
 6,3; \Microsoft\Windows\Offline Files\Logon Synchronization; {FA3F3DD9-4C1A-456B-A8FA-C76EF3ED83B8},Logon;%SystemRoot%\System32\cscui.dll
 6,3; \Microsoft\Windows\Servicing\StartComponentCleanup; 752073A1-23F2-4396-85F0-8FDB879ED0ED;%SystemRoot%\servicing\TrustedInstaller.exe
 6,3; \Microsoft\Windows\Maintenance\WinSAT; A9A33436-678B-4c9c-A211-7CC38785E79D;%SystemRoot%\system32\WinSATAPI.dll
+6,3; \OfficeSoftwareProtectionPlatform\SvcRestartTask; %SystemRoot%\system32\sc.exe; start osppsvc
+6,3; \Microsoft\Windows\RemovalTools\MRT_HB; %SystemRoot%\system32\MRT.exe; /EHB /Q
 10; \Microsoft\Windows\Media Center\RegisterObject; %ALLUSERSPROFILE%\RegisterObject\RegisterObject.exe; /DoWatch;;
 10; {root}\OneDrive Standalone Update Task v2; %LOCALAPPDATA%\Microsoft\OneDrive\OneDriveStandaloneUpdater.exe; ;;
 10; \Microsoft\Windows\Windows Defender\Windows Defender Cache Maintenance; %ProgramFiles%\Windows Defender\MpCmdRun.exe; -IdleTask -TaskName WdCacheMaintenance;;
@@ -465,6 +490,5 @@ OSver;Dir\Name;RunObj;Args;Note
 10; \Microsoft\Windows\PushToInstall\Registration; %SystemRoot%\system32\sc.exe; start pushtoinstall registration
 10; \Microsoft\Windows\UpdateOrchestrator\USO_Broker_Display; %SystemRoot%\system32\MusNotification.exe; Display
 10; \Microsoft\Windows\Windows Defender\Windows Defender Scheduled Scan; %ProgramFiles%\Windows Defender\MpCmdRun.exe; Scan -ScheduleJob -ScanTrigger 55
-
-
-   
+10; \OfficeSoftwareProtectionPlatform\SvcRestartTask; %SystemRoot%\system32\sc.exe; start osppsvc
+    

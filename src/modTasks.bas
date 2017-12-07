@@ -9,6 +9,10 @@ Option Explicit
 ' Vista+: HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks
 ' XP:     HKLM\Software\Microsoft\Windows\CurrentVersion\Explorer\SharedTaskScheduler
 
+'regexp replacing (for CLSID):
+'^(.*?): (\(disabled\) )?(.*?) - (.*?) - (.*?)( \(Microsoft\))?
+' \3; \4; \5
+
 ' Action type constants
 Private Enum TASK_ACTION_TYPE
     TASK_ACTION_EXEC = 0
@@ -838,6 +842,8 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
     Dim ID              As String
     Dim aID()           As String
     Dim DirFull_2       As String
+    Dim bTelemetry      As Boolean
+    Dim sRunFilename    As String
     
     '// Todo: Add analysis for dangerous host exe, like cmd.exe. Don't try to show 'Microsoft' EDS sign in log for them,
     'exception: if no arguments specified.
@@ -988,15 +994,32 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
             End If
             
             If Not isSafe Then
-
+                
+                bTelemetry = False
+                
+                sRunFilename = GetFileName(te(j).RunObj, True)
+                
+                If InStr(1, DirParent, "Customer Experience", 1) <> 0 Then bTelemetry = True
+                If InStr(1, DirParent, "Application Experience", 1) <> 0 Then bTelemetry = True
+                If InStr(1, DirParent, "telemetry", 1) <> 0 Then bTelemetry = True
+                If InStr(1, TaskName, "telemetry", 1) <> 0 Then bTelemetry = True
+                If StrComp(sRunFilename, "OLicenseHeartbeat.exe", 1) = 0 Then bTelemetry = True
+                
+                'skip signature mark for host processes
+                If SignResult.isMicrosoftSign Then
+                    If inArraySerialized(sRunFilename, "rundll32.exe|schtasks.exe|sc.exe|cmd.exe|wscript.exe|" & _
+                      "mshta.exe|pcalua.exe|powershell.exe|svchost.exe", "|") Then SignResult.isMicrosoftSign = False
+                End If
+                
                 sHit = "O22 - Task: " & IIf(te(j).Enabled, "", "(disabled) ") & _
+                  IIf(bTelemetry, "(telemetry) ", "") & _
                   IIf(DirParent = "{root}", TaskName, DirParent & "\" & TaskName)
-
+                
                 sHit = sHit & " - " & te(j).RunObj & _
                   IIf(Len(te(j).RunArgs) <> 0, " " & te(j).RunArgs, "") & _
                   IIf(te(j).FileMissing And Not bNoFile, " (file missing)", "") & _
                   IIf(SignResult.isMicrosoftSign, " (Microsoft)", "")
-
+                
                 If Not IsOnIgnoreList(sHit) Then
               
                     If bMD5 Then
