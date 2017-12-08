@@ -243,6 +243,7 @@ Private Const STATUS_SUCCESS         As Long = 0&
 Private Declare Function NtQueryKey Lib "NTDLL.DLL" (ByVal KeyHandle As Long, ByVal KeyInformationClass As KEY_INFORMATION_CLASS, KeyInformation As Any, ByVal length As Long, ResultLength As Long) As Long
 Private Declare Function NtQueryObject Lib "NTDLL.DLL" (ByVal Handle As Long, ByVal ObjectInformationClass As OBJECT_INFORMATION_CLASS, ObjectInformation As Any, ByVal ObjectInformationLength As Long, ReturnLength As Long) As Long
 Private Declare Function NtOpenKeyEx Lib "NTDLL.DLL" (KeyHandle As Long, ByVal DesiredAccess As Long, ObjectAttributes As OBJECT_ATTRIBUTES, ByVal OpenOptions As Long) As Long
+Private Declare Function NtOpenKey Lib "NTDLL.DLL" (KeyHandle As Long, ByVal DesiredAccess As Long, ObjectAttributes As OBJECT_ATTRIBUTES) As Long
 
 
 Public Function GetHKey(ByVal HKeyName As Variant) As ENUM_REG_HIVE 'Get handle of main hive
@@ -2320,7 +2321,8 @@ Public Function IsKeySymLink(hHive As ENUM_REG_HIVE, sKey As String, Optional ou
     End With
     
     'open key as a source of a symlink
-    lRet = NtOpenKeyEx(hKeyLink, WRITE_OWNER, OA, REG_OPTION_OPEN_LINK Or REG_OPTION_BACKUP_RESTORE)
+    'lRet = NtOpenKeyEx(hKeyLink, WRITE_OWNER, OA, REG_OPTION_OPEN_LINK Or REG_OPTION_BACKUP_RESTORE)
+    lRet = NtOpenKey(hKeyLink, KEY_READ, OA)
     
     If STATUS_SUCCESS = lRet Then
         sNtNameLink = RegGetKeyInfoNameEx(hKeyLink)

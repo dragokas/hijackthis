@@ -537,7 +537,7 @@ Public Function SignVerify( _
 '        tim(6).Start 'release
 '        tim(7).Start 'CryptCATEnumerateMember
 
-    If bDebugMode Then tim(0).Start 'Total time
+    If bDebugMode Or bDebugToFile Then tim(0).Start 'Total time
 
     ' in.  sFilePath - path to PE EXE file for validation
     ' in.  Flags - options for checking
@@ -712,7 +712,7 @@ Public Function SignVerify( _
 '        .pszOID = StrPtr(szOID_CERT_STRONG_KEY_OS_1)
 '    End With
     
-    If bDebugMode Then tim(1).Start
+    If bDebugMode Or bDebugToFile Then tim(1).Start
     
     If IsWin8AndNewer Then
         ' obtain context for procedure of signature verification
@@ -738,7 +738,7 @@ Public Function SignVerify( _
         End If
     End If
     
-    If bDebugMode Then tim(1).Freeze
+    If bDebugMode Or bDebugToFile Then tim(1).Freeze
     
     FileSize = FileLenW(, hFile) ' file size == 0 ?
     
@@ -758,7 +758,7 @@ Public Function SignVerify( _
         End If
     End If
     
-    If bDebugMode Then tim(2).Start 'CryptCATAdminCalcHashFromFileHandle
+    If bDebugMode Or bDebugToFile Then tim(2).Start 'CryptCATAdminCalcHashFromFileHandle
     
     If IsWin8AndNewer Then
         ' obtain size needed for hash (Win8+)
@@ -797,8 +797,8 @@ Public Function SignVerify( _
     Next
     SignResult.HashFileCode = sMemberTag
     
-    If bDebugMode Then tim(2).Freeze
-    If bDebugMode Then tim(3).Start 'CryptCATAdminEnumCatalogFromHash
+    If bDebugMode Or bDebugToFile Then tim(2).Freeze
+    If bDebugMode Or bDebugToFile Then tim(3).Start 'CryptCATAdminEnumCatalogFromHash
     
     If Not CBool(Flags And SV_DisableCatalogVerify) Then
         ' Simple checking tag by cache
@@ -839,7 +839,7 @@ Public Function SignVerify( _
         End If
     End If
     
-    If bDebugMode Then tim(3).Freeze
+    If bDebugMode Or bDebugToFile Then tim(3).Freeze
     
 SkipCatCheck:
     
@@ -937,11 +937,11 @@ SkipCatCheck:
     '  Example: "C:\Program Files\WindowsApps\king.com.CandyCrushSodaSaga_1.75.600.0_x86__kgqvnymyfvs32\AppxMetadata\CodeIntegrity.cat"
     '  => "C:\Program Files\WindowsApps\king.com.CandyCrushSodaSaga_1.75.600.0_x86__kgqvnymyfvs32\stritz.exe"
     
-    tim(4).Start 'WinVerifyTrust
+    If bDebugMode Or bDebugToFile Then tim(4).Start 'WinVerifyTrust
     
     ReturnVal = WinVerifyTrust(INVALID_HANDLE_VALUE, ActionGuid, VarPtr(WintrustData))
     
-    tim(4).Freeze
+    If bDebugMode Or bDebugToFile Then tim(4).Freeze
     
     bWinTrustVerified = True
     
@@ -987,13 +987,13 @@ SkipCatCheck:
         ReturnVal <> TRUST_E_BAD_DIGEST And _
         ReturnVal <> TRUST_E_PROVIDER_UNKNOWN Then
     
-        tim(5).Start 'GetSignerInfo
+        If bDebugMode Or bDebugToFile Then tim(5).Start 'GetSignerInfo
     
         GetSignerInfo WintrustData.hWVTStateData, SignResult, Flags
         
         If Flags And SV_SelfTest Then Dbg "GetSignerInfo: HashRootCert = " & SignResult.HashRootCert
         
-        tim(5).Freeze
+        If bDebugMode Or bDebugToFile Then tim(5).Freeze
     End If
     
     ' correcting result if SV_AllowSelfSigned specified to allow self-signed certificates based on user settings (flags)
@@ -1108,7 +1108,7 @@ SkipCatCheck:
         
     End With
     
-    If bDebugMode Then tim(7).Start 'CryptCATEnumerateMember
+    If bDebugMode Or bDebugToFile Then tim(7).Start 'CryptCATEnumerateMember
     
     'Enumerating all tags in security catalog and save them in cache (if validation was successful)
     #If UseSimpleCatCheck Then
@@ -1156,11 +1156,11 @@ SkipCatCheck:
         End If
     #End If
     
-    If bDebugMode Then tim(7).Freeze
+    If bDebugMode Or bDebugToFile Then tim(7).Freeze
     
 Finalize:
 
-    tim(6).Start 'release
+    If bDebugMode Or bDebugToFile Then tim(6).Start 'release
 
     ' Release sec. cat. context
     If (CatalogContext) Then
@@ -1193,10 +1193,12 @@ Finalize:
     'revert file system redirector to its initial state
     ToggleWow64FSRedirection bOldRedir
     
-    'freeze all timers
-    For i = 0 To UBound(tim)
-        tim(i).Freeze
-    Next
+    If bDebugMode Or bDebugToFile Then
+        'freeze all timers
+        For i = 0 To UBound(tim)
+            tim(i).Freeze
+        Next
+    End If
     
     Exit Function
 ErrorHandler:
@@ -1733,9 +1735,9 @@ Public Function IsMicrosoftCertHash(hash As String) As Boolean
     Next
 End Function
 
-Public Function IsMicrosoftFile(sFile As String, Optional Flags As FLAGS_SignVerify) As Boolean
+Public Function IsMicrosoftFile(sFile As String) As Boolean
     Dim SignResult As SignResult_TYPE
-    SignVerify sFile, Flags, SignResult
+    SignVerify sFile, SV_LightCheck Or SV_PreferInternalSign, SignResult
     If SignResult.isLegit Then
         IsMicrosoftFile = SignResult.isMicrosoftSign
     End If

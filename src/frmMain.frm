@@ -1837,7 +1837,11 @@ Public Sub Test()
     '4 - KEY_VIRTUAL_SHARED
     '8 - KEY_VIRTUAL_REDIRECTED
     
-    'Stop
+'    Dim sSymTarget$
+'
+'    Debug.Print Reg.IsKeySymLink(HKLM, "SYSTEM\CurrentControlSet", sSymTarget)
+'
+'    Stop
 End Sub
 
 Private Sub Form_Load()
@@ -2205,7 +2209,7 @@ Private Sub FormStart_Stady2()
         Exit Sub
     End If
     
-    If bDebugMode Then
+    If bDebugMode Or bDebugToFile Then
         'checking is EDS machanism working correclty
         Dim SignResult As SignResult_TYPE
     

@@ -479,7 +479,7 @@ Private Sub Class_Initialize()
     End If
     
     If OSName_ = "" Then
-        OSName_ = "Windows Unknown" & "(ver. " & MajorMinor_ & ") (" & "Build: " & osi.dwBuildNumber & ")" & " Registry's data: " & _
+        OSName_ = "Windows Unknown" & "(ver: " & MajorMinor_ & ". PT: " & osi.wProductType & ". Build: " & osi.dwBuildNumber & ")" & " Registry's data: " & _
             RegRead_REG_SZ("SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName")
     End If
     

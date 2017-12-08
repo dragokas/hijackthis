@@ -107,6 +107,8 @@ Public HE           As clsHiveEnum
 Public Reg          As clsRegistry
 
 Public colSafeDNS   As New Collection
+Public colSafeCert  As New Collection
+Public colBadCert   As New Collection
 Public cReg4vals    As New Collection
 Public sRegVals()   As String
 Public sFileVals()  As String

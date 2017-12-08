@@ -560,6 +560,7 @@ Public Function PathNormalize(ByVal sFileName As String) As String
         bShouldSeek = True  'relative or on the %PATH%
     Else
         If Not FileExists(sFileName) Then bShouldSeek = True 'e.g. no extension
+        sFileName = GetLongPath(sFileName)
     End If
     
     If bShouldSeek Then
@@ -1004,6 +1005,7 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
                 If InStr(1, DirParent, "telemetry", 1) <> 0 Then bTelemetry = True
                 If InStr(1, TaskName, "telemetry", 1) <> 0 Then bTelemetry = True
                 If StrComp(sRunFilename, "OLicenseHeartbeat.exe", 1) = 0 Then bTelemetry = True
+                If StrComp(DirFull, "\Microsoft\Windows\IME\SQM data sender", 1) = 0 Then bTelemetry = True
                 
                 'skip signature mark for host processes
                 If SignResult.isMicrosoftSign Then
