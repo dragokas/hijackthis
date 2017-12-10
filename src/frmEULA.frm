@@ -179,7 +179,9 @@ Private Sub Form_Initialize()
         OpenLogHandle
     End If
     
-    'If InStr(1, command$(), "/bDebugToFile", 1) <> 0 Then
+    If InStr(1, Command$(), "/DebugToFile", 1) <> 0 Then
+        bDebugToFile = True
+    End If
     If InStr(1, Command$(), "/debug", 1) <> 0 Then
         bDebugToFile = True
         OpenDebugLogHandle

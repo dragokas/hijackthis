@@ -338,6 +338,10 @@ if /i "%ch%" neq "n" (
 )
 
 :skipAskHotUpdate
+
+:: test running HJT scan from Autologger (2 logs should be created - HiJackThis.log and HiJackThis_debug.log)
+if not defined bFast call _10_Scan_Execution_Test.cmd Ask
+
 exit /B
 
 :GetOSBitness

@@ -342,7 +342,7 @@
 
      HiJackThis Fork использует примеры кода и разработки других авторов:
      
-     - Кривоус Анатолий { The Trick } - класс 'HashTable', модули 'UnregCOM', 'EXE loader'
+     - Кривоус Анатолий { The Trick } - классы 'HashTable', 'Binary Stream', модули 'UnregCOM', 'EXE loader'
      - Файфель Борис { Catstail } - классы 'Process', 'CRC32'
      - VolteFace - класс 'StringBuilder'
      - Jason Peter Brown - обёртка для библиотеки регулярных выражений PCRE2
@@ -1597,4 +1597,4 @@
 ; Empty
 ;
 ; (2300 - ...)
-;   
+;    

@@ -502,10 +502,10 @@ Public Function OpenW(FileName As String, Access As VB_FILE_ACCESS_MODE, retHand
 End Function
 
                                                                   'do not change Variant type at all or you will die ^_^
-Public Function GetW(hFile As Long, pos As Long, Optional vOut As Variant, Optional vOutPtr As Long, Optional cbToRead As Long) As Boolean
+Public Function GetW(hFile As Long, Optional vPos As Variant, Optional vOut As Variant, Optional vOutPtr As Long, Optional cbToRead As Long) As Boolean
     
     'On Error GoTo ErrorHandler
-    AppendErrorLogCustom "GetW - Being", "Handle: " & hFile, "pos: " & pos, "cbToRead: " & cbToRead
+    AppendErrorLogCustom "GetW - Being", "Handle: " & hFile, "pos: " & vPos, "cbToRead: " & cbToRead
     
     Dim lBytesRead  As Long
     Dim lr          As Long
@@ -513,9 +513,12 @@ Public Function GetW(hFile As Long, pos As Long, Optional vOut As Variant, Optio
     Dim vType       As Long
     Dim UnknType    As Boolean
     Dim oldPos      As Long
+    Dim pos         As Long
     
     'modMain_CheckO1Item - #52 (Bad file name or number) LastDllError = 126 (Не найден указанный модуль.)
-    If pos >= 1 Then
+    If Not IsMissing(vPos) Then
+      pos = CLng(vPos)
+      If pos >= 1 Then
         pos = pos - 1   ' VB's Get & SetFilePointer difference correction
         
         oldPos = SetFilePointer(hFile, 0&, ByVal 0&, FILE_CURRENT)
@@ -530,6 +533,7 @@ Public Function GetW(hFile As Long, pos As Long, Optional vOut As Variant, Optio
                 End If
             End If
         End If
+      End If
     End If
     
     If Not IsMissing(vOut) Then
@@ -2074,7 +2078,7 @@ Public Function FindOnPath(ByVal sAppName As String, Optional bUseSourceValueOnF
     AppendErrorLogCustom "FindOnPath - Begin"
 
     Static Exts() As String
-    Static isInit As Boolean
+    Static IsInit As Boolean
     Dim ProcPath$
     Dim sFile As String
     Dim sFolder As String
@@ -2083,8 +2087,8 @@ Public Function FindOnPath(ByVal sAppName As String, Optional bUseSourceValueOnF
     Dim sFileTry As String
     Dim bFullPath As Boolean
 
-    If Not isInit Then
-        isInit = True
+    If Not IsInit Then
+        IsInit = True
         Exts = Split(EnvironW("%PathExt%"), ";")
         For i = 0 To UBound(Exts)
             Exts(i) = LCase$(Exts(i))

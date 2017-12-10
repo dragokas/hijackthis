@@ -138,6 +138,7 @@ OSver;Dir\Name;RunObj;Args;Note
 6,1; \Microsoft\Windows\Server Manager\ServerManager; %SystemRoot%\system32\ServerManagerLauncher.exe
 6,1; \Microsoft\Windows\Defrag\ScheduledDefrag; %SystemRoot%\system32\defrag.exe; -c -i -g
 6,1; \Microsoft\Windows\Defrag\ManualDefrag; %SystemRoot%\system32\defrag.exe; -c
+6,1; \Microsoft\Windows\Maintenance\WinSAT; A9A33436-678B-4c9c-A211-7CC38785E79D; %SystemRoot%\system32\WinSATAPI.dll
 6,2; \Microsoft\Windows\Windows Defender\Windows Defender Cache Maintenance; %ProgramFiles%\Windows Defender\MpCmdRun.exe; -IdleTask -TaskName WdCacheMaintenance
 6,2; \Microsoft\Windows\Windows Defender\Windows Defender Cleanup; %ProgramFiles%\Windows Defender\MpCmdRun.exe; -IdleTask -TaskName WdCleanup
 6,2; \Microsoft\Windows\Windows Defender\Windows Defender Scheduled Scan; %ProgramFiles%\Windows Defender\MpCmdRun.exe; Scan -ScheduleJob
@@ -491,4 +492,4 @@ OSver;Dir\Name;RunObj;Args;Note
 10; \Microsoft\Windows\UpdateOrchestrator\USO_Broker_Display; %SystemRoot%\system32\MusNotification.exe; Display
 10; \Microsoft\Windows\Windows Defender\Windows Defender Scheduled Scan; %ProgramFiles%\Windows Defender\MpCmdRun.exe; Scan -ScheduleJob -ScanTrigger 55
 10; \OfficeSoftwareProtectionPlatform\SvcRestartTask; %SystemRoot%\system32\sc.exe; start osppsvc
-    
+     

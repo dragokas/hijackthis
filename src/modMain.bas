@@ -267,6 +267,13 @@ Private Type MY_PROC_LOG
     EDS_issued  As String
 End Type
 
+Private Type CERTIFICATE_BLOB_PROPERTY
+    PropertyID As Long
+    Reserved As Long
+    Length As Long
+    Data() As Byte
+End Type
+
 Private Declare Sub OutputDebugStringA Lib "kernel32.dll" (ByVal lpOutputString As String)
 
 Private HitSorted()     As String
@@ -289,7 +296,7 @@ Public OSver    As clsOSInfo
 Public Proc     As clsProcess
 Public cMath    As clsMath
 
-Private Declare Function SysAllocStringByteLen Lib "oleaut32.dll" (ByVal pszStrPtr As Long, ByVal length As Long) As String
+Private Declare Function SysAllocStringByteLen Lib "oleaut32.dll" (ByVal pszStrPtr As Long, ByVal Length As Long) As String
 
 
 'it map ANSI scan result string from ListBox to Unicode string that is stored in memory (SCAN_RESULT structure)
@@ -1383,7 +1390,7 @@ Private Sub ProcessRuleReg(ByVal sRule$)
     'Registry rule syntax:
     '[regkey],[regvalue],[infected data],[default data]
     '* [regkey]           = "" -> abort - no way man!
-    ' * [regvalue]        = "" -> delete entire key
+    ' * [regvaluStrings     = "" -> delete entire key
     '  * [default data]   = "" -> delete value
     '   * [infected data] = "" -> any value (other than default) is considered infected
     vRule = Split(sRule, ",")
@@ -4958,55 +4965,64 @@ Public Sub CheckCertificatesEDS()
     'https://www.bleepingcomputer.com/news/security/certlock-trojan-blocks-security-programs-by-disallowing-their-certificates/
     'https://www.securitylab.ru/news/486648.php
     
-    '//TODO - reverse 'blob'
+    'reverse 'blob'
     'https://namecoin.org/2017/05/27/reverse-engineering-cryptoapi-cert-blobs.html
     'https://itsme.home.xs4all.nl/projects/xda/smartphone-certificates.html
     'https://msdn.microsoft.com/en-us/library/windows/desktop/aa376079%28v=vs.85%29.aspx
     'https://msdn.microsoft.com/en-us/library/windows/desktop/aa376573%28v=vs.85%29.aspx
     'https://msdn.microsoft.com/en-us/library/cc232282.aspx
-    '
-    '+0  DWORD propid
-    '+4  DWORD unknown
-    '+8  DWORD dwSize
-    '+12 BYTE data[dwSize]
     
     Dim i&, aSubKey$(), Idx&, sTitle$, bSafe As Boolean, sHit$, Result As SCAN_RESULT
+    Dim Blob() As Byte, CertHash As String, FriendlyName As String
     
     For i = 1 To Reg.EnumSubKeysToArray(HKLM, "SOFTWARE\Microsoft\SystemCertificates\Disallowed\Certificates", aSubKey())
         
         bSafe = True
         sTitle = ""
         
-        Idx = GetCollectionIndexByKey(aSubKey(i), colSafeCert)
+        Blob = Reg.GetBinary(HKLM, "SOFTWARE\Microsoft\SystemCertificates\Disallowed\Certificates\" & aSubKey(i), "Blob")
         
-        If Idx <> 0 Then
-            'it's safe
-            If Not bHideMicrosoft Or bIgnoreAllWhitelists Then
-                sTitle = GetCollectionKeyByIndex(Idx, colSafeCert)
-                bSafe = False
-            End If
-        Else
-            bSafe = False
-            Idx = GetCollectionIndexByKey(aSubKey(i), colBadCert)
+        If AryPtr(Blob) Then
+            ParseCertBlob Blob, CertHash, FriendlyName
+            
+            'Debug.Print "(" & FriendlyName & ")"
+            
+            If CertHash = "" Then CertHash = aSubKey(i)
+            
+            Idx = GetCollectionIndexByKey(CertHash, colSafeCert)
             
             If Idx <> 0 Then
-                sTitle = GetCollectionKeyByIndex(Idx, colBadCert)
+                'it's safe
+                If Not bHideMicrosoft Or bIgnoreAllWhitelists Then
+                    sTitle = GetCollectionKeyByIndex(Idx, colSafeCert)
+                    bSafe = False
+                End If
+            Else
+                bSafe = False
+                Idx = GetCollectionIndexByKey(CertHash, colBadCert)
+                
+                If Idx <> 0 Then
+                    sTitle = GetCollectionKeyByIndex(Idx, colBadCert) & " (Well-known cert.)"
+                End If
             End If
-        End If
-        
-        If Not bSafe Then
-            If sTitle = "" Then sTitle = "Unknown"
             
-            sHit = "O7 - Policy: [Certificate] Disallowed code signing root certificate: " & aSubKey(i) & " - " & sTitle
-            
-            If Not IsOnIgnoreList(sHit) Then
-                With Result
-                    .Section = "O7"
-                    .HitLineW = sHit
-                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\SystemCertificates\Disallowed\Certificates\" & aSubKey(i)
-                    .CureType = REGISTRY_BASED
-                End With
-                AddToScanResults Result
+            If Not bSafe Then
+                If sTitle = "" Then sTitle = "Unknown"
+                If FriendlyName <> "" Then sTitle = sTitle & " (" & FriendlyName & ")"
+                If FriendlyName = "Fraudulent" Or FriendlyName = "Untrusted" Then sTitle = sTitle & " (HJT: possible, safe)"
+                
+                'Hash - 'Name, cert. issued to' (Name of cert.) (HJT rating, if possible)
+                sHit = "O7 - Policy: [Untrusted Certificate] " & CertHash & " - " & sTitle
+                
+                If Not IsOnIgnoreList(sHit) Then
+                    With Result
+                        .Section = "O7"
+                        .HitLineW = sHit
+                        AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\SystemCertificates\Disallowed\Certificates\" & aSubKey(i)
+                        .CureType = REGISTRY_BASED
+                    End With
+                    AddToScanResults Result
+                End If
             End If
         End If
     Next
@@ -5016,6 +5032,64 @@ ErrorHandler:
     ErrorMsg Err, "CheckSystemProblems"
     If inIDE Then Stop: Resume Next
 End Sub
+
+Private Sub ParseCertBlob(Blob() As Byte, out_CertHash As String, out_FriendlyName As String)
+    On Error GoTo ErrorHandler:
+    
+    'Thanks to Willem Jan Hengeveld
+    'https://itsme.home.xs4all.nl/projects/xda/smartphone-certificates.html
+    
+    Const SHA1_HASH As Long = 3
+    Const FRIENDLY_NAME As Long = 11 'Fraudulent
+    
+    Dim prop As CERTIFICATE_BLOB_PROPERTY
+    Dim cStream As clsStream
+    Set cStream = New clsStream
+    
+    'registry blob is an array of CERTIFICATE_BLOB_PROPERTY structures.
+    
+    cStream.WriteData VarPtr(Blob(0)), UBound(Blob) + 1
+    cStream.BufferPointer = 0
+    
+    Do While cStream.BufferPointer < cStream.Size
+        cStream.ReadData VarPtr(prop), 12
+        If prop.Length > 0 Then
+            ReDim prop.Data(prop.Length - 1)
+            cStream.ReadData VarPtr(prop.Data(0)), prop.Length
+            
+'            Debug.Print "PropID: " & prop.PropertyID
+'            Debug.Print "Length: " & prop.Length
+'            Debug.Print "DataA:   " & Replace(StringFromPtrA(VarPtr(prop.Data(0))), vbNullChar, "-")
+'            Debug.Print "DataW:   " & StringFromPtrW(VarPtr(prop.Data(0)))
+'            Debug.Print "HexData: " & GetHexStringFromArray(prop.Data)
+            'If prop.PropertyID = 32 Then Stop
+            
+            Select Case prop.PropertyID
+            Case SHA1_HASH
+                out_CertHash = GetHexStringFromArray(prop.Data)
+            Case FRIENDLY_NAME
+                out_FriendlyName = StringFromPtrW(VarPtr(prop.Data(0)))
+            End Select
+            
+            If out_CertHash <> "" And out_FriendlyName <> "" Then Exit Do
+        End If
+    Loop
+    
+    Set cStream = Nothing
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "ParseCertBlob"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Private Function GetHexStringFromArray(a() As Byte) As String
+    Dim sHex As String
+    Dim i As Long
+    For i = 0 To UBound(a)
+        sHex = sHex & Right$("0" & Hex(a(i)), 2)
+    Next
+    GetHexStringFromArray = sHex
+End Function
 
 Private Sub CheckO7Item()
     On Error GoTo ErrorHandler:
@@ -5119,8 +5193,7 @@ Private Sub CheckO7Item()
     
     
     
-    'temporarily disabled
-    'Call CheckCertificatesEDS 'Untrusted certificates
+    Call CheckCertificatesEDS 'Untrusted certificates
     
     Call CheckSystemProblems '%temp%, %tmp%, disk free space < 1 GB.
     
@@ -6546,6 +6619,10 @@ Public Sub CheckO15Item()
                         lProtZones(i) = 5 'Unknown
                     End If
                 End If
+                
+                If lProtZones(i) = 5 Then
+                    If sProtVals(i) = "knownfolder" And OSver.MajorMinor = 6.1 Then bSafe = True
+                End If
             End If
             
             If Not bSafe Then
@@ -7379,7 +7456,7 @@ Public Sub CheckO21Item()
     'HKCR\AllFilesystemObjects\shellex\ContextMenuHandlers
     
     Dim sSSODL$, sHit$, sFile$, bOnWhiteList As Boolean
-    Dim hKey&, i&, sName$, lNameLen&, sCLSID$, lDataLen&
+    Dim hKey&, i&, sName$, lNameLen&, sCLSID$, lDataLen&, sValueName$
     Dim Result As SCAN_RESULT, bSafe As Boolean, bInList As Boolean
     
     sSSODL = "Software\Microsoft\Windows\CurrentVersion\ShellServiceObjectDelayLoad"
@@ -7395,13 +7472,13 @@ Public Sub CheckO21Item()
         
             Do
                 lNameLen = MAX_VALUENAME
-                sName = String$(lNameLen, 0&)
+                sValueName = String$(lNameLen, 0&)
                 lDataLen = MAX_VALUENAME
                 sCLSID = String$(lDataLen, 0&)
                 
-                If RegEnumValueW(hKey, i, StrPtr(sName), lNameLen, 0&, REG_SZ, StrPtr(sCLSID), lDataLen) <> 0 Then Exit Do
+                If RegEnumValueW(hKey, i, StrPtr(sValueName), lNameLen, 0&, REG_SZ, StrPtr(sCLSID), lDataLen) <> 0 Then Exit Do
                 
-                sName = Left$(sName, lNameLen)
+                sValueName = Left$(sValueName, lNameLen)
                 sCLSID = TrimNull(sCLSID)
                 
                 Call GetFileByCLSID(sCLSID, sFile, sName, HE.Redirected, HE.SharedKey)
@@ -7419,7 +7496,12 @@ Public Sub CheckO21Item()
                     End If
                 End If
                 
+                If sName = "(no name)" Then sName = sValueName
+                
                 sHit = IIf(bIsWin32, "O21", IIf(HE.Redirected, "O21-32", "O21")) & " - ShellServiceObjectDelayLoad: " & sName & " - " & sCLSID & " - " & sFile
+                
+                'some shit leftover by Microsoft ^)
+                If sName = "WebCheck" And sCLSID = "{E6FB5E20-DE35-11CF-9C87-00AA005127ED}" And sFile = "(no file)" Then bSafe = True
                 
                 If Not IsOnIgnoreList(sHit) And Not bSafe Then
                     If bMD5 Then sHit = sHit & GetFileMD5(sFile)
@@ -7475,6 +7557,8 @@ Public Sub CheckO21Item()
                         If IsMicrosoftFile(sFile) Then bSafe = True
                     End If
                 End If
+                
+                If sName = "(no name)" Then sName = aSubKey(i)
                 
                 sHit = IIf(bIsWin32, "O21", IIf(HE.Redirected, "O21-32", "O21")) & " - ShellIconOverlayIdentifiers: " & sName & " - " & sCLSID & " - " & sFile
                 
@@ -7582,6 +7666,7 @@ Public Sub CheckO22Item()
     
     If OSver.IsWindowsVistaOrGreater Then
         EnumTasks2   '<--- New routine
+        EnumJobs
         Exit Sub
     End If
     
@@ -7593,6 +7678,8 @@ Public Sub CheckO22Item()
     Dim sSTS$, hKey&, i&, sCLSID$, lCLSIDLen&, lDataLen&
     Dim sFile$, sName$, sHit$, isSafe As Boolean
     Dim Wow6432Redir As Boolean, Result As SCAN_RESULT
+    
+    EnumJobs
     
     Wow6432Redir = False
     
@@ -9773,9 +9860,9 @@ End Function
 
 'get the last item of serialized array
 Public Function SplitExGetLast(sSerializedArray As String, Optional Delimiter As String = " ") As String
-    Dim ret() As String
-    ret = SplitSafe(sSerializedArray, Delimiter)
-    SplitExGetLast = ret(UBound(ret))
+    Dim Ret() As String
+    Ret = SplitSafe(sSerializedArray, Delimiter)
+    SplitExGetLast = Ret(UBound(Ret))
 End Function
 
 Private Sub DeleteDuplicatesInArray(arr() As String, CompareMethod As VbCompareMethod, Optional DontCompress As Boolean)
@@ -10440,6 +10527,7 @@ Public Function CreateLogFile() As String
     Dim lNumProcesses&
     Dim hProc&, sProcessName$
     Dim Col As New Collection, cnt&
+    Dim sTmp$
     
     On Error GoTo MakeLog:
     
@@ -10534,6 +10622,18 @@ Public Function CreateLogFile() As String
     Next
     
     sProcessList = sProcessList & vbCrLf
+    
+    'show all PIDs in debug. mode
+    If bDebug Or bDebugToFile Then
+        If lNumProcesses Then
+            sTmp = ""
+            For i = 0 To UBound(Process)
+                sTmp = sTmp & Process(i).PID & " | " & IIf(Len(Process(i).Path) <> 0, Process(i).Path, Process(i).Name) & vbCrLf
+            Next
+            AppendErrorLogCustom sTmp
+            sTmp = ""
+        End If
+    End If
     
     '------------------------------
 MakeLog:
@@ -10681,7 +10781,7 @@ MakeLog:
         End If
     End If
     
-    If 0 <> ErrLogCustomText.length Then
+    If 0 <> ErrLogCustomText.Length Then
         sLog.Append vbCrLf & vbCrLf & "Trace information:" & vbCrLf & ErrLogCustomText.ToString & vbCrLf
     End If
     
@@ -10700,7 +10800,7 @@ MakeLog:
     Dim Size_2 As Long
     Dim Size_3 As Long
     
-    Size_1 = 2& * (sLog.length + Len(" bytes, CRC32: FFFFFFFF. Sign:   "))   'Вычисление размера лога (в байтах)
+    Size_1 = 2& * (sLog.Length + Len(" bytes, CRC32: FFFFFFFF. Sign:   "))   'Вычисление размера лога (в байтах)
     Size_2 = Size_1 + 2& * Len(CStr(Size_1))                                 'с учетом самого числа "кол-во байт"
     Size_3 = Size_2 - 2& * Len(CStr(Size_1)) + 2& * Len(CStr(Size_2))        'пересчет, если число байт увеличилось на 1 разряд
     

@@ -35,6 +35,122 @@ Private Type TASK_ENTRY
     RegID       As String
 End Type
 
+Private Enum JOB_PRIORITY_CLASS
+    JOB_REALTIME_PRIORITY = &H800000
+    JOB_HIGH_PRIORITY = &H1000000
+    JOB_IDLE_PRIORITY = &H2000000
+    JOB_NORMAL_PRIORITY = &H4000000
+End Enum
+
+Private Enum JOB_SCHED_STATUS
+    SCHED_S_TASK_READY = &H41300
+    SCHED_S_TASK_RUNNING = &H41301
+    SCHED_S_TASK_NOT_SCHEDULED = &H41305
+End Enum
+
+Private Type JOB_HEADER
+    ProductVer As Integer
+    FormatVer As Integer
+    ID As UUID
+    AppNameOffset As Integer
+    TriggerOffset As Integer
+    ErrRetryCount As Integer
+    ErrRetryInterval As Integer
+    IdleDeadline As Integer
+    IdleWait As Integer
+    Priority As JOB_PRIORITY_CLASS
+    MaxRunTime As Long
+    ExitCode As Long
+    Status As JOB_SCHED_STATUS
+    Flags As Long
+    LastRunTime As SYSTEMTIME
+End Type
+
+Private Type JOB_UNICODE_STRING
+    Length As Integer
+    Data As String
+End Type
+
+Private Type JOB_USER_DATA
+    Size As Integer
+    Data() As Byte
+End Type
+
+Private Type JOB_RESERVED_DATA
+    Size As Integer
+    StartError As Long
+    TaskFlags As Long
+End Type
+
+Private Enum JOB_TRIGGER_TYPE
+    ONCE = 0
+    DAILY = 1
+    WEEKLY = 2
+    MONTHLYDATE = 3
+    MONTHLYDOW = 4
+    EVENT_ON_IDLE = 5
+    EVENT_AT_SYSTEMSTART = 6
+    EVENT_AT_LOGON = 7
+End Enum
+
+Private Enum JOB_TRIGGER_FLAGS
+    TASK_TRIGGER_FLAG_HAS_END_DATE = &H80000000
+    TASK_TRIGGER_FLAG_KILL_AT_DURATION_END = &H40000000
+    TASK_TRIGGER_FLAG_DISABLED = &H20000000
+End Enum
+
+Private Type JOB_TRIGGER
+    TriggerSize As Integer
+    Reserved1 As Integer
+    BeginYear As Integer
+    BeginMonth As Integer
+    BeginDay As Integer
+    EndYear As Integer
+    EndMonth As Integer
+    EndDay As Integer
+    StartHour As Integer
+    StartMinute As Integer
+    MinutesDuration As Long
+    MinutesInterval As Long
+    Flags As Long ' sum of JOB_TRIGGER_FLAGS bits
+    TriggerType As JOB_TRIGGER_TYPE
+    TriggerSpecific0 As Integer
+    TriggerSpecific1 As Integer
+    TriggerSpecific2 As Integer
+    Padding As Integer
+    Reserved2 As Integer
+    Reserved3 As Integer
+End Type
+
+Private Type JOB_TRIGGERS
+    ccTriggers As Integer
+    aTrigger() As JOB_TRIGGER
+End Type
+
+Private Type JOB_SIGNATURE
+    SignVer As Integer
+    MinClientVer As Integer
+    Signature(63) As Byte
+End Type
+
+Private Type JOB_PROPERTY
+    ccRunInstance As Integer
+    AppName As JOB_UNICODE_STRING
+    Parameters As JOB_UNICODE_STRING
+    WorkDir As JOB_UNICODE_STRING
+    Author  As JOB_UNICODE_STRING
+    Comment  As JOB_UNICODE_STRING
+    UserData As JOB_USER_DATA
+    ReservedData As JOB_RESERVED_DATA
+    Triggers As JOB_TRIGGERS
+    JobSignature As JOB_SIGNATURE
+End Type
+
+Private Type JOB_FILE
+    head As JOB_HEADER
+    prop As JOB_PROPERTY
+End Type
+
 ' Task state
 Private Const TASK_STATE_RUNNING        As Long = 4&
 Private Const TASK_STATE_QUEUED         As Long = 2&
@@ -44,7 +160,7 @@ Private Const TASK_ENUM_HIDDEN          As Long = 1&
 
 Private Declare Sub Sleep Lib "kernel32.dll" (ByVal dwMilliseconds As Long)
 
-Private CreateLogFile As Boolean
+Private bCreateLogFile As Boolean
 Private LogHandle As Integer
 
 
@@ -73,7 +189,7 @@ Private LogHandle As Integer
 '    Dim rootFolder As ITaskFolder
 '    Set rootFolder = Service.GetFolder("\")
 '
-'    CreateLogFile = MakeCSV
+'    bCreateLogFile = MakeCSV
 '
 '    If MakeCSV Then
 '        LogHandle = FreeFile()
@@ -359,7 +475,7 @@ Private LogHandle As Integer
 '            HRESULT = ""
 '            If errN <> 0 Then HRESULT = ErrMessageText(errN)
 '
-'            If CreateLogFile Then
+'            If bCreateLogFile Then
 '                'taskState
 '                Print #LogHandle, OSver.MajorMinor & ";" & "" & ";" & ScreenChar(registeredTask.Name) & ";" & ScreenChar(DirParent) & ";" & _
 '                    ScreenChar(RunObj) & ";" & ScreenChar(RunArgs) & ";" & _
@@ -846,18 +962,6 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
     Dim bTelemetry      As Boolean
     Dim sRunFilename    As String
     
-    '// Todo: Add analysis for dangerous host exe, like cmd.exe. Don't try to show 'Microsoft' EDS sign in log for them,
-    'exception: if no arguments specified.
-    'powershell.exe
-    'cmd.exe.
-    'wscript.exe
-    'mshta.exe
-    'svchost.exe
-    'rundll32.exe
-    'pcalua.exe
-    'schtasks.exe
-    'sc.exe
-    
     '// TODO: Add record: "O22 - Task: 'Task scheduler' service is disabled!"
     
     If GetServiceRunState("Schedule") <> SERVICE_RUNNING Then
@@ -1240,6 +1344,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
+'// intended for deletion task without SCAN_RESULT info
 Public Function KillTask2(TaskFullPath As String) As Boolean
     On Error GoTo ErrorHandler:
     
@@ -1268,3 +1373,150 @@ ErrorHandler:
     ErrorMsg Err, "KillTask2"
     If inIDE Then Stop: Resume Next
 End Function
+
+Public Sub EnumJobs()
+    On Error GoTo ErrorHandler:
+    
+    Dim Job As JOB_FILE
+    Dim aFiles() As String
+    Dim TaskFolder As String
+    Dim i As Long
+    Dim j As Long
+    Dim sTmp As String
+    Dim sHit As String
+    Dim Result As SCAN_RESULT
+    Dim sJobName As String
+    Dim bEnabled As Boolean
+    Dim sRunState As String
+    
+    TaskFolder = BuildPath(sWinDir, "Tasks")
+    
+    aFiles = ListFiles(TaskFolder, ".job", False)
+    
+    If IsArrDimmed(aFiles) Then
+        For i = 0 To UBound(aFiles)
+            
+            Call ParseJob(aFiles(i), Job)
+            
+            sJobName = GetFileName(aFiles(i), True)
+            
+            Job.prop.AppName.Data = EnvironW(PathNormalize(Job.prop.AppName.Data))
+            
+            If Mid$(Job.prop.AppName.Data, 2, 1) <> ":" Then
+                If Job.prop.WorkDir.Data <> "" Then
+                    sTmp = BuildPath(Job.prop.WorkDir.Data, Job.prop.AppName.Data)
+                    If FileExists(sTmp) Then Job.prop.AppName.Data = sTmp 'if only file exists in this work. folder
+                End If
+            End If
+            
+            bEnabled = False
+            
+            'task is enabled if there are at least 1 trigger without TASK_TRIGGER_FLAG_DISABLED flag
+            For j = 0 To Job.prop.Triggers.ccTriggers - 1
+                bEnabled = bEnabled Or Not CBool(Job.prop.Triggers.aTrigger(j).Flags And TASK_TRIGGER_FLAG_DISABLED)
+            Next
+            
+            Select Case Job.head.Status
+                Case SCHED_S_TASK_READY
+                    sRunState = "Ready"
+                Case SCHED_S_TASK_RUNNING
+                    sRunState = "Running"
+                Case SCHED_S_TASK_NOT_SCHEDULED
+                    sRunState = "Not scheduled"
+            End Select
+            
+            sHit = "O22 - Task: " & IIf(bEnabled, "", "(disabled) ") & "(" & sRunState & ") " & sJobName & " - " & _
+                Job.prop.AppName.Data & IIf(Job.prop.Parameters.Length > 1, " " & Job.prop.Parameters.Data, "")
+
+            If Not IsOnIgnoreList(sHit) Then
+            
+                With Result
+                    .Section = "O22"
+                    .HitLineW = sHit
+                    AddFileToFix .File, REMOVE_FILE, aFiles(i)
+                    AddRegToFix .Reg, REMOVE_VALUE, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\CompatibilityAdapter\Signatures", sJobName
+                    AddRegToFix .Reg, REMOVE_VALUE, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\CompatibilityAdapter\Signatures", sJobName & ".fp"
+                    .CureType = FILE_BASED Or REGISTRY_BASED
+                End With
+                AddToScanResults Result
+            End If
+        Next
+    End If
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "EnumJobs"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Private Function ParseJob(sFile As String, Job As JOB_FILE) As Boolean
+    On Error GoTo ErrorHandler:
+    
+    Dim EmptyJob As JOB_FILE
+    
+    Dim cStream As clsStream
+    Set cStream = New clsStream
+    
+    Dim i As Long
+    
+    Job = EmptyJob
+    
+    cStream.LoadFileToStream sFile, cStream
+    
+    If cStream.Size <= 0 Then
+        ErrorMsg Err, "ParseJob. Unable to open file: " & sFile
+        ParseJob = False
+        Exit Function
+    Else
+        cStream.BufferPointer = 0
+        cStream.ReadData VarPtr(Job.head), LenB(Job.head)
+        cStream.ReadData VarPtr(Job.prop.ccRunInstance), 2
+        Read_Job_String cStream, Job.prop.AppName
+        Read_Job_String cStream, Job.prop.Parameters
+        Read_Job_String cStream, Job.prop.WorkDir
+        Read_Job_String cStream, Job.prop.Author
+        Read_Job_String cStream, Job.prop.Comment
+        cStream.ReadData VarPtr(Job.prop.UserData.Size), 2
+        If Job.prop.UserData.Size > 0 Then
+            ReDim Job.prop.UserData.Data(Job.prop.UserData.Size - 1)
+            cStream.ReadData VarPtr(Job.prop.UserData.Data(0)), Job.prop.UserData.Size
+        End If
+        cStream.ReadData VarPtr(Job.prop.ReservedData.Size), 2
+        If Job.prop.ReservedData.Size = 8 Then
+            cStream.ReadData VarPtr(Job.prop.ReservedData.StartError), 4
+            cStream.ReadData VarPtr(Job.prop.ReservedData.TaskFlags), 4
+        End If
+        cStream.ReadData VarPtr(Job.prop.Triggers.ccTriggers), 2
+        If Job.prop.Triggers.ccTriggers > 0 Then
+            ReDim Job.prop.Triggers.aTrigger(Job.prop.Triggers.ccTriggers - 1)
+            For i = 0 To Job.prop.Triggers.ccTriggers - 1
+                cStream.ReadData VarPtr(Job.prop.Triggers.aTrigger(i)), LenB(Job.prop.Triggers.aTrigger(i))
+            Next
+        End If
+        cStream.ReadData VarPtr(Job.prop.JobSignature), LenB(Job.prop.JobSignature)
+    End If
+    
+    ParseJob = True
+    Set cStream = Nothing
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "ParseJob", sFile
+    If inIDE Then Stop: Resume Next
+End Function
+
+Private Sub Read_Job_String(cStream As clsStream, JobUniStr As JOB_UNICODE_STRING)
+    
+    JobUniStr.Data = vbNullString
+    
+    cStream.ReadData VarPtr(JobUniStr.Length), 2
+    
+    If JobUniStr.Length > 1 Then
+    
+        JobUniStr.Data = String$(JobUniStr.Length - 1, 0&)
+        
+        cStream.ReadData StrPtr(JobUniStr.Data), (JobUniStr.Length - 1) * 2 'minus null terminator
+        
+        cStream.BufferPointer = cStream.BufferPointer + 2
+    End If
+End Sub

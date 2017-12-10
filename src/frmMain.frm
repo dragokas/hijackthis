@@ -1841,6 +1841,8 @@ Public Sub Test()
 '
 '    Debug.Print Reg.IsKeySymLink(HKLM, "SYSTEM\CurrentControlSet", sSymTarget)
 '
+'    EnumJobs
+'
 '    Stop
 End Sub
 

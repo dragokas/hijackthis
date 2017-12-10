@@ -1376,6 +1376,9 @@ Public Function FormatFileMissing(ByVal sFile As String) As String
     
     If Len(sFile) = 0 Then
         FormatFileMissing = "(no file)"
+    ElseIf sFile = "(no file)" Then
+        FormatFileMissing = sFile
+        Exit Function
     Else
         '8.3 -> Full
         sFile = GetLongPath(sFile)
@@ -1393,6 +1396,7 @@ Public Function FormatFileMissing(ByVal sFile As String) As String
             FormatFileMissing = sFile
         Else
             If InStr(sFile, "\") <> 0 Then
+                
                 FormatFileMissing = sFile & " (file missing)"
                 
             Else 'relative path?

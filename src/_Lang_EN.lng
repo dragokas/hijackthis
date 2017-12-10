@@ -343,7 +343,7 @@
 
      HJT uses code snippets and third-party developments written by:
      
-     - Anatolii Krivous { The Trick } - 'HashTable' class, 'UnregCOM', 'EXE loader' modules
+     - Anatolii Krivous { The Trick } - 'HashTable', 'Binary Stream' classes, 'UnregCOM', 'EXE loader' modules
      - Boris Fayfel { Catstail } - 'Process' and 'CRC32' classes
      - VolteFace - 'StringBuilder' class
      - Jason Peter Brown - wrapper for regular expressions library PCRE2
@@ -1594,4 +1594,4 @@
 ; Empty
 ;
 ; (2300 - ...)
-;      
+;       
