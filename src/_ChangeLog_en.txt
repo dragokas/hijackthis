@@ -1,0 +1,1064 @@
+﻿Version history:
+
+1. HiJackThis
+2. StartupList
+3. ADSspy
+
+
+1. HiJackThis: changelog
+-----------------------------
+
+[2.7.0.24] - Dec 15, 2017
+Fixed error where log file created as trimmed due to the NUL characters.
+Uptime is removed.
+Finished translation of the list of updates into English.
+Lists of updates of HJT, StartupList and ADSSpy are added to the tab in menu "Help" -> About HJT -> History.
+R4 - SearchScopes: Changed format of log line.
+
+[2.7.0.23] - Dec 10, 2017
+O22 - Task: Added parsing of .job files
+O7 - Policy: [Untrusted Certificate] - added verification of the list of untrusted digital signature certificates and their analysis.
+
+[2.7.0.22] - Dec 09, 2017
+Updated whitelists.
+O17 - Removed ControlSet[x], referenced by the CurrentControlSet.
+
+[2.7.0.21] - Dec 07, 2017
+Updated whitelists.
+Added horizontal scrollbar to the ignore list window.
+O4 - HKLM\..\FileRenameOperations: disabled output of entries, related to delayed deletion ( -> DELETE marks).
+O22 - Task: added mark "(telemetry)" for entries, related to collection of statistics and tranferring to Microsoft server.
+O22 - Task: removed marks "(Microsoft)" in tasks, that executes via host-process (cmd.exe, schtasks.exe e.t.c.)
+Switch /ihatewhitelists - fixed.
+Added switch /default - to load default settings (useful together with /silentautolog in case user changed settings himself). It is not affect ignore list.
+Added switch /skipIgnoreList - do not load ignore list.
+Added switch /timeout:sec, where 'sec' is a number of seconds allowed for HiJackThis to be run in /silentautolog mode until emergency shutdown (180 sec. by default); 0 - to disable.
+Added output of time zone.
+Correcting errors in the backup module.
+
+[2.7.0.20] - Dec 04, 2017
+/silentautolog - fixed error, when logfile cannot be created
+O22 - Task: Reworked. Removed dependency from task scheduler service.
+O22 - Task: Added support of output of several actions for 1 job.
+O22 - Task: Added checking of legitimacy  of ComHandler-jobs.
+O22 - Task: The output of the job status (Running / Ready / Queued) is abolished, only the status "Disabled" is left.
+O22 - Task: Added ability to remove damaged jobs.
+Removed section O4 - Autorun.inf: 
+Removed section O4 - MountPoints2:
+
+[2.7.0.19] - Dec 02, 2017
+Added new Microsoft root certificate's hash.
+
+[2.7.0.18] - Nov 25, 2017
+Added cheking of registry type virtualization. No more double records for keys in log, if key has 'Shared' type.
+Added universal iteration of registry hives. Now all hives: HKLM / HKCU / HKU (default, SID of services and other logged users) will be checked in every section.
+Added O4 - Win9x BAT: C:\Windows\System32\Batinit.bat
+Added O4 - Win9x BAT: C:\Windows\WinStart.bat
+Added O4 - Win9x BAT: C:\Windows\DosStart.bat
+Added O4 - Win9x BAT: C:\AutoExec.bat
+Added O4 - WinNT BAT: C:\Windows\System32\AutoExec.nt
+Added O4 - WinNT BAT: C:\Windows\System32\Config.nt
+Added O4 - AlternateShell (SafeBoot):
+Added O4 - ScreenSaver:
+Added O4 - RunOnceEx:
+Added O4 - RunServicesOnceEx:
+Added O4 - Autorun.inf:
+Added O4 - MountPoints2:
+Added O7 - Taskbar policy:
+O16 - Trusted Zone and Trusted IP range: added checking of https protocol.
+O16 - ProtocolDefaults: added cheking of ldap, news, nntp, oecmd, snews, knownfolder protocols.
+Added O21 - ShellExecuteHooks:
+Introduces a new postfix "(folder missing)".
+Added selection of menu item in scan results window by right mouse button click.
+
+[2.7.0.17] - Nov 21, 2017
+Added opportunity to download and launch programs for checking and cure shortcuts (Check Browsers' LNK & ClearLNK) via the menu Tools -> Shortcuts.
+Accelerated creating of huge and debugging logs (optimized class of strings concatenation StringBuilder).
+Accelerated creating of huge logs in /silentautolog mode (records are no longer added to ListBox). Fixed crash due to the ListBox overflow in /silentautolog mode.
+
+[2.7.0.16] - Nov 06, 2017
+O17 - DHCP DNS: fixed error when DNS is not displayed (curve code from Microsoft ^).
+
+[2.7.0.15] - Nov 03, 2017
+All windows from 'tools' section will no longer lost the focus when you move mouse to the some items of main window.
+F0, F1 didn't work after 2.7.0.1 (fixed).
+F0, F1 is now show full path to file.
+O1 - accelerated fix.
+R1 - for ProxyServer: added displaying of status (enabled / disabled)
+R1 fix for ProxyServer: added disabling of proxy.
+O3 fix: added fix of WebBrowser and ShellBrowser keys.
+
+[2.7.0.14] - Oct 27, 2017
+R3 - Default URLSearchHook is missing: added CLSID fix
+R3 - fixed error with redirector.
+O2 - added checking of HKCU keys
+O3 - added checking of HKCU keys
+O3 - removed some white lists
+O3 - added cheking of \Software\Microsoft\Internet Explorer\Explorer Bars
+O8 - added checking of HKLM keys
+Improved compatibility with Windows 2k.
+
+[2.7.0.13] - Oct 25, 2017
+Added animation of progressbar in task bar when scanning processed.
+Fixed work of ignore list.
+Added O4 - HKLM\..\BootExecute
+Added O4 - HKLM\..\FileRenameOperations
+Cheking of launching from %temp% is now ignored for the switch /silentautolog and other switches.
+Added possibility to install HiJackThis in folder 'Program Files' and menu 'Start' (File -> Install HJT).
+Restored function of automatic HJT scanning at system startup.
+Added button "Add ALL to ignore list" in context menu.
+Added command line switch /install - to install HJT.
+Added command line switch /autostart - to set HiJackThis for automatical scanning at system startup (use with /install)
+Added warning if system has outdated Service Pack.
+Added jumping to file or registry record via the result scanning window (look to right mouse click, Context menu => Jump to Registry / File).
+
+[2.7.0.12] - Oct 07, 2017
+Added detection of OS Revision.
+
+[2.7.0.11] - Oct 06, 2017
+EDS: fixed critical error in caching mechanism.
+Now program will always run from the main menu, if not setted mark "Do not show this menu after starting the program". Earlier 2-nd program execution led to transition to the scan results window.
+
+[2.7.0.3] - 2.7.0.10
+v Added full registry backup:
+(!) called by pressing "Fix Checked" button, not more than once a week
+(!) saved to a folder C:\Windows\ABR\<Date>
+(!) used utility ABR by Dmitriy Kuznetsov, so backups are compatible with UVs.
+(!) recovering from backup is available with several ways:
+ - via HiJackThis: Main Menu => List of Backups => select item "<Date>: REGISTRY BACKUP" => Restore.
+ - run file C:\Windows\ABR\<Date>\restore.exe
+ - via UVs v.4.0.8+ => Menu "File" => Restore registry from catalogue ... => select backup you need => Recover.
+ - via Windows RE: In command line of recovery environment enter <disk>:\Windows\ABR\<Date>\restore <disk>:
+(!) recovery from backup will call system rebooting without warnings.
+(!) Uninstallation of HJT will lead to removing of backups from the folder C:\Windows\ABR, if only they was create via HJT.
+(!) All backups that is older than 28 days are removed automatically when new backup is created.
+(!) If system drive contains less than 1 GB of free disk space backups will not be created (!). You will see a warning in the section O7 - TroubleShoot: Free disk space on C: is too low = NNN MB.
+
+[2.7.0.10] - Sep 30, 2017
+Accelerated work of the program on highly loaded systems on the CPU (due to the miners, etc.)
+Fixed crash (clsStringBuilder)
+
+[2.7.0.9] - Sep 27, 2017
+Menu has been reorganized, added icons.
+Added output of OS version from NTDLL.dll file if it is different from the version obtained in the standard way.
+Added output of Uptime (OS operating time).
+Added output of "FirstRun" sign ("yes", if the scanning executed first time after system rebooting).
+Added output of message, whether integrity of program is corrupted (e.g. due to the infection by file virus or due to the downloading of HiJackThis from non-official source).
+O7 - TroubleShoot: added cheking of availability at least 1 GB of free disk space on system drive. Fix will call execution of Microsoft CleanMgr utility.
+O7 - TroubleShoot: [Network] added checking whether computer name has empty name. It can lead to network problems.
+Batch digital signature checker: added "Has internal signature?" field to the CSV report.
+
+[2.7.0.4] - Sep 14, 2017
+Added displaying of default browser (for http protocol)
+
+[2.7.0.3] - Sep 02, 2017
+O25 - WMI: fixed white lists.
+O7 - IPSEC: reworked.
+O17 - Added white list of good known DNS.
+R4 - detalization of parameter names; checking is appended.
+EDS: fixed cheking on Win 7 SP0.
+Safe obtaining of environment variables.
+
+[2.7.0.1] - Aug 17, 2017
+The program is transferred to the Pre-Alpha status.
+The code is significantly reorganized (refactoring).
+Removed backup module due to the process of its full replacing.
+
+v Added checking for updates avaliability via Internet.
+(!) called from menu "Help" or "Misc Tools"
+(!) available new option "Check updates automatically when program is starting".
+
+v Ignore list: earlier you was unable to add entry with Russian or unicode characters.
+
+v Added ASLR, DEP protection.
+
+v Accelerated:
+ - EDS checking.
+ - saving huge reports.
+ - O1 - Hosts: if there are more than 40 records, the log will contain all of them, and results window will contain only first 20 and last 20 records + item "Reset contents to default".
+ - inteface navigation.
+
+v Batch digital signature checker: added new fields to CSV report:
+ - is PE (whether the file is PE EXE format)
+ - Signer name
+ - Signer email
+ - Catalog path (path to the security catalogue, in which hash of the file was found)
+ - PE hash
+ - Algorithm of certificate hash
+ - Algorithm of signature digest
+ - Time Stamp (time when file was signed)
+
+v Changed encryption:
+ - Program settings is now stored in HKLM\Software\TrendMicro\HiJackThisFork
+
+v O26 - Image File Execution Options:
+ - added detection of AVRF Hook/DoubleAgent
+ - added checking of HKCU ш Wow64.
+
+v Compatibility impovements:
+ - Windows Server with Terminal services.
+ - Cheking OS version.
+
+v Security improvements:
+ - Blocked removing of Microsoft services. 
+(!) Now system services can be removed only via menu "Tools" => "Delete Service".
+(!) "Tools" => "Delete Service" is now allows to enter display name of the service.
+(!) HTTP links have been replaced by HTTPS.
+
+v Hyperlinks have been replaced and devided by languages for:
+ - "Analyze report" button
+ - sending error messages
+ - list of updates
+ - Online Guide in main menu
+ - Help => Support
+
+v Added menu:
+ - Help => Support
+ - Help => Users' Manual => Sections' description
+ - Help => Users' Manual => Command line keys
+
+v Updated GitHub Wiki pages: https://github.com/dragokas/hijackthis/wiki
+v Opened common topic for discussing by English-speaking users: https://github.com/dragokas/hijackthis/issues/4
+
+v Size of program:
+ - HiJackThis.exe is now not packed by UPX due to the fact that UPX brokes binary compatibility when analyzing Crash-dumps.
+
+[2.6.4.24] - Apr 24, 2017
+File deletion mechanism is improved.
+Added section O26 - Image File Execution Options.
+
+[2.6.4.23] - Apr 24, 2017
+Added polymorph version.
+
+[2.6.4.22] - Apr 23, 2017
+Translation to Russian has been finished.
+Revision and additions to program's internal help is finished (Help => About program => Sections).
+Fixed error while starting program from read only drive.
+
+[2.6.4.21] - Apr 17, 2017
+R4 - new whitelist mechanism for Bing.
+R4 - fix is improved.
+O4 - Startup other users: earlier the same user folder name was always displayed.
+O21 - added checking ShellIconOverlayIdentifiers.
+O21 - added checking EDS for pre-installed Microsoft dll-files.
+O7 - TroubleShoot: new group. It display damaged system settings that can lead to OS malfunction.
+O7 - TroubleShoot: added checking of environment variables - %TEMP%, %TMP%.
+O2,O3,O22: improved compatiblity with x64.
+Added interface locking while scanning via AutoLogger (key /silentautolog is affect).
+
+[2.6.4.17] - Apr 05, 2017
+Added subsection R4 - search providers (DefaultScope, SearchScopes).
+Added mark (lnk is corrupted) for damaged shortcuts.
+Fixed bug with NUL char. in processes list.
+EDS checking appended with files that have 'Microsoft' string in description.
+Bug fix: O22 (file missing), when launched via working directory or not fully qualified path in CLSID.
+O22, O23 white lists have been updated.
+
+[2.6.4.16] - Apr 05, 2017
+Resolved cases where files cannot be removed by fix.
+O22 - Task: Backup is temporarily disabled.
+
+[2.6.4.15] - Mar 25, 2017
+O22, O23 - reduced number of EDS checkings. It execute now on database files only. Windows Defender servcie will be in the log.
+O22 - Added displaying of path to file in ComHandler Tasks type.
+O8 - fixed "file missing" for records with file:// prefix.
+Added base compatiblity with Windows 2000.
+
+[2.6.4.14] - Mar 19, 2017
+O2 - х32-bitness key checking is now working
+O3 - х32-bitness key checking is now working
+O2, O3 - cleaning improved
+O23 - FindOnPath
+R0 - UnQuote
+R1 - proxy, added HKU\.DEFAULT
+
+[2.6.4.13] - Mar 16, 2017
+Improved output of debug info.
+Added the switch /debugtofile - output trace info to the file HiJackThis_debug.log
+The switch /debug is now writes parallel trace log to the file HiJackThis_debug.log
+
+[2.6.4.12] - Mar 15, 2017
+All sections: Expand environment variables
+
+[2.6.4.11] - Mar 03, 2017
+O22, O23 - Removed names of EDS from the log.
+
+[2.6.4.10] - Mar 10, 2017
+O22, O23 - prefixes are returned.
+O23 - outout of service's description is returned to the log (if only it doesn't coincide with its name)
+Processes: removed EDS checking.
+O8, O12 - lines with "no file" wasn't displayed in the log; also added "file missing".
+Convertation of file/path format from 8.3 to full is added for all sections.
+Hosts File Editor: fixed the button "Open in editor"
+
+[2.6.4.9] - Mar 03, 2017
+O22 - changed the format of the log: removed the prefix; The name of the job file is combined with the path.
+O23 - changed the format of the log: removed the prefix and the name of the service.
+O23 - added the ServiceDll check.
+O23 and processes: for the files that don't have an EDS or whose EDS doesn't pass the check, the mark "not signed" is displayed.
+Fixed the size of all menus, taking into account the translation into Russian.
+Now the state of 4 additional settings in the "Tools" tab will be saved (these: switch on the environment variables report, MD5 calculation, ignore whitelists and MS files).
+About the program: the tabs "Purpose" and "Authors" are combined.
+The HiJackThis project has been renamed, all references to Trend Micro have been removed, except for the note in the "Copyright" section.
+
+[2.6.4.7] - Feb 26, 2017
+EDS: the list of Microsoft certification centers is updated (thanks Akok).
+EDS: In O22 - ScheduledTask added the output of the name of person EDS was issued to, if it is legitimate.
+EDS: To the lists of processes the verified name of the EDS recipient is appended.
+FS: Full revision of file redirectors. Some functions could not access Windows\System32; some of the leaks could affect the failure of the EDS check.
+FS: Minimized the number of calls to the file redirector.
+Added LNK target expansion for O4 - MSConfig\startupfolder
+Changed output format O23 - Displayed service name - HKLM\..\name of the key - path to the file (the name of person EDS was issued to, if it is legitimate) ("file missing" if the file is missing on the disk)
+The way of checking the presence of a file on a disk is changed. "File missing" will not be displayed for files where access is blocked.
+Added caching for checking the presence of the file on the disk.
+Fixed the order of searching for executable files.
+Added a mode for recording the trace of the execution of functions in the log - it is started by renaming the file in HiJackThis_debug.exe or by using the /debug switch
+OS info: Added ReleaseID output for win10.
+In the internal help "Help -> About program -> Section" the output of the detailed description of each section is added.
+ADS Spy: added partial support for Unicode names
+ADS Spy: Fixed a cyclic checking on the simlink
+ADS Spy: added support for x64 bit OS
+ADS Spy: added the output of the contents of the stream by double-clicking
+ADS Spy: Fixed bug with opening file to view stream
+ADS Spy: updated whitelist
+
+[2.6.4.6] - Feb 22, 2017
+O18 - fixed obtaining path to file.
+O23 - the display name of the service was not always expanded when reading from the dll resource.
+
+[2.6.4.5] - Feb 16, 2017
+Fixed errors in EDS checking module. Program could hung (primarily on XP).
+Removed marks <-- Attention in tasks with the missing object.
+More detailed progress bar.
+
+[2.6.4.4] - Feb 12, 2017
+[O22] The "tasks" section is supplemented with the EDS checking.
+[O22] Fixed a bug with a white list of tasks.
+Microsoft processes are flagged after a successful EDS checking.
+[O4] Lines with non-system SIDs are supplemented by the descriptions of the real user name.
+[O4] Added "file missing" notations.
+[O4] Fixed a bug with checking for empty arrays.
+
+[2.6.4.3] - Jan 31, 2017
+[R3] Fixed bug when checking URLSearchHook.
+Improved support for Unicode paths.
+Fixed bug with fix O4 - \..\StartupApproved\StartupFolder
+[O2] A request for forced termination of the IExplore.exe process was added
+The procedure of 'soft' completion of the process is added.
+[O4] Fixed bug with obtaining the date.
+[O22] Fixed output of service's status for the damaged jobs.
+[O22] Damaged jobs or jobs for which there is no file to start are marked with the <==== ATTENTION
+Improved the procedure for freezing the process.
+[O22] Process killing has been replaced by freezing.
+[O22] Fixing is now made in silent mode (no errors are displayed).
+[O22] Database for Windows 10 has been updated.
+
+[2.6.4.0] - Jul 24, 2016
+ADSspy replaced by v1.12.
+Process Manager is now working in separate window.
+Fixed error while checking O4 - BootVerificationProgram
+The program description is expanded when clicking menu 'Help' -> 'About' and 'Info...' buttons in the scan window. Now it is divided into tabs "Sections", "Keys", "About the program", "Author", "History".
+O17 - Fix: Added reset of the DNS cache.
+Now you can change almost any text via external language files.
+Correction of log CRC is added.
+Edited errors when navigating between menus, and other visual problems.
+O12 Fix - Removed the warning to close Internet Explorer if there are no any iexplore processes.
+O4 - added the output of arguments of shortcut's target.
+
+[2.6.3.0] - Jul 14, 2016
+O14 - iereset.inf fix spoiled the file. Corrected.
+R3 - added keys for HKLM, HKU\.Default
+* New: added the function of minimizing the program into the icon in the notification area (see the setting in the menu 'Misc Tools' -> Main).
+The 'Unlock Registry Key' menu has been renamed to 'Registry Key Unlocker'
+The button 'Generate StartupList Log' has been renamed to 'StartupList Scan'
+The command line parameters are now case-insensitive.
+The /silentautolog mode now displays a progress bar during the scan.
+Added the /noGUI command line switch - do not display the program window while scanning.
+Added the command line switch /md5 - count the MD5 hash of files.
+Added the command line switch /StartupList - starts the StartupList scan
+Added the command line switch /SysTray - runs the program collapsed in the notification area.
+StartupList is replaced with version 2.10. All the command line switches are replaced:
+/showempty - Show empty sections
+/showcmts - Show comments in .bat files
+/noshowclsids - Hide class identifiers
+/noshowprivate - Hide user names and computer name
+/noshowusers - Hide records of other users
+/noshowhardware - Hide records of other hardware configurations
+/showlargehosts - Show hosts file even if it has more than 1000 rows
+/showlargezones - Show Internet zones even if they have more than 1000 domains
+/autosave - Start StartupList in hidden mode, automatically save the report and exit the program
+/autosavepath: - Specify the path to save the report when using the /autosave switch. Use double quotes for paths with space characters.
+StartupList: the library istrusted.dll is replaced with internal EDS checking functions.
+StartupList: MSComCtl.dll is placed in resources. It no longer needs to be downloaded separately.
+StartupList: now shows the complete list of processes.
+StartupList: the crash of the program is eliminated when checking LSP, the paths to the providers are improved.
+
+[2.6.2.0] - Jul 09, 2016
+O1 - Hosts: been improved function for reading Hosts on systems with active write protection.
+O7 - IPSec subsection added (it's IP Security policies which allow fine tuning of IP packets filter).
+O25 - WMI Events: simplified and trimmed to provide output of actual malware only; added whitelist.
+O22 - Tasks: whitelist for OS Win XP/Vista/7/8/8.1/10 have been updated.
+O4 - removed false entries that could apply to disable autorun items on Win 8+
+O4 - added subsections:
+..\StartupApproved\Run
+..\StartupApproved\Run32
+..\StartupApproved\StartupFolder
+It's an analogue of MSConfig for Win 8+ (disabled autorun items).
+O4 - added checking of keys HKCU/HKLM/HKU for:
+..\Software\Microsoft\Windows\CurrentVersion\Run-
+..\Software\Microsoft\Windows\CurrentVersion\RunServices-
+..\Software\Microsoft\Windows\CurrentVersion\RunOnce-
+..\Software\Microsoft\Windows\CurrentVersion\RunServicesOnce-
+..\Software\Microsoft\Command Processor -> AutoRun
+O4 - Startup other users: (new subsection) - checking of folder "Startup" of other users.
+O4 - MSConfig: renamed to MSConfig\startupreg.
+O4 - MSConfig\startupfolder: added (disabled items of folder "Startup" on WinXP).
+Removed flickering of desktop during the scan on some OS (bug in v1.19).
+F3 Fix: not worked (bug in v.1.20)
+ALT+TAB is now switches to the HJT active tool window instead of the main window.
+Added tool for batch digital signature checking and whether file is Windows Protected.
+Fixed an issue where the digital signature verification led to the connection to Internet.
+Simplified LNK checking.
+Progress bar made over the entire width.
+Added missing icons of program.
+Removed info about OS Product Type and OS Suite Mask.
+All mention of HKUS hive replaced by HKU.
+Removed prefixes -64. Added prefixes -32 (meaning: key is under redirection, i.e. 32-bit key on 64-bit OS).
+List of backups sorted in reverse order (beginning from the most fresh entry).
+Fix O2, Fix O3: supplemented by removing the HKCU/HKLM keys for:
+..\Software\Microsoft\Internet Explorer\Extension Compatibility\{CLSID}
+..\Software\Microsoft\Windows\CurrentVersion\Ext\Stats\{CLSID}
+..\Software\Microsoft\Windows\CurrentVersion\Ext\Settings\{CLSID}
+..\Software\Microsoft\Windows\CurrentVersion\Ext\PreApproved\{CLSID}
+..\Software\Microsoft\Internet Explorer\ApprovedExtensionsMigration\{CLSID}
+..\Software\Microsoft\Internet Explorer\ApprovedExtensionsMigration{CLSID}
+..\Software\Microsoft\Windows\CurrentVersion\Policies\Ext\CLSID -> {CLSID}
+
+[2.6.1.25] - Jun 11, 2016
+O22 - Tasks. Added scanning in depth based on white lists.
+O25 - error correction.
+O4 - added detection of substitution shortcuts by PE EXE.
+O4 - redesigned (refactoring), removed the bug with duplicate rows, added the key: SYSTEM\CurrentControlSet\Control\BootVerificationProgram
+Improved work with the ignore list, fixed the bugs, the log displays the number of entries in the ignore list if any.
+A context menu has been added to the scan window: 'Fix checked', 'Info on selected', 'Add to ignore list', 'Search on Google', 'ReScan'.
+Now the strings will be in the unicode in the log (there were previously '?' signs).
+
+[2.6.1.23] - Jun 01, 2016
+Fixed bug with obtaining PE EXE company name.
+O4 - now displays the full path to the shortcut file.
+O23 - added the service status output. [RS|01234]. S - stopped. R - any other state (running, start/stop pending, protected). Startup type: 0 - boot, 1 - system, 2 - automatic, 3 - manual, 4 - disabled (will not be appear in the log).
+O23 - Fixed a bug where the path to the service file was not displayed.
+Added settings: 1. Ignore all whitelists, 2. Ignore Microsoft files (enabled by default).
+Removed additional prefixes -32.
+O17 Check - partially did not work (bug v.1.20)
+R - added the key HKLM\SYSTEM\ControlSet001\services\NlaSvc\Parameters\Internet\ManualProxies
+R - added the key HKLM\SOFTWARE\Clients\StartMenuInternet\IEXPLORE.EXE\shell\open\command
+R - duplication is eliminated because of the x64 redirector.
+O1 hosts - support for non-standard line breaks (thanks to Sandor)
+Added progress bar of the fixing process, as well as an audio notification at the end of the fix.
+
+[2.6.1.22] - May 31, 2016
+Fixed bug with creating backups
+
+[2.6.1.21] - May 30, 2016
+Fixed conflict when launching HJT in the system, where old version is already worked (incompatibility of cryptographic module).
+Fixed bug with HJT uninstall function.
+
+[2.6.1.20] - May 29, 2016
+O4 (msconfig) - Improved obtaining of the date when autostart item was disabled.
+Finished introduction of unicode to all registry functions.
+Settings 'Default Start Page' / 'Default Search Page' / 'Default Search Assistant' / 'Default Search Customize' are encrypted in the registry. These lines are connected to the check / fix O14 (although, in the help it was written that they are already connected).
+The version of the Edge browser has been added.
+Scan with MD5 calculation is limited to files up to 10 MB in size, MD5 calculation speed is improved, x64 paths support.
+Progressbar is repaired / redesign.
+Bug: the incorrect calculation of the timeout for processes working is fixed. It could lead to the program hang.
+Some revisions of the backup mechanism for compatibility with x64.
+Fixed bugs in O6 Fix, O7 Check.
+"-32" prefixes (32-bit keys on 64-bit OS) are introduced.
+R (Check / Fix) - support for x32 / x64 keys is added, HKUS\.Default is enabled, new keys are added.
+F2 (Check / Fix) - added support for x32 / x64 keys.
+O9 (Check / Fix) - added support for x32 / x64 keys.
+O11 (Check / Fix) - added support for x32 / x64 keys.
+O12 (Check / Fix) - added support for x32 / x64 keys.
+O13 (Check / Fix) - added support for x32 / x64 keys.
+O15 (Check / Fix) - added support for x32 / x64 keys.
+O16 (Check / Fix) - added support for x32 / x64 keys.
+O17 (Check / Fix) - added support for x32 / x64 keys.
+O19 (Check / Fix) - added support for x32 / x64 keys.
+O20 (Check / Fix) - added support for x32 / x64 keys.
+O21 (Check / Fix) - added support for x32 / x64 keys.
+Currently, all sections have support for scanning and fixing keys of both bitness. The work of backups is not guaranteed.
+
+[2.6.1.19] - May 18, 2016
+Removed EDS from HiJackThis.exe file.
+
+[2.6.1.18] - May 17, 2016
+Added support for checking the EDS by SHA256 (Windows 8+), a more reliable filter in O23.
+
+[2.6.1.16] - May 11, 2016
+O25 - WMI Events. Added detection of persistent WMI event consumers (Check / Fix).
+Fixed several bugs (related to saving the log, obtaining file properties, scheduler tasks, interface, ...)
+Process killing is improved.
+Added protection against accidental deletion of system files.
+
+[2.6.1.15] - May 10, 2016
+O1 - improved x64 support.
+O1 - disabled sorting of the log.
+O1 - added handling of Hosts.ICS. New prefix: "O1 - Hosts.ICS: ".
+O1 - Added detection of DNSApi.dll altering. New prefix "O1 - DNSApi: File is patched - ". Fix is executed via SFC subsystem.
+O1 - Added the string in the log "O1 - Hosts: Reset contents to default". It will be shown when the number of records in Hosts >= 10, or if the size of file is = 0 bytes. Fixing is resets hosts content to default template. This applies to Hosts in the default folder only.
+O1 Check - added checking of Hosts file in default folder. New prefix - "O1 - Hosts default: ". It is necessary when path to the hosts is altered, so as not to fix 2 times.
+O1 Check - autocorrection in the Hosts file of nonstandard line breaks during the scan is disabled.
+O1 Fix - added templates of standard Hosts contents (XP / Vista / 7+)
+O1 Fix - added clearing the cache of DNS resolver.
+O1 Bug: if you don't close HJT after fixing the path to the Hosts, a second scan shows the old path.
+O2 Check / Fix - added support for x32 / x64 keys.
+O3 Check / Fix - added support for x32 / x64 keys.
+O2, O3 Fix - Added handling of HKLM\SOFTWARE\Microsoft\Internet Explorer\Extension Compatibility\ keys
+LSP Fix - the recommendation to use LSP-Fix is replaced with WinSockReset.
+R3 Fix - fixed a bug where it was impossible to fix "Default URLSearchHook is missing".
+
+[2.6.1.14] - Apr 25, 2016
+Fixed 'O20 (file missing)'.
+Fixed 'R3 - Default URLSearchHook is missing'.
+Removed O4 - HKUS \ .DEFAULT, because it is always a symlink for O4 - HKUS\S-1-5-18.
+Most of the old list of white domains (R0, R1, O15) has been deleted. A new whitelist was added.
+Added white lists for F2, O9, O11, O18, O1.
+The function of obtaining paths of protected processes is improved.
+All functions related to the registry have been reconsidered. However there are still not yet connected to all sections of code (in the creation / modification / deletion function, permissions reset fixed bugs and stack damage).
+In all sections (except for fixes and backups) the bit depth is rigidly set (so far, I'll do a scan of both bitness later).
+Fixed a bug with checking EDS on XP x64.
+Fixed errors when starting the program with the renamed extension, as well as from the root of the disk.
+Some messages will now be in the language, chosen in the system as the language for the dialogs, regardless of what is selected in the program settings (exception: launching the program with the key for forcing the language selection).
+A check mark "Do not show this message again" was added to the window with the displayed error. The same check mark is added to the settings.
+Improved saving of settings.
+
+[2.6.1.13] - Apr 22, 2016
+HJT will no longer stop on the first damaged scheduler job.
+HJT will show in the debugging section all the damaged jobs (with in-depth checks).
+When you manually start the scan while saving the log, any errors are no longer displayed on the screen (only in the log).
+
+[2.6.1.12] - Apr 21, 2016
+Added menu Tools -> Unlock Registry Key
+O23 Services - Fix is fixed. It seems that he never worked in any version of HJT in half the cases.
+Improved services removing function.
+Fixed a rare bug with LNK parser.
+Replaced URL parser.
+Removed unused logo.
+Added the program icon for the "Large Icons" and "Huge Icons" folder views.
+
+[2.6.1.11] - Apr 19, 2016
+O4-64 - is now show 64-bit nodes of registry. O4 is always show 32-bit nodes.
+O4-64 - added opportunity for fixing.
+Improved function for unlocking file access. Added support of unicode in the names. Fixed error related to the x64 file redirector.
+Functions "Delete File on Reboot.." and "Unlock and delete File..." doesn't call dialog box now, because it doesn't support x64. You need to enter the path manually.
+
+[2.6.1.10] - Apr 17, 2016
+The bug with obtaining the list of registry keys was fixed (the function did not work as described in MSDN).
+Fixed a bug with obtaining Task Scheduler tasks list.
+Added error output if the Scheduler service is not enabled.
+
+2.6.1.9] - Apr 13, 2016
+/accepteula key - added backward compatibility with older versions of HJT.
+I repaired the display version of Internet Explorer (broke when I first improved it in v1.0).
+The file deletion features are now enhanced by resetting of privileges.
+Added the menu File -> Settings.
+Added menu Tools -> Delete File -> Unlock & Delete File ...
+
+[2.6.1.8] - Apr 05, 2016
+Added definitions for Windows 10, SuiteMask (SM), ProductType (PT).
+Added information on OS installation language, language for display in dialogs, language for programs that do not support Unicode.
+Added information on the presence of elevated privileges (Elevation).
+Added the user name that launched the HJT process (as well as the group in which it belongs) and the computer name.
+The O17 DNS DHCP whitelist is removed.
+Added fast access menu - File, Tools, Help.
+O1 - sorting of Hosts section is disabled.
+
+[2.6.1.7] - Apr 03, 2016
+O2 Fix - warning about the need to close IE is no longer displayed if it is not running.
+O2 Fix - added support for x64 systems.
+O2 Check - sometimes show "(file missing)" if the file existed.
+O9 Fix - improved + added support for x64.
+Fixed bug with file redirector.
+
+[2.6.1.6] - Apr 02, 2016
+Command line parser is improved.
+DNS DCHP filters by mask 192.168.*.* are removed (white is only - 192.168.0.1 and 192.168.1.1)
+
+[2.6.1.4] - Dec 10, 2015
+O23 - Fix is appended with removing a service.
+O23 - improved error handler.
+O23 - whitelist with file description is replaced by checking by EDS.
+Errors will no longer be placed on the clipboard in silent mode.
+A section with debugging information has been added to the log. Please inform the author about them.
+Added time spent for verification to the log file.
+
+[2.6.1.3] - Nov 08, 2015
+O22 - SheduledTasks - Killing of process before removing the task.
+Changed labels on some buttons.
+Online guide is now open depending on the selected language.
+O17 - DHCP DNS will not be displayed if it is transfered not via the DHCP - configured locally.
+O17 - devided into primary/secondary e.t.c. DNS.
+N1, N2, N3, N4 - is disabled.
+Interface: fixed overlapping of the label in main menu / scan results menu.
+Interface: autofocus is disabled when pointing to text boxes.
+Interface: The parasitic focus on the "Scan" button is removed when other buttons are pressed.
+Interface: 'Uninstall manager', 'Hosts manager', 'Process manager' - sizes of controls and other artifacts are fixed.
+The HJT database was decrypted.
+The HJT ignore list is encrypted.
+Changes in the ignore list box are now immediately written to the registry.
+If you delete HJT, the ignore list is also cleared.
+Display versions of the StartupList and ADS Spy modules.
+Logs of some utilities are now opened in the default text editor.
+
+[2.6.1.2] - Oct 31, 2015
+Fixed bug "Access denied" in mode /silentautolog
+Fixed crash when obtaining router DNS
+Fixed bad characters in clipboard when sending bug reports.
+O4 - MSConfig - Added fix (removing).
+O4 - MSConfig - Added marks "(no file)"
+O4 - Autostart - removing is improved
+O4 - Shortcuts - removing is improved
+O23 - Added expanding of services' name, that was specified as resource of system file
+O22 - SheduledTasks - added compatibility with Windows Vista and newer (checking tasks in root folder only)
+
+[2.6.1.1] - Oct 29, 2015
+- Fixed possible error while starting the program. Increased error handler.
+- App paths\HiJackThis will no longer be created.
+- Disabled styles in CheckBox for Windows XP
+- Obtaining DNS Router is not worked in XP x64. It was a problem with file redirector.
+- "Корпорация Майкрософт" added to the whitelist of services (attribute - words in the description of the service). Maybe later add checking by digital signature?
+
+[v2.6.1.0 Alpha (first fork by Dragokas)] - Oct 12, 2015 - based on unreleased v2.0.6 Beta official - https://sourceforge.net/p/hjt/code/HEAD/tree/beta/2.0.6/
+* first fork
+* new visual styles
+* prevent to run program twice using mutexes
+* Uninstall manager fully reworked and include 32-bit keys to scan
+* added subclassing, mouse scroll support everywhere
+* ADS Spy returned
+* code prepared to allow full translation
+* Full Process list (NtQuerySystemInformation), identical process paths have been combined in log
+* log size calculation improved
+* added sorting of log sections
+* added centering of form
+* added DHCP DNS checking (O17)
+* removed some whitelist from Safe domains
+* removed some whitelist from O16 - DPF.
+* improved error handling mechanism, added bug logging
+* Unicode support for Msgbox
+* O4 wow64 bug fixes
+* added msconfig disabled items
+* removed some duplicates in O4 autostart folder scan
+* fixed when open file operations used identical handles
+* fixed when O23 incorrectly detect wow64 services file.
+* fixed when incorrectly detect run from temporarily folder
+* file system redirector improvements
+* special folders definition improvements
+* added debug privilages
+* Unicode support for several file system functions
+* Full rework on registry functions and unicode support
+* Added checking of admin rights
+* improved OS version checking
+* LNK/pif shortcut parser improvements
+* Firefox / Opera / Chrome / IE version checking improvements
+* Added unlocking NTFS permissions when deleting files
+
+[v2.0.6 Beta official (r35)] - Jul 10, 2013
+* Added O4-64 - Autorun on Wow64 registry keys
+* Added cheking of Opera version
+* Added horizontal Scroll Bar to results screen
+* Fixed modUtils to get Chrome Version XP/Win7
+* determine the correct Windows version
+* Changed URL where crash window refer to
+* Removed ADS Spy
+* Removed URL check when clicking 'Analyze this'
+* Removed code of version checker
+* Removed code of SpyBot and AdAware version checking
+
+[v2.0.5 Beta official (r21)] - May 17, 2013
+* Fixed "No internet connection available" when pressing the button Analyze This
+* Fixed the link of update website, now send you to sourceforge.net projects
+* Fixed left-right scrollbar when in safe mode or low screen resolution
+* 'default' restored hosts file didn't include ipv6 address entry	 
+* support newest version of FireFox
+
+[v2.0.4 official (r10)] - May 09, 2013
+* Fixed parser issues on winlogon notify
+* Fixed issues to handle certain environment variables
+* Rename HJT generates complete scan log
+
+[v2.00.0 official]
+* AnalyzeThis added for log file statistics
+* Recognizes Windows Vista and IE7
+* Fixed a few bugs in the O23 method
+* Fixed a bug in the O22 method (SharedTaskScheduler)
+* Did a few tweaks on the log format
+* Fixed and improved ADS Spy
+* Improved Itty Bitty Procman (processes are frozen before they are killed)
+* Added listing of O4 autoruns from other users
+* Added listing of the Policies Run items in O4 method, used by SmitFraud trojan
+* Added /silentautolog parameter for system admins
+* Added /deleteonreboot [file] parameter for system admins
+* Added O24 - ActiveX Desktop Components enumeration
+* Added Enhanced Security Confirguration (ESC) Zones to O15 Trusted Sites check
+
+[v1.99.1 official]
+* Added Winlogon Notify keys to O20 listing
+* Fixed crashing bug on certain Win2000 and WinXP systems at O23 listing
+* Fixed lots and lots of 'unexpected error' bugs
+* Fixed lots of inproper functioning bugs (i.e. stuff that didn't work)
+* Added 'Delete NT Service' function in Misc Tools section
+* Added ProtocolDefaults to O15 listing
+* Fixed MD5 hashing not working
+* Fixed 'ISTSVC' autorun entries with garbage data not being fixed
+* Fixed HijackThis uninstall entry not being updated/created on new versions
+* Added Uninstall Manager in Misc Tools to manage 'Add/Remove Software' list
+* Added option to scan the system at startup, then show results or quit if nothing found
+
+[v1.99 official]
+* Added O23 (NT Services) in light of newer trojans
+* Integrated ADS Spy into Misc Tools section
+* Added 'Action taken' to info in 'More info on this item'
+
+[v1.98 official]
+* Definitive support for Japanese/Chinese/Korean systems
+* Added O20 (AppInit_DLLs) in light of newer trojans
+* Added O21 (ShellServiceObjectDelayLoad, SSODL) in light of newer trojans
+* Added O22 (SharedTaskScheduler) in light of newer trojans
+* Backups of fixed items are now saved in separate folder
+* HijackThis now checks if it was started from a temp folder
+* Added a small process manager (Misc Tools section)
+
+[v1.96 official]
+* Lots of bugfixes and small enhancements! Among others:
+* Fix for Japanese IE toolbars
+* Fix for searchwww.com fake CLSID trick in IE toolbars and BHO's
+* Attributes on Hosts file will now be restored when scanning/fixing/restoring it.
+* Added several files to the LSP whitelist
+* Fixed some issues with incorrectly re-encrypting data, making R0/R1 go undetected until a restart
+* All sites in the Trusted Zone are now shown, with the exception of those on the nonstandard but safe domain list
+
+[v1.95 official]
+* Added a new regval to check for from Whazit hijack (Start Page_bak).
+* Excluded IE logo change tweak from toolbar detection (BrandBitmap and SmBrandBitmap).
+* New in logfile: Running processes at time of scan.
+* Checkmarks for running StartupList with /full and /complete in HijackThis UI.
+* New O19 method to check for Datanotary hijack of user stylesheet.
+* Google.com IP added to whitelist for Hosts file check.
+
+[v1.94 official]
+* Fixed a bug in the Check for Updates function that could cause corrupt downloads on certain systems.
+* Fixed a bug in enumeration of toolbars (Lop toolbars are now listed!).
+* Added imon.dll, drwhook.dll and wspirda.dll to LSP safelist.
+* Fixed a bug where DPF could not be deleted.
+* Fixed a stupid bug in enumeration of autostarting shortcuts.
+* Fixed info on Netscape 6/7 and Mozilla saying '%shitbrowser%' (oops).
+* Fixed bug where logfile would not auto-open on systems that don't have .log filetype registered.
+* Added support for backing up F0 and F1 items (d'oh!).
+
+[v1.93 official]
+* Added mclsp.dll (McAfee), WPS.DLL (Sygate Firewall), zklspr.dll (Zero Knowledge) and mxavlsp.dll (OnTrack) to LSP safelist.
+* Fixed a bug in LSP routine for Win95.
+* Made taborder nicer.
+* Fixed a bug in backup/restore of IE plugins.
+* Added UltimateSearch hijack in O17 method (I think).
+* Fixed a bug with detecting/removing BHO's disabled by BHODemon.
+* Also fixed a bug in StartupList (now version 1.52.1).
+
+[v1.92 official]
+* Fixed two stupid bugs in backup restore function.
+* Added DiamondCS file to LSP files safelist.
+* Added a few more items to the protocol safelist.
+* Log is now opened immediately after saving.
+* Removed rd.yahoo.com from NSBSD list (spammers are starting to use this, no doubt spyware authors will follow).
+* Updated integrated StartupList to v1.52.
+* In light of SpywareNuker/BPS Spyware Remover, any strings relevant to reverse-engineers are now encrypted.
+* Rudimentary proxy support for the Check for Updates function.
+
+[v1.91 official]
+* Added rd.yahoo.com to the Nonstandard But Safe Domains list.
+* Added 8 new protocols to the protocol check safelist, as well as showing the file that handles the protocol in the log (O18).
+* Added listing of programs/links in Startup folders (O4).
+* Fixed 'Check for Update' not detecting new versions.
+
+[v1.9 official]
+* Added check for Lop.com 'Domain' hijack (O17).
+* Bugfix in URLSearchHook (R3) fix.
+* Improved O1 (Hosts file) check.
+* Rewrote code to delete BHO's, fixing a really nasty bug with orphaned BHO keys.
+* Added AutoConfigURL and proxyserver checks (R1).
+* IE Extensions (Button/Tools menuitem) in HKEY_CURRENT_USER are now also detected.
+* Added check for extra protocols (O18).
+
+[v1.81 official]
+* Added 'ignore non-standard but safe domains' option.
+* Improved Winsock LSP hijackers detection.
+* Integrated StartupList updated to v1.4.
+
+[v1.8 official]
+* Fixed a few bugs.
+* Adds detecting of free.aol.com in Trusted Zone.
+* Adds checking of URLSearchHooks key, which should have only one value.
+* Adds listing/deleting of Download Program Files.
+* Integrated StartupList into the new 'Misc Tools' section of the Config screen!
+
+[v1.71 official]
+* Improves detecting of O6.
+* Some internal changes/improvements.
+
+[v1.7 official]
+* Adds backup function! Yay!
+* Added check for default URL prefix
+* Added check for changing of IERESET.INF
+* Added check for changing of Netscape/Mozilla homepage and default search engine.
+
+[v1.61 official]
+* Fixes Runtime Error when Hosts file is empty.
+
+[v1.6 official]
+* Added enumerating of MSIE plugins
+* Added check for extra options in 'Advanced' tab of 'Internet Options'.
+
+[v1.5 official]
+* Adds 'Uninstall & Exit' and 'Check for update online' functions.
+* Expands enumeration of autoloading Registry entries (now also scans for .vbs, .js, .dll, rundll32 and service)
+
+[v1.4 official]
+* Adds repairing of broken Internet access (aka Winsock or LSP fix) by New.Net/WebHancer
+* A few bugfixes/enhancements
+
+[v1.3 official]
+* Adds detecting of extra MSIE context menu items
+* Added detecting of extra 'Tools' menu items and extra buttons
+* Added 'Confirm deleting/ignoring items' checkbox
+
+[v1.2 official]
+* Adds 'Ignorelist' and 'Info' functions
+
+[v1.1 official]
+* Supports BHO's, some default URL changes
+
+[v1.0 official]
+* Original release
+
+
+
+2. StartupList: changelog
+------------------------------
+
+[v.2.10 (first fork by Dragokas)]
+* WinTrustVerifyChildNodes. Fixed error with empty node
+* istrusted.dll replaced by internal digital signature checking
+* list of processes is full now
+* MSComCtl.dll library placed in resources
+* fixed proram crash when checking LSP, fixed receiving paths to NS providers.
+
+[v2.02]
+* appinit_dlls zit in Windows key, niet Winlogon
+* path voor log bij /autosave kunnen aangeven
+
+[v2.01]
+* ICQ/mIRC help text
+* save node tree to disk
+* mirc voor 3rd party autoruns
+* winnt4 process enum werkt niet
+* help text voor: wininit.bak
+* root zones (my computer/local intranet) voor other users leeg
+* zone 0 in EnumZones
+* view warning log
+* refresh knoppie e.d.
+* meer info voor error
+* progress voor large hosts/zones
+* mnuPopupCopyTree
+* skippen van grote hostsfile & zones, cmdline arguments
+* node right-click wat beter
+
+[v2.00]
+* Checken of alle stuff te zien is bij bShowEmpty
+* Users Software \ DisabledEnums \ Zones is leeg, moet weg (win98)
+* Abort knopje tijdens scan/save log?
+* HKLM\SYSTEM\CurrentControlSet\Control\SafeBoot\Minimal en Network (services)
+* HKLM\SYSTEM\CurrentControlSet\Control\SafeBoot,AlternateShell
+* VxD services voor andere hardware cfgs
+* Als wmi niet werkt -> geen usernames maar SIDs
+* Windows versions in modHelp.bas voor sections
+* Printer monitors
+* EnumXPSecurity voor andere users
+* EnumPolicies voor andere users
+* EnumZones: ZoneMap\Domains root value
+* Windows XP Security Center stuff:
+* SOFTWARE\Microsoft\Security Center
+* Software\Microsoft\Windows NT\CurrentVersion\systemrestore
+* fix bug in EnumZones when ZoneMap key is missing (HKCU/HKLM/HKUS)
+* fix Win2003 Small Biz Server being recognized as WinXP 64-bit
+* duplicate process/module entries in win9x
+* disable contextmenu items
+* dll modules loaded by running processes?
+* use marcin's code for regedit jump
+* registry jump - werkt soms niet ?
+* policies subkeys?
+* Help texts
+* Triage
+
+[v1.52]
+* Fixed stupid 'Bad filename or number' error at startup (hopefully)
+* Fixed two bugs in function that reads settings from .ini files
+* Added two more files to LSP files safelist (MS Firewall and
+  DiamondCS)
+* Fixed not detecting modified Shell line in XP (among others, this
+  BIG bug affected two sections)
+* Added listing of values in ShellServiceObjectDelayLoad regkey
+
+[v1.51]
+* Added switch: /full, which will show some rarely important
+  sections that otherwise remain hidden:  Stub Paths, Explorer Check, 
+  Config.sys, Dosstart.bat, Superhidden Extensions, 
+  Regedit.exe Check, WinNT Services, Win9x VxD Services
+* Lines in BAT files with both 'ECHO' and '>' are now shown
+* Windows NT Logon/logoff scripts are now listed (new section)
+* Rudimentary check for PendingFileRenameOperations in NT, located
+  in above section. Also moved BootExecute check to this section
+
+[v1.5]
+* Added more files to safe list of LSP files
+* REM/ECHO line in .bat files only listed with /complete switch
+* Check for Policies\System\Shell= at SYSTEM.INI check
+* Added enumeration of Windows NT/2000/XP services (only
+  with /full switch)
+* Also lists Windows 9x Vxd services (only with /full switch)
+
+[v1.4]
+* Added listing of Winsock LSP providers
+* Fixed a NT bug with Load key
+
+[v1.35]
+* Fixed a few items not appearing in NT/2000/XP.
+* Made Regedit check even more supple.
+
+[v1.34]
+* Added listing of drivers= line from system.ini
+* Some more sections are now hidden if nothing interesting is there
+* Enumeration of Stub Paths now shows disabled items
+* Fixed a few bugs
+* Workaround for Atguard 'From:' bug :)
+
+[v1.33]
+* Fixed some erroneous errors.
+* Added listing of MSIE version.
+
+[v1.32]
+* Fixed a few bugs. That's basically it. :)
+
+[v1.31]
+* Finally added alternative (and better) method for listing processes
+  in Windows NT/2000/XP (PSAPI.DLL needed for NT4)
+* Improved filename extracting from shortcuts - StartupList should
+  not be able to extract filenames with a 100% success rate
+* Creation date is now displayed for Wininit.ini and Wininit.bak
+* Added Regedit check
+* Added listing of BHO's
+* Added listing of Task Scheduler jobs
+* Added listing of 'Download Program Files' (aka ActiveX Objects)
+
+[v1.3]
+* Added /html parameter, for a report in HTML format
+* Lots of performance enhancements, more readble code (like you care :)
+* Also some small upgrades/tweaks
+
+[v1.23]
+* Now also lists WININIT.BAK (the last WININIT.INI)
+
+[v1.22]
+* Made System.ini check platform independant (was Win9x only)
+* The target file & path is now extracted from enumerated shortcuts
+* Fixed MAJOR bug - GetWindowsVersion wasn't remembered, WinNT was assumed
+
+[v1.21]
+* Fixed some WinNT bugs
+* Slightly improved Explorer.exe check in WinNT
+
+[v1.2]
+* Added WinNT-only startups
+* Added Windows version check
+* Added command line parameters /verbose, /complete, /force9x, /forcent and /forceall
+
+[v1.1]
+* Added RunOnceEx listing
+
+[v1.0]
+* Initial release
+
+
+3. ADSspy: changelog
+--------------------------
+
+[v1.13] (first fork by Dragokas)
+* Partially added unicode support
+* Fixed infinite loop in symlinks.
+* Added x64 OS bitness support
+* Added view stream contents on double click
+* Fixed bug when 'cannot open file' to read stream contents
+* WhiteList updated
+
+[v1.12]
+* Added Q30lsldxJoudresxAaaqpcawXc to the safelist
+
+[1.11] - Feb 05, 2006
+* Fixed a bug where max 72 streams in one file were found and others 
+were ignored. Enlarged buffer to allow for ca. max 7000 streams.
+
+[v1.10] - Dec 17, 2005
+* Changed the UI slightly. Added option to scan only a selected folder.
+
+[v1.09.2] - Nov 30, 2005
+* The root folder was not scanned for streams. Added.
+
+[v1.09.1] - Aug 14, 2005
+* Fixed bug where GetVolumeInformation returned incorrect data 
+when drive path did not include trailing backslash.
+
+[v1.09] - Jul 15, 2005
+* Fix a bug where ADS Spy would refuse to run when drive with 
+Windows volume was not NTFS, even if other volumes were.
+
+[v1.07] - Sep ??, 2004
+* Version number is now displayed in titlebar. Scan button changes 
+to 'abort scan' during scan now.
+
+[v1.06] - Sep 05, 2004
+* Added proper handling for ADS streams which fail to be removed.
+
+[v1.05] - Sep 03, 2004
+* Added ':Zone.Identifier:' to ignorelist. This stream is present 
+in files downloaded with IE6 SP2 on XP SP2 systems and provides 
+zone security information on them.
+
+[v1.04] - Aug 29, 2004
+* Improved displaying of streams with binary data (NULL characters 
+are removed, this doesn't affect saving the stream to disk though).
+* Saving a stream contents to disk is now done directly from 
+the stream	instead of just copying displayed contents to a file.
+* Added option to calculate MD5 checksum of stream contents 
+in scan results list (disabled by default).
+* Changed 'save contents' dialog box filter to have 'Binary files (*.bin)' 
+as default, instead of 'Text files (*.txt)'.
+
+[v1.03] - Aug 28, 2004
+* Changed checkbox to exclude ':encryptable:' and ':SummaryInformation:' 
+and renamed it 'ignore system info streams'.
+* Fixed a bug when viewing a stream that contains binary data (added warning).
+* Folders are now scanned for ADS streams as well. :)
+
+[v1.02] - Aug 28, 2004
+* Added right-click option to scan results, allowing scan results 
+to be	saved to disk and viewed, where the stream can be copied, 
+saved and edited in Wordpad.
+* Added checkbox option to ignore ':encryptable:' streams.
+* Added ADS Spy to download section on Merijn.org.
+
+[v1.01] - Aug 27, 2004
+* Added 'quick scan' option, when unchecked ADS Spy scans entire disk.
+
+[v1.00] - Aug 27, 2004
+* Original release.
+

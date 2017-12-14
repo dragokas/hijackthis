@@ -30,6 +30,7 @@ Private gLines() As String
 
 Public Translate() As String        'language selected by user in HJT menu                  (priority)
 Public TranslateNative() As String  'language selected in OS Control Panel as UI display    (special cases)
+Public g_VersionHistory As String
 
 ' How to add new language?
 '
@@ -193,16 +194,19 @@ End Sub
 '// English
 Public Sub LoadDefaultLanguage(Optional UseResource As Boolean)
     LoadLangFile "_Lang_EN.lng", 201, UseResource
+    g_VersionHistory = LoadResFile("_ChangeLog_en.txt", 103, UseResource)
 End Sub
 
 '// Russian
 Public Sub LangRU()
     LoadLangFile "_Lang_RU.lng", 202
+    g_VersionHistory = LoadResFile("_ChangeLog_ru.txt", 104)
 End Sub
 
 Sub LoadLangFile(sFileName As String, Optional ResID As Long, Optional UseResource As Boolean)
+    On Error GoTo ErrorHandler:
 
-    AppendErrorLogCustom "LoadLangFile - Begin", "File: " & sFileName, "ResID: " & ResID, "Unicode? " & UseResource
+    AppendErrorLogCustom "LoadLangFile - Begin", "File: " & sFileName, "ResID: " & ResID, "UseResource? " & UseResource
 
     Dim sPath As String, sText As String, b() As Byte
     sPath = BuildPath(AppPath(), sFileName)
@@ -222,8 +226,43 @@ Sub LoadLangFile(sFileName As String, Optional ResID As Long, Optional UseResour
     ExtractLanguage sText, sFileName  ' parse sText -> gLines()
     
     AppendErrorLogCustom "LoadLangFile - End"
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "LoadLangFile"
+    If inIDE Then Stop: Resume Next
 End Sub
 '------------------------------------------------------------------
+
+Function LoadResFile(sFileName As String, Optional ResID As Long, Optional UseResource As Boolean) As String
+    On Error GoTo ErrorHandler:
+
+    AppendErrorLogCustom "LoadResFile - Begin", "File: " & sFileName, "ResID: " & ResID, "UseResource? " & UseResource
+
+    Dim sPath As String, sText As String, b() As Byte
+    sPath = BuildPath(AppPath(), sFileName)
+    
+    If FileExists(sPath) And Not UseResource Then
+        sText = ReadFileContents(sPath, isUnicode:=False)
+    Else
+        If ResID <> 0 Then
+            b() = LoadResData(ResID, "CUSTOM")
+            sText = StrConv(b, vbUnicode, &H419&)
+            If b(0) = &HEF& And b(1) = &HBB& And b(2) = &HBF& Then      ' - BOM UTF-8
+                sText = Mid$(sText, 4)
+            End If
+        End If
+    End If
+    
+    LoadResFile = ConvertCodePageW(sText, 65001) ' UTF8
+    
+    AppendErrorLogCustom "LoadResFile - End"
+
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "LoadResFile"
+    If inIDE Then Stop: Resume Next
+End Function
 
 Public Function GetHelpText(Optional Section As String) As String
     GetHelpText = GetHelpStartupList(Section)
@@ -280,7 +319,7 @@ Public Sub ReloadLanguage()
                     Case "0011": .cmdScan.Caption = Translation
                     Case "0013": .cmdFix.Caption = Translation
                     Case "0014": .cmdInfo.Caption = Translation
-                    Case "1009": .cmdAnalyze.Caption = Translation
+                    Case "1000": .cmdAnalyze.Caption = Translation
                     Case "0009": .cmdMainMenu.Caption = Translation
                     Case "0015": .fraOther.Caption = Translation
                     Case "0016": .cmdHelp.Caption = Translation

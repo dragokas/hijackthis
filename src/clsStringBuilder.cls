@@ -32,6 +32,9 @@ Option Explicit
 '
 '   Fork by Alex Dragokas
 '
+'   v2.3
+'   Fixed issue when .ToString and .ToStringRight methods returns trimmed string when buffer contains NUL characters.
+'
 '   v2.2
 '   .AppendLine method has been added (same as .Append, but also adds CrLf characters to the end of string)
 '   Speed is improved (reallocation of buffer is now *= 1.6 instead of += CHUNK_SIZE ).
@@ -108,7 +111,7 @@ Private Declare Function HeapDestroy Lib "kernel32.dll" (ByVal hHeap As Long) As
 Private Declare Function HeapValidate Lib "kernel32.dll" (ByVal hHeap As Long, ByVal dwFlags As Long, ByVal lpMem As Long) As Long
 'Private Declare Function GetProcessHeap Lib "kernel32.dll" () As Long
 'Private Declare Sub RtlZeroMemory Lib "kernel32.dll" (Destination As Any, ByVal length As Long)
-Private Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal length As Long) As Long
+Private Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long) As Long
 Private Declare Function GetMem2 Lib "msvbvm60.dll" (Src As Any, Dst As Any) As Long
 Private Declare Function PutMem4 Lib "msvbvm60.dll" (ByVal Addr As Long, ByVal NewVal As Long) As Long
 Private Declare Function SysAllocString Lib "oleaut32.dll" (ByVal pOlechar As Long) As Long
@@ -219,7 +222,8 @@ End Sub
 ' #############################
 Public Property Get ToString() As String
     If m_lLength = 0 Then Exit Property
-    PutMem4 VarPtr(ToString), SysAllocString(m_pMemoryPtr)
+    ToString = String$(m_lLength \ 2, 0&)
+    memcpy ByVal StrPtr(ToString), ByVal m_pMemoryPtr, m_lLength
 End Property
 
 ' #############################
@@ -260,13 +264,13 @@ End Property
 '   Get the copy of internally stored string (only the part from beginning of the string)
 '
 ' #############################
-Public Property Get ToStringLeft(ByVal length As Long) As String
+Public Property Get ToStringLeft(ByVal Length As Long) As String
     If m_lLength = 0 Then Exit Property
-    If length > (m_lLength \ 2) Then
-        length = m_lLength \ 2
+    If Length > (m_lLength \ 2) Then
+        Length = m_lLength \ 2
     End If
-    ToStringLeft = String$(length, 0&)
-    memcpy ByVal StrPtr(ToStringLeft), ByVal m_pMemoryPtr, length * 2
+    ToStringLeft = String$(Length, 0&)
+    memcpy ByVal StrPtr(ToStringLeft), ByVal m_pMemoryPtr, Length * 2
 End Property
 
 
@@ -277,16 +281,16 @@ End Property
 '   Get the copy of internally stored string (only the part from middle of the string)
 '
 ' #############################
-Public Property Get ToStringMid(StartPos As Long, ByVal length As Long) As String
+Public Property Get ToStringMid(StartPos As Long, ByVal Length As Long) As String
     Dim Index As Long
     Index = StartPos - 1
     If m_lLength = 0 Then Exit Property
     If StartPos > (m_lLength \ 2) Then Exit Property
-    If Index + length > (m_lLength \ 2) Then
-        length = (m_lLength \ 2) - Index
+    If Index + Length > (m_lLength \ 2) Then
+        Length = (m_lLength \ 2) - Index
     End If
-    ToStringMid = String$(length, 0&)
-    memcpy ByVal StrPtr(ToStringMid), ByVal m_pMemoryPtr + Index * 2, length * 2
+    ToStringMid = String$(Length, 0&)
+    memcpy ByVal StrPtr(ToStringMid), ByVal m_pMemoryPtr + Index * 2, Length * 2
 End Property
 
 
@@ -297,12 +301,13 @@ End Property
 '   Get the copy of internally stored string (only the part from end of the string)
 '
 ' #############################
-Public Property Get ToStringRight(ByVal length As Long) As String
+Public Property Get ToStringRight(ByVal Length As Long) As String
     If m_lLength = 0 Then Exit Property
-    If length > (m_lLength \ 2) Then
-        length = m_lLength \ 2
+    If Length > (m_lLength \ 2) Then
+        Length = m_lLength \ 2
     End If
-    PutMem4 VarPtr(ToStringRight), SysAllocString(m_pMemoryPtr + m_lLength - length * 2)
+    ToStringRight = String$(Length, 0&)
+    memcpy ByVal StrPtr(ToStringRight), ByVal m_pMemoryPtr + m_lLength - Length * 2, Length * 2
 End Property
 
 
@@ -530,21 +535,21 @@ End Sub
 '   the stored string.
 '
 ' #############################
-Public Sub Remove(pos As Long, ByVal length As Long)
+Public Sub Remove(pos As Long, ByVal Length As Long)
     Dim pFrom As Long
     Dim pTo As Long
     Dim Index As Long
     
     Index = pos - 1
-    If (length <= 0) Then Exit Sub
+    If (Length <= 0) Then Exit Sub
     If (Index < 0) Then Exit Sub
     If (Index > (m_lLength \ 2)) Then Exit Sub
     
     ' Copy the entire stored string, from 'index' to the end and move it over to the
     ' left to overright the desired chracters, and then excess characters at the end
     ' of the string
-    If (length + Index > (m_lLength \ 2)) Then
-        length = (m_lLength \ 2) - Index
+    If (Length + Index > (m_lLength \ 2)) Then
+        Length = (m_lLength \ 2) - Index
     End If
     
     ' GOOD GARBAGE STRING
@@ -559,24 +564,24 @@ Public Sub Remove(pos As Long, ByVal length As Long)
     ' m_pMemoryPtr
     
     pTo = m_pMemoryPtr + (Index * 2&)
-    pFrom = m_pMemoryPtr + ((Index + length) * 2&)
+    pFrom = m_pMemoryPtr + ((Index + Length) * 2&)
     
     #If UseUndo Then
         If Not m_bInRevert Then
             'backup old value
-            m_UndoText = String$(length, 0&)
-            memcpy ByVal StrPtr(m_UndoText), ByVal pTo, length * 2&
+            m_UndoText = String$(Length, 0&)
+            memcpy ByVal StrPtr(m_UndoText), ByVal pTo, Length * 2&
             m_UndoIndexStart = Index
             m_LastOp = SB_LAST_REMOVE
         End If
     #End If
     
-    If (m_lLength - ((Index + length) * 2&)) <> 0 Then 'if not nothing to move (removing not the last characters)
+    If (m_lLength - ((Index + Length) * 2&)) <> 0 Then 'if not nothing to move (removing not the last characters)
     
-        memcpy ByVal pTo, ByVal pFrom, m_lLength - ((Index + length) * 2&)
+        memcpy ByVal pTo, ByVal pFrom, m_lLength - ((Index + Length) * 2&)
     End If
     
-    m_lLength = m_lLength - (length * 2&)
+    m_lLength = m_lLength - (Length * 2&)
     
     'Append NUL terminator
     GetMem2 ByVal StrPtr(vbNullChar), ByVal (m_pMemoryPtr + m_lLength)
@@ -667,9 +672,9 @@ End Function
 '   Returns the length of the string
 '
 ' #############################
-Public Property Get length() As Long
+Public Property Get Length() As Long
     ' Since the string is stored as unicode, every character is 2 bytes
-    length = m_lLength \ 2
+    Length = m_lLength \ 2
 End Property
 
 ' #############################

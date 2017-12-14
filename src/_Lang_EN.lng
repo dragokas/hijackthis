@@ -23,7 +23,7 @@
      Are you sure you want to launch one more copy?
 0004=Below are the results of HiJackThis scan. Be careful what you delete with 'Fix checked' button.
      Scan results do not determine whether an item is bad or not. If you think that your machine is infected,
-     press 'Analyze report' button, sign up, read instruction, make required logs
+     press 'AnalyzeThis' button, sign up, read instruction, make required logs
      and show them to our consultants by creating new thread.
 0007=It looks like you're running HiJackThis from a read-only device like a CD-ROM. If you want to make backups of items you fix, you must copy HiJackThis.exe to your hard disk first, and run it from there.
      
@@ -58,7 +58,6 @@
 1006=Done.
 1007=Could not unzip file to Desktop! Please, unzip it manually.
 1008=The value '[*]' could not be written to the settings file '[**]'. Please, verify that write access is allowed to that file.
-1009=Analyze report
 1010=Scanning is not finished yet! Are you really sure you want to forcibly close the program?
 1011=Warning: Ignore list contains [] items.
 1012=Warning: General scanning was not performed.
@@ -367,11 +366,6 @@
 0037=Purpose
 0038=Authors
 0039=History
-1300=
-     Updates
-     ------------
-
-     You can find list of recent updates at:
 ;
 ; ============== Settings ===============
 ;

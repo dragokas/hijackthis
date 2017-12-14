@@ -2568,9 +2568,10 @@ Private Sub pictLogo_Click()
     End If
 End Sub
 
+'AnalyzeThis
 Private Sub cmdAnalyze_Click()
-    'create new issue
-    OpenURL "https://github.com/dragokas/hijackthis/issues/new", "https://safezone.cc/pravila/"
+    'open instruction on how to prepare logs for 'Issue' section on GitHub to ask for help in PC cure
+    OpenURL "https://github.com/dragokas/hijackthis/wiki/How-to-make-a-request-for-help-in-the-PC-cure-section%3F", "https://safezone.cc/pravila/"
     
     'old URL: 'http://sourceforge.net/p/hjt/support-requests/
     
@@ -3700,7 +3701,7 @@ Private Sub cmdScan_Click()
         UpdateProgressBar "Finish"
 
         'cmdScan.Caption = "Scan"
-        cmdScan.Caption = Translate(11)
+        'cmdScan.Caption = Translate(11)
         
         cmdScan.Enabled = True
     End If
@@ -5067,14 +5068,8 @@ Private Sub chkHelp_Click(Index As Integer)
         txtHelp.Text = Translate(33) & TranslateNative(34)
     
     Case 3: 'History
-        ' Updates
-        ' ------------
-        ' You can find list of recent updates at:
-        If IsRussianLangCode(OSver.LangSystemCode) Or IsRussianLangCode(OSver.LangDisplayCode) And Not bForceEN Then
-            txtHelp.Text = Translate(1300) & " " & "https://safezone.cc/resources/hijackthis-fork.201/updates"
-        Else
-            txtHelp.Text = Translate(1300) & " " & "https://github.com/dragokas/hijackthis/issues/5"
-        End If
+        ' Version history:
+        txtHelp.Text = g_VersionHistory
     End Select
     
     bSwitchingTabs = False

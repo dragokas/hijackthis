@@ -214,7 +214,7 @@ End Type
 'End Type
 
 Private Type OBJECT_ATTRIBUTES
-    length                   As Long
+    Length                   As Long
     RootDirectory            As Long
     ObjectName               As Long
     Attributes               As Long
@@ -240,7 +240,7 @@ Private Const REG_OPTION_BACKUP_RESTORE As Long = 4&
 Private Const STATUS_SUCCESS         As Long = 0&
 
 'Private Declare Function CompareObjectHandles Lib "Kernelbase.dll" (ByVal hFirstObjectHandle As Long, ByVal hSecondObjectHandle As Long) As Long
-Private Declare Function NtQueryKey Lib "NTDLL.DLL" (ByVal KeyHandle As Long, ByVal KeyInformationClass As KEY_INFORMATION_CLASS, KeyInformation As Any, ByVal length As Long, ResultLength As Long) As Long
+Private Declare Function NtQueryKey Lib "NTDLL.DLL" (ByVal KeyHandle As Long, ByVal KeyInformationClass As KEY_INFORMATION_CLASS, KeyInformation As Any, ByVal Length As Long, ResultLength As Long) As Long
 Private Declare Function NtQueryObject Lib "NTDLL.DLL" (ByVal Handle As Long, ByVal ObjectInformationClass As OBJECT_INFORMATION_CLASS, ObjectInformation As Any, ByVal ObjectInformationLength As Long, ReturnLength As Long) As Long
 Private Declare Function NtOpenKeyEx Lib "NTDLL.DLL" (KeyHandle As Long, ByVal DesiredAccess As Long, ObjectAttributes As OBJECT_ATTRIBUTES, ByVal OpenOptions As Long) As Long
 Private Declare Function NtOpenKey Lib "NTDLL.DLL" (KeyHandle As Long, ByVal DesiredAccess As Long, ObjectAttributes As OBJECT_ATTRIBUTES) As Long
@@ -297,12 +297,17 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function GetShortHiveName(ByVal FullHiveName As String) As String
+'to extract root hive name from full key
+'returns short hive name
+'specify bIncludeSID to get e.g., HKU\S-1-5-20
+Public Function GetShortHiveName(ByVal FullHiveName As String, Optional bIncludeSID As Boolean) As String
     On Error GoTo ErrorHandler:
     Dim pos As Long
+    Dim sRoot As String
+    Dim sSidPart As String
     pos = InStr(FullHiveName, "\")
-    If pos <> 0 Then FullHiveName = Left$(FullHiveName, pos - 1)
-    Select Case UCase$(FullHiveName)
+    If pos <> 0 Then sRoot = Left$(FullHiveName, pos - 1)
+    Select Case UCase$(sRoot)
         Case "HKEY_CLASSES_ROOT", "HKCR"
             GetShortHiveName = "HKCR"
         Case "HKEY_CURRENT_USER", "HKCU"
@@ -318,6 +323,20 @@ Public Function GetShortHiveName(ByVal FullHiveName As String) As String
         Case "HKEY_DYN_DATA"
             GetShortHiveName = "HKDD"
     End Select
+    If bIncludeSID Then
+        If GetShortHiveName = "HKU" Then
+            If pos <> 0 Then
+                sSidPart = Mid$(FullHiveName, pos + 1)
+                If Len(sSidPart) <> 0 Then
+                    pos = InStr(sSidPart, "\")
+                    If pos <> 0 Then
+                        sSidPart = Left$(sSidPart, pos - 1)
+                    End If
+                    GetShortHiveName = GetShortHiveName & "\" & sSidPart
+                End If
+            End If
+        End If
+    End If
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "GetShortHiveName", FullHiveName
@@ -402,33 +421,6 @@ Public Function MapStringToRegType(sRegType As String) As REG_VALUE_TYPE
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "MapStringToRegType", sRegType
-    If inIDE Then Stop: Resume Next
-End Function
-
-'to extract root hive name from full key
-'returns short hive name
-'specify bIncludeSID to get e.g., HKU\S-1-5-20
-Public Function GetHiveName(sKey As String, Optional bIncludeSID As Boolean) As String
-    On Error GoTo ErrorHandler:
-    Dim pos1 As Long, pos2 As Long
-    
-    pos1 = InStr(sKey, "\")
-    If pos1 <> 0 Then
-        GetHiveName = GetShortHiveName(Left$(sKey, pos1 - 1))
-        If GetHiveName = "HKU" And bIncludeSID Then
-            pos2 = InStr(pos1 + 1, sKey, "\")
-            If pos2 <> 0 Then
-                GetHiveName = GetHiveName & "\" & Mid$(sKey, pos1 + 1, pos2 - pos1 - 1)
-            ElseIf pos1 < Len(sKey) Then
-                GetHiveName = GetHiveName & "\" & Mid$(sKey, pos1 + 1)
-            End If
-        End If
-    Else
-        GetHiveName = GetShortHiveName(sKey)
-    End If
-    Exit Function
-ErrorHandler:
-    ErrorMsg Err, "GetHiveName"
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -2304,13 +2296,13 @@ Public Function IsKeySymLink(hHive As ENUM_REG_HIVE, sKey As String, Optional ou
     End If
     
     With UniStr
-        .length = LenB(sNtKey)
-        .MaximumLength = .length
+        .Length = LenB(sNtKey)
+        .MaximumLength = .Length
         .Buffer = StrPtr(sNtKey)
     End With
     
     With OA
-        .length = LenB(OA)
+        .Length = LenB(OA)
         .ObjectName = VarPtr(UniStr)
         If bOS_32 Then
             .RootDirectory = 0

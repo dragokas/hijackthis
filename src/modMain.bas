@@ -1390,7 +1390,7 @@ Private Sub ProcessRuleReg(ByVal sRule$)
     'Registry rule syntax:
     '[regkey],[regvalue],[infected data],[default data]
     '* [regkey]           = "" -> abort - no way man!
-    ' * [regvaluStrings     = "" -> delete entire key
+    ' * [regvalue]        = "" -> delete entire key
     '  * [default data]   = "" -> delete value
     '   * [infected data] = "" -> any value (other than default) is considered infected
     vRule = Split(sRule, ",")
@@ -1680,7 +1680,8 @@ Public Sub CheckR4Item()
                 If 0 <> Len(sBuf) Then sProvider = sBuf
             End If
             
-            sHit = "R4 - " & aKey(i) & ": DefaultScope = " & sDefScope & " - " & sProvider & " - " & sURL
+            'sHit = "R4 - " & aKey(i) & ": DefaultScope = " & sDefScope & " - " & sProvider & " - " & sURL
+            sHit = "R4 - SearchScopes: [DefaultScope] " & HE.HiveNameAndSID & " - " & sDefScope & " - " & sProvider & " - " & sURL
             
             If Not IsBingScopeKeyPara("URL", sURL) Then
               If Not IsOnIgnoreList(sHit) Then
@@ -1704,6 +1705,7 @@ Public Sub CheckR4Item()
     'HKLM\Software\Microsoft\Internet Explorer\SearchScopes
     
     If OSver.MajorMinor >= 6 Then
+    
       For i = 1 To cReg4vals.Count
         aData = Split(cReg4vals.Item(i), ",", 3)
         sHive = aData(0)
@@ -1714,8 +1716,16 @@ Public Sub CheckR4Item()
             
             'If Not inArraySerialized(sValue, sDefData, "|", , , vbTextCompare) And Not (sValue = "") Then
             If Not IsBingScopeKeyPara(sParam, sValue) And Len(sValue) > 0 Then
+            
+                sProvider = Reg.GetString(0&, sHive & "\Software\Microsoft\Internet Explorer\SearchScopes\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", "DisplayName")
+                If sProvider = "" Then sProvider = "(no name)"
+                If Left$(sProvider, 1) = "@" Then
+                    sBuf = GetStringFromBinary(, , sProvider)
+                    If 0 <> Len(sBuf) Then sProvider = sBuf
+                End If
 
-                sHit = "R4 - " & sHive & "\Software\Microsoft\Internet Explorer\SearchScopes\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}: " & sParam & " = " & sValue
+                'sHit = "R4 - " & sHive & "\Software\Microsoft\Internet Explorer\SearchScopes\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}: " & sParam & " = " & sValue
+                sHit = "R4 - SearchScopes: [" & sParam & "] " & HE.HiveNameAndSID & "\..\" & "{0633EE93-D776-472f-A0FF-E1416B8B2E3A}" & " - " & sProvider & " - " & sValue
                 
                 If Not IsOnIgnoreList(sHit) Then
                     With Result
@@ -1763,7 +1773,7 @@ Public Sub CheckR4Item()
               
               If Len(sURL) <> 0 Or Reg.ValueExists(0&, aKey(i) & "\" & aScopes(j), CStr(Param)) Then
                 
-                sHit = "R4 - " & aKey(i) & "\" & aScopes(j) & " - " & sProvider & " - " '& sURL
+                'sHit = "R4 - " & aKey(i) & "\" & aScopes(j) & " - " & sProvider & " - " '& sURL
                 
                 If Not IsBingScopeKeyPara("URL", sURL) Then
                   
@@ -1784,7 +1794,8 @@ Public Sub CheckR4Item()
                             sParams = sParams & IIf(sParams <> "", ",", "") & CStr(Param)
                         Else 'new URL ?
                             'save last result and flush
-                            sHit = sHit & sLastURL & " (" & sParams & ")"
+                            'sHit = sHit & sLastURL & " (" & sParams & ")"
+                            sHit = "R4 - SearchScopes: [" & sParams & "] " & Reg.GetShortHiveName(aKey(i)) & "\..\" & aScopes(j) & " - " & sProvider & " - " & sLastURL
                             
                             If Not IsOnIgnoreList(sHit) Then
                                 Result.HitLineW = sHit
@@ -1799,8 +1810,9 @@ Public Sub CheckR4Item()
               End If
             Next
             
-            If sParams <> "" Then
-                sHit = "R4 - " & aKey(i) & "\" & aScopes(j) & " - " & sProvider & " - " & sLastURL & " (" & sParams & ")"
+            If sParams <> "" And Len(sLastURL) <> 0 Then
+                'sHit = "R4 - " & aKey(i) & "\" & aScopes(j) & " - " & sProvider & " - " & sLastURL & " (" & sParams & ")"
+                sHit = "R4 - SearchScopes: [" & sParams & "] " & Reg.GetShortHiveName(aKey(i)) & "\..\" & aScopes(j) & " - " & sProvider & " - " & sLastURL
                 
                 If Not IsOnIgnoreList(sHit) Then
                     Result.HitLineW = sHit
@@ -1969,7 +1981,7 @@ Public Sub FixR4Item(sItem$, Result As SCAN_RESULT)
             If .Hive <> 0 Then
                 sFixHive = Reg.GetShortHiveName(Reg.GetHiveNameByHandle(.Hive))
             Else
-                sFixHive = Reg.GetHiveName(.Key, bIncludeSID:=True)
+                sFixHive = Reg.GetShortHiveName(.Key, bIncludeSID:=True)
             End If
             
             'moved to BACKUP_KEY verb
@@ -3191,6 +3203,8 @@ Public Sub CheckO2Item()
                             End If
                         End If
                         
+                        sFile = FormatFileMissing(sFile)
+                        
                         sHit = IIf(bIsWin32, "O2", IIf(HE.Redirected, "O2-32", "O2")) & _
                             " - " & HE.HiveNameAndSID & "\..\BHO: " & sName & " - " & sCLSID & " - " & sFile
                         
@@ -3403,6 +3417,8 @@ Public Sub CheckO3Item()
                             sProgId = ""
                         End If
                     End If
+                    
+                    sFile = FormatFileMissing(sFile)
                     
                     bSafe = False
                     
@@ -10555,7 +10571,7 @@ Public Function CreateLogFile() As String
                 If Len(Process(i).Path) = 0 Then
                     If Not ((StrComp(Process(i).Name, "System Idle Process", 1) = 0 And Process(i).PID = 0) _
                         Or (StrComp(Process(i).Name, "System", 1) = 0 And Process(i).PID = 4) _
-                        Or (StrComp(Process(i).Name, "Memory Compression", 1) = 0 And Process(i).PID = 0) _
+                        Or (StrComp(Process(i).Name, "Memory Compression", 1) = 0) _
                         Or (StrComp(Process(i).Name, "Secure System", 1) = 0) And Process(i).PID = 0) Then
                           sProcessName = Process(i).Name '& " (cannot get Process Path)"
                     End If
@@ -10702,7 +10718,10 @@ MakeLog:
             "Service Pack: " & OSver.SPVer & IIf(bSPOld, " <=== Attention! (outdated SP)", "") & _
             IIf(OSver.MajorMinor <> OSver.MajorMinorNTDLL And OSver.MajorMinorNTDLL <> 0, " (NTDLL.dll = " & OSver.NtDllVersion & ")", "") & _
             vbCrLf
-    sLog.Append "Time:      " & TimeCreated & " (" & sUTC & ")," & vbTab & "Uptime: " & TrimSeconds(GetSystemUpTime()) & " h/m" & vbCrLf
+    
+    '," & vbTab & "Uptime: " & TrimSeconds(GetSystemUpTime()) & " h/m" & vbCrLf
+            
+    sLog.Append "Time:      " & TimeCreated & " (" & sUTC & ")" & vbCrLf
     sLog.Append "Language:  " & "OS: " & OSver.LangSystemNameFull & " (" & "0x" & Hex$(OSver.LangSystemCode) & "). " & _
             "Display: " & OSver.LangDisplayNameFull & " (" & "0x" & Hex$(OSver.LangDisplayCode) & "). " & _
             "Non-Unicode: " & OSver.LangNonUnicodeNameFull & " (" & "0x" & Hex$(OSver.LangNonUnicodeCode) & ")" & vbCrLf

@@ -333,8 +333,8 @@ set "ch="
 set /p "ch=Would you like to write hot-update.txt ? (Y/N)"
 if /i "%ch%" neq "n" (
   start "" hot-changelog.txt
-  start "" ChangeLog\ChangeLog_en.txt
-  start "" ChangeLog\ChangeLog.txt
+  start "" _ChangeLog_en.txt
+  start "" _ChangeLog_ru.txt
 )
 
 :skipAskHotUpdate

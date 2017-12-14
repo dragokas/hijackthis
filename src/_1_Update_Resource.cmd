@@ -27,7 +27,8 @@ set ResCnt=0
 call :AddResource + 1 #24 manifest.txt
 call :AddResource + 101 CUSTOM TasksWhite.csv
 call :AddResource - 102 CUSTOM MSCOMCTL.OCX.bak
-call :AddResource + 103 CUSTOM readme - History.txt
+call :AddResource + 103 CUSTOM _ChangeLog_en.txt
+call :AddResource + 104 CUSTOM _ChangeLog_ru.txt
 call :AddResource + 201 CUSTOM _Lang_EN.lng
 call :AddResource + 202 CUSTOM _Lang_RU.lng
 call :AddResource - 301 CUSTOM tools\PCRE2\pcre2-16.dll
