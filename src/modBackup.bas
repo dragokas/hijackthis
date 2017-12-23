@@ -73,7 +73,7 @@ End Type
 
 Private Declare Function SRRemoveRestorePoint Lib "SrClient.dll" (ByVal dwRPNum As Long) As Long
 Private Declare Function SRSetRestorePoint Lib "SrClient.dll" Alias "SRSetRestorePointA" (pRestorePtSpec As RESTOREPOINTINFOA, pSMgrStatus As STATEMGRSTATUS) As Long
-Private Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal length As Long) As Long
+Private Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long) As Long
 
 ' -------------------------------------
 '    Plan on reworking Backup module
@@ -554,7 +554,7 @@ Public Function BackupKey(Result As SCAN_RESULT, ByVal hHive As ENUM_REG_HIVE, B
     Dim aSubKeys() As String
     Dim aValues() As String
     Dim MyReg As FIX_REG_KEY
-    Dim i As Long, j As Long, K As Long
+    Dim i As Long, j As Long, k As Long
     
     BackupKey = True
     
@@ -589,9 +589,9 @@ Public Function BackupKey(Result As SCAN_RESULT, ByVal hHive As ENUM_REG_HIVE, B
         Erase aSubKeys
         For j = 1 To Reg.EnumSubKeysToArray(hHive, sKey, aSubKeys(), bUseWow64, True, True)
             Erase aValues
-            For K = 1 To Reg.EnumValuesToArray(hHive, aSubKeys(j), aValues(), bUseWow64)
+            For k = 1 To Reg.EnumValuesToArray(hHive, aSubKeys(j), aValues(), bUseWow64)
                 MyReg.Key = aSubKeys(j)
-                MyReg.Param = aValues(K)
+                MyReg.Param = aValues(k)
                 lRegID = BackupAllocReg(MyReg)
                 BackupAddCommand REGISTRY_BASED, VERB_RESTORE_REG_VALUE, OBJ_REG_VALUE, lRegID
             Next
@@ -611,9 +611,9 @@ Public Function BackupKey(Result As SCAN_RESULT, ByVal hHive As ENUM_REG_HIVE, B
         
         'backup values of root key
         Erase aValues
-        For K = 1 To Reg.EnumValuesToArray(hHive, sKey, aValues(), bUseWow64)
+        For k = 1 To Reg.EnumValuesToArray(hHive, sKey, aValues(), bUseWow64)
             MyReg.Key = sKey
-            MyReg.Param = aValues(K)
+            MyReg.Param = aValues(k)
             lRegID = BackupAllocReg(MyReg)
             BackupAddCommand REGISTRY_BASED, VERB_RESTORE_REG_VALUE, OBJ_REG_VALUE, lRegID
         Next

@@ -8,6 +8,16 @@
 1. HiJackThis: changelog
 -----------------------------
 
+[2.7.0.26] - 23.12.2017
+Updated list of DNS.
+O4 - Added output of folders in Autostart directories.
+O2, O3 - fixed heuristic cleaning.
+R4 section - DefaultScope is merged with R4 - SearchScopes.
+Little speed optimizations.
+
+[2.7.0.25] - 17.12.2017
+Updated list of certificates on XP.
+
 [2.7.0.24] - Dec 15, 2017
 Fixed error where log file created as trimmed due to the NUL characters.
 Uptime is removed.
@@ -1062,3 +1072,4 @@ saved and edited in Wordpad.
 [v1.00] - Aug 27, 2004
 * Original release.
 
+ 

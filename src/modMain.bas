@@ -932,13 +932,13 @@ Public Sub LoadStuff()
     'Loading Safe DNS list
     'https://www.comss.ru/list.php?c=securedns
     
+    'These are checked with nslookup
+    
     With colSafeDNS
-        .Add "Google Public DNS", "8.8.8.8"
-        .Add "Google Public DNS", "8.8.4.4"
-        '2001:4860:4860::8888 IPv6
-        '2001:4860:4860::8844 IPv6
-        .Add "Verisign Public DNS", "64.6.64.6"
-        .Add "Verisign Public DNS", "64.6.65.6"
+        .Add "Google", "8.8.8.8"
+        .Add "Google", "8.8.4.4"
+        .Add "Verisign", "64.6.64.6"
+        .Add "Verisign", "64.6.65.6"
         .Add "SkyDNS", "193.58.251.251"
         .Add "Cisco OpenDNS", "208.67.222.222"
         .Add "Cisco OpenDNS", "208.67.220.220"
@@ -986,14 +986,42 @@ Public Sub LoadStuff()
         .Add "Alternate DNS", "23.253.163.53"
         .Add "Rejector", "95.154.128.32"
         .Add "Rejector", "78.46.36.8"
-        .Add "SmartViper Public DNS", "208.76.50.50"
-        .Add "SmartViper Public DNS", "208.76.51.51"
-        .Add "DNS Advantage / UltraDNS", "156.154.70.1"
-        .Add "DNS Advantage / UltraDNS", "156.154.71.1"
+        .Add "SmartViper", "208.76.50.50"
+        .Add "SmartViper", "208.76.51.51"
+        .Add "Neustar DNS Advantage / UltraDNS", "156.154.70.1"
+        .Add "Neustar DNS Advantage / UltraDNS", "156.154.71.1"
+        .Add "Neustar DNS Advantage / UltraDNS", "156.154.70.5"
+        .Add "Neustar DNS Advantage / UltraDNS", "156.154.71.5"
         .Add "GreenTeamDNS", "81.218.119.11"
         .Add "GreenTeamDNS", "209.88.198.133"
         .Add "GTE", "192.76.85.133"
         .Add "GTE", "206.124.64.1"
+        .Add "Hurricane Electric", "74.82.42.42"
+        .Add "puntCAT", "109.69.8.51"
+        .Add "Sprintlink General DNS", "204.117.214.10"
+        .Add "Sprintlink General DNS", "199.2.252.10"
+        .Add "Sprintlink General DNS", "204.97.212.10"
+        .Add "Chaos Computer Club", "194.150.168.168"
+        .Add "Chaos Computer Club", "213.73.91.35"
+        .Add "Chaos Computer Club", "85.214.20.141"
+        .Add "censurfridns.dk", "89.233.43.71"
+        .Add "censurfridns.dk", "91.239.100.100"
+        .Add "CyberGhost", "38.132.106.139"
+        .Add "CyberGhost", "194.187.251.67"
+        .Add "CyberGhost", "185.93.180.131"
+        .Add "CyberGhost", "209.58.179.186"
+        .Add "CyberGhost", "27.50.70.139"
+        .Add "DNSReactor", "45.55.155.25"
+        .Add "DNSReactor", "104.236.210.29"
+        .Add "FDN", "80.67.169.12"
+        .Add "FDN", "80.67.169.40"
+        .Add "Lightning Wire Labs", "81.3.27.54"
+        .Add "Lightning Wire Labs", "74.113.60.185"
+        .Add "Freenom", "80.80.80.80"
+        .Add "Freenom", "80.80.81.81"
+        .Add "Quad9", "9.9.9.10"
+        .Add "Xiala", "77.109.148.136"
+        .Add "Xiala", "77.109.148.137"
     End With
     
     With colSafeCert
@@ -1024,6 +1052,39 @@ Public Sub LoadStuff()
         .Add "DigiNotar Cyber CA", "2B84BFBB34EE2EF949FE1CBE30AA026416EB2216"
         .Add "Microsoft Enforced Licensing Intermediate PCA", "2A83E9020591A55FC6DDAD3FB102794C52B24E70"
         .Add "www.google.com", "1916A2AF346D399F50313C393200F14140456616"
+        'additional certificates on XP
+        .Add "e-islem.kktcmerkezbankasi.org", "F92BE5266CC05DB2DC0DC3F2DC74E02DEFD949CB"
+        .Add "Microsoft Online Svcs BPOS CA2", "F5A874F3987EB0A9961A564B669A9050F770308A"
+        .Add "Microsoft Online Svcs BPOS EMEA CA2", "E9809E023B4512AA4D4D53F40569C313C1D0294D"
+        .Add "Microsoft Online Svcs BPOS APAC CA3", "E95DD86F32C771F0341743EBD75EC33C74A3DED9"
+        .Add "Microsoft Genuine Windows Phone Public Preview CA01", "E38A2B7663B86796436D8DF5898D9FAA6835B238"
+        .Add "Microsoft Online Svcs BPOS APAC CA2", "D8CE8D07F9F19D2569C2FB854401BC99C1EB7C3B"
+        .Add "Microsoft Online Svcs BPOS APAC CA1", "D43153C8C25F0041287987250F1E3CABAC8C2177"
+        .Add "Microsoft Online Svcs BPOS APAC CA5", "D0BB3E3DFBFB86C0EEE2A047E328609E6E1F185E"
+        .Add "*.EGO.GOV.TR", "C69F28C825139E65A646C434ACA5A1D200295DB1"
+        .Add "Microsoft IPTVe CA", "BED412B1334D7DFCEBA3015E5F9F905D571C45CF"
+        .Add "Microsoft Online Svcs CA5", "A81706D31E6F5C791CD9D3B1B9C63464954BA4F5"
+        .Add "Microsoft Online Svcs BPOS EMEA CA3", "A7B5531DDC87129E2C3BB14767953D6745FB14A6"
+        .Add "Microsoft Online Svcs BPOS EMEA CA1", "A35A8C727E88BCCA40A3F9679CE8CA00C26789FD"
+        .Add "Microsoft Online Svcs CA1", "A221D360309B5C3C4097C44CC779ACC5A9845B66"
+        .Add "Microsoft Online CA001", "A1505D9843C826DD67ED4EA5209804BDBB0DF502"
+        .Add "Microsoft Online Svcs CA3", "8977E8569D2A633AF01D0394851681CE122683A6"
+        .Add "Microsoft Online Svcs BPOS EMEA CA6", "838FFD509DE868F481C29819992E38A4F7082873"
+        .Add "Microsoft Online Svcs BPOS CA1", "7613BF0BA261006CAC3ED2DDBEF343425357F18B"
+        .Add "Microsoft Online Svcs CA4", "6690C02B922CBD3FF0D0A5994DBD336592887E3F"
+        .Add "Microsoft Online Svcs CA4", "5D5185DF1EB7DC76015422EC8138A5724BEE2886"
+        .Add "AC DG Tresor SSL", "5CE339465F41A1E423149F65544095404DE6EBE2"
+        .Add "Microsoft Online Svcs BPOS CA2", "587B59FB52D8A683CBE1CA00E6393D7BB923BC92"
+        .Add "Microsoft Online Svcs BPOS CA2", "4ED8AA06D1BC72CA64C47B1DFE05ACC8D51FC76F"
+        .Add "Microsoft Online Svcs CA5", "4DF13947493CFF69CDE554881C5F114E97C3D03B"
+        .Add "*.google.com", "4D8547B7F864132A7F62D9B75B068521F10B68E3"
+        .Add "CN=Microsoft Online Svcs BPOS APAC CA4", "3A26012171855D4020C973BEC3F4F9DA45BD2B83"
+        .Add "Microsoft Online Svcs CA3", "374D5B925B0BD83494E656EB8087127275DB83CE"
+        .Add "Microsoft Online Svcs BPOS EMEA CA4", "330D8D3FD325A0E5FDDDA27013A2E75E7130165F"
+        .Add "Microsoft Online Svcs CA1", "23EF3384E21F70F034C467D4CBA6EB61429F174E"
+        .Add "Microsoft Online Svcs CA6", "09FF2CC86CEEFA8A8BB3F2E3E84D6DA3FABBF63E"
+        .Add "Microsoft Online Svcs BPOS EMEA CA5", "09271DD621EBD3910C2EA1D059F99B8181405A17"
+        .Add "Microsoft Online Svcs BPOS APAC CA6", "08738A96A4853A52ACEF23F782E8E1FEA7BCED02"
     End With
     
     With colBadCert
@@ -1581,9 +1642,11 @@ Public Sub CheckR3Item()
             
             sCLSID = TrimNull(sCLSID)
             
-            GetFileByCLSID sCLSID, sFile, sName, HE.Redirected, HE.SharedKey
+            GetFileByCLSID sCLSID, sFile, , HE.Redirected, HE.SharedKey
             
             If Not (sCLSID = sDefHookCLSID And StrComp(sFile, sDefHookDll, 1) = 0) Then
+                
+                GetTitleByCLSID sCLSID, sName, HE.Redirected, HE.SharedKey
                 
                 sHit = IIf(bIsWin32, "R3 - ", IIf(HE.Redirected, "R3-32 - ", "R3 - ")) & HE.HiveNameAndSID & "\..\URLSearchHooks: " & _
                     sName & " - " & sCLSID & " - " & sFile
@@ -1628,118 +1691,13 @@ Public Sub CheckR4Item()
     'http://ijustdoit.eu/changing-default-search-provider-in-internet-explorer-11-using-group-policies/
     
     'SearchScope
-    'R4 - DefaultScope:
     'R4 - SearchScopes:
     
-    Dim Result As SCAN_RESULT, sHit$, i&, j&, sDefScope$, sURL$, sProvider$, aScopes() As String, sHive$, vKey, aHives() As String
-    Dim aKey() As String, aDes() As String, sValue$, sParam$, sDefData$, aData$(), sBuf As String, Param As Variant
-    
-    GetHives aHives, bIncludeServiceSID:=False
-    
-    'DefaultScope should NOT be here:
-    'HKCU\Software\Policies\Microsoft\Internet Explorer\SearchScopes
-    'HKLM\Software\Policies\Microsoft\Internet Explorer\SearchScopes
-    'HKLM\Software\Microsoft\Internet Explorer\SearchScopes
-    
-    'DefaultScope should be here:
-    'HKCU\Software\Microsoft\Internet Explorer\SearchScopes
-     
-    ReDim aKey((UBound(aHives) + 1) * 2 - 1)
-    ReDim aDes((UBound(aHives) + 1) * 2 - 1)
-    
-    'preparing keys for checking and its descriptions
-    For i = 0 To UBound(aHives)
-        aKey(j) = aHives(i) & "\Software\Microsoft\Internet Explorer\SearchScopes"
-        aDes(j) = aHives(i)
-        j = j + 1
-    Next
-    For i = 0 To UBound(aHives)
-        aKey(j) = aHives(i) & "\Software\Policies\Microsoft\Internet Explorer\SearchScopes"
-        aDes(j) = aHives(i) & "\Software\Policies"
-        j = j + 1
-    Next
-    
-    'Checking if 'DefaultScope' for each user points to 'Bing'
-    
-    For i = 0 To UBound(aKey)
-        sHive = Left$(aKey(i), 4)
-        sDefScope = Reg.GetString(0&, aKey(i), "DefaultScope")
-        
-        If sDefScope <> "" Then
-            
-            For Each Param In Array("URL", "SuggestionsURL_JSON", "SuggestionsURL", "SuggestionsURLFallback", "TopResultURL", "TopResultURLFallback")
-                sURL = Reg.GetString(0&, aKey(i) & "\" & sDefScope, CStr(Param))
-                If sURL <> "" Then Exit For
-            Next
-            If sURL = "" Then sURL = "(no URL)"
-            
-            sProvider = Reg.GetString(0&, aKey(i) & "\" & sDefScope, "DisplayName")
-            If sProvider = "" Then sProvider = "(no name)"
-            If Left$(sProvider, 1) = "@" Then
-                sBuf = GetStringFromBinary(, , sProvider)
-                If 0 <> Len(sBuf) Then sProvider = sBuf
-            End If
-            
-            'sHit = "R4 - " & aKey(i) & ": DefaultScope = " & sDefScope & " - " & sProvider & " - " & sURL
-            sHit = "R4 - SearchScopes: [DefaultScope] " & HE.HiveNameAndSID & " - " & sDefScope & " - " & sProvider & " - " & sURL
-            
-            If Not IsBingScopeKeyPara("URL", sURL) Then
-              If Not IsOnIgnoreList(sHit) Then
-                With Result
-                    .Section = "R4"
-                    .HitLineW = sHit
-                    AddRegToFix .Reg, RESTORE_VALUE, 0, aKey(i), "DefaultScope", "{0633EE93-D776-472f-A0FF-E1416B8B2E3A}"
-                    .CureType = REGISTRY_BASED
-                    AddRegToFix .Reg, BACKUP_KEY, 0, aKey(i) & "\" & sDefScope
-                End With
-                AddToScanResults Result
-              End If
-            End If
-            
-        End If
-    Next
-    
-    'Checking consistency of default scope
-    
-    'HKCU\Software\Microsoft\Internet Explorer\SearchScopes
-    'HKLM\Software\Microsoft\Internet Explorer\SearchScopes
-    
-    If OSver.MajorMinor >= 6 Then
-    
-      For i = 1 To cReg4vals.Count
-        aData = Split(cReg4vals.Item(i), ",", 3)
-        sHive = aData(0)
-        sParam = aData(1)
-        sDefData = aData(2)
-        
-            sValue = Reg.GetString(0&, sHive & "\Software\Microsoft\Internet Explorer\SearchScopes\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", sParam)
-            
-            'If Not inArraySerialized(sValue, sDefData, "|", , , vbTextCompare) And Not (sValue = "") Then
-            If Not IsBingScopeKeyPara(sParam, sValue) And Len(sValue) > 0 Then
-            
-                sProvider = Reg.GetString(0&, sHive & "\Software\Microsoft\Internet Explorer\SearchScopes\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", "DisplayName")
-                If sProvider = "" Then sProvider = "(no name)"
-                If Left$(sProvider, 1) = "@" Then
-                    sBuf = GetStringFromBinary(, , sProvider)
-                    If 0 <> Len(sBuf) Then sProvider = sBuf
-                End If
-
-                'sHit = "R4 - " & sHive & "\Software\Microsoft\Internet Explorer\SearchScopes\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}: " & sParam & " = " & sValue
-                sHit = "R4 - SearchScopes: [" & sParam & "] " & HE.HiveNameAndSID & "\..\" & "{0633EE93-D776-472f-A0FF-E1416B8B2E3A}" & " - " & sProvider & " - " & sValue
-                
-                If Not IsOnIgnoreList(sHit) Then
-                    With Result
-                        .Section = "R4"
-                        .HitLineW = sHit
-                        AddRegToFix .Reg, RESTORE_VALUE, 0, sHive & "\Software\Microsoft\Internet Explorer\SearchScopes\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", _
-                          sParam, SplitSafe(sDefData, "|")(0)
-                        .CureType = REGISTRY_BASED
-                    End With
-                    AddToScanResults Result
-                End If
-            End If
-      Next
-    End If
+    Dim Result As SCAN_RESULT, sHit$, j&, k&, sURL$, sProvider$, aScopes() As String, sBuf$, sDefScope$, bDefault As Boolean
+    Dim Param As Variant, aData() As String, sHive$, sParam$, sDefData$
+    Dim HE As clsHiveEnum, HEFix As clsHiveEnum
+    Set HE = New clsHiveEnum
+    Set HEFix = New clsHiveEnum
     
     'Enum custom scopes
     '
@@ -1748,17 +1706,23 @@ Public Sub CheckR4Item()
     'HKLM\Software\Microsoft\Internet Explorer\SearchScopes
     'HKCU\Software\Microsoft\Internet Explorer\SearchScopes
     
+    HE.Init HE_HIVE_ALL, HE_SID_ALL And Not HE_SID_SERVICE, HE_REDIR_NO_WOW
+    
+    HE.AddKey "Software\Microsoft\Internet Explorer\SearchScopes"
+    HE.AddKey "Software\Policies\Microsoft\Internet Explorer\SearchScopes"
+    
+    HE.Clone HEFix
+    
     Dim sLastURL As String
     Dim sParams As String
     
-    For i = 0 To UBound(aKey)
-        sHive = Left$(aKey(i), 4)
+    Do While HE.MoveNext
         
-        For j = 1 To Reg.EnumSubKeysToArray(0&, aKey(i), aScopes())
-          If StrComp(aScopes(j), "{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", 1) <> 0 Then
+        For j = 1 To Reg.EnumSubKeysToArray(HE.Hive, HE.Key, aScopes())
             
-            sProvider = Reg.GetString(0&, aKey(i) & "\" & aScopes(j), "DisplayName")
+            sProvider = Reg.GetString(HE.Hive, HE.Key & "\" & aScopes(j), "DisplayName")
             If sProvider = "" Then sProvider = "(no name)"
+            
             If Left$(sProvider, 1) = "@" Then
                 sBuf = GetStringFromBinary(, , sProvider)
                 If 0 <> Len(sBuf) Then sProvider = sBuf
@@ -1769,22 +1733,18 @@ Public Sub CheckR4Item()
             
             For Each Param In Array("URL", "SuggestionsURL_JSON", "SuggestionsURL", "SuggestionsURLFallback", "TopResultURL", "TopResultURLFallback")
             
-              sURL = Reg.GetString(0&, aKey(i) & "\" & aScopes(j), CStr(Param))
+              sURL = Reg.GetString(HE.Hive, HE.Key & "\" & aScopes(j), CStr(Param))
               
-              If Len(sURL) <> 0 Or Reg.ValueExists(0&, aKey(i) & "\" & aScopes(j), CStr(Param)) Then
-                
-                'sHit = "R4 - " & aKey(i) & "\" & aScopes(j) & " - " & sProvider & " - " '& sURL
+              If Len(sURL) <> 0 Or Reg.ValueExists(HE.Hive, HE.Key & "\" & aScopes(j), CStr(Param)) Then
                 
                 If Not IsBingScopeKeyPara("URL", sURL) Then
                   
                     With Result
                         .Section = "R4"
-                        '.HitLineW = sHit
-                        AddRegToFix .Reg, REMOVE_KEY, 0, aKey(i) & "\" & aScopes(j)
-                        'AddRegToFix .Reg, REMOVE_VALUE, 0, aKey(i) & "\" & aScopes(j), CStr(Param)
+                        AddRegToFix .Reg, REMOVE_KEY, HE.Hive, HE.Key & "\" & aScopes(j)
                         .CureType = REGISTRY_BASED
                     End With
-                  
+                    
                     If sLastURL = "" Then 'first time?
                         sLastURL = sURL
                         sParams = CStr(Param)
@@ -1794,11 +1754,11 @@ Public Sub CheckR4Item()
                             sParams = sParams & IIf(sParams <> "", ",", "") & CStr(Param)
                         Else 'new URL ?
                             'save last result and flush
-                            'sHit = sHit & sLastURL & " (" & sParams & ")"
-                            sHit = "R4 - SearchScopes: [" & sParams & "] " & Reg.GetShortHiveName(aKey(i)) & "\..\" & aScopes(j) & " - " & sProvider & " - " & sLastURL
+                            sHit = "R4 - SearchScopes: " & HE.KeyAndHive & "\" & aScopes(j) & " [" & sParams & "] = " & sLastURL & " - " & sProvider
                             
                             If Not IsOnIgnoreList(sHit) Then
                                 Result.HitLineW = sHit
+                                GoSub CheckDefaultScope
                                 AddToScanResults Result, , True
                             End If
                             
@@ -1811,21 +1771,70 @@ Public Sub CheckR4Item()
             Next
             
             If sParams <> "" And Len(sLastURL) <> 0 Then
-                'sHit = "R4 - " & aKey(i) & "\" & aScopes(j) & " - " & sProvider & " - " & sLastURL & " (" & sParams & ")"
-                sHit = "R4 - SearchScopes: [" & sParams & "] " & Reg.GetShortHiveName(aKey(i)) & "\..\" & aScopes(j) & " - " & sProvider & " - " & sLastURL
+                sHit = "R4 - SearchScopes: " & HE.KeyAndHive & "\" & aScopes(j) & " [" & sParams & "] = " & sLastURL & " - " & sProvider
                 
                 If Not IsOnIgnoreList(sHit) Then
                     Result.HitLineW = sHit
+                    GoSub CheckDefaultScope
                     AddToScanResults Result
                 End If
             End If
             
-          End If
         Next
-    Next
+    Loop
     
     AppendErrorLogCustom "CheckR4Item - End"
+    
+    Set HE = Nothing
+    Set HEFix = Nothing
+    
     Exit Sub
+    
+CheckDefaultScope:
+    
+    HEFix.Repeat
+    Do While HEFix.MoveNext
+        sDefScope = Reg.GetString(HEFix.Hive, HEFix.Key, "DefaultScope")
+        If sDefScope <> "" Then
+            If StrComp(sDefScope, aScopes(j), 1) = 0 Then
+                If InStr(1, HEFix.Key, "Policies", 1) <> 0 Then
+                    'remove policies
+                    AddRegToFix Result.Reg, REMOVE_VALUE, HEFix.Hive, HEFix.Key, "DefaultScope"
+                Else
+                    'reset default scope to bing
+                    
+                    For k = 1 To cReg4vals.Count
+                        aData = Split(cReg4vals.Item(k), ",", 3)
+                        sHive = aData(0)
+                        sParam = aData(1)
+                        sDefData = SplitSafe(aData(2), "|")(0)
+        
+                        If (HEFix.HiveName = "HKLM" And sHive = "HKLM") Or _
+                            (HEFix.HiveName <> "HKLM" And sHive = "HKCU") Then
+                
+                            AddRegToFix Result.Reg, RESTORE_VALUE, HEFix.Hive, HEFix.Key & "\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", sParam, sDefData, , REG_RESTORE_SZ
+                        End If
+                    Next
+            
+                    AddRegToFix Result.Reg, RESTORE_VALUE, HEFix.Hive, HEFix.Key, "DefaultScope", "{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", , REG_RESTORE_SZ
+                    AddRegToFix Result.Reg, RESTORE_VALUE, HEFix.Hive, HEFix.Key & "\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", "DisplayName", "Bing", , REG_RESTORE_SZ
+                    If HEFix.HiveName = "HKLM" Then
+                        AddRegToFix Result.Reg, RESTORE_VALUE, HEFix.Hive, HEFix.Key & "\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", "", "Bing", , REG_RESTORE_SZ
+                    Else
+                        AddRegToFix Result.Reg, RESTORE_VALUE, HEFix.Hive, HEFix.Key & "\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", "FaviconURL", "http://www.bing.com/favicon.ico", , REG_RESTORE_SZ
+                        AddRegToFix Result.Reg, RESTORE_VALUE, HEFix.Hive, HEFix.Key & "\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", "FaviconURLFallback", "http://www.bing.com/favicon.ico", , REG_RESTORE_SZ
+                        AddRegToFix Result.Reg, RESTORE_VALUE, HEFix.Hive, HEFix.Key & "\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", "NTLogoPath", AppDataLocalLow & "\Microsoft\Internet Explorer\Services\", , REG_RESTORE_SZ
+                        AddRegToFix Result.Reg, RESTORE_VALUE, HEFix.Hive, HEFix.Key & "\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", "NTLogoURL", "http://go.microsoft.com/fwlink/?LinkID=403856&language={language}&scale={scalelevel}&contrast={contrast}", , REG_RESTORE_SZ
+                        AddRegToFix Result.Reg, RESTORE_VALUE, HEFix.Hive, HEFix.Key & "\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", "NTSuggestionsURL", "http://api.bing.com/qsml.aspx?query={searchTerms}&market={language}&maxwidth={ie:maxWidth}&rowheight={ie:rowHeight}&sectionHeight={ie:sectionHeight}&FORM=IENTSS", , REG_RESTORE_SZ
+                        AddRegToFix Result.Reg, RESTORE_VALUE, HEFix.Hive, HEFix.Key & "\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", "NTTopResultURL", "http://www.bing.com/search?q={searchTerms}&src=IE-SearchBox&FORM=IENTTR", , REG_RESTORE_SZ
+                        AddRegToFix Result.Reg, RESTORE_VALUE, HEFix.Hive, HEFix.Key & "\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", "NTURL", "http://www.bing.com/search?q={searchTerms}&src=IE-SearchBox&FORM=IENTSR", , REG_RESTORE_SZ
+                    End If
+                End If
+            End If
+        End If
+    Loop
+    
+    Return
 ErrorHandler:
     ErrorMsg Err, "CheckR4Item"
     If inIDE Then Stop: Resume Next
@@ -1951,73 +1960,7 @@ End Function
 
 Public Sub FixR4Item(sItem$, Result As SCAN_RESULT)
     On Error GoTo ErrorHandler:
-    
-    Dim sFixHive As String, sParam As String, sHive As String, sDefData As String, j As Long, aData() As String, i&
-    Dim Param As Variant, sURL As String
-    
     FixRegistryHandler Result
-    
-'    If AryPtr(Result.Reg) <> 0 Then
-'        For Each Param In Array("URL", "SuggestionsURL_JSON", "SuggestionsURL", "SuggestionsURLFallback", "TopResultURL", "TopResultURLFallback")
-'
-'            sURL = Reg.GetString(0&, Result.Reg(0).Key, CStr(Param))
-'            If Len(sURL) <> 0 Then Exit For
-'        Next
-'    End If
-'
-'    'if all URL params was deleted we must delete parent key too
-'    If Len(sURL) = 0 Then
-'        If AryPtr(Result.Reg) <> 0 Then
-'            BackupKey Result, 0&, Result.Reg(0).Key
-'            Reg.DelKey 0&, Result.Reg(0).Key
-'        End If
-'    End If
-    
-    For i = 0 To UBound(Result.Reg)
-      With Result.Reg(i)
-        
-        'if resetting DefaultScope, set defaults for all 'Bing' scope values
-        If InStr(1, .Param, "DefaultScope", 1) <> 0 Then
-            If .Hive <> 0 Then
-                sFixHive = Reg.GetShortHiveName(Reg.GetHiveNameByHandle(.Hive))
-            Else
-                sFixHive = Reg.GetShortHiveName(.Key, bIncludeSID:=True)
-            End If
-            
-            'moved to BACKUP_KEY verb
-            'BackupKey Result, 0&, sFixHive & "\Software\Microsoft\Internet Explorer\SearchScopes\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}"
-            
-            For j = 1 To cReg4vals.Count
-                aData = Split(cReg4vals.Item(j), ",", 3)
-                sHive = aData(0)
-                sParam = aData(1)
-                sDefData = SplitSafe(aData(2), "|")(0)
-        
-                If (sFixHive = "HKLM" And sHive = "HKLM") Or _
-                    (sFixHive <> "HKLM" And sHive = "HKCU") Then
-                
-                    Reg.SetStringVal 0&, sFixHive & "\Software\Microsoft\Internet Explorer\SearchScopes\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", sParam, sDefData
-                End If
-            Next
-            
-            Reg.SetStringVal 0&, sFixHive & "\Software\Microsoft\Internet Explorer\SearchScopes", "DefaultScope", "{0633EE93-D776-472f-A0FF-E1416B8B2E3A}"
-            Reg.SetStringVal 0&, sFixHive & "\Software\Microsoft\Internet Explorer\SearchScopes\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", "DisplayName", "Bing"
-            If sFixHive = "HKLM" Then
-                Reg.SetStringVal 0&, sFixHive & "\Software\Microsoft\Internet Explorer\SearchScopes\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", "", "Bing"
-            Else
-                Reg.SetStringVal 0&, sFixHive & "\Software\Microsoft\Internet Explorer\SearchScopes\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", "FaviconURL", "http://www.bing.com/favicon.ico"
-                Reg.SetStringVal 0&, sFixHive & "\Software\Microsoft\Internet Explorer\SearchScopes\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", "FaviconURLFallback", "http://www.bing.com/favicon.ico"
-                Reg.SetStringVal 0&, sFixHive & "\Software\Microsoft\Internet Explorer\SearchScopes\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", "NTLogoPath", AppDataLocalLow & "\Microsoft\Internet Explorer\Services\"
-                Reg.SetStringVal 0&, sFixHive & "\Software\Microsoft\Internet Explorer\SearchScopes\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", "NTLogoURL", "http://go.microsoft.com/fwlink/?LinkID=403856&language={language}&scale={scalelevel}&contrast={contrast}"
-                Reg.SetStringVal 0&, sFixHive & "\Software\Microsoft\Internet Explorer\SearchScopes\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", "NTSuggestionsURL", "http://api.bing.com/qsml.aspx?query={searchTerms}&market={language}&maxwidth={ie:maxWidth}&rowheight={ie:rowHeight}&sectionHeight={ie:sectionHeight}&FORM=IENTSS"
-                Reg.SetStringVal 0&, sFixHive & "\Software\Microsoft\Internet Explorer\SearchScopes\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", "NTTopResultURL", "http://www.bing.com/search?q={searchTerms}&src=IE-SearchBox&FORM=IENTTR"
-                Reg.SetStringVal 0&, sFixHive & "\Software\Microsoft\Internet Explorer\SearchScopes\{0633EE93-D776-472f-A0FF-E1416B8B2E3A}", "NTURL", "http://www.bing.com/search?q={searchTerms}&src=IE-SearchBox&FORM=IENTSR"
-            End If
-        End If
-        
-      End With
-    Next
-    
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "FixR4Item", "sItem=", sItem
@@ -3179,12 +3122,8 @@ Public Sub CheckO2Item()
                         If HE.SharedKey And sName = "" Then
                             sName = Reg.GetString(0&, BHO_key, vbNullString, Not HE.Redirected)
                         End If
-                        'get BHO name from CLSID regkey
-                        If sName = "" Then
-                            GetFileByCLSID sCLSID, sFile, sName, HE.Redirected, HE.SharedKey
-                        Else
-                            GetFileByCLSID sCLSID, sFile, , HE.Redirected, HE.SharedKey
-                        End If
+                        
+                        GetFileByCLSID sCLSID, sFile, , HE.Redirected, HE.SharedKey
                         
                         sProgId = Reg.GetString(HKEY_CLASSES_ROOT, "Clsid\" & sCLSID & "\ProgID", vbNullString, HE.Redirected)
                         If sProgId = "" And HE.SharedKey Then
@@ -3205,42 +3144,49 @@ Public Sub CheckO2Item()
                         
                         sFile = FormatFileMissing(sFile)
                         
-                        sHit = IIf(bIsWin32, "O2", IIf(HE.Redirected, "O2-32", "O2")) & _
-                            " - " & HE.HiveNameAndSID & "\..\BHO: " & sName & " - " & sCLSID & " - " & sFile
-                        
                         bSafe = False
                         If InStr(1, sFile, "\Microsoft Office", 1) <> 0 Then
                             If IsMicrosoftFile(sFile) Then bSafe = True
                         End If
-
-                        If Not IsOnIgnoreList(sHit) And (Not bSafe) Then
-                            If bMD5 Then sHit = sHit & GetFileMD5(sFile)
+                        
+                        If Not bSafe Then
+                            'get bho name from CLSID
+                            If sName = "" Then GetTitleByCLSID sCLSID, sName, HE.Redirected, HE.SharedKey
+                        
+                            sHit = IIf(bIsWin32, "O2", IIf(HE.Redirected, "O2-32", "O2")) & _
+                                " - " & HE.HiveNameAndSID & "\..\BHO: " & sName & " - " & sCLSID & " - " & sFile
+                        
+                            If Not IsOnIgnoreList(sHit) Then
                             
-                            With Result
-                                .Section = "O2"
-                                .HitLineW = sHit
+                                If bMD5 Then sHit = sHit & GetFileMD5(sFile)
                                 
-                                AddRegToFix .Reg, REMOVE_KEY, 0, BHO_key, , , IIf(HE.SharedKey, REG_REDIRECTION_BOTH, REG_NOTREDIRECTED)
-                    
-                                If 0 <> Len(sProgId) Then
-                                    AddRegToFix .Reg, REMOVE_KEY, HKCR, sProgId, , , IIf(HE.SharedKey, REG_REDIRECTION_BOTH, REG_NOTREDIRECTED)
-                                End If
-                                
-                                HEFixKey.Repeat
-                                Do While HEFixKey.MoveNext
-                                    AddRegToFix .Reg, REMOVE_KEY, HE.Hive, Replace$(HE.Key, "{CLSID}", sCLSID), , , HE.Redirected
-                                Loop
-                                
-                                HEFixValue.Repeat
-                                Do While HEFixValue.MoveNext
-                                    AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key, sCLSID, , HE.Redirected
-                                Loop
-                                
-                                AddFileToFix .File, REMOVE_FILE Or UNREG_DLL, sFile
-                                
-                                .CureType = REGISTRY_BASED Or FILE_BASED
-                            End With
-                            AddToScanResults Result
+                                With Result
+                                    .Section = "O2"
+                                    .HitLineW = sHit
+                                    
+                                    AddRegToFix .Reg, REMOVE_KEY, 0, BHO_key, , , IIf(HE.SharedKey, REG_REDIRECTION_BOTH, HE.Redirected)
+                        
+                                    If 0 <> Len(sProgId) Then
+                                        AddRegToFix .Reg, REMOVE_KEY, HKCR, sProgId, , , IIf(HE.SharedKey, REG_REDIRECTION_BOTH, HE.Redirected)
+                                    End If
+                                    
+                                    HEFixKey.Repeat
+                                    Do While HEFixKey.MoveNext
+                                        AddRegToFix .Reg, REMOVE_KEY, HEFixKey.Hive, Replace$(HEFixKey.Key, "{CLSID}", sCLSID), , , HEFixKey.Redirected
+                                    Loop
+                                    
+                                    HEFixValue.Repeat
+                                    Do While HEFixValue.MoveNext
+                                        AddRegToFix .Reg, REMOVE_VALUE, HEFixValue.Hive, HEFixValue.Key, sCLSID, , HEFixValue.Redirected
+                                    Loop
+                                    
+                                    AddFileToFix .File, REMOVE_FILE Or UNREG_DLL, sFile
+                                    
+                                    .CureType = REGISTRY_BASED Or FILE_BASED
+                                End With
+                            
+                                AddToScanResults Result
+                            End If
                         End If
                     End If
                     i = i + 1
@@ -3389,7 +3335,7 @@ Public Sub CheckO3Item()
                     End If
         
                     'found one? then check corresponding HKCR key
-                    GetFileByCLSID sCLSID, sFile, sName, HE.Redirected, HE.SharedKey
+                    GetFileByCLSID sCLSID, sFile, , HE.Redirected, HE.SharedKey
         
                     '   sCLSID <> "BrandBitmap" And _
                     '   sCLSID <> "SmBrandBitmap" And _
@@ -3426,10 +3372,13 @@ Public Sub CheckO3Item()
                         If WhiteListed(sFile, sWinDir & "\system32\msdxm.ocx") Then bSafe = True
                     End If
                     
-                    If 0 <> Len(sName) And InStr(sCLSID, "{") > 0 And Not bSafe Then
+                    'If 0 <> Len(sName) And InStr(sCLSID, "{") > 0 And Not bSafe Then
+                    If InStr(sCLSID, "{") <> 0 And Not bSafe Then
         
         '          If Not SearchwwwTrick Or _
         '            (SearchwwwTrick And (sCLSID <> "BrandBitmap" And sCLSID <> "SmBrandBitmap")) Then
+                        
+                        GetTitleByCLSID sCLSID, sName, HE.Redirected, HE.SharedKey
         
                         sHit = IIf(bIsWin32, "O3", IIf(HE.Redirected, "O3-32", "O3")) & _
                             " - " & HE.HiveNameAndSID & "\..\" & aDescr(HE.KeyIndex) & ": " & sName & " - " & sCLSID & " - " & sFile
@@ -3450,12 +3399,12 @@ Public Sub CheckO3Item()
                                 
                                 HEFixKey.Repeat
                                 Do While HEFixKey.MoveNext
-                                    AddRegToFix .Reg, REMOVE_KEY, HE.Hive, Replace$(HE.Key, "{CLSID}", sCLSID), , , HE.Redirected
+                                    AddRegToFix .Reg, REMOVE_KEY, HEFixKey.Hive, Replace$(HEFixKey.Key, "{CLSID}", sCLSID), , , HEFixKey.Redirected
                                 Loop
                                 
                                 HEFixValue.Repeat
                                 Do While HEFixValue.MoveNext
-                                    AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key, sCLSID, , HE.Redirected
+                                    AddRegToFix .Reg, REMOVE_VALUE, HEFixValue.Hive, HEFixValue.Key, sCLSID, , HEFixValue.Redirected
                                 Loop
                                 
                                 AddFileToFix .File, REMOVE_FILE Or UNREG_DLL, sFile
@@ -3501,7 +3450,7 @@ Sub GetUserNamesAndSids(aSID() As String, aUser() As String)
     'not all users visible in User Accounts screen have a SID though,
     'they probably get this when logging in for the first time
 
-    Dim CurUserName$, i&, K&, sUsername$, aTmpSID() As String, aTmpUser() As String
+    Dim CurUserName$, i&, k&, sUsername$, aTmpSID() As String, aTmpUser() As String
 
     CurUserName = GetUser()
     
@@ -3525,20 +3474,20 @@ Sub GetUserNamesAndSids(aSID() As String, aUser() As String)
     Next i
     
     'compress array
-    K = 0
+    k = 0
     ReDim aSID(UBound(aTmpSID))
     ReDim aUser(UBound(aTmpSID))
     
     For i = 0 To UBound(aTmpSID)
         If 0 <> Len(aTmpSID(i)) Then
-            aSID(K) = aTmpSID(i)
-            aUser(K) = aTmpUser(i)
-            K = K + 1
+            aSID(k) = aTmpSID(i)
+            aUser(k) = aTmpUser(i)
+            k = k + 1
         End If
     Next
-    If K > 0 Then
-        ReDim Preserve aSID(K - 1)
-        ReDim Preserve aUser(K - 1)
+    If k > 0 Then
+        ReDim Preserve aSID(k - 1)
+        ReDim Preserve aUser(k - 1)
     Else
         ReDim Preserve aSID(0)
         ReDim Preserve aUser(0)
@@ -3657,7 +3606,7 @@ Sub CheckO4_RegRuns()
                 
                 If Not bIgnoreAllWhitelists And bHideMicrosoft Then
                     
-                    '//TODO: narrow down to services' DIS only: S-1-5-19 + S-1-5-20 + 'UpdatusUser' (NVIDIA)
+                    '//TODO: narrow down to services' SID only: S-1-5-19 + S-1-5-20 + 'UpdatusUser' (NVIDIA)
                     
                     'Note: For services only
                     If StrComp(sFile, PF_64 & "\Windows Sidebar\Sidebar.exe", 1) = 0 And sArgs = "/autoRun" Then
@@ -3827,7 +3776,7 @@ Sub CheckO4_RegRuns()
             
             sHit = sAlias & ConcatFileArg(sFile, sArgs)
             
-            If Not IsOnIgnoreList(sHit) Then
+            If Not IsOnIgnoreList(sHit) And Not FileMissing(sFile) Then
             
               If sArgs <> "-> DELETE" Or (sArgs = "-> DELETE" And bShowPendingDeleted) Then
 
@@ -4320,12 +4269,13 @@ End Sub
 Sub CheckO4_AutostartFolder(aSID() As String, aUser() As String)
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "CheckO4_AutostartFolder - Begin"
-
+    
     Dim aRegKeys() As String, aParams() As String, aDes() As String, aDesConst() As String, Result As SCAN_RESULT
-    Dim sAutostartFolder$(), sShortCut$, i&, K&, Wow6432Redir As Boolean, UseWow, sFolder$, sHit$, dEpoch As Date
+    Dim sAutostartFolder$(), sShortCut$, i&, k&, Wow6432Redir As Boolean, UseWow, sFolder$, sHit$, dEpoch As Date
     Dim FldCnt&, sKey$, sSID$, sFile$, sLinkPath$, sLinkExt$, sTarget$, Blink As Boolean, bPE_EXE As Boolean
     Dim bData() As Byte, isDisabled As Boolean, flagDisabled As Long, sKeyDisable As String, sHive As String, dDate As Date
     Dim StartupCU As String, aFiles() As String, sArguments As String, aUserNames() As String, aUserConst() As String, sUsername$
+    Dim aFolders() As String
     
     ReDim aRegKeys(1 To 8)
     ReDim aParams(1 To UBound(aRegKeys))
@@ -4388,7 +4338,7 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUser() As String)
     FldCnt = 0
     
     ' Get folder pathes
-    For K = 1 To UBound(aRegKeys)
+    For k = 1 To UBound(aRegKeys)
     
         For Each UseWow In Array(False, True)
             
@@ -4396,15 +4346,15 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUser() As String)
         
             'skip HKCU Wow64
             If (bIsWin32 And Wow6432Redir) _
-              Or bIsWin64 And Wow6432Redir And StrBeginWith(aRegKeys(K), "HKCU") Then Exit For
+              Or bIsWin64 And Wow6432Redir And StrBeginWith(aRegKeys(k), "HKCU") Then Exit For
     
             FldCnt = FldCnt + 1
-            sAutostartFolder(FldCnt) = Reg.GetString(0&, aRegKeys(K), aParams(K), Wow6432Redir)
-            aDes(FldCnt) = aDesConst(K)
-            aUserNames(FldCnt) = aUserConst(K)
+            sAutostartFolder(FldCnt) = Reg.GetString(0&, aRegKeys(k), aParams(k), Wow6432Redir)
+            aDes(FldCnt) = aDesConst(k)
+            aUserNames(FldCnt) = aUserConst(k)
             
             'save path of Startup for current user to substitute other user names
-            If aParams(K) = "Startup" Then
+            If aParams(k) = "Startup" Then
                 If Len(sAutostartFolder(FldCnt)) <> 0 Then
                     StartupCU = UnQuote(EnvironW(sAutostartFolder(FldCnt)))
                 End If
@@ -4417,13 +4367,13 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUser() As String)
         If Len(aSID(i)) <> 0 Then
             sSID = aSID(i)
             
-            For K = 1 To UBound(aRegKeys)
+            For k = 1 To UBound(aRegKeys)
             
                 'only HKCU keys
-                If StrBeginWith(aRegKeys(K), "HKCU") Then
+                If StrBeginWith(aRegKeys(k), "HKCU") Then
                 
                     ' Convert HKCU -> HKU
-                    sKey = Replace$(aRegKeys(K), "HKCU\", "HKU\" & sSID)
+                    sKey = Replace$(aRegKeys(k), "HKCU\", "HKU\" & sSID)
                 
                     FldCnt = FldCnt + 1
                     If UBound(sAutostartFolder) < FldCnt Then
@@ -4432,8 +4382,8 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUser() As String)
                         ReDim Preserve aUserNames(UBound(aUserNames) + 100)
                     End If
             
-                    sAutostartFolder(FldCnt) = Reg.GetString(0&, sKey, aParams(K))
-                    aDes(FldCnt) = sSID & " " & aDesConst(K)
+                    sAutostartFolder(FldCnt) = Reg.GetString(0&, sKey, aParams(k))
+                    aDes(FldCnt) = sSID & " " & aDesConst(k)
                     aUserNames(FldCnt) = aUser(i)
                 End If
             Next
@@ -4444,8 +4394,8 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUser() As String)
     ReDim Preserve aDes(FldCnt)
     ReDim Preserve aUserNames(FldCnt)
     
-    For K = 1 To UBound(sAutostartFolder)
-        sAutostartFolder(K) = UnQuote(EnvironW(sAutostartFolder(K)))
+    For k = 1 To UBound(sAutostartFolder)
+        sAutostartFolder(k) = UnQuote(EnvironW(sAutostartFolder(k)))
     Next
     
     ' adding all similar folders in c:\users (in case user isn't logged - so HKU\SID willn't be exist for him, cos his hive is not mounted)
@@ -4466,19 +4416,37 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUser() As String)
     
     DeleteDuplicatesInArray sAutostartFolder, vbTextCompare, DontCompress:=True
     
-    For K = 1 To UBound(sAutostartFolder)
+    For k = 1 To UBound(sAutostartFolder)
         
-        sUsername = aUserNames(K)
+        sUsername = aUserNames(k)
         
-        sFolder = sAutostartFolder(K)
+        sFolder = sAutostartFolder(k)
         
         If 0 <> Len(sFolder) Then
           If FolderExists(sFolder) Then
             
+            Erase aFolders
+            aFolders = ListSubfolders(sFolder)
+            
+            For i = 0 To UBoundSafe(aFolders)
+            
+                sHit = "O4 - " & aDes(k) & ": " & aFolders(i) & " (Folder)"
+            
+                If Not IsOnIgnoreList(sHit) Then
+                    With Result
+                        .Section = "O4"
+                        .HitLineW = sHit
+                        AddFileToFix .File, REMOVE_FOLDER, aFolders(i)
+                        .CureType = FILE_BASED
+                    End With
+                    AddToScanResults Result
+                End If
+            Next
+            
             Erase aFiles
             aFiles = ListFiles(sFolder)
             
-              For i = 0 To UBoundSafe(aFiles)
+            For i = 0 To UBoundSafe(aFiles)
             
                 sShortCut = GetFileNameAndExt(aFiles(i))
 
@@ -4490,9 +4458,9 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUser() As String)
               
                     If OSver.MajorMinor >= 6.2 Then  ' Win 8+
 
-                        If StrInParamArray(aDes(K), "Startup", "User Startup", "Global Startup", "Global User Startup") Then
+                        If StrInParamArray(aDes(k), "Startup", "User Startup", "Global Startup", "Global User Startup") Then
 
-                            Select Case aDes(K)
+                            Select Case aDes(k)
                                 Case "Startup": sHive = "HKCU"
                                 Case "User Startup": sHive = "HKCU"
                                 Case "Global Startup": sHive = "HKLM"
@@ -4534,7 +4502,7 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUser() As String)
                     If isDisabled Then
                         sHit = "O4 - " & sHive & "\..\StartupApproved\StartupFolder: " 'if you change it, change fix also !!!
                     Else
-                        sHit = "O4 - " & aDes(K) & ": "
+                        sHit = "O4 - " & aDes(k) & ": "
                     End If
                     
                     If StrInParamArray(sLinkExt, ".LNK", ".URL", ".WEBSITE", ".PIF") Then Blink = True
@@ -4548,12 +4516,12 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUser() As String)
                     If Blink Then
                         sTarget = GetFileFromShortcut(sLinkPath, sArguments)
                             
-                        sHit = sHit & sShortCut & "    ->    " & sTarget & IIf(Len(sArguments) <> 0, " " & sArguments, "") 'doSafeURLPrefix
+                        sHit = sHit & aFiles(i) & "    ->    " & sTarget & IIf(Len(sArguments) <> 0, " " & sArguments, "") 'doSafeURLPrefix
                     Else
-                        sHit = sHit & sShortCut & IIf(bPE_EXE, "    ->    (PE EXE)", "")
+                        sHit = sHit & aFiles(i) & IIf(bPE_EXE, "    ->    (PE EXE)", "")
                     End If
                     
-                    If sUsername <> "" Then sHit = sHit & " (Folder '" & sUsername & "')"
+                    'If sUsername <> "" Then sHit = sHit & " (Folder '" & sUsername & "')"
                     
                     If isDisabled Then sHit = sHit & IIf(dDate <> dEpoch, " (" & Format$(dDate, "yyyy\/mm\/dd") & ")", "")
                     
@@ -4579,7 +4547,7 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUser() As String)
                             AddFileToFix .File, REMOVE_FILE, sLinkPath
                             .CureType = FILE_BASED Or REGISTRY_BASED
                           Else
-                            .Alias = aDes(K)
+                            .Alias = aDes(k)
                             AddFileToFix .File, REMOVE_FILE, sLinkPath
                             AddProcessToFix .Process, KILL_PROCESS, sTarget
                             .CureType = FILE_BASED Or PROCESS_BASED
@@ -4589,7 +4557,7 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUser() As String)
                     End If
                   End If
                 End If
-              Next
+            Next
           End If
         End If
     Next
@@ -4616,6 +4584,7 @@ Public Sub CheckO4Item()
     ' http://safezone.cc/threads/27567/
     
     '2.7.0.18 [11.11.2017] // Dragokas. Removed "|" char. vulnerability.
+    '2.7.0.26 - Added scanning for Folders in AutoStart folder locations.
     
     'Scanning routines
     
@@ -5240,7 +5209,7 @@ Private Sub CheckO7Item()
     'Trojan example: https://www.trendmicro.com/vinfo/us/threat-encyclopedia/malware/troj_dloade.xn
     
     Dim KeyPolicy() As String, IPSecName$, KeyNFA() As String, KeyNegotiation() As String, dModify As Date, lModify As Long, IPSecID As String
-    Dim KeyISAKMP As String, j As Long, KeyFilter() As String, K As Long, NegAction As String, NegType As String, bEnabled As Boolean, sActPolicy As String
+    Dim KeyISAKMP As String, j As Long, KeyFilter() As String, k As Long, NegAction As String, NegType As String, bEnabled As Boolean, sActPolicy As String
     Dim bFilterData() As Byte, IP(1) As String, RuleAction As String, bMirror As Boolean, DataSerialized As String
     Dim Packet_Type(1) As String, M As Long, n As Long, PortNum(1) As Long, ProtocolType As String, idxBaseOffset As Long, IpFil As IPSEC_FILTER_RECORD, RecCnt As Byte
     Dim bRegexpInit As Boolean, oMatches As IRegExpMatchCollection, IPTypeFlag(1) As Long, b() As Byte, bAtLeastOneFilter As Boolean, bNoFilter As Boolean
@@ -5356,12 +5325,12 @@ Private Sub CheckO7Item()
                 End If
             Else
                 
-                For K = 0 To UBound(KeyFilter)
-                    KeyFilter(K) = MidFromCharRev(KeyFilter(K), "\")
-                    KeyFilter(K) = IIf(KeyFilter(K) = "", "", "HKLM\SOFTWARE\Policies\Microsoft\Windows\IPSec\Policy\Local\" & KeyFilter(K))
+                For k = 0 To UBound(KeyFilter)
+                    KeyFilter(k) = MidFromCharRev(KeyFilter(k), "\")
+                    KeyFilter(k) = IIf(KeyFilter(k) = "", "", "HKLM\SOFTWARE\Policies\Microsoft\Windows\IPSec\Policy\Local\" & KeyFilter(k))
                 Next
                 
-                For K = 0 To UBound(KeyFilter)
+                For k = 0 To UBound(KeyFilter)
                     
                     Erase IP
                     Erase Packet_Type: Packet_Type(0) = "Unknown": Packet_Type(1) = "Unknown"
@@ -5369,7 +5338,7 @@ Private Sub CheckO7Item()
                     ProtocolType = ""
                     bMirror = False
                     
-                    bFilterData() = Reg.GetBinary(0&, KeyFilter(K), "ipsecData")
+                    bFilterData() = Reg.GetBinary(0&, KeyFilter(k), "ipsecData")
                     
                     If IsArrDimmed(bFilterData) Then
 
@@ -6638,6 +6607,7 @@ Public Sub CheckO15Item()
                 
                 If lProtZones(i) = 5 Then
                     If sProtVals(i) = "knownfolder" And OSver.MajorMinor = 6.1 Then bSafe = True
+                    If HE.UserName = "UpdatusUser" Then bSafe = True
                 End If
             End If
             
@@ -6645,7 +6615,8 @@ Public Sub CheckO15Item()
                 If lProtZones(i) < 0 Or lProtZones(i) > 5 Then lProtZones(i) = 5 'Unknown
                 If lProtZones(i) <> lProtZoneDefs(i) Then 'check for legit
                     sHit = IIf(HE.Redirected, "O15-32", "O15") & " - ProtocolDefaults: " & HE.HiveNameAndSID & _
-                        " - '" & sProtVals(i) & "' protocol is in " & sZoneNames(lProtZones(i)) & " Zone, should be " & sZoneNames(lProtZoneDefs(i)) & " Zone"
+                        " - '" & sProtVals(i) & "' protocol is in " & sZoneNames(lProtZones(i)) & " Zone, should be " & sZoneNames(lProtZoneDefs(i)) & " Zone" & _
+                        IIf(HE.IsSidUser, "(User: '" & HE.UserName & "')", "")
                     If Not IsOnIgnoreList(sHit) Then
                         With Result
                             .Section = "O15"
@@ -7497,7 +7468,7 @@ Public Sub CheckO21Item()
                 sValueName = Left$(sValueName, lNameLen)
                 sCLSID = TrimNull(sCLSID)
                 
-                Call GetFileByCLSID(sCLSID, sFile, sName, HE.Redirected, HE.SharedKey)
+                Call GetFileByCLSID(sCLSID, sFile, , HE.Redirected, HE.SharedKey)
                 
                 sFile = FormatFileMissing(sFile)
                 
@@ -7512,26 +7483,29 @@ Public Sub CheckO21Item()
                     End If
                 End If
                 
-                If sName = "(no name)" Then sName = sValueName
+                If Not bSafe Then
+                    Call GetTitleByCLSID(sCLSID, sName, HE.Redirected, HE.SharedKey)
                 
-                sHit = IIf(bIsWin32, "O21", IIf(HE.Redirected, "O21-32", "O21")) & " - ShellServiceObjectDelayLoad: " & sName & " - " & sCLSID & " - " & sFile
+                    If sName = "(no name)" Then sName = sValueName
+                    
+                    sHit = IIf(bIsWin32, "O21", IIf(HE.Redirected, "O21-32", "O21")) & " - ShellServiceObjectDelayLoad: " & sName & " - " & sCLSID & " - " & sFile
+                    
+                    'some shit leftover by Microsoft ^)
+                    If sName = "WebCheck" And sCLSID = "{E6FB5E20-DE35-11CF-9C87-00AA005127ED}" And sFile = "(no file)" Then bSafe = True
                 
-                'some shit leftover by Microsoft ^)
-                If sName = "WebCheck" And sCLSID = "{E6FB5E20-DE35-11CF-9C87-00AA005127ED}" And sFile = "(no file)" Then bSafe = True
-                
-                If Not IsOnIgnoreList(sHit) And Not bSafe Then
-                    If bMD5 Then sHit = sHit & GetFileMD5(sFile)
-                    With Result
-                        .Section = "O21"
-                        .HitLineW = sHit
-                        If sCLSID <> "" Then AddRegToFix .Reg, REMOVE_KEY, HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, , , REG_REDIRECTION_BOTH
-                        AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key, sName, , HE.Redirected
-                        If Not FileMissing(sFile) Then AddFileToFix .File, REMOVE_FILE, sFile
-                        .CureType = REGISTRY_BASED Or FILE_BASED
-                    End With
-                    AddToScanResults Result
+                    If Not IsOnIgnoreList(sHit) And Not bSafe Then
+                        If bMD5 Then sHit = sHit & GetFileMD5(sFile)
+                        With Result
+                            .Section = "O21"
+                            .HitLineW = sHit
+                            If sCLSID <> "" Then AddRegToFix .Reg, REMOVE_KEY, HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, , , REG_REDIRECTION_BOTH
+                            AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key, sName, , HE.Redirected
+                            If Not FileMissing(sFile) Then AddFileToFix .File, REMOVE_FILE, sFile
+                            .CureType = REGISTRY_BASED Or FILE_BASED
+                        End With
+                        AddToScanResults Result
+                    End If
                 End If
-                
                 i = i + 1
             Loop
             RegCloseKey hKey
@@ -7556,7 +7530,7 @@ Public Sub CheckO21Item()
                 sName = aSubKey(i)
                 sCLSID = Reg.GetString(HE.Hive, HE.Key & "\" & aSubKey(i), vbNullString, HE.Redirected)
                 
-                Call GetFileByCLSID(sCLSID, sFile, sName, HE.Redirected, HE.SharedKey)
+                Call GetFileByCLSID(sCLSID, sFile, , HE.Redirected, HE.SharedKey)
                 
                 sFile = FormatFileMissing(sFile)
                 
@@ -7574,21 +7548,25 @@ Public Sub CheckO21Item()
                     End If
                 End If
                 
-                If sName = "(no name)" Then sName = aSubKey(i)
-                
-                sHit = IIf(bIsWin32, "O21", IIf(HE.Redirected, "O21-32", "O21")) & " - ShellIconOverlayIdentifiers: " & sName & " - " & sCLSID & " - " & sFile
-                
-                If Not IsOnIgnoreList(sHit) And Not bSafe Then
-                    If bMD5 Then sHit = sHit & GetFileMD5(sFile)
-                    With Result
-                        .Section = "O21"
-                        .HitLineW = sHit
-                        If sCLSID <> "" Then AddRegToFix .Reg, REMOVE_KEY, HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, , , REG_REDIRECTION_BOTH
-                        AddRegToFix .Reg, REMOVE_KEY, HE.Hive, HE.Key & "\" & aSubKey(i), , , HE.Redirected
-                        If Not FileMissing(sFile) Then AddFileToFix .File, REMOVE_FILE, sFile
-                        .CureType = REGISTRY_BASED Or FILE_BASED
-                    End With
-                    AddToScanResults Result
+                If Not bSafe Then
+                    Call GetTitleByCLSID(sCLSID, sName, HE.Redirected, HE.SharedKey)
+                    
+                    If sName = "(no name)" Then sName = aSubKey(i)
+                    
+                    sHit = IIf(bIsWin32, "O21", IIf(HE.Redirected, "O21-32", "O21")) & " - ShellIconOverlayIdentifiers: " & sName & " - " & sCLSID & " - " & sFile
+                    
+                    If Not IsOnIgnoreList(sHit) And Not bSafe Then
+                        If bMD5 Then sHit = sHit & GetFileMD5(sFile)
+                        With Result
+                            .Section = "O21"
+                            .HitLineW = sHit
+                            If sCLSID <> "" Then AddRegToFix .Reg, REMOVE_KEY, HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, , , REG_REDIRECTION_BOTH
+                            AddRegToFix .Reg, REMOVE_KEY, HE.Hive, HE.Key & "\" & aSubKey(i), , , HE.Redirected
+                            If Not FileMissing(sFile) Then AddFileToFix .File, REMOVE_FILE, sFile
+                            .CureType = REGISTRY_BASED Or FILE_BASED
+                        End With
+                        AddToScanResults Result
+                    End If
                 End If
             
             Next
@@ -7612,10 +7590,10 @@ Public Sub CheckO21Item()
         For i = 1 To Reg.EnumValuesToArray(HE.Hive, HE.Key, aValue, HE.Redirected)
             sCLSID = aValue(i)
             
-            Call GetFileByCLSID(sCLSID, sFile, sName, HE.Redirected, HE.SharedKey)
+            Call GetFileByCLSID(sCLSID, sFile, , HE.Redirected, HE.SharedKey)
             
             sFile = FormatFileMissing(sFile)
-
+            
             bSafe = False
             If bHideMicrosoft And Not bIgnoreAllWhitelists Then
             
@@ -7627,22 +7605,26 @@ Public Sub CheckO21Item()
                 End If
             End If
             
-            If OSver.MajorMinor >= 6 Then 'XP/2003 has no policy
-                bDisabled = Not (1 = Reg.GetDword(HKLM, "SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer", "EnableShellExecuteHooks"))
-            End If
-            
-            sHit = IIf(HE.Redirected, "O21-32", "O21") & " - ShellExecuteHooks: " & sName & " - " & sCLSID & " - " & sFile & IIf(bDisabled, " (disabled)", "")
-            If Not IsOnIgnoreList(sHit) And Not bSafe Then
-                If bMD5 Then sHit = sHit & GetFileMD5(sFile)
-                With Result
-                    .Section = "O21"
-                    .HitLineW = sHit
-                    If sCLSID <> "" Then AddRegToFix .Reg, REMOVE_KEY, HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, , , REG_REDIRECTION_BOTH
-                    AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key, sCLSID, , HE.Redirected
-                    If Not FileMissing(sFile) Then AddFileToFix .File, REMOVE_FILE, sFile
-                    .CureType = REGISTRY_BASED Or FILE_BASED
-                End With
-                AddToScanResults Result
+            If Not bSafe Then
+                Call GetTitleByCLSID(sCLSID, sName, HE.Redirected, HE.SharedKey)
+                
+                If OSver.MajorMinor >= 6 Then 'XP/2003 has no policy
+                    bDisabled = Not (1 = Reg.GetDword(HKLM, "SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer", "EnableShellExecuteHooks"))
+                End If
+                
+                sHit = IIf(HE.Redirected, "O21-32", "O21") & " - ShellExecuteHooks: " & sName & " - " & sCLSID & " - " & sFile & IIf(bDisabled, " (disabled)", "")
+                If Not IsOnIgnoreList(sHit) And Not bSafe Then
+                    If bMD5 Then sHit = sHit & GetFileMD5(sFile)
+                    With Result
+                        .Section = "O21"
+                        .HitLineW = sHit
+                        If sCLSID <> "" Then AddRegToFix .Reg, REMOVE_KEY, HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, , , REG_REDIRECTION_BOTH
+                        AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key, sCLSID, , HE.Redirected
+                        If Not FileMissing(sFile) Then AddFileToFix .File, REMOVE_FILE, sFile
+                        .CureType = REGISTRY_BASED Or FILE_BASED
+                    End With
+                    AddToScanResults Result
+                End If
             End If
         Next
     Loop
@@ -8634,7 +8616,9 @@ Public Sub ErrorMsg(ErrObj As ErrObject, sProcedure$, ParamArray vCodeModule())
     End If
     
     For i = 0 To UBound(vCodeModule)
-        sParameters = sParameters & vCodeModule(i) & " "
+        If Not IsMissing(vCodeModule(i)) Then
+            sParameters = sParameters & vCodeModule(i) & " "
+        End If
     Next
     
     If IsArrDimmed(TranslateNative) Then
@@ -8919,7 +8903,7 @@ Public Function HasSpecialCharacters(sName$) As Boolean
     End If
 End Function
 
-Public Sub CheckForReadOnlyMedia()
+Public Function CheckForReadOnlyMedia() As Boolean
     Dim sMsg$, hFile As Long, sTempFile$
     
     AppendErrorLogCustom "CheckForReadOnlyMedia - Begin"
@@ -8945,11 +8929,12 @@ Public Sub CheckForReadOnlyMedia()
         MsgBoxW sMsg, vbExclamation
     Else
         CloseW hFile
+        CheckForReadOnlyMedia = True
     End If
     DeleteFileWEx (StrPtr(sTempFile))
     
     AppendErrorLogCustom "CheckForReadOnlyMedia - End"
-End Sub
+End Function
 
 Public Sub SetAllFontCharset()
     On Error GoTo ErrorHandler:
@@ -10855,15 +10840,15 @@ End Function
 
 ' Сортировка по Хоару. На вход - массив j(), на выходе массив k() с индексами массива j в отсортированном порядке + отсортированный массив.
 ' Алгоритм особо отлично подходит для сортировки User type arrays по любому из полей.
-Public Sub QuickSortSpecial(j() As String, K() As Long, ByVal low As Long, ByVal high As Long)
+Public Sub QuickSortSpecial(j() As String, k() As Long, ByVal low As Long, ByVal high As Long)
     On Error GoTo ErrorHandler:
     Dim i As Long, l As Long, M As String, wsp As String
     i = low: l = high: M = j((i + l) \ 2)
     Do Until i > l: Do While j(i) < M: i = i + 1: Loop: Do While j(l) > M: l = l - 1: Loop
-        If (i <= l) Then wsp = j(i): j(i) = j(l): j(l) = wsp: wsp = K(i): K(i) = K(l): K(l) = wsp: i = i + 1: l = l - 1
+        If (i <= l) Then wsp = j(i): j(i) = j(l): j(l) = wsp: wsp = k(i): k(i) = k(l): k(l) = wsp: i = i + 1: l = l - 1
     Loop
-    If low < l Then QuickSortSpecial j, K, low, l
-    If i < high Then QuickSortSpecial j, K, i, high
+    If low < l Then QuickSortSpecial j, k, low, l
+    If i < high Then QuickSortSpecial j, k, i, high
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "QuickSortSpecial"

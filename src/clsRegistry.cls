@@ -306,7 +306,11 @@ Public Function GetShortHiveName(ByVal FullHiveName As String, Optional bInclude
     Dim sRoot As String
     Dim sSidPart As String
     pos = InStr(FullHiveName, "\")
-    If pos <> 0 Then sRoot = Left$(FullHiveName, pos - 1)
+    If pos <> 0 Then
+        sRoot = Left$(FullHiveName, pos - 1)
+    Else
+        sRoot = FullHiveName
+    End If
     Select Case UCase$(sRoot)
         Case "HKEY_CLASSES_ROOT", "HKCR"
             GetShortHiveName = "HKCR"

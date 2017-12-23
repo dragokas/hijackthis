@@ -117,7 +117,7 @@ Private Declare Function GetTokenInformation Lib "advapi32.dll" (ByVal TokenHand
 'Private Declare Function OpenThreadToken Lib "advapi32.dll" (ByVal ThreadHandle As Long, ByVal DesiredAccess As Long, ByVal OpenAsSelf As Long, TokenHandle As Long) As Long
 'Private Declare Function GetCurrentThread Lib "kernel32.dll" () As Long
 Private Declare Function GetCurrentProcess Lib "kernel32.dll" () As Long
-Private Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (Dest As Any, Source As Any, ByVal lSize As Long)
+Private Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (dest As Any, Source As Any, ByVal lSize As Long)
 Private Declare Function GetMem4 Lib "msvbvm60.dll" (Src As Any, Dst As Any) As Long
 Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
 Private Declare Function LocalFree Lib "kernel32.dll" (ByVal hMem As Long) As Long
@@ -802,6 +802,7 @@ Function GetCurrentProcessSID() As String
                 End If
             End If
         End If
+        CloseHandle hProcessToken
     End If
     
     AppendErrorLogCustom "GetCurrentProcessSID - End"

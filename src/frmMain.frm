@@ -2139,7 +2139,12 @@ Private Sub FormStart_Stady1()
         pictLogo.Visible = False
     End If
     
-    If Not bAutoLogSilent Then CheckForReadOnlyMedia
+    If Not bAutoLogSilent Then
+        If Not CheckForReadOnlyMedia() Then
+            g_NeedTerminate = True
+        End If
+    End If
+    
     CheckDateFormat
     CheckForStartedFromTempDir
     
@@ -2166,6 +2171,8 @@ Private Sub FormStart_Stady2()
     Else
         bInit = True
     End If
+    
+    If g_NeedTerminate Then Unload Me: Exit Sub
     
     If InStr(1, Command$(), "/uninstall", 1) > 0 Then
         Me.Hide

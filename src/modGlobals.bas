@@ -132,6 +132,7 @@ Public gNotUserClick    As Boolean
 Public gNoGUI           As Boolean
 Public g_WER_Disabled   As Boolean
 Public g_HwndMain       As Long
+Public g_NeedTerminate  As Boolean
 
 Public sHostsFile$
 
@@ -248,8 +249,8 @@ Public Const LB_ITEMFROMPOINT  As Long = &H1A9&
 'modFile
 
 Public Type LARGE_INTEGER
-    LowPart As Long
-    HighPart As Long
+    lowpart As Long
+    highpart As Long
 End Type
  
 Public Type FILETIME
@@ -360,7 +361,7 @@ Public Declare Function WriteFile Lib "kernel32.dll" (ByVal hFile As Long, ByVal
 Public Declare Function RegOpenKeyEx Lib "advapi32.dll" Alias "RegOpenKeyExW" (ByVal hKey As Long, ByVal lpSubKey As Long, ByVal ulOptions As Long, ByVal samDesired As Long, phkResult As Long) As Long
 Public Declare Function RegQueryValueExLong Lib "advapi32.dll" Alias "RegQueryValueExW" (ByVal hKey As Long, ByVal lpValueName As Long, ByVal lpReserved As Long, ByRef lpType As Long, szData As Long, ByRef lpcbData As Long) As Long
 Public Declare Function RegCloseKey Lib "advapi32.dll" (ByVal hKey As Long) As Long
-Public Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal length As Long) As Long
+Public Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long) As Long
 Public Declare Function GetWindowsDirectory Lib "kernel32.dll" Alias "GetWindowsDirectoryW" (ByVal lpBuffer As Long, ByVal uSize As Long) As Long
 Public Declare Function GetSystemWindowsDirectory Lib "kernel32.dll" Alias "GetSystemWindowsDirectoryW" (ByVal lpBuffer As Long, ByVal uSize As Long) As Long
 Public Declare Function lstrlen Lib "kernel32.dll" Alias "lstrlenW" (ByVal lpString As Long) As Long
@@ -825,7 +826,7 @@ Public Type CLIENT_ID
 End Type
 
 Public Type UNICODE_STRING
-    length          As Integer
+    Length          As Integer
     MaximumLength   As Integer
     Buffer          As Long
 End Type
@@ -926,7 +927,7 @@ Public Type MODULEENTRY32W
     szExePath(MAX_PATH - 1) As Integer
 End Type
 
-Public Declare Function NtQuerySystemInformation Lib "NTDLL.DLL" (ByVal infoClass As Long, Buffer As Any, ByVal BufferSize As Long, ret As Long) As Long
+Public Declare Function NtQuerySystemInformation Lib "NTDLL.DLL" (ByVal infoClass As Long, Buffer As Any, ByVal BufferSize As Long, Ret As Long) As Long
 Public Declare Function GetModuleFileNameEx Lib "psapi.dll" Alias "GetModuleFileNameExW" (ByVal hProcess As Long, ByVal hModule As Long, ByVal lpFileName As Long, ByVal nSize As Long) As Long
 Public Declare Function GetProcessImageFileName Lib "psapi.dll" Alias "GetProcessImageFileNameW" (ByVal hProcess As Long, ByVal lpImageFileName As Long, ByVal nSize As Long) As Long
 Public Declare Function GetFullPathName Lib "kernel32.dll" Alias "GetFullPathNameW" (ByVal lpFileName As Long, ByVal nBufferLength As Long, ByVal lpBuffer As Long, lpFilePart As Long) As Long

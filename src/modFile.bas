@@ -253,8 +253,8 @@ Private lWow64Old               As Long
 Private DriveTypeName           As New Collection
 Private arrPathFolders()        As String
 Private arrPathFiles()          As String
-Private Total_Folders           As Long
 Private Total_Files             As Long
+Private Total_Folders           As Long
 
 
 Public Function FileExists(ByVal sFile As String, Optional bUseWow64 As Boolean) As Boolean
@@ -288,15 +288,15 @@ Public Function FileExists(ByVal sFile As String, Optional bUseWow64 As Boolean)
     
     ' use 2 methods for reliability reason (both supported unicode pathes)
     Dim Ex(1) As Boolean
-    Dim ret As Long
+    Dim Ret As Long
     Dim Redirect As Boolean, bOldStatus As Boolean
     Dim WFD     As WIN32_FIND_DATA
     Dim hFile   As Long
     
     If Not bUseWow64 Then Redirect = ToggleWow64FSRedirection(False, sFile, bOldStatus)
     
-    ret = GetFileAttributes(StrPtr(sFile))
-    If ret <> INVALID_HANDLE_VALUE And (0 = (ret And FILE_ATTRIBUTE_DIRECTORY)) Then
+    Ret = GetFileAttributes(StrPtr(sFile))
+    If Ret <> INVALID_HANDLE_VALUE And (0 = (Ret And FILE_ATTRIBUTE_DIRECTORY)) Then
         Ex(0) = True
     ElseIf Err.LastDllError = 5 Then
         Ex(0) = True
@@ -343,7 +343,7 @@ Public Function FolderExists(ByVal sFolder$, Optional bUseWow64 As Boolean) As B
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "FolderExists - Begin", "Folder: " & sFolder, "bUseWow64: " & bUseWow64
     
-    Dim ret As Long, Redirect As Boolean, bOldStatus As Boolean
+    Dim Ret As Long, Redirect As Boolean, bOldStatus As Boolean
     
     AppendErrorLogCustom "FolderExists - Begin", "Folder: " & sFolder
     
@@ -353,8 +353,8 @@ Public Function FolderExists(ByVal sFolder$, Optional bUseWow64 As Boolean) As B
     
     If Not bUseWow64 Then Redirect = ToggleWow64FSRedirection(False, sFolder, bOldStatus)
     
-    ret = GetFileAttributes(StrPtr(sFolder))
-    If CBool(ret And vbDirectory) And (ret <> INVALID_FILE_ATTRIBUTES) Then
+    Ret = GetFileAttributes(StrPtr(sFolder))
+    If CBool(Ret And vbDirectory) And (Ret <> INVALID_FILE_ATTRIBUTES) Then
         FolderExists = True
     ElseIf Err.LastDllError = 5 Then
         FolderExists = True
@@ -506,7 +506,7 @@ Public Function GetW(hFile As Long, Optional vPos As Variant, Optional vOut As V
     
     'On Error GoTo ErrorHandler
     AppendErrorLogCustom "GetW - Being", "Handle: " & hFile, "pos: " & vPos, "cbToRead: " & cbToRead
-    
+
     Dim lBytesRead  As Long
     Dim lr          As Long
     Dim ptr         As Long
@@ -902,6 +902,7 @@ ErrorHandler:
     Resume Next
 End Sub
 
+
 'main function to list files
 
 Public Function ListFiles(Path As String, Optional Extension As String = "", Optional Recursively As Boolean = False) As String()
@@ -1000,7 +1001,7 @@ Private Sub ListFiles_Ex(Path As String, Optional Extension As String = "", Opti
     
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "modFile.ListFiles_Ex", "File:", Path
+    ErrorMsg Err, "modFile.ListFiles_Ex", "Folder:", Path
     Resume Next
 End Sub
 
@@ -2054,9 +2055,18 @@ End Function
 'true if success
 Public Function FileCopyW(FileSource As String, FileDestination As String, Optional bOverwrite As Boolean = True) As Boolean
     Dim bOldRedir As Boolean
+    Dim sFolder As String
+    
     If Not FileExists(FileSource) Then Exit Function
     ToggleWow64FSRedirection False, FileSource, bOldRedir
     ToggleWow64FSRedirection False, FileDestination
+    
+    sFolder = GetParentDir(FileDestination)
+    
+    If Not FolderExists(sFolder) Then
+        If Not MkDirW(sFolder) Then Exit Function
+    End If
+    
     FileCopyW = CopyFile(StrPtr(FileSource), StrPtr(FileDestination), Not bOverwrite)
     If Not FileCopyW Then
         TryUnlock FileDestination

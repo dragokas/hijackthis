@@ -268,6 +268,8 @@ Public Function GetStringFromBinary(Optional ByVal sFile As String, Optional ByV
     
     If 0 <> Len(FileAndIDHybrid) Then
     
+        Dbg "1"
+    
         If Left$(FileAndIDHybrid, 1) = "@" Then FileAndIDHybrid = Mid$(FileAndIDHybrid, 2)
         If InStr(FileAndIDHybrid, "%") <> 0 Then
             If InStr(1, FileAndIDHybrid, ".inf", 1) = 0 Then
@@ -310,23 +312,32 @@ Public Function GetStringFromBinary(Optional ByVal sFile As String, Optional ByV
     
     sBuf = String$(160, 0)
     
+    Dbg "2"
+    
     Redirect = ToggleWow64FSRedirection(False, sFile, bOldStatus)
     
     If bIsInf Then
+        Dbg "3"
         nSize = GetPrivateProfileString(StrPtr("Strings"), StrPtr(sResVar), StrPtr(sInitialVar), StrPtr(sBuf), Len(sBuf), StrPtr(sFile))
         If nSize <> 0 Then
             sBuf = UnQuote(Left$(sBuf, nSize))
         End If
         GetStringFromBinary = sBuf
     Else
+        Dbg "4"
         hModule = LoadLibraryEx(StrPtr(sFile), 0&, LOAD_LIBRARY_AS_DATAFILE)
 
+        Dbg "5"
+
         If hModule Then
+            Dbg "6"
             nSize = LoadString(hModule, Abs(nid), StrPtr(sBuf), LenB(sBuf))
             If nSize > 0 Then
                 GetStringFromBinary = TrimNull(Left$(sBuf, nSize))
             End If
+            Dbg "7"
             FreeLibrary hModule
+            Dbg "8"
         End If
     End If
     
@@ -1239,7 +1250,63 @@ Public Sub SleepNoLock(ByVal nMSec As Long)
     Loop
 End Sub
 
-Public Sub GetFileByCLSID(ByVal sCLSID As String, out_sFile As String, Optional out_sTitle As String, Optional bRedirected As Boolean, Optional bShared As Boolean)
+Public Sub GetTitleByCLSID(ByVal sCLSID As String, out_sTitle As String, Optional bRedirected As Boolean, Optional bShared As Boolean)
+    On Error GoTo ErrorHandler:
+    
+    Dim sAppID As String
+    Dim bRedirState As Boolean
+    Dim out_sFile As String
+    Dim sBuf As String
+    Dim i As Long
+    
+    If Len(sCLSID) = 0 Then
+        out_sTitle = "(no name)"
+        Exit Sub
+    End If
+    
+    If Left$(sCLSID, 1) <> "{" Then
+        sCLSID = "{" & sCLSID & "}"
+    End If
+    
+    out_sTitle = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, vbNullString, bRedirected)
+    If bShared And 0 = Len(out_sTitle) Then
+        out_sTitle = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, vbNullString, Not bRedirected)
+    End If
+    If 0 = Len(out_sTitle) Then
+        out_sTitle = "(no name)"
+        
+        For i = 1 To 2
+            If i = 1 Then
+                bRedirState = bRedirected
+            Else
+                If Len(out_sFile) <> 0 Then Exit For
+                If Not bShared Then Exit For
+                bRedirState = Not bRedirected
+            End If
+            
+            out_sFile = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InProcServer32", vbNullString, bRedirState)
+    
+            If 0 = Len(out_sFile) Then
+                sAppID = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, "AppID", bRedirState)
+                If 0 <> Len(sAppID) Then
+                    GetTitleByAppID sAppID, out_sTitle, bRedirState, False
+                End If
+            End If
+        Next
+    End If
+        
+    If Left$(out_sTitle, 1) = "@" Then
+        sBuf = GetStringFromBinary(, , out_sTitle)
+        If 0 <> Len(sBuf) Then out_sTitle = sBuf
+    End If
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "GetTitleByCLSID", sCLSID, out_sTitle, bRedirected, bShared
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Public Sub GetFileByCLSID(ByVal sCLSID As String, out_sFile As String, Optional out_sTitle As Variant, Optional bRedirected As Boolean, Optional bShared As Boolean)
     On Error GoTo ErrorHandler:
     
     'Note: if 'bShared' = true, function will query for both WOW states,
@@ -1261,15 +1328,17 @@ Public Sub GetFileByCLSID(ByVal sCLSID As String, out_sFile As String, Optional 
         sCLSID = "{" & sCLSID & "}"
     End If
     
-    out_sTitle = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, vbNullString, bRedirected)
-    If bShared And 0 = Len(out_sTitle) Then
-        out_sTitle = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, vbNullString, Not bRedirected)
-    End If
-    If 0 = Len(out_sTitle) Then out_sTitle = "(no name)"
-    
-    If Left$(out_sTitle, 1) = "@" Then
-        sBuf = GetStringFromBinary(, , out_sTitle)
-        If 0 <> Len(sBuf) Then out_sTitle = sBuf
+    If Not IsMissing(out_sTitle) Then
+        out_sTitle = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, vbNullString, bRedirected)
+        If bShared And 0 = Len(out_sTitle) Then
+            out_sTitle = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, vbNullString, Not bRedirected)
+        End If
+        If 0 = Len(out_sTitle) Then out_sTitle = "(no name)"
+        
+        If Left$(out_sTitle, 1) = "@" Then
+            sBuf = GetStringFromBinary(, , out_sTitle)
+            If 0 <> Len(sBuf) Then out_sTitle = sBuf
+        End If
     End If
     
     For i = 1 To 2
@@ -1286,10 +1355,14 @@ Public Sub GetFileByCLSID(ByVal sCLSID As String, out_sFile As String, Optional 
         If 0 = Len(out_sFile) Then
             sAppID = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, "AppID", bRedirState)
             If 0 <> Len(sAppID) Then
-                If out_sTitle = "(no name)" Then
-                    GetFileByAppID sAppID, out_sFile, out_sTitle, bRedirState, False
-                Else
+                If IsMissing(out_sTitle) Then
                     GetFileByAppID sAppID, out_sFile, , bRedirState, False
+                Else
+                    If out_sTitle <> "(no name)" Then
+                        GetFileByAppID sAppID, out_sFile, , bRedirState, False
+                    Else
+                        GetFileByAppID sAppID, out_sFile, out_sTitle, bRedirState, False
+                    End If
                 End If
             End If
             If out_sFile = "" Then
@@ -1316,13 +1389,11 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Public Sub GetFileByAppID(sAppID As String, out_sFile As String, Optional out_sTitle As String, Optional bRedirected As Boolean, Optional bShared As Boolean)
-    On Error GoTo ErrorHandler:
 
+Public Sub GetTitleByAppID(sAppID As String, out_sTitle As String, Optional bRedirected As Boolean, Optional bShared As Boolean)
+    On Error GoTo ErrorHandler:
+    
     Dim sBuf As String
-    Dim sServiceName As String
-    Dim bRedirState As Boolean
-    Dim i As Long
     
     out_sTitle = Reg.GetString(HKEY_CLASSES_ROOT, "AppID\" & sAppID, vbNullString, bRedirected)
     If bShared And 0 = Len(out_sTitle) Then
@@ -1333,6 +1404,33 @@ Public Sub GetFileByAppID(sAppID As String, out_sFile As String, Optional out_sT
     If Left$(out_sTitle, 1) = "@" Then
         sBuf = GetStringFromBinary(, , out_sTitle)
         If 0 <> Len(sBuf) Then out_sTitle = sBuf
+    End If
+
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "GetTitleByAppID", sAppID, out_sTitle, bRedirected, bShared
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Public Sub GetFileByAppID(sAppID As String, out_sFile As String, Optional out_sTitle As Variant, Optional bRedirected As Boolean, Optional bShared As Boolean)
+    On Error GoTo ErrorHandler:
+
+    Dim sBuf As String
+    Dim sServiceName As String
+    Dim bRedirState As Boolean
+    Dim i As Long
+    
+    If Not IsMissing(out_sTitle) Then
+        out_sTitle = Reg.GetString(HKEY_CLASSES_ROOT, "AppID\" & sAppID, vbNullString, bRedirected)
+        If bShared And 0 = Len(out_sTitle) Then
+            out_sTitle = Reg.GetString(HKEY_CLASSES_ROOT, "AppID\" & sAppID, vbNullString, Not bRedirected)
+        End If
+        If 0 = Len(out_sTitle) Then out_sTitle = "(no name)"
+        
+        If Left$(out_sTitle, 1) = "@" Then
+            sBuf = GetStringFromBinary(, , out_sTitle)
+            If 0 <> Len(sBuf) Then out_sTitle = sBuf
+        End If
     End If
     
     For i = 1 To 2
