@@ -67,7 +67,7 @@ Private Type JOB_HEADER
 End Type
 
 Private Type JOB_UNICODE_STRING
-    Length As Integer
+    length As Integer
     Data As String
 End Type
 
@@ -1011,7 +1011,7 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
         
         TaskName = GetFileNameAndExt(DirFull)
         
-        UpdateProgressBar "O22", TaskName
+        UpdateProgressBar "O22", DirFull
         
         For j = 0 To numTasks - 1
             
@@ -1377,6 +1377,8 @@ End Function
 Public Sub EnumJobs()
     On Error GoTo ErrorHandler:
     
+    'http://www.forensicswiki.org/wiki/Windows_Job_File_Format
+    
     Dim Job As JOB_FILE
     Dim aFiles() As String
     Dim TaskFolder As String
@@ -1423,10 +1425,11 @@ Public Sub EnumJobs()
                     sRunState = "Running"
                 Case SCHED_S_TASK_NOT_SCHEDULED
                     sRunState = "Not scheduled"
+                'case 0x41302: is some undoc. state (possible, disabled)
             End Select
             
             sHit = "O22 - Task: " & IIf(bEnabled, "", "(disabled) ") & "(" & sRunState & ") " & sJobName & " - " & _
-                Job.prop.AppName.Data & IIf(Job.prop.Parameters.Length > 1, " " & Job.prop.Parameters.Data, "")
+                Job.prop.AppName.Data & IIf(Job.prop.Parameters.length > 1, " " & Job.prop.Parameters.Data, "")
 
             If Not IsOnIgnoreList(sHit) Then
             
@@ -1509,13 +1512,13 @@ Private Sub Read_Job_String(cStream As clsStream, JobUniStr As JOB_UNICODE_STRIN
     
     JobUniStr.Data = vbNullString
     
-    cStream.ReadData VarPtr(JobUniStr.Length), 2
+    cStream.ReadData VarPtr(JobUniStr.length), 2
     
-    If JobUniStr.Length > 1 Then
+    If JobUniStr.length > 1 Then
     
-        JobUniStr.Data = String$(JobUniStr.Length - 1, 0&)
+        JobUniStr.Data = String$(JobUniStr.length - 1, 0&)
         
-        cStream.ReadData StrPtr(JobUniStr.Data), (JobUniStr.Length - 1) * 2 'minus null terminator
+        cStream.ReadData StrPtr(JobUniStr.Data), (JobUniStr.length - 1) * 2 'minus null terminator
         
         cStream.BufferPointer = cStream.BufferPointer + 2
     End If

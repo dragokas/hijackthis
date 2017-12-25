@@ -318,6 +318,11 @@ del tools\VersionPatcher\EnumResReport.txt
 
 if defined bFast goto skipVT
 
+echo.
+echo "%cd%\%AppName%" | clip
+echo Path to HiJackThis.exe has been copied to clipboard (for VT check).
+echo.
+
 set ch=Y
 if /i "%CheckVT%"=="true" set /p "ch=Check on VirusTotal? (Y/N) "
 if /i "%ch%"=="N" set CheckVT=false
@@ -338,6 +343,11 @@ if /i "%ch%" neq "n" (
 )
 
 :skipAskHotUpdate
+
+echo.
+echo "%cd%\%AppTitle%.zip" | clip
+echo Path to HiJackThis.zip has been copied to clipboard (for server uploading).
+echo.
 
 :: test running HJT scan from Autologger (2 logs should be created - HiJackThis.log and HiJackThis_debug.log)
 if not defined bFast call _10_Scan_Execution_Test.cmd Ask

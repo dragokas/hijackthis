@@ -209,23 +209,23 @@ End Type
 'CRYPT_DATA_BLOB, *PCRYPT_DATA_BLOB, CRYPT_HASH_BLOB, *PCRYPT_HASH_BLOB, CRYPT_DIGEST_BLOB, *PCRYPT_DIGEST_BLOB, CRYPT_DER_BLOB,
 'PCRYPT_DER_BLOB, CRYPT_ATTR_BLOB, *PCRYPT_ATTR_BLOB;
 
-Private Type CRYPT_BIT_BLOB
+Public Type CRYPT_BIT_BLOB
     cbData              As Long
     pbData              As Long ' ptr -> BYTE[]
     cUnusedBits         As Long
 End Type
 
-Private Type CRYPT_ALGORITHM_IDENTIFIER
+Public Type CRYPT_ALGORITHM_IDENTIFIER
     pszObjId            As Long ' ptr -> STR
     Parameters          As CRYPTOAPI_BLOB ' CRYPT_OBJID_BLOB
 End Type
 
-Private Type CERT_PUBLIC_KEY_INFO
+Public Type CERT_PUBLIC_KEY_INFO
     Algorithm           As CRYPT_ALGORITHM_IDENTIFIER
     PublicKey           As CRYPT_BIT_BLOB
 End Type
 
-Private Type CERT_INFO
+Public Type CERT_INFO
     dwVersion               As Long
     SerialNumber            As CRYPTOAPI_BLOB ' CERT_NAME_BLOB
     SignatureAlgorithm      As CRYPT_ALGORITHM_IDENTIFIER
@@ -367,10 +367,11 @@ Private Declare Function WinVerifyTrust Lib "Wintrust.dll" (ByVal hwnd As Long, 
 Private Declare Function WTHelperProvDataFromStateData Lib "Wintrust.dll" (ByVal StateData As Long) As Long
 Private Declare Function WTHelperGetProvSignerFromChain Lib "Wintrust.dll" (ByVal pProvData As Long, ByVal idxSigner As Long, ByVal fCounterSigner As Long, ByVal idxCounterSigner As Long) As Long
 Private Declare Function CertDuplicateCertificateContext Lib "Crypt32.dll" (ByVal pCertContext As Long) As Long
-Private Declare Function CertFreeCertificateContext Lib "Crypt32.dll" (ByVal pCertContext As Long) As Long
+Public Declare Function CertFreeCertificateContext Lib "Crypt32.dll" (ByVal pCertContext As Long) As Long
 Private Declare Function CertNameToStr Lib "Crypt32.dll" Alias "CertNameToStrW" (ByVal dwCertEncodingType As Long, ByVal pName As Long, ByVal dwStrType As Long, ByVal psz As Long, ByVal csz As Long) As Long
 Private Declare Function CertGetCertificateContextProperty Lib "Crypt32.dll" (ByVal pCertContext As Long, ByVal dwPropId As Long, pvData As Any, pcbData As Long) As Long
 Private Declare Function CertGetNameString Lib "Crypt32.dll" Alias "CertGetNameStringW" (ByVal pCertContext As Long, ByVal dwType As Long, ByVal dwFlags As Long, pvTypePara As Any, ByVal pszNameString As Long, ByVal cchNameString As Long) As Long
+Public Declare Function CertCreateCertificateContext Lib "Crypt32.dll" (ByVal dwCertEncodingType As Long, ByVal pbCertEncoded As Long, ByVal cbCertEncoded As Long) As Long
 
 'Private Declare Sub GetNativeSystemInfo Lib "kernel32.dll" (ByVal lpSystemInfo As Long)
 Private Declare Function GetVersionEx Lib "kernel32.dll" Alias "GetVersionExW" (lpVersionInformation As Any) As Long
@@ -397,7 +398,7 @@ Private Declare Function GetFileAttributes Lib "kernel32.dll" Alias "GetFileAttr
 Private Declare Function HeapFree Lib "kernel32.dll" (ByVal hHeap As Long, ByVal dwFlags As Long, ByVal lpMem As Long) As Long
 Private Declare Function GetProcessHeap Lib "kernel32.dll" () As Long
 'Private Declare Function ArrPtr Lib "msvbvm60.dll" Alias "VarPtr" (arr() As Any) As Long
-Private Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long) As Long
+Private Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal length As Long) As Long
 'Private Declare Function GetMem1 Lib "msvbvm60.dll" (pSrc As Any, pDst As Any) As Long
 Private Declare Function GetMem4 Lib "msvbvm60.dll" (pSrc As Any, pDst As Any) As Long
 'Private Declare Function GetMem8 Lib "msvbvm60.dll" (pSrc As Any, pDst As Any) As Long
@@ -405,15 +406,15 @@ Private Declare Function lstrlen Lib "kernel32.dll" Alias "lstrlenW" (ByVal lpSt
 Private Declare Function lstrlenA Lib "kernel32.dll" (ByVal lpString As Long) As Long
 Private Declare Function lstrcpyn Lib "kernel32.dll" Alias "lstrcpynW" (ByVal lpDst As Long, ByVal lpSrc As Long, ByVal iMaxLength As Long) As Long
 'Private Declare Function lstrcpynA Lib "kernel32.dll" (ByVal lpDst As Long, ByVal lpSrc As Long, ByVal iMaxLength As Long) As Long
-Private Declare Function SysAllocStringByteLen Lib "oleaut32.dll" (ByVal pszStrPtr As Long, ByVal Length As Long) As String
+Private Declare Function SysAllocStringByteLen Lib "oleaut32.dll" (ByVal pszStrPtr As Long, ByVal length As Long) As String
 Private Declare Function FileTimeToSystemTime Lib "kernel32.dll" (lpFileTime As FILETIME, lpSystemTime As SYSTEMTIME) As Long
 Private Declare Function FileTimeToLocalFileTime Lib "kernel32.dll" (lpFileTime As FILETIME, lpLocalFileTime As FILETIME) As Long
 Private Declare Function SystemTimeToVariantTime Lib "oleaut32.dll" (lpSystemTime As SYSTEMTIME, vtime As Date) As Long
 'Private Declare Function SystemTimeToTzSpecificLocalTime Lib "kernel32.dll" (ByVal lpTimeZone As Any, lpUniversalTime As SYSTEMTIME, lpLocalTime As SYSTEMTIME) As Long
 'Private Declare Function GetTimeZoneInformation Lib "kernel32.dll" (ByVal lpTimeZoneInformation As Long) As Long
 
-Private Const X509_ASN_ENCODING             As Long = 1&
-Private Const PKCS_7_ASN_ENCODING           As Long = &H10000
+Public Const X509_ASN_ENCODING             As Long = 1&
+Public Const PKCS_7_ASN_ENCODING           As Long = &H10000
 Private Const CERT_X500_NAME_STR            As Long = 3&
 
 Private Const CERT_HASH_PROP_ID             As Long = 3&
@@ -564,7 +565,7 @@ Public Function SignVerify( _
     Dim SignSettings        As WINTRUST_SIGNATURE_SETTINGS
     Dim verInfo             As DRIVER_VER_INFO
     
-    Static IsInit           As Boolean
+    Static isInit           As Boolean
     Static IsVistaAndNewer  As Boolean
     Static IsWin8AndNewer   As Boolean
     Static SignCache()      As SignResult_TYPE
@@ -664,8 +665,8 @@ Public Function SignVerify( _
         End If
     End If
     
-    If Not IsInit Then                                          'Checking requirements
-        IsInit = True
+    If Not isInit Then                                          'Checking requirements
+        isInit = True
         
         Dim hLib As Long
         hLib = LoadLibrary(StrPtr("Wintrust.dll"))              'Redirector issues, if they are present, should be alerted here
@@ -1209,14 +1210,14 @@ End Function
 
 Private Function HasCatRootVulnerability() As Boolean
     On Error GoTo ErrHandler
-    Static IsInit       As Boolean
+    Static isInit       As Boolean
     Static VulnStatus   As Boolean
     
-    If IsInit Then
+    If isInit Then
         HasCatRootVulnerability = VulnStatus
         Exit Function
     Else
-        IsInit = True
+        isInit = True
     End If
     
     Dim inf(68) As Long: inf(0) = 276: GetVersionEx inf(0): If inf(1) < 6 Then Exit Function 'XP is not vulnerable
@@ -1555,7 +1556,7 @@ Private Sub WINTRUST_Free(ptr As Long)
     If 0 <> ptr Then HeapFree GetProcessHeap(), 0, ptr
 End Sub
 
-Private Function GetCertInfoFromCertificate(pCertificate As Long, out_CertInfo As CERT_INFO) As Boolean  'ptr -> CERT_CONTEXT
+Public Function GetCertInfoFromCertificate(pCertificate As Long, out_CertInfo As CERT_INFO) As Boolean  'ptr -> CERT_CONTEXT
     On Error GoTo ErrorHandler
     
     Dim Certificate As CERT_CONTEXT
@@ -1576,13 +1577,13 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Private Function GetSignerNameFromBLOB(Crypto_BLOB As CRYPTOAPI_BLOB) As String
+Public Function GetSignerNameFromBLOB(Crypto_BLOB As CRYPTOAPI_BLOB) As String
     On Error GoTo ErrorHandler
     
     Dim sName As String
     Dim pos   As Long
     
-    sName = GetCertNamestring(Crypto_BLOB) ' X.500 string
+    sName = GetCertNameString(Crypto_BLOB) ' X.500 string
     
     pos = InStr(sName, "CN=")
     If pos <> 0 Then
@@ -1622,7 +1623,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Private Function GetCertNamestring(Blob As CRYPTOAPI_BLOB) As String
+Public Function GetCertNameString(Blob As CRYPTOAPI_BLOB) As String
     On Error GoTo ErrorHandler
 
     Dim BufferSize As Long
@@ -1636,14 +1637,14 @@ Private Function GetCertNamestring(Blob As CRYPTOAPI_BLOB) As String
         sName = Left$(sName, lstrlen(StrPtr(sName)))
     End If
     
-    GetCertNamestring = sName
+    GetCertNameString = sName
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "GetCertNameString"
     If inIDE Then Stop: Resume Next
 End Function
 
-Private Function ExtractStringFromCertificate(pCertContext As Long, dwType As Long, Optional dwFlags As Long) As String
+Public Function ExtractStringFromCertificate(pCertContext As Long, dwType As Long, Optional dwFlags As Long) As String
     On Error GoTo ErrorHandler
     
     Dim bufSize As Long
@@ -1664,7 +1665,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Private Function ExtractPropertyFromCertificateByID(pCertContext As Long, ID As Long) As String
+Public Function ExtractPropertyFromCertificateByID(pCertContext As Long, ID As Long) As String
     On Error GoTo ErrorHandler
     
     Dim bufSize As Long
@@ -1692,12 +1693,12 @@ ErrorHandler:
 End Function
 
 Public Function IsMicrosoftCertHash(hash As String) As Boolean
-    Static IsInit As Boolean
+    Static isInit As Boolean
     Static Hashes(11) As String
     Dim i As Long
     
-    If Not IsInit Then
-        IsInit = True
+    If Not isInit Then
+        isInit = True
         'Issuer / Cert. hash / Cert. signature hash / public key MD5 hash
         
         'Microsoft Root Certificate Authority;CDD4EEAE6000AC7F40C3802C171E30148030C072;391BE92883D52509155BFEAE27B9BD340170B76B;983B132635B7E91DEEF54A6780C09269
@@ -1932,15 +1933,15 @@ End Function
 
 Public Function GetWindowsDir() As String
     Static SysRoot As String
-    Static IsInit As Boolean
+    Static isInit As Boolean
     Dim lr As Long
     
-    If IsInit Then
+    If isInit Then
         GetWindowsDir = SysRoot
         Exit Function
     End If
     
-    IsInit = True
+    isInit = True
     
     SysRoot = String$(MAX_PATH, 0&)
     lr = GetSystemWindowsDirectory(StrPtr(SysRoot), MAX_PATH)
@@ -1955,12 +1956,12 @@ End Function
 
 Public Function IsWow64() As Boolean
     Dim hModule As Long, procAddr As Long, lIsWin64 As Long
-    Static IsInit As Boolean, Result As Boolean
+    Static isInit As Boolean, Result As Boolean
 
-    If IsInit Then
+    If isInit Then
         IsWow64 = Result
     Else
-        IsInit = True
+        isInit = True
         hModule = LoadLibrary(StrPtr("kernel32.dll"))
         If hModule Then
             procAddr = GetProcAddress(hModule, "IsWow64Process")

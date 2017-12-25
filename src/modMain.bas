@@ -270,7 +270,7 @@ End Type
 Private Type CERTIFICATE_BLOB_PROPERTY
     PropertyID As Long
     Reserved As Long
-    Length As Long
+    length As Long
     Data() As Byte
 End Type
 
@@ -296,7 +296,7 @@ Public OSver    As clsOSInfo
 Public Proc     As clsProcess
 Public cMath    As clsMath
 
-Private Declare Function SysAllocStringByteLen Lib "oleaut32.dll" (ByVal pszStrPtr As Long, ByVal Length As Long) As String
+Private Declare Function SysAllocStringByteLen Lib "oleaut32.dll" (ByVal pszStrPtr As Long, ByVal length As Long) As String
 
 
 'it map ANSI scan result string from ListBox to Unicode string that is stored in memory (SCAN_RESULT structure)
@@ -4957,8 +4957,8 @@ Public Sub CheckCertificatesEDS()
     'https://msdn.microsoft.com/en-us/library/windows/desktop/aa376573%28v=vs.85%29.aspx
     'https://msdn.microsoft.com/en-us/library/cc232282.aspx
     
-    Dim i&, aSubKey$(), Idx&, sTitle$, bSafe As Boolean, sHit$, Result As SCAN_RESULT
-    Dim Blob() As Byte, CertHash As String, FriendlyName As String
+    Dim i&, aSubKey$(), Idx&, sTitle$, bSafe As Boolean, sHit$, Result As SCAN_RESULT, ResultAll As SCAN_RESULT
+    Dim Blob() As Byte, CertHash As String, FriendlyName As String, IssuedTo As String, nItems As Long
     
     For i = 1 To Reg.EnumSubKeysToArray(HKLM, "SOFTWARE\Microsoft\SystemCertificates\Disallowed\Certificates", aSubKey())
         
@@ -4968,7 +4968,7 @@ Public Sub CheckCertificatesEDS()
         Blob = Reg.GetBinary(HKLM, "SOFTWARE\Microsoft\SystemCertificates\Disallowed\Certificates\" & aSubKey(i), "Blob")
         
         If AryPtr(Blob) Then
-            ParseCertBlob Blob, CertHash, FriendlyName
+            ParseCertBlob Blob, CertHash, FriendlyName, IssuedTo
             
             'Debug.Print "(" & FriendlyName & ")"
             
@@ -4979,7 +4979,7 @@ Public Sub CheckCertificatesEDS()
             If Idx <> 0 Then
                 'it's safe
                 If Not bHideMicrosoft Or bIgnoreAllWhitelists Then
-                    sTitle = GetCollectionKeyByIndex(Idx, colSafeCert)
+                    sTitle = colSafeCert(Idx)
                     bSafe = False
                 End If
             Else
@@ -4987,16 +4987,17 @@ Public Sub CheckCertificatesEDS()
                 Idx = GetCollectionIndexByKey(CertHash, colBadCert)
                 
                 If Idx <> 0 Then
-                    sTitle = GetCollectionKeyByIndex(Idx, colBadCert) & " (Well-known cert.)"
+                    sTitle = colBadCert(Idx) & " (Well-known cert.)"
                 End If
             End If
             
             If Not bSafe Then
+                If sTitle = "" Then sTitle = IssuedTo
                 If sTitle = "" Then sTitle = "Unknown"
                 If FriendlyName <> "" Then sTitle = sTitle & " (" & FriendlyName & ")"
                 If FriendlyName = "Fraudulent" Or FriendlyName = "Untrusted" Then sTitle = sTitle & " (HJT: possible, safe)"
                 
-                'Hash - 'Name, cert. issued to' (Name of cert.) (HJT rating, if possible)
+                'O7 - Policy: [Untrusted Certificate] Hash - 'Name, cert. issued to' (HJT rating, if possible)
                 sHit = "O7 - Policy: [Untrusted Certificate] " & CertHash & " - " & sTitle
                 
                 If Not IsOnIgnoreList(sHit) Then
@@ -5004,13 +5005,24 @@ Public Sub CheckCertificatesEDS()
                         .Section = "O7"
                         .HitLineW = sHit
                         AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\SystemCertificates\Disallowed\Certificates\" & aSubKey(i)
+                        AddRegToFix ResultAll.Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\SystemCertificates\Disallowed\Certificates\" & aSubKey(i)
                         .CureType = REGISTRY_BASED
                     End With
                     AddToScanResults Result
+                    nItems = nItems + 1
                 End If
             End If
         End If
     Next
+    
+    If nItems > 10 Then
+        With ResultAll
+            .Alias = "O7"
+            .HitLineW = "O7 - Policy: [Untrusted Certificate] Fix all items from the log"
+            .CureType = REGISTRY_BASED
+        End With
+        AddToScanResults ResultAll
+    End If
     
     Exit Sub
 ErrorHandler:
@@ -5018,7 +5030,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Private Sub ParseCertBlob(Blob() As Byte, out_CertHash As String, out_FriendlyName As String)
+Private Sub ParseCertBlob(Blob() As Byte, out_CertHash As String, out_FriendlyName As String, out_IssuedTo As String)
     On Error GoTo ErrorHandler:
     
     'Thanks to Willem Jan Hengeveld
@@ -5027,9 +5039,16 @@ Private Sub ParseCertBlob(Blob() As Byte, out_CertHash As String, out_FriendlyNa
     Const SHA1_HASH As Long = 3
     Const FRIENDLY_NAME As Long = 11 'Fraudulent
     
-    Dim prop As CERTIFICATE_BLOB_PROPERTY
+    Dim pCertContext    As Long
+    Dim CertInfo        As CERT_INFO
+    Dim prop            As CERTIFICATE_BLOB_PROPERTY
+    
     Dim cStream As clsStream
     Set cStream = New clsStream
+    
+    out_CertHash = ""
+    out_FriendlyName = ""
+    out_IssuedTo = ""
     
     'registry blob is an array of CERTIFICATE_BLOB_PROPERTY structures.
     
@@ -5038,27 +5057,40 @@ Private Sub ParseCertBlob(Blob() As Byte, out_CertHash As String, out_FriendlyNa
     
     Do While cStream.BufferPointer < cStream.Size
         cStream.ReadData VarPtr(prop), 12
-        If prop.Length > 0 Then
-            ReDim prop.Data(prop.Length - 1)
-            cStream.ReadData VarPtr(prop.Data(0)), prop.Length
+        If prop.length > 0 Then
+            ReDim prop.Data(prop.length - 1)
+            cStream.ReadData VarPtr(prop.Data(0)), prop.length
             
 '            Debug.Print "PropID: " & prop.PropertyID
-'            Debug.Print "Length: " & prop.Length
+'            Debug.Print "Length: " & prop.length
 '            Debug.Print "DataA:   " & Replace(StringFromPtrA(VarPtr(prop.Data(0))), vbNullChar, "-")
 '            Debug.Print "DataW:   " & StringFromPtrW(VarPtr(prop.Data(0)))
 '            Debug.Print "HexData: " & GetHexStringFromArray(prop.Data)
-            'If prop.PropertyID = 32 Then Stop
             
             Select Case prop.PropertyID
             Case SHA1_HASH
                 out_CertHash = GetHexStringFromArray(prop.Data)
             Case FRIENDLY_NAME
                 out_FriendlyName = StringFromPtrW(VarPtr(prop.Data(0)))
-            End Select
+            Case 32
+                pCertContext = CertCreateCertificateContext(X509_ASN_ENCODING Or PKCS_7_ASN_ENCODING, VarPtr(prop.Data(0)), UBound(prop.Data) + 1)
             
-            If out_CertHash <> "" And out_FriendlyName <> "" Then Exit Do
+                If pCertContext <> 0 Then
+                    
+                    If GetCertInfoFromCertificate(pCertContext, CertInfo) Then
+                        out_IssuedTo = GetSignerNameFromBLOB(CertInfo.Subject)
+                    End If
+                    
+                    CertFreeCertificateContext pCertContext
+                Else
+                    Debug.Print "CertCreateCertificateContext failed with 0x" & Hex(Err.LastDllError)
+                End If
+            End Select
+            If out_CertHash <> "" And out_FriendlyName <> "" And out_IssuedTo <> "" Then Exit Do
         End If
     Loop
+    
+    If out_IssuedTo = "" Then Debug.Print "No SubjectName for cert: " & out_CertHash
     
     Set cStream = Nothing
     Exit Sub
@@ -8107,13 +8139,13 @@ Private Function IsWinServiceFileName(sFilePath As String, sServiceName As Strin
     
     On Error GoTo ErrorHandler:
     
-    Static IsInit As Boolean
+    Static isInit As Boolean
     Static oDictSRV As clsTrickHashTable
     Dim sCompany As String
     
-    If Not IsInit Then
+    If Not isInit Then
         Dim vKey, prefix$
-        IsInit = True
+        isInit = True
         Set oDictSRV = New clsTrickHashTable
         
         With oDictSRV
@@ -8420,12 +8452,12 @@ ErrorHandler:
 End Function
 
 Function IsSecurityProductName(sProductName As String) As Boolean
-    Static IsInit As Boolean
+    Static isInit As Boolean
     Static AV() As String
     Dim i&
     
-    If Not IsInit Then
-        IsInit = True
+    If Not isInit Then
+        isInit = True
         AddToArray AV, "security"
         AddToArray AV, "antivirus"
         AddToArray AV, "firewall"
@@ -8550,7 +8582,7 @@ Public Function IsOnIgnoreList(sHit$, Optional UpdateList As Boolean, Optional E
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "IsOnIgnoreList - Begin", "Line: " & sHit
     
-    Static IsInit As Boolean
+    Static isInit As Boolean
     Static aIgnoreList() As String
     
     If EraseList Then
@@ -8558,12 +8590,12 @@ Public Function IsOnIgnoreList(sHit$, Optional UpdateList As Boolean, Optional E
         Exit Function
     End If
     
-    If IsInit And Not UpdateList Then
+    If isInit And Not UpdateList Then
         If inArray(sHit, aIgnoreList) Then IsOnIgnoreList = True
     Else
         Dim iIgnoreNum&, i&
         
-        IsInit = True
+        isInit = True
         ReDim aIgnoreList(0)
         
         iIgnoreNum = Val(RegReadHJT("IgnoreNum", "0"))
@@ -8998,15 +9030,15 @@ Private Sub SetFontCharSet(objTxtboxFont As Object)
     
     'https://msdn.microsoft.com/en-us/library/aa241713(v=vs.60).aspx
     
-    Static IsInit As Boolean
+    Static isInit As Boolean
     Static lLCID As Long
     Dim bNonUsCharset As Boolean
     
     bNonUsCharset = True
     
-    If Not IsInit Then
+    If Not isInit Then
         lLCID = GetUserDefaultLCID()
-        IsInit = True
+        isInit = True
     End If
     
     Select Case lLCID
@@ -9861,9 +9893,9 @@ End Function
 
 'get the last item of serialized array
 Public Function SplitExGetLast(sSerializedArray As String, Optional Delimiter As String = " ") As String
-    Dim Ret() As String
-    Ret = SplitSafe(sSerializedArray, Delimiter)
-    SplitExGetLast = Ret(UBound(Ret))
+    Dim ret() As String
+    ret = SplitSafe(sSerializedArray, Delimiter)
+    SplitExGetLast = ret(UBound(ret))
 End Function
 
 Private Sub DeleteDuplicatesInArray(arr() As String, CompareMethod As VbCompareMethod, Optional DontCompress As Boolean)
@@ -10311,7 +10343,7 @@ Public Sub AppendErrorLogCustom(ParamArray CodeModule())    'trace info
     
     If Not (bDebugMode Or bDebugToFile) Then Exit Sub
     Static freq As Currency
-    Static IsInit As Boolean
+    Static isInit As Boolean
     
     Dim Other       As String
     Dim i           As Long
@@ -10320,8 +10352,8 @@ Public Sub AppendErrorLogCustom(ParamArray CodeModule())    'trace info
     Next
     
     Dim tim1 As Currency
-    If Not IsInit Then
-        IsInit = True
+    If Not isInit Then
+        isInit = True
         QueryPerformanceFrequency freq
     End If
     QueryPerformanceCounter tim1
@@ -10785,7 +10817,7 @@ MakeLog:
         End If
     End If
     
-    If 0 <> ErrLogCustomText.Length Then
+    If 0 <> ErrLogCustomText.length Then
         sLog.Append vbCrLf & vbCrLf & "Trace information:" & vbCrLf & ErrLogCustomText.ToString & vbCrLf
     End If
     
@@ -10804,7 +10836,7 @@ MakeLog:
     Dim Size_2 As Long
     Dim Size_3 As Long
     
-    Size_1 = 2& * (sLog.Length + Len(" bytes, CRC32: FFFFFFFF. Sign:   "))   'Вычисление размера лога (в байтах)
+    Size_1 = 2& * (sLog.length + Len(" bytes, CRC32: FFFFFFFF. Sign:   "))   'Вычисление размера лога (в байтах)
     Size_2 = Size_1 + 2& * Len(CStr(Size_1))                                 'с учетом самого числа "кол-во байт"
     Size_3 = Size_2 - 2& * Len(CStr(Size_1)) + 2& * Len(CStr(Size_2))        'пересчет, если число байт увеличилось на 1 разряд
     

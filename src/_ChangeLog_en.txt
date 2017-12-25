@@ -8,6 +8,11 @@
 1. HiJackThis: changelog
 -----------------------------
 
+[2.7.0.27] - 25.12.2017
+O7 - Fixed output of certificates' owner name.
+O7 - Added output of owner's name for certificates not listed in HJT database.
+O7 - Added item "Policy: [Untrusted Certificate] Fix all items from the log", to fix all certificates at once listed in the log, if number of lines > 10.
+
 [2.7.0.26] - 23.12.2017
 Updated list of DNS.
 O4 - Added output of folders in Autostart directories.
@@ -1072,4 +1077,4 @@ saved and edited in Wordpad.
 [v1.00] - Aug 27, 2004
 * Original release.
 
- 
+   
