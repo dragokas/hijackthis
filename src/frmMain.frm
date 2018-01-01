@@ -1792,12 +1792,6 @@ Attribute VB_Exposed = False
 
 Option Explicit
 
-#Const bDebugMode = False       ' /debug key analogue
-#Const bDebugToFile = False     ' /bDebugToFile key analogue
-#Const SilentAutoLog = False    ' /silentautolog key analogue
-#Const DoCrash = False          ' crash the program (test reason)
-#Const CryptDisable = False     ' disable encryption of ignore list and several other settings
-
 Private Type AppVersion
     Major       As Long
     Minor       As Long
@@ -1903,19 +1897,6 @@ Private Sub FormStart_Stady1()
 
     DisableSubclassing = False
     If inIDE Then DisableSubclassing = True
-
-    #If bDebugMode Then
-        bDebugMode = True
-    #End If
-    #If bDebugToFile Then
-        bDebugToFile = True
-    #End If
-    #If SilentAutoLog Then
-        bAutoLog = True: bAutoLogSilent = True
-    #End If
-    #If CryptDisable Then
-        bCryptDisable = True
-    #End If
     
     If bAutoLogSilent Then 'timeout timer
         If Perf.MAX_TimeOut <> 0 Then
@@ -2488,11 +2469,10 @@ End Sub
 
 Private Sub Form_Terminate()
     Set frmStartupList2 = Nothing
-    
+    Set ErrLogCustomText = Nothing    
     If FileExists(BuildPath(AppPath(), "MSComCtl.ocx")) Then
         Proc.ProcessRun AppPath(True), "/release:" & GetCurrentProcessId(), , vbMinimizedNoFocus, True
     End If
-    Set ErrLogCustomText = Nothing
     Set oDictFileExist = Nothing
 End Sub
 

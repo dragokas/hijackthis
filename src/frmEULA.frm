@@ -84,6 +84,12 @@ Attribute VB_Exposed = False
 
 Option Explicit
 
+#Const bDebugMode = False       ' /debug key analogue
+#Const bDebugToFile = False     ' /bDebugToFile key analogue
+#Const SilentAutoLog = False    ' /silentautolog key analogue
+#Const DoCrash = False          ' crash the program (test reason)
+#Const CryptDisable = False     ' disable encryption of ignore list and several other settings
+
 Private Const ICC_STANDARD_CLASSES As Long = &H4000&
 
 Private ControlsEvent As clsEvents
@@ -140,6 +146,19 @@ Private Sub Form_Initialize()
         End If
     End If
     
+    #If bDebugMode Then
+        bDebugMode = True
+    #End If
+    #If bDebugToFile Then
+        bDebugToFile = True
+    #End If
+    #If SilentAutoLog Then
+        bAutoLog = True: bAutoLogSilent = True
+    #End If
+    #If CryptDisable Then
+        bCryptDisable = True
+    #End If
+
     If InStr(1, Command$(), "/autolog", 1) > 0 Then bAutoLog = True
     If InStr(1, Command$(), "/silentautolog", 1) > 0 Then bAutoLog = True: bAutoLogSilent = True
     

@@ -270,7 +270,7 @@ End Type
 Private Type CERTIFICATE_BLOB_PROPERTY
     PropertyID As Long
     Reserved As Long
-    length As Long
+    Length As Long
     Data() As Byte
 End Type
 
@@ -296,7 +296,7 @@ Public OSver    As clsOSInfo
 Public Proc     As clsProcess
 Public cMath    As clsMath
 
-Private Declare Function SysAllocStringByteLen Lib "oleaut32.dll" (ByVal pszStrPtr As Long, ByVal length As Long) As String
+Private Declare Function SysAllocStringByteLen Lib "oleaut32.dll" (ByVal pszStrPtr As Long, ByVal Length As Long) As String
 
 
 'it map ANSI scan result string from ListBox to Unicode string that is stored in memory (SCAN_RESULT structure)
@@ -5057,9 +5057,9 @@ Private Sub ParseCertBlob(Blob() As Byte, out_CertHash As String, out_FriendlyNa
     
     Do While cStream.BufferPointer < cStream.Size
         cStream.ReadData VarPtr(prop), 12
-        If prop.length > 0 Then
-            ReDim prop.Data(prop.length - 1)
-            cStream.ReadData VarPtr(prop.Data(0)), prop.length
+        If prop.Length > 0 Then
+            ReDim prop.Data(prop.Length - 1)
+            cStream.ReadData VarPtr(prop.Data(0)), prop.Length
             
 '            Debug.Print "PropID: " & prop.PropertyID
 '            Debug.Print "Length: " & prop.length
@@ -8139,13 +8139,13 @@ Private Function IsWinServiceFileName(sFilePath As String, sServiceName As Strin
     
     On Error GoTo ErrorHandler:
     
-    Static isInit As Boolean
+    Static IsInit As Boolean
     Static oDictSRV As clsTrickHashTable
     Dim sCompany As String
     
-    If Not isInit Then
+    If Not IsInit Then
         Dim vKey, prefix$
-        isInit = True
+        IsInit = True
         Set oDictSRV = New clsTrickHashTable
         
         With oDictSRV
@@ -8452,12 +8452,12 @@ ErrorHandler:
 End Function
 
 Function IsSecurityProductName(sProductName As String) As Boolean
-    Static isInit As Boolean
+    Static IsInit As Boolean
     Static AV() As String
     Dim i&
     
-    If Not isInit Then
-        isInit = True
+    If Not IsInit Then
+        IsInit = True
         AddToArray AV, "security"
         AddToArray AV, "antivirus"
         AddToArray AV, "firewall"
@@ -8582,7 +8582,7 @@ Public Function IsOnIgnoreList(sHit$, Optional UpdateList As Boolean, Optional E
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "IsOnIgnoreList - Begin", "Line: " & sHit
     
-    Static isInit As Boolean
+    Static IsInit As Boolean
     Static aIgnoreList() As String
     
     If EraseList Then
@@ -8590,12 +8590,12 @@ Public Function IsOnIgnoreList(sHit$, Optional UpdateList As Boolean, Optional E
         Exit Function
     End If
     
-    If isInit And Not UpdateList Then
+    If IsInit And Not UpdateList Then
         If inArray(sHit, aIgnoreList) Then IsOnIgnoreList = True
     Else
         Dim iIgnoreNum&, i&
         
-        isInit = True
+        IsInit = True
         ReDim aIgnoreList(0)
         
         iIgnoreNum = Val(RegReadHJT("IgnoreNum", "0"))
@@ -9030,15 +9030,15 @@ Private Sub SetFontCharSet(objTxtboxFont As Object)
     
     'https://msdn.microsoft.com/en-us/library/aa241713(v=vs.60).aspx
     
-    Static isInit As Boolean
+    Static IsInit As Boolean
     Static lLCID As Long
     Dim bNonUsCharset As Boolean
     
     bNonUsCharset = True
     
-    If Not isInit Then
+    If Not IsInit Then
         lLCID = GetUserDefaultLCID()
-        isInit = True
+        IsInit = True
     End If
     
     Select Case lLCID
@@ -9893,9 +9893,9 @@ End Function
 
 'get the last item of serialized array
 Public Function SplitExGetLast(sSerializedArray As String, Optional Delimiter As String = " ") As String
-    Dim ret() As String
-    ret = SplitSafe(sSerializedArray, Delimiter)
-    SplitExGetLast = ret(UBound(ret))
+    Dim Ret() As String
+    Ret = SplitSafe(sSerializedArray, Delimiter)
+    SplitExGetLast = Ret(UBound(Ret))
 End Function
 
 Private Sub DeleteDuplicatesInArray(arr() As String, CompareMethod As VbCompareMethod, Optional DontCompress As Boolean)
@@ -10343,7 +10343,7 @@ Public Sub AppendErrorLogCustom(ParamArray CodeModule())    'trace info
     
     If Not (bDebugMode Or bDebugToFile) Then Exit Sub
     Static freq As Currency
-    Static isInit As Boolean
+    Static IsInit As Boolean
     
     Dim Other       As String
     Dim i           As Long
@@ -10352,8 +10352,8 @@ Public Sub AppendErrorLogCustom(ParamArray CodeModule())    'trace info
     Next
     
     Dim tim1 As Currency
-    If Not isInit Then
-        isInit = True
+    If Not IsInit Then
+        IsInit = True
         QueryPerformanceFrequency freq
     End If
     QueryPerformanceCounter tim1
@@ -10372,7 +10372,9 @@ Public Sub AppendErrorLogCustom(ParamArray CodeModule())    'trace info
     
         OutputDebugStringA Other
 
-        ErrLogCustomText.Append (vbCrLf & "- " & time & " - " & Format$(tim1 / freq, "##0.000") & " - " & Other)
+        If Not (ErrLogCustomText Is Nothing) Then
+                ErrLogCustomText.Append (vbCrLf & "- " & time & " - " & Format$(tim1 / freq, "##0.000") & " - " & Other)
+                End If
     
         'If DebugHeavy Then AddtoLog vbCrLf & "- " & time & " - " & Other
     End If
@@ -10577,8 +10579,6 @@ Public Function CreateLogFile() As String
         
         lNumProcesses = GetProcesses(Process)
         
-        On Error Resume Next
-        
         If lNumProcesses Then
         
             For i = 0 To UBound(Process)
@@ -10595,9 +10595,9 @@ Public Function CreateLogFile() As String
                 End If
                 
                 If Len(sProcessName) <> 0 Then
-                    Col.Add 1&, sProcessName              ' item - count, key - name of process
-
-                    If Err.Number <> 0& Then              ' if the same process
+                    If Not isCollectionKeyExists(sProcessName, Col) Then
+                        Col.Add 1&, sProcessName          ' item - count, key - name of process
+                    Else
                         cnt = Col.Item(sProcessName)      ' replacing item of collection
                         Col.Remove (sProcessName)
                         Col.Add cnt + 1&, sProcessName    ' increase count of identical processes
@@ -10817,7 +10817,7 @@ MakeLog:
         End If
     End If
     
-    If 0 <> ErrLogCustomText.length Then
+    If 0 <> ErrLogCustomText.Length Then
         sLog.Append vbCrLf & vbCrLf & "Trace information:" & vbCrLf & ErrLogCustomText.ToString & vbCrLf
     End If
     
@@ -10836,7 +10836,7 @@ MakeLog:
     Dim Size_2 As Long
     Dim Size_3 As Long
     
-    Size_1 = 2& * (sLog.length + Len(" bytes, CRC32: FFFFFFFF. Sign:   "))   'Вычисление размера лога (в байтах)
+    Size_1 = 2& * (sLog.Length + Len(" bytes, CRC32: FFFFFFFF. Sign:   "))   'Вычисление размера лога (в байтах)
     Size_2 = Size_1 + 2& * Len(CStr(Size_1))                                 'с учетом самого числа "кол-во байт"
     Size_3 = Size_2 - 2& * Len(CStr(Size_1)) + 2& * Len(CStr(Size_2))        'пересчет, если число байт увеличилось на 1 разряд
     
@@ -11938,7 +11938,10 @@ Public Sub HJT_Shutdown()   ' emergency exits the program due to exceeding the t
     
     Unload frmMain
     If Not inIDE Then ExitProcess 1001&
-    If inIDE Then Stop: Resume Next
+    If inIDE Then
+        Debug.Print "HJT_Shutdown is raised!"
+        End
+    End If
 End Sub
 
 Public Function WhiteListed(sFile As String, sWhiteListedPath As String, Optional bCheckFileNameOnly As Boolean) As Boolean

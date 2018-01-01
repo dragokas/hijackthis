@@ -8,6 +8,10 @@
 1. HiJackThis: changelog
 -----------------------------
 
+[2.7.0.28] - 01.01.2018
+Fixed app crash when program is finishing its working.
+Updated and improved script for retrieving new crash dump of program: http://dragokas.com/tools/debug/GetHJT_dump.zip
+
 [2.7.0.27] - 25.12.2017
 O7 - Fixed output of certificates' owner name.
 O7 - Added output of owner's name for certificates not listed in HJT database.
@@ -1077,4 +1081,4 @@ saved and edited in Wordpad.
 [v1.00] - Aug 27, 2004
 * Original release.
 
-   
+     

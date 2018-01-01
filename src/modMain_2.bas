@@ -588,7 +588,7 @@ Public Sub CheckO26Item()
     Dim sKeys$(), i&, sIFE$, sFile$, sHit$, Result As SCAN_RESULT
     Dim bDisabled As Boolean, vGFlag As Variant, vHive As Variant, lHive As Long, UseWow As Variant, Wow6432Redir As Boolean
     Dim bPerUser As Boolean, bIsSafe As Boolean, aTmp() As String, sNonSafe As String, bMissing As Boolean, sAlias As String
-    Dim bSafe As Boolean
+    Dim bSafe As Boolean, bShared As Boolean
     
     sIFE = "Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options"
     'key is redirected (XP-Vista)
@@ -602,6 +602,8 @@ Public Sub CheckO26Item()
         End If
     End If
     
+    If Reg.GetKeyVirtualType(HKEY_LOCAL_MACHINE, sIFE) And KEY_VIRTUAL_SHARED Then bShared = True
+    
     For Each vHive In Array(HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER)
         lHive = vHive
   
@@ -609,8 +611,8 @@ Public Sub CheckO26Item()
         
         For Each UseWow In Array(False, True)
             Wow6432Redir = UseWow
-  
-            If bIsWin7AndNewer And UseWow Then Exit For
+            
+            If bShared And UseWow Then Exit For
             sAlias = IIf(bIsWin32, "O26", IIf(Wow6432Redir And Not bIsWin7AndNewer, "O26-32", "O26"))
     
             sKeys = Split(Reg.EnumSubKeys(lHive, sIFE, Wow6432Redir), "|") 'for each image

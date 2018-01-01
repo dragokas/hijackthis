@@ -221,6 +221,7 @@ End Sub
 '
 ' #############################
 Public Property Get ToString() As String
+    If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     If m_lLength = 0 Then Exit Property
     ToString = String$(m_lLength \ 2, 0&)
     memcpy ByVal StrPtr(ToString), ByVal m_pMemoryPtr, m_lLength
@@ -234,6 +235,7 @@ End Property
 '
 ' #############################
 Public Property Let StringData(str As String)
+    If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     Clear
     Append str
 End Property
@@ -252,6 +254,7 @@ End Property
 '
 ' #############################
 Public Property Get ToStringPtr() As Long
+    If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     If m_lLength = 0 Then Exit Property
     ToStringPtr = m_pMemoryPtr
 End Property
@@ -265,6 +268,7 @@ End Property
 '
 ' #############################
 Public Property Get ToStringLeft(ByVal Length As Long) As String
+    If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     If m_lLength = 0 Then Exit Property
     If Length > (m_lLength \ 2) Then
         Length = m_lLength \ 2
@@ -282,6 +286,7 @@ End Property
 '
 ' #############################
 Public Property Get ToStringMid(StartPos As Long, ByVal Length As Long) As String
+    If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     Dim Index As Long
     Index = StartPos - 1
     If m_lLength = 0 Then Exit Property
@@ -302,6 +307,7 @@ End Property
 '
 ' #############################
 Public Property Get ToStringRight(ByVal Length As Long) As String
+    If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     If m_lLength = 0 Then Exit Property
     If Length > (m_lLength \ 2) Then
         Length = m_lLength \ 2
@@ -321,6 +327,7 @@ End Property
 '
 ' #############################
 Public Sub Clear()
+    If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     ' Clean out the string buffer
     If m_lLength <> 0 Then
         m_lLength = 0
@@ -339,6 +346,7 @@ End Sub
 '
 ' #############################
 Public Sub Append(str As String)
+    If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     Dim pTo As Long
     
     If Len(str) = 0 Then Exit Sub
@@ -353,6 +361,7 @@ Public Sub Append(str As String)
     
     ' Put the specified string at the end of the string buffer
     pTo = m_pMemoryPtr + m_lLength
+    
     memcpy ByVal pTo, ByVal StrPtr(str), LenB(str) + 2 '+2 for NUL terminator
     
     #If UseUndo Then
@@ -376,6 +385,7 @@ End Sub
 '
 ' #############################
 Public Sub AppendLine(str As String)
+    If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     Dim pTo As Long
     
     ' If we are going to need more memory (if the final size of the append is going to be
@@ -413,6 +423,7 @@ End Sub
 '
 ' #############################
 Public Sub Insert(pos As Long, str As String)
+    If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     Dim pFrom As Long
     Dim pTo As Long
     Dim Index As Long
@@ -474,6 +485,7 @@ End Sub
 '
 ' #############################
 Public Sub Overwrite(pos As Long, str As String)
+    If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     Dim pTo As Long
     Dim Index As Long
     Dim bExpanded As Boolean
@@ -536,6 +548,7 @@ End Sub
 '
 ' #############################
 Public Sub Remove(pos As Long, ByVal Length As Long)
+    If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     Dim pFrom As Long
     Dim pTo As Long
     Dim Index As Long
@@ -596,6 +609,7 @@ End Sub
 '
 ' #############################
 Public Function Undo() As Boolean
+    If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     Undo = True
     m_bInRevert = True
     Select Case m_LastOp
@@ -628,6 +642,7 @@ End Function
 '
 ' #############################
 Public Function UndoAppend() As Boolean
+    If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     If m_LastOp = SB_LAST_APPEND Then UndoAppend = Undo
 End Function
 
@@ -639,6 +654,7 @@ End Function
 '
 ' #############################
 Public Function UndoInsert() As Boolean
+    If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     If m_LastOp = SB_LAST_INSERT Then UndoInsert = Undo
 End Function
 
@@ -650,6 +666,7 @@ End Function
 '
 ' #############################
 Public Function UndoOverwrite() As Boolean
+    If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     If m_LastOp = SB_LAST_OVERWRITE Then UndoOverwrite = Undo
 End Function
 
@@ -661,6 +678,7 @@ End Function
 '
 ' #############################
 Public Function UndoRemove() As Boolean
+    If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     If m_LastOp = SB_LAST_REMOVE Then UndoRemove = Undo
 End Function
 #End If
@@ -673,6 +691,7 @@ End Function
 '
 ' #############################
 Public Property Get Length() As Long
+    If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     ' Since the string is stored as unicode, every character is 2 bytes
     Length = m_lLength \ 2
 End Property
@@ -690,6 +709,8 @@ Public Property Get Find(StartPos As Long, StrSearch As String, Optional Delimit
     ' Delimiter - if strings in StringBuilder are delimited by some character(s),
     '   e.g. if .Find 'rose' in '|melrose|rose|' should return pos. == 10, not 5
     ' CompareMethod - case sensitive mode switch
+    
+    If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     
     Dim Index As Long
     
@@ -866,6 +887,8 @@ End Function
 Private Sub Class_Terminate()
     If m_hHeap <> 0 Then
         HeapDestroy m_hHeap
+        m_hHeap = 0
+        m_pMemoryPtr = 0
     End If
 End Sub
 
