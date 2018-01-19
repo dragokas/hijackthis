@@ -32,6 +32,9 @@ Option Explicit
 '
 '   Fork by Alex Dragokas
 '
+'   v2.4
+'   Added Err.raise to all methods to ensure user doesn't call it within Forms' Terminate event.
+'
 '   v2.3
 '   Fixed issue when .ToString and .ToStringRight methods returns trimmed string when buffer contains NUL characters.
 '

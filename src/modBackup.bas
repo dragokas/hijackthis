@@ -1152,7 +1152,7 @@ Private Function SRP_Restore(nSeqNum As Long, Optional SRP_Description As String
     
     If S_OK = oSR.Restore(nSeqNum) Then
         SRP_Restore = True
-        RestartSystem
+        RestartSystem , , True
     End If
     
     Set oSR = Nothing

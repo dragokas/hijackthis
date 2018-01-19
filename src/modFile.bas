@@ -651,6 +651,7 @@ End Function
 Public Function CloseW(hFile As Long) As Long
     AppendErrorLogCustom "CloseW", "Handle: " & hFile
     CloseW = CloseHandle(hFile)
+    If CloseW Then hFile = 0
 End Function
 
 '// TODO. I don't like it. Re-check it !!!
@@ -2084,6 +2085,9 @@ End Function
 
 Public Function FindOnPath(ByVal sAppName As String, Optional bUseSourceValueOnFailure As Boolean, Optional sAdditionalDir As String) As String
     On Error GoTo ErrorHandler:
+    
+    '// TODO:
+    'replace PathFindOnPath API by manual parsing of %PATH%, because PathFindOnPath includes folders while searching, that is unappropriate
 
     AppendErrorLogCustom "FindOnPath - Begin"
 
@@ -2096,6 +2100,7 @@ Public Function FindOnPath(ByVal sAppName As String, Optional bUseSourceValueOnF
     Dim i As Long
     Dim sFileTry As String
     Dim bFullPath As Boolean
+    Dim bSuccess As Boolean
 
     If Not IsInit Then
         IsInit = True
@@ -2147,12 +2152,19 @@ Public Function FindOnPath(ByVal sAppName As String, Optional bUseSourceValueOnF
     Else
         ToggleWow64FSRedirection False
 
-        ProcPath = Space$(MAX_PATH)
-        LSet ProcPath = sAppName & vbNullChar
-
-        If CBool(PathFindOnPath(StrPtr(ProcPath), 0&)) Then
-            FindOnPath = TrimNull(ProcPath)
-        Else
+        If InStr(sAppName, ".") <> 0 Then
+            ProcPath = Space$(MAX_PATH)
+            LSet ProcPath = sAppName & vbNullChar
+        
+            If CBool(PathFindOnPath(StrPtr(ProcPath), 0&)) Then
+                FindOnPath = TrimNull(ProcPath)
+                If FileExists(FindOnPath) Then 'if not a folder
+                    bSuccess = True
+                End If
+            End If
+        End If
+        
+        If Not bSuccess Then
             'go through the extensions list
 
             For i = 0 To UBound(Exts)
@@ -2165,9 +2177,9 @@ Public Function FindOnPath(ByVal sAppName As String, Optional bUseSourceValueOnF
                     FindOnPath = TrimNull(ProcPath)
                     Exit For
                 End If
-
+                
             Next
-
+            
         End If
 
         ToggleWow64FSRedirection True

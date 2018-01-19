@@ -8,6 +8,18 @@
 1. HiJackThis: changelog
 -----------------------------
 
+[2.7.0.29] - 19.01.2018
+All sections of the log are unified to cover a single template "Section prefix-bitness" - "optional, section name": "hive\..\key": "optional, subkey" [parameter] = value
+"Compressed" log O7 - IPSec: in case system has several identical rules.
+Deleted attribute O7 - TroubleShoot: [EV] (environment value is altered)
+Added attribute O7 - TroubleShoot: [EV] (folder is not exist)
+Attempting to fix a line with a legitimate file will now call SFC for it.
+Separated into several lines with the possibility of separate fixes:
+ - O4 - HKLM\..\Session Manager: [BootExecute]
+ - O17 - ... Parameters: [NameServer] (finalized)
+ - O20 - HKLM\..\Windows: [AppInit_DLLs]
+ - O26 - IFEO (global).
+
 [2.7.0.28] - 01.01.2018
 Fixed app crash when program is finishing its working.
 Updated and improved script for retrieving new crash dump of program: http://dragokas.com/tools/debug/GetHJT_dump.zip

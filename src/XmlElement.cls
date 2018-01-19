@@ -29,7 +29,7 @@ Public Sub AppendAtribute(ByVal Attrib As CXmlAttribute)
     Exit Sub
 Err_Trap:
     ErrorMsg Err, "CXmlElement.AppendAtribute"
-    If InIDE Then Stop: Resume Next
+    If inIDE Then Stop: Resume Next
 End Sub
 
 Public Sub AppendNode(ByVal Element As CXmlElement, Optional ByVal Before As Long)
@@ -42,7 +42,7 @@ Public Sub AppendNode(ByVal Element As CXmlElement, Optional ByVal Before As Lon
     Exit Sub
 Err_Trap:
     ErrorMsg Err, "CXmlElement.AppendNode"
-    If InIDE Then Stop: Resume Next
+    If inIDE Then Stop: Resume Next
 End Sub
 
 Public Property Get AttributeCount() As Long
@@ -89,7 +89,7 @@ Public Property Get NodeByName(ByVal NodeName As String) As CXmlElement
     Exit Property
 Err_Trap:
     ErrorMsg Err, "CXmlElement.NodeByName", "NodeName"
-    If InIDE Then Stop: Resume Next
+    If inIDE Then Stop: Resume Next
 End Property
 
 Function GetNode(ByVal NodeName As String, ParentNode As CXmlElement, ChildNode As CXmlElement) As Boolean
@@ -107,7 +107,7 @@ Function GetNode(ByVal NodeName As String, ParentNode As CXmlElement, ChildNode 
     Exit Function
 Err_Trap:
     ErrorMsg Err, "CXmlElement.GetNode", "NodeName"
-    If InIDE Then Stop: Resume Next
+    If inIDE Then Stop: Resume Next
 End Function
 
 Public Property Let Name(RHS As String)
@@ -134,7 +134,7 @@ Public Property Get Node(ByVal Index As Long) As CXmlElement
     Exit Property
 Err_Trap:
     ErrorMsg Err, "CXmlElement.Node", Index
-    If InIDE Then Stop: Resume Next
+    If inIDE Then Stop: Resume Next
 End Property
 
 Function InByteArray(Start As Long, bArray() As Byte, str As String, Optional CompareMode As VbCompareMethod, Optional EndPos As Variant) As Long
@@ -159,7 +159,7 @@ Function InByteArray(Start As Long, bArray() As Byte, str As String, Optional Co
     Exit Function
 Err_Trap:
     ErrorMsg Err, "CXmlElement.InByteArray"
-    If InIDE Then Stop: Resume Next
+    If inIDE Then Stop: Resume Next
 End Function
 
 Friend Sub Parse(Data() As Byte, Optional Start As Long)
@@ -265,7 +265,7 @@ Friend Sub Parse(Data() As Byte, Optional Start As Long)
 
         End Select
         Start = Start + 1
-        DoEvents
+        'DoEvents
     Loop
 Exit Sub
 
@@ -280,7 +280,7 @@ Err_Trap:
             ' Log all other Errors
             ErrorMsg Err, "CXmlElement.Parse"
     End Select
-    If InIDE Then Stop: Resume Next
+    If inIDE Then Stop: Resume Next
 End Sub
 
 Private Function isCDataMarkupBegin(Data() As Byte, Start As Long) As Boolean
@@ -310,7 +310,7 @@ Private Function DecodeCData(Data() As Byte, Start As Long) As String
     Exit Function
 Err_Trap:
     ErrorMsg Err, "CXmlElement.DecodeCData"
-    If InIDE Then Stop: Resume Next
+    If inIDE Then Stop: Resume Next
 End Function
 
 Public Sub RemoveAttribute(ByVal Index As Variant)
@@ -349,7 +349,7 @@ Public Function Serialize() As String
     Exit Function
 Err_Trap:
     ErrorMsg Err, "CXmlElement.Serialize"
-    If InIDE Then Stop: Resume Next
+    If inIDE Then Stop: Resume Next
 End Function
 
 Private Sub Class_Initialize()

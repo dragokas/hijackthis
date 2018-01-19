@@ -1830,12 +1830,10 @@ Public Sub Test()
     '2 - KEY_VIRTUAL_USUAL
     '4 - KEY_VIRTUAL_SHARED
     '8 - KEY_VIRTUAL_REDIRECTED
-    
-'    Dim sSymTarget$
 '
-'    Debug.Print Reg.IsKeySymLink(HKLM, "SYSTEM\CurrentControlSet", sSymTarget)
+'    Dim sValue$
 '
-'    EnumJobs
+'    sValue = Reg.GetData(0, "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager", "BootExecute")
 '
 '    Stop
 End Sub
@@ -1872,7 +1870,7 @@ Private Sub tmrStart_Timer()
 End Sub
 
 Private Sub FormStart_Stady1()
-
+    
     On Error GoTo ErrorHandler:
     
     Dim ctl   As Control
@@ -1886,8 +1884,8 @@ Private Sub FormStart_Stady1()
     
     AppendErrorLogCustom "frmMain.FormStart_Stady1 - Begin"
 
-    bIsAlpha = True
-    'bIsBeta = True
+    bIsAlpha = False
+    bIsBeta = True
     
     StartupListVer = "2.12"
     ADSspyVer = "1.13"
@@ -2469,7 +2467,7 @@ End Sub
 
 Private Sub Form_Terminate()
     Set frmStartupList2 = Nothing
-    Set ErrLogCustomText = Nothing    
+    Set ErrLogCustomText = Nothing
     If FileExists(BuildPath(AppPath(), "MSComCtl.ocx")) Then
         Proc.ProcessRun AppPath(True), "/release:" & GetCurrentProcessId(), , vbMinimizedNoFocus, True
     End If
@@ -3457,7 +3455,7 @@ Private Sub cmdFix_Click()
         cmdScan.SetFocus
     End If
     
-    If bRebootRequired Then RestartSystem: Exit Sub
+    If bRebootRequired Then RestartSystem: bRebootRequired = False
     
     'CloseProgressbar 'leave progressBar visible to ensure the user saw completion of cure
     
@@ -3640,6 +3638,16 @@ Private Sub cmdScan_Click()
         
         'add the horizontal scrollbar if needed
         AddHorizontalScrollBarToResults lstResults
+        
+        If Not bAutoLog Then
+            If frmMain.WindowState <> vbMinimized Then
+                SetWindowPos frmMain.hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE
+                SetWindowPos frmMain.hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE
+                SetForegroundWindow frmMain.hwnd
+                SetActiveWindow frmMain.hwnd
+                SetFocus2 frmMain.hwnd
+            End If
+        End If
         
         Idx = 5
         
@@ -4707,7 +4715,7 @@ End Sub
 
 'Context menu in result list of scan:
 
-Private Sub lstResults_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub lstResults_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 
     On Error GoTo ErrorHandler:
     
@@ -4726,8 +4734,8 @@ Private Sub lstResults_MouseUp(Button As Integer, Shift As Integer, x As Single,
     
     'select item by right click
     If Button = 2 Then
-        XPix = x / Screen.TwipsPerPixelX
-        YPix = y / Screen.TwipsPerPixelY
+        XPix = X / Screen.TwipsPerPixelX
+        YPix = Y / Screen.TwipsPerPixelY
         XY = YPix * 65536 + XPix
         Idx = SendMessage(lstResults.hwnd, LB_ITEMFROMPOINT, 0&, ByVal XY)
         If Idx >= 0 And Idx <= (lstResults.ListCount - 1) Then

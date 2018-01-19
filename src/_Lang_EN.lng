@@ -7,7 +7,7 @@
 ; 2. First ";" character is a mark of comment
 ; 3. [], [*], [**] should not be modified or deleted !!!
 ; 4. You should not add empty lines for just convenience unless it is a part of translation string.
-; 5. "&" characters can be removed, but instead preferred to place them in random places 
+; 5. "&" characters can be removed, but instead preferred to place them in random places
 ; (these signs are responsible for hotkeys: ALT + letter, which is located next to the sign "&" will cause opening of the corresponding menu)
 ;
 ;
@@ -186,7 +186,7 @@
          R1 - Created registry value
          R2 - Created registry key
          R3 - Created extra registry parameter where only one should be
-         R4 - Search providers (DefaultScope, SearchScopes)
+         R4 - Search providers (SearchScopes)
       F - Autoloading from INI-files and corresponding registry locations
          F0 - Changed ini-file value (system.ini)
          F1 - Created ini-file parameter (win.ini)
@@ -258,7 +258,7 @@
      ----------------
      
      Next keys affects on StartupList module settings only.
-     It can be launched manually from the section "Config" -> "Misc Tools" -> "StartupList Scan" 
+     It can be launched manually from the section "Main menu" -> "Misc Tools" -> "StartupList Scan" 
      or via the key /StartupList
      
        /showempty	- Show empty sections
@@ -329,7 +329,7 @@
      
      Coordination:
 
-     - regist 
+     - regist
      - Fernando Mercês -= Trend Micro =-
      - Loucif Kharouni -= Trend Micro =-
      
@@ -347,7 +347,7 @@
      - VolteFace - 'StringBuilder' class
      - Jason Peter Brown - wrapper for regular expressions library PCRE2
      - Philip Hazel - regular expressions library PCRE2
-     - Dmitriy Kuznetsov - Autobackup registry (ABR)
+     - Dmitriy Kuznetsov { demkd } - Autobackup registry (ABR)
 
      License
      -------------
@@ -775,6 +775,7 @@
 0350=HiJackThis needs to restart the system.
      Please, save your work and press 'OK'.
 0351=Please, wait until Microsoft disk cleanup manager finish its work and press OK.
+0352=The server needs to be rebooted to complete required operations. Please, do it on your own.
 ;
 ; ============ Help on selected item (Sections) ================
 ;
@@ -1588,4 +1589,4 @@
 ; Empty
 ;
 ; (2300 - ...)
-;       
+;        

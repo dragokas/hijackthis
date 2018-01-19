@@ -16,7 +16,7 @@ Attribute VB_Ext_KEY = "Top_Level" ,"Yes"
 Option Explicit
 
 ' OSInfo class by Alex Dragokas
-' ver 1.5
+' ver 1.6
 '
 
 'Tips:
@@ -217,6 +217,7 @@ Dim SafeBootMode_           As String
 Dim Platform_               As String 'Win9x / WinNT
 Dim ReleaseId_              As Long
 Dim IsServer_               As Boolean
+Dim IsDomainController_     As Boolean
 Dim inIDE                   As Boolean
 Dim IsWin64_                As Boolean
 Dim SecureBoot_             As Boolean
@@ -375,7 +376,7 @@ Private Sub Class_Initialize()
         Case 10
             If osi.wProductType = VER_NT_WORKSTATION Then
                 OSName_ = "Windows 10"
-            ElseIf osi.wProductType = VER_NT_SERVER Then
+            Else
                 OSName_ = "Windows Server 2016"
             End If
         Case 6.4
@@ -384,29 +385,29 @@ Private Sub Class_Initialize()
         Case 6.3
             If osi.wProductType = VER_NT_WORKSTATION Then
                 OSName_ = "Windows 8.1"
-            ElseIf osi.wProductType = VER_NT_SERVER Then
+            Else
                 OSName_ = "Windows Server 2012 R2"
             End If
         Case 6.2
             If osi.wProductType = VER_NT_WORKSTATION Then
                 OSName_ = "Windows 8"
-            ElseIf osi.wProductType = VER_NT_SERVER Then
+            Else
                 OSName_ = "Windows Server 2012"
             End If
         Case 6.1
             If osi.wProductType = VER_NT_WORKSTATION Then
                 OSName_ = "Windows 7"
-            ElseIf osi.wProductType = VER_NT_SERVER Then
+            Else
                 OSName_ = "Windows Server 2008 R2"
             End If
         Case 6
             If osi.wProductType = VER_NT_WORKSTATION Then
                 OSName_ = "Windows Vista"
-            ElseIf osi.wProductType = VER_NT_SERVER Then
+            Else
                 OSName_ = "Windows Server 2008"
             End If
         Case 5.2
-            If osi.wProductType = VER_NT_SERVER Then
+            If osi.wProductType = VER_NT_SERVER Or osi.wProductType = VER_NT_DOMAIN_CONTROLLER Then
                 OSName_ = "Windows Server 2003"
                 If GetSystemMetrics(SM_SERVERR2) Then
                     Edition_ = "R2"
@@ -450,7 +451,7 @@ Private Sub Class_Initialize()
                 Else
                     Edition_ = "Tablet Edition"
                 End If
-            ElseIf osi.wProductType = VER_NT_SERVER Then
+            Else
                 If osi.wSuiteMask And VER_SUITE_DATACENTER Then
                     Edition_ = "Datacenter Server"
                 ElseIf osi.wSuiteMask And VER_SUITE_ENTERPRISE Then
@@ -463,7 +464,7 @@ Private Sub Class_Initialize()
             OSName_ = "Windows NT 4.0"
             If osi.wProductType = VER_NT_WORKSTATION Then
                 Edition_ = "Workstation"
-            ElseIf osi.wProductType = VER_NT_SERVER Then
+            Else
                 If osi.wSuiteMask And VER_SUITE_ENTERPRISE Then
                     Edition_ = "Enterprise Server"
                 Else
@@ -502,6 +503,11 @@ Private Sub Class_Initialize()
     
     IsServer_ = (osi.wProductType <> VER_NT_WORKSTATION)
     
+    If osi.wProductType = VER_NT_DOMAIN_CONTROLLER Then
+        IsDomainController_ = True
+        Edition_ = LTrim$(Edition_ & " (Domain Controller)")
+    End If
+    
     IsElevated_ = IsProcessElevated()
     
     IntegrityLevel_ = GetIntegrityLevel()
@@ -513,24 +519,24 @@ Private Sub Class_Initialize()
     ' wSuiteMask
     If osi.wSuiteMask And VER_SUITE_BACKOFFICE Then SuiteMask_ = SuiteMask_ & " + " & "BackOffice"
     If osi.wSuiteMask And VER_SUITE_BLADE Then SuiteMask_ = SuiteMask_ & " + " & "Blade"
-    If osi.wSuiteMask And VER_SUITE_COMPUTE_SERVER Then SuiteMask_ = SuiteMask_ & " + " & "Compute_Server"
+    If osi.wSuiteMask And VER_SUITE_COMPUTE_SERVER Then SuiteMask_ = SuiteMask_ & " + " & "Compute Server"
     If osi.wSuiteMask And VER_SUITE_DATACENTER Then SuiteMask_ = SuiteMask_ & " + " & "DataCenter"
     If osi.wSuiteMask And VER_SUITE_ENTERPRISE Then SuiteMask_ = SuiteMask_ & " + " & "Enterprise"
     If osi.wSuiteMask And VER_SUITE_EMBEDDEDNT Then SuiteMask_ = SuiteMask_ & " + " & "EmbeddedNT"
     If osi.wSuiteMask And VER_SUITE_PERSONAL Then SuiteMask_ = SuiteMask_ & " + " & "Personal"
     If osi.wSuiteMask And VER_SUITE_SINGLEUSERTS Then SuiteMask_ = SuiteMask_ & " + " & "SingleUserTS"
     If osi.wSuiteMask And VER_SUITE_SMALLBUSINESS Then SuiteMask_ = SuiteMask_ & " + " & "SmallBusiness"
-    If osi.wSuiteMask And VER_SUITE_SMALLBUSINESS_RESTRICTED Then SuiteMask_ = SuiteMask_ & " + " & "SmallBusiness_Restricted"
-    If osi.wSuiteMask And VER_SUITE_STORAGE_SERVER Then SuiteMask_ = SuiteMask_ & " + " & "Storage_Server"
+    If osi.wSuiteMask And VER_SUITE_SMALLBUSINESS_RESTRICTED Then SuiteMask_ = SuiteMask_ & " + " & "SmallBusiness Restricted"
+    If osi.wSuiteMask And VER_SUITE_STORAGE_SERVER Then SuiteMask_ = SuiteMask_ & " + " & "Storage Server"
     If osi.wSuiteMask And VER_SUITE_TERMINAL Then SuiteMask_ = SuiteMask_ & " + " & "Terminal"
-    If osi.wSuiteMask And VER_SUITE_WH_SERVER Then SuiteMask_ = SuiteMask_ & " + " & "WH_Server"
+    If osi.wSuiteMask And VER_SUITE_WH_SERVER Then SuiteMask_ = SuiteMask_ & " + " & "WH Server"
     
     If 0 <> Len(SuiteMask_) Then SuiteMask_ = Mid$(SuiteMask_, 4)
     
     ' wProductType
     Select Case osi.wProductType
         Case VER_NT_DOMAIN_CONTROLLER
-            ProductType_ = "Domain_Controller"
+            ProductType_ = "Domain Controller"
         Case VER_NT_SERVER
             ProductType_ = "Server"
         Case VER_NT_WORKSTATION
@@ -1615,6 +1621,10 @@ End Property
 
 Public Property Get IsServer() As Boolean
     IsServer = IsServer_
+End Property
+
+Public Property Get IsDomainController() As Boolean
+    IsDomainController = IsDomainController_
 End Property
 
 Public Property Get IsWin64() As Boolean

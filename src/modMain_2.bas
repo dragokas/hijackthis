@@ -138,8 +138,8 @@ Public Sub CheckO25Item()
             FilterName = GetStringInsideQt(FilterPath)
             ConsumerName = GetStringInsideQt(ConsumerPath)
             
-            Call ExtractNameSpaceAndClassNameFromstring(FilterPath, FilterNameSpace)
-            Call ExtractNameSpaceAndClassNameFromstring(ConsumerPath, ConsumerNameSpace, ConsumerClassName)
+            Call ExtractNameSpaceAndClassNameFromString(FilterPath, FilterNameSpace)
+            Call ExtractNameSpaceAndClassNameFromString(ConsumerPath, ConsumerNameSpace, ConsumerClassName)
             
             If 0 = Len(FilterNameSpace) Then FilterNameSpace = aNameSpaces(i)
             If 0 = Len(ConsumerNameSpace) Then ConsumerNameSpace = aNameSpaces(i)
@@ -524,7 +524,7 @@ End Function
 ' \\ALEX-PC\ROOT\subscription:ActiveScriptEventConsumer.Name="Dragokas_consumer"
 ' out_NameSpace <- ROOT\subscription
 ' out_ClassName <- ActiveScriptEventConsumer
-Sub ExtractNameSpaceAndClassNameFromstring(sComplexString As String, out_NameSpace As String, Optional out_ClassName As String)
+Sub ExtractNameSpaceAndClassNameFromString(sComplexString As String, out_NameSpace As String, Optional out_ClassName As String)
     On Error GoTo ErrorHandler
     Dim pos As Long, pos2 As Long, pos3 As Long
     out_NameSpace = ""
@@ -588,7 +588,7 @@ Public Sub CheckO26Item()
     Dim sKeys$(), i&, sIFE$, sFile$, sHit$, Result As SCAN_RESULT
     Dim bDisabled As Boolean, vGFlag As Variant, vHive As Variant, lHive As Long, UseWow As Variant, Wow6432Redir As Boolean
     Dim bPerUser As Boolean, bIsSafe As Boolean, aTmp() As String, sNonSafe As String, bMissing As Boolean, sAlias As String
-    Dim bSafe As Boolean, bShared As Boolean
+    Dim bSafe As Boolean, bShared As Boolean, sOrigLine As String
     
     sIFE = "Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options"
     'key is redirected (XP-Vista)
@@ -640,7 +640,7 @@ Public Sub CheckO26Item()
                     
                     If (Not bSafe) Or bIgnoreAllWhitelists Or (Not bHideMicrosoft) Then
                         
-                        sHit = sAlias & " - IFEO: [Debugger] " & IIf(lHive = HKCU, "HKCU", "HKLM") & "\...\" & sKeys(i) & " - " & sFile & IIf(bMissing, " (file missing)", "")
+                        sHit = sAlias & " - IFEO: " & IIf(lHive = HKCU, "HKCU", "HKLM") & "\..\" & sKeys(i) & ": [Debugger] = " & sFile & IIf(bMissing, " (file missing)", "")
             
                         If Not IsOnIgnoreList(sHit) And _
                           Not (OSver.MajorMinor <= 5.2 And sFile = "ntsd -d" And Not FileExists("ntsd") And bHideMicrosoft And Not bIgnoreAllWhitelists) Then
@@ -686,8 +686,8 @@ Public Sub CheckO26Item()
                         bMissing = True
                     End If
             
-                    sHit = sAlias & " - IFEO: [VerifierDlls] " & IIf(lHive = HKCU, "HKCU", "HKLM") & "\...\" & _
-                        sKeys(i) & " - " & sFile & IIf(bMissing, " (file missing)", "") & IIf(bDisabled, " (disabled)", "")
+                    sHit = sAlias & " - IFEO: " & IIf(lHive = HKCU, "HKCU", "HKLM") & "\..\" & _
+                        sKeys(i) & ": [VerifierDlls] = " & sFile & IIf(bMissing, " (file missing)", "") & IIf(bDisabled, " (disabled)", "")
             
                     If Not IsOnIgnoreList(sHit) Then
               
@@ -708,46 +708,44 @@ Public Sub CheckO26Item()
                 End If
         
             Next i
-    
+            
             'AVRF Global Hook
     
             sFile = Reg.GetString(lHive, sIFE & "\" & "{ApplicationVerifierGlobalSettings}", "VerifierProviders", Wow6432Redir)
             
-            bIsSafe = True
-            sNonSafe = ""
-            
             If sFile <> "" Then
-                If bIgnoreAllWhitelists Then
-                    sNonSafe = sFile
-                    bIsSafe = False
-                Else
-                    aTmp = Split(sFile)
-                    For i = 0 To UBound(aTmp)
-                        If InStr(1, sSafeIfeVerifier, aTmp(i), 1) = 0 Then bIsSafe = False: sNonSafe = sNonSafe & aTmp(i) & " "
-                    Next
-                    sNonSafe = RTrim$(sNonSafe)
-                End If
-            End If
-            
-            '// TODO: remove only non-safe dlls
-            
-            If (Not bIsSafe) Or bIgnoreAllWhitelists Or (Not bHideMicrosoft) Then
-        
-                sHit = sAlias & " - IFEO: {Global} " & IIf(lHive = HKCU, "HKCU", "HKLM") & " - " & sNonSafe
-            
-                If Not IsOnIgnoreList(sHit) Then
-              
-                    'If bMD5 Then sHit = sHit & GetFileMD5(sFile)
                 
-                    With Result
-                        .Section = "O26"
-                        .HitLineW = sHit
-                        AddRegToFix .Reg, REMOVE_VALUE, vHive, sIFE & "\" & "{ApplicationVerifierGlobalSettings}", "VerifierProviders", , CLng(Wow6432Redir)
-                        .CureType = REGISTRY_BASED
-                    End With
-                    AddToScanResults Result
-                End If
-        
+                aTmp = Split(sFile)
+                For i = 0 To UBound(aTmp)
+                    sFile = aTmp(i)
+                    sOrigLine = sFile
+                    
+                    If InStr(1, "*" & sSafeIfeVerifier & "*", "*" & sFile & "*", 1) = 0 Or bIgnoreAllWhitelists Or (Not bHideMicrosoft) Then
+                        
+                        sFile = FormatFileMissing(sFile)
+                        
+                        sHit = sAlias & " - IFEO Global hook: [VerifierProviders] = " & sFile
+                        
+                        If Not IsOnIgnoreList(sHit) Then
+                            
+                            If bMD5 Then sHit = sHit & GetFileMD5(sFile)
+                            
+                            With Result
+                                .Section = "O26"
+                                .HitLineW = sHit
+                                
+                                AddRegToFix .Reg, REPLACE_VALUE Or TRIM_VALUE, _
+                                    vHive, sIFE & "\" & "{ApplicationVerifierGlobalSettings}", "VerifierProviders", , CLng(Wow6432Redir), , _
+                                    sOrigLine, "", " "
+                                
+                                .CureType = REGISTRY_BASED
+                            End With
+                            AddToScanResults Result
+                        End If
+                        
+                    End If
+                Next
+                
             End If
     
         Next UseWow

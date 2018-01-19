@@ -283,7 +283,7 @@ Public Sub CheckLSP()
                     If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O10", sHit
                 Else
                     sDummy = Mid$(sFile, InStrRev(sFile, "\") + 1)
-                    If InStr(1, sSafeLSPFiles, sDummy, vbTextCompare) = 0 Or bIgnoreAllWhitelists Then
+                    If InStr(1, sSafeLSPFiles, "*" & sDummy & "*", vbTextCompare) = 0 Or bIgnoreAllWhitelists Then
                         If Not oUnknFile.Exists(sFile) Then
                             oUnknFile.Add sFile, 0
                             sHit = "O10 - Unknown file in Winsock LSP: " & sFile
@@ -293,7 +293,7 @@ Public Sub CheckLSP()
                 End If
             Else
                 'damn, file is gone
-                If InStr(1, sSafeLSPFiles, sFile, vbTextCompare) = 0 Or bIgnoreAllWhitelists Then
+                If InStr(1, sSafeLSPFiles, "*" & sFile & "*", vbTextCompare) = 0 Or bIgnoreAllWhitelists Then
                     If Not oMissingFile.Exists(sFile) Then
                         oMissingFile.Add sFile, 0
                         sHit = "O10 - Broken Internet access because of LSP provider '" & sFile & "' missing"
@@ -328,7 +328,7 @@ Public Sub CheckLSP()
                     If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O10", sHit
                 Else
                     sDummy = LCase$(Mid$(sFile, InStrRev(sFile, "\") + 1))
-                    If InStr(1, sSafeLSPFiles, sDummy, vbTextCompare) = 0 Or bIgnoreAllWhitelists Then
+                    If InStr(1, sSafeLSPFiles, "*" & sDummy & "*", vbTextCompare) = 0 Or bIgnoreAllWhitelists Then
                         If Not oUnknFile.Exists(sFile) Then
                             oUnknFile.Add sFile, 0
                             sHit = "O10 - Unknown file in Winsock LSP: " & sFile
@@ -338,7 +338,7 @@ Public Sub CheckLSP()
                 End If
             Else
                 'damn - crossed again!
-                If InStr(1, sSafeLSPFiles, sFile, vbTextCompare) = 0 Or bIgnoreAllWhitelists Then
+                If InStr(1, sSafeLSPFiles, "*" & sFile & "*", vbTextCompare) = 0 Or bIgnoreAllWhitelists Then
                     If Not oMissingFile.Exists(sFile) Then
                         oMissingFile.Add sFile, 0
                         sHit = "O10 - Broken Internet access because of LSP provider '" & sFile & "' missing"

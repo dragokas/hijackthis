@@ -67,7 +67,7 @@ Private Type JOB_HEADER
 End Type
 
 Private Type JOB_UNICODE_STRING
-    length As Integer
+    Length As Integer
     Data As String
 End Type
 
@@ -1418,6 +1418,7 @@ Public Sub EnumJobs()
                 bEnabled = bEnabled Or Not CBool(Job.prop.Triggers.aTrigger(j).Flags And TASK_TRIGGER_FLAG_DISABLED)
             Next
             
+            sRunState = ""
             Select Case Job.head.Status
                 Case SCHED_S_TASK_READY
                     sRunState = "Ready"
@@ -1428,8 +1429,8 @@ Public Sub EnumJobs()
                 'case 0x41302: is some undoc. state (possible, disabled)
             End Select
             
-            sHit = "O22 - Task: " & IIf(bEnabled, "", "(disabled) ") & "(" & sRunState & ") " & sJobName & " - " & _
-                Job.prop.AppName.Data & IIf(Job.prop.Parameters.length > 1, " " & Job.prop.Parameters.Data, "")
+            sHit = "O22 - Task (Job): " & IIf(bEnabled, "", "(disabled) ") & IIf(sRunState <> "", "(" & sRunState & ") ", "") & sJobName & " - " & _
+                Job.prop.AppName.Data & IIf(Job.prop.Parameters.Length > 1, " " & Job.prop.Parameters.Data, "")
 
             If Not IsOnIgnoreList(sHit) Then
             
@@ -1512,13 +1513,13 @@ Private Sub Read_Job_String(cStream As clsStream, JobUniStr As JOB_UNICODE_STRIN
     
     JobUniStr.Data = vbNullString
     
-    cStream.ReadData VarPtr(JobUniStr.length), 2
+    cStream.ReadData VarPtr(JobUniStr.Length), 2
     
-    If JobUniStr.length > 1 Then
+    If JobUniStr.Length > 1 Then
     
-        JobUniStr.Data = String$(JobUniStr.length - 1, 0&)
+        JobUniStr.Data = String$(JobUniStr.Length - 1, 0&)
         
-        cStream.ReadData StrPtr(JobUniStr.Data), (JobUniStr.length - 1) * 2 'minus null terminator
+        cStream.ReadData StrPtr(JobUniStr.Data), (JobUniStr.Length - 1) * 2 'minus null terminator
         
         cStream.BufferPointer = cStream.BufferPointer + 2
     End If

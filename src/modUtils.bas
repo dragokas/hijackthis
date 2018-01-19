@@ -884,7 +884,10 @@ Public Function DeleteFileWEx(lpSTR As Long, Optional ForceDeleteMicrosoft As Bo
     
     If Not ForceDeleteMicrosoft Then
         If Not StrInParamArray(sExt, ".txt", ".log", ".tmp") Then
-            If IsMicrosoftFile(FileName) Then Exit Function
+            If IsMicrosoftFile(FileName) Then
+                SFC_RestoreFile FileName
+                Exit Function
+            End If
         End If
     End If
     

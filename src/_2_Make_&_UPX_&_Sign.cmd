@@ -82,6 +82,14 @@ set VTScanToolArg=/min /scan
 
 if "%~1"=="Fast" set bFast=true
 
+echo.
+set "ch="
+set /p "ch=Would you like to translate new Changelog into English ? (Y/N)"
+if /i "%ch%" neq "n" (
+  start "" _ChangeLog_en.txt
+  start "" _ChangeLog_ru.txt
+)
+
 :: Searching for non-screened STOP statements
 call _5_Check_Stop_Statements.cmd
 
@@ -339,7 +347,6 @@ set /p "ch=Would you like to write hot-update.txt ? (Y/N)"
 if /i "%ch%" neq "n" (
   start "" hot-changelog.txt
   start "" _ChangeLog_en.txt
-  start "" _ChangeLog_ru.txt
 )
 
 :skipAskHotUpdate

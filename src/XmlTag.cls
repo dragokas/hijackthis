@@ -17,7 +17,7 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Public Enum TagStyles
-    STag        ' Start Tag
+    sTag        ' Start Tag
     ETag        ' End Tag
     EmptyTag    ' Empty Element Tag
 End Enum
@@ -26,12 +26,12 @@ Private m_eStyle        As TagStyles
 Private m_colAttributes As Collection
 Private m_sType         As String
 
-Friend Function Serialize(Optional eType As TagStyles = STag) As String
+Friend Function Serialize(Optional eType As TagStyles = sTag) As String
     On Error GoTo Err_Trap
 
     Dim oAttrib As CXmlAttribute
     
-    If (eType = STag) Or (eType = EmptyTag) Then
+    If (eType = sTag) Or (eType = EmptyTag) Then
         Serialize = "<" & m_sType
         For Each oAttrib In m_colAttributes
             Serialize = Serialize & " " & oAttrib.Serialize
@@ -43,7 +43,7 @@ Friend Function Serialize(Optional eType As TagStyles = STag) As String
     Exit Function
 Err_Trap:
     ErrorMsg Err, "CXmlTag.Serialize"
-    If InIDE Then Stop: Resume Next
+    If inIDE Then Stop: Resume Next
 End Function
 
 Public Sub AppendAttribute(ByVal Attrib As CXmlAttribute)
@@ -62,7 +62,7 @@ Err_Trap:
             ' Log All Other Errors
             ErrorMsg Err, "CXmlTag.AppendAttribute"
     End Select
-    If InIDE Then Stop: Resume Next
+    If inIDE Then Stop: Resume Next
 End Sub
 
 Public Property Get AttributeCount() As Long
@@ -81,7 +81,7 @@ Public Sub RemoveAttribute(ByVal Index As Variant)
     Exit Sub
 Err_Trap:
     ErrorMsg Err, "CXmlTag.RemoveAttribute", Index
-    If InIDE Then Stop: Resume Next
+    If inIDE Then Stop: Resume Next
 End Sub
 
 Public Property Get TagAttribute(ByVal Index As Variant) As CXmlAttribute
@@ -90,7 +90,7 @@ Public Property Get TagAttribute(ByVal Index As Variant) As CXmlAttribute
     Exit Property
 Err_Trap:
     ErrorMsg Err, "CXmlTag.TagAttribute", Index
-    If InIDE Then Stop: Resume Next
+    If inIDE Then Stop: Resume Next
 End Property
 
 ' Start is the position of the Tag Start Element
@@ -137,7 +137,7 @@ Friend Sub Parse(Data() As Byte, Start As Long)
                 
         End Select
         Start = Start + 1
-        DoEvents
+        'DoEvents
     Loop While Start <= UBound(Data)    ' Until we reach the End of the Tag or EOF
 Exit Sub
 
@@ -153,7 +153,7 @@ Err_Trap:
             ErrorMsg Err, "CXmlTag.Parse"
     
     End Select
-    If InIDE Then Stop: Resume Next
+    If inIDE Then Stop: Resume Next
 End Sub
 
 Public Property Get TagStyle() As TagStyles

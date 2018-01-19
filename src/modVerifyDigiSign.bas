@@ -398,7 +398,7 @@ Private Declare Function GetFileAttributes Lib "kernel32.dll" Alias "GetFileAttr
 Private Declare Function HeapFree Lib "kernel32.dll" (ByVal hHeap As Long, ByVal dwFlags As Long, ByVal lpMem As Long) As Long
 Private Declare Function GetProcessHeap Lib "kernel32.dll" () As Long
 'Private Declare Function ArrPtr Lib "msvbvm60.dll" Alias "VarPtr" (arr() As Any) As Long
-Private Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal length As Long) As Long
+Private Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long) As Long
 'Private Declare Function GetMem1 Lib "msvbvm60.dll" (pSrc As Any, pDst As Any) As Long
 Private Declare Function GetMem4 Lib "msvbvm60.dll" (pSrc As Any, pDst As Any) As Long
 'Private Declare Function GetMem8 Lib "msvbvm60.dll" (pSrc As Any, pDst As Any) As Long
@@ -406,7 +406,7 @@ Private Declare Function lstrlen Lib "kernel32.dll" Alias "lstrlenW" (ByVal lpSt
 Private Declare Function lstrlenA Lib "kernel32.dll" (ByVal lpString As Long) As Long
 Private Declare Function lstrcpyn Lib "kernel32.dll" Alias "lstrcpynW" (ByVal lpDst As Long, ByVal lpSrc As Long, ByVal iMaxLength As Long) As Long
 'Private Declare Function lstrcpynA Lib "kernel32.dll" (ByVal lpDst As Long, ByVal lpSrc As Long, ByVal iMaxLength As Long) As Long
-Private Declare Function SysAllocStringByteLen Lib "oleaut32.dll" (ByVal pszStrPtr As Long, ByVal length As Long) As String
+Private Declare Function SysAllocStringByteLen Lib "oleaut32.dll" (ByVal pszStrPtr As Long, ByVal Length As Long) As String
 Private Declare Function FileTimeToSystemTime Lib "kernel32.dll" (lpFileTime As FILETIME, lpSystemTime As SYSTEMTIME) As Long
 Private Declare Function FileTimeToLocalFileTime Lib "kernel32.dll" (lpFileTime As FILETIME, lpLocalFileTime As FILETIME) As Long
 Private Declare Function SystemTimeToVariantTime Lib "oleaut32.dll" (lpSystemTime As SYSTEMTIME, vtime As Date) As Long
@@ -565,7 +565,7 @@ Public Function SignVerify( _
     Dim SignSettings        As WINTRUST_SIGNATURE_SETTINGS
     Dim verInfo             As DRIVER_VER_INFO
     
-    Static isInit           As Boolean
+    Static IsInit           As Boolean
     Static IsVistaAndNewer  As Boolean
     Static IsWin8AndNewer   As Boolean
     Static SignCache()      As SignResult_TYPE
@@ -665,8 +665,8 @@ Public Function SignVerify( _
         End If
     End If
     
-    If Not isInit Then                                          'Checking requirements
-        isInit = True
+    If Not IsInit Then                                          'Checking requirements
+        IsInit = True
         
         Dim hLib As Long
         hLib = LoadLibrary(StrPtr("Wintrust.dll"))              'Redirector issues, if they are present, should be alerted here
@@ -1210,14 +1210,14 @@ End Function
 
 Private Function HasCatRootVulnerability() As Boolean
     On Error GoTo ErrHandler
-    Static isInit       As Boolean
+    Static IsInit       As Boolean
     Static VulnStatus   As Boolean
     
-    If isInit Then
+    If IsInit Then
         HasCatRootVulnerability = VulnStatus
         Exit Function
     Else
-        isInit = True
+        IsInit = True
     End If
     
     Dim inf(68) As Long: inf(0) = 276: GetVersionEx inf(0): If inf(1) < 6 Then Exit Function 'XP is not vulnerable
@@ -1693,12 +1693,12 @@ ErrorHandler:
 End Function
 
 Public Function IsMicrosoftCertHash(hash As String) As Boolean
-    Static isInit As Boolean
+    Static IsInit As Boolean
     Static Hashes(11) As String
     Dim i As Long
     
-    If Not isInit Then
-        isInit = True
+    If Not IsInit Then
+        IsInit = True
         'Issuer / Cert. hash / Cert. signature hash / public key MD5 hash
         
         'Microsoft Root Certificate Authority;CDD4EEAE6000AC7F40C3802C171E30148030C072;391BE92883D52509155BFEAE27B9BD340170B76B;983B132635B7E91DEEF54A6780C09269
@@ -1741,6 +1741,14 @@ Public Function IsMicrosoftFile(sFile As String) As Boolean
     SignVerify sFile, SV_LightCheck Or SV_PreferInternalSign, SignResult
     If SignResult.isLegit Then
         IsMicrosoftFile = SignResult.isMicrosoftSign
+    End If
+End Function
+
+Public Function IsLegitFileEDS(sFile As String) As Boolean
+    Dim SignResult As SignResult_TYPE
+    SignVerify sFile, SV_LightCheck Or SV_PreferInternalSign, SignResult
+    If SignResult.isLegit Then
+        IsLegitFileEDS = True
     End If
 End Function
     
@@ -1933,15 +1941,15 @@ End Function
 
 Public Function GetWindowsDir() As String
     Static SysRoot As String
-    Static isInit As Boolean
+    Static IsInit As Boolean
     Dim lr As Long
     
-    If isInit Then
+    If IsInit Then
         GetWindowsDir = SysRoot
         Exit Function
     End If
     
-    isInit = True
+    IsInit = True
     
     SysRoot = String$(MAX_PATH, 0&)
     lr = GetSystemWindowsDirectory(StrPtr(SysRoot), MAX_PATH)
@@ -1956,12 +1964,12 @@ End Function
 
 Public Function IsWow64() As Boolean
     Dim hModule As Long, procAddr As Long, lIsWin64 As Long
-    Static isInit As Boolean, Result As Boolean
+    Static IsInit As Boolean, Result As Boolean
 
-    If isInit Then
+    If IsInit Then
         IsWow64 = Result
     Else
-        isInit = True
+        IsInit = True
         hModule = LoadLibrary(StrPtr("kernel32.dll"))
         If hModule Then
             procAddr = GetProcAddress(hModule, "IsWow64Process")
