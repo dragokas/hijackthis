@@ -91,7 +91,7 @@ Public Property Get Tooltip() As String
 End Property
 
 Public Property Let TrayIcon(Value As Variant)
-   On Error Resume Next
+   'On Error Resume Next
    ' Value can be a picturebox, image, form or string
    Select Case TypeName(Value)
       Case "PictureBox", "Image"
@@ -99,27 +99,29 @@ Public Property Let TrayIcon(Value As Variant)
       Case "String"
         Me.Icon = LoadPicture(Value)
       Case Else
-         ' Is it a form ?
-         Me.Icon = Value.Icon
+        If TypeOf Value Is Form Then
+            Me.Icon = Value.Icon
+            'pvSetFormIcon Me
+        End If
    End Select
    UpdateIcon NIM_MODIFY
 End Property
 
 Private Sub Form_Load()
-    ReloadLanguage
+    ReloadLanguage True
     Me.Visible = False
     Tooltip = "HiJackThis v. " & AppVerString
     UpdateIcon NIM_ADD
 End Sub
 
-Private Sub Form_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
    Dim msg As Long
    
    ' The Form_MouseMove is intercepted to give systray mouse events.
    If Me.ScaleMode = vbPixels Then
-      msg = x
+      msg = X
    Else
-      msg = x / Screen.TwipsPerPixelX
+      msg = X / Screen.TwipsPerPixelX
    End If
       
    Select Case msg
@@ -185,7 +187,7 @@ Private Sub UpdateIcon(Value As Long)
       .uID = vbNull
       .uFlags = NIM_DELETE Or NIF_TIP Or NIM_MODIFY
       .uCallbackMessage = WM_MOUSEMOVE
-      .hIcon = Me.Icon
+      .hIcon = Me.Icon.Handle
    End With
    Shell_NotifyIcon Value, nid
 End Sub

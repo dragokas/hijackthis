@@ -356,6 +356,10 @@ Private Sub Class_Initialize()
     Set m_colChildren = New Collection
 End Sub
 
+Private Sub Class_Terminate()
+    Set m_colChildren = Nothing
+End Sub
+
 Public Property Get Value() As String
     Value = Body
 End Property

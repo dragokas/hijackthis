@@ -31,13 +31,11 @@ Private ControlHasFocus As Boolean
 
 ' ================ Buttons =================
 
-Private Sub BtnInArr_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub BtnInArr_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
     'убирает фокус с кнопки (позволяет убрать артифакт черного прямоугольника, который налазит на слова, особенно в русском переводе - окно Config)
-    'With frmMain.cmdMainMenu
     With frmMain.cmdHidden
         If Not (BtnInArr.Name = "cmdStartupList") And _
-            Not (BtnInArr.Name = "cmdADSSpy") And _
-            Not (BtnInArr.Name = "cmdProcessManager") And _
+            Not (BtnInArr.Container.Name = "FraSysTools") And _
             Not (BtnInArr.Name = "cmdN00bClose") And _
             Not (BtnInArr.Name = "cmdN00bScan") Then
             If .Visible And .Enabled Then .SetFocus
@@ -47,7 +45,7 @@ End Sub
 
 ' ================ CheckBoxes ==============
 
-Private Sub chkBoxInArr_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub chkBoxInArr_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
     'убирает фокус с чекбокса (позволяет убрать рамку выделения, которая часто съедает край первых букв надписи чекбокса
     'With frmMain.cmdMainMenu
     With frmMain.cmdHidden
@@ -61,7 +59,7 @@ End Sub
 Private Sub txtBoxInArr_LostFocus()
     ControlHasFocus = False
 End Sub
-Private Sub txtBoxInArr_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub txtBoxInArr_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
     If Not ControlHasFocus Then
         'If txtBoxInArr.Name <> "txtHelp" Then
             If GetForegroundWindow() = txtBoxInArr.Parent.hwnd Then
@@ -80,7 +78,7 @@ End Sub
 Private Sub lstBoxInArr_LostFocus()
     ControlHasFocus = False
 End Sub
-Private Sub lstBoxInArr_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub lstBoxInArr_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
     If Not ControlHasFocus Then
         If GetForegroundWindow() = lstBoxInArr.Parent.hwnd Then
             ControlHasFocus = True

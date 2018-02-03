@@ -40,8 +40,8 @@ Public Ver      As VerInfo
 
 Sub Using(Optional AddToMsg As String)
     MsgBox IIf(Len(AddToMsg) <> 0, AddToMsg & vbCrLf & vbCrLf, "") & _
-        "Использование:" & vbCrLf & App.EXEName & ".exe [Path to exe] [Version]" & vbCrLf & vbCrLf & _
-            "Например: " & App.EXEName & " c:\temp\my.exe 2.1.1.5", vbExclamation, "Version Patcher"
+        "Using:" & vbCrLf & App.EXEName & ".exe [Path to exe] [Version]" & vbCrLf & vbCrLf & _
+            "Example: " & App.EXEName & " c:\temp\my.exe 2.1.1.5", vbExclamation, "Version Patcher"
 End Sub
 
 
@@ -58,27 +58,37 @@ Public Sub Main()
     
     Dim PathToResourceFile As String
     
+    '// TODO: make port of https://www.codeproject.com/Articles/6317/Updating-version-information-at-run-time
+    
+    
+    
+    
+    
+    
+    
+    
+    
     If Not ParseCommandLine(Command(), argv) Then
         Using
         End
     End If
 
     If UBound(argv) < 1 Then
-        Using "Недостаточно аргументов."
+        Using "Not enough arguments."
         End
     End If
 
     aVer = Split(argv(1), ".")
 
     If UBound(aVer) < 3 Then
-        Using "Версия указана в неверном формате."
+        Using "Version is specified in unknown format."
         End
     End If
 
     PathToResourceFile = argv(0)
 
     If 0 = Len(Dir$(PathToResourceFile)) Then
-        Using "Указанный файл не существует."
+        Using "Specified file is not exist."
         End
     End If
 
@@ -87,12 +97,12 @@ Public Sub Main()
     Ver.Build = aVer(2)
     Ver.Revision = aVer(3)
 
-    LogPath = App.Path & "\EnumResReport.txt"
+'    LogPath = App.Path & "\EnumResReport.txt"
+'
+'    ff = FreeFile()
+'    Open LogPath For Output As #ff
 
-    ff = FreeFile()
-    Open LogPath For Output As #ff
-
-    GetManifestLangCodeFromFile = -1
+    'GetManifestLangCodeFromFile = -1
     
     hModule = LoadLibrary(PathToResourceFile)
     
@@ -141,7 +151,7 @@ Public Sub Main()
         MsgBox "Cannot load file: " & PathToResourceFile
     End If
     
-    Close #ff
+    'Close #ff
     
     UpdateVersionInfo Ver.aVerInfoData, PathToResourceFile, Ver.ResName, Ver.ResLanguage
     

@@ -256,6 +256,7 @@ Public Sub RefreshProcessListNT(objList As ListBox)
                     If Not ((StrComp(Process(i).Name, "System Idle Process", 1) = 0 And Process(i).PID = 0) _
                         Or (StrComp(Process(i).Name, "System", 1) = 0 And Process(i).PID = 4) _
                         Or (StrComp(Process(i).Name, "Memory Compression", 1) = 0) _
+                        Or (StrComp(Process(i).Name, "MemCompression", 1) = 0) _
                         Or (StrComp(Process(i).Name, "Secure System", 1) = 0)) Then
                           sProcessName = Process(i).Name '& " (cannot get Process Path)"
                     End If
@@ -504,7 +505,7 @@ Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
 End Sub
 
 Private Sub Form_Load()
-    ReloadLanguage
+    ReloadLanguage True
     Me.Height = 7215
     'Process Manager
     Me.Caption = Translate(170)
@@ -515,7 +516,7 @@ Private Sub Form_Load()
     AddHorizontalScrollBarToResults lstProcessManager
 End Sub
 
-Private Sub Form_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Form_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
 '    If Button = 1 Then
 '        ReleaseCapture
 '        SendMessage Me.hwnd, WM_NCLBUTTONDOWN, HTCAPTION, 0
@@ -631,7 +632,7 @@ Private Sub lstProcessManager_KeyDown(KeyCode As Integer, Shift As Integer)
     End Select
 End Sub
 
-Private Sub lstProcessManager_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub lstProcessManager_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
     If Button = 1 Then
         If lstProcManDLLs.Visible = False Then Exit Sub
         Dim S$
@@ -649,7 +650,7 @@ Private Sub lstProcessManager_MouseUp(Button As Integer, Shift As Integer, x As 
     End If
 End Sub
 
-Private Sub lstProcManDLLs_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub lstProcManDLLs_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
     If Button = 2 Then
         mnuProcManKill.Enabled = False
         PopupMenu mnuProcMan, , , , mnuProcManProps
@@ -668,7 +669,7 @@ End Sub
 Private Sub lstProcessManager_LostFocus()
     lstProcessManagerHasFocus = False
 End Sub
-Private Sub lstProcessManager_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub lstProcessManager_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
     If Not lstProcessManagerHasFocus Then
         If GetForegroundWindow() = lstProcessManager.Parent.hwnd Then
             lstProcessManagerHasFocus = True
@@ -694,7 +695,7 @@ End Sub
 Private Sub lstProcManDLLs_LostFocus()
     lstProcManDLLsHasFocus = False
 End Sub
-Private Sub lstProcManDLLs_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub lstProcManDLLs_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
     If Not lstProcManDLLsHasFocus Then
         If GetForegroundWindow() = lstProcManDLLs.Parent.hwnd Then
             lstProcManDLLsHasFocus = True

@@ -181,7 +181,7 @@ Function IsMouseWithin(hwnd As Long) As Boolean
     Dim p As POINTAPI
     If GetWindowRect(hwnd, r) Then
         If GetCursorPos(p) Then
-            IsMouseWithin = PtInRect(r, p.x, p.y)
+            IsMouseWithin = PtInRect(r, p.X, p.Y)
         End If
     End If
 End Function
@@ -565,7 +565,7 @@ Public Function DeleteFileForce(File As String, Optional bForceMicrosoft As Bool
     Dim Redirect As Boolean, bOldStatus As Boolean
 
     If Not bForceMicrosoft Then
-        If IsMicrosoftFile(File) Then Exit Function
+        If IsMicrosoftFile(File, True) Then Exit Function
     End If
 
     Redirect = ToggleWow64FSRedirection(False, File, bOldStatus)
@@ -884,7 +884,10 @@ Public Function DeleteFileWEx(lpSTR As Long, Optional ForceDeleteMicrosoft As Bo
     
     If Not ForceDeleteMicrosoft Then
         If Not StrInParamArray(sExt, ".txt", ".log", ".tmp") Then
-            If IsMicrosoftFile(FileName) Then
+            If IsMicrosoftFile(FileName, True) Then
+                SFC_RestoreFile FileName
+                Exit Function
+            ElseIf IsFileSFC(FileName) Then
                 SFC_RestoreFile FileName
                 Exit Function
             End If
@@ -1755,3 +1758,12 @@ Public Function isCLSID(sStr As String) As Boolean
         If sStr Like "????????-????-????-????-????????????*" Then isCLSID = True
     End If
 End Function
+
+Public Sub AlignCommandButtonText(Button As CommandButton, Style As BUTTON_ALIGNMENT)
+    Dim lOldStyle As Long
+    Dim lRet As Long
+    lOldStyle = GetWindowLong(Button.hwnd, GWL_STYLE)
+    lRet = SetWindowLong(Button.hwnd, GWL_STYLE, Style Or lOldStyle)
+    Button.Refresh
+End Sub
+

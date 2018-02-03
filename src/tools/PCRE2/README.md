@@ -9,3 +9,21 @@ For a ready-to-use VB6 wrapper that makes use of this DLL, please visit https://
 PCRE is BSD-licensed.  The full source code and API documentation are available at http://www.pcre.org/
 
 For the source code of pcre2-16.dll look in repository by tannerhelland: https://github.com/tannerhelland/PCRE2-VB6-DLL/releases
+
+--------
+
+HiJackThis note:
+
+This program is an essential part of HiJackThis Fork project resources.
+
+---------
+
+Checksum:
+
+pcre2-16.dll
+SHA1: 76E72667E79615669079BCE9CF5B627B74C532F6
+SHA256: c304ba9a4d54f3a4cb130c7849fdfc482691fc7a526c9f73d7c9dbb3a0899307
+
+Digitally signed by Alex Dragokas (using self-signed certificate).
+Certificate's thumbprint should be: 05F1F2D5BA84CDD6866B37AB342969515E3D912E
+

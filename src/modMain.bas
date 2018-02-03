@@ -10,7 +10,7 @@ Attribute VB_Name = "modMain"
 ' R4 by Alex Dragokas
 ' O1 hosts.ics / DNSApi hijackers by Alex Dragokas
 ' O4 MSconfig and full rework by Alex Dragokas
-' O7 IPSec / TroubleShoot by Alex Dragokas
+' O7 IPSec / TroubleShoot / Certificates by Alex Dragokas
 ' O17 DHCP DNS by Alex Dragokas
 ' O21 ShellIconOverlayIdentifiers by Alex Dragokas
 ' O22 Tasks (Vista+) by Alex Dragokas
@@ -153,6 +153,7 @@ End Enum
 Public Enum ENUM_PROCESS_ACTION_BASED
     KILL_PROCESS = 1
     FREEZE_PROCESS = 2
+    FREEZE_OR_KILL_PROCESS = 4
 End Enum
 #If False Then
     Dim KILL_PROCESS, FREEZE_PROCESS
@@ -225,7 +226,7 @@ Public Type SCAN_RESULT
     Service()       As FIX_SERVICE
     CureType        As ENUM_CURE_BASED
     O25             As O25_Info
-    NoNeedBackup    As Boolean          'if no backup required / possible
+    NoNeedBackup    As Boolean          'if no backup required / or impossible
 End Type
 
 Type TYPE_PERFORMANCE
@@ -573,7 +574,7 @@ Public Sub LoadStuff()
         '\Software\Microsoft\Windows NT\CurrentVersion\WinLogon   'F2 (boot;Shell)
         .Add "REG:system.ini;boot;Shell;explorer.exe|%WINDIR%\explorer.exe;"
         '\Software\Microsoft\Windows NT\CurrentVersion\WinLogon   'F2 (boot;UserInit)
-        .Add "REG:system.ini;boot;UserInit;%WINDIR%\System32\userinit.exe|userinit.exe;"
+        .Add "REG:system.ini;boot;UserInit;%WINDIR%\System32\userinit.exe|userinit.exe|userinit;"
         '\Software\Microsoft\Windows NT\CurrentVersion\Windows    'F3 (windows;load)
         .Add "REG:win.ini;windows;load;;"
         '\Software\Microsoft\Windows NT\CurrentVersion\Windows    'F3 (windows;run)
@@ -673,11 +674,13 @@ Public Sub LoadStuff()
         .Add "http://www.google.com"
         .Add "127.0.0.1;localhost"
         .Add "about:blank"
-        .Add "http://go.microsoft.com/"
-        .Add "www.microsoft.com/"
+        .Add "http://go.microsoft.com"
+        .Add "www.microsoft.com"
         .Add "microsoft.com"
         .Add "http://windowsupdate.com"
         .Add "http://runonce.msn.com"
+        .Add "http://*.update.microsoft.com"
+        .Add "https://*.update.microsoft.com"
         ' "iexplore"
         ' "http://www.aol.com"
     End With
@@ -1090,51 +1093,51 @@ Public Sub LoadStuff()
     End With
     
     With colBadCert
-        .Add "Comodo", "03D22C9C66915D58C88912B64C1F984B8344EF09"
-        .Add "F-Secure", "0F684EC1163281085C6AF20528878103ACEFCAAB"
-        .Add "FRISK", "1667908C9E22EFBD0590E088715CC74BE4C60884"
-        .Add "BitDefender", "18DEA4EFA93B06AE997D234411F3FD72A677EECE"
-        .Add "GData", "2026D13756EB0DB753DF26CB3B7EEBE3E70BB2CF"
-        .Add "Malwarebytes", "249BDA38A611CD746A132FA2AF995A2D3C941264"
-        .Add "Symantec", "31AC96A6C17C425222C46D55C3CCA6BA12E54DAF"
-        .Add "Trend Micro", "331E2046A1CCA7BFEF766724394BE6112B4CA3F7"
-        .Add "Webroot", "3353EA609334A9F23A701B9159E30CB6C22D4C59"
-        .Add "SUPERAntiSpyware", "373C33726722D3A5D1EDD1F1585D5D25B39BEA1A"
-        .Add "Kaspersky", "3850EDD77CC74EC9F4829AE406BBF9C21E0DA87F"
-        .Add "AVG", "3D496FA682E65FC122351EC29B55AB94F3BB03FC"
-        .Add "PC Tools", "4243A03DB4C3C15149CEA8B38EEA1DA4F26BD159"
-        .Add "K7 Computing", "42727E052C0C2E1B35AB53E1005FD9EDC9DE8F01"
-        .Add "Doctor Web", "4420C99742DF11DD0795BC15B7B0ABF090DC84DF"
-        .Add "Emsisoft", "4C0AF5719009B7C9D85C5EAEDFA3B7F090FE5FFF"
-        .Add "Checkpoint Software", "5240AB5B05D11B37900AC7712A3C6AE42F377C8C"
-        .Add "Emsisoft", "5DD3D41810F28B2A13E9A004E6412061E28FA48D"
-        .Add "K7 Computing", "7457A3793086DBB58B3858D6476889E3311E550E"
-        .Add "Bullguard", "76A9295EF4343E12DFC5FE05DC57227C1AB00D29"
-        .Add "McAfee", "775B373B33B9D15B58BC02B184704332B97C3CAF"
-        .Add "Comodo", "872CD334B7E7B3C3D1C6114CD6B221026D505EAB"
-        .Add "McAfee", "88AD5DFE24126872B33175D1778687B642323ACF"
-        .Add "Adaware", "9132E8B079D080E01D52631690BE18EBC2347C1E"
-        .Add "Safer Networking", "982D98951CF3C0CA2A02814D474A976CBFF6BDB1"
-        .Add "Webroot", "9A08641F7C5F2CCA0888388BE3E5DBDDAAA3B361"
-        .Add "ThreatTrack Security", "9C43F665E690AB4D486D4717B456C5554D4BCEB5"
-        .Add "CurioLab", "9E3F95577B37C74CA2F70C1E1859E798B7FC6B13"
-        .Add "Avira", "A1F8DCB086E461E2ABB4B46ADCFA0B48C58B6E99"
-        .Add "BullGuard", "A5341949ABE1407DD7BF7DFE75460D9608FBC309"
-        .Add "ESET", "A59CC32724DD07A6FC33F7806945481A2D13CA2F"
-        .Add "AVG", "AB7E760DA2485EA9EF5A6EEE7647748D4BA6B947"
-        .Add "AVAST", "AD4C5429E10F4FF6C01840C20ABA344D7401209F"
-        .Add "Symantec", "AD96BB64BA36379D2E354660780C2067B81DA2E0"
-        .Add "Malwarebytes", "B8EBF0E696AF77F51C96DB4D044586E2F4F8FD84"
-        .Add "Trend Micro", "CDC37C22FE9272D8F2610206AD397A45040326B8"
-        .Add "Kaspersky", "D3F78D747E7C5D6D3AE8ABFDDA7522BFB4CBD598"
-        .Add "ThreatTrack Security", "DB303C9B61282DE525DC754A535CA2D6A9BD3D87"
-        .Add "AVAST", "DB77E5CFEC34459146748B667C97B185619251BA"
-        .Add "Total Defense", "E22240E837B52E691C71DF248F12D27F96441C00"
-        .Add "AVG Technologies", "E513EAB8610CFFD7C87E00BCA15C23AAB407FCEF"
-        .Add "BitDefender", "ED841A61C0F76025598421BC1B00E24189E68D54"
-        .Add "ESET", "F83099622B4A9F72CB5081F742164AD1B8D048C9"
-        .Add "Panda", "FBB42F089AF2D570F2BF6F493D107A3255A9BB1A"
-        .Add "Doctor Web", "FFFA650F2CB2ABC0D80527B524DD3F9FC172C138"
+'        .Add "Comodo", "03D22C9C66915D58C88912B64C1F984B8344EF09"
+'        .Add "F-Secure", "0F684EC1163281085C6AF20528878103ACEFCAAB"
+'        .Add "FRISK", "1667908C9E22EFBD0590E088715CC74BE4C60884"
+'        .Add "BitDefender", "18DEA4EFA93B06AE997D234411F3FD72A677EECE"
+'        .Add "GData", "2026D13756EB0DB753DF26CB3B7EEBE3E70BB2CF"
+'        .Add "Malwarebytes", "249BDA38A611CD746A132FA2AF995A2D3C941264"
+'        .Add "Symantec", "31AC96A6C17C425222C46D55C3CCA6BA12E54DAF"
+'        .Add "Trend Micro", "331E2046A1CCA7BFEF766724394BE6112B4CA3F7"
+'        .Add "Webroot", "3353EA609334A9F23A701B9159E30CB6C22D4C59"
+'        .Add "SUPERAntiSpyware", "373C33726722D3A5D1EDD1F1585D5D25B39BEA1A"
+'        .Add "Kaspersky", "3850EDD77CC74EC9F4829AE406BBF9C21E0DA87F"
+'        .Add "AVG", "3D496FA682E65FC122351EC29B55AB94F3BB03FC"
+'        .Add "PC Tools", "4243A03DB4C3C15149CEA8B38EEA1DA4F26BD159"
+'        .Add "K7 Computing", "42727E052C0C2E1B35AB53E1005FD9EDC9DE8F01"
+'        .Add "Doctor Web", "4420C99742DF11DD0795BC15B7B0ABF090DC84DF"
+'        .Add "Emsisoft", "4C0AF5719009B7C9D85C5EAEDFA3B7F090FE5FFF"
+'        .Add "Checkpoint Software", "5240AB5B05D11B37900AC7712A3C6AE42F377C8C"
+'        .Add "Emsisoft", "5DD3D41810F28B2A13E9A004E6412061E28FA48D"
+'        .Add "K7 Computing", "7457A3793086DBB58B3858D6476889E3311E550E"
+'        .Add "Bullguard", "76A9295EF4343E12DFC5FE05DC57227C1AB00D29"
+'        .Add "McAfee", "775B373B33B9D15B58BC02B184704332B97C3CAF"
+'        .Add "Comodo", "872CD334B7E7B3C3D1C6114CD6B221026D505EAB"
+'        .Add "McAfee", "88AD5DFE24126872B33175D1778687B642323ACF"
+'        .Add "Adaware", "9132E8B079D080E01D52631690BE18EBC2347C1E"
+'        .Add "Safer Networking", "982D98951CF3C0CA2A02814D474A976CBFF6BDB1"
+'        .Add "Webroot", "9A08641F7C5F2CCA0888388BE3E5DBDDAAA3B361"
+'        .Add "ThreatTrack Security", "9C43F665E690AB4D486D4717B456C5554D4BCEB5"
+'        .Add "CurioLab", "9E3F95577B37C74CA2F70C1E1859E798B7FC6B13"
+'        .Add "Avira", "A1F8DCB086E461E2ABB4B46ADCFA0B48C58B6E99"
+'        .Add "BullGuard", "A5341949ABE1407DD7BF7DFE75460D9608FBC309"
+'        .Add "ESET", "A59CC32724DD07A6FC33F7806945481A2D13CA2F"
+'        .Add "AVG", "AB7E760DA2485EA9EF5A6EEE7647748D4BA6B947"
+'        .Add "AVAST", "AD4C5429E10F4FF6C01840C20ABA344D7401209F"
+'        .Add "Symantec", "AD96BB64BA36379D2E354660780C2067B81DA2E0"
+'        .Add "Malwarebytes", "B8EBF0E696AF77F51C96DB4D044586E2F4F8FD84"
+'        .Add "Trend Micro", "CDC37C22FE9272D8F2610206AD397A45040326B8"
+'        .Add "Kaspersky", "D3F78D747E7C5D6D3AE8ABFDDA7522BFB4CBD598"
+'        .Add "ThreatTrack Security", "DB303C9B61282DE525DC754A535CA2D6A9BD3D87"
+'        .Add "AVAST", "DB77E5CFEC34459146748B667C97B185619251BA"
+'        .Add "Total Defense", "E22240E837B52E691C71DF248F12D27F96441C00"
+'        .Add "AVG Technologies", "E513EAB8610CFFD7C87E00BCA15C23AAB407FCEF"
+'        .Add "BitDefender", "ED841A61C0F76025598421BC1B00E24189E68D54"
+'        .Add "ESET", "F83099622B4A9F72CB5081F742164AD1B8D048C9"
+'        .Add "Panda", "FBB42F089AF2D570F2BF6F493D107A3255A9BB1A"
+'        .Add "Doctor Web", "FFFA650F2CB2ABC0D80527B524DD3F9FC172C138"
     End With
     
     AppendErrorLogCustom "LoadStuff - End"
@@ -1258,11 +1261,6 @@ Public Sub StartScan()
         '.lblInfo(1).Visible = True
         '.picPaypal.Visible = True
         If .lstResults.ListCount > 0 Then
-            If bAutoSelect Then
-                For i = 0 To .lstResults.ListCount - 1
-                    .lstResults.Selected(i) = True
-                Next i
-            End If
             .txtNothing.Visible = False
             .cmdFix.Enabled = True
             .cmdSaveDef.Enabled = True
@@ -1282,7 +1280,7 @@ Public Sub StartScan()
     If bDebugMode Or bDebugToFile Then
     
         If ObjPtr(OSver) <> 0 Then
-                OSData = OSver.Bitness & " " & OSver.OSName & " (" & OSver.Edition & "), " & _
+                OSData = OSver.Bitness & " " & OSver.OSName & IIf(OSver.Edition <> "", " (" & OSver.Edition & ")", "") & ", " & _
                     OSver.Major & "." & OSver.Minor & "." & OSver.Build & "." & OSver.Revision & ", " & _
                     "Service Pack: " & OSver.SPVer & "" & IIf(OSver.IsSafeBoot, " (Safe Boot)", "")
         End If
@@ -1485,12 +1483,13 @@ Private Sub ProcessRuleReg(ByVal sRule$)
         Select Case iMode
         
         Case 0 'check for incorrect value
-            sData = Reg.GetString(hHive, sKey, sParam, Wow6432Redir)
-            sData = UnQuote(EnvironW(sData))
+            If Reg.ValueExists(hHive, sKey, sParam, Wow6432Redir) Then
+              sData = Reg.GetString(hHive, sKey, sParam, Wow6432Redir)
+              sData = UnQuote(EnvironW(sData))
             
-            If Not inArraySerialized(sData, sDefDataStrings, "|", , , 1) Then
+              If Not inArraySerialized(sData, sDefDataStrings, "|", , , 1) Or (Not bHideMicrosoft) Then
                 bIsNSBSD = False
-                If bIgnoreSafeDomains And Not bIgnoreAllWhitelists Then bIsNSBSD = StrBeginWithArray(sData, aSafeRegDomains)
+                If bHideMicrosoft And Not bIgnoreAllWhitelists Then bIsNSBSD = StrBeginWithArray(sData, aSafeRegDomains)
                 If Not bIsNSBSD Then
                     If InStr(1, sData, "%2e", 1) > 0 Then sData = UnEscape(sData)
                     
@@ -1507,14 +1506,18 @@ Private Sub ProcessRuleReg(ByVal sRule$)
                         AddToScanResults Result
                     End If
                 End If
+              End If
             End If
             
         Case 1  'check for present value
-            sData = Reg.GetString(hHive, sKey, sParam, Wow6432Redir)
-            If 0 <> Len(sData) Then
+            
+            If Reg.ValueExists(hHive, sKey, sParam, Wow6432Redir) Then
+            
+                sData = Reg.GetString(hHive, sKey, sParam, Wow6432Redir)
+            
                 'check if domain is on safe list
                 bIsNSBSD = False
-                If bIgnoreSafeDomains And Not bIgnoreAllWhitelists Then bIsNSBSD = StrBeginWithArray(sData, aSafeRegDomains)
+                If bHideMicrosoft And Not bIgnoreAllWhitelists Then bIsNSBSD = StrBeginWithArray(sData, aSafeRegDomains)
                 'make hit
                 If Not bIsNSBSD Then
                     If InStr(1, sData, "%2e", 1) > 0 Then sData = UnEscape(sData)
@@ -1646,7 +1649,7 @@ Public Sub CheckR3Item()
             
             GetFileByCLSID sCLSID, sFile, , HE.Redirected, HE.SharedKey
             
-            If Not (sCLSID = sDefHookCLSID And StrComp(sFile, sDefHookDll, 1) = 0) Then
+            If Not (sCLSID = sDefHookCLSID And StrComp(sFile, sDefHookDll, 1) = 0) Or (Not bHideMicrosoft) Then
                 
                 GetTitleByCLSID sCLSID, sName, HE.Redirected, HE.SharedKey
                 
@@ -1845,6 +1848,8 @@ End Sub
 Private Function IsBingScopeKeyPara(sRegParam As String, sURL As String) As Boolean
     If sURL = "" Then Exit Function
     
+    If Not bHideMicrosoft Then Exit Function
+    
     'Is valid domain
     Dim pos As Long, sPrefix As String
     pos = InStr(sURL, "?")
@@ -1855,6 +1860,7 @@ Private Function IsBingScopeKeyPara(sRegParam As String, sURL As String) As Bool
     Case "http://www.bing.com/as/api/qsml"
     Case "http://api.bing.com/qsml.aspx"
     Case "http://search.live.com/results.aspx"
+    Case "http://api.search.live.com/qsml.aspx"
     Case Else
         Exit Function
     End Select
@@ -2071,10 +2077,12 @@ Private Sub CheckFileItems(ByVal sRule$)
             End If
             
             sData = IniGetString(sFile, sSection, sParam)
-            sData = RTrimNull(sData)
+            sData = Trim$(RTrimNull(sData))
             
-            If Not inArraySerialized(sData, sLegitData, "|", , , vbTextCompare) Then
-                If bIsWinNT And Trim$(sData) <> vbNullString Then
+            If bIsWinNT And Len(sData) <> 0 Then
+            
+                If Not inArraySerialized(sData, sLegitData, "|", , , vbTextCompare) Or (Not bHideMicrosoft) Then
+                
                     sHit = "F0 - " & sFile & ": " & "[" & sSection & "]" & " " & sParam & " = " & sData
                     If Not IsOnIgnoreList(sHit) Then
                         If bMD5 Then sHit = sHit & GetFileMD5(sData)
@@ -2101,9 +2109,9 @@ Private Sub CheckFileItems(ByVal sRule$)
             End If
             
             sData = IniGetString(sFile, sSection, sParam)
-            sData = RTrimNull(sData)
+            sData = Trim$(RTrimNull(sData))
             
-            If Trim$(sData) <> vbNullString Then
+            If Len(sData) <> 0 Then
                 sHit = "F1 - " & sFile & ": " & "[" & sSection & "]" & " " & sParam & " = " & sData
                 If Not IsOnIgnoreList(sHit) Then
                     If bMD5 Then sHit = sHit & GetFileMD5(sData)
@@ -2132,7 +2140,7 @@ Private Sub CheckFileItems(ByVal sRule$)
                 If Right$(sData, 1) = "," Then sTmp = Left$(sTmp, Len(sTmp) - 1)
                 
                 'Note: HKCU + empty values are allowed
-                If Not inArraySerialized(sTmp, sLegitData, "|", , , vbTextCompare) And _
+                If (Not inArraySerialized(sTmp, sLegitData, "|", , , vbTextCompare) Or (Not bHideMicrosoft)) And _
                   Not ((HE.Hive = HKCU Or HE.Hive = HKU) And sData = "") Then
             
                     'exclude no WOW64 value on Win10 for UserInit
@@ -2640,10 +2648,10 @@ Private Sub CheckO1Item()
                     '216.239.37.101 = google.com
                     
                 '::1 - default for Vista
-                If Left$(sLine, 1) <> "#" And _
-                  StrComp(sLine, "127.0.0.1       localhost", 1) <> 0 And _
+                If (Left$(sLine, 1) <> "#" Or bIgnoreAllWhitelists) And _
+                  ((StrComp(sLine, "127.0.0.1       localhost", 1) <> 0 And _
                   StrComp(sLine, "::1             localhost", 1) <> 0 And _
-                  StrComp(sLine, "127.0.0.1 localhost", 1) <> 0 Then
+                  StrComp(sLine, "127.0.0.1 localhost", 1) <> 0) Or Not bHideMicrosoft) Then
                   
                     Do
                         sLine = Replace$(sLine, "  ", " ")
@@ -2805,9 +2813,9 @@ CheckHostsDefault:
                     
                     If sLine <> vbNullString Then
                     
-                        If Left$(sLine, 1) <> "#" And _
-                          StrComp(sLine, "127.0.0.1       localhost", 1) <> 0 And _
-                          StrComp(sLine, "::1             localhost", 1) <> 0 Then    '::1 - default for Vista
+                        If (Left$(sLine, 1) <> "#" Or bIgnoreAllWhitelists) And _
+                          ((StrComp(sLine, "127.0.0.1       localhost", 1) <> 0 And _
+                          StrComp(sLine, "::1             localhost", 1) <> 0) Or Not bHideMicrosoft) Then    '::1 - default for Vista
                             Do
                                 sLine = Replace$(sLine, "  ", " ")
                             Loop Until InStr(sLine, "  ") = 0
@@ -3190,8 +3198,10 @@ Public Sub CheckO2Item()
                         sFile = FormatFileMissing(sFile)
                         
                         bSafe = False
-                        If InStr(1, sFile, "\Microsoft Office", 1) <> 0 Then
-                            If IsMicrosoftFile(sFile) Then bSafe = True
+                        If bHideMicrosoft Then
+                            If InStr(1, sFile, "\Microsoft Office", 1) <> 0 Then
+                                If IsMicrosoftFile(sFile) Then bSafe = True
+                            End If
                         End If
                         
                         If Not bSafe Then
@@ -3413,8 +3423,10 @@ Public Sub CheckO3Item()
                     
                     bSafe = False
                     
-                    If OSver.MajorMinor = 5 Then 'Win2k
-                        If WhiteListed(sFile, sWinDir & "\system32\msdxm.ocx") Then bSafe = True
+                    If bHideMicrosoft Then
+                        If OSver.MajorMinor = 5 Then 'Win2k
+                            If WhiteListed(sFile, sWinDir & "\system32\msdxm.ocx") Then bSafe = True
+                        End If
                     End If
                     
                     'If 0 <> Len(sName) And InStr(sCLSID, "{") > 0 And Not bSafe Then
@@ -3556,13 +3568,8 @@ Sub CheckO4_RegRuns()
     Dim i&, j&, sKey$, sData$, sHit$, sAlias$, sParam As String, sMD5$, aValue() As String
     Dim bData() As Byte, isDisabledWin8 As Boolean, isDisabledWinXP As Boolean, flagDisabled As Long, sKeyDisable As String
     Dim sFile$, sArgs$, sUser$, bSafe As Boolean, aLines() As String, sLine As String
-    Dim bShowPendingDeleted As Boolean
     Dim aData() As String
     Dim sOrigLine As String
-    
-    If bIgnoreAllWhitelists Then
-        bShowPendingDeleted = True
-    End If
     
     ReDim aRegRuns(1 To 9)
     ReDim aDes(UBound(aRegRuns))
@@ -3680,6 +3687,10 @@ Sub CheckO4_RegRuns()
                         If WhiteListed(sFile, PF_64 & "\Windows Sidebar\sidebar.exe") And (sArgs = "/autoRun" Or sArgs = "/detectMem") Then bSafe = True
                     End If
                     
+                    If OSver.MajorMinor = 5 Then
+                        If WhiteListed(sFile, sWinDir & "\system32\internat.exe") And Len(sArgs) = 0 Then bSafe = True
+                    End If
+                    
                 End If
                 
                 If (Not IsOnIgnoreList(sHit)) And (Not bSafe) Then
@@ -3692,7 +3703,10 @@ Sub CheckO4_RegRuns()
                         .Alias = sAlias
                         AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key, aValue(i), , HE.Redirected
                         AddFileToFix .File, REMOVE_FILE, sFile
-                        .CureType = REGISTRY_BASED Or FILE_BASED
+                        If Not isDisabledWinXP Then
+                            AddProcessToFix .Process, FREEZE_OR_KILL_PROCESS, sFile
+                        End If
+                        .CureType = REGISTRY_BASED Or FILE_BASED Or PROCESS_BASED
                     End With
                     AddToScanResults Result
                 End If
@@ -3743,6 +3757,8 @@ Sub CheckO4_RegRuns()
         
         aData = SplitSafe(sData, vbNullChar) 'if MULTI_SZ (BootExecute)
         
+        ArrayRemoveEmptyItems aData
+        
         For i = 0 To UBound(aData)
         
             bSafe = False
@@ -3757,10 +3773,12 @@ Sub CheckO4_RegRuns()
                     End If
                 End If
                 
-                If OSver.MajorMinor = 5 Then 'Win2k
-                    If StrComp(sData, "autochk *", 1) = 0 Or StrComp(sData, "DfsInit", 1) = 0 Then bSafe = True
-                Else
-                    If StrComp(sData, "autochk *", 1) = 0 Then bSafe = True
+                If bHideMicrosoft Then
+                    If OSver.MajorMinor = 5 Then 'Win2k
+                        If StrComp(sData, "autochk *", 1) = 0 Or StrComp(sData, "DfsInit", 1) = 0 Then bSafe = True
+                    Else
+                        If StrComp(sData, "autochk *", 1) = 0 Then bSafe = True
+                    End If
                 End If
             Else
                 If sData = aDefData(HE.KeyIndex) Then bSafe = True
@@ -3768,7 +3786,7 @@ Sub CheckO4_RegRuns()
             
             If Not bSafe Or bIgnoreAllWhitelists Or Not bHideMicrosoft Then
                 
-                'HKLM\..\Command Processor\Autorun:
+                'HKLM\..\Command Processor: [Autorun] =
                 sAlias = IIf(bIsWin32, "O4", IIf(HE.Redirected, "O4-32", "O4")) & " - " & HE.HiveNameAndSID & "\..\" & aDes(HE.KeyIndex) & ": " & _
                     "[" & sParam & "] = "
                 
@@ -3819,6 +3837,8 @@ Sub CheckO4_RegRuns()
     ReDim aRegParam(1 To UBound(aRegKey)) As String   'param
     ReDim aDes(1 To UBound(aRegKey)) As String        'description
     
+  If bAdditional Then
+    
     'https://technet.microsoft.com/en-us/library/cc960241.aspx
     'PendingFileRenameOperations
     'Shared
@@ -3863,9 +3883,11 @@ Sub CheckO4_RegRuns()
             
             sHit = sAlias & ConcatFileArg(sFile, sArgs)
             
-            If Not IsOnIgnoreList(sHit) And Not FileMissing(sFile) Then
+            'If Not IsOnIgnoreList(sHit) And Not FileMissing(sFile) Then
             
-              If sArgs <> "-> DELETE" Or (sArgs = "-> DELETE" And bShowPendingDeleted) Then
+            If Not IsOnIgnoreList(sHit) Then
+            
+              'If sArgs <> "-> DELETE" Or (sArgs = "-> DELETE" And bShowPendingDeleted) Then
 
                 If bMD5 Then sMD5 = GetFileMD5(sFile): sHit = sHit & sMD5
 
@@ -3878,11 +3900,13 @@ Sub CheckO4_RegRuns()
                     .CureType = REGISTRY_BASED Or FILE_BASED
                 End With
                 AddToScanResults Result
-              End If
+              'End If
             End If
           Next
         End If
     Loop
+    
+  End If
     
     Dim aFiles() As String
     ReDim aFiles(5)
@@ -3909,28 +3933,28 @@ Sub CheckO4_RegRuns()
                 
                 'exclude comments
                 For j = 0 To UBound(aData)
-                    If StrBeginWith(aData(j), "REM") Then
+                    If (StrBeginWith(aData(j), "REM") And Not bIgnoreAllWhitelists) Then
                         aData(j) = ""
-                    ElseIf StrBeginWith(aData(j), "::") Then
+                    ElseIf (StrBeginWith(aData(j), "::") And Not bIgnoreAllWhitelists) Then
                         aData(j) = ""
-                    ElseIf Not bIgnoreAllWhitelists Then
+                    ElseIf bHideMicrosoft Then
                         'check whitelist
                         If StrEndWith(sFile, "AutoExec.nt") Then
-                            If aData(j) = "@echo off" Then
+                            If StrComp(aData(j), "@echo off", 1) = 0 Then
                                 aData(j) = ""
-                            ElseIf aData(j) = "lh %SystemRoot%\system32\mscdexnt.exe" Then
+                            ElseIf StrComp(aData(j), "lh %SystemRoot%\system32\mscdexnt.exe", 1) = 0 Then
                                 aData(j) = ""
-                            ElseIf aData(j) = "lh %SystemRoot%\system32\redir" Then
+                            ElseIf StrComp(aData(j), "lh %SystemRoot%\system32\redir", 1) = 0 Then
                                 aData(j) = ""
-                            ElseIf aData(j) = "lh %SystemRoot%\system32\dosx" Then
+                            ElseIf StrComp(aData(j), "lh %SystemRoot%\system32\dosx", 1) = 0 Then
                                 aData(j) = ""
-                            ElseIf aData(j) = "SET BLASTER=A220 I5 D1 P330 T3" Then
+                            ElseIf StrComp(aData(j), "SET BLASTER=A220 I5 D1 P330 T3", 1) = 0 Then
                                 aData(j) = ""
                             End If
                         ElseIf StrEndWith(sFile, "Config.nt") Then
-                            If aData(j) = "dos=high, umb" Then
+                            If StrComp(aData(j), "dos=high, umb", 1) = 0 Then
                                 aData(j) = ""
-                            ElseIf aData(j) = "device=%SystemRoot%\system32\himem.sys" Then
+                            ElseIf StrComp(aData(j), "device=%SystemRoot%\system32\himem.sys", 1) = 0 Then
                                 aData(j) = ""
                             ElseIf StrComp(aData(j), "Files=40", 1) = 0 Then
                                 aData(j) = ""
@@ -4011,121 +4035,134 @@ Sub CheckO4_RegRuns()
         End If
     Loop
     
-'    'Autorun.inf
-'    'http://journeyintoir.blogspot.com/2011/01/autoplay-and-autorun-exploit-artifacts.html
-'    Dim aDrives() As String
-'    Dim sAutorun As String
-'    Dim aVerb() As String
-'    Dim bOnce As Boolean
-'
-'    aVerb = Split("open|shellexecute|shell\open\command|shell\explore\command", "|")
-'
-'    ' Mapping scheme for "inf. verb" -> to "registry" :
-'    '
-'    ' icon                  -> _Autorun\Defaulticon
-'    ' open                  -> shell\AutoRun\command
-'    ' shellexecute          -> shell\AutoRun\command
-'    ' shell\open\command    -> shell\open\command
-'    ' shell\explore\command -> shell\explore\command
-'
-'    aDrives = GetDrives(DRIVE_BIT_FIXED Or DRIVE_BIT_REMOVABLE)
-'
-'    For i = 1 To UBound(aDrives)
-'        sAutorun = BuildPath(aDrives(i), "autorun.inf")
-'        If FileExists(sAutorun) Then
-'
-'            bOnce = False
-'
-'            For j = 0 To UBound(aVerb)
-'
-'                sFile = ""
-'                sArgs = ""
-'                sData = ReadIniA(sAutorun, "autorun", aVerb(j))
-'
-'                If Len(sData) <> 0 Then
-'                    SplitIntoPathAndArgs sData, sFile, sArgs, bIsRegistryData:=False
-'                    sFile = FormatFileMissing(sFile)
-'
-'                    sHit = "O4 - Autorun.inf: " & sAutorun & " - " & aVerb(j) & " - " & ConcatFileArg(sFile, sArgs)
-'
-'                    If Not IsOnIgnoreList(sHit) Then
-'                        With Result
-'                            .Section = "O4"
-'                            .HitLineW = sHit
-'                            AddFileToFix .File, REMOVE_FILE, sAutorun
-'                            .CureType = FILE_BASED
-'                        End With
-'                        AddToScanResults Result
-'                    End If
-'
-'                    bOnce = True
-'                End If
-'            Next
-'
-'            'if unknown data is inside autorun.inf
-'            If Not bOnce Then
-'
-'                sHit = "O4 - Autorun.inf: " & sAutorun & " - " & "(unknown target)"
-'
-'                If Not IsOnIgnoreList(sHit) Then
-'                    With Result
-'                        .Section = "O4"
-'                        .HitLineW = sHit
-'                        AddFileToFix .File, REMOVE_FILE, sAutorun
-'                        .CureType = FILE_BASED
-'                    End With
-'                    AddToScanResults Result
-'                End If
-'            End If
-'        End If
-'    Next
-'
-'    'MountPoints2
-'    HE.Init HE_HIVE_ALL
-'    HE.AddKey "Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2"
-'
-'    aVerb = Split("shell\AutoRun\command|shell\open\command|shell\explore\command", "|")
-'
-'    Do While HE.MoveNext
-'        erase aSubKey
-'        For i = 1 To Reg.EnumSubKeysToArray(HE.Hive, HE.Key, aSubKey, HE.Redirected)
-'            For j = 0 To UBound(aVerb)
-'                sKey = HE.Key & "\" & aSubKey(i) & "\" & aVerb(j)
-'
-'                If Reg.KeyExists(HE.Hive, sKey, HE.Redirected) Then
-'
-'                    sData = Reg.GetString(HE.Hive, sKey, "", HE.Redirected)
-'
-'                    SplitIntoPathAndArgs sData, sFile, sArgs, bIsRegistryData:=True
-'                    sFile = FormatFileMissing(sFile)
-'
-'                    sHit = IIf(HE.Redirected, "O4-32", "O4") & " - MountPoints2: " & HE.HiveNameAndSID & "\..\" & aSubKey(i) & "\" & aVerb(j) & " - " & ConcatFileArg(sFile, sArgs)
-'
-'                    If Not IsOnIgnoreList(sHit) Then
-'                        With Result
-'                            .Section = "O4"
-'                            .HitLineW = sHit
-'                            'remove MountPoints2\{CLSID}
-'                            'or
-'                            'remove MountPoints2\Letter
-'                            AddRegToFix .Reg, REMOVE_KEY, HE.Hive, HE.Key & "\" & aSubKey(i), , , HE.Redirected
-'                            .CureType = REGISTRY_BASED
-'                        End With
-'                        AddToScanResults Result
-'                    End If
-'                End If
-'            Next
-'        Next
-'    Loop
+  If bAdditional Then
+    
+    'Autorun.inf
+    'http://journeyintoir.blogspot.com/2011/01/autoplay-and-autorun-exploit-artifacts.html
+    Dim aDrives() As String
+    Dim sAutorun As String
+    Dim aVerb() As String
+    Dim bOnce As Boolean
+
+    aVerb = Split("open|shellexecute|shell\open\command|shell\explore\command", "|")
+
+    ' Mapping scheme for "inf. verb" -> to "registry" :
+    '
+    ' icon                  -> _Autorun\Defaulticon
+    ' open                  -> shell\AutoRun\command
+    ' shellexecute          -> shell\AutoRun\command
+    ' shell\open\command    -> shell\open\command
+    ' shell\explore\command -> shell\explore\command
+
+    aDrives = GetDrives(DRIVE_BIT_FIXED Or DRIVE_BIT_REMOVABLE)
+
+    For i = 1 To UBound(aDrives)
+        sAutorun = BuildPath(aDrives(i), "autorun.inf")
+        If FileExists(sAutorun) Then
+
+            bOnce = False
+
+            For j = 0 To UBound(aVerb)
+
+                sFile = ""
+                sArgs = ""
+                sData = ReadIniA(sAutorun, "autorun", aVerb(j))
+
+                If Len(sData) <> 0 Then
+                    SplitIntoPathAndArgs sData, sFile, sArgs, bIsRegistryData:=False
+                    sFile = FormatFileMissing(sFile)
+
+                    sHit = "O4 - Autorun.inf: " & sAutorun & " - " & aVerb(j) & " - " & ConcatFileArg(sFile, sArgs)
+
+                    If Not IsOnIgnoreList(sHit) Then
+                        With Result
+                            .Section = "O4"
+                            .HitLineW = sHit
+                            AddFileToFix .File, REMOVE_FILE, sAutorun
+                            .CureType = FILE_BASED
+                        End With
+                        AddToScanResults Result
+                    End If
+
+                    bOnce = True
+                End If
+            Next
+
+            'if unknown data is inside autorun.inf
+            If Not bOnce Then
+
+                sHit = "O4 - Autorun.inf: " & sAutorun & " - " & "(unknown target)"
+
+                If Not IsOnIgnoreList(sHit) Then
+                    With Result
+                        .Section = "O4"
+                        .HitLineW = sHit
+                        AddFileToFix .File, REMOVE_FILE, sAutorun
+                        .CureType = FILE_BASED
+                    End With
+                    AddToScanResults Result
+                End If
+            End If
+        End If
+    Next
+    
+  End If
+  
+  If bAdditional Then
+
+    'MountPoints2
+    HE.Init HE_HIVE_ALL
+    HE.AddKey "Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2"
+
+    aVerb = Split("shell\AutoRun\command|shell\open\command|shell\explore\command", "|")
+
+    Do While HE.MoveNext
+        Erase aSubKey
+        For i = 1 To Reg.EnumSubKeysToArray(HE.Hive, HE.Key, aSubKey, HE.Redirected)
+            For j = 0 To UBound(aVerb)
+                sKey = HE.Key & "\" & aSubKey(i) & "\" & aVerb(j)
+
+                If Reg.KeyExists(HE.Hive, sKey, HE.Redirected) Then
+
+                    sData = Reg.GetString(HE.Hive, sKey, "", HE.Redirected)
+
+                    SplitIntoPathAndArgs sData, sFile, sArgs, bIsRegistryData:=True
+                    sFile = FormatFileMissing(sFile)
+
+                    sHit = IIf(HE.Redirected, "O4-32", "O4") & " - MountPoints2: " & HE.HiveNameAndSID & "\..\" & aSubKey(i) & "\" & aVerb(j) & " - " & ConcatFileArg(sFile, sArgs)
+
+                    If Not IsOnIgnoreList(sHit) Then
+                        With Result
+                            .Section = "O4"
+                            .HitLineW = sHit
+                            'remove MountPoints2\{CLSID}
+                            'or
+                            'remove MountPoints2\Letter
+                            AddRegToFix .Reg, REMOVE_KEY, HE.Hive, HE.Key & "\" & aSubKey(i), , , HE.Redirected
+                            .CureType = REGISTRY_BASED
+                        End With
+                        AddToScanResults Result
+                    End If
+                End If
+            Next
+        Next
+    Loop
+    
+  End If
     
     'ScreenSaver
     sFile = Reg.GetString(HKCU, "Control Panel\Desktop", "SCRNSAVE.EXE")
-    If 0 <> Len(sFile) And sFile <> "(Нет)" Then
+    If 0 <> Len(sFile) Then
         bSafe = True
+        sOrigLine = sFile
+
         sFile = FormatFileMissing(sFile)
         
         If FileMissing(sFile) Then
-            bSafe = False
+            '// TODO: add english version of "(Нет)" - it's a default value for XP, as I can remember
+            If (sOrigLine <> "(Нет)" Or bIgnoreAllWhitelists) Then
+                bSafe = False
+            End If
         Else
             If Not IsMicrosoftFile(sFile) Then bSafe = False
         End If
@@ -4537,7 +4574,7 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUser() As String)
             
                 sShortCut = GetFileNameAndExt(aFiles(i))
 
-                If LCase$(sShortCut) <> "desktop.ini" Then
+                If (LCase$(sShortCut) <> "desktop.ini" Or bIgnoreAllWhitelists) Then
 
                   If Not FolderExists(sFolder & "\" & sShortCut) Then
                   
@@ -4574,7 +4611,6 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUser() As String)
                             End If
                         End If
                     End If
-                  
                   
                     sFile = ""
                     Blink = False
@@ -4636,7 +4672,7 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUser() As String)
                           Else
                             .Alias = aDes(k)
                             AddFileToFix .File, REMOVE_FILE, sLinkPath
-                            AddProcessToFix .Process, KILL_PROCESS, sTarget
+                            AddProcessToFix .Process, FREEZE_OR_KILL_PROCESS, sTarget
                             .CureType = FILE_BASED Or PROCESS_BASED
                           End If
                         End With
@@ -4803,7 +4839,7 @@ Private Sub CheckO5Item()
     IniGetString sControlIni, "don't load", "inetcpl.cpl"
     sDummy = RTrimNull(sDummy)
     
-    If sDummy <> vbNullString Then
+    If Len(sDummy) <> 0 Then
         sHit = "O5 - control.ini: [don't load] inetcpl.cpl = " & sDummy
         
         If Not IsOnIgnoreList(sHit) Then
@@ -4905,10 +4941,12 @@ Private Sub CheckSystemProblems()
     Dim sData As String, sDataNonExpanded As String
     Dim vParam, sKeyFull As String, sHit As String, sDefValue As String, Result As SCAN_RESULT
     
-    If OSver.MajorMinor = 5 Then 'Win2k
-        HE.Init HE_HIVE_ALL, HE_SID_ALL And Not HE_SID_SERVICE, HE_REDIR_NO_WOW
-    Else
+    If OSver.IsWindows7OrGreater Then
+        '7+
         HE.Init HE_HIVE_ALL, , HE_REDIR_NO_WOW
+    Else
+        'Vista-
+        HE.Init HE_HIVE_ALL, HE_SID_ALL And Not HE_SID_SERVICE, HE_REDIR_NO_WOW
     End If
     
     Do While HE.MoveNext
@@ -5199,7 +5237,7 @@ Private Sub CheckO7Item()
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "CheckO7Item - Begin"
     
-    Dim lData&, sHit$, Result As SCAN_RESULT
+    Dim lData&, sHit$, sHit1$, sHit2$, Result As SCAN_RESULT
     Dim i As Long
     
     'http://www.oszone.net/11424
@@ -5334,7 +5372,7 @@ Private Sub CheckO7Item()
     Dim bFilterData() As Byte, IP(1) As String, RuleAction As String, bMirror As Boolean, DataSerialized As String
     Dim Packet_Type(1) As String, M As Long, n As Long, PortNum(1) As Long, ProtocolType As String, idxBaseOffset As Long, IpFil As IPSEC_FILTER_RECORD, RecCnt As Byte
     Dim bRegexpInit As Boolean, oMatches As IRegExpMatchCollection, IPTypeFlag(1) As Long, b() As Byte, bAtLeastOneFilter As Boolean, bNoFilter As Boolean
-    Dim sHitTrimmed$, bSafe As Boolean
+    Dim bSafe As Boolean
     Dim odHit As clsTrickHashTable
     Set odHit = New clsTrickHashTable
     
@@ -5596,14 +5634,23 @@ AddItem:
     'example:
     'O7 - IPSec: (Enabled) IP_Policy_Name [yyyy/mm/dd] - {5d57bbac-8464-48b2-a731-9dd7e6f65c9f} - Source: My IP - Destination: 8.8.8.8 (Port 80 TCP) - (mirrored) Action: Block
     
-    sHit = "O7 - IPSec: Name: " & IPSecName & " " & _
-        "(" & Format$(dModify, "yyyy\/mm\/dd") & ")" & " - " & IPSecID & " - " & _
+    'do not show in log disabled entries
+    If Not bIgnoreAllWhitelists Then
+        If Not bEnabled Then Return
+    End If
+    
+    sHit1 = "O7 - IPSec: Name: " & IPSecName & " " & _
+        "(" & Format$(dModify, "yyyy\/mm\/dd") & ")" & " - "
+        
+    sHit2 = IPSecID & " - " & _
         IIf(bNoFilter, "No rules ", _
         "Source: " & IIf(Packet_Type(0) = "IP", "IP: " & IP(0), Packet_Type(0)) & _
         IIf((ProtocolType = "TCP" Or ProtocolType = "UDP") And PortNum(0) <> 0, " (Port " & PortNum(0) & " " & ProtocolType & ")", "") & " - " & _
         "Destination: " & IIf(Packet_Type(1) = "IP", "IP: " & IP(1), Packet_Type(1)) & _
         IIf((ProtocolType = "TCP" Or ProtocolType = "UDP") And PortNum(1) <> 0, " (Port " & PortNum(1) & " " & ProtocolType & ")", "") & " " & _
         IIf(bMirror, "(mirrored) ", "")) & "- Action: " & RuleAction & IIf(bEnabled, "", " (disabled)")
+    
+    sHit = sHit1 & sHit2
     
     If odHit.Exists(sHit) Then 'skip several identical rules
         If Not bAutoLogSilent Then DoEvents
@@ -5612,26 +5659,25 @@ AddItem:
         odHit.Add sHit, 0&
     End If
     
-    sHitTrimmed = Mid$(sHit, Len("O7 - IPSec: " & IPSecName & " " & _
-        "[" & Format$(dModify, "yyyy\/mm\/dd") & "]" & " - ") + 1)
-    
     bSafe = False
     
     'Whitelists
-    If OSver.MajorMinor <= 5.2 Then 'Win2k / XP
-        If sHitTrimmed = "{72385236-70fa-11d1-864c-14a300000000} - No rules - Action: Default response (disabled)" Then
+    If bHideMicrosoft Then
+      If (OSver.MajorMinor <= 5.2) Or (OSver.MajorMinor = 5.2 And OSver.IsWin64) Then  'Win2k / XP / XP x64
+        If StrComp(sHit2, "{72385236-70fa-11d1-864c-14a300000000} - No rules - Action: Default response (disabled)", 1) = 0 Then
             bSafe = True
-        ElseIf sHitTrimmed = "{72385230-70fa-11d1-864c-14a300000000} - Source: my IP - Destination: Any IP (mirrored) - Action: Allow (disabled)" Then
+        ElseIf StrComp(sHit2, "{72385230-70fa-11d1-864c-14a300000000} - Source: my IP - Destination: Any IP (mirrored) - Action: Allow (disabled)", 1) = 0 Then
             bSafe = True
-        ElseIf sHitTrimmed = "{72385230-70fa-11d1-864c-14a300000000} - Source: my IP - Destination: Any IP (mirrored) - Action: Inbound pass-through (disabled)" Then
+        ElseIf StrComp(sHit2, "{72385230-70fa-11d1-864c-14a300000000} - Source: my IP - Destination: Any IP (mirrored) - Action: Inbound pass-through (disabled)", 1) = 0 Then
             bSafe = True
-        ElseIf sHitTrimmed = "{7238523c-70fa-11d1-864c-14a300000000} - Source: my IP - Destination: Any IP (mirrored) - Action: Allow (disabled)" Then
+        ElseIf StrComp(sHit2, "{7238523c-70fa-11d1-864c-14a300000000} - Source: my IP - Destination: Any IP (mirrored) - Action: Allow (disabled)", 1) = 0 Then
             bSafe = True
-        ElseIf sHitTrimmed = "{7238523c-70fa-11d1-864c-14a300000000} - Source: my IP - Destination: Any IP (mirrored) - Action: Inbound pass-through (disabled)" Then
+        ElseIf StrComp(sHit2, "{7238523c-70fa-11d1-864c-14a300000000} - Source: my IP - Destination: Any IP (mirrored) - Action: Inbound pass-through (disabled)", 1) = 0 Then
             bSafe = True
         End If
+      End If
     End If
-       
+    
     If Not bSafe Then
       If Not IsOnIgnoreList(sHit) Then
         With Result
@@ -6156,7 +6202,7 @@ Public Sub CheckO11Item()
                 
                 If InStr("JAVA_VM.JAVA_SUN.BROWSE.ACCESSIBILITY.SEARCHING." & _
                   "HTTP1.1.MULTIMEDIA.Multimedia.CRYPTO.PRINT." & _
-                  "TOEGANKELIJKHEID.TABS.INTERNATIONAL*.ACCELERATED_GRAPHICS", sSubKey) = 0 Then
+                  "TOEGANKELIJKHEID.TABS.INTERNATIONAL*.ACCELERATED_GRAPHICS", sSubKey) = 0 Or bIgnoreAllWhitelists Then
                   
                     sName = Reg.GetString(HE.Hive, HE.Key & "\" & sSubKey, "Text", HE.Redirected)
                   
@@ -6354,7 +6400,7 @@ Public Sub CheckO13Item()
             'exclude empty HKCU / HKU
             If Not (HE.Hive <> HKLM And sDummy = "") Then
             
-                If Not inArraySerialized(sDummy, aExa(i), "|", , , vbBinaryCompare) Then
+                If Not inArraySerialized(sDummy, aExa(i), "|", , , vbBinaryCompare) Or Not bHideMicrosoft Then
                     
                     sHit = IIf(bIsWin32, "O13", IIf(HE.Redirected, "O13-32", "O13")) & " - " & HE.HiveNameAndSID & "\..\URL: " & _
                         aKey(i) & "[" & aVal(i) & "] = " & sDummy
@@ -6443,22 +6489,22 @@ Public Sub CheckO14Item()
     Next
     
     'SearchAssistant = http://ie.search.msn.com/{SUB_RFC1766}/srchasst/srchasst.htm
-    If sSearchAssis <> "http://ie.search.msn.com/{SUB_RFC1766}/srchasst/srchasst.htm" And _
-      sSearchAssis <> g_DEFSEARCHASS Then
+    If (sSearchAssis <> "http://ie.search.msn.com/{SUB_RFC1766}/srchasst/srchasst.htm" And _
+      sSearchAssis <> g_DEFSEARCHASS) Or Not bHideMicrosoft Then
         sHit = "O14 - IERESET.INF: SearchAssistant - " & sSearchAssis
         If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O14", sHit
     End If
     
     'CustomizeSearch = http://ie.search.msn.com/{SUB_RFC1766}/srchasst/srchcust.htm
-    If sCustSearch <> "http://ie.search.msn.com/{SUB_RFC1766}/srchasst/srchcust.htm" And _
-      sCustSearch <> g_DEFSEARCHCUST Then
+    If (sCustSearch <> "http://ie.search.msn.com/{SUB_RFC1766}/srchasst/srchcust.htm" And _
+      sCustSearch <> g_DEFSEARCHCUST) Or Not bHideMicrosoft Then
         sHit = "O14 - IERESET.INF: CustomizeSearch - " & sCustSearch
         If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O14", sHit
     End If
     
     'SEARCH_PAGE_URL = http://www.microsoft.com/isapi/redir.dll?prd=ie&ar=iesearch
-    If sSearchPage <> "http://www.microsoft.com/isapi/redir.dll?prd=ie&ar=iesearch" And _
-      sSearchPage <> g_DEFSEARCHPAGE Then
+    If (sSearchPage <> "http://www.microsoft.com/isapi/redir.dll?prd=ie&ar=iesearch" And _
+      sSearchPage <> g_DEFSEARCHPAGE) Or Not bHideMicrosoft Then
         sHit = "O14 - IERESET.INF: SEARCH_PAGE_URL - " & sSearchPage
         If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O14", sHit
     End If
@@ -6466,10 +6512,10 @@ Public Sub CheckO14Item()
     'START_PAGE_URL  = http://www.msn.com
     '                  http://www.microsoft.com/isapi/redir.dll?prd=ie&pver=5.5&ar=msnhome
     '                  http://www.microsoft.com/isapi/redir.dll?prd=ie&pver=6&ar=msnhome
-    If sStartPage <> "http://www.msn.com" And _
+    If (sStartPage <> "http://www.msn.com" And _
        sStartPage <> "http://www.microsoft.com/isapi/redir.dll?prd=ie&pver=5.5&ar=msnhome" And _
        sStartPage <> "http://www.microsoft.com/isapi/redir.dll?prd=ie&pver=6&ar=msnhome" And _
-       sStartPage <> g_DEFSTARTPAGE Then
+       sStartPage <> g_DEFSTARTPAGE) Or Not bHideMicrosoft Then
         sHit = "O14 - IERESET.INF: START_PAGE_URL - " & sStartPage
         If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O14", sHit
     End If
@@ -6477,10 +6523,10 @@ Public Sub CheckO14Item()
     'MS_START_PAGE_URL=http://www.microsoft.com/isapi/redir.dll?prd=ie&pver=5.5&ar=msnhome
     '(=START_PAGE_URL) http://www.microsoft.com/isapi/redir.dll?prd=ie&pver=6&ar=msnhome
     If sMsStartPage <> vbNullString Then
-        If sMsStartPage <> "http://www.msn.com" And _
+        If (sMsStartPage <> "http://www.msn.com" And _
            sMsStartPage <> "http://www.microsoft.com/isapi/redir.dll?prd=ie&pver=5.5&ar=msnhome" And _
            sMsStartPage <> "http://www.microsoft.com/isapi/redir.dll?prd=ie&pver=6&ar=msnhome" And _
-           sMsStartPage <> g_DEFSTARTPAGE Then
+           sMsStartPage <> g_DEFSTARTPAGE) Or Not bHideMicrosoft Then
             sHit = "O14 - IERESET.INF: MS_START_PAGE_URL - " & sMsStartPage
             If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O14", sHit
         End If
@@ -6603,7 +6649,7 @@ Public Sub CheckO15Item()
             End If
             For i = 0 To UBound(sDomains)
                 bSafe = False
-                If bIgnoreSafeDomains And Not bIgnoreAllWhitelists Then
+                If bHideMicrosoft And Not bIgnoreAllWhitelists Then
                     bSafe = StrBeginWithArray(sDomains(i), aSafeRegDomains)
                 End If
                 If Not bSafe Then
@@ -6611,22 +6657,31 @@ Public Sub CheckO15Item()
                     If UBound(sSubDomains) <> -1 Then
                         'list any trusted subdomains for main domain
                         For j = 0 To UBound(sSubDomains)
+                            
                             For Each vProtocol In Array("*", "http", "https")
                                 Select Case vProtocol
-                                Case "*": sProtPrefix = "*."
-                                Case "http": sProtPrefix = "http://"
-                                Case "https": sProtPrefix = "https://"
+                                    Case "*": sProtPrefix = "*."
+                                    Case "http": sProtPrefix = "http://"
+                                    Case "https": sProtPrefix = "https://"
                                 End Select
                                 If Reg.GetDword(HE.Hive, HE.Key & "\" & sDomains(i) & "\" & sSubDomains(j), CStr(vProtocol), HE.Redirected) = 2 Then
-                                    sHit = sAlias & sProtPrefix & sSubDomains(j) & "." & sDomains(i)
-                                    If Not IsOnIgnoreList(sHit) Then
-                                        With Result
-                                            .Section = "O15"
-                                            .HitLineW = sHit
-                                            AddRegToFix .Reg, REMOVE_KEY, HE.Hive, HE.Key & "\" & sDomains(i) & "\" & sSubDomains(j), , , HE.Redirected
-                                            .CureType = REGISTRY_BASED
-                                        End With
-                                        AddToScanResults Result
+                                
+                                    bSafe = False
+                                    If bHideMicrosoft And Not bIgnoreAllWhitelists Then
+                                        bSafe = StrBeginWithArray(sProtPrefix & sSubDomains(j) & "." & sDomains(i), aSafeRegDomains)
+                                    End If
+                                    
+                                    If Not bSafe Then
+                                        sHit = sAlias & sProtPrefix & sSubDomains(j) & "." & sDomains(i)
+                                        If Not IsOnIgnoreList(sHit) Then
+                                            With Result
+                                                .Section = "O15"
+                                                .HitLineW = sHit
+                                                AddRegToFix .Reg, REMOVE_KEY, HE.Hive, HE.Key & "\" & sDomains(i) & "\" & sSubDomains(j), , , HE.Redirected
+                                                .CureType = REGISTRY_BASED
+                                            End With
+                                            AddToScanResults Result
+                                        End If
                                     End If
                                 End If
                             Next
@@ -6635,20 +6690,28 @@ Public Sub CheckO15Item()
                     'list main domain as well if that's trusted too (*grumble*)
                     For Each vProtocol In Array("*", "http", "https")
                         Select Case vProtocol
-                        Case "*": sProtPrefix = "*."
-                        Case "http": sProtPrefix = "http://"
-                        Case "https": sProtPrefix = "https://"
+                            Case "*": sProtPrefix = "*."
+                            Case "http": sProtPrefix = "http://"
+                            Case "https": sProtPrefix = "https://"
                         End Select
                         If Reg.GetDword(HE.Hive, HE.Key & "\" & sDomains(i), CStr(vProtocol), HE.Redirected) = 2 Then
-                            sHit = sAlias & HE.HiveNameAndSID & " - " & sProtPrefix & sDomains(i)
-                            If Not IsOnIgnoreList(sHit) Then
-                                With Result
-                                    .Section = "O15"
-                                    .HitLineW = sHit
-                                    AddRegToFix .Reg, REMOVE_KEY, HE.Hive, HE.Key & "\" & sDomains(i), , , HE.Redirected
-                                    .CureType = REGISTRY_BASED
-                                End With
-                                AddToScanResults Result
+                        
+                            bSafe = False
+                            If bHideMicrosoft And Not bIgnoreAllWhitelists Then
+                                If StrBeginWithArray(sProtPrefix & sDomains(i), aSafeRegDomains) Then bSafe = True
+                            End If
+                        
+                            If Not bSafe Then
+                                sHit = sAlias & HE.HiveNameAndSID & " - " & sProtPrefix & sDomains(i)
+                                If Not IsOnIgnoreList(sHit) Then
+                                    With Result
+                                        .Section = "O15"
+                                        .HitLineW = sHit
+                                        AddRegToFix .Reg, REMOVE_KEY, HE.Hive, HE.Key & "\" & sDomains(i), , , HE.Redirected
+                                        .CureType = REGISTRY_BASED
+                                    End With
+                                    AddToScanResults Result
+                                End If
                             End If
                         End If
                     Next
@@ -6730,8 +6793,10 @@ Public Sub CheckO15Item()
         LastIndex = 11
     ElseIf OSver.IsWindowsVistaOrGreater Then
         LastIndex = 10
-    Else
+    ElseIf OSver.IsWindowsXPOrGreater Then
         LastIndex = 5
+    Else
+        LastIndex = 4
     End If
     
     Do While HE.MoveNext
@@ -6756,7 +6821,7 @@ Public Sub CheckO15Item()
             
             If Not bSafe Then
                 If lProtZones(i) < 0 Or lProtZones(i) > 5 Then lProtZones(i) = 5 'Unknown
-                If lProtZones(i) <> lProtZoneDefs(i) Then 'check for legit
+                If (lProtZones(i) <> lProtZoneDefs(i) Or Not bHideMicrosoft) Then 'check for legit
                     sHit = IIf(HE.Redirected, "O15-32", "O15") & " - ProtocolDefaults: " & HE.HiveNameAndSID & _
                         " - [" & sProtVals(i) & "] protocol is in " & sZoneNames(lProtZones(i)) & " Zone, should be " & sZoneNames(lProtZoneDefs(i)) & " Zone" & _
                         IIf(HE.IsSidUser, "(User: '" & HE.UserName & "')", "")
@@ -6880,7 +6945,7 @@ Public Sub CheckO16Item()
                   InStr(sCodebase, "http://download.microsoft.com") <> 1 And _
                   InStr(sCodebase, "http://windowsupdate.microsoft.com") <> 1 And _
                   InStr(sCodebase, "http://v4.windowsupdate.microsoft.com") <> 1) _
-                  Or bIgnoreAllWhitelists Then
+                  Or Not bHideMicrosoft Then
            
                   'InStr(sCodeBase, "http://java.sun.com") <> 1 And _
                   'InStr(sCodeBase, "http://download.macromedia.com") <> 1 And _
@@ -7034,6 +7099,7 @@ Public Sub CheckO17Item()
                     
                     If sParam = "NameServer" Then
                         Data = SplitByMultiDelims(Trim$(sData), True, sTrimChar, " ", ",")
+                        ArrayRemoveEmptyItems Data
                     End If
                     
                     For i = 0 To UBound(Data)
@@ -7086,6 +7152,7 @@ Public Sub CheckO17Item()
                         'into several separate
                         
                         Data = SplitByMultiDelims(Trim$(sData), True, sTrimChar, " ", ",")
+                        ArrayRemoveEmptyItems Data
                         
                         For i = 0 To UBound(Data)
                             ReDim Preserve TcpIpNameServers(UBound(TcpIpNameServers) + 1)   'for using in filtering DNS DHCP later
@@ -7156,7 +7223,7 @@ Continue:
         For i = 0 To UBound(DNS)
             If Len(DNS(i)) <> 0 Then
                 'If Not (DNS(i) = "192.168.0.1" Or DNS(i) = "192.168.1.1") Then
-                    If Not inArray(DNS(i), TcpIpNameServers, , , vbTextCompare) Then
+                    If (Not inArray(DNS(i), TcpIpNameServers, , , vbTextCompare) Or bIgnoreAllWhitelists) Then
                         sHit = "O17 - DHCP DNS " & i + 1 & ": " & DNS(i)
                         
                         sProviderDNS = GetCollectionKeyByItemName(DNS(i), colSafeDNS)
@@ -7516,16 +7583,17 @@ Public Sub CheckO20Item()
         End If
         
         sFile = Reg.GetString(HKEY_LOCAL_MACHINE, sAppInit, "AppInit_DLLs", Wow6432Redir)
-        If sFile <> vbNullString Then
+        If Len(sFile) <> 0 Then
             
             aFile = SplitByMultiDelims(sFile, True, sTrimChar, ",", " ")
+            ArrayRemoveEmptyItems aFile
             
             For i = 0 To UBound(aFile)
             
                 sFile = aFile(i)
                 sOrigLine = sFile
                 
-                If InStr(1, "*" & sSafeAppInit & "*", "*" & sFile & "*", vbTextCompare) = 0 Or bIgnoreAllWhitelists Then
+                If (InStr(1, "*" & sSafeAppInit & "*", "*" & sFile & "*", vbTextCompare) = 0) Or bIgnoreAllWhitelists Then
                     'item is not on whitelist
                     'O20 - AppInit_DLLs
                     'O20-32 - AppInit_DLLs
@@ -7568,7 +7636,7 @@ Public Sub CheckO20Item()
         sSubkeys = Split(Reg.EnumSubKeys(HKEY_LOCAL_MACHINE, sWinLogon, Wow6432Redir), "|")
         If UBound(sSubkeys) <> -1 Then
             For i = 0 To UBound(sSubkeys)
-                If InStr(1, "*" & sSafeWinlogonNotify & "*", "*" & sSubkeys(i) & "*", vbTextCompare) = 0 Then
+                If (InStr(1, "*" & sSafeWinlogonNotify & "*", "*" & sSubkeys(i) & "*", vbTextCompare) = 0) Or bIgnoreAllWhitelists Then
                     sFile = Reg.GetString(HKEY_LOCAL_MACHINE, sWinLogon & "\" & sSubkeys(i), "DllName", Wow6432Redir)
                     
                     sFile = FormatFileMissing(sFile)
@@ -7661,10 +7729,12 @@ Public Sub CheckO21Item()
                 If bHideMicrosoft And Not bIgnoreAllWhitelists Then
                     
                     bInList = inArray(sCLSID, aSafeSSODL, , , vbTextCompare)
-                    If StrComp(GetFileName(sFile, True), "GROOVEEX.DLL", 1) = 0 Then bInList = True
                     
                     If bInList Then
                         If IsMicrosoftFile(sFile) Then bSafe = True
+                    End If
+                    If Not bSafe Then
+                        If WhiteListed(sFile, "GROOVEEX.DLL", True) Then bSafe = True
                     End If
                 End If
                 
@@ -7677,7 +7747,7 @@ Public Sub CheckO21Item()
                         "[" & sValueName & "] " & " = " & sCLSID & " => " & IIf(sName <> sValueName, sName & " - ", "") & sFile
                     
                     'some shit leftover by Microsoft ^)
-                    If sName = "WebCheck" And sCLSID = "{E6FB5E20-DE35-11CF-9C87-00AA005127ED}" And sFile = "(no file)" Then bSafe = True
+                    If bHideMicrosoft And (sName = "WebCheck" And sCLSID = "{E6FB5E20-DE35-11CF-9C87-00AA005127ED}" And sFile = "(no file)") Then bSafe = True
                 
                     If Not IsOnIgnoreList(sHit) And Not bSafe Then
                         If bMD5 Then sHit = sHit & GetFileMD5(sFile)
@@ -7698,6 +7768,7 @@ Public Sub CheckO21Item()
         End If
     Loop
     
+    'ShellIconOverlayIdentifiers
     Dim aSubKey() As String
     Dim sSIOI As String
     
@@ -7816,6 +7887,35 @@ Public Sub CheckO21Item()
         Next
     Loop
     
+    'ColumnHandlers
+    'Note: Not available in Vista+
+    'HKEY_CLASSES_ROOT\Folder\ShellEx\ColumnHandlers
+    
+    'see also: https://www.nirsoft.net/utils/shexview.html
+    
+'    HE.Init HE_HIVE_ALL
+'    HE.AddKey "SOFTWARE\Classes\Folder\ShellEx\ColumnHandlers"
+'    HE.AddKey "SOFTWARE\Classes\Folder\ShellEx\ContextMenuHandlers"
+'    HE.AddKey "SOFTWARE\Classes\Folder\ShellEx\DragDropHandlers"
+'    HE.AddKey "SOFTWARE\Classes\Folder\ShellEx\PropertySheetHandlers"
+'    HE.AddKey "SOFTWARE\Classes\Folder\ShellEx\CopyHookHandlers"
+    
+    'Нужно подумать, как это представить в логе. Обработчики могут быть зарегистрированы как для папок, так и для отдельных расширений имени.
+    'Сканировать всё подряд? Нужно будет совмещать одинаковые CLSID.
+    
+    'HKEY_CLASSES_ROOT\*\shellex
+    'HKEY_CLASSES_ROOT\Folder\shellex - virtual combination of actual file folders, shell folders, drives, other special folders
+    'HKEY_CLASSES_ROOT\Directory\shellex
+    'and so ...
+    
+    'Explorer Shell extensions
+    'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Approved
+    'see:
+    'https://msdn.microsoft.com/en-us/library/ms812054.aspx
+    'https://forum.sysinternals.com/shell-extensions-approved_topic11891.html
+    'So, this key can be needed only for heuristic cleaning of extension
+    
+    
     AppendErrorLogCustom "CheckO21Item - End"
     Exit Sub
 ErrorHandler:
@@ -7900,10 +8000,6 @@ Public Sub CheckO22Item()
         
         If Not isSafe Then
             sHit = "O22 - ScheduledTask: " & sName & " - " & sCLSID & " - " & sFile
-            If Not IsOnIgnoreList(sHit) Then
-                If bMD5 Then sHit = sHit & GetFileMD5(sFile)
-                AddToScanResultsSimple "O22", sHit
-            End If
             
             If Not IsOnIgnoreList(sHit) Then
                 If bMD5 Then sHit = sHit & GetFileMD5(sFile)
@@ -7956,6 +8052,10 @@ Public Sub CheckO23Item()
     Dim SignResult As SignResult_TYPE
     Dim FoundFile As String
     Dim IsMSCert As Boolean
+    Dim sImagePath As String
+    Dim sArgument As String
+    Dim pos As Long
+    Dim bSuspicious As Boolean
     
     If Not bIsWinNT Then Exit Sub
     
@@ -8040,6 +8140,7 @@ Public Sub CheckO23Item()
         End If
         
         'cleanup filename
+        sImagePath = sFile
         sFile = CleanServiceFileName(sFile, sName)
         
         '//// TODO: Check this !!!
@@ -8066,6 +8167,9 @@ Public Sub CheckO23Item()
         
         ServState = GetServiceRunState(sName)
         
+        sArgument = ""
+        bSuspicious = False
+        
         If lType >= 16 Then
           If Not (lStart = 4 And bHideDisabled) Then
                
@@ -8074,14 +8178,34 @@ Public Sub CheckO23Item()
             IsCompositeCmd = False
             isSafeMSCmdLine = False
             
-            If Not FileExists(sFile) And sFile <> "" Then
+            'признак командной строки - вся строка как файл не существует на диске
+            If Not FileExists(sImagePath) And sImagePath <> "" Then
             
                 ' Дальше идут процедуры парсинга командной строки и проверки сертиката для каждого файла из этой цепочки
                 ' Если любой файл из цепочки не проходит проверку, строка считается небезопасной
             
                 Stady = 23: Dbg CStr(Stady)
             
-                ParseCommandLine sFile, argc, argv
+                ParseCommandLine sImagePath, argc, argv
+                
+                If argc > 1 Then
+                    pos = InStr(sImagePath, argv(1))
+                    If pos <> 0 Then
+                        sArgument = Mid$(sImagePath, pos + Len(argv(1)))
+                        If Left$(sArgument, 1) = """" Then sArgument = Mid$(sArgument, 2)
+                        sArgument = LTrim$(sArgument)
+                    End If
+                End If
+                
+                If Len(sArgument) <> 0 Then
+                    If Len(sArgument) > 50 Then
+                        bSuspicious = True
+                    ElseIf InStr(1, sArgument, "http:", 1) <> 0 Then
+                        bSuspicious = True
+                    ElseIf InStr(1, EnvironW(sArgument), "http:", 1) <> 0 Then
+                        bSuspicious = True
+                    End If
+                End If
                 
                 '// TODO: добавить к FindOnPath папку, в которой находится основной запускаемый службой файл
                 
@@ -8102,8 +8226,8 @@ Public Sub CheckO23Item()
                   Stady = 26: Dbg CStr(Stady)
                 
                   ' если запускающий файл существует (иначе, нет смысла проверять остальные аргументы)
-                  If 0 <> Len(FoundFile) Then
-                    
+                  If 0 <> Len(FoundFile) And Not StrBeginWith(sImagePath, sWinSysDir & "\svchost.exe -k") Then
+                  
                     'флаг о том, что служба запускает составную командную строку, в которой как минимум первый (запускающий файл) существует
                     IsCompositeCmd = True
                 
@@ -8146,12 +8270,12 @@ Public Sub CheckO23Item()
                 If (Not FileExists(sFile)) And (Not IsCompositeCmd) Then
                     sFile = sFile & " (file missing)"
                 Else
-                    If IsCompositeCmd Then
-                        FoundFile = argv(1)
-                    Else
-                        FoundFile = sFile
-                    End If
-                    Stady = 33: Dbg CStr(Stady)
+'                    If IsCompositeCmd Then
+'                        FoundFile = argv(1)
+'                    Else
+'                        FoundFile = sFile
+'                    End If
+'                    Stady = 33: Dbg CStr(Stady)
                     
                     'sCompany = GetFilePropCompany(FoundFile)
                     'If Len(sCompany) = 0 Then sCompany = "Unknown owner"
@@ -8159,8 +8283,10 @@ Public Sub CheckO23Item()
                 End If
             End If
             
+            WipeSignResult SignResult
+            
             If Not IsCompositeCmd And sFile <> "(no file)" Then    'иначе, такая проверка уже выполнена ранее
-                If IsWinServiceFileName(sFile, sDisplayName) Then
+                If IsWinServiceFileName(sFile, sDisplayName, sArgument) Then
                     SignVerify sFile, SV_LightCheck Or SV_PreferInternalSign, SignResult
                 Else
                     WipeSignResult SignResult
@@ -8177,22 +8303,23 @@ Public Sub CheckO23Item()
             End If
             
             With SignResult
-                ' если корневой сертификат цепочки доверия принадлежит Майкрософт, то исключаем службу из лога
+                ' если корневой сертификат цепочки доверия принадлежит Майкрософт + с учётом, что файл проходит по базе, то исключаем службу из лога
                 
-                If bDllMissing Or Not (.isMicrosoftSign And .isLegit And bHideMicrosoft) Then
+                If bSuspicious Or bDllMissing Or Not (.isMicrosoftSign And .isLegit And bHideMicrosoft) Then
                     Stady = 36: Dbg CStr(Stady)
                     If bMD5 Then
                         If sFile <> "(no file)" Then sFile = sFile & GetFileMD5(sFile)
                     End If
                     Stady = 37: Dbg CStr(Stady)
-                    'sHit = "O23 - Service " & IIf(ServState <> SERVICE_STOPPED, "R", "S") & lStart & _
-                    '    ": " & sDisplayName & " - (" & sName & ")" & " - " & sCompany & " - " & sFile
                     
-                    'sHit = "O23 - Service " & IIf(ServState <> SERVICE_STOPPED, "R", "S") & lStart & _
-                    '    ": " & sDisplayName & " - HKLM\..\" & sName & " - " & sFile
+'                    pos = InStr(1, sDisplayName, "; {PlaceHolder", 1)
+'                    If pos <> 0 Then
+'                        sDisplayName = UnQuote(Trim$(Left$(sDisplayName, pos - 1)))
+'                    End If
                     
                     sHit = "O23 - Service " & IIf(ServState <> SERVICE_STOPPED, "R", "S") & lStart & _
-                        ": " & IIf(sDisplayName = sName, sName, sDisplayName & " - (" & sName & ")") & " - " & sFile
+                        ": " & IIf(sDisplayName = sName, sName, sDisplayName & " - (" & sName & ")") & " - " & sFile & _
+                        IIf(Len(sArgument) <> 0, " " & sArgument, "")
                     
                     If Len(sServiceDll) <> 0 Then
                         sHit = sHit & "; ""ServiceDll"" = " & sServiceDll
@@ -8222,7 +8349,19 @@ Public Sub CheckO23Item()
 Continue:
     Next i
 
-    '//TODO: Add checking device drivers
+    'Device drivers
+    
+    'Похоже, нужно дорабатывать процесс проверки ЭЦП
+    'У драйверов Microsoft в основном идёт подпись только по сертификатам, внутренней нет.
+    'У остальных - стоит кросс-подпись Microsoft, следовательно её нужно отфильтровать, и смотреть есть ли сторонняя подпись.
+    'Если есть, то выводить в лог + её получателя.
+    '
+    '+ нужно определяться, каким методом производить удаление драйвера.
+    'Судя по анализу разницы между логами, полученными через NtQuerySystemInformation и чтение реестра,
+    'по всей видимости некоторые из драйверов подгрузили другие драйвера, и в этом случае непонятно как их удалять.
+    'Т.е. для этих записей удаление через ветку служб отпадает.
+    
+    'Да и вообще, есть ли смысл получать список драйверов с помощью программы, у которой нет механизма антируткита ???
     
     '
     '
@@ -8231,31 +8370,149 @@ Continue:
     '
     'Enum via SetupAPI or via NtQuerySystemInformation
     
-'via NtQuerySystemInformation:
+    'via NtQuerySystemInformation:
     
-'    Const DRIVER_INFORMATION            As Long = 11
-'    Const SYSTEM_MODULE_SIZE            As Long = 284
-'    Const STATUS_INFO_LENGTH_MISMATCH   As Long = &HC0000004
-    
-'    Dim ret     As Long
-'    Dim buf()   As Byte
-'    Dim mdl     As SYSTEM_MODULE_INFORMATION
-'    Dim Driver  As String
+    Const DRIVER_INFORMATION            As Long = 11
+    Const SYSTEM_MODULE_SIZE            As Long = 284
+    Const STATUS_INFO_LENGTH_MISMATCH   As Long = &HC0000004
+
+  'temporarily disabled until I figure out how correctly set all filters for Microsoft entries
+  If bAdditional And False Then
+
+    Dim Ret     As Long
+    Dim buf()   As Byte
+    Dim mdl     As SYSTEM_MODULE_INFORMATION
+    Dim dDriver As clsTrickHashTable
+
+    Set dDriver = New clsTrickHashTable
+    dDriver.CompareMode = TextCompare
+
+    If NtQuerySystemInformation(DRIVER_INFORMATION, ByVal 0&, 0, Ret) = STATUS_INFO_LENGTH_MISMATCH Then
+        ReDim buf(Ret - 1)
+        If NtQuerySystemInformation(DRIVER_INFORMATION, buf(0), Ret, Ret) = STATUS_SUCCESS Then
+            mdl.ModulesCount = buf(0) Or (buf(1) * &H100&) Or (buf(2) * &H10000) Or (buf(3) * &H1000000)
+            If mdl.ModulesCount Then
+                ReDim mdl.Modules(mdl.ModulesCount - 1)
+                For Ret = 0 To mdl.ModulesCount - 1
+                    memcpy mdl.Modules(Ret), buf(Ret * SYSTEM_MODULE_SIZE + 4), SYSTEM_MODULE_SIZE
+                    sFile = TrimNull(mdl.Modules(Ret).Name)
+
+                    sFile = CleanServiceFileName(sFile, "")
+                    
+                    sFile = FindOnPath(sFile, True, sWinSysDir & "\Drivers")
+
+                    If Not IsMicrosoftDriverFile(sFile) Or Not bHideMicrosoft Then
+                        dDriver.Add sFile, 0&
+                    End If
+
+'                    If Not IsMicrosoftFile(sFile) Or Not bHideMicrosoft Then
 '
-'    If NtQuerySystemInformation(DRIVER_INFORMATION, ByVal 0&, 0, ret) = STATUS_INFO_LENGTH_MISMATCH Then
-'        ReDim buf(ret - 1)
-'        If NtQuerySystemInformation(DRIVER_INFORMATION, buf(0), ret, ret) = STATUS_SUCCESS Then
-'            mdl.ModulesCount = buf(0) Or (buf(1) * &H100&) Or (buf(2) * &H10000) Or (buf(3) * &H1000000)
-'            If mdl.ModulesCount Then
-'                ReDim mdl.Modules(mdl.ModulesCount - 1)
-'                For ret = 0 To mdl.ModulesCount - 1
-'                    memcpy mdl.Modules(ret), buf(ret * SYSTEM_MODULE_SIZE + 4), SYSTEM_MODULE_SIZE
-'                    Driver = NormalizeDriverString(mdl.Modules(ret).Name)
-'                    AddtoLog Driver  '"[" & Format(ret + 1, "000") & "] "
-'                Next
-'            End If
-'        End If
-'    End If
+'                        If InStr(1, sFile, "amtqkbgr.SYS", 1) <> 0 Then Stop
+'
+'                        sFile = FormatFileMissing(sFile)
+'
+'                        sHit = "O23 - Driver: " & sFile
+'
+'                        If Not IsOnIgnoreList(sHit) Then
+'
+'                            With Result
+'                                .Section = "O23"
+'                                .HitLineW = sHit
+'                                AddServiceToFix .Service, DELETE_SERVICE, sName
+'                                .CureType = SERVICE_BASED
+'                            End With
+'                            AddToScanResults Result
+'                        End If
+'                    End If
+                Next
+            End If
+        End If
+    End If
+
+    For i = 0 To UBound(sServices)
+
+        sName = sServices(i)
+
+        lType = Reg.GetDword(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\" & sName, "Type")
+
+        If lType >= 16 Then 'not a Driver
+            GoTo Continue2
+        End If
+
+        lStart = Reg.GetDword(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\" & sName, "Start")
+
+        If (lStart = 4 And bHideDisabled) Then
+            GoTo Continue2
+        End If
+
+        sDisplayName = Reg.GetString(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\" & sName, "DisplayName")
+
+        If Len(sDisplayName) = 0 Then
+            sDisplayName = sName
+        Else
+            If Left$(sDisplayName, 1) = "@" Then                    'extract string resource from file
+
+                sBuf = GetStringFromBinary(, , sDisplayName)
+
+                If 0 <> Len(sBuf) Then sDisplayName = sBuf
+            End If
+        End If
+
+        sFile = Reg.GetString(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\" & sName, "ImagePath")
+        If Len(sFile) = 0 Then GoTo Continue2
+
+        sFile = CleanServiceFileName(sFile, sName)
+
+        ServState = GetServiceRunState(sName)
+
+        If Not bAutoLogSilent Then DoEvents
+
+        If Not IsMicrosoftDriverFile(sFile) Or Not bHideMicrosoft Then
+            
+            If dDriver.Exists(sFile) Then dDriver.Remove sFile
+            
+            sFile = FormatFileMissing(sFile)
+
+            sHit = "O23 - Driver " & IIf(ServState <> SERVICE_STOPPED, "R", "S") & lStart & _
+                ": " & IIf(sDisplayName = sName, sName, sDisplayName & " - (" & sName & ")") & " - " & sFile
+
+            If Not IsOnIgnoreList(sHit) Then
+
+                With Result
+                    .Section = "O23"
+                    .HitLineW = sHit
+                    AddServiceToFix .Service, DELETE_SERVICE, sName
+                    .CureType = SERVICE_BASED
+                End With
+                AddToScanResults Result
+            End If
+        End If
+
+Continue2:
+    Next
+    
+    'if currently there are more running drivers
+    If dDriver.Count > 0 Then
+        For i = 0 To dDriver.Count - 1
+        
+            sFile = FormatFileMissing(dDriver.Keys(i))
+            
+            sHit = "O23 - Driver R: " & sFile
+        
+            If Not IsOnIgnoreList(sHit) Then
+
+                With Result
+                    .Section = "O23"
+                    .HitLineW = sHit
+                    AddFileToFix .File, REMOVE_FILE, sFile
+                    .CureType = FILE_BASED
+                End With
+                AddToScanResults Result
+            End If
+        Next
+    End If
+
+  End If
 
     AppendErrorLogCustom "CheckO23Item - End"
     Exit Sub
@@ -8264,44 +8521,22 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-'Function NormalizeDriverString(ByVal Driver As String) As String
-'    Dim WinDir         As String
-'    Dim WinDirName     As String
-'    Dim pos            As Long
-'
-'    WinDrivers = Environ("SystemRoot") & "\System32\Drivers"
-'    WinDir = Environ("SystemRoot")
-'    WinDirName = "\" & Mid(WinDir, 4) & "\"
-'    ' чистка
-'    pos = InStr(Driver, Chr(0))
-'    If pos Then Driver = Left(Driver, pos - 1)
-'    ' если нет абсолютного пути
-'    If InStr(Driver, "\") = 0 Then
-'        Driver = FindFileOnPathFolders(Driver)
-'    End If
-'    ' нормализация путей
-'    If Left(Driver, 4) = "\??\" Then Driver = Mid(Driver, 5)
-'    ' приведение пути к системной папке к единому виду "\SystemRoot\" (отключил)
-'    If StrComp(Left(Driver, Len(WinDirName)), WinDirName, 1) = 0 Then
-'        Driver = "\SystemRoot\" & Mid(Driver, Len(WinDirName) + 1)
-'        'Driver = WinDir & "\" & Mid(Driver, Len(WinDirName) + 1)
-'    End If
-'    If StrComp(Left(Driver, Len(WinDir)), WinDir, 1) = 0 Then Driver = "\SystemRoot\" & Mid(Driver, Len(WinDir) + 2)
-'    NormalizeDriverString = Driver
-'End Function
-
-Private Function IsWinServiceFileName(sFilePath As String, sServiceName As String) As Boolean
+Private Function IsWinServiceFileName(sFilePath As String, sServiceName As String, Optional sArgument As String) As Boolean
     
     On Error GoTo ErrorHandler:
     
     Static IsInit As Boolean
     Static oDictSRV As clsTrickHashTable
     Dim sCompany As String
+    Dim sFileName As String
+    Dim sArgBase As String
     
     If Not IsInit Then
         Dim vKey, prefix$
         IsInit = True
         Set oDictSRV = New clsTrickHashTable
+        
+        'Note: this list is used to improve scan speed
         
         With oDictSRV
             .CompareMode = TextCompare
@@ -8415,7 +8650,7 @@ Private Function IsWinServiceFileName(sFilePath As String, sServiceName As Strin
             .Add "<SysRoot>\System32\mpssvc.dll", 0&
             .Add "<SysRoot>\System32\msdtc.exe", 0&
             .Add "<SysRoot>\System32\msdtckrm.dll", 0&
-            .Add "<SysRoot>\System32\msiexec.exe", 0&
+            .Add "<SysRoot>\System32\msiexec.exe", "/V"
             .Add "<SysRoot>\System32\mspmsnsv.dll", 0&
             .Add "<SysRoot>\System32\mswsock.dll", 0&
             .Add "<SysRoot>\System32\ncasvc.dll", 0&
@@ -8557,6 +8792,7 @@ Private Function IsWinServiceFileName(sFilePath As String, sServiceName As Strin
             .Add "<SysRoot>\SysWow64\svchost.exe", 0&
             .Add "<SysRoot>\Microsoft.NET\Framework\v3.0\Windows Communication Foundation\infocard.exe", 0&
             .Add "<SysRoot>\Microsoft.Net\Framework\v3.0\WPF\PresentationFontCache.exe", 0&
+            .Add "<SysRoot>\Microsoft.NET\Framework64\v4.0.30319\SMSvcHost.exe", 0&
             .Add "<SysRoot>\system32\lserver.exe", 0&
             .Add "<SysRoot>\system32\mprdim.dll", 0&
             .Add "<SysRoot>\system32\wdfmgr.exe", 0&
@@ -8564,6 +8800,59 @@ Private Function IsWinServiceFileName(sFilePath As String, sServiceName As Strin
             .Add "<SysRoot>\system32\RSoPProv.exe", 0&
             .Add "<SysRoot>\system32\Dfssvc.exe", 0&
             .Add "<SysRoot>\system32\ntfrs.exe", 0&
+            .Add "<SysRoot>\System32\dusmsvc.dll", 0&
+            .Add "<SysRoot>\system32\SEMgrSvc.dll", 0&
+            .Add "<SysRoot>\System32\SshBroker.dll", 0&
+            .Add "<SysRoot>\System32\SshProxy.dll", 0&
+            .Add "<SysRoot>\System32\TokenBroker.dll", 0&
+            .Add "<SysRoot>\System32\debugregsvc.dll", 0&
+            .Add "<SysRoot>\System32\assignedaccessmanagersvc.dll", 0&
+            .Add "<SysRoot>\system32\CapabilityAccessManager.dll", 0&
+            .Add "<SysRoot>\System32\DeveloperToolsSvc.exe", 0&
+            .Add "<SysRoot>\System32\DevicesFlowBroker.dll", 0&
+            .Add "<SysRoot>\system32\DiagSvc.dll", 0&
+            .Add "<SysRoot>\System32\GraphicsPerfSvc.dll", 0&
+            .Add "<SysRoot>\System32\IpxlatCfg.dll", 0&
+            .Add "<SysRoot>\System32\lpasvc.dll", 0&
+            .Add "<SysRoot>\System32\NaturalAuth.dll", 0&
+            .Add "<SysRoot>\System32\PrintWorkflowService.dll", 0&
+            .Add "<SysRoot>\System32\SharedRealitySvc.dll", 0&
+            .Add "<SysRoot>\System32\Windows.WARP.JITService.dll", 0&
+            .Add "<SysRoot>\System32\wfdsconmgrsvc.dll", 0&
+            .Add "<SysRoot>\system32\spectrum.exe", 0&
+            .Add "<SysRoot>\system32\PushToInstall.dll", 0&
+            .Add "<SysRoot>\system32\InstallService.dll", 0&
+            .Add "<SysRoot>\System32\XboxGipSvc.dll", 0&
+            .Add "<SysRoot>\system32\xbgmsvc.exe", 0&
+            .Add "<SysRoot>\System32\dns.exe", 0&
+            .Add "<SysRoot>\System32\wins.exe", 0&
+            .Add "<SysRoot>\System32\WBEM\WinMgmt.exe", 0&
+            .Add "<SysRoot>\system32\RsSub.exe", 0&
+            .Add "<SysRoot>\system32\RsEng.exe", 0&
+            .Add "<SysRoot>\system32\Windows Media\Server\nsum.exe", 0&
+            .Add "<SysRoot>\system32\MSTask.exe", 0&
+            .Add "<SysRoot>\system32\tcpsvcs.exe", 0&
+            .Add "<SysRoot>\system32\inetsrv\inetinfo.exe", 0&
+            .Add "<SysRoot>\system32\sfmprint.exe", 0&
+            .Add "<SysRoot>\System32\snmp.exe", 0&
+            .Add "<SysRoot>\System32\ias.dll", 0&
+            .Add "<SysRoot>\system32\Windows Media\Server\nspm.exe", 0&
+            .Add "<SysRoot>\system32\Windows Media\Server\nspmon.exe", 0&
+            .Add "<SysRoot>\system32\Windows Media\Server\nscm.exe", 0&
+            .Add "<SysRoot>\system32\regsvc.exe", 0&
+            .Add "<SysRoot>\System32\llssrv.exe", 0&
+            .Add "<SysRoot>\System32\termsrv.exe", 0&
+            .Add "<SysRoot>\system32\RsFsa.exe", 0&
+            .Add "<SysRoot>\system32\sfmsvc.exe", 0&
+            .Add "<SysRoot>\system32\tlntsvr.exe", 0&
+            .Add "<SysRoot>\system32\grovel.exe", 0&
+            .Add "<SysRoot>\system32\netdde.exe", 0&
+            .Add "<SysRoot>\System32\UtilMan.exe", 0&
+            .Add "<SysRoot>\system32\clipsrv.exe", 0&
+            .Add "<SysRoot>\system32\Windows Media\NSLite\nslservice.exe", 0&
+            .Add "<SysRoot>\system32\faxsvc.exe", 0&
+            .Add "<SysRoot>\system32\tftpd.exe", 0&
+            .Add "<SysRoot>\SysWow64\mnmsrvc.exe", 0&
             
             For Each vKey In .Keys
                 prefix = Left$(vKey, InStr(vKey, "\") - 1)
@@ -8579,24 +8868,47 @@ Private Function IsWinServiceFileName(sFilePath As String, sServiceName As Strin
         End With
     End If
     
-    IsWinServiceFileName = oDictSRV.Exists(sFilePath)
+    If oDictSRV.Exists(sFilePath) Then
+        sArgBase = oDictSRV(sFilePath)
+        If sArgBase = 0 Then
+            'no arguments defined in database
+            IsWinServiceFileName = True
+        Else
+            'check also an argument
+            If StrComp(sArgument, sArgBase, 1) = 0 Then IsWinServiceFileName = True
+        End If
+    End If
+    
+    'if service file is not in list, check if it protected by SFC, excepting AV / Firewall services
+    'also, separate blacklist nedeed to identify dangerous host-files like cmd.exe / powershell e.t.c.
     
     If Not IsWinServiceFileName Then
-    
+
         If Not (StrComp(sFilePath, PF_64 & "\Windows Defender\mpsvc.dll", 1) = 0) _
           And Not (StrComp(sFilePath, PF_64 & "\Windows Defender\NisSrv.exe", 1) = 0) _
           And Not (StrComp(sFilePath, PF_64 & "\Windows Defender\MsMpEng.exe", 1) = 0) _
           And Not (StrComp(sFilePath, PF_64 & "\Microsoft Security Client\MsMpEng.exe", 1) = 0) _
           And Not (StrComp(sFilePath, PF_64 & "\Microsoft Security Client\NisSrv.exe", 1) = 0) _
           And Not (StrComp(sFilePath, PF_64 & "\Windows Defender Advanced Threat Protection\MsSense.exe", 1) = 0) Then
-        
-            If Not IsSecurityProductName(sServiceName) Then
-        
-                sCompany = GetFilePropCompany(sFilePath)
-                If InStr(1, sCompany, "Microsoft", 1) > 0 Or InStr(1, sCompany, "Корпорация Майкрософт", 1) > 0 Then
+
+'            If Not IsSecurityProductName(sServiceName) Then
+'
+'                sCompany = GetFilePropCompany(sFilePath)
+'                If InStr(1, sCompany, "Microsoft", 1) > 0 Or InStr(1, sCompany, "Корпорация Майкрософт", 1) > 0 Then
+'                    IsWinServiceFileName = True
+'                End If
+'            End If
+            
+            If IsFileSFC(sFilePath) Then
+                
+                sFileName = GetFileName(sFilePath, True)
+                
+                If Not inArraySerialized(sFileName, "rundll32.exe|schtasks.exe|sc.exe|cmd.exe|wscript.exe|" & _
+                                                    "mshta.exe|pcalua.exe|powershell.exe", "|", , , vbTextCompare) Then
                     IsWinServiceFileName = True
                 End If
             End If
+
         End If
     End If
     
@@ -8683,8 +8995,9 @@ Public Sub CheckO24Item()
             sSubscr = GetLongPath(sSubscr)  ' 8.3 -> Full
             sName = Reg.GetString(HKEY_CURRENT_USER, sDCKey & "\" & sComponents(i), "FriendlyName", Wow64key)
             If sName = vbNullString Then sName = "(no name)"
-            If Not (LCase$(sSource) = "about:home" And LCase$(sSubscr) = "about:home") And _
-               Not (UCase$(sSource) = "131A6951-7F78-11D0-A979-00C04FD705A2" And UCase$(sSubscr) = "131A6951-7F78-11D0-A979-00C04FD705A2") Then
+            If (Not (LCase$(sSource) = "about:home" And LCase$(sSubscr) = "about:home") And _
+               Not (UCase$(sSource) = "131A6951-7F78-11D0-A979-00C04FD705A2" And UCase$(sSubscr) = "131A6951-7F78-11D0-A979-00C04FD705A2")) _
+               Or Not bHideMicrosoft Then
                
                 sHit = "O24 - Desktop Component " & sComponents(i) & ": " & sName & " - " & _
                     IIf(sSource <> "", "[Source] = " & sSource, IIf(sSubscr <> "", "[SubscribedURL] = " & sSubscr, "(no file)"))
@@ -8729,9 +9042,19 @@ Public Sub FixO24Item_Post()
     
     SystemParametersInfo SPI_SETDESKWALLPAPER, 0&, 0&, SPIF_UPDATEINIFILE 'SPIF_SENDWININICHANGE Or SPIF_UPDATEINIFILE
     Sleep 1000
+    RestartExplorer
+End Sub
+
+Public Sub RestartExplorer()
+    'We could do it in official way, e.g. with RestartManager: https://jiangsheng.net/2013/01/22/how-to-restart-windows-explorer-programmatically-using-restart-manager/
+    'but, consider we are dealing with malware, it is better to just kill process without notifying loaded modules about this action
+
     KillProcessByFile sWinDir & "\" & "explorer.exe", True
     Sleep 1000
-    Proc.ProcessRun sWinDir & "\" & "explorer.exe", CloseHandles:=True
+    '// TODO. Run unelevated (downgrade privileges) or create something like CreateExplorerShellUnelevatedTask task.
+    'Note: /NOUACCHECK switch known to override task policy
+    'I guess, it is used in task scheduler to prevent recurse call
+    Proc.ProcessRun sWinDir & "\" & "explorer.exe", "", CloseHandles:=True
 End Sub
     
 Public Function IsOnIgnoreList(sHit$, Optional UpdateList As Boolean, Optional EraseList As Boolean) As Boolean
@@ -8829,7 +9152,7 @@ Public Sub ErrorMsg(ErrObj As ErrObject, sProcedure$, ParamArray vCodeModule())
     Dim OSData As String
     
     If ObjPtr(OSver) <> 0 Then
-        OSData = OSver.Bitness & " " & OSver.OSName & " (" & OSver.Edition & "), " & _
+        OSData = OSver.Bitness & " " & OSver.OSName & IIf(OSver.Edition <> "", " (" & OSver.Edition & ")", "") & ", " & _
             OSver.Major & "." & OSver.Minor & "." & OSver.Build & "." & OSver.Revision & ", " & _
             "Service Pack: " & OSver.SPVer & "" & IIf(OSver.IsSafeBoot, " (Safe Boot)", "")
     End If
@@ -9307,7 +9630,8 @@ Public Sub CheckForStartedFromTempDir()
             'msgboxW "Запуск из архива запрещен !" & vbCrLf & "Распаковать на рабочий стол для Вас ?", vbExclamation, AppName
             If MsgBoxW(sMsg, vbExclamation Or vbYesNo, g_AppName) = vbYes Then
                 Dim NewFile As String
-                NewFile = Desktop & "\" & AppExeName(True)
+                NewFile = Desktop & "\HiJackThis\" & AppExeName(True)
+                MkDirW NewFile, True
                 If FileExists(NewFile) Then     ', Cache:=NO_CACHE
                     SetFileAttributes StrPtr(NewFile), GetFileAttributes(StrPtr(NewFile)) And Not FILE_ATTRIBUTE_READONLY
                     DeleteFileWEx StrPtr(NewFile)
@@ -9746,13 +10070,13 @@ End Function
 'End Function
 
 Public Function MsgBoxW(Prompt As String, Optional Buttons As VbMsgBoxStyle, Optional Title As String = " ") As VbMsgBoxResult
-    Dim hActiveWnd As Long, hMyWnd As Long, frm As Form
+    Dim hActiveWnd As Long, hMyWnd As Long, Frm As Form
     If inIDE Then
         MsgBoxW = MsgBox(Prompt, Buttons, Title)
     Else
         hActiveWnd = GetForegroundWindow()
-        For Each frm In Forms
-            If frm.hwnd = hActiveWnd Then hMyWnd = hActiveWnd: Exit For
+        For Each Frm In Forms
+            If Frm.hwnd = hActiveWnd Then hMyWnd = hActiveWnd: Exit For
         Next
         MsgBoxW = MessageBox(IIf(hMyWnd <> 0, hMyWnd, g_HwndMain), StrPtr(Prompt), StrPtr(Title), ByVal Buttons)
     End If
@@ -9813,7 +10137,7 @@ Public Sub InitVariables()
     ReDim tim(10)
     For i = 0 To UBound(tim)
         Set tim(i) = New clsTimer
-        tim(i).Index = i
+        tim(i).index = i
     Next
     
     SysDisk = Space$(MAX_PATH)
@@ -10062,6 +10386,28 @@ Public Function SplitSafe(sComplexString As String, Optional Delimiter As String
     End If
 End Function
 
+Public Sub ArrayRemoveEmptyItems(arr() As String)
+    Dim i As Long
+    Dim d As Long
+    Dim bShift As Boolean
+    
+    For i = LBound(arr) To UBound(arr)
+        If Len(arr(i)) <> 0 Then
+            If bShift Then arr(d) = arr(i): d = d + 1 'shifting items
+        Else
+            If Not bShift Then bShift = True: d = i
+        End If
+    Next
+    
+    If bShift Then
+        If d > LBound(arr) Then
+            ReDim Preserve arr(d - 1)
+        ElseIf UBound(arr) > LBound(arr) Then
+            ReDim Preserve arr(d)
+        End If
+    End If
+End Sub
+
 'get the first item of serilized array
 Public Function SplitExGetFirst(sSerializedArray As String, Optional Delimiter As String = " ") As String
     SplitExGetFirst = SplitSafe(sSerializedArray, Delimiter)(0)
@@ -10273,33 +10619,24 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function GetCollectionKeyByIndex(ByVal Index As Long, Col As Collection) As String ' Thanks to 'The Trick' (А. Кривоус) for this code
-    
-    '//TODO: WARNING: this code can cause crash on XP !!!
-    'Dragokas: Added IsBadReadPtr for assurance
-    
+Public Function GetCollectionKeyByIndex(ByVal index As Long, Col As Collection) As String ' Thanks to 'The Trick' (А. Кривоус) for this code
+    'Fixed by Dragokas
     On Error GoTo ErrorHandler:
     Dim lpSTR As Long, ptr As Long, Key As String
     If Col Is Nothing Then Exit Function
-    Select Case Index
+    Select Case index
     Case Is < 1, Is > Col.Count: Exit Function
     Case Else
         ptr = ObjPtr(Col)
-        Do While Index
-            If 0 = IsBadReadPtr(ptr + 24, 4) Then
-                GetMem4 ByVal ptr + 24, ptr
-            End If
-            Index = Index - 1
+        Do While index
+            GetMem4 ByVal ptr + 24, ptr
+            index = index - 1
         Loop
     End Select
-    lpSTR = StrPtr(Key)
-    
-    If 0 = IsBadReadPtr(ptr + 16, 4) Then
-        GetMem4 ByVal ptr + 16, ByVal VarPtr(Key)
-        GetCollectionKeyByIndex = Key
-        GetMem4 lpSTR, ByVal VarPtr(Key)
-    End If
-    
+    GetMem4 ByVal VarPtr(Key), lpSTR
+    GetMem4 ByVal ptr + 16, ByVal VarPtr(Key)
+    GetCollectionKeyByIndex = Key
+    GetMem4 lpSTR, ByVal VarPtr(Key)
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "GetCollectionKey"
@@ -10329,21 +10666,21 @@ End Function
 Public Function isCollectionKeyExists(Key As String, Col As Collection) As Boolean
     Dim i As Long
     For i = 1 To Col.Count
-        If GetCollectionKeyByIndex(i, Col) = Key Then isCollectionKeyExists = True: Exit For
+        If StrComp(GetCollectionKeyByIndex(i, Col), Key, 1) = 0 Then isCollectionKeyExists = True: Exit For
     Next
 End Function
 
 Public Function GetCollectionKeyByItemName(Key As String, Col As Collection) As String
     Dim i As Long
     For i = 1 To Col.Count
-        If GetCollectionKeyByIndex(i, Col) = Key Then GetCollectionKeyByItemName = Col.Item(i)
+        If StrComp(GetCollectionKeyByIndex(i, Col), Key, 1) = 0 Then GetCollectionKeyByItemName = Col.Item(i)
     Next
 End Function
 
 Public Function GetCollectionIndexByKey(Key As String, Col As Collection) As Long
     Dim i As Long
     For i = 1 To Col.Count
-        If GetCollectionKeyByIndex(i, Col) = Key Then GetCollectionIndexByKey = i
+        If StrComp(GetCollectionKeyByIndex(i, Col), Key, 1) = 0 Then GetCollectionIndexByKey = i
     Next
 End Function
 
@@ -10739,8 +11076,9 @@ Public Function CreateLogFile() As String
     Dim hProc&, sProcessName$
     Dim Col As New Collection, cnt&
     Dim sTmp$
+    Dim bStadyMakeLog As Boolean
     
-    On Error GoTo MakeLog:
+    On Error GoTo ErrorHandler:
     
     AppendErrorLogCustom "frmMain.CreateLogFile - Begin"
     
@@ -10765,6 +11103,7 @@ Public Function CreateLogFile() As String
                     If Not ((StrComp(Process(i).Name, "System Idle Process", 1) = 0 And Process(i).PID = 0) _
                         Or (StrComp(Process(i).Name, "System", 1) = 0 And Process(i).PID = 4) _
                         Or (StrComp(Process(i).Name, "Memory Compression", 1) = 0) _
+                        Or (StrComp(Process(i).Name, "MemCompression", 1) = 0) _
                         Or (StrComp(Process(i).Name, "Secure System", 1) = 0) And Process(i).PID = 0) Then
                           sProcessName = Process(i).Name '& " (cannot get Process Path)"
                     End If
@@ -10777,7 +11116,6 @@ Public Function CreateLogFile() As String
                         cnt = Col.Item(sProcessName)      ' replacing item of collection
                         Col.Remove (sProcessName)
                         Col.Add cnt + 1&, sProcessName    ' increase count of identical processes
-                        Err.Clear
                     End If
                 End If
             Next
@@ -10846,15 +11184,9 @@ Public Function CreateLogFile() As String
     
     '------------------------------
 MakeLog:
+    bStadyMakeLog = True
     
     UpdateProgressBar "Report"
-    
-    If Err.Number Then
-        sProcessList = "(" & Translate(28) & " (error#" & Err.Number & "))" & vbCrLf
-        If Not bAutoLogSilent Then MsgBoxW Err.Description
-    End If
-    
-    On Error GoTo ErrorHandler:
     
     'UpdateProgressBar "Finish"
     'DoEvents
@@ -10905,7 +11237,7 @@ MakeLog:
     TimeCreated = Right$("0" & Day(Now), 2) & "." & Right$("0" & Month(Now), 2) & "." & Year(Now) & " - " & _
         Right$("0" & Hour(Now), 2) & ":" & Right$("0" & Minute(Now), 2)
     
-    sLog.Append "Platform:  " & OSver.Bitness & " " & OSver.OSName & " (" & OSver.Edition & "), " & _
+    sLog.Append "Platform:  " & OSver.Bitness & " " & OSver.OSName & IIf(OSver.Edition <> "", " (" & OSver.Edition & ")", "") & ", " & _
             OSver.Major & "." & OSver.Minor & "." & OSver.Build & "." & OSver.Revision & _
             IIf(OSver.ReleaseId <> 0, " (ReleaseId: " & OSver.ReleaseId & ")", "") & ", " & _
             "Service Pack: " & OSver.SPVer & IIf(bSPOld, " <=== Attention! (outdated SP)", "") & _
@@ -10924,7 +11256,7 @@ MakeLog:
     End If
     
     sLog.Append "Ran by:    " & GetUser() & vbTab & "(group: " & OSver.UserType & ") on " & GetComputer() & _
-        ", FirstRun: " & IIf(bFirstRebootScan, "yes", "no") & vbCrLf & vbCrLf
+        ", " & "(SID: " & OSver.SID_CurrentProcess & ") " & "FirstRun: " & IIf(bFirstRebootScan, "yes", "no") & vbCrLf & vbCrLf
     
     
     Dim tmp$
@@ -10944,11 +11276,29 @@ MakeLog:
    
     sLog.Append vbCrLf & "Boot mode: " & OSver.SafeBootMode & vbCrLf
     
-    '// TODO: improve it (Get environment block)
     If bLogEnvVars Then
-        sLog.Append "Windows folder: " & sWinDir & vbCrLf & _
-                      "System folder: " & sWinSysDir & vbCrLf & _
-                      "Hosts file: " & sHostsFile & vbCrLf
+        
+        Dim pEnv As Long
+        Dim pEnvNext As Long
+        Dim strEnv As String
+        
+        pEnv = GetEnvironmentStrings()
+        pEnvNext = pEnv
+        
+        If pEnv <> 0 Then
+            sLog.Append vbCrLf & "Environment variables for current process:" & vbCrLf & vbCrLf
+            Do
+                strEnv = StringFromPtrW(pEnvNext)
+                
+                If Len(strEnv) <> 0 Then
+                    sLog.Append strEnv & vbCrLf
+                    pEnvNext = pEnvNext + LenB(strEnv) + 2
+                End If
+            Loop Until Len(strEnv) = 0
+            
+            FreeEnvironmentStrings pEnv
+        End If
+        sLog.Append vbCrLf
     End If
     
     sLog.Append vbCrLf & sProcessList
@@ -10976,6 +11326,10 @@ MakeLog:
     If Not bScanExecuted Then
         ' "Warning: General scanning was not performed." & vbCrLf
         sLog.Append vbCrLf & vbCrLf & Translate(1012) & vbCrLf
+    End If
+    Dim SignMsg As String
+    If Not isEDS_Work(SignMsg) Then
+        sLog.Append vbCrLf & vbCrLf & BuildPath(sWinDir, "system32\ntdll.dll") & " file doesn't pass digital signature verification. Error: " & SignMsg & vbCrLf
     End If
     
     'Append by Error Log
@@ -11041,8 +11395,9 @@ MakeLog:
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "frmMain_CreateLogFile"
-    Set sLog = Nothing
     If inIDE Then Stop: Resume Next
+    If Not bStadyMakeLog Then GoTo MakeLog
+    Set sLog = Nothing
 End Function
 
 
@@ -11490,21 +11845,27 @@ Public Sub FixProcessHandler(Result As SCAN_RESULT)
     
     Dim i As Long
     
-    '// TODO: Add protection against system critical processes by full path name
-    
     If Result.CureType And PROCESS_BASED Then
         If AryPtr(Result.Process) Then
             For i = 0 To UBound(Result.Process)
                 With Result.Process(i)
-                    Select Case .ActionType
+                    
+                    If Not IsSystemCriticalProcessPath(.Path) Then
                 
-                    Case FREEZE_PROCESS
-                        PauseProcessByFile .Path
+                        Select Case .ActionType
                 
-                    Case KILL_PROCESS
-                        KillProcessByFile .Path
+                        Case FREEZE_PROCESS
+                            PauseProcessByFile .Path
+                    
+                        Case KILL_PROCESS
+                            KillProcessByFile .Path, bForceMicrosoft:=True
                         
-                    End Select
+                        Case FREEZE_OR_KILL_PROCESS
+                            If Not PauseProcessByFile(.Path) Then
+                                KillProcessByFile .Path, bForceMicrosoft:=True
+                            End If
+                        End Select
+                    End If
                 End With
             Next
         End If
@@ -11646,10 +12007,10 @@ Public Sub FixRegistryHandler(Result As SCAN_RESULT)
                                 'replace by exact value
                                 sData = Replace$(.TrimDelimiter & sData & .TrimDelimiter, _
                                     .TrimDelimiter & .ReplaceDataWhat & .TrimDelimiter, _
-                                    .TrimDelimiter & .ReplaceDataInto & .TrimDelimiter)
+                                    .TrimDelimiter & .ReplaceDataInto & .TrimDelimiter, 1, 1, vbBinaryCompare) 'restrict to maximum 1 replacing
                             Else
                                 'replace with part of value
-                                sData = Replace$(sData, .ReplaceDataWhat, .ReplaceDataInto, , , vbTextCompare)
+                                sData = Replace$(sData, .ReplaceDataWhat, .ReplaceDataInto, 1, 1, vbTextCompare) 'restrict to maximum 1 replacing
                             End If
                             
                             lType = Reg.GetValueType(.Hive, .Key, .Param, .Redirected)
@@ -11802,7 +12163,7 @@ Public Sub FixFileHandler(Result As SCAN_RESULT)
                 With Result.File(i)
                 
                     If .ActionType And UNREG_DLL Then
-                        If Not IsMicrosoftFile(.Path) Then
+                        If Not IsMicrosoftFile(.Path, True) Then
                             Reg.UnRegisterDll .Path
                         End If
                     End If
@@ -11915,15 +12276,16 @@ ErrorHandler:
 End Sub
 
 Public Function CheckIntegrityHJT() As Boolean
+    On Error GoTo ErrorHandler
+    AppendErrorLogCustom "CheckIntegrityHJT - Begin"
     'Checking consistency of HiJackThis.exe
     Dim SignResult As SignResult_TYPE
     CheckIntegrityHJT = True
     If Not inIDE Then
-        If OSver.IsWindows7OrGreater Then
+        If OSver.IsWindows7OrGreater Then 'because my signatures' timestamp is SHA2
             If Not (OSver.SPVer = 0 And (OSver.MajorMinor = 6.1)) Then
                 'ensure EDS subsystem is working correctly
-                SignVerify BuildPath(sWinDir, "system32\ntdll.dll"), SV_LightCheck Or SV_SelfTest Or SV_PreferInternalSign, SignResult
-                If SignResult.HashRootCert = "CDD4EEAE6000AC7F40C3802C171E30148030C072" Then
+                If isEDS_Work() Then
                     SignVerify AppPath(True), SV_PreferInternalSign, SignResult
                     If SignResult.HashRootCert <> "05F1F2D5BA84CDD6866B37AB342969515E3D912E" Then
                         'not a developer machine ?
@@ -11937,21 +12299,54 @@ Public Function CheckIntegrityHJT() As Boolean
             End If
         End If
     End If
+    AppendErrorLogCustom "CheckIntegrityHJT - End"
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "CheckIntegrityHJT"
+    If inIDE Then Stop: Resume Next
 End Function
 
-Public Function SetTaskBarProgressValue(frm As Form, ByVal Value As Single) As Boolean
+'ensure EDS subsystem is working correctly
+Public Function isEDS_Work(Optional sReturnMsg As String) As Boolean
+    Static bWork As Boolean
+    Static bInit As Boolean
+    Static sMsg As String
+    Dim SignResult As SignResult_TYPE
+    
+    '//TODO:
+    'Warning:
+    'For some reason, in Vista, if we are trying to check internal signature for ntdll.dll (SV_PreferInternalSign flag),
+    'WinVerify trust returns "Not a cryptographic message or the cryptographic message is not formatted correctly."
+    
+    If Not bInit Then
+        bInit = True
+        SignVerify BuildPath(sWinDir, "system32\ntdll.dll"), SV_LightCheck Or SV_SelfTest, SignResult
+        If IsMicrosoftCertHash(SignResult.HashRootCert) Then
+            bWork = True
+        End If
+        sMsg = SignResult.ShortMessage
+    End If
+    isEDS_Work = bWork
+    sReturnMsg = sMsg
+End Function
+
+Public Function SetTaskBarProgressValue(Frm As Form, ByVal Value As Single) As Boolean
     If Value < 0 Or Value > 1 Then Exit Function
     If Not (TaskBar Is Nothing) Then
         If Value = 0 Then
             TaskBar.SetProgressState frmMain.hwnd, TBPF_NOPROGRESS
         Else
-            TaskBar.SetProgressValue frm.hwnd, CCur(Value * 10000), CCur(10000)
+            TaskBar.SetProgressValue Frm.hwnd, CCur(Value * 10000), CCur(10000)
         End If
     End If
 End Function
 
 Public Function InstallHJT(Optional bAskToCreateDesktopShortcut As Boolean, Optional bSilent As Boolean) As Boolean
+    On Error GoTo ErrorHandler
+    
     Dim HJT_Location As String
+    
+    AppendErrorLogCustom "InstallHJT - Begin"
     
     InstallHJT = True
 
@@ -11959,12 +12354,14 @@ Public Function InstallHJT(Optional bAskToCreateDesktopShortcut As Boolean, Opti
     
     MkDirW GetParentDir(HJT_Location)
     
-    'Copy exe to Program Files dir
-    If Not FileCopyW(AppPath(True), HJT_Location, True) Then
-        'MsgBoxW "Error while installing HiJackThis to program files folder. Cannot copy. Error = " & Err.LastDllError, vbCritical
-        MsgBoxW Translate(593) & " " & Err.LastDllError, vbCritical
-        InstallHJT = False
-        Exit Function
+    If StrComp(AppPath(True), HJT_Location, 1) <> 0 Then
+        'Copy exe to Program Files dir
+        If Not FileCopyW(AppPath(True), HJT_Location, True) Then
+            'MsgBoxW "Error while installing HiJackThis to program files folder. Cannot copy. Error = " & Err.LastDllError, vbCritical
+            MsgBoxW Translate(593) & " " & Err.LastDllError, vbCritical
+            InstallHJT = False
+            Exit Function
+        End If
     End If
     
     'create Control panel -> 'Uninstall programs' entry
@@ -11977,22 +12374,33 @@ Public Function InstallHJT(Optional bAskToCreateDesktopShortcut As Boolean, Opti
         If bSilent Then
             CreateHJTShortcutDesktop HJT_Location
         Else
-            'Do you want to create shortcut in Desktop?
+            'Installation is completed. Do you want to create shortcut in Desktop?
             If MsgBoxW(Translate(69), vbYesNo) = vbYes Then
                 CreateHJTShortcutDesktop HJT_Location
             End If
         End If
     End If
+    
+    AppendErrorLogCustom "InstallHJT - End"
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "InstallHJT"
+    If inIDE Then Stop: Resume Next
 End Function
 
 Public Function InstallAutorunHJT(Optional bSilent As Boolean) As Boolean
+    On Error GoTo ErrorHandler
+
     Dim JobCommand As String
     Dim HJT_Location As String
     Dim iExitCode As Long
+    Dim HJT_Command As String
+    
+    AppendErrorLogCustom "InstallAutorunHJT - Begin"
     
     HJT_Location = BuildPath(PF_32, "HiJackThis Fork\HiJackThis.exe")
     
-'    If MsgBox("This will install HJT to 'Program Files' folder and set task scheduler for automatically run HJT scan at system startup." & _
+'    If MsgBox("This will install HJT to 'Program Files' folder and set Windows for automatically run HJT scan at system startup." & _
 '        vbCrLf & vbCrLf & "Continue?" & vbCrLf & vbCrLf & "Note: it is recommended that you add all safe items to ignore list, so " & _
 '        "the results window will appear at system startup if only new item will be found.", vbYesNo Or vbQuestion) = vbNo Then
     If Not bSilent Then
@@ -12004,32 +12412,52 @@ Public Function InstallAutorunHJT(Optional bSilent As Boolean) As Boolean
         End If
     End If
     
-    'check if 'Schedule' service is launched
-    If Not RunScheduler_Service(True, Not bSilent, bSilent) Then
-        Exit Function
+    If OSver.IsWindowsVistaOrGreater Then
+        'check if 'Schedule' service is launched
+        If Not RunScheduler_Service(True, Not bSilent, bSilent) Then
+            Exit Function
+        End If
     End If
     
     If InstallHJT(, (InStr(1, Command(), "/noGUI", 1) <> 0)) Then
     
-        'delay after system startup for 1 min.
-        JobCommand = "/create /tn ""HiJackThis Autostart Scan"" /SC ONSTART /DELAY 0001:00 /F /RL HIGHEST " & _
-            "/tr ""\""" & HJT_Location & "\"" /startupscan"""
-    
-        If Proc.ProcessRun("schtasks.exe", JobCommand, , 0) Then
-            iExitCode = Proc.WaitForTerminate(, , , 15000)     'if ExitCode = 0, 15 sec for timeout
-            If ERROR_SUCCESS <> iExitCode Then
-                Proc.ProcessClose , , True
-                'MsgBoxW "Error while creating task. Error = " & iExitCode, vbCritical
-                MsgBoxW Translate(594) & " " & iExitCode, vbCritical
-            Else
-                InstallAutorunHJT = True
+        If OSver.IsWindowsVistaOrGreater Then
+        
+            'delay after system startup for 1 min.
+            JobCommand = "/create /tn ""HiJackThis Autostart Scan"" /SC ONSTART /DELAY 0001:00 /F /RL HIGHEST " & _
+                "/tr ""\""" & HJT_Location & "\"" /startupscan"""
+        
+            If Proc.ProcessRun("schtasks.exe", JobCommand, , 0) Then
+                iExitCode = Proc.WaitForTerminate(, , , 15000)     'if ExitCode = 0, 15 sec for timeout
+                If ERROR_SUCCESS <> iExitCode Then
+                    Proc.ProcessClose , , True
+                    'MsgBoxW "Error while creating task. Error = " & iExitCode, vbCritical
+                    MsgBoxW Translate(594) & " " & iExitCode, vbCritical
+                Else
+                    InstallAutorunHJT = True
+                End If
             End If
+        Else
+            'XP-
+            'to add to 'Run' registry key
+            HJT_Command = """" & IIf(OSver.IsWin64, "%ProgramFiles(x86)%", "%ProgramFiles%") & "\HiJackThis Fork\HiJackThis.exe" & """" & " /startupscan"
+            InstallAutorunHJT = Reg.SetExpandStringVal(HKLM, "Software\Microsoft\Windows\CurrentVersion\Run", "HiJackThis Autostart Scan", HJT_Command)
         End If
     End If
+    
+    AppendErrorLogCustom "InstallAutorunHJT - End"
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "InstallAutorunHJT"
+    If inIDE Then Stop: Resume Next
 End Function
 
 Public Function RemoveAutorunHJT() As Boolean
-    RemoveAutorunHJT = KillTask2("\HiJackThis Autostart Scan")
+    If OSver.IsWindowsVistaOrGreater Then
+        RemoveAutorunHJT = KillTask2("\HiJackThis Autostart Scan")
+    Else
+        RemoveAutorunHJT = Reg.DelVal(HKLM, "Software\Microsoft\Windows\CurrentVersion\Run", "HiJackThis Autostart Scan")
+    End If
 End Function
 
 Public Sub OpenAndSelectFile(sFile As String)
@@ -12205,11 +12633,11 @@ Public Sub HJT_Shutdown()   ' emergency exits the program due to exceeding the t
     End If
 End Sub
 
-Public Function WhiteListed(sFile As String, sWhiteListedPath As String, Optional bCheckFileNameOnly As Boolean) As Boolean
+Public Function WhiteListed(sFile As String, sWhiteListedPath As String, Optional bCheckFileNamePartOnly As Boolean) As Boolean
     'to check matching the file with the specified name and verify it by EDS
 
     If bHideMicrosoft And Not bIgnoreAllWhitelists Then
-        If bCheckFileNameOnly Then
+        If bCheckFileNamePartOnly Then
             If StrComp(GetFileName(sFile, True), sWhiteListedPath, 1) = 0 Then
                 If IsMicrosoftFile(sFile) Then WhiteListed = True
             End If

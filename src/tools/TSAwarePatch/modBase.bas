@@ -4,6 +4,7 @@ Option Explicit
 Private Declare Function CharToOem Lib "user32.dll" Alias "CharToOemA" (ByVal lpszScr As String, ByVal lpszDst As String) As Long
 Private Declare Function WriteFile Lib "kernel32" (ByVal hFile As Long, ByVal lpBuffer As Long, ByVal nNumberOfBytesToWrite As Long, lpNumberOfBytesWritten As Long, ByVal lpOverlapped As Long) As Long
 Private Declare Function GetStdHandle Lib "kernel32" (ByVal nStdHandle As Long) As Long
+Private Declare Sub ExitProcess Lib "kernel32.dll" (ByVal uExitCode As Long)
 
 Const STD_OUTPUT_HANDLE As Long = -11&
 
@@ -17,10 +18,11 @@ Public Sub Main()
             WriteLog "Using: TSAwarePatch.exe [file]"
             Exit Sub
         End If
-        TSPatch UnQuote(Command())
+        TSPatch UnQuote(Trim(Command()))
     Else
         TSPatch "test.exe"
     End If
+    ExitProcess 0
 End Sub
 
 Function TSPatch(sFile As String) As Boolean
@@ -44,6 +46,7 @@ Function TSPatch(sFile As String) As Boolean
     
     If hFile <= 0 Then
         WriteLog "Could not open file. Error: " & Err.LastDllError
+        ExitProcess 2
         Exit Function
     End If
     
@@ -59,7 +62,8 @@ Function TSPatch(sFile As String) As Boolean
             Case IMAGE_FILE_MACHINE_AMD64
                 DllCharacteristics_offset = NT_Head_offset + &H5E&
             Case Else
-                Debug.Print "Unknown architecture, not PE EXE or damaged image."
+                WriteLog "Unknown architecture, not PE EXE or damaged image."
+                ExitProcess 1
         End Select
         
         GetW hFile, DllCharacteristics_offset + 1, Flags

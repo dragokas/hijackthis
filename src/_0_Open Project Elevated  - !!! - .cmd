@@ -47,12 +47,12 @@ exit /b
       echo.&echo Project already run !
       pause >NUL
     ) || (
-      schtasks.exe /i /run /tn "%TaskName%" || start "" "%ProjFile%"
+      schtasks.exe /run /tn "%TaskName%" || start "" "%ProjFile%"
     )
   ) else (
     rem Task exists ?
     schtasks.exe /query /FO LIST /tn "%TaskName%" | find /i "%TaskName%" && (
-      schtasks.exe /i /run /tn "%TaskName%"
+      schtasks.exe /run /tn "%TaskName%"
     ) || (
       start "" "%ProjFile%"
     )

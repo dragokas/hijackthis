@@ -140,7 +140,7 @@ Begin VB.Form frmADSspy
       MultiLine       =   -1  'True
       ScrollBars      =   2  'Vertical
       TabIndex        =   6
-      Text            =   "frmADSspy.frx":27A2
+      Text            =   "frmADSspy.frx":1CFA
       Top             =   120
       Width           =   8055
    End
@@ -321,8 +321,8 @@ Private Declare Function GetLogicalDrives Lib "kernel32.dll" () As Long
 Private Declare Function GetDriveType Lib "kernel32.dll" Alias "GetDriveTypeA" (ByVal nDrive As String) As Long
 
 Private Declare Function CreateFileW Lib "kernel32.dll" (ByVal lpFileName As Long, ByVal dwDesiredAccess As Long, ByVal dwShareMode As Long, ByVal lpSecurityAttributes As Long, ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, ByVal hTemplateFile As Long) As Long
-Private Declare Function NtQueryInformationFile Lib "NTDLL.DLL" (ByVal FileHandle As Long, IoStatusBlock_Out As IO_STATUS_BLOCK, lpFileInformation_Out As Long, ByVal length As Long, ByVal FileInformationClass As FILE_INFORMATION_CLASS) As Long
-Private Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal length As Long)
+Private Declare Function NtQueryInformationFile Lib "NTDLL.DLL" (ByVal FileHandle As Long, IoStatusBlock_Out As IO_STATUS_BLOCK, lpFileInformation_Out As Long, ByVal Length As Long, ByVal FileInformationClass As FILE_INFORMATION_CLASS) As Long
+Private Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long)
 Private Declare Function DeleteFile Lib "kernel32.dll" Alias "DeleteFileW" (ByVal lpFileName As Long) As Long
 'Private Declare Function SHFileExists Lib "shell32.dll" Alias "#45" (ByVal szPath As String) As Long
 'Private Declare Sub Sleep Lib "kernel32.dll" (ByVal dwMilliseconds As Long)
@@ -462,7 +462,7 @@ Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
 End Sub
 
 Private Sub Form_Load()
-    ReloadLanguage
+    ReloadLanguage True
 
     'ADS Spy v[] - written by Merijn
     Me.Caption = Replace$(Translate(190), "[]", ADSspyVer)
@@ -516,9 +516,8 @@ Private Sub Form_Load()
     Dim Btn As CommandButton
     Dim ctl As Control
     
-    ReloadLanguage
     CenterForm Me
-    Me.Icon = frmMain.Icon
+    'Me.Icon = frmMain.Icon
     
     ' if Win XP -> disable all window styles from option buttons
     If OSver.MajorMinor >= 5.1 And OSver.MajorMinor <= 5.2 Then
@@ -728,10 +727,10 @@ Private Sub cmdRemove_Click()
     If lstADSFound.ListCount = 0 Then Exit Sub
     If lstADSFound.SelCount = 0 Then lstADSFound.Clear: Exit Sub
     
-    Dim i&, j&, K&, sStream$, sLockedStreams$
-    K = lstADSFound.SelCount
+    Dim i&, j&, k&, sStream$, sLockedStreams$
+    k = lstADSFound.SelCount
     'Are you sure you want to remove the selected [] ADS's from your system? They will be deleted permanently!
-    If MsgBoxW(Replace$(Translate(2215), "[]", K), vbQuestion + vbYesNo) = vbNo Then Exit Sub
+    If MsgBoxW(Replace$(Translate(2215), "[]", k), vbQuestion + vbYesNo) = vbNo Then Exit Sub
     'go from bottom of list to prevent .RemoveItem messing up the For loop
     'Removing selected streams...
     Status Translate(2216)
@@ -751,7 +750,7 @@ Private Sub cmdRemove_Click()
             j = j + 1
         End If
         'Removing selected streams...
-        Status Translate(2216) & " " & Int(CLng(j) / K * 100) & " %"
+        Status Translate(2216) & " " & Int(CLng(j) / k * 100) & " %"
     Next i
     
     ToggleWow64FSRedirection True
@@ -937,7 +936,7 @@ Private Sub lstADSFound_KeyDown(KeyCode As Integer, Shift As Integer)
     If KeyCode = 27 Then bAbortScanNow = True: Me.Hide
 End Sub
 
-Private Sub lstADSFound_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub lstADSFound_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
     If Button = 2 And lstADSFound.ListCount > 0 Then PopupMenu mnuPopup
 End Sub
 

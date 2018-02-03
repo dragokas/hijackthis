@@ -634,8 +634,10 @@ Public Sub CheckO26Item()
                     bSafe = False
                     
                     'check by safe list
-                    If StrComp(GetFileName(sFile, True), "PROCEXP.EXE", 1) = 0 Then
-                        If IsMicrosoftFile(sFile) Then bSafe = True
+                    If bHideMicrosoft Then
+                        If StrComp(GetFileName(sFile, True), "PROCEXP.EXE", 1) = 0 Then
+                            If IsMicrosoftFile(sFile) Then bSafe = True
+                        End If
                     End If
                     
                     If (Not bSafe) Or bIgnoreAllWhitelists Or (Not bHideMicrosoft) Then
@@ -715,7 +717,9 @@ Public Sub CheckO26Item()
             
             If sFile <> "" Then
                 
-                aTmp = Split(sFile)
+                aTmp = SplitSafe(sFile)
+                ArrayRemoveEmptyItems aTmp
+                
                 For i = 0 To UBound(aTmp)
                     sFile = aTmp(i)
                     sOrigLine = sFile

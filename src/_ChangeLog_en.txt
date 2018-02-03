@@ -8,35 +8,99 @@
 1. HiJackThis: changelog
 -----------------------------
 
-[2.7.0.29] - 19.01.2018
+[2.8.0.3] - February 03, 2018
+Disabled O7 - IPSEC items is removed from the log.
+Improved working of options "Ignore Microsoft entries" and "Ignore All whitelists" with unchecked checkbox.
+O22 - Task: fixed error in output of status "(disabled)".
+
+[2.8.0.2] - February 02, 2018
+Logs:
+Log "Environment variables" replaced by with the output of all environment variables of the current process.
+O7 - Policy: [Untrusted Certificate] Black list of certificates and "Well-Known cert." attribute are removed.
+Added option "Additional scan" (disabled, by default). It can be enabled in File -> Settings
+
+Scan:
+O4 - PendingFileRenameOperations (moved to "Additional scan")
+O4 - Autorun.inf (added to "Additional scan")
+O4 - MountPoints2 (added to "Additional scan")
+O22 - Task: added attribute "(activation)" for tasks related to OS activation.
+O22 - Task: added attribute "(update)" for GWX tasks ("Get Windows 10").
+O23 - Service: added output of arguments.
+
+Errors:
+Fixed bug, that lead to absence of process list in XP.
+Fixed bug in working with collections, that could lead to application crash.
+Fixed several errors, when O23 malware entries were not included in report.
+Fixed app crash when user attempt to close it before StartupList2 finishes its working.
+Fixed work of checkbox "Mark everything found for fixing after scan".
+Fixed bug when trying to add HJT to startup beeing launched via Start menu and also on XP/2k systems.
+
+Protection:
+Improved protection against removing system files when EDS mechanism is damaged.
+Added protection from finishing system critical processes.
+
+Fixes:
+O21: added restarting of Explorer.
+O4: added process freezing.
+O22: added finishing of task.
+
+Interface and other:
+Added icons to the tools and removed unused from resources.
+Added multilingual description in file properties (DE/FR/EN/RU).
+Menu "Misc Tools" is reorganized:
+ - additional settings is moved to main settings menu;
+ - added section "Plugins";
+ - added buttons "Registry Keys Unlocker" and "Digital signature checker".
+Main settings are splitted into categories:
+ - Scan area
+ - Scan options
+ - Fix & Backup
+ - Interface
+Option "Ignore Microsoft files" is renamed into "Ignore Microsoft entries"
+Option "Ignore non-standard but safe domains in IE (e.g. msn.com, microsoft.com)" is absorbed by "Ignore Microsoft entries".
+Added tooltips to some checkboxes.
+When HiJackThis.exe launches from archive, now it is asking for unpacking into {Desktop}\HiJackThis subfolder, not a root of desktop.
+Improved scan speed on highly-loaded systems in /silentautolog mode.
+Added command line keys:
+/Area:Process - include list of running processes in report
+/Area:Environment - include environment variables in report
+/Area:Additional - execute "Additional scan"
+Whitelists has been updated.
+
+[2.7.0.29] - January 19, 2018
 All sections of the log are unified to cover a single template "Section prefix-bitness" - "optional, section name": "hive\..\key": "optional, subkey" [parameter] = value
 "Compressed" log O7 - IPSec: in case system has several identical rules.
 Deleted attribute O7 - TroubleShoot: [EV] (environment value is altered)
 Added attribute O7 - TroubleShoot: [EV] (folder is not exist)
+Added attribute O1 - Hosts: is damaged (contains NUL characters only)
 Attempting to fix a line with a legitimate file will now call SFC for it.
 Separated into several lines with the possibility of separate fixes:
  - O4 - HKLM\..\Session Manager: [BootExecute]
  - O17 - ... Parameters: [NameServer] (finalized)
  - O20 - HKLM\..\Windows: [AppInit_DLLs]
  - O26 - IFEO (global).
+Added a forbiddance to the program to reboot the server OS with a request to the user to do it manually.
+Fixed the detection of some editions of server OS.
+Added bringing of the HJT window to the foreground as soon as the scan is complete.
+Improved file search by %PATH%.
 
-[2.7.0.28] - 01.01.2018
+[2.7.0.28] - January 01, 2018
 Fixed app crash when program is finishing its working.
-Updated and improved script for retrieving new crash dump of program: http://dragokas.com/tools/debug/GetHJT_dump.zip
+Updated and improved script for retrieving new crash dump of program: https://dragokas.com/tools/debug/GetHJT_dump.zip
 
-[2.7.0.27] - 25.12.2017
+[2.7.0.27] - Dec 25, 2017
 O7 - Fixed output of certificates' owner name.
 O7 - Added output of owner's name for certificates not listed in HJT database.
 O7 - Added item "Policy: [Untrusted Certificate] Fix all items from the log", to fix all certificates at once listed in the log, if number of lines > 10.
 
-[2.7.0.26] - 23.12.2017
+[2.7.0.26] - Dec 23, 2017
 Updated list of DNS.
 O4 - Added output of folders in Autostart directories.
 O2, O3 - fixed heuristic cleaning.
 R4 section - DefaultScope is merged with R4 - SearchScopes.
 Little speed optimizations.
 
-[2.7.0.25] - 17.12.2017
+[2.7.0.25] - Dec 17, 2017
 Updated list of certificates on XP.
 
 [2.7.0.24] - Dec 15, 2017
@@ -694,7 +758,7 @@ O22 - SheduledTasks - added compatibility with Windows Vista and newer (checking
 * Firefox / Opera / Chrome / IE version checking improvements
 * Added unlocking NTFS permissions when deleting files
 
-[v2.0.6 Beta official (r35)] - Jul 10, 2013
+[v2.0.6 Beta official (unreleased) (r35)] - Jul 10, 2013
 * Added O4-64 - Autorun on Wow64 registry keys
 * Added cheking of Opera version
 * Added horizontal Scroll Bar to results screen
@@ -1093,4 +1157,4 @@ saved and edited in Wordpad.
 [v1.00] - Aug 27, 2004
 * Original release.
 
-     
+                 

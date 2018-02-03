@@ -281,11 +281,11 @@ ErrorHandler:
 End Sub
 
 '// copy gLines() -> Translate() + replace text on controls
-Public Sub ReloadLanguage()
+Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "ReloadLanguage - Begin"
     
-    Dim i&, Translation$, ID As String
+    Dim i&, Translation$, ID As String, bAnotherForm As Boolean
     Static SecondChance As Boolean
     
     Translate() = gLines()
@@ -295,9 +295,35 @@ Public Sub ReloadLanguage()
             If Len(gLines(i)) <> 0 Then
                 ID = Right$("000" & i, 4)
                 Translation = gLines(i)
-                Select Case ID
+                
+                If bDontTouchMainForm Then
+                  bAnotherForm = True
+                Else
+                  bAnotherForm = False
+                  
+                  Select Case ID
                 
                     '; ================ Start window =================
+                    
+                    Case "1030": .chkLogProcesses.Caption = Translation
+                    Case "1031": .chkLogProcesses.ToolTipText = Translation
+                    Case "1032": .chkAdvLogEnvVars.Caption = Translation
+                    Case "1033": .chkAdvLogEnvVars.ToolTipText = Translation
+                    Case "1034": .chkAdditionalScan.Caption = Translation
+                    Case "1035": .chkAdditionalScan.ToolTipText = Translation
+                    
+                    Case "1040": .chkIgnoreMicrosoft.Caption = Translation
+                    Case "1041": .chkIgnoreMicrosoft.ToolTipText = Translation
+                    Case "1042": .chkIgnoreAll.Caption = Translation
+                    Case "1043": .chkIgnoreAll.ToolTipText = Translation
+                    Case "1044": .chkDoMD5.Caption = Translation
+                    Case "1045": .chkDoMD5.ToolTipText = Translation
+                    
+                    'frame names
+                    Case "1050": .FraIncludeSections.Caption = Translation
+                    Case "1051": .fraScanOpt.Caption = Translation
+                    Case "1052": .FraFixing.Caption = Translation
+                    Case "1053": .FraInterface.Caption = Translation
                     
                     Case "1110": .fraN00b.Caption = Translation
                     Case "0001": .lblInfo(0).Caption = Translation
@@ -398,37 +424,49 @@ Public Sub ReloadLanguage()
                     
                     Case "0092": .lblStartupListAbout.Caption = Translation
                     
-                    Case "0100": .lblConfigInfo(16).Caption = Translation
+                    'system tools frame
+                    Case "0100": .FraSysTools.Caption = Translation
                     
                     Case "0101": .cmdProcessManager.Caption = Translation
-                    Case "0102": .lblConfigInfo(12).Caption = Translation
+                    Case "0102": .lblProcessManagerAbout.Caption = Translation
                     
                     Case "0103": .cmdHostsManager.Caption = Translation
-                    Case "0104": .lblConfigInfo(13).Caption = Translation
+                    Case "0104": .lblHostsManagerAbout.Caption = Translation
                     
                     Case "0105": .cmdDelOnReboot.Caption = Translation
-                    Case "0106": .lblInfo(2).Caption = Translation
+                    Case "0106": .lblDelOnRebootAbout.Caption = Translation
                     
                     Case "0107": .cmdDeleteService.Caption = Translation
-                    Case "0108": .lblInfo(6).Caption = Translation
+                    Case "0108": .lblDeleteServiceAbout.Caption = Translation
                     
                     Case "0109": .cmdADSSpy.Caption = Translation
-                    Case "0110": .lblInfo(5).Caption = Translation
+                    Case "0110": .lblADSSpyAbout.Caption = Translation
                     
                     Case "0224": .cmdARSMan.Caption = Translation
-                    Case "0112": .lblInfo(7).Caption = Translation
+                    Case "0112": .lblARSManAbout.Caption = Translation
                     
-                    Case "0120": .lblConfigInfo(17).Caption = Translation
-                    Case "0121": .chkDoMD5.Caption = Translation
-                    Case "0122": .chkAdvLogEnvVars.Caption = Translation
+                    Case "0119": .cmdRegKeyUnlocker.Caption = Translation
+                    Case "0120": .lblRegKeyUnlockerAbout.Caption = Translation
                     
-                    Case "0123": .chkIgnoreMicrosoft.Caption = Translation
-                    Case "0124": .chkIgnoreAll.Caption = Translation
+                    Case "0121": .cmdDigiSigChecker.Caption = Translation
+                    Case "0122": .lblDigiSigCheckerAbout.Caption = Translation
                     
-                    Case "0140": .lblConfigInfo(18).Caption = Translation
+                    'plugins frame
+                    Case "1600": .FraPlugins.Caption = Translation
+                    Case "1601": .cmdLnkChecker.Caption = Translation
+                    Case "1602": .lblLnkCheckerAbout.Caption = Translation
+                    Case "1603": .cmdLnkCleaner.Caption = Translation
+                    Case "1604": .lblLnkCleanerAbout.Caption = Translation
+                    
+                    'updates frame
+                    Case "0140": .FraUpdateCheck.Caption = Translation
                     Case "0141": .cmdCheckUpdate.Caption = Translation
                     Case "0142": .chkCheckUpdatesOnStart.Caption = Translation
-
+                    Case "0143": .lblUseProxy.Caption = Translation
+                    Case "0144": .lblVersion.Caption = Translation
+                    
+                    'uninstall frame
+                    Case "0149": .FraRemoveHJT.Caption = Translation
                     Case "0150": .cmdUninstall.Caption = Translation
                     Case "0152": .lblUninstallHJT.Caption = Translation
                     
@@ -458,10 +496,9 @@ Public Sub ReloadLanguage()
                     Case "0050": .chkAutoMark.Caption = Translation
                     Case "0051": .chkBackup.Caption = Translation
                     Case "0052": .chkConfirm.Caption = Translation
-                    Case "0053": .chkIgnoreSafeDomains.Caption = Translation
-                    Case "0054": .chkLogProcesses.Caption = Translation
+                    'Case "0053": .chkIgnoreSafeDomains.Caption = Translation
                     Case "0055": .chkSkipIntroFrameSettings.Caption = Translation
-                    Case "0056": .chkConfigStartupScan.Caption = Translation
+                    
                     Case "0058": .chkSkipErrorMsg.Caption = Translation
                     Case "0059": .chkConfigMinimizeToTray.Caption = Translation
                     
@@ -470,6 +507,9 @@ Public Sub ReloadLanguage()
                     Case "0062": .lblConfigInfo(1).Caption = Translation
                     Case "0063": .lblConfigInfo(2).Caption = Translation
                     Case "0064": .lblConfigInfo(4).Caption = Translation
+                    
+                    Case "1400": .chkConfigStartupScan.Caption = Translation
+                    Case "1401": .chkConfigStartupScan.ToolTipText = Translation
                     
                     '; ================ Hosts manager ==================
                     
@@ -497,9 +537,12 @@ Public Sub ReloadLanguage()
                     
                     '; === Other ===
                     'Case "9999": SetCharSet CInt(Translation)
-                    
                     Case Else
-                    
+                        bAnotherForm = True
+                  End Select
+                End If
+                  
+                If bAnotherForm Then
                     If True Then
                         ' ================ ADS Spy =================
                     
@@ -529,6 +572,7 @@ Public Sub ReloadLanguage()
                                     Case "2232": .cmdViewSave.Caption = Translation
                                     Case "2233": .cmdViewEdit.Caption = Translation
                                     Case "2234": .cmdViewBack.Caption = Translation
+                                    Case "2235": .cmdExit.Caption = Translation
                                 End Select
                             End With
                         End If
@@ -750,7 +794,7 @@ Public Sub ReloadLanguage()
                             End With
                         End If
                     End If
-                End Select
+                End If
             End If
         Next i
     End With
@@ -774,10 +818,10 @@ ErrorHandler:
     End If
 End Sub
 
-Public Function IsFormInit(frm As Form) As Boolean
+Public Function IsFormInit(Frm As Form) As Boolean
     Dim cForm As Form
     For Each cForm In Forms
-        If cForm Is frm Then
+        If cForm Is Frm Then
             IsFormInit = True
             Exit For
         End If

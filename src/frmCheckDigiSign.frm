@@ -14,6 +14,7 @@ Begin VB.Form frmCheckDigiSign
       Italic          =   0   'False
       Strikethrough   =   0   'False
    EndProperty
+   Icon            =   "frmCheckDigiSign.frx":0000
    LinkTopic       =   "Form1"
    ScaleHeight     =   4680
    ScaleWidth      =   9255
@@ -243,7 +244,7 @@ Private Sub cmdGo_Click()
     
     If hFile <= 0 Then
         'Cannot open report file. Write access is restricted by another program.
-        MsgBoxW Translate(1869)
+        MsgBoxW Translate(1869) & vbCrLf & vbCrLf & ReportPath
         Exit Sub
     End If
     
@@ -323,7 +324,7 @@ Private Sub cmdGo_Click()
     End If
     
     'Abort
-    cmdExit.Caption = Translate(1861)
+    CmdExit.Caption = Translate(1861)
     
     Dim bWHQL As Boolean
     Dim bWPF As Boolean
@@ -499,7 +500,7 @@ Private Sub cmdGo_Click()
     
     isRan = False
     cmdGo.Enabled = True
-    cmdExit.Caption = Translate(1858)
+    CmdExit.Caption = Translate(1858)
     
     If FileExists(ReportPath) Then
         'Shell "rundll32.exe shell32.dll,ShellExec_RunDLL " & """" & ReportPath & """", vbNormalFocus
@@ -534,11 +535,11 @@ Sub CopyArrayToDictionary(arr() As String, oDict As Object)
     Next
 End Sub
 
-Private Sub CmdExit_Click()
+Private Sub cmdExit_Click()
     If isRan Then
         isRan = False
         ToggleWow64FSRedirection True
-        cmdExit.Caption = Translate(1858)
+        CmdExit.Caption = Translate(1858)
     Else
         Me.Hide
         'Unload Me
@@ -546,16 +547,16 @@ Private Sub CmdExit_Click()
 End Sub
 
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
-    If KeyCode = 27 Then CmdExit_Click
+    If KeyCode = 27 Then cmdExit_Click
 End Sub
 
 Private Sub Form_Load()
     Dim OptB As OptionButton
     Dim ctl As Control
     
-    Me.Icon = frmMain.Icon
+    'Me.Icon = frmMain.Icon
     CenterForm Me
-    Call ReloadLanguage
+    Call ReloadLanguage(True)
     
     ' if Win XP -> disable all window styles from option buttons
     If bIsWinXP Then
@@ -599,7 +600,7 @@ Private Sub Form_Resize()
     TopLevel2 = TopLevel1 - 1440
     
     cmdGo.Top = TopLevel1
-    cmdExit.Top = TopLevel1
+    CmdExit.Top = TopLevel1
     
     shpBack.Top = TopLevel1 + 120
     shpFore.Top = TopLevel1 + 120
@@ -611,14 +612,14 @@ Private Sub Form_Resize()
 End Sub
 
 Private Sub Text1_KeyDown(KeyCode As Integer, Shift As Integer)
-    If KeyCode = 27 Then CmdExit_Click
+    If KeyCode = 27 Then cmdExit_Click
 End Sub
 
-Private Sub Text1_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Text1_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
     AddObjToList Data
 End Sub
 
-Private Sub Form_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Form_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
     AddObjToList Data
 End Sub
 

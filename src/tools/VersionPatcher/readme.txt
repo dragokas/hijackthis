@@ -8,4 +8,13 @@ Using:
 
 VersionPatcher.exe [Path to PE EXE] [Version]
 
+------------
+
+* HiJackThis note:
+
+This program currently is not used in HiJackThis project.
+
+------------
+
+// TODO: this program needs to be completely rewritten
 

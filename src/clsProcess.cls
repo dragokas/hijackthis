@@ -87,7 +87,7 @@ Private Declare Function CommandLineToArgvW Lib "shell32.dll" (ByVal lpCmdLine A
 'Private Declare Function lstrcmpi Lib "kernel32.dll" Alias "lstrcmpiW" (ByVal lpString1 As Long, ByVal lpString2 As Long) As Long
 Private Declare Function lstrlen Lib "kernel32.dll" Alias "lstrlenW" (ByVal lpString As Long) As Long
 Private Declare Function lstrcpyn Lib "kernel32.dll" Alias "lstrcpynW" (ByVal lpString1 As Long, ByVal lpString2 As Long, ByVal iMaxLength As Long) As Long
-Private Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal length As Long) As Long
+Private Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long) As Long
 Private Declare Function GetMem2 Lib "msvbvm60.dll" (Src As Any, Dst As Any) As Long
 Private Declare Function GetMem4 Lib "msvbvm60.dll" (Src As Any, Dst As Any) As Long
 Private Declare Function GlobalFree Lib "kernel32.dll" (ByVal hMem As Long) As Long
@@ -492,7 +492,7 @@ End Function
 Private Sub ParseCommandLine(Line As String, argc As Long, argv() As String)
     On Error GoTo ErrorHandler:
     Dim ptr     As Long
-    Dim index   As Long
+    Dim Index   As Long
     Dim strLen  As Long
     Dim strAdr  As Long
     
@@ -501,11 +501,11 @@ Private Sub ParseCommandLine(Line As String, argc As Long, argv() As String)
     argv(0) = App.Path & "\" & App.EXEName & ".exe"
     If argc = 0 Then Exit Sub
     
-    For index = 1 To argc
-        GetMem4 ByVal ptr + (index - 1) * 4, strAdr
+    For Index = 1 To argc
+        GetMem4 ByVal ptr + (Index - 1) * 4, strAdr
         strLen = lstrlen(strAdr)
-        argv(index) = Space$(strLen)
-        lstrcpyn StrPtr(argv(index)), strAdr, strLen + 1
+        argv(Index) = Space$(strLen)
+        lstrcpyn StrPtr(argv(Index)), strAdr, strLen + 1
     Next
     GlobalFree ptr
     Exit Sub
@@ -551,3 +551,12 @@ Public Function GetArrDims(vArray As Variant) As Integer
         End If
     End If
 End Function
+
+Private Sub Class_Terminate()
+    If pi.hThread <> 0 Then
+        CloseHandle pi.hThread
+    End If
+    If pi.hProcess <> 0 Then
+        CloseHandle pi.hProcess
+    End If
+End Sub

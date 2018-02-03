@@ -42,11 +42,18 @@ End Enum
     Dim HE_REDIR_BOTH, HE_REDIR_WOW, HE_REDIR_NO_WOW
 #End If
 
+Public Enum BUTTON_ALIGNMENT
+    BS_CENTER = &H300&
+    BS_LEFT = &H100&
+    BS_RIGHT = &H200&
+    BS_TOP = &H400&
+End Enum
+
 Public Type LVITEMW
     Mask        As Long
     iItem       As Long
     iSubItem    As Long
-    state       As Long
+    State       As Long
     stateMask   As Long
     pszText     As Long
     cchTextMax  As Long
@@ -102,6 +109,24 @@ Public Declare Function SetCurrentDirectory Lib "kernel32.dll" Alias "SetCurrent
 
 'modmain
 Public Declare Sub ExitProcess Lib "kernel32.dll" (ByVal uExitCode As Long)
+Public Declare Function GetEnvironmentStrings Lib "kernel32.dll" Alias "GetEnvironmentStringsW" () As Long
+Public Declare Function FreeEnvironmentStrings Lib "kernel32.dll" Alias "FreeEnvironmentStringsW" (ByVal lpszEnvironmentBlock As Long) As Long
+Public Declare Function DestroyIcon Lib "user32.dll" (ByVal hIcon As Long) As Long
+Public Declare Function GetWindow Lib "user32.dll" (ByVal hwnd As Long, ByVal uCmd As Long) As Long
+Public Declare Function LoadImageW Lib "user32.dll" (ByVal hInst As Long, ByVal lpszName As Long, ByVal uType As Long, ByVal cxDesired As Long, ByVal cyDesired As Long, ByVal fuLoad As Long) As Long
+Public Declare Function SendMessageW Lib "user32.dll" (ByVal hwnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Public Declare Function SfcIsFileProtected Lib "Sfc.dll" (ByVal RpcHandle As Long, ByVal ProtFileName As Long) As Long
+
+Public Const GW_OWNER          As Long = 4
+Public Const IMAGE_ICON        As Long = 1
+Public Const ICON_SMALL        As Long = 0
+Public Const ICON_BIG          As Long = 1
+Public Const LR_DEFAULTSIZE    As Long = &H40
+Public Const SM_CXICON         As Long = 11
+Public Const SM_CYICON         As Long = 12
+Public Const SM_CXSMICON       As Long = 49
+Public Const SM_CYSMICON       As Long = 50
+Public Const WM_SETICON        As Long = &H80
 
 Public HE           As clsHiveEnum
 Public Reg          As clsRegistry
@@ -116,8 +141,9 @@ Public sFileVals()  As String
 Public bAutoSelect      As Boolean
 Public bConfirm         As Boolean
 Public bMakeBackup      As Boolean
+Public bAdditional      As Boolean
 Public bShowSRP         As Boolean
-Public bIgnoreSafeDomains      As Boolean
+'Public bIgnoreSafeDomains      As Boolean
 Public bLogProcesses    As Boolean
 Public bSkipErrorMsg    As Boolean
 Public bMinToTray       As Boolean
@@ -860,6 +886,59 @@ Public Type IO_COUNTERS
     OtherTransferCount      As Currency
 End Type
 
+Public Enum KWAIT_REASON
+    Executive = 0
+    FreePage = 1
+    PageIn = 2
+    PoolAllocation = 3
+    DelayExecution = 4
+    Suspended = 5
+    UserRequest = 6
+    WrExecutive = 7
+    WrFreePage = 8
+    WrPageIn = 9
+    WrPoolAllocation = 10
+    WrDelayExecution = 11
+    WrSuspended = 12
+    WrUserRequest = 13
+    WrEventPair = 14
+    WrQueue = 15
+    WrLpcReceive = 16
+    WrLpcReply = 17
+    WrVirtualMemory = 18
+    WrPageOut = 19
+    WrRendezvous = 20
+    Spare2 = 21
+    Spare3 = 22
+    Spare4 = 23
+    Spare5 = 24
+    WrCalloutStack = 25
+    WrKernel = 26
+    WrResource = 27
+    WrPushLock = 28
+    WrMutex = 29
+    WrQuantumEnd = 30
+    WrDispatchInt = 31
+    WrPreempted = 32
+    WrYieldExecution = 33
+    WrFastMutex = 34
+    WrGuardedMutex = 35
+    WrRundown = 36
+    MaximumWaitReason = 37
+End Enum
+
+Public Enum KTHREAD_STATE
+    Initialized = 0
+    Ready = 1
+    Running = 2
+    Standby = 3
+    Terminated = 4
+    Waiting = 5
+    Transition = 6
+    DeferredReady = 7
+    GateWait = 8
+End Enum
+
 Public Type SYSTEM_THREAD
     KernelTime          As LARGE_INTEGER
     UserTime            As LARGE_INTEGER
@@ -870,8 +949,8 @@ Public Type SYSTEM_THREAD
     Priority            As Long
     BasePriority        As Long
     ContextSwitchCount  As Long
-    state               As Long 'enum KTHREAD_STATE
-    WaitReason          As Long 'enum KWAIT_REASON
+    State               As KTHREAD_STATE
+    WaitReason          As KWAIT_REASON
     dReserved01         As Long
 End Type
 
@@ -1162,6 +1241,7 @@ Public Type OSVERSIONINFOEX
     wReserved As Byte
 End Type
 
+Public Declare Function GetWindowLong Lib "user32.dll" Alias "GetWindowLongW" (ByVal hwnd As Long, ByVal nIndex As Long) As Long
 Public Declare Function SetWindowLong Lib "user32.dll" Alias "SetWindowLongW" (ByVal hwnd As Long, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
 Public Declare Function CallWindowProc Lib "user32.dll" Alias "CallWindowProcW" (ByVal lpPrevWndFunc As Long, ByVal hwnd As Long, ByVal msg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
 Public Declare Function GetCursorPos Lib "user32.dll" (lpPoint As POINTAPI) As Long
@@ -1181,6 +1261,8 @@ Public Declare Function GetPixel Lib "gdi32.dll" (ByVal hdc As Long, ByVal X As 
 Public Declare Function SetWindowRgn Lib "user32.dll" (ByVal hwnd As Long, ByVal hRgn As Long, ByVal bRedraw As Boolean) As Long
 Public Declare Function CreateRectRgn Lib "gdi32.dll" (ByVal X1 As Long, ByVal Y1 As Long, ByVal X2 As Long, ByVal Y2 As Long) As Long
 Public Declare Function CombineRgn Lib "gdi32.dll" (ByVal hDestRgn As Long, ByVal hSrcRgn1 As Long, ByVal hSrcRgn2 As Long, ByVal nCombineMode As Long) As Long
+
+Public Const GWL_STYLE As Long = -16&
 
 Public Const TIME_ZONE_ID_INVALID As Long = -1&
 Public Const TIME_ZONE_ID_DAYLIGHT As Long = 2

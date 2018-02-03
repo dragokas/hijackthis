@@ -43,7 +43,7 @@ set AppName=
 set NoUPX=true
 
 :: List of file extensions and additional folders in project's directory to include in zip-backup
-set arcList=*.vbp *.vbw *.res *.exe *.frm *.frx *.lvw *.cmd *.csi *.csv *.txt *.log *.PDM *.SCC *.lng *.pdb *.tlb *.ocx *.dll *.md *.gitignore *.bak
+set arcList=*.vbp *.vbw *.rc *.res *.exe *.frm *.frx *.lvw *.cmd *.csi *.csv *.txt *.log *.PDM *.SCC *.lng *.pdb *.tlb *.ocx *.dll *.md *.gitignore *.bak
 
 :: Folder for backup of archive
 set ArcFolder=Archive
@@ -83,12 +83,8 @@ set VTScanToolArg=/min /scan
 if "%~1"=="Fast" set bFast=true
 
 echo.
-set "ch="
-set /p "ch=Would you like to translate new Changelog into English ? (Y/N)"
-if /i "%ch%" neq "n" (
-  start "" _ChangeLog_en.txt
-  start "" _ChangeLog_ru.txt
-)
+echo ===^> PLEASE, don't forget to translate new Changelog into English. Thanks :^)
+echo.
 
 :: Searching for non-screened STOP statements
 call _5_Check_Stop_Statements.cmd
@@ -195,9 +191,11 @@ if "%OSBitness%"=="x32" (set "PF=%ProgramFiles%") else (set "PF=%ProgramFiles(x8
 set "arc=%ArcFolder%\%ProjTitle%_%newVersion%"
 
 :: adding support for "Build" version (we should reset it first to default 1.1.1.1)
-call :SplitVersionLine 1.1.1.1
-call :UpdateProject
+::call :SplitVersionLine 1.1.1.1
+::call :UpdateProject
 ::::::::::::::::::::::::::::::
+
+echo Starting compilation ...
 
 if exist "%AppName%" del "%AppName%"
 "%PF%\Microsoft Visual Studio\VB98\vb6.exe" /m "%ProjFile%" && echo Compilation is successfull. || (
@@ -214,13 +212,13 @@ if exist "%AppName%" del "%AppName%"
 )
 
 :: injecting "Build" field of version
-call :SplitVersionLine %newVersion%
-call :UpdateProject
-"%VerPatcher%" "%cd%\%AppName%" %newVersion%
+::call :SplitVersionLine %newVersion%
+::call :UpdateProject
+::"%VerPatcher%" "%cd%\%AppName%" %newVersion%
 :::::::::::::::::::::::::::::::
 
 :: TS aware + ASLR + DEP
-"%FlagsPatcher%" "%cd%\%AppName%"
+"%FlagsPatcher%" "%cd%\%AppName%" || (echo.& pause)
 
 :: for update checker (in future)
 > "%cd%\HiJackThis-update.txt" set /p "=%newVersion%"<NUL
@@ -322,7 +320,6 @@ if %errorlevel% neq 0 (pause & exit /B)
 copy /y MSCOMCTL.OCX.bak MSCOMCTL.OCX
 copy /y HiJackThis.zip HiJackThis_test.zip
 del /f /a /q *.tmp 2>NUL
-del tools\VersionPatcher\EnumResReport.txt
 
 if defined bFast goto skipVT
 

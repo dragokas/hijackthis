@@ -1,4 +1,7 @@
-Attribute VB_Name = "Модуль1"
+Attribute VB_Name = "Module1"
+'ChangeIcon by anny05
+'Fork by Dragokas
+
 Option Explicit
 
  Private Const OPEN_EXISTING As Long = &H3
@@ -52,6 +55,13 @@ Option Explicit
  Private Declare Function UpdateResource Lib "kernel32" Alias "UpdateResourceA" (ByVal lUpdate As Long, ByVal lpType As Long, ByVal lpName As Long, ByVal wLanguage As Long, lpData As Any, ByVal cbData As Long) As Long
  Private Declare Function EndUpdateResource Lib "kernel32" Alias "EndUpdateResourceA" (ByVal lUpdate As Long, ByVal fDiscard As Long) As Long
  Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long)
+ Private Declare Function FindResource Lib "kernel32" Alias "FindResourceW" (ByVal hModule As Long, ByVal lpName As Long, ByVal lpType As Long) As Long
+ Private Declare Function FindResourceEx Lib "kernel32" Alias "FindResourceExW" (ByVal hModule As Long, ByVal lpType As Long, ByVal lpName As Long, ByVal wLanguage As Integer) As Long
+ Private Declare Function LoadLibraryEx Lib "kernel32.dll" Alias "LoadLibraryExW" (ByVal lpFileName As Long, ByVal hFile As Long, ByVal dwFlags As Long) As Long
+ Private Declare Function FreeLibrary Lib "kernel32.dll" (ByVal hLibModule As Long) As Long
+
+ Const DONT_RESOLVE_DLL_REFERENCES   As Long = &H1&
+ Const LOAD_LIBRARY_AS_DATAFILE      As Long = &H2&
 
  Public Function ChangeIcon(ByVal strExePath As String, ByVal strIcoPath As String) As Boolean
  Dim lFile As Long
@@ -125,9 +135,26 @@ Option Explicit
  Exit Function
  End If
 
+Dim hModule As Long
+
+hModule = LoadLibraryEx(StrPtr(strExePath), 0, LOAD_LIBRARY_AS_DATAFILE Or DONT_RESOLVE_DLL_REFERENCES)
+
+If hModule <> 0 Then
+
+    'removing default VB6 icons
+    For i = 30001 To 30020
+        If FindResourceEx(hModule, RT_ICON, i, 0&) Then
+            Call UpdateResource(lUpdate, RT_ICON, i, 0, ByVal 0, 0)
+        End If
+    Next
+
+    FreeLibrary hModule
+End If
+
  If EndUpdateResource(lUpdate, False) = False Then
  ChangeIcon = False
  CloseHandle (lFile)
+ Exit Function
  End If
 
  Call CloseHandle(lFile)

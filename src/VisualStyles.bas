@@ -36,6 +36,8 @@ Private Declare Function GetMenuItemID Lib "user32" (ByVal hMenu As Long, ByVal 
 Private Declare Function GetMenuItemCount Lib "user32" (ByVal hMenu As Long) As Long
 Private Declare Function GetMenuItemInfo Lib "user32" Alias "GetMenuItemInfoW" (ByVal hMenu As Long, ByVal uItem As Long, ByVal fByPosition As Long, lpmii As MENUITEMINFOW) As Long
 
+Public g_hPrevIcon As Long
+
 Public Function MenuReleaseIcons()
     SetMenuIconByName 0, "", Nothing, True 'free objects
 End Function
@@ -190,11 +192,98 @@ Public Sub SetMenuIcons(WndHandle As Long)
     SetMenuIconByName WndHandle, Translate(1214), LoadResPicture("UNINSTALLER", vbResBitmap)
     SetMenuIconByName WndHandle, Translate(1235), LoadResPicture("INSTALL", vbResBitmap)
     SetMenuIconByName WndHandle, Translate(1224), LoadResPicture("UPDATE", vbResBitmap)
-    SetMenuIconByName WndHandle, Translate(1237), LoadResPicture("IE", vbResBitmap)
-    SetMenuIconByName WndHandle, Translate(1238), LoadResPicture("IE", vbResBitmap)
+    SetMenuIconByName WndHandle, Translate(1237), LoadResPicture("LNKCHECK", vbResBitmap)
+    SetMenuIconByName WndHandle, Translate(1238), LoadResPicture("LNKCLEAN", vbResBitmap)
     
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "SetMenuIcons"
     If inIDE Then Stop: Resume Next
+End Sub
+
+'Special note:
+' if you see "Unspecified error 50003" on XP/Vista. It's mean you need to add icon 16x16 x8 bit (or x24 bit) to your .ico group.
+
+'Set high quality icon
+Public Sub pvSetFormIcon(Frm As Form)
+
+    'Thanks to Bonnie West
+
+    Const LR_LOADMAP3DCOLORS            As Long = &H1000&
+    Const DONT_RESOLVE_DLL_REFERENCES   As Long = &H1&
+    Const LOAD_LIBRARY_AS_DATAFILE      As Long = &H2&
+    
+    Dim hModule     As Long
+    Dim hWndOwner   As Long
+    Dim hIcon       As Long
+    Dim hPrevIcon   As Long
+    
+    'Set big icon
+    If inIDE Then
+        hModule = LoadLibraryEx(StrPtr(App.Path & "\HiJackThis.exe"), 0, LOAD_LIBRARY_AS_DATAFILE Or DONT_RESOLVE_DLL_REFERENCES)
+        If hModule <> 0 Then
+            hIcon = LoadImageW(hModule, 1&, IMAGE_ICON, 0, 0, LR_LOADMAP3DCOLORS) 'for IDE - let it be with no Alpha to differentiate these windows
+            FreeLibrary hModule
+        End If
+    Else
+        hIcon = LoadImageW(App.hInstance, 1&, IMAGE_ICON, 0, 0, LR_DEFAULTSIZE)
+    End If
+    
+    If hIcon <> 0 Then
+        'Set Frm.Icon = Nothing
+        hWndOwner = GetWindow(Frm.hwnd, GW_OWNER)
+
+        g_hPrevIcon = SendMessageW(hWndOwner, WM_SETICON, ICON_BIG, hIcon)
+        If hPrevIcon <> 0 Then
+            'DestroyIcon hPrevIcon
+        End If
+
+'        hPrevIcon = SendMessageW(Frm.hwnd, WM_SETICON, ICON_BIG, hIcon)
+'        If hPrevIcon <> 0 Then
+'            'DestroyIcon hPrevIcon
+'        End If
+    End If
+    
+'    'set small icon
+'    If inIDE Then
+'        hModule = LoadLibraryEx(StrPtr(App.Path & "\HiJackThis.exe"), 0, LOAD_LIBRARY_AS_DATAFILE Or DONT_RESOLVE_DLL_REFERENCES)
+'        If hModule <> 0 Then
+'            hIcon = LoadImageW(hModule, 1&, IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0) 'for IDE - let it be with no Alpha to differentiate these windows
+'            FreeLibrary hModule
+'        End If
+'    Else
+'        hIcon = LoadImageW(App.hInstance, 1&, IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0)
+'    End If
+'
+'    If hIcon <> 0 Then
+'        hWndOwner = GetWindow(Frm.hwnd, GW_OWNER)
+'
+'        hPrevIcon = SendMessageW(hWndOwner, WM_SETICON, ICON_SMALL, hIcon)
+'        If hPrevIcon <> 0 Then
+'            DestroyIcon hPrevIcon
+'        End If
+'
+'        hPrevIcon = SendMessageW(Frm.hwnd, WM_SETICON, ICON_SMALL, hIcon)
+'        If hPrevIcon <> 0 Then
+'            DestroyIcon hPrevIcon
+'        End If
+'    End If
+    
+End Sub
+
+Public Sub pvDestroyFormIcon(Frm As Form)
+    Dim hPrevIcon   As Long
+    Dim hWndOwner   As Long
+    
+    hWndOwner = GetWindow(Frm.hwnd, GW_OWNER)
+    
+    hPrevIcon = SendMessageW(Frm.hwnd, WM_SETICON, ICON_BIG, g_hPrevIcon)
+    If hPrevIcon <> 0 Then
+        DestroyIcon hPrevIcon
+    End If
+
+'    hPrevIcon = SendMessageW(Frm.hwnd, WM_SETICON, ICON_BIG, 0&)
+'    If hPrevIcon <> 0 Then
+'        DestroyIcon hPrevIcon
+'    End If
 End Sub

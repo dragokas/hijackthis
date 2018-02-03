@@ -5,7 +5,8 @@ OSver;Dir\Name;RunObj;Args;Note
 5,1; {438755C2-A8BA-11D1-B96B-00A0C90312E1}\Предзагрузчик Browseui; %windir%\system32\browseui.dll;
 5,1; {438755C2-A8BA-11D1-B96B-00A0C90312E1}\Browseui preloader; %windir%\system32\browseui.dll;
 5,1; {8C7461EF-2B13-11d2-BE35-3078302C2030}\Component Categories cache daemon; %windir%\system32\browseui.dll;
-6; \Microsoft\Windows Defender\MP Scheduled Scan; %ProgramFiles%\windows defender\MpCmdRun.exe; Scan -RestrictPrivileges;
+5,2; {438755C2-A8BA-11D1-B96B-00A0C90312E1}\Browseui preloader; %windir%\system32\browseui.dll;
+5,2; {8C7461EF-2B13-11d2-BE35-3078302C2030}\Component Categories cache daemon; %windir%\system32\browseui.dll;
 6; \Microsoft\Windows\Media Center\ehDRMInit; %SystemRoot%\ehome\ehPrivJob.exe; /DRMInit;
 6; \Microsoft\Windows\Media Center\OCURActivate; %SystemRoot%\ehome\ehPrivJob.exe; /OCURActivate;
 6; \Microsoft\Windows\Media Center\OCURDiscovery; %SystemRoot%\ehome\ehPrivJob.exe; /OCURDiscovery;
@@ -47,8 +48,6 @@ OSver;Dir\Name;RunObj;Args;Note
 6; \Microsoft\Windows\WDI\ResolutionHost; {900be39d-6be8-461a-bc4d-b0fa71f5ecb1}; %SystemRoot%\System32\wdi.dll
 6; \Microsoft\Windows\Tcpip\WSHReset; %SystemRoot%\system32\netsh.exe; interface tcp set heuristic wsh=default
 6,1; \Microsoft\Windows\Media Center\VCore; %ALLUSERSPROFILE%\vCore\VCore.exe; /check
-6,1; \Microsoft\Windows Defender\MP Scheduled Scan; %ProgramFiles%\windows defender\MpCmdRun.exe; Scan -ScheduleJob -WinTask -RestrictPrivilegesScan
-6,1; \Microsoft\Windows Defender\MpIdleTask; %ProgramFiles%\windows defender\MpCmdRun.exe; -IdleTask -TaskName MpIdleTask
 6,1; \Microsoft\Windows\Windows Media Sharing\UpdateLibrary; %ProgramFiles%\Windows Media Player\wmpnscfg.exe; 
 6,1; {root}\SidebarExecute; %ProgramFiles(x86)%\Windows Sidebar\sidebar.exe; /S
 6,1; {root}\SidebarExecute; %ProgramFiles%\Windows Sidebar\sidebar.exe; /showGadgets
@@ -132,17 +131,12 @@ OSver;Dir\Name;RunObj;Args;Note
 6,1; \Microsoft\Windows\Offline Files\Background Synchronization; {FA3F3DD9-4C1A-456B-A8FA-C76EF3ED83B8};%SystemRoot%\System32\cscui.dll
 6,1; \Microsoft\Windows\Offline Files\Logon Synchronization; {FA3F3DD9-4C1A-456B-A8FA-C76EF3ED83B8},Logon;%SystemRoot%\System32\cscui.dll
 6,1; \Microsoft\Windows\SideShow\GadgetManager; {FF87090D-4A9A-4f47-879B-29A80C355D61},$(Arg0);%SystemRoot%\System32\AuxiliaryDisplayServices.dll
-6,1; \Microsoft\Microsoft Antimalware\Microsoft Antimalware Scheduled Scan; %ProgramFiles%\Microsoft Security Client\MpCmdRun.exe;Scan -ScheduleJob -RestrictPrivileges
 6,1; \OfficeSoftwareProtectionPlatform\SvcRestartTask; %SystemRoot%\system32\sc.exe; start osppsvc
 6,1; \Microsoft\Windows\termsrv\licensing\TlsWarning; %SystemRoot%\system32\tlsbln.exe
 6,1; \Microsoft\Windows\Server Manager\ServerManager; %SystemRoot%\system32\ServerManagerLauncher.exe
 6,1; \Microsoft\Windows\Defrag\ScheduledDefrag; %SystemRoot%\system32\defrag.exe; -c -i -g
 6,1; \Microsoft\Windows\Defrag\ManualDefrag; %SystemRoot%\system32\defrag.exe; -c
 6,1; \Microsoft\Windows\Maintenance\WinSAT; A9A33436-678B-4c9c-A211-7CC38785E79D; %SystemRoot%\system32\WinSATAPI.dll
-6,2; \Microsoft\Windows\Windows Defender\Windows Defender Cache Maintenance; %ProgramFiles%\Windows Defender\MpCmdRun.exe; -IdleTask -TaskName WdCacheMaintenance
-6,2; \Microsoft\Windows\Windows Defender\Windows Defender Cleanup; %ProgramFiles%\Windows Defender\MpCmdRun.exe; -IdleTask -TaskName WdCleanup
-6,2; \Microsoft\Windows\Windows Defender\Windows Defender Scheduled Scan; %ProgramFiles%\Windows Defender\MpCmdRun.exe; Scan -ScheduleJob
-6,2; \Microsoft\Windows\Windows Defender\Windows Defender Verification; %ProgramFiles%\Windows Defender\MpCmdRun.exe; -IdleTask -TaskName WdVerification
 6,2; \Microsoft\Windows\Windows Media Sharing\UpdateLibrary; %ProgramFiles%\Windows Media Player\wmpnscfg.exe; 
 6,2; \Microsoft\Windows\Plug and Play\Sysprep Generalize Drivers; %SystemRoot%\System32\drvinst.exe;6
 6,2; \Microsoft\Windows\Mobile Broadband Accounts\MNO Metadata Parser; %SystemRoot%\System32\MbaeParserTask.exe; 
@@ -176,10 +170,6 @@ OSver;Dir\Name;RunObj;Args;Note
 6,2; \Microsoft\Windows\WS\License Validation; rundll32.exe; WSClient.dll,WSpTLR licensing
 6,2; \Microsoft\Windows\WS\WSRefreshBannedAppsListTask; rundll32.exe; WSClient.dll,RefreshBannedAppsList
 6,2; \Microsoft\Windows\UPnP\UPnPHostConfig; sc.exe; config upnphost start= auto
-6,3; \Microsoft\Windows\Windows Defender\Windows Defender Cache Maintenance; %ProgramFiles%\Windows Defender\MpCmdRun.exe; -IdleTask -TaskName WdCacheMaintenance
-6,3; \Microsoft\Windows\Windows Defender\Windows Defender Cleanup; %ProgramFiles%\Windows Defender\MpCmdRun.exe; -IdleTask -TaskName WdCleanup
-6,3; \Microsoft\Windows\Windows Defender\Windows Defender Scheduled Scan; %ProgramFiles%\Windows Defender\MpCmdRun.exe; Scan -ScheduleJob
-6,3; \Microsoft\Windows\Windows Defender\Windows Defender Verification; %ProgramFiles%\Windows Defender\MpCmdRun.exe; -IdleTask -TaskName WdVerification
 6,3; \Microsoft\Windows\Windows Media Sharing\UpdateLibrary; %ProgramFiles%\Windows Media Player\wmpnscfg.exe; 
 6,3; \Microsoft\Windows\Workplace Join\Automatic-Workplace-Join; %SystemRoot%\System32\AutoWorkplace.exe; join
 6,3; \Microsoft\Windows\Plug and Play\Sysprep Generalize Drivers; %SystemRoot%\System32\drvinst.exe;6
@@ -298,10 +288,6 @@ OSver;Dir\Name;RunObj;Args;Note
 6,3; \Microsoft\Windows\RemovalTools\MRT_HB; %SystemRoot%\system32\MRT.exe; /EHB /Q
 10; \Microsoft\Windows\Media Center\RegisterObject; %ALLUSERSPROFILE%\RegisterObject\RegisterObject.exe; /DoWatch;;
 10; {root}\OneDrive Standalone Update Task v2; %LOCALAPPDATA%\Microsoft\OneDrive\OneDriveStandaloneUpdater.exe; ;;
-10; \Microsoft\Windows\Windows Defender\Windows Defender Cache Maintenance; %ProgramFiles%\Windows Defender\MpCmdRun.exe; -IdleTask -TaskName WdCacheMaintenance;;
-10; \Microsoft\Windows\Windows Defender\Windows Defender Cleanup; %ProgramFiles%\Windows Defender\MpCmdRun.exe; -IdleTask -TaskName WdCleanup;;
-10; \Microsoft\Windows\Windows Defender\Windows Defender Scheduled Scan; %ProgramFiles%\Windows Defender\MpCmdRun.exe; Scan -ScheduleJob;;
-10; \Microsoft\Windows\Windows Defender\Windows Defender Verification; %ProgramFiles%\Windows Defender\MpCmdRun.exe; -IdleTask -TaskName WdVerification;Note;Error
 10; \Microsoft\Windows\Windows Media Sharing\UpdateLibrary; %ProgramFiles%\Windows Media Player\wmpnscfg.exe; ;;
 10; {root}\CreateExplorerShellUnelevatedTask; %SystemRoot%\explorer.exe; /NOUACCHECK;;
 10; \Microsoft\Windows\Workplace Join\Automatic-Workplace-Join; %SystemRoot%\System32\AutoWorkplace.exe; join;;
@@ -490,6 +476,5 @@ OSver;Dir\Name;RunObj;Args;Note
 10; \Microsoft\Windows\WwanSvc\NotificationTask; %SystemRoot%\System32\WiFiTask.exe; wwan
 10; \Microsoft\Windows\PushToInstall\Registration; %SystemRoot%\system32\sc.exe; start pushtoinstall registration
 10; \Microsoft\Windows\UpdateOrchestrator\USO_Broker_Display; %SystemRoot%\system32\MusNotification.exe; Display
-10; \Microsoft\Windows\Windows Defender\Windows Defender Scheduled Scan; %ProgramFiles%\Windows Defender\MpCmdRun.exe; Scan -ScheduleJob -ScanTrigger 55
 10; \OfficeSoftwareProtectionPlatform\SvcRestartTask; %SystemRoot%\system32\sc.exe; start osppsvc
-     
+        

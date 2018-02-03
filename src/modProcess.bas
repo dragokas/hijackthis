@@ -77,6 +77,8 @@ Private Type STARTUPINFO
     hStdError As Long
 End Type
 
+Const PROCESS_SET_INFORMATION As Long = &H200&
+
 'Private Type LARGE_INTEGER
 '    LowPart     As Long
 '    HighPart    As Long
@@ -316,9 +318,7 @@ End Function
 Public Function PauseProcess(lPID As Long) As Boolean
     On Error GoTo ErrorHandler:
 
-    '//TODO: add process status checking after Nt
-
-    Dim hSnap&, uTE32 As THREADENTRY32, hThread&, IsFailed As Boolean, hProc&
+    Dim hThread&, hProc&, i&, SysThread() As SYSTEM_THREAD
     
     If Not bIsWinNT And Not bIsWinME Then Exit Function
     If lPID = 0 Or lPID = GetCurrentProcessId Then Exit Function
@@ -329,34 +329,24 @@ Public Function PauseProcess(lPID As Long) As Boolean
         If hProc <> 0 Then
             Call NtSuspendProcess(hProc)
             CloseHandle hProc
-        End If
-    End If
-    
-    hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, lPID)
-    If hSnap = -1 Then Exit Function
-    
-    uTE32.dwSize = Len(uTE32)
-    If Thread32First(hSnap, uTE32) = 0 Then
-        CloseHandle hSnap
-        Exit Function
-    End If
-    
-    Do
-        If uTE32.th32ProcessID = lPID Then
-            PauseProcess = True
             
-            hThread = OpenThread(THREAD_SUSPEND_RESUME, False, uTE32.th32ThreadID)
-            If hThread = 0 Then
-                IsFailed = True
-            Else
-                If SuspendThread(hThread) = -1 Then IsFailed = True
-                CloseHandle hThread
+            If IsProcessSuspended(lPID) Then
+                PauseProcess = True
+                Exit Function
             End If
         End If
-    Loop Until Thread32Next(hSnap, uTE32) = 0
-    CloseHandle hSnap
+    End If
     
-    If IsFailed Then PauseProcess = False
+    For i = 0 To GetThreads_Zw(lPID, SysThread) - 1
+        
+        hThread = OpenThread(THREAD_SUSPEND_RESUME, False, SysThread(i).ClientId.UniqueThread)
+        If hThread <> 0 Then
+            Call SuspendThread(hThread)
+            CloseHandle hThread
+        End If
+    Next
+    
+    PauseProcess = IsProcessSuspended(lPID)
     
     Exit Function
 ErrorHandler:
@@ -367,9 +357,7 @@ End Function
 Public Function ResumeProcess(lPID As Long) As Boolean
     On Error GoTo ErrorHandler:
 
-    '//TODO: add process status checking after Nt
-
-    Dim hSnap&, uTE32 As THREADENTRY32, hThread&, IsFailed As Boolean, hProc&
+    Dim hThread&, hProc&, i&, SysThread() As SYSTEM_THREAD
     
     If Not (bIsWinNT Or bIsWinME) Then Exit Function
     If lPID = 0 Or lPID = GetCurrentProcessId Then Exit Function
@@ -380,34 +368,24 @@ Public Function ResumeProcess(lPID As Long) As Boolean
         If hProc <> 0 Then
             Call NtResumeProcess(hProc)
             CloseHandle hProc
-        End If
-    End If
-    
-    hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, lPID)
-    If hSnap = -1 Then Exit Function
-    
-    uTE32.dwSize = Len(uTE32)
-    If Thread32First(hSnap, uTE32) = 0 Then
-        CloseHandle hSnap
-        Exit Function
-    End If
-    
-    Do
-        If uTE32.th32ProcessID = lPID Then
-            ResumeProcess = True
             
-            hThread = OpenThread(THREAD_SUSPEND_RESUME, False, uTE32.th32ThreadID)
-            If hThread = 0 Then
-                IsFailed = True
-            Else
-                If ResumeThread(hThread) = -1 Then IsFailed = True
-                CloseHandle hThread
+            If IsProcessResumed(lPID) Then
+                ResumeProcess = True
+                Exit Function
             End If
         End If
-    Loop Until Thread32Next(hSnap, uTE32) = 0
-    CloseHandle hSnap
+    End If
     
-    If IsFailed Then ResumeProcess = False
+    For i = 0 To GetThreads_Zw(lPID, SysThread) - 1
+        
+        hThread = OpenThread(THREAD_SUSPEND_RESUME, False, SysThread(i).ClientId.UniqueThread)
+        If hThread <> 0 Then
+            Call ResumeThread(hThread)
+            CloseHandle hThread
+        End If
+    Next
+    
+    ResumeProcess = IsProcessResumed(lPID)
     
     Exit Function
 ErrorHandler:
@@ -424,7 +402,7 @@ Public Function KillProcessByFile(sPath$, Optional bForceMicrosoft As Boolean) A
     sPath = FindOnPath(sPath, True)
     
     If Not bForceMicrosoft Then
-        If IsMicrosoftFile(sPath) Then Exit Function
+        If IsMicrosoftFile(sPath, True) Then Exit Function
     End If
     
     If Not bIsWinNT Then
@@ -600,6 +578,92 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
+Public Function IsProcessSuspended(ProcessID As Long) As Boolean
+    Dim SysThread() As SYSTEM_THREAD
+    Dim i As Long
+    IsProcessSuspended = True
+    
+    For i = 0 To GetThreads_Zw(ProcessID, SysThread) - 1
+        If SysThread(i).WaitReason <> Suspended Then
+            IsProcessSuspended = False
+            Exit Function
+        End If
+    Next
+End Function
+
+Public Function IsProcessResumed(ProcessID As Long) As Boolean
+    Dim SysThread() As SYSTEM_THREAD
+    Dim i As Long
+    IsProcessResumed = True
+    
+    For i = 0 To GetThreads_Zw(ProcessID, SysThread) - 1
+        If SysThread(i).WaitReason = Suspended Then
+            IsProcessResumed = False
+            Exit Function
+        End If
+    Next
+End Function
+
+Public Function GetThreads_Zw(ProcessID As Long, ThreadList() As SYSTEM_THREAD) As Long
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "GetThreads_Zw - Begin"
+    
+    Const SPI_SIZE      As Long = &HB8&                                 'SPI struct: http://www.informit.com/articles/article.aspx?p=22442&seqNum=5
+    Const THREAD_SIZE   As Long = &H40&
+    
+    Dim cnt         As Long
+    Dim Ret         As Long
+    Dim buf()       As Byte
+    Dim Offset      As Long
+    Dim Process     As SYSTEM_PROCESS_INFORMATION
+    Dim i           As Long
+    
+    ReDim ProcList(200)
+    
+    SetCurrentProcessPrivileges "SeDebugPrivilege"
+    
+    If NtQuerySystemInformation(SystemProcessInformation, ByVal 0&, 0&, Ret) = STATUS_INFO_LENGTH_MISMATCH Then
+    
+        ReDim buf(Ret - 1)
+        
+        If NtQuerySystemInformation(SystemProcessInformation, buf(0), Ret, Ret) = STATUS_SUCCESS Then
+        
+            With Process
+            
+                Do
+                    memcpy Process, buf(Offset), SPI_SIZE
+                    
+                    If .ProcessID = ProcessID Then
+
+                        ReDim ThreadList(0 To .NumberOfThreads - 1)
+                    
+                        For i = 0 To .NumberOfThreads - 1
+                            memcpy ThreadList(i), buf(Offset + SPI_SIZE + i * THREAD_SIZE), THREAD_SIZE
+                        Next
+                        
+                        cnt = .NumberOfThreads
+                        Exit Do
+                    End If
+                    
+                    Offset = Offset + .NextEntryOffset
+                    
+                Loop While .NextEntryOffset
+                
+            End With
+            
+        End If
+        
+    End If
+    
+    GetThreads_Zw = cnt
+    
+    AppendErrorLogCustom "GetThreads_Zw - End"
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetThreads_Zw"
+    If inIDE Then Stop: Resume Next
+End Function
+
 Public Function GetProcesses_Zw(ProcList() As MY_PROC_ENTRY) As Long    'Return -> Count of processes
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "GetProcesses_Zw - Begin"
@@ -608,7 +672,7 @@ Public Function GetProcesses_Zw(ProcList() As MY_PROC_ENTRY) As Long    'Return 
     Const THREAD_SIZE   As Long = &H40&
     
     Dim cnt         As Long
-    Dim ret         As Long
+    Dim Ret         As Long
     Dim buf()       As Byte
     Dim Offset      As Long
     Dim Process     As SYSTEM_PROCESS_INFORMATION
@@ -619,11 +683,11 @@ Public Function GetProcesses_Zw(ProcList() As MY_PROC_ENTRY) As Long    'Return 
     
     SetCurrentProcessPrivileges "SeDebugPrivilege"
     
-    If NtQuerySystemInformation(SystemProcessInformation, ByVal 0&, 0&, ret) = STATUS_INFO_LENGTH_MISMATCH Then
+    If NtQuerySystemInformation(SystemProcessInformation, ByVal 0&, 0&, Ret) = STATUS_INFO_LENGTH_MISMATCH Then
     
-        ReDim buf(ret - 1)
+        ReDim buf(Ret - 1)
         
-        If NtQuerySystemInformation(SystemProcessInformation, buf(0), ret, ret) = STATUS_SUCCESS Then
+        If NtQuerySystemInformation(SystemProcessInformation, buf(0), Ret, Ret) = STATUS_SUCCESS Then
         
             With Process
             
@@ -641,8 +705,8 @@ Public Function GetProcesses_Zw(ProcList() As MY_PROC_ENTRY) As Long    'Return 
                     ElseIf .ProcessID = 4 Then
                         ProcName = "System"
                     Else
-                        ProcName = Space$(.ImageName.length \ 2)
-                        memcpy ByVal StrPtr(ProcName), ByVal .ImageName.Buffer, .ImageName.length
+                        ProcName = Space$(.ImageName.Length \ 2)
+                        memcpy ByVal StrPtr(ProcName), ByVal .ImageName.Buffer, .ImageName.Length
                         ProcPath = GetFilePathByPID(.ProcessID)
                         
                         If Len(ProcPath) = 0 Then
@@ -826,10 +890,10 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function ProcessExist(NameOrPath As String, bDoRefresh As Boolean) As Boolean
+Public Function ProcessExist(NameOrPath As String, bGetNewListOfProcesses As Boolean) As Boolean
     Dim i As Long
     
-    If AryPtr(gProcess) = 0 Or bDoRefresh Then Call GetProcesses(gProcess)
+    If AryPtr(gProcess) = 0 Or bGetNewListOfProcesses Then Call GetProcesses(gProcess)
     
     If InStr(NameOrPath, "\") <> 0 Then
         'by path
@@ -960,6 +1024,7 @@ Public Function GetRunningProcesses$()
                 If Not ((StrComp(.Name, "System Idle Process", 1) = 0 And .PID = 0) _
                         Or (StrComp(.Name, "System", 1) = 0 And .PID = 4) _
                         Or (StrComp(.Name, "Memory Compression", 1) = 0) _
+                        Or (StrComp(.Name, "MemCompression", 1) = 0) _
                         Or (StrComp(.Name, "Secure System", 1) = 0)) Then
 
                     sProc = sProc & "|" & .PID & "=" & .Path
@@ -979,6 +1044,18 @@ Public Function GetLoadedModules(lPID As Long, sProcess As String) As String
 
     If IsArrDimmed(DLLList) Then
         GetLoadedModules = Join(DLLList, "|")
+    End If
+End Function
+
+Public Function GetPriorityProcess(Optional hProcess As Long, Optional lPID As Long) As PROCESS_PRIORITY
+    If hProcess <> 0 Then
+        GetPriorityProcess = GetPriorityClass(hProcess)
+    ElseIf lPID <> 0 Then
+        hProcess = OpenProcess(IIf(bIsWinVistaAndNewer, PROCESS_QUERY_LIMITED_INFORMATION, PROCESS_QUERY_INFORMATION), 0&, lPID)
+        If hProcess <> 0 Then
+            GetPriorityProcess = GetPriorityClass(hProcess)
+            CloseHandle hProcess
+        End If
     End If
 End Function
 
@@ -1023,22 +1100,25 @@ Public Function SetPriorityAllThreads(hProcess As Long, ePriorityThread As THREA
     End If
 End Function
 
-Public Function GetProcessThreadIDs(hProcess As Long) As Long()
+Public Function GetProcessThreadIDs(Optional hProcess As Long, Optional PID As Long) As Long()
     
     On Error GoTo ErrorHandler
     
     Dim hSnap As Long
-    Dim PID As Long
     Dim te As THREADENTRY32
     Dim thrID() As Long
     Dim nThreads As Long
     
     ReDim thrID(0)
     
-    If hProcess = GetCurrentProcess() Then
-        PID = GetCurrentProcessId
+    If hProcess <> 0 Then
+        If hProcess = GetCurrentProcess() Then
+            PID = GetCurrentProcessId
+        Else
+            PID = GetProcessID(hProcess)
+            If PID = 0 Then Exit Function
+        End If
     Else
-        PID = GetProcessID(hProcess)
         If PID = 0 Then Exit Function
     End If
     
@@ -1071,3 +1151,152 @@ ErrorHandler:
     Debug.Print "GetProcessThreadIDs", "Error = " & Err.Number, "LastDllError = " & Err.LastDllError
     If inIDE Then Stop: Resume Next
 End Function
+
+Public Function IsSystemCriticalProcessPath(sPath As String) As Boolean
+    Static dPath As clsTrickHashTable
+    
+    If dPath Is Nothing Then
+        Set dPath = New clsTrickHashTable
+        dPath.CompareMode = TextCompare
+        
+        dPath.Add sWinSysDir & "\smss.exe", 0
+        dPath.Add sWinSysDir & "\csrss.exe", 0
+        dPath.Add sWinSysDir & "\svchost.exe", 0
+        dPath.Add sWinSysDir & "\winlogon.exe", 0
+        dPath.Add sWinSysDir & "\wininit.exe", 0
+        dPath.Add sWinSysDir & "\lsm.exe", 0
+        dPath.Add sWinSysDir & "\services.exe", 0
+        dPath.Add sWinSysDir & "\lsass.exe", 0
+        dPath.Add sWinSysDir & "\msdtc.exe", 0 'database / file / message queue transactions
+    End If
+    
+    IsSystemCriticalProcessPath = dPath.Exists(sPath)
+End Function
+
+Public Sub SystemPriorityDowngrade(bState As Boolean)
+    On Error GoTo ErrorHandler
+    
+    Static dPath As clsTrickHashTable
+    Static dPrior As clsTrickHashTable
+    Dim i As Long
+    
+    If dPath Is Nothing Then
+        If bState = False Then
+            MsgBoxW ("Invalid using of SystemPriorityDowngrade")
+            Exit Sub
+        End If
+        
+        Set dPath = New clsTrickHashTable
+        Set dPrior = New clsTrickHashTable
+        
+        dPath.CompareMode = TextCompare
+        dPrior.CompareMode = TextCompare
+        
+        'Critical processes
+        dPath.Add sWinSysDir & "\alg.exe", 0
+        dPath.Add sWinSysDir & "\smss.exe", 0
+        dPath.Add sWinSysDir & "\csrss.exe", 0
+        dPath.Add sWinSysDir & "\ctfmon.exe", 0
+        dPath.Add sWinSysDir & "\lsass.exe", 0
+        dPath.Add sWinSysDir & "\msdtc.exe", 0
+        dPath.Add sWinSysDir & "\services.exe", 0
+        dPath.Add sWinSysDir & "\svchost.exe", 0
+        dPath.Add sWinSysDir & "\winlogon.exe", 0
+        dPath.Add sWinSysDir & "\wininit.exe", 0
+        dPath.Add sWinSysDir & "\lsm.exe", 0
+        'dllhost.exe ?
+        
+        'Access denied
+        dPath.Add sWinSysDir & "\audiodg.exe", 0
+        dPath.Add sWinSysDir & "\SecurityHealthService.exe", 0
+        'SearchFilter
+        'SearchProtocolHost
+        'RuntimeBroker
+        'dllHost
+    End If
+    
+    If bState = True Then 'do downgrade
+    
+        Dim lNumProcesses As Long
+        Dim Process() As MY_PROC_ENTRY
+        Dim hProc As Long
+        Dim dwSelfPID As Long
+        Dim Priority As PROCESS_PRIORITY
+        
+        dwSelfPID = GetCurrentProcessId()
+        
+        lNumProcesses = GetProcesses(Process)
+        
+        If lNumProcesses > 0 Then
+            
+            For i = 0 To UBound(Process)
+                
+                If Not dPath.Exists(Process(i).Path) Then
+                
+                    If StrComp(Process(i).Name, "avz.exe", 1) <> 0 And _
+                        StrComp(Process(i).Name, "avz5.exe", 1) <> 0 And _
+                        Process(i).PID <> dwSelfPID And _
+                        Process(i).PID <> 0 And _
+                        Not (StrComp(Process(i).Name, "System", 1) = 0 And Process(i).PID = 4) And _
+                        InStr(1, Process(i).Path, "Windows Defender", 1) = 0 And _
+                        StrComp(Process(i).Name, "Memory Compression", 1) <> 0 And _
+                        StrComp(Process(i).Name, "MemCompression", 1) <> 0 _
+                        Then
+                        
+                        hProc = OpenProcess(PROCESS_SET_INFORMATION, 0, Process(i).PID)
+                        
+                        If hProc <> 0 Then
+                            
+                            Priority = GetPriorityProcess(, Process(i).PID)
+                            
+                            'save old state
+                            dPrior.Add hProc, CLng(Priority)
+                            
+                            'downgrade
+                            If Not SetPriorityProcess(hProc, IDLE_PRIORITY_CLASS) Then
+                            
+                                Debug.Print "Can't set priority: " & Process(i).Path
+                            
+                                'on failure
+                                CloseHandle hProc
+                                dPrior.Remove hProc
+                            End If
+                        
+                        Else
+                            Debug.Print "Can't open: " & Process(i).Path & " (PID = " & Process(i).PID & ")"
+                        End If
+                        
+                    End If
+                
+                End If
+                
+            Next
+        End If
+        
+    Else 'revert changes
+        
+        For i = 0 To dPrior.Count - 1
+            
+            hProc = dPrior.Keys(i)
+            Priority = dPrior.Items(i)
+            
+            If Priority = 0 Then
+                Priority = NORMAL_PRIORITY_CLASS
+            End If
+            
+            If Not SetPriorityProcess(hProc, Priority) Then
+                Debug.Print "Can't restore priority: " & Process(i).Path
+            End If
+            
+            CloseHandle hProc
+        Next
+        
+        Set dPath = Nothing
+        Set dPrior = Nothing
+    End If
+
+    Exit Sub
+ErrorHandler:
+    Debug.Print "GetProcessThreadIDs", "Error = " & Err.Number, "LastDllError = " & Err.LastDllError
+    If inIDE Then Stop: Resume Next
+End Sub

@@ -296,7 +296,7 @@ End Function
 
 ' // Load file to byte stream. Returns size of written data
 Public Function LoadFileToStream( _
-                 ByRef sFileName As String, _
+                 ByRef sFilename As String, _
                  ByVal oStream As clsStream) As Long
     Dim hFile       As Long
     Dim sizeOfFile  As LARGE_INTEGER
@@ -310,7 +310,7 @@ Public Function LoadFileToStream( _
     
     Ret = -1
     
-    hFile = CreateFile(StrPtr(sFileName), GENERIC_READ, 0, ByVal 0&, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0)
+    hFile = CreateFile(StrPtr(sFilename), GENERIC_READ, 0, ByVal 0&, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0)
     If hFile = INVALID_HANDLE_VALUE Then
         Err.Raise 75
     End If
@@ -346,7 +346,7 @@ End Function
 
 ' // Save stream data to file
 Public Function SaveStreamToFile( _
-                 ByRef sFileName As String, _
+                 ByRef sFilename As String, _
                  ByVal oStream As clsStream) As Long
     Dim hFile       As Long
     Dim binData()   As Byte
@@ -359,7 +359,7 @@ Public Function SaveStreamToFile( _
     
     Ret = -1
     
-    hFile = CreateFile(StrPtr(sFileName), GENERIC_WRITE, 0, ByVal 0&, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)
+    hFile = CreateFile(StrPtr(sFilename), GENERIC_WRITE, 0, ByVal 0&, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)
     If hFile = INVALID_HANDLE_VALUE Then
         Err.Raise 75
     End If
@@ -392,3 +392,6 @@ error_handler:
     
 End Function
 
+Private Sub Class_Terminate()
+    Erase mBuffer
+End Sub

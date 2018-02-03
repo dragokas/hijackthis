@@ -19,7 +19,7 @@ Sub Main()
         Size = LOF(ff)
         Rest = 4 - (Size Mod 4)
         If Rest <> 0 And Rest <> 4 Then
-            Put #ff, Size + 1, String$(Rest, Chr$(0))
+            Put #ff, Size + 1, String$(Rest, " ")
         End If
     Close #ff
     

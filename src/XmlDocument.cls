@@ -113,6 +113,10 @@ Private Sub Class_Initialize()
     Set m_RootElement = New CXmlElement
 End Sub
 
+Private Sub Class_Terminate()
+    Set m_RootElement = Nothing
+End Sub
+
 Public Property Get NodeByName(ByVal NodeName As String) As CXmlElement
     Set NodeByName = m_RootElement.NodeByName(NodeName)
 End Property

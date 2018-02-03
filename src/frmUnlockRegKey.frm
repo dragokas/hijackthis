@@ -5,6 +5,7 @@ Begin VB.Form frmUnlockRegKey
    ClientLeft      =   120
    ClientTop       =   450
    ClientWidth     =   8445
+   Icon            =   "frmUnlockRegKey.frx":0000
    LinkTopic       =   "Form1"
    ScaleHeight     =   3240
    ScaleWidth      =   8445
@@ -110,7 +111,7 @@ Private Sub cmdGo_Click()
     'If Not FileExists(sLogPath) Then
         sHeader = "Logfile of Registry Key Unlocker (HJT v." & AppVerString & ")" & vbCrLf & vbCrLf
     
-        sHeader = sHeader & "Platform:  " & OSver.Bitness & " " & OSver.OSName & " (" & OSver.Edition & "), " & _
+        sHeader = sHeader & "Platform:  " & OSver.Bitness & " " & OSver.OSName & IIf(OSver.Edition <> "", " (" & OSver.Edition & ")", "") & ", " & _
             OSver.Major & "." & OSver.Minor & "." & OSver.Build & "." & OSver.Revision & _
             IIf(OSver.ReleaseId <> 0, " (ReleaseId: " & OSver.ReleaseId & ")", "") & ", " & _
             "Service Pack: " & OSver.SPVer & "" & IIf(OSver.IsSafeBoot, " (Safe Boot)", "") & vbCrLf
@@ -160,9 +161,9 @@ Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
 End Sub
 
 Private Sub Form_Load()
-    ReloadLanguage
+    ReloadLanguage True
     CenterForm Me
-    Me.Icon = frmMain.Icon
+    'Me.Icon = frmMain.Icon
 End Sub
 
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)

@@ -664,29 +664,29 @@ Private LogHandle As Integer
 '    If inIDE Then Stop: Resume Next
 'End Sub
 
-Public Function PathNormalize(ByVal sFileName As String) As String
+Public Function PathNormalize(ByVal sFilename As String) As String
     
-    AppendErrorLogCustom "PathNormalize - Begin", "File: " & sFileName
+    AppendErrorLogCustom "PathNormalize - Begin", "File: " & sFilename
     
     Dim sTmp As String, bShouldSeek As Boolean
     
-    sFileName = UnQuote(sFileName)
+    sFilename = UnQuote(sFilename)
     
-    If Mid$(sFileName, 2, 1) <> ":" Then
+    If Mid$(sFilename, 2, 1) <> ":" Then
         bShouldSeek = True  'relative or on the %PATH%
     Else
-        If Not FileExists(sFileName) Then bShouldSeek = True 'e.g. no extension
-        sFileName = GetLongPath(sFileName)
+        If Not FileExists(sFilename) Then bShouldSeek = True 'e.g. no extension
+        sFilename = GetLongPath(sFilename)
     End If
     
     If bShouldSeek Then
-        sTmp = FindOnPath(sFileName)
+        sTmp = FindOnPath(sFilename)
         If Len(sTmp) <> 0 Then
-            sFileName = sTmp
+            sFilename = sTmp
         End If
     End If
     
-    PathNormalize = sFileName
+    PathNormalize = sFilename
     
     AppendErrorLogCustom "PathNormalize - End"
 End Function
@@ -695,7 +695,7 @@ Public Function isInTasksWhiteList(sPathName As String, sTargetFile As String, s
     On Error GoTo ErrorHandler
     Dim WL_ID As Long
 
-    If bIgnoreAllWhitelists Then Exit Function
+    If Not bHideMicrosoft Then Exit Function
     If Not oDict.TaskWL_ID.Exists(sPathName) Then
     
         'O22 - ScheduledTask: (Ready) User_Feed_Synchronization-{826B43E8-D4FF-4589-B639-B04CB653CCC1} - {root} - C:\Windows\system32\msfeedssync.exe sync
@@ -961,6 +961,8 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
     Dim DirFull_2       As String
     Dim bTelemetry      As Boolean
     Dim sRunFilename    As String
+    Dim bActivation     As Boolean
+    Dim bUpdate         As Boolean
     
     '// TODO: Add record: "O22 - Task: 'Task scheduler' service is disabled!"
     
@@ -1043,9 +1045,10 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
             
             If isSafe Or StrBeginWith(DirFull, "\Microsoft\") Then
                 If te(j).ActionType = TASK_ACTION_EXEC Then
-                    te(j).RunObj = PathNormalize(te(j).RunObj)
-                    SignVerify te(j).RunObj, SV_LightCheck Or SV_PreferInternalSign, SignResult
-                    
+                    If InStr(1, DirFull, "Windows Defender", 1) = 0 Then
+                        te(j).RunObj = PathNormalize(te(j).RunObj)
+                        SignVerify te(j).RunObj, SV_LightCheck Or SV_PreferInternalSign, SignResult
+                    End If
                 ElseIf te(j).ActionType = TASK_ACTION_COM_HANDLER Then
                     te(j).RunObjCom = PathNormalize(te(j).RunObjCom)
                     SignVerify te(j).RunObjCom, SV_LightCheck Or SV_PreferInternalSign, SignResult
@@ -1101,6 +1104,8 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
             If Not isSafe Then
                 
                 bTelemetry = False
+                bActivation = False
+                bUpdate = False
                 
                 sRunFilename = GetFileName(te(j).RunObj, True)
                 
@@ -1111,14 +1116,44 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
                 If StrComp(sRunFilename, "OLicenseHeartbeat.exe", 1) = 0 Then bTelemetry = True
                 If StrComp(DirFull, "\Microsoft\Windows\IME\SQM data sender", 1) = 0 Then bTelemetry = True
                 
+                If InStr(1, DirParent, "Activation", 1) <> 0 Then
+                    If SignResult.isMicrosoftSign Then
+                        '\Microsoft\Windows\Windows Activation Technologies\ValidationTask - C:\Windows\system32\Wat\WatAdminSvc.exe /run (Microsoft)
+                        bActivation = True
+                    ElseIf StrComp(sRunFilename, "schtasks.exe", 1) = 0 Then
+                        'C:\Windows\system32\schtasks.exe /run /I /TN "\Microsoft\Windows\Windows Activation Technologies\ValidationTask"
+                        bActivation = True
+                    End If
+                End If
+                If InStr(1, DirParent, "gwx", 1) <> 0 Then
+                    '\Microsoft\Windows\Setup\gwx\refreshgwxconfig - C:\Windows\system32\GWX\GWXConfigManager.exe /RefreshConfig (Microsoft)
+                    '\Microsoft\Windows\Setup\gwx\refreshgwxcontent - C:\Windows\system32\GWX\GWXConfigManager.exe /RefreshContent (Microsoft)
+                    '\Microsoft\Windows\Setup\gwx\runappraiser - C:\Windows\system32\GWX\GWXConfigManager.exe /RunAppraiser (Microsoft)
+                    If SignResult.isMicrosoftSign Then bUpdate = True
+                End If
+                
                 'skip signature mark for host processes
                 If SignResult.isMicrosoftSign Then
                     If inArraySerialized(sRunFilename, "rundll32.exe|schtasks.exe|sc.exe|cmd.exe|wscript.exe|" & _
-                      "mshta.exe|pcalua.exe|powershell.exe|svchost.exe", "|") Then SignResult.isMicrosoftSign = False
+                      "mshta.exe|pcalua.exe|powershell.exe|svchost.exe|msiexec.exe", "|", , , vbTextCompare) Then SignResult.isMicrosoftSign = False
+                      
+                    If SignResult.isMicrosoftSign And Len(te(j).RunArgs) <> 0 Then
+                        If InStr(1, te(j).RunArgs, "http:", 1) <> 0 Then
+                            SignResult.isMicrosoftSign = False
+                        ElseIf InStr(1, te(j).RunArgs, "ftp:", 1) <> 0 Then
+                            SignResult.isMicrosoftSign = False
+                        ElseIf InStr(1, EnvironW(te(j).RunArgs), "http:", 1) <> 0 Then
+                            SignResult.isMicrosoftSign = False
+                        ElseIf InStr(1, EnvironW(te(j).RunArgs), "ftp:", 1) <> 0 Then
+                            SignResult.isMicrosoftSign = False
+                        End If
+                    End If
                 End If
                 
                 sHit = "O22 - Task: " & IIf(te(j).Enabled, "", "(disabled) ") & _
                   IIf(bTelemetry, "(telemetry) ", "") & _
+                  IIf(bActivation, "(activation) ", "") & _
+                  IIf(bUpdate, "(update) ", "") & _
                   IIf(DirParent = "{root}", TaskName, DirParent & "\" & TaskName)
                 
                 sHit = sHit & " - " & te(j).RunObj & _
@@ -1148,7 +1183,9 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
                         End If
                         AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree" & DirFull
                         
-                        .CureType = FILE_BASED Or REGISTRY_BASED
+                        AddProcessToFix .Process, KILL_PROCESS, aFiles(i)
+                        
+                        .CureType = FILE_BASED Or REGISTRY_BASED Or PROCESS_BASED
                     End With
                     AddToScanResults Result
                 End If
@@ -1246,7 +1283,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Private Function AnalyzeTask(sFileName As String, te() As TASK_ENTRY) As Long
+Private Function AnalyzeTask(sFilename As String, te() As TASK_ENTRY) As Long
     'additional info:
     'https://github.com/libyal/winreg-kb/blob/master/documentation/Task%20Scheduler%20Keys.asciidoc
     
@@ -1257,12 +1294,13 @@ Private Function AnalyzeTask(sFileName As String, te() As TASK_ENTRY) As Long
     Dim bExecBased      As Boolean
     Dim sFileData       As String
     Dim sTmp            As String
+    Dim sTaskStatus     As String
     Dim i As Long
     Dim j As Long
     
     ReDim te(0)
     
-    sFileData = ReadFileContents(sFileName, False)
+    sFileData = ReadFileContents(sFilename, False)
     
     If Len(sFileData) = 0 Then Exit Function
     
@@ -1328,7 +1366,15 @@ Private Function AnalyzeTask(sFileName As String, te() As TASK_ENTRY) As Long
         End If
     End If
     
-    te(0).Enabled = (0 = StrComp(xmlDoc.NodeValueByName("Settings\Enabled"), "true", 1))
+    Set xmlElement = Nothing
+    
+    sTaskStatus = xmlDoc.NodeValueByName("Settings\Enabled")
+    
+    If Len(sTaskStatus) = 0 Then
+        te(0).Enabled = True
+    Else
+        te(0).Enabled = (0 = StrComp(sTaskStatus, "true", 1))
+    End If
     
     If j > 0 Then ReDim Preserve te(j - 1)
     
@@ -1337,6 +1383,8 @@ Private Function AnalyzeTask(sFileName As String, te() As TASK_ENTRY) As Long
     Next
     
     AnalyzeTask = j
+    
+    Set xmlDoc = Nothing
     
     Exit Function
 ErrorHandler:

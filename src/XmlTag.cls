@@ -172,3 +172,7 @@ End Property
 Private Sub Class_Initialize()
     Set m_colAttributes = New Collection
 End Sub
+
+Private Sub Class_Terminate()
+    Set m_colAttributes = Nothing
+End Sub

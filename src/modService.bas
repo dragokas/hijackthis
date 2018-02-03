@@ -399,13 +399,13 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function CleanServiceFileName(sFileName As String, sServiceName As String, Optional sCustomKey As String) As String
+Public Function CleanServiceFileName(sFilename As String, sServiceName As String, Optional sCustomKey As String) As String
     On Error GoTo ErrorHandler:
     
     Dim sFile As String, ext As String, sBuf As String
     Dim j As Long, pos As Long
 
-    sFile = sFileName
+    sFile = sFilename
 
         'cleanup filename
         If Len(sFile) <> 0 Then
@@ -432,10 +432,16 @@ Public Function CleanServiceFileName(sFileName As String, sServiceName As String
             If StrComp("system32\", Left$(sFile, 9), 1) = 0 Then
                 sFile = sWinDir & "\" & sFile
             End If
+            If StrComp("SysWOW64\", Left$(sFile, 9), 1) = 0 Then
+                sFile = sWinDir & "\" & sFile
+            End If
             
             'remove parameters (and double filenames)
             j = InStr(1, sFile, ".exe ", vbTextCompare) + 3 ' mark -> '.exe' + space
             If j < Len(sFile) And j > 3 Then sFile = Left$(sFile, j)
+            
+            If Left(sFile, 4) = "\??\" Then sFile = Mid$(sFile, 5)
+            If Left$(sFile, 1) = "\" Then sFile = SysDisk & sFile
             
             'add .exe if not specified
             If Len(sFile) > 3 Then ext = Mid$(sFile, Len(sFile) - 3)
@@ -455,8 +461,10 @@ Public Function CleanServiceFileName(sFileName As String, sServiceName As String
             End If
             
             'wow64 correction
-            If IsServiceWow64(sServiceName, sCustomKey) Then
-                sFile = Replace$(sFile, sWinSysDir, sWinSysDirWow64, , , vbTextCompare)
+            If Len(sServiceName) <> 0 Then
+                If IsServiceWow64(sServiceName, sCustomKey) Then
+                    sFile = Replace$(sFile, sWinSysDir, sWinSysDirWow64, , , vbTextCompare)
+                End If
             End If
             
             If Mid$(sFile, 2, 1) <> ":" Then 'if not fully qualified path
@@ -467,11 +475,11 @@ Public Function CleanServiceFileName(sFileName As String, sServiceName As String
             End If
         End If
         
-    CleanServiceFileName = sFile
+    CleanServiceFileName = GetLongPath(sFile)
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "CleanServiceFileName", sFileName, sServiceName
+    ErrorMsg Err, "CleanServiceFileName", sFilename, sServiceName
     If inIDE Then Stop: Resume Next
 End Function
 

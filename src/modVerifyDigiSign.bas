@@ -3,25 +3,29 @@ Option Explicit
 
 '
 ' Authenticode digital signature verifier / Driver's WHQL signature verifier
-' revision 2.11. (29.09.2017)
+' revision 2.12. (01.02.2018)
 '
 ' Copyrights: (с) Polshyn Stanislav Viktorovich aka Alex Dragokas
 '
 
-' 2.9. (02.12.2017)
+' 01.02.2018
+' added optional in. parameter - idxSignature, to explicitly set the index of embedded signature for checking
+' added out. parameter IdxVerifiedSign, to get index of the verified embedded signature
+
+' 02.12.2017
 ' Added another one Microsoft root certificate hash
 
-' 2.8. (14.09.2017)
-' SV_LightCheck:
-'  - skip non-essential fields of SignResult_TYPE
+' 26.09.2017
+' SV_PreferInternalSign:
+'  - made checking by internal signature in priority
 
-' 2.9. (20.09.2017)
+' 20.09.2017
 ' SV_SelfTest:
 '  - returns additional debug data
 
-' 2.10 (26.09.2017)
-' SV_PreferInternalSign:
-'  - made checking by internal signature in priority
+' 14.09.2017
+' SV_LightCheck:
+'  - skip non-essential fields of SignResult_TYPE
 
 ' To manage certificates enter to 'Win + R' window:
 ' certmgr.msc
@@ -58,6 +62,7 @@ Public Type SignResult_TYPE ' out. Digital signature data
     DateCertExpired   As Date    ' certificate is valid until ...
     DateTimeStamp     As Date    ' time when file was signed by Time stamp server
     NumberOfSigns     As Long    ' number of signatures
+    IdxVerifiedSign   As Long    ' index of verified signature if multiple signatures are present
     ShortMessage      As String  ' short description of checking results
     FullMessage       As String  ' full description of checking results
     ReturnCode        As Long    ' result error code of WinVerifyTrust
@@ -525,7 +530,8 @@ End Sub
 Public Function SignVerify( _
     sFilePath As String, _
     ByVal Flags As FLAGS_SignVerify, _
-    SignResult As SignResult_TYPE) As Boolean
+    SignResult As SignResult_TYPE, _
+    Optional idxSignature As Long = -1) As Boolean
     
     On Error GoTo ErrorHandler
     
@@ -775,12 +781,12 @@ Public Function SignVerify( _
     If (HashSize = 0& Or Not Success) Then
         ' obtain size needed for hash
         CryptCATAdminCalcHashFromFileHandle hFile, HashSize, ByVal 0&, 0&
-    
+        
         If (HashSize = 0&) Then
             WriteError Err, SignResult, "CryptCATAdminCalcHashFromFileHandle"
             GoTo Finalize
         End If
-
+        
         ' allocating the memory
         ReDim aFileHash(HashSize - 1&)
 
@@ -877,7 +883,7 @@ SkipCatCheck:
             .dwUnionChoice = WTD_CHOICE_FILE
             .pUnion = VarPtr(WintrustFile)     'pFile
             
-            If (Flags And SV_CheckSecondarySignature) Then .dwStateAction = WTD_STATEACTION_IGNORE ' hWVTStateData doesn't needed
+            'If (Flags And SV_CheckSecondarySignature) Then .dwStateAction = WTD_STATEACTION_IGNORE ' hWVTStateData doesn't needed
         End With
     
         With WintrustFile                               'WINTRUST_FILE_INFO
@@ -938,6 +944,13 @@ SkipCatCheck:
     '  Example: "C:\Program Files\WindowsApps\king.com.CandyCrushSodaSaga_1.75.600.0_x86__kgqvnymyfvs32\AppxMetadata\CodeIntegrity.cat"
     '  => "C:\Program Files\WindowsApps\king.com.CandyCrushSodaSaga_1.75.600.0_x86__kgqvnymyfvs32\stritz.exe"
     
+    If idxSignature <> -1 And (Flags And SV_CheckSecondarySignature) Then
+        'if index of signature is specified explicitly, no need to call WinVerifyTrust twice
+        
+        SignSettings.dwFlags = WSS_VERIFY_SPECIFIC
+        SignSettings.dwIndex = idxSignature
+    End If
+    
     If bDebugMode Or bDebugToFile Then tim(4).Start 'WinVerifyTrust
     
     ReturnVal = WinVerifyTrust(INVALID_HANDLE_VALUE, ActionGuid, VarPtr(WintrustData))
@@ -959,7 +972,7 @@ SkipCatCheck:
         
         'verify secondary signature
         
-        If (Flags And SV_CheckSecondarySignature) Then
+        If (Flags And SV_CheckSecondarySignature) And idxSignature = -1 Then
             If SignResult.NumberOfSigns < 2 Or Not IsWin8AndNewer Then
                 WipeSignResult SignResult
                 ReturnVal = TRUST_E_NOSIGNATURE
@@ -981,6 +994,8 @@ SkipCatCheck:
             End If
         End If
     End If
+    
+    SignResult.IdxVerifiedSign = SignSettings.dwVerifiedSigIndex
     
     'calling signer info extractor routine
     
@@ -1008,7 +1023,8 @@ SkipCatCheck:
     
     'if Win7 SP0 / Win 2008 R2 Server SP0 (temporarily fix)
     If OSver.SPVer = 0 And (OSver.MajorMinor = 6.1) Then
-        If CatalogContext <> 0 And ReturnVal = CRYPT_E_BAD_MSG Then 'Not a cryptographic message or the cryptographic message is not formatted correctly
+        If ReturnVal = CRYPT_E_BAD_MSG Then  'Not a cryptographic message or the cryptographic message is not formatted correctly
+            SignResult.HashRootCert = "CDD4EEAE6000AC7F40C3802C171E30148030C072"
             ReturnVal = 0
             ReturnFlag = True
         End If
@@ -1736,12 +1752,97 @@ Public Function IsMicrosoftCertHash(hash As String) As Boolean
     Next
 End Function
 
-Public Function IsMicrosoftFile(sFile As String) As Boolean
+Public Function IsMicrosoftFile(sFile As String, Optional bAllowDamagedSubsystem As Boolean) As Boolean
     Dim SignResult As SignResult_TYPE
-    SignVerify sFile, SV_LightCheck Or SV_PreferInternalSign, SignResult
-    If SignResult.isLegit Then
-        IsMicrosoftFile = SignResult.isMicrosoftSign
+    
+    If isEDS_Work() Then
+        If OSver.MajorMinor = 6 Then 'Vista
+            SignVerify sFile, SV_LightCheck, SignResult
+        Else
+            SignVerify sFile, SV_LightCheck Or SV_PreferInternalSign, SignResult
+        End If
+        If SignResult.isLegit Then
+            IsMicrosoftFile = SignResult.isMicrosoftSign
+        End If
+    Else
+        If bAllowDamagedSubsystem Then
+            Dim sCompany As String
+            sCompany = GetFilePropCompany(sFile)
+            If InStr(1, sCompany, "Microsoft", 1) <> 0 Or InStr(1, sCompany, "Корпорация Майкрософт", 1) <> 0 Then
+                IsMicrosoftFile = True
+            ElseIf SfcIsFileProtected(0&, StrPtr(sFile)) <> 0 Then 'anyway, suppose that this file is Microsoft, even if not (for safe)
+                IsMicrosoftFile = True
+            End If
+        End If
     End If
+End Function
+
+Public Function IsMicrosoftDriverFile(sFile As String) As Boolean
+
+    'Okay, here we should check whether all signatures of driver's file belong to Microsoft.
+    'But, secondary signature can be checked in Win8+ only.
+    '
+    'So, what we currently can do:
+    '
+    '1) On Win7 check file if it has certificate signature only.
+    'If it has embedded signature, then -> skip checking
+    '//TODO. Need to know how to verify that dem secondary embedded signature.
+    '
+    '2) On Win8+ check all available signatures.
+    '
+    
+    Dim SignResult As SignResult_TYPE
+    Dim i As Long
+    Dim IdxFirstVerified As Long
+    
+    With SignResult
+    
+        If OSver.IsWindows8OrGreater Then
+            SignVerify sFile, SV_isDriver Or SV_CheckEmbeddedPresence, SignResult 'by default, catalogue checking go first
+            
+            If .isMicrosoftSign Then
+                'one or more embedded is present
+                If .isEmbedded Then
+                    If .isSignedByCert Then
+                        'if certificate based checking is executed, call embedded sign. check to get number of signatures
+                        SignVerify sFile, SV_isDriver Or SV_DisableCatalogVerify Or SV_CacheDoNotLoad, SignResult
+                    End If
+                    
+                    If .NumberOfSigns > 1 Then
+                        
+                        If Not .isMicrosoftSign Then Exit Function
+                        
+                        IdxFirstVerified = .IdxVerifiedSign
+                        
+                        For i = 0 To .NumberOfSigns - 1
+                            'skip sign. index, already verified by the previous call
+                            If i <> IdxFirstVerified Then
+                                SignVerify sFile, SV_isDriver Or SV_CheckSecondarySignature, SignResult, i
+                                
+                                'if at least one signature doesn't belong to Microsoft then it is not a Microsoft Driver
+                                If Not .isMicrosoftSign Then Exit Function
+                            End If
+                        Next
+                        'all checks are passed successfully
+                        IsMicrosoftDriverFile = True
+                    Else
+                        IsMicrosoftDriverFile = .isMicrosoftSign
+                    End If
+                Else
+                    IsMicrosoftDriverFile = True
+                End If
+            End If
+        Else
+            'Win7- currently doesn't support multiple sign. checking by WinVerifyTrust
+            SignVerify sFile, SV_isDriver Or SV_CheckEmbeddedPresence, SignResult
+    
+            If Not .isEmbedded Then
+                If .isMicrosoftSign Then
+                    IsMicrosoftDriverFile = True
+                End If
+            End If
+        End If
+    End With
 End Function
 
 Public Function IsLegitFileEDS(sFile As String) As Boolean
@@ -2136,13 +2237,13 @@ Public Function VerifyFileSignature(sFile$) As Integer
 '                'file downloaded ok, continue
 '            Else
 '                'file download failed
-'                bAbort = True
+'                bSL_Abort = True
 '                VerifyFileSignature = -1
 '                Exit Function
 '            End If
 '        Else
 '            'user aborted download
-'            bAbort = True
+'            bSL_Abort = True
 '            VerifyFileSignature = -1
 '            Exit Function
 '        End If
@@ -2156,7 +2257,7 @@ Public Function VerifyFileSignature(sFile$) As Integer
 End Function
 
 Public Sub WinTrustVerifyChildNodes(sKey$)
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     If Not NodeExists(sKey) Then Exit Sub
     Dim nodFirst As Node, nodCurr As Node
     Set nodFirst = frmStartupList2.tvwMain.Nodes(sKey).Child
@@ -2169,13 +2270,13 @@ Public Sub WinTrustVerifyChildNodes(sKey$)
         
             If nodCurr = nodFirst.LastSibling Then Exit Do
             Set nodCurr = nodCurr.Next
-            If bAbort Then Exit Sub
+            If bSL_Abort Then Exit Sub
         Loop
     End If
 End Sub
 
 Public Sub WinTrustVerifyNode(sKey$)
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     If Not NodeIsValidFile(frmStartupList2.tvwMain.Nodes(sKey)) Then Exit Sub
         
     Dim sFile$, sIcon$

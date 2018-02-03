@@ -1037,7 +1037,7 @@ Public Function EnumFiles$(sFolder$)    'returns list of files divided by |
             If sFile <> "." And sFile <> ".." Then
                 sList = sList & "|" & sFile
             End If
-            If bAbort Then
+            If bSL_Abort Then
                 FindClose hFind
                 GoTo Finalize
             End If
@@ -1050,33 +1050,33 @@ Finalize:
     If bRedirStateChanged Then Call ToggleWow64FSRedirection(bOldState)
 End Function
 
-Public Function GetLongFilename$(sFileName$)
+Public Function GetLongFilename$(sFilename$)
     Dim sLongFilename$
-    If InStr(sFileName, "~") = 0 Then
-        GetLongFilename = sFileName
+    If InStr(sFilename, "~") = 0 Then
+        GetLongFilename = sFilename
         Exit Function
     End If
     sLongFilename = String$(MAX_PATH, 0)
-    GetLongPathNameW StrPtr(sFileName), StrPtr(sLongFilename), Len(sLongFilename)
+    GetLongPathNameW StrPtr(sFilename), StrPtr(sLongFilename), Len(sLongFilename)
     GetLongFilename = TrimNull(sLongFilename)
 End Function
 
-Public Function GetFilePropVersion(sFileName As String) As String
+Public Function GetFilePropVersion(sFilename As String) As String
     On Error GoTo ErrorHandler:
-    AppendErrorLogCustom "GetFilePropVersion - Begin", "File: " & sFileName
+    AppendErrorLogCustom "GetFilePropVersion - Begin", "File: " & sFilename
     
     Dim hData&, lDataLen&, uBuf() As Byte
     Dim uVFFI As VS_FIXEDFILEINFO, sVersion$, Redirect As Boolean, bOldStatus As Boolean
     
-    If Not FileExists(sFileName) Then Exit Function
+    If Not FileExists(sFilename) Then Exit Function
     
-    Redirect = ToggleWow64FSRedirection(False, sFileName, bOldStatus)
+    Redirect = ToggleWow64FSRedirection(False, sFilename, bOldStatus)
     
-    lDataLen = GetFileVersionInfoSize(StrPtr(sFileName), ByVal 0&)
+    lDataLen = GetFileVersionInfoSize(StrPtr(sFilename), ByVal 0&)
     If lDataLen = 0 Then GoTo Finalize
     
     ReDim uBuf(0 To lDataLen - 1)
-    If 0 <> GetFileVersionInfo(StrPtr(sFileName), 0&, lDataLen, uBuf(0)) Then
+    If 0 <> GetFileVersionInfo(StrPtr(sFilename), 0&, lDataLen, uBuf(0)) Then
     
         If 0 <> VerQueryValue(uBuf(0), StrPtr("\"), hData, lDataLen) Then
         
@@ -1101,19 +1101,19 @@ Finalize:
     AppendErrorLogCustom "GetFilePropVersion - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "GetFilePropVersion", sFileName
+    ErrorMsg Err, "GetFilePropVersion", sFilename
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function GetVersionFromVBP(sFileName As String) As String
+Public Function GetVersionFromVBP(sFilename As String) As String
     On Error GoTo ErrorHandler:
-    AppendErrorLogCustom "GetVersionFromVBP - Begin", "File: " & sFileName
+    AppendErrorLogCustom "GetVersionFromVBP - Begin", "File: " & sFilename
     
     Dim hFile As Long, sLine As String, arr() As String
     Dim MajorVer As Long, MinorVer As Long, BuildVer As Long, RevisionVer As Long
     
-    OpenW sFileName, FOR_READ, hFile
+    OpenW sFilename, FOR_READ, hFile
     
     If hFile > 0 Then
         Do While LineInputW(hFile, sLine)
@@ -1135,20 +1135,20 @@ Public Function GetVersionFromVBP(sFileName As String) As String
     
     GetVersionFromVBP = MajorVer & "." & MinorVer & "." & BuildVer & "." & RevisionVer
     
-    AppendErrorLogCustom "GetVersionFromVBP - End", "File: " & sFileName
+    AppendErrorLogCustom "GetVersionFromVBP - End", "File: " & sFilename
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "GetVersionFromVBP", sFileName
+    ErrorMsg Err, "GetVersionFromVBP", sFilename
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function GetValueFromVBP(sFileName As String, sParameterName As String) As String
+Public Function GetValueFromVBP(sFilename As String, sParameterName As String) As String
     On Error GoTo ErrorHandler:
-    AppendErrorLogCustom "GetValueFromVBP - Begin", "File: " & sFileName
+    AppendErrorLogCustom "GetValueFromVBP - Begin", "File: " & sFilename
     
     Dim hFile As Long, sLine As String, arr() As String
     
-    OpenW sFileName, FOR_READ, hFile
+    OpenW sFilename, FOR_READ, hFile
     
     If hFile > 0 Then
         Do While LineInputW(hFile, sLine)
@@ -1163,31 +1163,31 @@ Public Function GetValueFromVBP(sFileName As String, sParameterName As String) A
         CloseW hFile
     End If
     
-    AppendErrorLogCustom "GetValueFromVBP - End", "File: " & sFileName
+    AppendErrorLogCustom "GetValueFromVBP - End", "File: " & sFilename
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "GetValueFromVBP", sFileName
+    ErrorMsg Err, "GetValueFromVBP", sFilename
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function GetFilePropCompany(sFileName As String) As String
+Public Function GetFilePropCompany(sFilename As String) As String
     On Error GoTo ErrorHandler:
     Dim hData&, lDataLen&, uBuf() As Byte, uCodePage(0 To 3) As Byte
     Dim sCodePage$, sCompanyName$, Stady&, Redirect As Boolean, bOldStatus As Boolean
     
-    If Not FileExists(sFileName) Then Exit Function
+    If Not FileExists(sFilename) Then Exit Function
     
-    Redirect = ToggleWow64FSRedirection(False, sFileName, bOldStatus)
+    Redirect = ToggleWow64FSRedirection(False, sFilename, bOldStatus)
     
     Stady = 1
-    lDataLen = GetFileVersionInfoSize(StrPtr(sFileName), ByVal 0&)
+    lDataLen = GetFileVersionInfoSize(StrPtr(sFilename), ByVal 0&)
     If lDataLen = 0 Then GoTo Finalize
     
     Stady = 2
     ReDim uBuf(0 To lDataLen - 1)
     
     Stady = 3
-    If 0 <> GetFileVersionInfo(StrPtr(sFileName), 0&, lDataLen, uBuf(0)) Then
+    If 0 <> GetFileVersionInfo(StrPtr(sFilename), 0&, lDataLen, uBuf(0)) Then
         
         Stady = 4
         VerQueryValue uBuf(0), StrPtr("\VarFileInfo\Translation"), hData, lDataLen
@@ -1222,7 +1222,7 @@ Finalize:
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "GetFilePropCompany", sFileName, "DataLen: ", lDataLen, "hData: ", hData, "sCodePage: ", sCodePage, _
+    ErrorMsg Err, "GetFilePropCompany", sFilename, "DataLen: ", lDataLen, "hData: ", hData, "sCodePage: ", sCodePage, _
         "Buf: ", uCodePage(0), uCodePage(1), uCodePage(2), uCodePage(3), "Stady: ", Stady
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     If inIDE Then Stop: Resume Next
@@ -2535,13 +2535,17 @@ Public Function MkDirW(ByVal Path As String, Optional ByVal LastComponentIsFile 
     Dim FC As String, lr As Boolean, pos As Long
     Dim bRedirect As Boolean, bOldStatus As Boolean
     If LastComponentIsFile Then Path = Left(Path, InStrRev(Path, "\") - 1) ' cut off file name
-    If InStr(Path, ":") = 0 Then 'if replative path
+    If InStr(Path, ":") = 0 Then 'if relative path
         Dim sCurDir$, nChar As Long
         sCurDir = String$(MAX_PATH, 0&)
         nChar = GetCurrentDirectory(MAX_PATH + 1, StrPtr(sCurDir))
         sCurDir = Left$(sCurDir, nChar)
         If Right$(sCurDir, 1) <> "\" Then sCurDir = sCurDir & "\"
         Path = sCurDir & Path
+    End If
+    If FolderExists(Path) Then
+        MkDirW = True
+        Exit Function
     End If
     bRedirect = ToggleWow64FSRedirection(False, Path, bOldStatus)
     Do 'looping through each path component
@@ -2587,3 +2591,4 @@ Public Function GetFreeDiscSpace(sRoot As String, bForCurrentUser As Boolean) As
         End If
     End If
 End Function
+

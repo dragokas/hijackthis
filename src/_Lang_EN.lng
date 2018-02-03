@@ -41,7 +41,7 @@
 0016=Help
 0017=Back
 0018=Config
-0019=Back
+0019=Report
 0020=Add checked to ignorelist
 0025=This will set HiJackThis to ignore the checked items, unless they change. Continue?
 0026=Write access was denied to the location you specified. Try a different location please.
@@ -77,6 +77,22 @@
 1026=Downloading is completed. Run the program?
 1027=!!! HiJackThis was shut down due to exceeding the maximum allowed timeout: [] sec. !!! Report file will be incomplete!
      Please, restart the program manually (not via Autologger).
+1030=Processes
+1031=Include list of running processes in logfiles
+1032=Environment variables
+1033=Include environment variables in logfile
+1034=Additional scan
+1035=Include specific sections, like O4 - RenameOperations.
+1040=Ignore Microsoft entries
+1041=Do not include in log files and registry related to Microsoft
+1042=Ignore ALL Whitelists
+1043=Include in log any entries regardless whitelist
+1044=Calculate MD5
+1045=Calculate checksum of files (MD5) if possible
+1050=Scan area
+1051=Scan options
+1052=Fix & Backup
+1053=Interface
 ;
 ; ============== EULA ============
 ;
@@ -237,6 +253,9 @@
        /silentautolog	- the same as /autolog, except with no required user intervention
        /timeout:sec	- number of seconds allowed for HiJackThis to be run in /silentautolog mode (180 by default; 0 - to disable).
        /StartupList	- run scan by 'StartupList' module
+       /Area:Process - include list of running processes in report
+       /Area:Environment - include environment variables in report
+       /Area:Additional - execute "Additional scan"
        /ihatewhitelists 	- ignore all internal whitelists
        /skipIgnoreList	- do not load ignore list
        /md5		- calculate md5 hash of files
@@ -377,13 +396,11 @@
 0042=Ignorelist
 0043=Backups
 0044=Misc Tools
-0050=Mark everything found for fixing after scan
+0050=Mark everything found for fixing after scan (DANGEROUS !!!)
 0051=Make backups before fixing items
 0052=Confirm fixing && ignoring of items (safe mode)
 0053=Ignore non-standard but safe domains in IE (e.g. msn.com, microsoft.com)
-0054=Include list of running processes in logfiles
 0055=Do not show main menu at startup
-0056=Run HiJackThis scan at Windows startup and show results (if only items are found)
 0057=Are you sure you want to enable this option?
      HiJackThis is not a 'click & fix' program. Because it targets *general* hijacking methods, false positives are a frequent occurrence.
      If you enable this option, you might disable programs or drivers you need. However, it is highly unlikely you will break your system beyond repair. So you should only enable this option if you know what you're doing!
@@ -395,14 +412,17 @@
 0063=Default Search Assistant:
 0064=Default Search Customize:
 0065=Sorry! Not implemented yet.
-0066=This will install HJT to 'Program Files' folder and set task scheduler for automatically run the scanning after system startup.
+0066=This will install HJT to 'Program Files' folder and set Windows for automatically run the scanning after system startup.
 
      Continue?
 
      Note: it is recommended that you add all safe items to ignore list (e.g. with context menu -> Add ALL to ignore list), so the results window will appear after system startup if only new item will be found.
+     Also, it's can be useful to mark checkbox "Mark everything found for fixing after scan".
 0067=Task scheduler service is required to be run for this action. Do you want to run it now and set for automatically start at system boot?
 0068=Error! Could not launch Task scheduler service.
-0069=Do you want to create shortcut in Desktop?
+0069=Installation is completed. Do you want to create shortcut in Desktop?
+1400=Add HiJackThis to startup
+1401=Run HiJackThis scan at Windows startup in silent mode and show results if only something is found
 ;
 ; ============= IgnoreList ============
 ;
@@ -471,17 +491,17 @@
      A simple tool that lists all and every auto starting program on your system. Commonly used to troubleshoot malfunctioning systems, trojan/viral infections, new spyware/malware breed and the likes.
 0100=System tools
 0101=Process manager
-0102=Small process manager, working much like the Task Manager.
+0102=Small process manager, working much like the Task Manager
 0103=Hosts file manager
-0104=Editor for the 'hosts' file.
+0104=Editor for the 'hosts' file
 0105=Delete a file on reboot...
-0106=If a file cannot be removed from memory, Windows can be setup to delete it when the system is restarted.
+0106=If a file cannot be removed from the disk, Windows can be setup to delete it when the system is restarted
 0107=Delete a Windows service...
-0108=Delete a Windows Service (O23).
+0108=Delete a Windows Service (O23)
      USE WITH CAUTION!
 0109=ADS Spy
-0110=Scan for hidden data streams.
-0112=Open a utility to manage the items in the Add/Remove Software list.
+0110=Scan for hidden data streams
+0112=Managing items in the Add/Remove Software snap-in
 0113=Enter the exact service name as it appears in the scan results, or the short name between brackets if that is listed.
      WARNING! When the service is deleted, it cannot be restored!
 0114=Delete a Windows NT Service
@@ -489,21 +509,27 @@
      Make sure you entered the name of the service correctly.
 0117=The following service was found:
 0118=Are you absolutely sure you want to delete this service?
-0120=Advanced settings
-0121=Calculate checksum of files (MD5)
-0122=Include environment variables in logfile
-0123=Ignore Microsoft files
-0124=Ignore all Whitelists
+0119=Registry Keys Unlocker
+0120=Reset permissions on the given registry keys list
+0121=Digital signature checker
+0122=Verify authenticode digital signatures on the given list of files
 0140=Updates
 0141=Check for update online
 0142=Check updates automatically on program startup
 0143=Use this proxy server (host:port) :
+0144=Current version is:
+0149=Removing HJT
 0150=Uninstall HiJackThis
-0152=Removes all HJT settings, backups and quit.
+0152=Removes all settings, backups and quit
 0153=This will remove HiJackThis' settings and backups. Note that you will have to delete the HiJackThis.exe file manually.
      
      Continue with uninstall?
 0154=This will completely remove HiJackThis, including settings and backups. Continue?
+1600=Plugins
+1601=Check Browsers' LNK
+1602=Identify infected shortcuts (.LNK) which cause unwanted advertisement in browsers
+1603=ClearLNK
+1604=Clean and restore list of infected shortcuts (.LNK), found via Check Browsers' LNK plugin
 ;
 ; ================ Process Manager =============
 ;
@@ -611,6 +637,7 @@
 2232=Save to disk...
 2233=Edit in Wordpad
 2234=Back
+2235=Exit
 ;
 ; =============== Uninstall manager ==============
 ;
@@ -696,7 +723,7 @@
 ;
 ; (1850 - 1899)
 ;
-1850=Authenticode EDS checker (created by Dragokas)
+1850=Authenticode EDS checker - written by Dragokas
 1851=This tool will create a detail report about digital signature of files/folders you specify below:
 1852=Recursively (include subfolders)
 1853=Include files in Windows folder
@@ -721,7 +748,7 @@
 ;
 ; (1900 - 1949)
 ;
-1900=Registry Key Unlocker (created by Dragokas)
+1900=Registry Key Unlocker - written by Dragokas
 1901=Enter Registry Key(s) to unlock and reset access rights:
 1902=Recursively (process keys and all subkeys)
 1903=Go
@@ -1589,4 +1616,4 @@
 ; Empty
 ;
 ; (2300 - ...)
-;        
+;                   

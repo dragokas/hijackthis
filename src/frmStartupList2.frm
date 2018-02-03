@@ -1419,15 +1419,15 @@ Private NUM_OF_SECTIONS As Long
 Private lCountedNodes& 'for GetStartupListReport()
 
 
-Private Sub chkSectionDisabled_Click(index As Integer)
+Private Sub chkSectionDisabled_Click(Index As Integer)
     If chkSectionDisabled(0).Tag = "stop" Then Exit Sub
-    If chkSectionDisabled(index).Enabled = False Then Exit Sub
+    If chkSectionDisabled(Index).Enabled = False Then Exit Sub
     Dim objCheck As CheckBox
-    If index = 0 Then
+    If Index = 0 Then
         For Each objCheck In chkSectionDisabled
-            If objCheck.index > 0 And chkSectionDisabled(objCheck.index).Enabled Then
+            If objCheck.Index > 0 And chkSectionDisabled(objCheck.Index).Enabled Then
                 chkSectionDisabled(0).Tag = "stop"
-                chkSectionDisabled(objCheck.index).Value = chkSectionDisabled(0).Value
+                chkSectionDisabled(objCheck.Index).Value = chkSectionDisabled(0).Value
                 chkSectionDisabled(0).Tag = vbNullString
             End If
         Next objCheck
@@ -1437,23 +1437,23 @@ Private Sub chkSectionDisabled_Click(index As Integer)
         chkSectionDisabled(0).Tag = vbNullString
     End If
     If txtHelp.Visible Then
-        If index = 0 Then
+        If Index = 0 Then
             txtHelp.Text = GetHelpText("Disabled")
         Else
-            txtHelp.Text = GetHelpText(chkSectionDisabled(index).Tag)
+            txtHelp.Text = GetHelpText(chkSectionDisabled(Index).Tag)
         End If
     End If
 End Sub
 
-Private Sub chkSectionFiles_Click(index As Integer)
+Private Sub chkSectionFiles_Click(Index As Integer)
     If chkSectionFiles(0).Tag = "stop" Then Exit Sub
-    If chkSectionFiles(index).Enabled = False Then Exit Sub
+    If chkSectionFiles(Index).Enabled = False Then Exit Sub
     Dim objCheck As CheckBox
-    If index = 0 Then
+    If Index = 0 Then
         For Each objCheck In chkSectionFiles
-            If objCheck.index > 0 And chkSectionFiles(objCheck.index).Enabled Then
+            If objCheck.Index > 0 And chkSectionFiles(objCheck.Index).Enabled Then
                 chkSectionFiles(0).Tag = "stop"
-                chkSectionFiles(objCheck.index).Value = chkSectionFiles(0).Value
+                chkSectionFiles(objCheck.Index).Value = chkSectionFiles(0).Value
                 chkSectionFiles(0).Tag = vbNullString
             End If
         Next objCheck
@@ -1463,10 +1463,10 @@ Private Sub chkSectionFiles_Click(index As Integer)
         chkSectionFiles(0).Tag = vbNullString
     End If
     If txtHelp.Visible Then
-        If index = 0 Then
+        If Index = 0 Then
             txtHelp.Text = GetHelpText("Files")
         Else
-            txtHelp.Text = GetHelpText(chkSectionFiles(index).Tag)
+            txtHelp.Text = GetHelpText(chkSectionFiles(Index).Tag)
         End If
     End If
 End Sub
@@ -1475,15 +1475,15 @@ Private Sub chkSectionHardware_Click()
     If txtHelp.Visible Then txtHelp.Text = GetHelpText(chkSectionHardware.Tag)
 End Sub
 
-Private Sub chkSectionHijack_Click(index As Integer)
+Private Sub chkSectionHijack_Click(Index As Integer)
     If chkSectionHijack(0).Tag = "stop" Then Exit Sub
-    If chkSectionHijack(index).Enabled = False Then Exit Sub
+    If chkSectionHijack(Index).Enabled = False Then Exit Sub
     Dim objCheck As CheckBox
-    If index = 0 Then
+    If Index = 0 Then
         For Each objCheck In chkSectionHijack
-            If objCheck.index > 0 And chkSectionHijack(objCheck.index).Enabled Then
+            If objCheck.Index > 0 And chkSectionHijack(objCheck.Index).Enabled Then
                 chkSectionHijack(0).Tag = "stop"
-                chkSectionHijack(objCheck.index).Value = chkSectionHijack(0).Value
+                chkSectionHijack(objCheck.Index).Value = chkSectionHijack(0).Value
                 chkSectionHijack(0).Tag = vbNullString
             End If
         Next objCheck
@@ -1493,23 +1493,23 @@ Private Sub chkSectionHijack_Click(index As Integer)
         chkSectionHijack(0).Tag = vbNullString
     End If
     If txtHelp.Visible Then
-        If index = 0 Then
+        If Index = 0 Then
             txtHelp.Text = GetHelpText("Hijack")
         Else
-            txtHelp.Text = GetHelpText(chkSectionHijack(index).Tag)
+            txtHelp.Text = GetHelpText(chkSectionHijack(Index).Tag)
         End If
     End If
 End Sub
 
-Private Sub chkSectionMSIE_Click(index As Integer)
+Private Sub chkSectionMSIE_Click(Index As Integer)
     If chkSectionMSIE(0).Tag = "stop" Then Exit Sub
-    If chkSectionMSIE(index).Enabled = False Then Exit Sub
+    If chkSectionMSIE(Index).Enabled = False Then Exit Sub
     Dim objCheck As CheckBox
-    If index = 0 Then
+    If Index = 0 Then
         For Each objCheck In chkSectionMSIE
-            If objCheck.index > 0 And chkSectionMSIE(objCheck.index).Enabled Then
+            If objCheck.Index > 0 And chkSectionMSIE(objCheck.Index).Enabled Then
                 chkSectionMSIE(0).Tag = "stop"
-                chkSectionMSIE(objCheck.index).Value = chkSectionMSIE(0).Value
+                chkSectionMSIE(objCheck.Index).Value = chkSectionMSIE(0).Value
                 chkSectionMSIE(0).Tag = vbNullString
             End If
         Next objCheck
@@ -1519,23 +1519,23 @@ Private Sub chkSectionMSIE_Click(index As Integer)
         chkSectionMSIE(0).Tag = vbNullString
     End If
     If txtHelp.Visible Then
-        If index = 0 Then
+        If Index = 0 Then
             txtHelp.Text = GetHelpText("MSIE")
         Else
-            txtHelp.Text = GetHelpText(chkSectionMSIE(index).Tag)
+            txtHelp.Text = GetHelpText(chkSectionMSIE(Index).Tag)
         End If
     End If
 End Sub
 
-Private Sub chkSectionRegistry_Click(index As Integer)
+Private Sub chkSectionRegistry_Click(Index As Integer)
     If chkSectionRegistry(0).Tag = "stop" Then Exit Sub
-    If chkSectionRegistry(index).Enabled = False Then Exit Sub
+    If chkSectionRegistry(Index).Enabled = False Then Exit Sub
     Dim objCheck As CheckBox
-    If index = 0 Then
+    If Index = 0 Then
         For Each objCheck In chkSectionRegistry
-            If objCheck.index > 0 And chkSectionRegistry(objCheck.index).Enabled Then
+            If objCheck.Index > 0 And chkSectionRegistry(objCheck.Index).Enabled Then
                 chkSectionRegistry(0).Tag = "stop"
-                chkSectionRegistry(objCheck.index).Value = chkSectionRegistry(0).Value
+                chkSectionRegistry(objCheck.Index).Value = chkSectionRegistry(0).Value
                 chkSectionRegistry(0).Tag = vbNullString
             End If
         Next objCheck
@@ -1545,10 +1545,10 @@ Private Sub chkSectionRegistry_Click(index As Integer)
         chkSectionRegistry(0).Tag = vbNullString
     End If
     If txtHelp.Visible Then
-        If index = 0 Then
+        If Index = 0 Then
             txtHelp.Text = GetHelpText("Registry")
         Else
-            txtHelp.Text = GetHelpText(chkSectionRegistry(index).Tag)
+            txtHelp.Text = GetHelpText(chkSectionRegistry(Index).Tag)
         End If
     End If
 End Sub
@@ -1562,7 +1562,7 @@ Private Sub cmdAbort_Click()
     'Form_Resize
     'Exit Sub
     
-    bAbort = True
+    bSL_Abort = True
     cmdAbort.Enabled = False
 End Sub
 
@@ -1570,6 +1570,15 @@ Private Sub cmdRefresh_Click()
     mnuFindFind.Tag = vbNullString
     cmdRefresh.Visible = False
     GetAllEnums
+    If bSL_Abort Then
+        If bSL_Terminate Then
+            bSL_Terminate = False
+            Unload Me
+        Else
+            Status Translate(929): bSL_Abort = False
+        End If
+        Exit Sub
+    End If
 End Sub
 
 Private Sub cmdSaveCancel_Click()
@@ -1661,7 +1670,7 @@ Private Sub cmdSaveOK_Click()
     Open sFile For Output As #ff
         Print #ff, sLog
     Close #ff
-    If bAbort Then
+    If bSL_Abort Then
         '"Generating of StartupList report was aborted!"
         Status Translate(903)
     Else
@@ -1743,13 +1752,12 @@ Private Sub LoadStrings()
     SEC_XPSECURITY = Translate(2057)
 End Sub
 
-Private Sub Form_Activate()
-    bAbort = False
-End Sub
-
 Private Sub Form_Load()
     Dim ff%
-    ReloadLanguage
+    
+    If bSL_Abort Then Exit Sub
+    
+    ReloadLanguage True
     LoadStrings
 
 '    If App.PrevInstance Then
@@ -1862,6 +1870,15 @@ Private Sub Form_Load()
     
     LoadSectionNames
     GetAllEnums
+    If bSL_Abort Then
+        If bSL_Terminate Then
+            bSL_Terminate = False
+            Unload Me
+        Else
+            Status Translate(929): bSL_Abort = False
+        End If
+        Exit Sub
+    End If
     
     If bAutoSave Then
         If sAutoSavePath <> vbNullString Then
@@ -1875,6 +1892,7 @@ Private Sub Form_Load()
                 Print #ff, GetStartupListReport
             Close #ff
         End If
+        '//TODO: check this
         Terminate_HJT
     End If
     
@@ -1907,11 +1925,11 @@ Private Sub GetAllEnums()
     
     cmdAbort.Enabled = True
     cmdAbort.Visible = True
-    bAbort = False
+    bSL_Abort = False
     
-    If Not bDebug And Not IsRunningInIDE Then
-        On Error Resume Next
-    End If
+'    If Not bDebug And Not IsRunningInIDE Then
+'        On Error Resume Next
+'    End If
     
     If Not bAutoSave Then Me.Show
     'Loading...
@@ -1969,6 +1987,7 @@ Private Sub GetAllEnums()
     EnumProcesses
     DoTicks tvwMain, "RunningProcesses"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'startup folders in start menu etc
     Status Translate(909) & " " & SEC_AUTOSTARTFOLDERS
@@ -1976,6 +1995,7 @@ Private Sub GetAllEnums()
     EnumAutoStartFolders
     DoTicks tvwMain, "AutoStartFolders"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'Task Scheduler jobs
     Status Translate(909) & " " & SEC_TASKSCHEDULER
@@ -1983,6 +2003,7 @@ Private Sub GetAllEnums()
     EnumJobs
     DoTicks tvwMain, "TaskSchedulerJobs"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'autoload entries from ini files, shell
     Status Translate(909) & " " & SEC_INIFILE
@@ -1990,6 +2011,7 @@ Private Sub GetAllEnums()
     EnumIniFiles
     DoTicks tvwMain, "IniFiles"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'autorun.inf op alle schijven
     Status Translate(909) & " " & SEC_AUTORUNINF
@@ -1997,6 +2019,7 @@ Private Sub GetAllEnums()
     EnumAutorunInf
     DoTicks tvwMain, "AutorunInfs"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'autoexec.bat, winstart.bat, dosstart.bat
     Status Translate(909) & " " & SEC_BATFILES
@@ -2004,6 +2027,7 @@ Private Sub GetAllEnums()
     EnumBatAutostartFiles
     DoTicks tvwMain, "BatFiles"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'Explorer clones
     Status Translate(909) & " " & SEC_EXPLORERCLONES
@@ -2011,6 +2035,7 @@ Private Sub GetAllEnums()
     EnumExplorerClones
     DoTicks tvwMain, "ExplorerClones"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'Browser Helper Objects
     Status Translate(909) & " " & SEC_BHOS
@@ -2018,6 +2043,7 @@ Private Sub GetAllEnums()
     EnumBHOs
     DoTicks tvwMain, "BHOs"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'IE Toolbars
     Status Translate(909) & " " & SEC_IETOOLBARS
@@ -2025,6 +2051,7 @@ Private Sub GetAllEnums()
     EnumIEToolbars
     DoTicks tvwMain, "IEToolbars"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'IE Extensions
     Status Translate(909) & " " & SEC_IEEXTENSIONS
@@ -2032,6 +2059,7 @@ Private Sub GetAllEnums()
     EnumIEExtensions
     DoTicks tvwMain, "IEExtensions"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'IE Explorer Bars
     Status Translate(909) & " " & SEC_IEBARS
@@ -2039,6 +2067,7 @@ Private Sub GetAllEnums()
     EnumIEExplBars
     DoTicks tvwMain, "IEExplBars"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'IE MenuExt
     Status Translate(909) & " " & SEC_IEMENUEXT
@@ -2046,6 +2075,7 @@ Private Sub GetAllEnums()
     EnumIEMenuExt
     DoTicks tvwMain, "IEMenuExt"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'IE bands
     Status Translate(909) & " " & SEC_IEBANDS
@@ -2053,6 +2083,7 @@ Private Sub GetAllEnums()
     EnumIEBands
     DoTicks tvwMain, "IEBands"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'Downloaded Program Files
     Status Translate(909) & " " & SEC_DPFS
@@ -2060,6 +2091,7 @@ Private Sub GetAllEnums()
     EnumDPFs
     DoTicks tvwMain, "DPFs"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'ActiveSetup\StubPath autoruns
     Status Translate(909) & " " & SEC_ACTIVEX
@@ -2067,6 +2099,7 @@ Private Sub GetAllEnums()
     EnumActiveXAutoruns
     DoTicks tvwMain, "ActiveX"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'Desktop Components
     Status Translate(909) & " " & SEC_DESKTOPCOMPONENTS
@@ -2074,6 +2107,7 @@ Private Sub GetAllEnums()
     EnumDesktopComponents
     DoTicks tvwMain, "DesktopComponents"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'HK..\..\IE\URLSearchHooks
     Status Translate(909) & " " & SEC_URLSEARCHHOOKS
@@ -2081,6 +2115,7 @@ Private Sub GetAllEnums()
     EnumURLSearchHooks
     DoTicks tvwMain, "URLSearchHooks"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'ini file values, mapped to the registry in NT
     Status Translate(909) & " " & SEC_INIMAPPING
@@ -2088,6 +2123,7 @@ Private Sub GetAllEnums()
     EnumIniMappingKeys
     DoTicks tvwMain, "IniMapping"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'MountPoints
     Status Translate(909) & " " & SEC_MOUNTPOINTS
@@ -2095,6 +2131,7 @@ Private Sub GetAllEnums()
     EnumMountPoints
     DoTicks tvwMain, "MountPoints"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'NT scripts
     Status Translate(909) & " " & SEC_SCRIPTPOLICIES
@@ -2102,6 +2139,7 @@ Private Sub GetAllEnums()
     EnumNTScripts
     DoTicks tvwMain, "ScriptPolicies"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'wininit.ini/.bak, PendingFileRenameOperations
     Status Translate(909) & " " & SEC_ONREBOOT
@@ -2109,6 +2147,7 @@ Private Sub GetAllEnums()
     EnumOnRebootActions
     DoTicks tvwMain, "OnRebootActions"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'shell commands for .exe, bat, com, pif, etc
     Status Translate(909) & " " & SEC_SHELLCOMMANDS
@@ -2116,6 +2155,7 @@ Private Sub GetAllEnums()
     EnumShellCommands
     DoTicks tvwMain, "ShellCommands"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'NT Services + 9x device drivers
     Status Translate(909) & " " & SEC_SERVICES
@@ -2123,6 +2163,7 @@ Private Sub GetAllEnums()
     EnumServices
     DoTicks tvwMain, "Services"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'Driver filters
     Status Translate(909) & " " & SEC_DRIVERFILTERS
@@ -2130,6 +2171,7 @@ Private Sub GetAllEnums()
     EnumDriverFilters
     DoTicks tvwMain, "DriverFilters"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'Drivers32
     Status Translate(909) & " " & SEC_DRIVERS32
@@ -2137,6 +2179,7 @@ Private Sub GetAllEnums()
     RegEnumDrivers32 tvwMain
     DoTicks tvwMain, "Drivers32"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'Print Monitors
     Status Translate(909) & " " & SEC_PRINTMONITORS
@@ -2144,6 +2187,7 @@ Private Sub GetAllEnums()
     EnumPrintMonitors
     DoTicks tvwMain, "PrintMonitors"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'Winlogon autoruns
     Status Translate(909) & " " & SEC_WINLOGON
@@ -2151,6 +2195,7 @@ Private Sub GetAllEnums()
     EnumWinLogonAutoruns
     DoTicks tvwMain, "WinLogonAutoruns"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'LSA packages (security, notification, authentication)
     Status Translate(909) & " " & SEC_LSAPACKAGES
@@ -2158,6 +2203,7 @@ Private Sub GetAllEnums()
     EnumLSAPackages
     DoTicks tvwMain, "LsaPackages"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'policies
     Status Translate(909) & " " & SEC_POLICIES
@@ -2165,6 +2211,7 @@ Private Sub GetAllEnums()
     EnumPolicies
     DoTicks tvwMain, "Policies"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'Image File Execution
     Status Translate(909) & " " & SEC_IMAGEFILEEXECUTION
@@ -2172,6 +2219,7 @@ Private Sub GetAllEnums()
     EnumImageFileExecution
     DoTicks tvwMain, "ImageFileExecution"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'HKCR\*\shellex\ContextMenuHandlers
     Status Translate(909) & " " & SEC_CONTEXTMENUHANDLERS
@@ -2179,6 +2227,7 @@ Private Sub GetAllEnums()
     EnumContextMenuHandlers
     DoTicks tvwMain, "ContextMenuHandlers"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'HKCR\*\shellex\ColumnHandlers
     Status Translate(909) & " " & SEC_COLUMNHANDLERS
@@ -2186,6 +2235,7 @@ Private Sub GetAllEnums()
     EnumColumnHandlers
     DoTicks tvwMain, "ColumnHandlers"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'HKLM\..\explorer\ShellExecuteHooks
     Status Translate(909) & " " & SEC_SHELLEXECUTEHOOKS
@@ -2193,6 +2243,7 @@ Private Sub GetAllEnums()
     EnumShellExecuteHooks
     DoTicks tvwMain, "ShellExecuteHooks"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'HKLM\..\Shell Extensions\Approved
     Status Translate(909) & " " & SEC_SHELLEXT
@@ -2200,6 +2251,7 @@ Private Sub GetAllEnums()
     EnumShellExtensions
     DoTicks tvwMain, "ShellExts"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'all Run/RunOnce/RunServices/etc regkeys
     Status Translate(909) & " " & SEC_REGRUNKEYS
@@ -2207,6 +2259,7 @@ Private Sub GetAllEnums()
     EnumRunRegKeys
     DoTicks tvwMain, "RunRegkeys"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'same, RunEx keys
     Status Translate(909) & " " & SEC_REGRUNEXKEYS
@@ -2214,6 +2267,7 @@ Private Sub GetAllEnums()
     EnumRunExRegKeys
     DoTicks tvwMain, "RunExRegkeys"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'HKCR\Protocols\Filter + \Handler
     Status Translate(909) & " " & SEC_PROTOCOLS
@@ -2221,6 +2275,7 @@ Private Sub GetAllEnums()
     EnumProtocols
     DoTicks tvwMain, "Protocols"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'Accessibility\Utility Manager autoruns
     Status Translate(909) & " " & SEC_UTILMANAGER
@@ -2228,6 +2283,7 @@ Private Sub GetAllEnums()
     EnumAccUtilManager
     DoTicks tvwMain, "UtilityManager"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'WOW
     Status Translate(909) & " " & SEC_WOW
@@ -2235,6 +2291,7 @@ Private Sub GetAllEnums()
     EnumWOW
     DoTicks tvwMain, "WOW"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'SSODL
     Status Translate(909) & " " & SEC_SSODL
@@ -2242,6 +2299,7 @@ Private Sub GetAllEnums()
     EnumSSODL
     DoTicks tvwMain, "ShellServiceObjectDelayLoad"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'STS
     Status Translate(909) & " " & SEC_SHAREDTASKSCHEDULER
@@ -2249,6 +2307,7 @@ Private Sub GetAllEnums()
     EnumSharedTaskScheduler
     DoTicks tvwMain, "SharedTaskScheduler"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'MPRServices
     Status Translate(909) & " " & SEC_MPRSERVICES
@@ -2256,6 +2315,7 @@ Private Sub GetAllEnums()
     EnumMPRServices
     DoTicks tvwMain, "MPRServices"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'SecurityProviders
     Status Translate(909) & " " & SEC_SECURITYPROVIDERS
@@ -2263,6 +2323,7 @@ Private Sub GetAllEnums()
     EnumSecurityProviders
     DoTicks tvwMain, "SecurityProviders"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'App Paths
     Status Translate(909) & " " & SEC_APPPATHS
@@ -2270,6 +2331,7 @@ Private Sub GetAllEnums()
     EnumAppPaths
     DoTicks tvwMain, "AppPaths"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'Command Processor Autostart
     Status Translate(909) & " " & SEC_CMDPROC
@@ -2277,6 +2339,7 @@ Private Sub GetAllEnums()
     EnumCmdProcessorAutorun
     DoTicks tvwMain, "CmdProcAutorun"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'Winsock LSP
     Status Translate(909) & " " & SEC_WINSOCKLSP
@@ -2284,6 +2347,7 @@ Private Sub GetAllEnums()
     EnumLSP
     DoTicks tvwMain, "WinsockLSP"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     '3rd party autostarts, e.g. icq
     Status Translate(909) & " " & SEC_3RDPARTY
@@ -2291,15 +2355,17 @@ Private Sub GetAllEnums()
     Enum3rdPartyAutostarts
     DoTicks tvwMain, "3rdPartyApps"
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'Hijack points
     EnumHijack
     UpdateProgressBar
+    If bSL_Abort Then Exit Sub
     
     'Disabled stuff
     EnumDisabled
     UpdateProgressBar
-    
+    If bSL_Abort Then Exit Sub
     
     '-----------------------------------------
     'remove empty users/hardware nodes
@@ -2345,8 +2411,7 @@ Private Sub GetAllEnums()
     End If
     
     'Aborted!
-    If bAbort Then Status Translate(929)
-    bAbort = False
+    If bSL_Abort Then Exit Sub
     
     If bDebug Then
         tvwMain.Nodes.Add "System", tvwChild, "SystemTicks", " Time: " & GetTickCount - lTicks & " ms", "clock"
@@ -2418,13 +2483,13 @@ Private Sub mnuFileCopy_Click()
     If tvwMain.Visible Then
         mnuFileCopy.Enabled = False
         sLog = GetStartupListReport
-        If Not bAbort Then
+        If Not bSL_Abort Then
             Clipboard.Clear
             Clipboard.SetText sLog
             'The StartupList report has been copied to your clipboard.
             Status Translate(930) & " (" & Format$(Len(sLog) / 1024, "#,00") & " Kb)"
         Else
-            bAbort = False
+            bSL_Abort = False
             'Generating of StartupList report was aborted!
             Status Translate(931)
         End If
@@ -2589,9 +2654,9 @@ Private Sub mnuFileTriage_Click()
     If Section.Children > 0 Then
         'Running processes
         tvwTriage.Nodes.Add "Triage", tvwChild, "RunningProcesses", Translate(935), "memory"
-        For i = Section.index + 1 To Section.Children + Section.index
+        For i = Section.Index + 1 To Section.Children + Section.Index
             sFile = tvwMain.Nodes(i).Text
-            AddTriageObj "RunningProcesses" & i - 1 - Section.index, "Process", sFile
+            AddTriageObj "RunningProcesses" & i - 1 - Section.Index, "Process", sFile
         Next i
     End If
 '    EnumAutoStartFolders
@@ -2605,11 +2670,11 @@ Private Sub mnuFileTriage_Click()
     If Section.Children > 0 Then
         'Registry 'Run' keys
         tvwTriage.Nodes.Add "Triage", tvwChild, "RunRegKeys", Translate(936), "registry"
-        For i = Section.index + 1 To Section.Children + Section.index
+        For i = Section.Index + 1 To Section.Children + Section.Index
             Set Subsection = tvwMain.Nodes(i)
             If Subsection.Children > 0 Then
                 tvwTriage.Nodes.Add "RunRegKeys", tvwChild, Subsection.Key, Subsection.Text, "registry"
-                For j = Subsection.index + 1 To Subsection.Children + Subsection.index
+                For j = Subsection.Index + 1 To Subsection.Children + Subsection.Index
                     If InStr(tvwMain.Nodes(j).Text, " = ") > 0 Then
                         sName = Left$(tvwMain.Nodes(j).Text, InStr(tvwMain.Nodes(j).Text, " = ") - 1)
                         sFile = Mid$(tvwMain.Nodes(j).Text, InStr(tvwMain.Nodes(j).Text, " = ") + 3)
@@ -2630,7 +2695,7 @@ Private Sub mnuFileTriage_Click()
     If Section.Children > 0 Then
         'ActiveX Autoruns
         tvwTriage.Nodes.Add "Triage", tvwChild, "ActiveX", Translate(937), "msie"
-        For i = Section.index + 1 To Section.Children + Section.index
+        For i = Section.Index + 1 To Section.Children + Section.Index
             sDummy = Split(tvwMain.Nodes(i).Text, " - ")
             If UBound(sDummy) = 1 Or UBound(sDummy) = 2 Then
                 sName = sDummy(0)
@@ -2641,7 +2706,7 @@ Private Sub mnuFileTriage_Click()
                 End If
                 sFile = sDummy(1)
                 sFile = GuessFullpathFromAutorun(sFile)
-                AddTriageObj "ActiveX" & (i - 1 - Section.index), "ActiveX Object", sFile, sCLSID
+                AddTriageObj "ActiveX" & (i - 1 - Section.Index), "ActiveX Object", sFile, sCLSID
             End If
         Next i
     End If
@@ -2652,7 +2717,7 @@ Private Sub mnuFileTriage_Click()
     If Section.Children > 0 Then
         'Explorer clones
         tvwTriage.Nodes.Add "Triage", tvwChild, "ExplorerClones", Translate(938), "explorer"
-        For i = Section.index + 1 To Section.Children + Section.index
+        For i = Section.Index + 1 To Section.Children + Section.Index
             sFile = tvwMain.Nodes(i).Text
             AddTriageObj tvwMain.Nodes(i).Key, "File", sFile
         Next i
@@ -2666,7 +2731,7 @@ Private Sub mnuFileTriage_Click()
     If Section.Children > 0 Then
         'Browser Helper Objects
         tvwTriage.Nodes.Add "Triage", tvwChild, "BHOs", Translate(939), "msie"
-        For i = Section.index + 1 To Section.Children + Section.index
+        For i = Section.Index + 1 To Section.Children + Section.Index
             sDummy = Split(tvwMain.Nodes(i).Text, " = ")
             If UBound(sDummy) = 2 Then
                 'sName = sDummy(0)
@@ -2678,7 +2743,7 @@ Private Sub mnuFileTriage_Click()
                 sFile = sDummy(1)
             End If
             
-            AddTriageObj "BHO" & (i - 1 - Section.index), "BHO", sFile, sCLSID
+            AddTriageObj "BHO" & (i - 1 - Section.Index), "BHO", sFile, sCLSID
         Next i
     End If
 '    EnumImageFileExecution
@@ -2693,7 +2758,7 @@ Private Sub mnuFileTriage_Click()
     If Section.Children > 0 Then
         'ShellServiceObjectDelayLoad
         tvwTriage.Nodes.Add "Triage", tvwChild, "ShellServiceObjectDelayLoad", Translate(940), "registry"
-        For i = Section.index + 1 To Section.Children + Section.index
+        For i = Section.Index + 1 To Section.Children + Section.Index
             sDummy = Split(tvwMain.Nodes(i).Text, " = ")
             If UBound(sDummy) = 2 Then
                 sName = sDummy(0)
@@ -2711,7 +2776,7 @@ Private Sub mnuFileTriage_Click()
     If Section.Children > 0 Then
         'SharedTaskScheduler
         tvwTriage.Nodes.Add "Triage", tvwChild, "SharedTaskScheduler", Translate(941), "registry"
-        For i = Section.index + 1 To Section.Children + Section.index
+        For i = Section.Index + 1 To Section.Children + Section.Index
             sDummy = Split(tvwMain.Nodes(i).Text, " = ")
             If UBound(sDummy) = 2 Then
                 sName = sDummy(0)
@@ -2775,19 +2840,19 @@ End Sub
 
 
 Private Sub mnuFileVerify_Click()
-    bAbort = False
+    bSL_Abort = False
     cmdAbort.Visible = True
     WinTrustVerifyChildNodes "System"
     If NodeExists("Users") Then WinTrustVerifyChildNodes "Users"
     If NodeExists("Hardware") Then WinTrustVerifyChildNodes "Hardware"
-    If bAbort Then
+    If bSL_Abort Then
         'Verification aborted.
         Status Translate(944)
     Else
         'Verification done.
         Status Translate(945)
     End If
-    bAbort = False
+    bSL_Abort = False
 End Sub
 
 Private Sub mnuFindFind_Click()
@@ -2811,7 +2876,7 @@ Private Sub mnuFindNext_Click()
     End If
     
     Dim iFirst&, i&
-    iFirst = tvwMain.SelectedItem.index + 1
+    iFirst = tvwMain.SelectedItem.Index + 1
     For i = iFirst To tvwMain.Nodes.Count
         If InStr(1, tvwMain.Nodes(i).Text, sFind, vbTextCompare) > 0 Then
             tvwMain.SelectedItem = tvwMain.Nodes(i)
@@ -2874,35 +2939,30 @@ End Sub
 Private Sub mnuOptionsShowHardware_Click()
     mnuOptionsShowHardware.Checked = Not mnuOptionsShowHardware.Checked
     bShowHardware = CBool(mnuOptionsShowHardware.Checked)
-    'GetAllEnums
     cmdRefresh.Visible = True
 End Sub
 
 Private Sub mnuOptionsShowLargeHosts_Click()
     bShowLargeHosts = Not bShowLargeHosts
     mnuOptionsShowLargeHosts.Checked = Not mnuOptionsShowLargeHosts.Checked
-    'GetAllEnums
     cmdRefresh.Visible = True
 End Sub
 
 Private Sub mnuOptionsShowLargeZones_Click()
     bShowLargeZones = Not bShowLargeZones
     mnuOptionsShowLargeZones.Checked = Not mnuOptionsShowLargeZones.Checked
-    'GetAllEnums
     cmdRefresh.Visible = True
 End Sub
 
 Private Sub mnuOptionsShowPrivacy_Click()
     mnuOptionsShowPrivacy.Checked = Not mnuOptionsShowPrivacy.Checked
     bShowPrivacy = CBool(mnuOptionsShowPrivacy.Checked)
-    'GetAllEnums
     cmdRefresh.Visible = True
 End Sub
 
 Private Sub mnuOptionsShowUsers_Click()
     mnuOptionsShowUsers.Checked = Not mnuOptionsShowUsers.Checked
     bShowUsers = CBool(mnuOptionsShowUsers.Checked)
-    'GetAllEnums
     cmdRefresh.Visible = True
 End Sub
 
@@ -3022,7 +3082,7 @@ Private Sub mnuPopupCLSIDRunScanner_Click()
         sCLSID = Mid$(tvwMain.SelectedItem.Tag, InStr(tvwMain.SelectedItem.Tag, "{"))
         sCLSID = Left$(sCLSID, InStr(sCLSID, "}") + 1)
     End If
-    If IsCLSID(sCLSID) Then RunScannerGetCLSID sCLSID, tvwMain.SelectedItem.Key
+    If isCLSID(sCLSID) Then RunScannerGetCLSID sCLSID, tvwMain.SelectedItem.Key
 End Sub
 
 Private Sub mnuPopupCLSIDGoogle_Click()
@@ -3034,7 +3094,7 @@ Private Sub mnuPopupCLSIDGoogle_Click()
         sCLSID = Mid$(tvwMain.SelectedItem.Tag, InStr(tvwMain.SelectedItem.Tag, "{"))
         sCLSID = Left$(sCLSID, InStr(sCLSID, "}") + 1)
     End If
-    If IsCLSID(sCLSID) Then ShellRun "https://www.google.com/search?q=" & sCLSID
+    If isCLSID(sCLSID) Then ShellRun "https://www.google.com/search?q=" & sCLSID
 End Sub
 
 Private Sub mnuPopupSaveTree_Click()
@@ -3089,7 +3149,7 @@ Private Sub mnuPopupShowProp_Click()
 End Sub
 
 Private Sub mnuPopupVerifyFile_Click()
-    bAbort = False
+    bSL_Abort = False
     WinTrustVerifyNode tvwMain.SelectedItem.Key
     'Done.
     Status Translate(961)
@@ -3109,21 +3169,18 @@ End Sub
 Private Sub mnuOptionsShowCLSID_Click()
     mnuOptionsShowCLSID.Checked = Not mnuOptionsShowCLSID.Checked
     bShowCLSIDs = CBool(mnuOptionsShowCLSID.Checked)
-    'GetAllEnums
     cmdRefresh.Visible = True
 End Sub
 
 Private Sub mnuOptionsShowCmts_Click()
     mnuOptionsShowCmts.Checked = Not mnuOptionsShowCmts.Checked
     bShowCmts = CBool(mnuOptionsShowCmts.Checked)
-    'GetAllEnums
     cmdRefresh.Visible = True
 End Sub
 
 Private Sub mnuOptionsShowEmpty_Click()
     mnuOptionsShowEmpty.Checked = Not mnuOptionsShowEmpty.Checked
     bShowEmpty = CBool(mnuOptionsShowEmpty.Checked)
-    'GetAllEnums
     cmdRefresh.Visible = True
 End Sub
 
@@ -3141,13 +3198,22 @@ Private Sub mnuViewRefresh_Click()
     cmdRefresh.Visible = False
     cmdAbort.Visible = True
     GetAllEnums
+    If bSL_Abort Then
+        If bSL_Terminate Then
+            bSL_Terminate = False
+            Unload Me
+        Else
+            Status Translate(929): bSL_Abort = False
+        End If
+        Exit Sub
+    End If
 End Sub
 
 Private Function GetStartupListReport$()
     Dim sLog$
     'Generating report...
     Status Translate(962)
-    bAbort = False
+    'bSL_Abort = False
     cmdAbort.Enabled = True
     cmdAbort.Visible = True
     Form_Resize
@@ -3187,13 +3253,13 @@ Private Function GetStartupListReport$()
     Form_Resize
     lCountedNodes = 1
     sLog = sLog & GetNodeChildren(tvwMain.Nodes("System").Key, 2)
-    If bAbort Then Exit Function
+    If bSL_Abort Then Exit Function
     If bShowUsers Then sLog = sLog & GetNodeChildren(tvwMain.Nodes("Users").Key, 1)
-    If bAbort Then Exit Function
+    If bSL_Abort Then Exit Function
     If bShowHardware Then sLog = sLog & GetNodeChildren(tvwMain.Nodes("Hardware").Key, 1)
     pgbStatus.Visible = False
     Form_Resize
-    If bAbort Then Exit Function
+    If bSL_Abort Then Exit Function
     
     If InStr(sLog, vbCrLf & vbCrLf & vbCrLf) > 0 Then
         sLog = Replace$(sLog, vbCrLf & vbCrLf & vbCrLf, vbCrLf & vbCrLf)
@@ -3226,7 +3292,7 @@ End Function
 
 Private Function GetNodeChildren$(sKey$, iLevel%)
     Dim S$, t$, u$, nodFirst As Node, nodCurrent As Node
-    If bAbort Then Exit Function
+    If bSL_Abort Then Exit Function
     If Trim$(sKey) = vbNullString Then Exit Function
     If tvwMain.Nodes(sKey).Children = 0 Then Exit Function
     If bDebug Then Status sKey
@@ -3279,13 +3345,14 @@ Private Function GetNodeChildren$(sKey$, iLevel%)
             pgbStatus.Value = lCountedNodes
             DoEvents
         End If
-        If bAbort Then Exit Function
+        If bSL_Abort Then Exit Function
     Loop
     GetNodeChildren = S & vbCrLf
 End Function
 
 Private Sub UpdateProgressBar()
     On Error Resume Next
+    If bSL_Abort Or bSL_Terminate Then Exit Sub
     If bDebug Then
         If pgbStatus.Value = pgbStatus.Max Then MsgBoxW "UpdateProgressBar: at max!"
     End If
@@ -3300,7 +3367,7 @@ End Function
 
 Private Sub EnumProcesses()
     Dim sProcessList$(), sModuleList$(), i&, j&, sProc$, lPID&
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     tvwMain.Nodes.Add "System", tvwChild, "RunningProcesses", SEC_RUNNINGPROCESSES, "memory", "memory"
     sProcessList = Split(GetRunningProcesses, "|")
     For i = 0 To UBound(sProcessList)
@@ -3317,7 +3384,7 @@ Private Sub EnumProcesses()
             tvwMain.Nodes("RunningProcesses" & i).Text = tvwMain.Nodes("RunningProcesses" & i).Text & " (" & tvwMain.Nodes("RunningProcesses" & i).Children & ")"
             tvwMain.Nodes("RunningProcesses" & i).Sorted = True
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("RunningProcesses").Children > 0 Then
         tvwMain.Nodes("RunningProcesses").Text = tvwMain.Nodes("RunningProcesses").Text & " (" & tvwMain.Nodes("RunningProcesses").Children & ")"
@@ -3334,7 +3401,7 @@ End Sub
 Private Sub EnumAutoStartFolders()
     Dim sFolders$(), i&, j&, sFiles$()
     Dim sName$, sDir$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     tvwMain.Nodes.Add "System", tvwChild, "AutoStartFolders", SEC_AUTOSTARTFOLDERS, "folder", "folder"
     
     ReDim sFolders(12)
@@ -3375,7 +3442,7 @@ Private Sub EnumAutoStartFolders()
                 End If
             End If
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     
     If tvwMain.Nodes("AutoStartFolders").Children = 0 And Not bShowEmpty Then
@@ -3385,16 +3452,16 @@ Private Sub EnumAutoStartFolders()
     If Not bShowUsers Then Exit Sub
     '--------------------------------------------------------------
     ReDim sFolders(3)
-    Dim sUsername$, K&
+    Dim sUsername$, k&
 
-    For K = 0 To UBound(sUsernames)
-        sUsername = MapSIDToUsername(sUsernames(K))
+    For k = 0 To UBound(sUsernames)
+        sUsername = MapSIDToUsername(sUsernames(k))
         If sUsername <> GetUser() And sUsername <> vbNullString Then
-            tvwMain.Nodes.Add "Users" & sUsernames(K), tvwChild, sUsernames(K) & "AutoStartFolders", SEC_AUTOSTARTFOLDERS, "folder"
-            sFolders(0) = "Startup|" & Reg.GetString(HKEY_USERS, sUsernames(K) & "\Software\Microsoft\Windows\CurrentVersion\explorer\Shell Folders", "Startup")
-            sFolders(1) = "AltStartup|" & Reg.GetString(HKEY_USERS, sUsernames(K) & "\Software\Microsoft\Windows\CurrentVersion\explorer\Shell Folders", "AltStartup")
-            sFolders(2) = "User Startup|" & Reg.GetString(HKEY_USERS, sUsernames(K) & "\Software\Microsoft\Windows\CurrentVersion\explorer\User Shell Folders", "Startup")
-            sFolders(3) = "User AltStartup|" & Reg.GetString(HKEY_USERS, sUsernames(K) & "\Software\Microsoft\Windows\CurrentVersion\explorer\User Shell Folders", "AltStartup")
+            tvwMain.Nodes.Add "Users" & sUsernames(k), tvwChild, sUsernames(k) & "AutoStartFolders", SEC_AUTOSTARTFOLDERS, "folder"
+            sFolders(0) = "Startup|" & Reg.GetString(HKEY_USERS, sUsernames(k) & "\Software\Microsoft\Windows\CurrentVersion\explorer\Shell Folders", "Startup")
+            sFolders(1) = "AltStartup|" & Reg.GetString(HKEY_USERS, sUsernames(k) & "\Software\Microsoft\Windows\CurrentVersion\explorer\Shell Folders", "AltStartup")
+            sFolders(2) = "User Startup|" & Reg.GetString(HKEY_USERS, sUsernames(k) & "\Software\Microsoft\Windows\CurrentVersion\explorer\User Shell Folders", "Startup")
+            sFolders(3) = "User AltStartup|" & Reg.GetString(HKEY_USERS, sUsernames(k) & "\Software\Microsoft\Windows\CurrentVersion\explorer\User Shell Folders", "AltStartup")
             
             For i = 0 To UBound(sFolders)
                 sName = Left$(sFolders(i), InStr(sFolders(i), "|") - 1)
@@ -3402,31 +3469,31 @@ Private Sub EnumAutoStartFolders()
                 sDir = ExpandEnvironmentVars(sDir)
                 If sDir <> vbNullString Then
                     sFiles = Split(EnumFiles(sDir), "|")
-                    tvwMain.Nodes.Add sUsernames(K) & "AutoStartFolders", tvwChild, sUsernames(K) & "AutoStartFolders" & sName, sName, "folder", "folder"
-                    tvwMain.Nodes(sUsernames(K) & "AutoStartFolders" & sName).Tag = sDir
+                    tvwMain.Nodes.Add sUsernames(k) & "AutoStartFolders", tvwChild, sUsernames(k) & "AutoStartFolders" & sName, sName, "folder", "folder"
+                    tvwMain.Nodes(sUsernames(k) & "AutoStartFolders" & sName).Tag = sDir
                     For j = 0 To UBound(sFiles)
                         If StrComp(sFiles(j), "desktop.ini", 1) <> 0 Then
-                            tvwMain.Nodes.Add sUsernames(K) & "AutoStartFolders" & sName, tvwChild, sUsernames(K) & "AutoStartFolders" & sName & j, sFiles(j), "dll", "dll"
-                            tvwMain.Nodes(sUsernames(K) & "AutoStartFolders" & sName & j).Tag = BuildPath(sDir, sFiles(j))
+                            tvwMain.Nodes.Add sUsernames(k) & "AutoStartFolders" & sName, tvwChild, sUsernames(k) & "AutoStartFolders" & sName & j, sFiles(j), "dll", "dll"
+                            tvwMain.Nodes(sUsernames(k) & "AutoStartFolders" & sName & j).Tag = BuildPath(sDir, sFiles(j))
                         End If
                     Next j
-                    If tvwMain.Nodes(sUsernames(K) & "AutoStartFolders" & sName).Children = 0 And Not bShowEmpty Then
-                        tvwMain.Nodes.Remove (sUsernames(K) & "AutoStartFolders" & sName)
+                    If tvwMain.Nodes(sUsernames(k) & "AutoStartFolders" & sName).Children = 0 And Not bShowEmpty Then
+                        tvwMain.Nodes.Remove (sUsernames(k) & "AutoStartFolders" & sName)
                     End If
                 End If
-                If bAbort Then Exit Sub
+                If bSL_Abort Then Exit Sub
             Next i
             
-            If tvwMain.Nodes(sUsernames(K) & "AutoStartFolders").Children = 0 And Not bShowEmpty Then
-                tvwMain.Nodes.Remove sUsernames(K) & "AutoStartFolders"
+            If tvwMain.Nodes(sUsernames(k) & "AutoStartFolders").Children = 0 And Not bShowEmpty Then
+                tvwMain.Nodes.Remove sUsernames(k) & "AutoStartFolders"
             End If
         End If
-    Next K
+    Next k
 End Sub
 
 Private Sub EnumRunRegKeys()
     Dim sKeys$(), sNames$(), i&, j&, sValues$()
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     tvwMain.Nodes.Add "System", tvwChild, "RunRegkeys", SEC_REGRUNKEYS, "registry", "registry"
     
     ReDim sNames(9)
@@ -3465,7 +3532,7 @@ Private Sub EnumRunRegKeys()
         If tvwMain.Nodes("RunRegkeysUser" & i).Children = 0 And Not bShowEmpty Then
             tvwMain.Nodes.Remove ("RunRegkeysUser" & i)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     For i = 0 To UBound(sKeys)
         sValues = Split(RegEnumValues(HKEY_LOCAL_MACHINE, sKeys(i)), "|")
@@ -3479,7 +3546,7 @@ Private Sub EnumRunRegKeys()
         If tvwMain.Nodes("RunRegkeysSystem" & i).Children = 0 And Not bShowEmpty Then
             tvwMain.Nodes.Remove ("RunRegkeysSystem" & i)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     
     If tvwMain.Nodes("RunRegkeys").Children = 0 And Not bShowEmpty Then
@@ -3488,37 +3555,37 @@ Private Sub EnumRunRegKeys()
     
     If Not bShowUsers Then Exit Sub
     '-------------------------------------------------------------------
-    Dim sUsername$, K&
-    For K = 0 To UBound(sUsernames)
-        sUsername = MapSIDToUsername(sUsernames(K))
+    Dim sUsername$, k&
+    For k = 0 To UBound(sUsernames)
+        sUsername = MapSIDToUsername(sUsernames(k))
         If sUsername <> GetUser() And sUsername <> vbNullString Then
-            tvwMain.Nodes.Add "Users" & sUsernames(K), tvwChild, sUsernames(K) & "RunRegkeys", SEC_REGRUNKEYS, "registry"
+            tvwMain.Nodes.Add "Users" & sUsernames(k), tvwChild, sUsernames(k) & "RunRegkeys", SEC_REGRUNKEYS, "registry"
         
             For i = 0 To UBound(sKeys)
-                sValues = Split(RegEnumValues(HKEY_USERS, sUsernames(K) & "\" & sKeys(i)), "|")
-                tvwMain.Nodes.Add sUsernames(K) & "RunRegkeys", tvwChild, sUsernames(K) & "RunRegkeysUser" & i, "User " & sNames(i), "registry", "registry"
-                tvwMain.Nodes(sUsernames(K) & "RunRegkeysUser" & i).Tag = "HKEY_USERS\" & sUsernames(K) & "\" & sKeys(i)
+                sValues = Split(RegEnumValues(HKEY_USERS, sUsernames(k) & "\" & sKeys(i)), "|")
+                tvwMain.Nodes.Add sUsernames(k) & "RunRegkeys", tvwChild, sUsernames(k) & "RunRegkeysUser" & i, "User " & sNames(i), "registry", "registry"
+                tvwMain.Nodes(sUsernames(k) & "RunRegkeysUser" & i).Tag = "HKEY_USERS\" & sUsernames(k) & "\" & sKeys(i)
                 For j = 0 To UBound(sValues)
-                    tvwMain.Nodes.Add sUsernames(K) & "RunRegkeysUser" & i, tvwChild, sUsernames(K) & "RunRegkeysUser" & i & "Val" & j, sValues(j), "reg", "reg"
-                    tvwMain.Nodes(sUsernames(K) & "RunRegkeysUser" & i & "Val" & j).Tag = GuessFullpathFromAutorun(Mid$(sValues(j), InStr(sValues(j), " = ") + 3))
+                    tvwMain.Nodes.Add sUsernames(k) & "RunRegkeysUser" & i, tvwChild, sUsernames(k) & "RunRegkeysUser" & i & "Val" & j, sValues(j), "reg", "reg"
+                    tvwMain.Nodes(sUsernames(k) & "RunRegkeysUser" & i & "Val" & j).Tag = GuessFullpathFromAutorun(Mid$(sValues(j), InStr(sValues(j), " = ") + 3))
                 Next j
-                tvwMain.Nodes(sUsernames(K) & "RunRegkeysUser" & i).Sorted = True
-                If tvwMain.Nodes(sUsernames(K) & "RunRegkeysUser" & i).Children = 0 And Not bShowEmpty Then
-                    tvwMain.Nodes.Remove (sUsernames(K) & "RunRegkeysUser" & i)
+                tvwMain.Nodes(sUsernames(k) & "RunRegkeysUser" & i).Sorted = True
+                If tvwMain.Nodes(sUsernames(k) & "RunRegkeysUser" & i).Children = 0 And Not bShowEmpty Then
+                    tvwMain.Nodes.Remove (sUsernames(k) & "RunRegkeysUser" & i)
                 End If
             Next i
     
-            If tvwMain.Nodes(sUsernames(K) & "RunRegkeys").Children = 0 And Not bShowEmpty Then
-                tvwMain.Nodes.Remove sUsernames(K) & "RunRegkeys"
+            If tvwMain.Nodes(sUsernames(k) & "RunRegkeys").Children = 0 And Not bShowEmpty Then
+                tvwMain.Nodes.Remove sUsernames(k) & "RunRegkeys"
             End If
         End If
-        If bAbort Then Exit Sub
-    Next K
+        If bSL_Abort Then Exit Sub
+    Next k
 End Sub
 
 Private Sub EnumRunExRegKeys()
     Dim sKeys$(), sNames$(), i&
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     tvwMain.Nodes.Add "System", tvwChild, "RunExRegkeys", SEC_REGRUNEXKEYS, "registry", "registry"
 
     ReDim sNames(9)
@@ -3545,7 +3612,7 @@ Private Sub EnumRunExRegKeys()
     sKeys(8) = "Software\Microsoft\Windows NT\CurrentVersion\RunServicesOnce"
     sKeys(9) = "Software\Microsoft\Windows NT\CurrentVersion\RunServicesOnceEx"
 
-    Dim sSubkeys$(), sVals$(), j&, K&
+    Dim sSubkeys$(), sVals$(), j&, k&
     For i = 0 To UBound(sKeys)
         sSubkeys = Split(Reg.EnumSubKeys(HKEY_CURRENT_USER, sKeys(i)), "|")
         tvwMain.Nodes.Add "RunExRegkeys", tvwChild, "RunEx" & i & "User", "User " & sNames(i), "registry", "registry"
@@ -3554,10 +3621,10 @@ Private Sub EnumRunExRegKeys()
             tvwMain.Nodes.Add "RunEx" & i & "User", tvwChild, "RunEx" & i & "User.sub" & j, sSubkeys(j), "registry", "registry"
             tvwMain.Nodes("RunEx" & i & "User.sub" & j).Tag = "HKEY_CURRENT_USER\" & sKeys(i) & "\" & sSubkeys(j)
             sVals = Split(RegEnumValues(HKEY_CURRENT_USER, sKeys(i) & "\" & sSubkeys(j), True), Chr$(0))
-            For K = 0 To UBound(sVals)
-                tvwMain.Nodes.Add "RunEx" & i & "User.sub" & j, tvwChild, "RunEx" & i & "User.sub" & j & "val" & K, sVals(K), "reg", "reg"
-                tvwMain.Nodes("RunEx" & i & "User.sub" & j & "val" & K).Tag = GuessFullpathFromAutorun(Mid$(sVals(K), InStr(sVals(K), " = ") + 3))
-            Next K
+            For k = 0 To UBound(sVals)
+                tvwMain.Nodes.Add "RunEx" & i & "User.sub" & j, tvwChild, "RunEx" & i & "User.sub" & j & "val" & k, sVals(k), "reg", "reg"
+                tvwMain.Nodes("RunEx" & i & "User.sub" & j & "val" & k).Tag = GuessFullpathFromAutorun(Mid$(sVals(k), InStr(sVals(k), " = ") + 3))
+            Next k
             If tvwMain.Nodes("RunEx" & i & "User.sub" & j).Children = 0 And Not bShowEmpty Then
                 tvwMain.Nodes.Remove "RunEx" & i & "User.sub" & j
             End If
@@ -3566,7 +3633,7 @@ Private Sub EnumRunExRegKeys()
         If tvwMain.Nodes("RunEx" & i & "User").Children = 0 And Not bShowEmpty Then
             tvwMain.Nodes.Remove ("RunEx" & i & "User")
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     For i = 0 To UBound(sKeys)
         sSubkeys = Split(Reg.EnumSubKeys(HKEY_LOCAL_MACHINE, sKeys(i)), "|")
@@ -3576,10 +3643,10 @@ Private Sub EnumRunExRegKeys()
             tvwMain.Nodes.Add "RunEx" & i & "System", tvwChild, "RunEx" & i & "System.sub" & j, sSubkeys(j), "registry", "registry"
             tvwMain.Nodes("RunEx" & i & "System.sub" & j).Tag = "HKEY_LOCAL_MACHINE\" & sKeys(i) & "\" & sSubkeys(j)
             sVals = Split(RegEnumValues(HKEY_LOCAL_MACHINE, sKeys(i) & "\" & sSubkeys(j), True), Chr$(0))
-            For K = 0 To UBound(sVals)
-                tvwMain.Nodes.Add "RunEx" & i & "System.sub" & j, tvwChild, "RunEx" & i & "System.sub" & j & "val" & K, sVals(K), "reg", "reg"
-                tvwMain.Nodes("RunEx" & i & "System.sub" & j & "val" & K).Tag = GuessFullpathFromAutorun(Mid$(sVals(K), InStr(sVals(K), " = ") + 3))
-            Next K
+            For k = 0 To UBound(sVals)
+                tvwMain.Nodes.Add "RunEx" & i & "System.sub" & j, tvwChild, "RunEx" & i & "System.sub" & j & "val" & k, sVals(k), "reg", "reg"
+                tvwMain.Nodes("RunEx" & i & "System.sub" & j & "val" & k).Tag = GuessFullpathFromAutorun(Mid$(sVals(k), InStr(sVals(k), " = ") + 3))
+            Next k
             If tvwMain.Nodes("RunEx" & i & "System.sub" & j).Children = 0 And Not bShowEmpty Then
                 tvwMain.Nodes.Remove "RunEx" & i & "System.sub" & j
             End If
@@ -3588,7 +3655,7 @@ Private Sub EnumRunExRegKeys()
         If tvwMain.Nodes("RunEx" & i & "System").Children = 0 And Not bShowEmpty Then
             tvwMain.Nodes.Remove ("RunEx" & i & "System")
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     
     If tvwMain.Nodes("RunExRegkeys").Children = 0 And Not bShowEmpty Then
@@ -3611,10 +3678,10 @@ Private Sub EnumRunExRegKeys()
                     tvwMain.Nodes.Add sUsernames(l) & "RunEx" & i & "User", tvwChild, sUsernames(l) & "RunEx" & i & "User.sub" & j, sSubkeys(j), "registry", "registry"
                     tvwMain.Nodes(sUsernames(l) & "RunEx" & i & "User.sub" & j).Tag = "HKEY_CURRENT_USER\" & sUsernames(l) & "\" & sKeys(i) & "\" & sSubkeys(j)
                     sVals = Split(RegEnumValues(HKEY_USERS, sUsernames(l) & "\" & sKeys(i) & "\" & sSubkeys(j), True), Chr$(0))
-                    For K = 0 To UBound(sVals)
-                        tvwMain.Nodes.Add sUsernames(l) & "RunEx" & i & "User.sub" & j, tvwChild, sUsernames(l) & "RunEx" & i & "User.sub" & j & "val" & K, sVals(K), "reg", "reg"
-                        tvwMain.Nodes(sUsernames(l) & "RunEx" & i & "User.sub" & j & "val" & K).Tag = GuessFullpathFromAutorun(Mid$(sVals(K), InStr(sVals(K), " = ") + 3))
-                    Next K
+                    For k = 0 To UBound(sVals)
+                        tvwMain.Nodes.Add sUsernames(l) & "RunEx" & i & "User.sub" & j, tvwChild, sUsernames(l) & "RunEx" & i & "User.sub" & j & "val" & k, sVals(k), "reg", "reg"
+                        tvwMain.Nodes(sUsernames(l) & "RunEx" & i & "User.sub" & j & "val" & k).Tag = GuessFullpathFromAutorun(Mid$(sVals(k), InStr(sVals(k), " = ") + 3))
+                    Next k
                 Next j
                 tvwMain.Nodes(sUsernames(l) & "RunEx" & i & "User").Sorted = True
                 If tvwMain.Nodes(sUsernames(l) & "RunEx" & i & "User").Children = 0 And Not bShowEmpty Then
@@ -3626,7 +3693,7 @@ Private Sub EnumRunExRegKeys()
                 tvwMain.Nodes.Remove (sUsernames(l) & "RunExRegkeys")
             End If
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next l
 End Sub
 
@@ -3705,7 +3772,7 @@ End Sub
 
 Private Sub EnumBatAutostartFiles()
     Dim sBats$(), i&
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     tvwMain.Nodes.Add "System", tvwChild, "BatFiles", SEC_BATFILES, "bat", "bat"
     
     ReDim sBats(5)
@@ -3738,7 +3805,7 @@ Private Sub EnumBatAutostartFiles()
         If tvwMain.Nodes("BatFiles" & sFile).Children = 0 And Not bShowEmpty Then
             tvwMain.Nodes.Remove "BatFiles" & sFile
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     
     If tvwMain.Nodes("BatFiles").Children = 0 And Not bShowEmpty Then
@@ -3751,7 +3818,7 @@ End Sub
 
 Private Sub EnumAutorunInf()
     Dim sDrives$(), i&, j&, sContent$()
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     tvwMain.Nodes.Add "System", tvwChild, "AutorunInfs", SEC_AUTORUNINF, "ini"
     sDrives = Split(GetLocalDisks(), " ")
     For i = 0 To UBound(sDrives)
@@ -3771,7 +3838,7 @@ Private Sub EnumAutorunInf()
                 tvwMain.Nodes.Remove "AutorunInfs" & sDrives(i)
             End If
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("AutorunInfs").Children = 0 And Not bShowEmpty Then
         tvwMain.Nodes.Remove "AutorunInfs"
@@ -3783,7 +3850,7 @@ End Sub
 Private Sub EnumOnRebootActions()
     Dim sWininitIni$, sWininitBak$, i&, sContent$()
     Dim sSessionMan$, sBootEx$, sPFRO$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sSessionMan = "System\CurrentControlSet\Control\Session Manager"
     sWininitIni = sWinDir & "\wininit.ini"
     sWininitBak = sWinDir & "\wininit.bak"
@@ -3800,7 +3867,7 @@ Private Sub EnumOnRebootActions()
             End If
             tvwMain.Nodes.Add "OnRebootActionsWininit.ini", tvwChild, "OnRebootActionsWininit.ini" & i, sContent(i), "text", "text"
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("OnRebootActionsWininit.ini").Children = 0 And Not bShowEmpty Then
         tvwMain.Nodes.Remove "OnRebootActionsWininit.ini"
@@ -3816,7 +3883,7 @@ Private Sub EnumOnRebootActions()
             End If
             tvwMain.Nodes.Add "OnRebootActionsWininit.bak", tvwChild, "OnRebootActionsWininit.bak" & i, sContent(i), "text", "text"
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("OnRebootActionsWininit.bak").Children = 0 And Not bShowEmpty Then
         tvwMain.Nodes.Remove "OnRebootActionsWininit.bak"
@@ -3841,7 +3908,7 @@ Private Sub EnumOnRebootActions()
                 If InStr(sContent(i + 1), "\??\") = 1 Then sContent(i + 1) = Mid$(sContent(i + 1), 5)
                 tvwMain.Nodes.Add "OnRebootActionsPendingFileRenameOperations", tvwChild, "OnRebootActionsPendingFileRenameOperations" & i, sContent(i) & " -> " & sContent(i + 1), "reg", "reg"
             End If
-            If bAbort Then Exit Sub
+            If bSL_Abort Then Exit Sub
         Next i
     End If
     
@@ -3874,7 +3941,7 @@ Private Sub EnumOnRebootActions()
                     If InStr(sContent(i + 1), "\??\") = 1 Then sContent(i + 1) = Mid$(sContent(i + 1), 5)
                     tvwMain.Nodes.Add sHardwareCfgs(l) & "OnRebootActionsPendingFileRenameOperations", tvwChild, sHardwareCfgs(l) & "OnRebootActionsPendingFileRenameOperations" & i, sContent(i) & " -> " & sContent(i + 1), "reg", "reg"
                 End If
-                If bAbort Then Exit Sub
+                If bSL_Abort Then Exit Sub
             Next i
         End If
         
@@ -3887,7 +3954,7 @@ End Sub
 Private Sub EnumIniFiles()
     Dim sIniStuff$(), i&, j&, sDummy$()
     Dim sFile$, sSection$, sVal$, sData$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     ReDim sIniStuff(9)
     '0/1 at end means can the line occur multiple times
     sIniStuff(0) = "win.ini|windows|load|0"
@@ -3924,7 +3991,7 @@ Private Sub EnumIniFiles()
                 tvwMain.Nodes.Add "IniFiles" & sFile, tvwChild, "IniFiles" & sFile & i & sVal & j, sDummy(j), "ini"
             Next j
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     
     If tvwMain.Nodes("IniFileswin.ini").Children = 0 And Not bShowEmpty Then
@@ -3942,7 +4009,7 @@ End Sub
 
 Private Sub EnumIniMappingKeys()
     Dim sIniMapping$(), sNames$(), i&
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     tvwMain.Nodes.Add "System", tvwChild, "IniMapping", SEC_INIMAPPING, "ini", "ini"
     
     ReDim sNames(17)
@@ -4009,7 +4076,7 @@ Private Sub EnumIniMappingKeys()
                 Case HKEY_LOCAL_MACHINE: tvwMain.Nodes("IniMapping" & i).Tag = "HKEY_LOCAL_MACHINE\" & sKey
             End Select
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     
     If tvwMain.Nodes("IniMapping").Children = 0 And Not bShowEmpty Then
@@ -4036,7 +4103,7 @@ Private Sub EnumIniMappingKeys()
                         tvwMain.Nodes(sUsernames(l) & "IniMapping" & i).Tag = "HKEY_USERS\" & sUsernames(l) & "\" & sKey
                     End If
                 End If
-                If bAbort Then Exit Sub
+                If bSL_Abort Then Exit Sub
             Next i
             
             If tvwMain.Nodes(sUsernames(l) & "IniMapping").Children = 0 And Not bShowEmpty Then
@@ -4048,7 +4115,7 @@ End Sub
 
 Private Sub EnumShellCommands()
     Dim sTypes$(), i&
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     tvwMain.Nodes.Add "System", tvwChild, "ShellCommands", SEC_SHELLCOMMANDS, "run", "run"
     tvwMain.Nodes.Add "ShellCommands", tvwChild, "ShellCommandsSystem", "All users", "users"
     tvwMain.Nodes.Add "ShellCommands", tvwChild, "ShellCommandsUser", "This user", "user"
@@ -4100,7 +4167,7 @@ Private Sub EnumShellCommands()
             If bShowEmpty Then tvwMain.Nodes.Add "ShellCommandsSystem", tvwChild, "ShellCommandsSystem" & sTypes(i), "." & sTypes(i), "exe"
             If bShowEmpty Then tvwMain.Nodes.Add "ShellCommandsSystem", tvwChild, "ShellCommandsSystem" & sTypes(i) & "dde", "." & sTypes(i), "exe"
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     tvwMain.Nodes("ShellCommandsSystem").Sorted = True
     If tvwMain.Nodes("ShellCommandsSystem").Children = 0 And Not bShowEmpty Then
@@ -4135,7 +4202,7 @@ Private Sub EnumShellCommands()
             If bShowEmpty Then tvwMain.Nodes.Add "ShellCommandsUser", tvwChild, "ShellCommandsUser" & sTypes(i), "." & sTypes(i), "exe"
             If bShowEmpty Then tvwMain.Nodes.Add "ShellCommandsUser", tvwChild, "ShellCommandsUser" & sTypes(i) & "dde", "." & sTypes(i), "exe"
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     tvwMain.Nodes("ShellCommandsUser").Sorted = True
     If tvwMain.Nodes("ShellCommandsUser").Children = 0 And Not bShowEmpty Then
@@ -4178,7 +4245,7 @@ Private Sub EnumShellCommands()
                     If bShowEmpty Then tvwMain.Nodes.Add sUsernames(l) & "ShellCommandsUser", tvwChild, sUsernames(l) & "ShellCommandsUser" & sTypes(i), "." & sTypes(i), "exe"
                     If bShowEmpty Then tvwMain.Nodes.Add sUsernames(l) & "ShellCommandsUser", tvwChild, sUsernames(l) & "ShellCommandsUser" & sTypes(i) & "dde", "." & sTypes(i), "exe"
                 End If
-                If bAbort Then Exit Sub
+                If bSL_Abort Then Exit Sub
             Next i
             tvwMain.Nodes(sUsernames(l) & "ShellCommandsUser").Sorted = True
             If tvwMain.Nodes(sUsernames(l) & "ShellCommandsUser").Children = 0 And Not bShowEmpty Then
@@ -4190,7 +4257,7 @@ Private Sub EnumShellCommands()
 End Sub
 
 Private Sub Enum3rdPartyAutostarts()
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     Dim sUsername$, l&
     
     tvwMain.Nodes.Add "System", tvwChild, "3rdPartyApps", SEC_3RDPARTY, "help", "help"
@@ -4245,7 +4312,7 @@ Private Sub EnumICQAgentAutostarts()
         Else
             tvwMain.Nodes.Remove "ICQ" & i
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("ICQ").Children > 0 Then
         tvwMain.Nodes("ICQ").Text = tvwMain.Nodes("ICQ").Text & " (" & tvwMain.Nodes("ICQ").Children & ")"
@@ -4274,7 +4341,7 @@ Private Sub EnumICQAgentAutostarts()
                 Else
                     tvwMain.Nodes.Remove sUsernames(l) & "ICQ" & i
                 End If
-                If bAbort Then Exit Sub
+                If bSL_Abort Then Exit Sub
             Next i
             If tvwMain.Nodes(sUsernames(l) & "ICQ").Children > 0 Then
                 tvwMain.Nodes(sUsernames(l) & "ICQ").Text = tvwMain.Nodes(sUsernames(l) & "ICQ").Text & " (" & tvwMain.Nodes(sUsernames(l) & "ICQ").Children & ")"
@@ -4288,7 +4355,7 @@ Private Sub EnumICQAgentAutostarts()
 End Sub
 
 Private Sub EnumMircAutostarts()
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     'mirc autostarts:
     '* mirc.ini [rfiles] remote.ini
     '* mirc.ini [afiles] aliases.ini
@@ -4417,7 +4484,7 @@ End Sub
 
 Private Sub EnumActiveXAutoruns()
     Dim sAXKey$, sKeys$(), i&, sStubPath$, sName$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sAXKey = "Software\Microsoft\Active Setup\Installed Components"
     tvwMain.Nodes.Add "System", tvwChild, "ActiveX", SEC_ACTIVEX, "msie", "msie"
     tvwMain.Nodes("ActiveX").Tag = "HKEY_LOCAL_MACHINE\" & sAXKey
@@ -4439,7 +4506,7 @@ Private Sub EnumActiveXAutoruns()
             End If
             tvwMain.Nodes("ActiveX" & i).Tag = "HKEY_LOCAL_MACHINE\" & sAXKey & "\" & sKeys(i)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("ActiveX").Children > 0 Then
         tvwMain.Nodes("ActiveX").Text = tvwMain.Nodes("ActiveX").Text & " (" & tvwMain.Nodes("ActiveX").Children & ")"
@@ -4456,7 +4523,7 @@ End Sub
 
 Private Sub EnumDPFs()
     Dim sKey$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sKey = "Software\Microsoft\Code Store Database\Distribution Units"
     Dim sKeys$(), i&, sName$, sFile$, sCodebase$
     tvwMain.Nodes.Add "System", tvwChild, "DPFs", SEC_DPFS, "msie"
@@ -4478,7 +4545,7 @@ Private Sub EnumDPFs()
                 tvwMain.Nodes.Add "DPFs", tvwChild, "DPFs" & i, sName & " - " & sKeys(i) & " - " & sFile & " - " & sCodebase, "reg"
             End If
             tvwMain.Nodes("DPFs" & i).Tag = "HKEY_LOCAL_MACHINE\" & sKey & "\" & sKeys(i)
-            If bAbort Then Exit Sub
+            If bSL_Abort Then Exit Sub
         Next i
     End If
     If tvwMain.Nodes("DPFs").Children > 0 Then
@@ -4495,7 +4562,7 @@ End Sub
 
 Private Sub EnumProtocols()
     Dim i&, sKeys$(), sCLSID$, sFile$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     tvwMain.Nodes.Add "System", tvwChild, "Protocols", SEC_PROTOCOLS, "registry", "registry"
     
     sKeys = Split(Reg.EnumSubKeys(HKEY_CLASSES_ROOT, "Protocols\Filter"), "|")
@@ -4514,7 +4581,7 @@ Private Sub EnumProtocols()
                 End If
                 tvwMain.Nodes("ProtocolsFilter" & i).Tag = GuessFullpathFromAutorun(sFile)
             End If
-            If bAbort Then Exit Sub
+            If bSL_Abort Then Exit Sub
         Next i
         tvwMain.Nodes("ProtocolsFilter").Text = tvwMain.Nodes("ProtocolsFilter").Text & " (" & tvwMain.Nodes("ProtocolsFilter").Children & ")"
     End If
@@ -4535,7 +4602,7 @@ Private Sub EnumProtocols()
                 End If
                 tvwMain.Nodes("ProtocolsHandler" & i).Tag = GuessFullpathFromAutorun(sFile)
             End If
-            If bAbort Then Exit Sub
+            If bSL_Abort Then Exit Sub
         Next i
         tvwMain.Nodes("ProtocolsHandler").Text = tvwMain.Nodes("ProtocolsHandler").Text & " (" & tvwMain.Nodes("ProtocolsHandler").Children & ")"
     End If
@@ -4550,7 +4617,7 @@ End Sub
 
 Private Sub EnumExplorerClones()
     Dim sExplorers$(), i&
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     tvwMain.Nodes.Add "System", tvwChild, "ExplorerClones", SEC_EXPLORERCLONES, "explorer", "explorer"
         
     ReDim sExplorers(7)
@@ -4569,7 +4636,7 @@ Private Sub EnumExplorerClones()
             tvwMain.Nodes.Add "ExplorerClones", tvwChild, "ExplorerClones" & i, sExplorers(i), "explorer", "explorer"
             tvwMain.Nodes("ExplorerClones" & i).Tag = sExplorers(i)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     
     If tvwMain.Nodes("ExplorerClones").Children = 0 And Not bShowEmpty Then
@@ -4583,7 +4650,7 @@ End Sub
 Private Sub EnumServices()
     Dim sKey$, sKeys$(), i&, sDisplayName$, sFile$, lStart&, lType&, sType$, sSafeBoot$
     Dim sBuf$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     tvwMain.Nodes.Add "System", tvwChild, "Services", SEC_SERVICES, "exe", "exe"
     sKey = "System\CurrentControlSet\Services"
     sSafeBoot = "System\CurrentControlSet\Control\SafeBoot"
@@ -4613,7 +4680,7 @@ Private Sub EnumServices()
             tvwMain.Nodes.Add "NTServices", tvwChild, "NTServices" & i, sDisplayName & " = " & sFile, "exe", "exe"
             tvwMain.Nodes("NTServices" & i).Tag = GuessFullpathFromAutorun(sFile)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("NTServices").Children > 0 Then
         tvwMain.Nodes("NTServices").Text = tvwMain.Nodes("NTServices").Text & " (" & tvwMain.Nodes("NTServices").Children & ")"
@@ -4634,7 +4701,7 @@ Private Sub EnumServices()
             tvwMain.Nodes.Add "VxDServices", tvwChild, "VxDServices" & i, sDisplayName & " = " & sFile, "exe", "exe"
             tvwMain.Nodes("VxDServices" & i).Tag = GuessFullpathFromAutorun(sFile)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("VxDServices").Children > 0 Then
         tvwMain.Nodes("VxDServices").Text = tvwMain.Nodes("VxDServices").Text & " (" & tvwMain.Nodes("VxDServices").Children & ")"
@@ -4653,7 +4720,7 @@ Private Sub EnumServices()
                 tvwMain.Nodes.Add "SafeBootMinimal", tvwChild, "SafeBootMinimal" & Replace$(sType, " ", vbNullString), sType, "exe"
             End If
             tvwMain.Nodes.Add "SafeBootMinimal" & Replace$(sType, " ", vbNullString), tvwChild, "SafeBootMinimal" & Replace$(sType, " ", vbNullString) & i, sKeys(i), "dll"
-            If IsCLSID(sKeys(i)) Then
+            If isCLSID(sKeys(i)) Then
                 tvwMain.Nodes("SafeBootMinimal" & Replace$(sType, " ", vbNullString) & i).Tag = "HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Class\" & sKeys(i)
             Else
                 sFile = sKeys(i)
@@ -4685,7 +4752,7 @@ Private Sub EnumServices()
                 tvwMain.Nodes.Add "SafeBootNetwork", tvwChild, "SafeBootNetwork" & Replace$(sType, " ", vbNullString), sType, "exe"
             End If
             tvwMain.Nodes.Add "SafeBootNetwork" & Replace$(sType, " ", vbNullString), tvwChild, "SafeBootNetwork" & Replace$(sType, " ", vbNullString) & i, sKeys(i), "dll"
-            If IsCLSID(sKeys(i)) Then
+            If isCLSID(sKeys(i)) Then
                 tvwMain.Nodes("SafeBootNetwork" & Replace$(sType, " ", vbNullString) & i).Tag = "HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Class\" & sKeys(i)
             Else
                 sFile = sKeys(i)
@@ -4755,7 +4822,7 @@ Private Sub EnumServices()
                 tvwMain.Nodes.Add sHardwareCfgs(l) & "NTServices", tvwChild, sHardwareCfgs(l) & "NTServices" & i, sDisplayName & " = " & sFile, "exe", "exe"
                 tvwMain.Nodes(sHardwareCfgs(l) & "NTServices" & i).Tag = GuessFullpathFromAutorun(sFile)
             End If
-            If bAbort Then Exit Sub
+            If bSL_Abort Then Exit Sub
         Next i
         If tvwMain.Nodes(sHardwareCfgs(l) & "NTServices").Children > 0 Then
             tvwMain.Nodes(sHardwareCfgs(l) & "NTServices").Text = tvwMain.Nodes(sHardwareCfgs(l) & "NTServices").Text & " (" & tvwMain.Nodes(sHardwareCfgs(l) & "NTServices").Children & ")"
@@ -4776,7 +4843,7 @@ Private Sub EnumServices()
                 tvwMain.Nodes.Add sHardwareCfgs(l) & "VxDServices", tvwChild, sHardwareCfgs(l) & "VxDServices" & i, sDisplayName & " = " & sFile, "exe", "exe"
                 tvwMain.Nodes(sHardwareCfgs(l) & "VxDServices" & i).Tag = GuessFullpathFromAutorun(sFile)
             End If
-            If bAbort Then Exit Sub
+            If bSL_Abort Then Exit Sub
         Next i
         If tvwMain.Nodes(sHardwareCfgs(l) & "VxDServices").Children > 0 Then
             tvwMain.Nodes(sHardwareCfgs(l) & "VxDServices").Text = tvwMain.Nodes(sHardwareCfgs(l) & "VxDServices").Text & " (" & tvwMain.Nodes(sHardwareCfgs(l) & "VxDServices").Children & ")"
@@ -4795,7 +4862,7 @@ Private Sub EnumServices()
                     tvwMain.Nodes.Add sHardwareCfgs(l) & "SafeBootMinimal", tvwChild, sHardwareCfgs(l) & "SafeBootMinimal" & Replace$(sType, " ", vbNullString), sType, "exe"
                 End If
                 tvwMain.Nodes.Add sHardwareCfgs(l) & "SafeBootMinimal" & Replace$(sType, " ", vbNullString), tvwChild, sHardwareCfgs(l) & "SafeBootMinimal" & Replace$(sType, " ", vbNullString) & i, sKeys(i), "dll"
-                If IsCLSID(sKeys(i)) Then
+                If isCLSID(sKeys(i)) Then
                     tvwMain.Nodes(sHardwareCfgs(l) & "SafeBootMinimal" & Replace$(sType, " ", vbNullString) & i).Tag = "HKEY_LOCAL_MACHINE\System\" & sHardwareCfgs(l) & "\Control\Class\" & sKeys(i)
                 Else
                     sFile = sKeys(i)
@@ -4827,7 +4894,7 @@ Private Sub EnumServices()
                     tvwMain.Nodes.Add sHardwareCfgs(l) & "SafeBootNetwork", tvwChild, sHardwareCfgs(l) & "SafeBootNetwork" & Replace$(sType, " ", vbNullString), sType, "exe"
                 End If
                 tvwMain.Nodes.Add sHardwareCfgs(l) & "SafeBootNetwork" & Replace$(sType, " ", vbNullString), tvwChild, sHardwareCfgs(l) & "SafeBootNetwork" & Replace$(sType, " ", vbNullString) & i, sKeys(i), "dll"
-                If IsCLSID(sKeys(i)) Then
+                If isCLSID(sKeys(i)) Then
                     tvwMain.Nodes(sHardwareCfgs(l) & "SafeBootNetwork" & Replace$(sType, " ", vbNullString) & i).Tag = "HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Class\" & sKeys(i)
                 Else
                     sFile = sKeys(i)
@@ -4867,7 +4934,7 @@ End Sub
 Private Sub EnumLSP()
     'Winsock LSP entries
     Dim sLSPKey$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sLSPKey = "System\CurrentControlSet\Services\Winsock2"
     tvwMain.Nodes.Add "System", tvwChild, "WinsockLSP", SEC_WINSOCKLSP, "lsp"
     If Not Reg.KeyExists(HKEY_LOCAL_MACHINE, sLSPKey) Then
@@ -4888,7 +4955,7 @@ Private Sub EnumLSP()
         tvwMain.Nodes.Add "WinsockLSPProtocols", tvwChild, "WinsockLSPProtocols" & i, sWinsock(i), "internet"
         sFile = Mid$(sWinsock(i), InStrRev(sWinsock(i), " - ") + 3)
         tvwMain.Nodes("WinsockLSPProtocols" & i).Tag = GuessFullpathFromAutorun(sFile)
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("WinsockLSPProtocols").Children > 0 Then
         tvwMain.Nodes("WinsockLSPProtocols").Text = tvwMain.Nodes("WinsockLSPProtocols").Text & " (" & tvwMain.Nodes("WinsockLSPProtocols").Children & ")"
@@ -4903,7 +4970,7 @@ Private Sub EnumLSP()
         tvwMain.Nodes.Add "WinsockLSPNamespaces", tvwChild, "WinsockLSPNamespaces" & i, sWinsock(i), "internet"
         sFile = Mid$(sWinsock(i), InStrRev(sWinsock(i), " - ") + 3)
         tvwMain.Nodes("WinsockLSPNamespaces" & i).Tag = GuessFullpathFromAutorun(sFile)
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("WinsockLSPNamespaces").Children > 0 Then
         tvwMain.Nodes("WinsockLSPNamespaces").Text = tvwMain.Nodes("WinsockLSPNamespaces").Text & " (" & tvwMain.Nodes("WinsockLSPNamespaces").Children & ")"
@@ -4924,7 +4991,7 @@ Private Sub EnumWinLogonAutoruns()
     'AppInit_DLLs,System,VmApplet,TaskMan,and a shitload more
     
     Dim sKeys$(), i&, sWinLogon$, sWindows$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sWinLogon = "Software\Microsoft\Windows NT\CurrentVersion\WinLogon"
     sWindows = "Software\Microsoft\Windows NT\CurrentVersion\Windows"
     Dim sFile$, sName$
@@ -4946,7 +5013,7 @@ Private Sub EnumWinLogonAutoruns()
             tvwMain.Nodes.Add "WinLogonAutoruns", tvwChild, "WinLogonL" & i, sValsL(i) & " = " & sFile, "reg", "reg"
             tvwMain.Nodes("WinLogonL" & i).Tag = "HKEY_LOCAL_MACHINE\" & sWinLogon
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     For i = 0 To UBound(sValsW)
         sFile = Reg.GetString(HKEY_LOCAL_MACHINE, sWindows, sValsW(i))
@@ -4954,7 +5021,7 @@ Private Sub EnumWinLogonAutoruns()
             tvwMain.Nodes.Add "WinLogonAutoruns", tvwChild, "WinLogonW" & i, sValsW(i) & " = " & sFile, "reg", "reg"
             tvwMain.Nodes("WinLogonW" & i).Tag = "HKEY_LOCAL_MACHINE\" & sWindows
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     
     'Winlogon\Notify
@@ -4967,7 +5034,7 @@ Private Sub EnumWinLogonAutoruns()
             tvwMain.Nodes.Add "WinLogonNotify", tvwChild, "WinLogonNotify" & i, sKeys(i) & " = " & sFile, "dll", "dll"
             tvwMain.Nodes("WinLogonNotify" & i).Tag = GuessFullpathFromAutorun(sFile)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("WinLogonNotify").Children > 0 Then
         tvwMain.Nodes("WinLogonNotify").Text = tvwMain.Nodes("WinLogonNotify").Text & " (" & tvwMain.Nodes("WinLogonNotify").Children & ")"
@@ -4993,7 +5060,7 @@ Private Sub EnumWinLogonAutoruns()
             tvwMain.Nodes.Add "WinLogonGPExtensions", tvwChild, "WinLogonGPExtensions" & i, sName & " = " & sFile, "dll", "dll"
             tvwMain.Nodes("WinLogonGPExtensions" & i).Tag = GuessFullpathFromAutorun(sFile)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("WinLogonGPExtensions").Children > 0 Then
         tvwMain.Nodes("WinLogonGPExtensions").Text = tvwMain.Nodes("WinLogonGPExtensions").Text & " (" & tvwMain.Nodes("WinLogonGPExtensions").Children & ")"
@@ -5011,7 +5078,7 @@ End Sub
 
 Private Sub EnumBHOs()
     Dim sBHO$, sName$, sFile$, sKeys$(), i&
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sBHO = "Software\Microsoft\Windows\CurrentVersion\explorer\Browser Helper Objects"
     tvwMain.Nodes.Add "System", tvwChild, "BHOs", SEC_BHOS, "msie", "msie"
     tvwMain.Nodes("BHOs").Tag = "HKEY_LOCAL_MACHINE\" & sBHO
@@ -5031,7 +5098,7 @@ Private Sub EnumBHOs()
             tvwMain.Nodes.Add "BHOs", tvwChild, "BHO" & i, sName & " = " & sKeys(i) & " = " & sFile, "dll", "dll"
         End If
         tvwMain.Nodes("BHO" & i).Tag = GuessFullpathFromAutorun(sFile)
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     
     If tvwMain.Nodes("BHOs").Children > 0 Then
@@ -5047,7 +5114,7 @@ End Sub
 
 Private Sub EnumSSODL()
     Dim sSSODL$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sSSODL = "Software\Microsoft\Windows\CurrentVersion\ShellServiceObjectDelayLoad"
     tvwMain.Nodes.Add "System", tvwChild, "ShellServiceObjectDelayLoad", SEC_SSODL, "registry", "registry"
     
@@ -5068,7 +5135,7 @@ Private Sub EnumSSODL()
             End If
             tvwMain.Nodes("SSODLSystem" & i).Tag = GuessFullpathFromAutorun(sFile)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
 
     If tvwMain.Nodes("ShellServiceObjectDelayLoadSystem").Children > 0 Then
@@ -5094,7 +5161,7 @@ Private Sub EnumSSODL()
             End If
             tvwMain.Nodes("SSODLUser" & i).Tag = GuessFullpathFromAutorun(sFile)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("ShellServiceObjectDelayLoadUser").Children > 0 Then
         tvwMain.Nodes("ShellServiceObjectDelayLoadUser").Text = tvwMain.Nodes("ShellServiceObjectDelayLoadUser").Text & " (" & tvwMain.Nodes("ShellServiceObjectDelayLoadUser").Children & ")"
@@ -5129,7 +5196,7 @@ Private Sub EnumSSODL()
                     End If
                     tvwMain.Nodes(sUsernames(l) & "SSODL" & i).Tag = GuessFullpathFromAutorun(sFile)
                 End If
-                If bAbort Then Exit Sub
+                If bSL_Abort Then Exit Sub
             Next i
             If tvwMain.Nodes(sUsernames(l) & "ShellServiceObjectDelayLoadUser").Children > 0 Then
                 tvwMain.Nodes(sUsernames(l) & "ShellServiceObjectDelayLoadUser").Text = tvwMain.Nodes(sUsernames(l) & "ShellServiceObjectDelayLoadUser").Text & " (" & tvwMain.Nodes(sUsernames(l) & "ShellServiceObjectDelayLoadUser").Children & ")"
@@ -5143,7 +5210,7 @@ End Sub
 
 Private Sub EnumSharedTaskScheduler()
     Dim sSTS$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sSTS = "Software\Microsoft\Windows\CurrentVersion\Explorer\SharedTaskScheduler"
     Dim sVals$(), i&, sName$, sFile$
     tvwMain.Nodes.Add "System", tvwChild, "SharedTaskScheduler", SEC_SHAREDTASKSCHEDULER, "registry", "registry"
@@ -5162,7 +5229,7 @@ Private Sub EnumSharedTaskScheduler()
             End If
             tvwMain.Nodes("SharedTaskScheduler" & i).Tag = GuessFullpathFromAutorun(sFile)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("SharedTaskScheduler").Children > 0 Then
         tvwMain.Nodes("SharedTaskScheduler").Text = tvwMain.Nodes("SharedTaskScheduler").Text & " (" & tvwMain.Nodes("SharedTaskScheduler").Children & ")"
@@ -5177,7 +5244,7 @@ End Sub
 
 Private Sub EnumMPRServices()
     Dim sMPR$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sMPR = "System\CurrentControlSet\Control\MPRServices"
     Dim sKeys$(), i&, sFile$ ', sEntryPoint$
     tvwMain.Nodes.Add "System", tvwChild, "MPRServices", SEC_MPRSERVICES, "registry", "registry"
@@ -5191,7 +5258,7 @@ Private Sub EnumMPRServices()
             tvwMain.Nodes.Add "MPRServices", tvwChild, "MPRServices" & i, sKeys(i) & " = " & sFile, "dll", "dll"
             tvwMain.Nodes("MPRServices" & i).Tag = GuessFullpathFromAutorun(sFile)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("MPRServices").Children > 0 Then
         tvwMain.Nodes("MPRServices").Text = tvwMain.Nodes("MPRServices").Text & " (" & tvwMain.Nodes("MPRServices").Children & ")"
@@ -5215,7 +5282,7 @@ Private Sub EnumMPRServices()
                 tvwMain.Nodes.Add sHardwareCfgs(l) & "MPRServices", tvwChild, sHardwareCfgs(l) & "MPRServices" & i, sKeys(i) & " = " & sFile, "dll", "dll"
                 tvwMain.Nodes(sHardwareCfgs(l) & "MPRServices" & i).Tag = GuessFullpathFromAutorun(sFile)
             End If
-            If bAbort Then Exit Sub
+            If bSL_Abort Then Exit Sub
         Next i
         If tvwMain.Nodes(sHardwareCfgs(l) & "MPRServices").Children > 0 Then
             tvwMain.Nodes(sHardwareCfgs(l) & "MPRServices").Text = tvwMain.Nodes(sHardwareCfgs(l) & "MPRServices").Text & " (" & tvwMain.Nodes(sHardwareCfgs(l) & "MPRServices").Children & ")"
@@ -5228,7 +5295,7 @@ End Sub
 
 Private Sub EnumWOW()
     Dim sCmd$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     tvwMain.Nodes.Add "System", tvwChild, "WOW", SEC_WOW, "registry", "registry"
     
     Dim sVals$(), i&, sWOW$, sSessionMan$, sKnownDlls$()
@@ -5245,7 +5312,7 @@ Private Sub EnumWOW()
             tvwMain.Nodes.Add "WOW", tvwChild, "WOW" & i, sVals(i) & " = " & sCmd, "exe", "exe"
             tvwMain.Nodes("WOW" & i).Tag = GuessFullpathFromAutorun(sCmd)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     
     sKnownDlls = Split(Reg.GetString(HKEY_LOCAL_MACHINE, sWOW, "KnownDlls"), " ")
@@ -5254,7 +5321,7 @@ Private Sub EnumWOW()
     For i = 0 To UBound(sKnownDlls)
         tvwMain.Nodes.Add "WOWKnownDlls", tvwChild, "WOWKnownDlls" & i, sKnownDlls(i), "dll"
         tvwMain.Nodes("WOWKnownDlls" & i).Tag = GuessFullpathFromAutorun(sKnownDlls(i))
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("WOWKnownDlls").Children > 0 Then
         tvwMain.Nodes("WOWKnownDlls").Text = tvwMain.Nodes("WOWKnownDlls").Text & " (" & tvwMain.Nodes("WOWKnownDlls").Children & ")"
@@ -5270,7 +5337,7 @@ Private Sub EnumWOW()
         sCmd = Mid$(sKnownDlls(i), InStr(sKnownDlls(i), " = ") + 3)
         tvwMain.Nodes.Add "WOWKnownDlls32b", tvwChild, "WOWKnownDlls32b" & i, sCmd, "dll"
         tvwMain.Nodes("WOWKnownDlls32b" & i).Tag = GuessFullpathFromAutorun(sCmd)
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("WOWKnownDlls32b").Children > 0 Then
         tvwMain.Nodes("WOWKnownDlls32b").Text = tvwMain.Nodes("WOWKnownDlls32b").Text & " (" & tvwMain.Nodes("WOWKnownDlls32b").Children & ")"
@@ -5289,7 +5356,7 @@ Private Sub EnumWOW()
             tvwMain.Nodes.Add "ExcludeFromKnownDlls", tvwChild, "ExcludeFromKnownDlls" & i, sContent(i), "dll"
             tvwMain.Nodes("ExcludeFromKnownDlls" & i).Tag = GuessFullpathFromAutorun(sContent(i))
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("ExcludeFromKnownDlls").Children > 0 Then
         tvwMain.Nodes("ExcludeFromKnownDlls").Text = tvwMain.Nodes("ExcludeFromKnownDlls").Text & " (" & tvwMain.Nodes("ExcludeFromKnownDlls").Children & ")"
@@ -5317,7 +5384,7 @@ Private Sub EnumWOW()
                 tvwMain.Nodes.Add sHardwareCfgs(l) & "WOW", tvwChild, sHardwareCfgs(l) & "WOW" & i, sVals(i) & " = " & sCmd, "exe", "exe"
                 tvwMain.Nodes(sHardwareCfgs(l) & "WOW" & i).Tag = GuessFullpathFromAutorun(sCmd)
             End If
-            If bAbort Then Exit Sub
+            If bSL_Abort Then Exit Sub
         Next i
         
         sKnownDlls = Split(Reg.GetString(HKEY_LOCAL_MACHINE, sWOW, "KnownDlls"), " ")
@@ -5326,7 +5393,7 @@ Private Sub EnumWOW()
         For i = 0 To UBound(sKnownDlls)
             tvwMain.Nodes.Add sHardwareCfgs(l) & "WOWKnownDlls", tvwChild, sHardwareCfgs(l) & "WOWKnownDlls" & i, sKnownDlls(i), "dll"
             tvwMain.Nodes(sHardwareCfgs(l) & "WOWKnownDlls" & i).Tag = GuessFullpathFromAutorun(sKnownDlls(i))
-            If bAbort Then Exit Sub
+            If bSL_Abort Then Exit Sub
         Next i
         If tvwMain.Nodes(sHardwareCfgs(l) & "WOWKnownDlls").Children > 0 Then
             tvwMain.Nodes(sHardwareCfgs(l) & "WOWKnownDlls").Text = tvwMain.Nodes(sHardwareCfgs(l) & "WOWKnownDlls").Text & " (" & tvwMain.Nodes(sHardwareCfgs(l) & "WOWKnownDlls").Children & ")"
@@ -5342,7 +5409,7 @@ Private Sub EnumWOW()
             sCmd = Mid$(sKnownDlls(i), InStr(sKnownDlls(i), " = ") + 3)
             tvwMain.Nodes.Add sHardwareCfgs(l) & "WOWKnownDlls32b", tvwChild, sHardwareCfgs(l) & "WOWKnownDlls32b" & i, sCmd, "dll"
             tvwMain.Nodes(sHardwareCfgs(l) & "WOWKnownDlls32b" & i).Tag = GuessFullpathFromAutorun(sCmd)
-            If bAbort Then Exit Sub
+            If bSL_Abort Then Exit Sub
         Next i
         If tvwMain.Nodes(sHardwareCfgs(l) & "WOWKnownDlls32b").Children > 0 Then
             tvwMain.Nodes(sHardwareCfgs(l) & "WOWKnownDlls32b").Text = tvwMain.Nodes(sHardwareCfgs(l) & "WOWKnownDlls32b").Text & " (" & tvwMain.Nodes(sHardwareCfgs(l) & "WOWKnownDlls32b").Children & ")"
@@ -5360,7 +5427,7 @@ Private Sub EnumWOW()
                 tvwMain.Nodes.Add sHardwareCfgs(l) & "ExcludeFromKnownDlls", tvwChild, sHardwareCfgs(l) & "ExcludeFromKnownDlls" & i, sContent(i), "dll"
                 tvwMain.Nodes(sHardwareCfgs(l) & "ExcludeFromKnownDlls" & i).Tag = GuessFullpathFromAutorun(sContent(i))
             End If
-            If bAbort Then Exit Sub
+            If bSL_Abort Then Exit Sub
         Next i
         If tvwMain.Nodes(sHardwareCfgs(l) & "ExcludeFromKnownDlls").Children > 0 Then
             tvwMain.Nodes(sHardwareCfgs(l) & "ExcludeFromKnownDlls").Text = tvwMain.Nodes(sHardwareCfgs(l) & "ExcludeFromKnownDlls").Text & " (" & tvwMain.Nodes(sHardwareCfgs(l) & "ExcludeFromKnownDlls").Children & ")"
@@ -5376,7 +5443,7 @@ End Sub
 
 Private Sub EnumCmdProcessorAutorun()
     Dim sCmd$, sCmdKey$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     tvwMain.Nodes.Add "System", tvwChild, "CmdProcAutorun", SEC_CMDPROC, "cmd", "cmd"
     sCmdKey = "Software\Microsoft\Command Processor"
     
@@ -5418,7 +5485,7 @@ End Sub
 
 Private Sub EnumImageFileExecution()
     Dim sKeys$(), i&, sIFE$, sFile$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sIFE = "Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options"
     tvwMain.Nodes.Add "System", tvwChild, "ImageFileExecution", SEC_IMAGEFILEEXECUTION, "explorer", "explorer"
     tvwMain.Nodes("ImageFileExecution").Tag = "HKEY_LOCAL_MACHINE\" & sIFE
@@ -5430,7 +5497,7 @@ Private Sub EnumImageFileExecution()
             tvwMain.Nodes.Add "ImageFileExecution", tvwChild, "ImageFileExecution" & i, sKeys(i) & " = " & sFile, "exe", "exe"
             tvwMain.Nodes("ImageFileExecution" & i).Tag = GuessFullpathFromAutorun(sFile)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("ImageFileExecution").Children > 0 Then
         tvwMain.Nodes("ImageFileExecution").Text = tvwMain.Nodes("ImageFileExecution").Text & " (" & tvwMain.Nodes("ImageFileExecution").Children & ")"
@@ -5445,7 +5512,7 @@ End Sub
 
 Private Sub EnumContextMenuHandlers()
     Dim sKeys$(), sObjects$(), i&, j&, sCLSID$, sFile$, sDummy$, sName$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     tvwMain.Nodes.Add "System", tvwChild, "ContextMenuHandlers", SEC_CONTEXTMENUHANDLERS, "explorer", "explorer"
     
     ReDim sObjects(10)
@@ -5496,7 +5563,7 @@ Private Sub EnumContextMenuHandlers()
                 End If
                 tvwMain.Nodes("ContextMenuHandlers" & j & "sub" & i).Tag = GuessFullpathFromAutorun(sFile)
             End If
-            If bAbort Then Exit Sub
+            If bSL_Abort Then Exit Sub
         Next i
         If tvwMain.Nodes("ContextMenuHandlers" & j).Children > 0 Then
             tvwMain.Nodes("ContextMenuHandlers" & j).Text = tvwMain.Nodes("ContextMenuHandlers" & j).Text & " (" & tvwMain.Nodes("ContextMenuHandlers" & j).Children & ")"
@@ -5513,7 +5580,7 @@ End Sub
 Private Sub EnumColumnHandlers()
     'HKCR\Folder\shellex\ColumnHandlers\*
     Dim sKeys$(), sTheKey$, i&, sCLSID$, sName$, sFile$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sTheKey = "Folder\shellex\ColumnHandlers"
     tvwMain.Nodes.Add "System", tvwChild, "ColumnHandlers", SEC_COLUMNHANDLERS, "explorer"
     tvwMain.Nodes("ColumnHandlers").Tag = "HKEY_CLASSES_ROOT\" & sTheKey
@@ -5532,7 +5599,7 @@ Private Sub EnumColumnHandlers()
         Else
             tvwMain.Nodes.Add "ColumnHandlers", tvwChild, "ColumnHandlers" & i, sName & " - " & sFile, "dll"
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("ColumnHandlers").Children > 0 Then
         tvwMain.Nodes("ColumnHandlers").Text = tvwMain.Nodes("ColumnHandlers").Text & " (" & tvwMain.Nodes("ColumnHandlers").Children & ")"
@@ -5546,7 +5613,7 @@ End Sub
 
 Private Sub EnumShellExecuteHooks()
     Dim sSEH$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sSEH = "Software\Microsoft\Windows\CurrentVersion\explorer\ShellExecuteHooks"
     Dim sVals$(), i&, sName$, sFile$
     tvwMain.Nodes.Add "System", tvwChild, "ShellExecuteHooks", SEC_SHELLEXECUTEHOOKS, "explorer", "explorer"
@@ -5572,7 +5639,7 @@ Private Sub EnumShellExecuteHooks()
             End If
             tvwMain.Nodes("ShellExecuteHooks" & i).Tag = GuessFullpathFromAutorun(sFile)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("ShellExecuteHooks").Children > 0 Then
         tvwMain.Nodes("ShellExecuteHooks").Text = tvwMain.Nodes("ShellExecuteHooks").Text & " (" & tvwMain.Nodes("ShellExecuteHooks").Children & ")"
@@ -5588,7 +5655,7 @@ End Sub
 Private Sub EnumShellExtensions()
     'HKLM\Software\Microsoft\Windows\CurrentVersion\Shell Extensions\Approved
     Dim sKey$, sVals$(), sKeys$(), i&, sName$, sFile$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sKey = "Software\Microsoft\Windows\CurrentVersion\Shell Extensions\Approved"
     sVals = Split(RegEnumValues(HKEY_LOCAL_MACHINE, sKey), "|")
     tvwMain.Nodes.Add "System", tvwChild, "ShellExts", SEC_SHELLEXT, "explorer"
@@ -5606,7 +5673,7 @@ Private Sub EnumShellExtensions()
             tvwMain.Nodes.Add "ShellExtsSystem", tvwChild, "ShellExtsSystem" & i, sName & " - " & sVals(i) & " - " & sFile, "reg"
         End If
         tvwMain.Nodes("ShellExtsSystem" & i).Tag = GuessFullpathFromAutorun(sFile)
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("ShellExtsSystem").Children > 0 Then
         tvwMain.Nodes("ShellExtsSystem").Text = tvwMain.Nodes("ShellExtsSystem").Text & " (" & tvwMain.Nodes("ShellExtsSystem").Children & ")"
@@ -5628,7 +5695,7 @@ Private Sub EnumShellExtensions()
             tvwMain.Nodes.Add "ShellExtsUser", tvwChild, "ShellExtsUser" & i, sName & " - " & sKeys(i) & " - " & sFile, "reg"
         End If
         tvwMain.Nodes("ShellExtsUser" & i).Tag = GuessFullpathFromAutorun(sFile)
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("ShellExtsUser").Children > 0 Then
         tvwMain.Nodes("ShellExtsUser").Text = tvwMain.Nodes("ShellExtsUser").Text & " (" & tvwMain.Nodes("ShellExtsUser").Children & ")"
@@ -5661,7 +5728,7 @@ Private Sub EnumShellExtensions()
                     tvwMain.Nodes.Add sUsernames(l) & "ShellExtsUser", tvwChild, sUsernames(l) & "ShellExtsUser" & i, sName & " - " & sKeys(i) & " - " & sFile, "reg"
                 End If
                 tvwMain.Nodes(sUsernames(l) & "ShellExtsUser" & i).Tag = GuessFullpathFromAutorun(sFile)
-                If bAbort Then Exit Sub
+                If bSL_Abort Then Exit Sub
             Next i
             If tvwMain.Nodes(sUsernames(l) & "ShellExtsUser").Children > 0 Then
                 tvwMain.Nodes(sUsernames(l) & "ShellExtsUser").Text = tvwMain.Nodes(sUsernames(l) & "ShellExtsUser").Text & " (" & tvwMain.Nodes(sUsernames(l) & "ShellExtsUser").Children & ")"
@@ -5675,7 +5742,7 @@ End Sub
 
 Private Sub EnumURLSearchHooks()
     Dim sKey$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sKey = "Software\Microsoft\Internet Explorer\URLSearchHooks"
     Dim sVals$(), i&, sCLSID$, sName$, sFile$
     tvwMain.Nodes.Add "System", tvwChild, "URLSearchHooks", SEC_URLSEARCHHOOKS, "msie"
@@ -5696,7 +5763,7 @@ Private Sub EnumURLSearchHooks()
             End If
             tvwMain.Nodes("URLSearchHooksSystem" & i).Tag = GuessFullpathFromAutorun(sFile)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("URLSearchHooksSystem").Children > 0 Then
         tvwMain.Nodes("URLSearchHooksSystem").Text = tvwMain.Nodes("URLSearchHooksSystem").Text & " (" & tvwMain.Nodes("URLSearchHooksSystem").Children & ")"
@@ -5720,7 +5787,7 @@ Private Sub EnumURLSearchHooks()
             End If
             tvwMain.Nodes("URLSearchHooksUser" & i).Tag = GuessFullpathFromAutorun(sFile)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("URLSearchHooksUser").Children > 0 Then
         tvwMain.Nodes("URLSearchHooksUser").Text = tvwMain.Nodes("URLSearchHooksUser").Text & " (" & tvwMain.Nodes("URLSearchHooksUser").Children & ")"
@@ -5756,7 +5823,7 @@ Private Sub EnumURLSearchHooks()
                     End If
                     tvwMain.Nodes(sUsernames(l) & "URLSearchHooksUser" & i).Tag = GuessFullpathFromAutorun(sFile)
                 End If
-                If bAbort Then Exit Sub
+                If bSL_Abort Then Exit Sub
             Next i
             If tvwMain.Nodes(sUsernames(l) & "URLSearchHooksUser").Children > 0 Then
                 tvwMain.Nodes(sUsernames(l) & "URLSearchHooksUser").Text = tvwMain.Nodes(sUsernames(l) & "URLSearchHooksUser").Text & " (" & tvwMain.Nodes(sUsernames(l) & "URLSearchHooksUser").Children & ")"
@@ -5773,7 +5840,7 @@ End Sub
 
 Private Sub EnumAccUtilManager()
     Dim sAUM$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sAUM = "Software\Microsoft\Windows NT\CurrentVersion\Accessibility\Utility Manager"
     Dim sKeys$(), i&, lStart&, sFile$
     tvwMain.Nodes.Add "System", tvwChild, "UtilityManager", SEC_UTILMANAGER, "registry", "registry"
@@ -5787,7 +5854,7 @@ Private Sub EnumAccUtilManager()
             tvwMain.Nodes.Add "UtilityManager", tvwChild, "UtilityManager" & i, sKeys(i) & " = " & sFile, "exe", "exe"
             tvwMain.Nodes("UtilityManager" & i).Tag = GuessFullpathFromAutorun(sFile)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("UtilityManager").Children > 0 Then
         tvwMain.Nodes("UtilityManager").Text = tvwMain.Nodes("UtilityManager").Text & " (" & tvwMain.Nodes("UtilityManager").Children & ")"
@@ -5801,7 +5868,7 @@ Private Sub EnumAccUtilManager()
 End Sub
 
 Private Sub EnumJobs()
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     tvwMain.Nodes.Add "System", tvwChild, "TaskScheduler", SEC_TASKSCHEDULER, "folder"
     tvwMain.Nodes.Add "TaskScheduler", tvwChild, "TaskSchedulerJobs", "Jobs", "folder"
     tvwMain.Nodes.Add "TaskScheduler", tvwChild, "TaskSchedulerJobsSystem", "Jobs (system32 folder)", "folder"
@@ -5815,7 +5882,7 @@ Private Sub EnumJobs()
             tvwMain.Nodes.Add "TaskSchedulerJobs", tvwChild, "TaskSchedulerJobs" & i, sFiles(i), "bat", "bat"
             tvwMain.Nodes("TaskSchedulerJobs" & i).Tag = sWinDir & "\Tasks\" & sFiles(i)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     sFiles = Split(EnumFiles(sSysDir & "\Tasks"), "|")
     For i = 0 To UBound(sFiles)
@@ -5823,7 +5890,7 @@ Private Sub EnumJobs()
             tvwMain.Nodes.Add "TaskSchedulerJobsSystem", tvwChild, "TaskSchedulerJobsSystem" & i, sFiles(i), "bat", "bat"
             tvwMain.Nodes("TaskSchedulerJobsSystem" & i).Tag = sSysDir & "\Tasks\" & sFiles(i)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     
     If tvwMain.Nodes("TaskSchedulerJobs").Children > 0 Then
@@ -5849,7 +5916,7 @@ End Sub
 
 Private Sub EnumNTScripts()
     Dim sScripts$, sContents$(), i&
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sScripts = "Software\Policies\Microsoft\Windows\System\Scripts"
     tvwMain.Nodes.Add "System", tvwChild, "ScriptPolicies", SEC_SCRIPTPOLICIES, "script"
     
@@ -5870,7 +5937,7 @@ Private Sub EnumNTScripts()
                 If Trim$(sContents(i)) <> vbNullString Then
                     tvwMain.Nodes.Add "ScriptPoliciesLogon", tvwChild, "ScriptPoliciesLogon" & i, sContents(i), "text", "text"
                 End If
-                If bAbort Then Exit Sub
+                If bSL_Abort Then Exit Sub
             Next i
         End If
     End If
@@ -5882,7 +5949,7 @@ Private Sub EnumNTScripts()
                 If Trim$(sContents(i)) <> vbNullString Then
                     tvwMain.Nodes.Add "ScriptPoliciesLogoff", tvwChild, "ScriptPoliciesLogoff" & i, sContents(i), "text", "text"
                 End If
-                If bAbort Then Exit Sub
+                If bSL_Abort Then Exit Sub
             Next i
         End If
     End If
@@ -5894,7 +5961,7 @@ Private Sub EnumNTScripts()
                 If Trim$(sContents(i)) <> vbNullString Then
                     tvwMain.Nodes.Add "ScriptPoliciesStartup", tvwChild, "ScriptPoliciesStartup" & i, sContents(i), "text", "text"
                 End If
-                If bAbort Then Exit Sub
+                If bSL_Abort Then Exit Sub
             Next i
         End If
     End If
@@ -5906,7 +5973,7 @@ Private Sub EnumNTScripts()
                 If Trim$(sContents(i)) <> vbNullString Then
                     tvwMain.Nodes.Add "ScriptPoliciesShutdown", tvwChild, "ScriptPoliciesShutdown" & i, sContents(i), "text", "text"
                 End If
-                If bAbort Then Exit Sub
+                If bSL_Abort Then Exit Sub
             Next i
         End If
     End If
@@ -5937,7 +6004,7 @@ Private Sub EnumNTScripts()
                         If Trim$(sContents(i)) <> vbNullString Then
                             tvwMain.Nodes.Add sUsernames(l) & "ScriptPoliciesLogon", tvwChild, sUsernames(l) & "ScriptPoliciesLogon" & i, sContents(i), "text", "text"
                         End If
-                        If bAbort Then Exit Sub
+                        If bSL_Abort Then Exit Sub
                     Next i
                 End If
             End If
@@ -5949,7 +6016,7 @@ Private Sub EnumNTScripts()
                         If Trim$(sContents(i)) <> vbNullString Then
                             tvwMain.Nodes.Add sUsernames(l) & "ScriptPoliciesLogoff", tvwChild, sUsernames(l) & "ScriptPoliciesLogoff" & i, sContents(i), "text", "text"
                         End If
-                        If bAbort Then Exit Sub
+                        If bSL_Abort Then Exit Sub
                     Next i
                 End If
             End If
@@ -5962,7 +6029,7 @@ Private Sub EnumNTScripts()
 End Sub
 
 Private Sub EnumDisabled()
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     tvwMain.Nodes.Add "System", tvwChild, "DisabledEnums", "Protection & disabled items", "bad"
     
     Dim sUsername$, l&
@@ -6051,7 +6118,7 @@ End Sub
 
 Private Sub EnumDisabledMsconfig9x()
     Dim sNames$(), sKeys$(), i&, j&, sValues$()
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     tvwMain.Nodes.Add "DisabledEnums", tvwChild, "msconfig9x", SEC_MSCONFIG9X, "registry"
     
     ReDim sNames(1)
@@ -6077,7 +6144,7 @@ Private Sub EnumDisabledMsconfig9x()
                 tvwMain.Nodes.Remove ("msconfig9xUser" & i)
             End If
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     For i = 0 To UBound(sKeys)
         sValues = Split(RegEnumValues(HKEY_LOCAL_MACHINE, sKeys(i)), "|")
@@ -6094,7 +6161,7 @@ Private Sub EnumDisabledMsconfig9x()
                 tvwMain.Nodes.Remove ("msconfig9xSystem" & i)
             End If
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     
     If tvwMain.Nodes("msconfig9x").Children = 0 And Not bShowEmpty Then
@@ -6124,7 +6191,7 @@ Private Sub EnumDisabledMsconfig9x()
                         tvwMain.Nodes.Remove (sUsernames(l) & "msconfig9xUser" & i)
                     End If
                 End If
-                If bAbort Then Exit Sub
+                If bSL_Abort Then Exit Sub
             Next i
             
             If tvwMain.Nodes(sUsernames(l) & "msconfig9x").Children = 0 And Not bShowEmpty Then
@@ -6138,7 +6205,7 @@ Private Sub EnumDisabledMsconfigXP()
     'HKCU\Run, HKLM\Run
     'HKLM\Software\Microsoft\Shared Tools\MSConfig\startupreg
     Dim sKey$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sKey = "Software\Microsoft\Shared Tools\MSConfig\startupreg"
     Dim sKeys$(), sSubkeys$(), j&, i&, sFile$
     sKeys = Split(Reg.EnumSubKeys(HKEY_LOCAL_MACHINE, sKey), "|")
@@ -6162,7 +6229,7 @@ Private Sub EnumDisabledMsconfigXP()
                 Next j
             End If
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("msconfigxp").Children > 0 Then
         tvwMain.Nodes("msconfigxp").Text = tvwMain.Nodes("msconfigxp").Text & " (" & tvwMain.Nodes("msconfigxp").Children & ")"
@@ -6178,7 +6245,7 @@ End Sub
 
 Private Sub EnumHostsFile()
     Dim sHostsFile$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     If bIsWinNT Then
         sHostsFile = BuildPath(sSysDir, "drivers\etc\hosts")
     Else
@@ -6226,7 +6293,7 @@ Private Sub EnumHostsFile()
                 'Loading... Hosts file
                 Status Translate(912) & " (" & Int(CLng(i) * 100 / UBound(sContents)) & "%, " & i & " lines)"
             End If
-            If bAbort Then Exit Sub
+            If bSL_Abort Then Exit Sub
         Next i
         
         If tvwMain.Nodes("HostsFile").Children > 0 Then
@@ -6246,7 +6313,7 @@ End Sub
 
 Private Sub EnumIEToolbars()
     Dim sKey$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     tvwMain.Nodes.Add "System", tvwChild, "IEToolbars", SEC_IETOOLBARS, "msie"
     sKey = "Software\Microsoft\Internet Explorer\Toolbar"
     
@@ -6272,7 +6339,7 @@ Private Sub EnumIEToolbars()
             tvwMain.Nodes.Add "IEToolbarsSystem", tvwChild, "IEToolbarsSystem" & i, sName & " - " & sCLSID & " - " & sFile, "dll"
         End If
         tvwMain.Nodes("IEToolbarsSystem" & i).Tag = GuessFullpathFromAutorun(sFile)
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("IEToolbarsSystem").Children > 0 Then
         tvwMain.Nodes("IEToolbarsSystem").Text = tvwMain.Nodes("IEToolbarsSystem").Text & " (" & tvwMain.Nodes("IEToolbarsSystem").Children & ")"
@@ -6301,7 +6368,7 @@ Private Sub EnumIEToolbars()
             End If
             tvwMain.Nodes("IEToolbarsUserShell" & i).Tag = GuessFullpathFromAutorun(sFile)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("IEToolbarsUserShell").Children > 0 Then
         tvwMain.Nodes("IEToolbarsUserShell").Text = tvwMain.Nodes("IEToolbarsUserShell").Text & " (" & tvwMain.Nodes("IEToolbarsUserShell").Children & ")"
@@ -6329,7 +6396,7 @@ Private Sub EnumIEToolbars()
             End If
             tvwMain.Nodes("IEToolbarsUserWeb" & i).Tag = GuessFullpathFromAutorun(sFile)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("IEToolbarsUserWeb").Children > 0 Then
         tvwMain.Nodes("IEToolbarsUserWeb").Text = tvwMain.Nodes("IEToolbarsUserWeb").Text & " (" & tvwMain.Nodes("IEToolbarsUserWeb").Children & ")"
@@ -6371,7 +6438,7 @@ Private Sub EnumIEToolbars()
                     End If
                     tvwMain.Nodes(sUsernames(l) & "IEToolbarsUserShell" & i).Tag = GuessFullpathFromAutorun(sFile)
                 End If
-                If bAbort Then Exit Sub
+                If bSL_Abort Then Exit Sub
             Next i
             If tvwMain.Nodes(sUsernames(l) & "IEToolbarsUserShell").Children > 0 Then
                 tvwMain.Nodes(sUsernames(l) & "IEToolbarsUserShell").Text = tvwMain.Nodes(sUsernames(l) & "IEToolbarsUserShell").Text & " (" & tvwMain.Nodes(sUsernames(l) & "IEToolbarsUserShell").Children & ")"
@@ -6399,7 +6466,7 @@ Private Sub EnumIEToolbars()
                     End If
                     tvwMain.Nodes(sUsernames(l) & "IEToolbarsUserWeb" & i).Tag = GuessFullpathFromAutorun(sFile)
                 End If
-                If bAbort Then Exit Sub
+                If bSL_Abort Then Exit Sub
             Next i
             If tvwMain.Nodes(sUsernames(l) & "IEToolbarsUserWeb").Children > 0 Then
                 tvwMain.Nodes(sUsernames(l) & "IEToolbarsUserWeb").Text = tvwMain.Nodes(sUsernames(l) & "IEToolbarsUserWeb").Text & " (" & tvwMain.Nodes(sUsernames(l) & "IEToolbarsUserWeb").Children & ")"
@@ -6416,7 +6483,7 @@ End Sub
 
 Private Sub EnumIEExtensions()
     Dim sKey$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     tvwMain.Nodes.Add "System", tvwChild, "IEExtensions", SEC_IEEXTENSIONS, "msie"
     sKey = "Software\Microsoft\Internet Explorer\Extensions"
     tvwMain.Nodes("IEExtensions").Tag = "HKEY_LOCAL_MACHINE\" & sKey
@@ -6459,7 +6526,7 @@ Private Sub EnumIEExtensions()
             tvwMain.Nodes.Add "IEExtensions", tvwChild, "IEExtensions" & i, sName & " - " & sCLSID & " - " & sFile, "dll"
         End If
         tvwMain.Nodes("IEExtensions" & i).Tag = GuessFullpathFromAutorun(sFile)
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("IEExtensions").Children > 0 Then
         tvwMain.Nodes("IEExtensions").Text = tvwMain.Nodes("IEExtensions").Text & " (" & tvwMain.Nodes("IEExtensions").Children & ")"
@@ -6473,7 +6540,7 @@ End Sub
 
 Private Sub EnumIEExplBars()
     Dim sKey$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     tvwMain.Nodes.Add "System", tvwChild, "IEExplBars", SEC_IEBARS, "msie"
     sKey = "Software\Microsoft\Internet Explorer\Explorer Bars"
     tvwMain.Nodes("IEExplBars").Tag = "HKEY_LOCAL_MACHINE\" & sKey
@@ -6490,7 +6557,7 @@ Private Sub EnumIEExplBars()
             tvwMain.Nodes.Add "IEExplBars", tvwChild, "IEExplBars" & i, sName & " - " & sKeys(i) & " - " & sFile, "dll"
         End If
         tvwMain.Nodes("IEExplBars" & i).Tag = GuessFullpathFromAutorun(sFile)
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("IEExplBars").Children > 0 Then
         tvwMain.Nodes("IEExplBars").Text = tvwMain.Nodes("IEExplBars").Text & " (" & tvwMain.Nodes("IEExplBars").Children & ")"
@@ -6504,7 +6571,7 @@ End Sub
 
 Private Sub EnumIEMenuExt()
     Dim sKey$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     tvwMain.Nodes.Add "System", tvwChild, "IEMenuExt", SEC_IEMENUEXT, "msie"
     sKey = "Software\Microsoft\Internet Explorer\MenuExt"
     Dim sKeys$(), i&, sFile$
@@ -6516,7 +6583,7 @@ Private Sub EnumIEMenuExt()
         sFile = GetLongFilename(sFile)
         tvwMain.Nodes.Add "IEMenuExtUser", tvwChild, "IEMenuExtUser" & i, sKeys(i) & " - " & sFile, "exe"
         tvwMain.Nodes("IEMenuExtUser" & i).Tag = "HKEY_CURRENT_USER\" & sKey & "\" & sKeys(i)
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("IEMenuExtUser").Children > 0 Then
         tvwMain.Nodes("IEMenuExtUser").Text = tvwMain.Nodes("IEMenuExtUser").Text & " (" & tvwMain.Nodes("IEMenuExtUser").Children & ")"
@@ -6532,7 +6599,7 @@ Private Sub EnumIEMenuExt()
         sFile = GetLongFilename(sFile)
         tvwMain.Nodes.Add "IEMenuExtSystem", tvwChild, "IEMenuExtSystem" & i, sKeys(i) & " - " & sFile, "exe"
         tvwMain.Nodes("IEMenuExtSystem" & i).Tag = "HKEY_LOCAL_MACHINE\" & sKey & "\" & sKeys(i)
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("IEMenuExtSystem").Children > 0 Then
         tvwMain.Nodes("IEMenuExtSystem").Text = tvwMain.Nodes("IEMenuExtSystem").Text & " (" & tvwMain.Nodes("IEMenuExtSystem").Children & ")"
@@ -6558,7 +6625,7 @@ Private Sub EnumIEMenuExt()
                 sFile = ExpandEnvironmentVars(Reg.GetString(HKEY_USERS, sUsernames(l) & "\" & sKey & "\" & sKeys(i), vbNullString))
                 sFile = GetLongFilename(sFile)
                 tvwMain.Nodes.Add sUsernames(l) & "IEMenuExt", tvwChild, sUsernames(l) & "IEMenuExtUser" & i, sKeys(i) & " - " & sFile, "exe"
-                If bAbort Then Exit Sub
+                If bSL_Abort Then Exit Sub
             Next i
             If tvwMain.Nodes(sUsernames(l) & "IEMenuExt").Children > 0 Then
                 tvwMain.Nodes(sUsernames(l) & "IEMenuExt").Text = tvwMain.Nodes(sUsernames(l) & "IEMenuExt").Text & " (" & tvwMain.Nodes(sUsernames(l) & "IEMenuExt").Children & ")"
@@ -6576,7 +6643,7 @@ Private Sub EnumIEBands()
 End Sub
 
 Private Sub EnumHijack()
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     tvwMain.Nodes.Add "System", tvwChild, "Hijack", "Hijack points", "attn"
     
     Dim sUsername$, l&
@@ -6654,7 +6721,7 @@ End Sub
 
 Private Sub EnumDefaultPrefix()
     Dim sKey$, sPrefix$(), i%, sName$, sData$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sKey = "Software\Microsoft\Windows\CurrentVersion\URL"
     tvwMain.Nodes.Add "Hijack", tvwChild, "URLPrefix", SEC_URLPREFIX, "msie"
     tvwMain.Nodes("URLPrefix").Tag = "HKEY_LOCAL_MACHINE\" & sKey
@@ -6672,7 +6739,7 @@ Private Sub EnumDefaultPrefix()
         sData = Mid$(sPrefix(i), InStr(sPrefix(i), " = ") + 3)
         tvwMain.Nodes.Add "URLPrefix", tvwChild, "URLPrefix" & i, sPrefix(i), "reg"
         tvwMain.Nodes("URLPrefix" & i).Tag = "HKEY_LOCAL_MACHINE\" & sKey & "\Prefixes"
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("URLPrefix").Children > 0 Then
         tvwMain.Nodes("URLPrefix").Sorted = True
@@ -6699,7 +6766,7 @@ Private Sub EnumResetWebSettings()
     sSTPU = "START_PAGE_URL = "
     sMSPU = "MS_START_PAGE_URL = "
     sSEPU = "SEARCH_PAGE_URL = "
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sContents = InputFile(BuildPath(sWinDir, "inf\iereset.inf"))
     'it's not always unicode format when in winNT!
     If InStr(sContents, Chr$(255)) = 1 Then
@@ -6729,7 +6796,7 @@ Private Sub EnumResetWebSettings()
             sMSPU = Mid$(sInf(i), InStr(sInf(i), "http://"))
             sMSPU = "SEARCH_PAGE_URL = " & Left$(sMSPU, Len(sMSPU) - 1)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     tvwMain.Nodes.Add "Hijack", tvwChild, "ResetWebSettings", SEC_RESETWEBSETTINGS, "ini"
     tvwMain.Nodes("ResetWebSettings").Tag = BuildPath(sWinDir, "inf\iereset.inf")
@@ -6747,7 +6814,7 @@ End Sub
 
 Private Sub EnumHostsFilePath()
     Dim sDatabasePath$, sKey$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sKey = "System\CurrentControlSet\Services\Tcpip\Parameters"
     tvwMain.Nodes.Add "Hijack", tvwChild, "HostsFilePath", SEC_HOSTSFILEPATH, "registry"
     tvwMain.Nodes("HostsFilePath").Tag = "HKEY_LOCAL_MACHINE\" & sKey
@@ -6784,7 +6851,7 @@ End Sub
 
 Private Sub EnumIEURLs()
     Dim sKeys$(), sVals$(), i&, j&, sVal$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     tvwMain.Nodes.Add "Hijack", tvwChild, "IEURLs", SEC_IEURLS, "msie"
     tvwMain.Nodes.Add "IEURLs", tvwChild, "IEURLsUser", "This user", "user"
     tvwMain.Nodes.Add "IEURLs", tvwChild, "IEURLsSystem", "All users", "users"
@@ -6844,7 +6911,7 @@ Private Sub EnumIEURLs()
         Else
             If Not bShowEmpty Then tvwMain.Nodes.Remove "IEURLsSystem" & i
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
 
     For i = 0 To UBound(sKeys)
@@ -6866,7 +6933,7 @@ Private Sub EnumIEURLs()
         Else
             If Not bShowEmpty Then tvwMain.Nodes.Remove "IEURLsUser" & i
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
 
     If Not bShowUsers Then Exit Sub
@@ -6896,7 +6963,7 @@ Private Sub EnumIEURLs()
                 Else
                     If Not bShowEmpty Then tvwMain.Nodes.Remove sUsernames(l) & "IEURLsUser" & i
                 End If
-                If bAbort Then Exit Sub
+                If bSL_Abort Then Exit Sub
             Next i
             
             If tvwMain.Nodes(sUsernames(l) & "IEURLsUser").Children = 0 And Not bShowEmpty Then
@@ -7004,7 +7071,7 @@ End Sub
 
 Private Sub EnumStoppedServices()
     Dim sKey$, sKeys$(), i&, sDisplayName$, lStart&, lType&, sFile$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sKey = "System\CurrentControlSet\Services"
     tvwMain.Nodes.Add "DisabledEnums", tvwChild, "StoppedServices", SEC_STOPPEDSERVICES, "exe"
     tvwMain.Nodes.Add "StoppedServices", tvwChild, "StoppedOnlyServices", "Stopped", "exe"
@@ -7032,7 +7099,7 @@ Private Sub EnumStoppedServices()
                 tvwMain.Nodes("StoppedServices" & i).Tag = GuessFullpathFromAutorun(sFile)
             End If
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     
     If tvwMain.Nodes("StoppedOnlyServices").Children > 0 Then
@@ -7069,7 +7136,7 @@ Private Sub EnumXPSecurity()
 '  Software\Microsoft\Windows Defender,DisableAntiSpyware !
 
     Dim sVals$(), i&
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     tvwMain.Nodes.Add "DisabledEnums", tvwChild, "XPSecurity", SEC_XPSECURITY, "internet"
     
     tvwMain.Nodes.Add "XPSecurity", tvwChild, "XPSecurityCenter", "Security Center", "xpsec"
@@ -7083,7 +7150,7 @@ Private Sub EnumXPSecurity()
         tvwMain.Nodes("XPSecurityCenterUser").Tag = "HKEY_CURRENT_USER\Software\Microsoft\Security Center"
         For i = 0 To UBound(sVals)
             tvwMain.Nodes.Add "XPSecurityCenterUser", tvwChild, "XPSecurityCenterUser" & i, sVals(i), "reg"
-            If bAbort Then Exit Sub
+            If bSL_Abort Then Exit Sub
         Next i
     End If
     
@@ -7093,7 +7160,7 @@ Private Sub EnumXPSecurity()
         tvwMain.Nodes("XPSecurityCenterSystem").Tag = "HKEY_LOCAL_MACHINE\Software\Microsoft\Security Center"
         For i = 0 To UBound(sVals)
             tvwMain.Nodes.Add "XPSecurityCenterSystem", tvwChild, "XPSecurityCenterSystem" & i, sVals(i), "reg"
-            If bAbort Then Exit Sub
+            If bSL_Abort Then Exit Sub
         Next i
     End If
     
@@ -7130,7 +7197,7 @@ Private Sub EnumXPSecurity()
             
             tvwMain.Nodes.Add "XPFirewallDomainApps", tvwChild, "XPFirewallDomainApps" & i, sName & " - " & sScope & " (" & IIf(bEnabled, "enabled)", "disabled)"), "firewall"
             tvwMain.Nodes("XPFirewallDomainApps" & i).Tag = sFile
-            If bAbort Then Exit Sub
+            If bSL_Abort Then Exit Sub
         Next i
         If tvwMain.Nodes("XPFirewallDomainApps").Children > 0 Then
             tvwMain.Nodes("XPFirewallDomainApps").Text = tvwMain.Nodes("XPFirewallDomainApps").Text & " (" & tvwMain.Nodes("XPFirewallDomainApps").Children & ")"
@@ -7158,7 +7225,7 @@ Private Sub EnumXPSecurity()
         
             tvwMain.Nodes.Add "XPFirewallDomainPorts", tvwChild, "XPFirewallDomainPorts" & i, sName & " - " & sProtocol & " port " & sPort & " - " & sScope & " (" & IIf(bEnabled, "enabled)", "disabled)"), "firewall"
             tvwMain.Nodes("XPFirewallDomainPorts" & i).Tag = "HKEY_LOCAL_MACHINE\" & sFirewallKeyD & "\GloballyOpenPorts\List"
-            If bAbort Then Exit Sub
+            If bSL_Abort Then Exit Sub
         Next i
         If tvwMain.Nodes("XPFirewallDomainPorts").Children > 0 Then
             tvwMain.Nodes("XPFirewallDomainPorts").Text = tvwMain.Nodes("XPFirewallDomainPorts").Text & " (" & tvwMain.Nodes("XPFirewallDomainPorts").Children & ")"
@@ -7185,7 +7252,7 @@ Private Sub EnumXPSecurity()
                         
             tvwMain.Nodes.Add "XPFirewallStandardApps", tvwChild, "XPFirewallStandardApps" & i, sName & " - " & sScope & " (" & IIf(bEnabled, "enabled)", "disabled)"), "firewall"
             tvwMain.Nodes("XPFirewallStandardApps" & i).Tag = sFile
-            If bAbort Then Exit Sub
+            If bSL_Abort Then Exit Sub
         Next i
         If tvwMain.Nodes("XPFirewallStandardApps").Children > 0 Then
             tvwMain.Nodes("XPFirewallStandardApps").Text = tvwMain.Nodes("XPFirewallStandardApps").Text & " (" & tvwMain.Nodes("XPFirewallStandardApps").Children & ")"
@@ -7213,7 +7280,7 @@ Private Sub EnumXPSecurity()
         
             tvwMain.Nodes.Add "XPFirewallStandardPorts", tvwChild, "XPFirewallStandardPorts" & i, sName & " - " & sProtocol & " port " & sPort & " - " & sScope & " (" & IIf(bEnabled, "enabled)", "disabled)"), "firewall"
             tvwMain.Nodes("XPFirewallStandardPorts" & i).Tag = "HKEY_LOCAL_MACHINE\" & sFirewallKeyS & "\GloballyOpenPorts\List"
-            If bAbort Then Exit Sub
+            If bSL_Abort Then Exit Sub
         Next i
         If tvwMain.Nodes("XPFirewallStandardPorts").Children > 0 Then
             tvwMain.Nodes("XPFirewallStandardPorts").Text = tvwMain.Nodes("XPFirewallStandardPorts").Text & " (" & tvwMain.Nodes("XPFirewallStandardPorts").Children & ")"
@@ -7227,7 +7294,7 @@ Private Sub EnumXPSecurity()
         tvwMain.Nodes("XPSecurityRestoreUser").Tag = "HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\SystemRestore"
         For i = 0 To UBound(sVals)
             tvwMain.Nodes.Add "XPSecurityRestoreUser", tvwChild, "XPSecurityRestoreUser" & i, sVals(i), "reg"
-            If bAbort Then Exit Sub
+            If bSL_Abort Then Exit Sub
         Next i
     End If
     
@@ -7237,7 +7304,7 @@ Private Sub EnumXPSecurity()
         tvwMain.Nodes("XPSecurityRestoreSystem").Tag = "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\SystemRestore"
         For i = 0 To UBound(sVals)
             tvwMain.Nodes.Add "XPSecurityRestoreSystem", tvwChild, "XPSecurityRestoreSystem" & i, sVals(i), "reg"
-            If bAbort Then Exit Sub
+            If bSL_Abort Then Exit Sub
         Next i
     End If
     
@@ -7289,7 +7356,7 @@ Private Sub EnumXPSecurity()
                 tvwMain.Nodes.Remove sUsernames(l) & "XPSecurity"
             End If
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next l
     
     End If
@@ -7447,7 +7514,7 @@ End Sub
 Private Sub EnumPrintMonitors()
     'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Print\Monitors
     Dim sKeys$(), i&, sMonitors$, sName$, sFile$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sMonitors = "System\CurrentControlSet\Control\Print\Monitors"
     
     tvwMain.Nodes.Add "System", tvwChild, "PrintMonitors", SEC_PRINTMONITORS, "printer"
@@ -7461,7 +7528,7 @@ Private Sub EnumPrintMonitors()
         If sFile = vbNullString Then sFile = "(no file)"
         tvwMain.Nodes.Add "PrintMonitors", tvwChild, "PrintMonitors" & i, sName & " - " & sFile, "dll"
         tvwMain.Nodes("PrintMonitors" & i).Tag = GuessFullpathFromAutorun(sFile)
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("PrintMonitors").Children > 0 Then
         tvwMain.Nodes("PrintMonitors").Text = tvwMain.Nodes("PrintMonitors").Text & " (" & tvwMain.Nodes("PrintMonitors").Children & ")"
@@ -7498,7 +7565,7 @@ End Sub
 Private Sub EnumSecurityProviders()
     '  HKLM\System\CurrentControlSet\Control\SecurityProviders
     Dim sSecProv$(), i&, sProviders$, sFile$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sProviders = "System\CurrentControlSet\Control\SecurityProviders"
     
     tvwMain.Nodes.Add "System", tvwChild, "SecurityProviders", SEC_SECURITYPROVIDERS, "registry"
@@ -7510,7 +7577,7 @@ Private Sub EnumSecurityProviders()
         
         tvwMain.Nodes.Add "SecurityProviders", tvwChild, "SecurityProviders" & i, sFile, "dll"
         tvwMain.Nodes("SecurityProviders" & i).Tag = GuessFullpathFromAutorun(sFile)
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
 
     If tvwMain.Nodes("SecurityProviders").Children > 0 Then
@@ -7534,7 +7601,7 @@ Private Sub EnumSecurityProviders()
             
             tvwMain.Nodes.Add sHardwareCfgs(l) & "SecurityProviders", tvwChild, sHardwareCfgs(l) & "SecurityProviders" & i, sFile, "dll"
             tvwMain.Nodes(sHardwareCfgs(l) & "SecurityProviders" & i).Tag = GuessFullpathFromAutorun(sFile)
-            If bAbort Then Exit Sub
+            If bSL_Abort Then Exit Sub
         Next i
     
         If tvwMain.Nodes(sHardwareCfgs(l) & "SecurityProviders").Children > 0 Then
@@ -7549,7 +7616,7 @@ Private Sub EnumDesktopComponents()
     'HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\Desktop\Components
     Dim sDC$, sComponents$(), i&
     Dim sName$, sSource$, sSubURL$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sDC = "Software\Microsoft\Internet Explorer\Desktop\Components"
     
     tvwMain.Nodes.Add "System", tvwChild, "DesktopComponents", SEC_DESKTOPCOMPONENTS, "msie"
@@ -7563,7 +7630,7 @@ Private Sub EnumDesktopComponents()
         
         tvwMain.Nodes.Add "DesktopComponents", tvwChild, "DesktopComponents" & i, sName & " - " & sSource & " - " & sSubURL, "reg"
         tvwMain.Nodes("DesktopComponents" & i).Tag = "HKEY_CURRENT_USER\" & sDC & "\" & sComponents(i)
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
 
     If tvwMain.Nodes("DesktopComponents").Children > 0 Then
@@ -7589,7 +7656,7 @@ Private Sub EnumDesktopComponents()
                 
                 tvwMain.Nodes.Add sUsernames(l) & "DesktopComponents", tvwChild, sUsernames(l) & "DesktopComponents" & i, sName & " - " & sSource & " - " & sSubURL, "reg"
                 tvwMain.Nodes(sUsernames(l) & "DesktopComponents" & i).Tag = "HKEY_USERS\" & sUsernames(l) & "\" & sDC & "\" & sComponents(i)
-                If bAbort Then Exit Sub
+                If bSL_Abort Then Exit Sub
             Next i
         
             If tvwMain.Nodes(sUsernames(l) & "DesktopComponents").Children > 0 Then
@@ -7604,7 +7671,7 @@ End Sub
 Private Sub EnumAppPaths()
     'HKLM\Software\Microsoft\Windows\CurrentVersion\App Paths
     Dim sAPKey$, sApps$(), i&, sExe$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sAPKey = "Software\Microsoft\Windows\CurrentVersion\App Paths"
     
     tvwMain.Nodes.Add "System", tvwChild, "AppPaths", SEC_APPPATHS, "registry"
@@ -7617,7 +7684,7 @@ Private Sub EnumAppPaths()
         sExe = GetLongFilename(sExe)
         tvwMain.Nodes.Add "AppPaths", tvwChild, "AppPaths" & i, sApps(i) & " - " & sExe, "exe"
         tvwMain.Nodes("AppPaths" & i).Tag = sExe
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     If tvwMain.Nodes("AppPaths").Children > 0 Then
         tvwMain.Nodes("AppPaths").Text = tvwMain.Nodes("AppPaths").Text & " (" & tvwMain.Nodes("AppPaths").Children & ")"
@@ -7632,7 +7699,7 @@ Private Sub EnumMountPoints()
     'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints (win9x/2000)
     'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2 (winxp)
     Dim sMPKey$, sMPKey2$, sKeys$(), i&, sCmd$
-    If bAbort Then Exit Sub
+    If bSL_Abort Then Exit Sub
     sMPKey = "Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints"
     sMPKey2 = "Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2"
     
@@ -7646,7 +7713,7 @@ Private Sub EnumMountPoints()
             tvwMain.Nodes.Add "MountPoints", tvwChild, "MountPoints" & i, sKeys(i) & " - " & sCmd, "reg"
             tvwMain.Nodes("MountPoints" & i).Tag = GuessFullpathFromAutorun(sCmd)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     sKeys = Split(Reg.EnumSubKeys(HKEY_CURRENT_USER, sMPKey2), "|")
     For i = 0 To UBound(sKeys)
@@ -7655,7 +7722,7 @@ Private Sub EnumMountPoints()
             tvwMain.Nodes.Add "MountPoints", tvwChild, "MountPoints2" & i, sKeys(i) & " - " & sCmd, "reg"
             tvwMain.Nodes("MountPoints2" & i).Tag = GuessFullpathFromAutorun(sCmd)
         End If
-        If bAbort Then Exit Sub
+        If bSL_Abort Then Exit Sub
     Next i
     
     If tvwMain.Nodes("MountPoints").Children > 0 Then
@@ -7681,7 +7748,7 @@ Private Sub EnumMountPoints()
                     tvwMain.Nodes.Add sUsernames(l) & "MountPoints", tvwChild, sUsernames(l) & "MountPoints" & i, sKeys(i) & " - " & sCmd, "reg"
                     tvwMain.Nodes(sUsernames(l) & "MountPoints" & i).Tag = GuessFullpathFromAutorun(sCmd)
                 End If
-                If bAbort Then Exit Sub
+                If bSL_Abort Then Exit Sub
             Next i
             sKeys = Split(Reg.EnumSubKeys(HKEY_USERS, sUsernames(l) & "\" & sMPKey2), "|")
             For i = 0 To UBound(sKeys)
@@ -7690,7 +7757,7 @@ Private Sub EnumMountPoints()
                     tvwMain.Nodes.Add sUsernames(l) & "MountPoints", tvwChild, sUsernames(l) & "MountPoints2" & i, sKeys(i) & " - " & sCmd, "reg"
                     tvwMain.Nodes(sUsernames(l) & "MountPoints2" & i).Tag = GuessFullpathFromAutorun(sCmd)
                 End If
-                If bAbort Then Exit Sub
+                If bSL_Abort Then Exit Sub
             Next i
             
             
@@ -7840,7 +7907,7 @@ Private Sub tvwMain_KeyUp(KeyCode As Integer, Shift As Integer)
     If mnuHelpShow.Checked Then txtHelp.Text = GetHelpText(tvwMain.SelectedItem.Key)
 End Sub
 
-Private Sub tvwMain_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub tvwMain_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
     On Error Resume Next
     Status tvwMain.SelectedItem.Tag
     If mnuHelpShow.Checked Then txtHelp.Text = GetHelpText(tvwMain.SelectedItem.Key)
@@ -8056,7 +8123,7 @@ Private Function EnumSubKeys$(lHive&, sKey$)
             sList = sList & "|" & sName
             i = i + 1
             sName = String$(MAX_PATH, 0)
-            If bAbort Then
+            If bSL_Abort Then
                 RegCloseKey hKey
                 Exit Function
             End If
@@ -8104,7 +8171,7 @@ Private Function RegEnumValues$(lHive&, sKey$, Optional bNullSep As Boolean = Fa
             lDataLen = UBound(uData)
             i = i + 1
             
-            If bAbort Then
+            If bSL_Abort Then
                 RegCloseKey hKey
                 Exit Function
             End If
@@ -8134,7 +8201,7 @@ Private Function RegEnumDwordValues$(lHive&, sKey$)
             lDataLen = UBound(uData)
             i = i + 1
         
-            If bAbort Then
+            If bSL_Abort Then
                 RegCloseKey hKey
                 Exit Function
             End If
@@ -8143,3 +8210,12 @@ Private Function RegEnumDwordValues$(lHive&, sKey$)
     End If
     If sList <> vbNullString Then RegEnumDwordValues = Mid$(sList, 2)
 End Function
+
+Private Sub Form_Activate()
+    'bSL_Abort = False
+End Sub
+
+Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
+    bSL_Abort = True
+    bSL_Terminate = True
+End Sub

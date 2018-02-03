@@ -25,3 +25,18 @@ Russian:
 Чтобы избежать случайных данных в конце ресурса, дописываем <NUL> самостоятельно.
 
 Предоставлен в качестве обратной совместимости с VB6 IDE без обновления SP6.
+
+------------
+
+* HiJackThis note:
+
+This program is not included in HiJackThis Fork resources.
+However, it is used to finalize project building.
+
+------------
+Checksum:
+
+Align4byte.exe
+Digitally signed by Alex Dragokas (using self-signed certificate).
+
+Certificate's thumbprint should be: 05F1F2D5BA84CDD6866B37AB342969515E3D912E

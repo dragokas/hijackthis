@@ -158,7 +158,7 @@ Private Sub Form_Initialize()
     #If CryptDisable Then
         bCryptDisable = True
     #End If
-
+    
     If InStr(1, Command$(), "/autolog", 1) > 0 Then bAutoLog = True
     If InStr(1, Command$(), "/silentautolog", 1) > 0 Then bAutoLog = True: bAutoLogSilent = True
     
