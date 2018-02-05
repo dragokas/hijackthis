@@ -64,9 +64,9 @@ End Function
 ' -----------------------------------------------------------------------------
 
 '// parse Lang file contents into -> gLines(). It's a temp array.
-Sub ExtractLanguage(sLangFileContents As String, Optional sFileName As String) ' sFileName for logging reasons only
+Sub ExtractLanguage(sLangFileContents As String, Optional sFilename As String) ' sFileName for logging reasons only
     On Error GoTo ErrorHandler:
-    AppendErrorLogCustom "ExtractLanguage - Begin", "File: " & sFileName
+    AppendErrorLogCustom "ExtractLanguage - Begin", "File: " & sFilename
 
     Dim Lines() As String, i As Long, Idx&, ch$, pos&
     
@@ -87,9 +87,9 @@ Sub ExtractLanguage(sLangFileContents As String, Optional sFileName As String) '
                 If Idx > UBound(Translate) Or Idx < LBound(Translate) Then
                     'current is 9999 (look at the top of this module)
                     If 0 <> Len(Translate(570)) Then
-                        MsgBoxW Replace$(Translate(570), "[]", sFileName)
+                        MsgBoxW Replace$(Translate(570), "[]", sFilename)
                     Else
-                        MsgBoxW "The language file '" & sFileName & "' is invalid (ambiguous id numbers).", vbCritical
+                        MsgBoxW "The language file '" & sFilename & "' is invalid (ambiguous id numbers).", vbCritical
                     End If
                     'Unload frmMain
                     LoadDefaultLanguage UseResource:=True 'emergency mode
@@ -115,6 +115,7 @@ Public Sub LoadLanguage(lCode As Long, Force As Boolean, Optional PreLoadNativeL
     AppendErrorLogCustom "LoadLanguage - Begin", "Code: " & lCode, "Force? " & Force
 
     Dim HasSupportSlavian As Boolean
+    Dim NotSupportedByCP As Boolean
     
     ReDim Translate(MAX_LOCALE_LINES)
     ReDim TranslateNative(MAX_LOCALE_LINES)
@@ -128,7 +129,9 @@ Public Sub LoadLanguage(lCode As Long, Force As Boolean, Optional PreLoadNativeL
     ' Force choosing of language: no checks for non-Unicode language settings
     If Force Then
         Select Case lCode
-        Case &H419&, &H422&, &H423& 'Russian, Ukrainian, Belarusian
+        Case &H422&
+            LangUA
+        Case &H419&, &H423&  'Russian, Ukrainian, Belarusian
             LangRU
         Case &H409& 'English
             LoadDefaultLanguage
@@ -142,9 +145,15 @@ Public Sub LoadLanguage(lCode As Long, Force As Boolean, Optional PreLoadNativeL
         ' first load native system language strings for special purposes
     
         Select Case OSver.LangDisplayCode
-        Case &H419&, &H422&, &H423& 'Russian, Ukrainian, Belarusian
+        Case &H419&, &H423&  'Russian, Ukrainian, Belarusian
             If HasSupportSlavian Then
                 LangRU
+            Else
+                LoadDefaultLanguage
+            End If
+        Case &H422&
+            If HasSupportSlavian Then
+                LangUA
             Else
                 LoadDefaultLanguage
             End If
@@ -157,23 +166,35 @@ Public Sub LoadLanguage(lCode As Long, Force As Boolean, Optional PreLoadNativeL
         ReloadLanguageNative    'fill TranlateNative() array
     
         Select Case lCode 'OSVer.LangDisplayCode
-        Case &H419&, &H422&, &H423& 'Russian, Ukrainian, Belarusian
+        Case &H419&, &H423& 'Russian, Ukrainian, Belarusian
             If HasSupportSlavian Then
                 LangRU
             Else
-                'If Not bAutoLog Then MsgBoxW "Cannot set Russian language!" & vbCrLf & _
-                    "First, you must set language for non-Unicode programs to Russian" & vbCrLf & _
-                    "through the Control panel -> system language settings.", vbCritical
-                If Not bAutoLog Then MsgBoxW "Не могу выбрать русский язык!" & vbCrLf & _
-                    "Сперва Вам необходимо выставить язык для программ, не поддерживающих Юникод, на Русский" & vbCrLf & _
-                    "через Панель управления -> Региональные стандарты.", vbCritical
-                LoadDefaultLanguage
+                NotSupportedByCP = True
+            End If
+        Case &H422&
+            If HasSupportSlavian Then
+                LangUA
+            Else
+                NotSupportedByCP = True
             End If
         Case &H409& 'English
             LoadDefaultLanguage
         Case Else
             LoadDefaultLanguage
         End Select
+        
+        If NotSupportedByCP Then
+            'If Not bAutoLog Then MsgBoxW "Cannot set Russian language!" & vbCrLf & _
+                "First, you must set language for non-Unicode programs to Russian" & vbCrLf & _
+                "through the Control panel -> system language settings.", vbCritical
+            If Not bAutoLog Then
+                MsgBoxW "Не могу выбрать русский язык!" & vbCrLf & _
+                    "Сперва Вам необходимо выставить язык для программ, не поддерживающих Юникод, на Русский" & vbCrLf & _
+                    "через Панель управления -> Региональные стандарты.", vbCritical
+            End If
+            LoadDefaultLanguage
+        End If
     End If
     
     If Not PreLoadNativeLang Then
@@ -203,13 +224,22 @@ Public Sub LangRU()
     g_VersionHistory = LoadResFile("_ChangeLog_ru.txt", 104)
 End Sub
 
-Sub LoadLangFile(sFileName As String, Optional ResID As Long, Optional UseResource As Boolean)
+'// Ukrainian
+Public Sub LangUA()
+    LoadLangFile "_Lang_UA.lng", 203
+    g_VersionHistory = LoadResFile("_ChangeLog_ru.txt", 104)
+End Sub
+
+Sub LoadLangFile(sFilename As String, Optional ResID As Long, Optional UseResource As Boolean)
     On Error GoTo ErrorHandler:
 
-    AppendErrorLogCustom "LoadLangFile - Begin", "File: " & sFileName, "ResID: " & ResID, "UseResource? " & UseResource
+    AppendErrorLogCustom "LoadLangFile - Begin", "File: " & sFilename, "ResID: " & ResID, "UseResource? " & UseResource
 
     Dim sPath As String, sText As String, b() As Byte
-    sPath = BuildPath(AppPath(), sFileName)
+    sPath = BuildPath(AppPath(), sFilename)
+    
+    If Not IsArrDimmed(Translate) Then ReDim Translate(MAX_LOCALE_LINES)
+    If Not IsArrDimmed(TranslateNative) Then ReDim TranslateNative(MAX_LOCALE_LINES)
     
     If FileExists(sPath) And Not UseResource Then
         sText = ReadFileContents(sPath, isUnicode:=False)
@@ -223,7 +253,7 @@ Sub LoadLangFile(sFileName As String, Optional ResID As Long, Optional UseResour
         End If
     End If
     sText = ConvertCodePageW(sText, 65001)  ' UTF8
-    ExtractLanguage sText, sFileName  ' parse sText -> gLines()
+    ExtractLanguage sText, sFilename  ' parse sText -> gLines()
     
     AppendErrorLogCustom "LoadLangFile - End"
     
@@ -234,13 +264,13 @@ ErrorHandler:
 End Sub
 '------------------------------------------------------------------
 
-Function LoadResFile(sFileName As String, Optional ResID As Long, Optional UseResource As Boolean) As String
+Function LoadResFile(sFilename As String, Optional ResID As Long, Optional UseResource As Boolean) As String
     On Error GoTo ErrorHandler:
 
-    AppendErrorLogCustom "LoadResFile - Begin", "File: " & sFileName, "ResID: " & ResID, "UseResource? " & UseResource
+    AppendErrorLogCustom "LoadResFile - Begin", "File: " & sFilename, "ResID: " & ResID, "UseResource? " & UseResource
 
     Dim sPath As String, sText As String, b() As Byte
-    sPath = BuildPath(AppPath(), sFileName)
+    sPath = BuildPath(AppPath(), sFilename)
     
     If FileExists(sPath) And Not UseResource Then
         sText = ReadFileContents(sPath, isUnicode:=False)

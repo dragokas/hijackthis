@@ -7,7 +7,7 @@
 ; 2. First ";" character is a mark of comment
 ; 3. [], [*], [**] should not be modified or deleted !!!
 ; 4. You should not add empty lines for just convenience unless it is a part of translation string.
-; 5. "&" characters can be removed, but instead preferred to place them in random places
+; 5. "&" signs can be removed, but instead preferred to place them next to the unical characters among nearby rows
 ; (these signs are responsible for hotkeys: ALT + letter, which is located next to the sign "&" will cause opening of the corresponding menu)
 ;
 ;
@@ -83,7 +83,7 @@
 1033=Include environment variables in logfile
 1034=Additional scan
 1035=Include specific sections, like O4 - RenameOperations.
-1040=Ignore Microsoft entries
+1040=Hide Microsoft entries
 1041=Do not include in log files and registry related to Microsoft
 1042=Ignore ALL Whitelists
 1043=Include in log any entries regardless whitelist
@@ -261,7 +261,7 @@
        /md5		- calculate md5 hash of files
        /default		- load default settings (they will not be saved)
        /install     	- install HiJackThis to 'Program Files' folder and create shortcuts
-       /autostart   	- set task scheduler for automatical run the HJT scanning after system boot up (use with /install key)
+       /autostart   	- set Windows for automatical run the HJT scanning after system boot up (use with /install key)
        /uninstall	- remove all HiJackThis Registry entries, backups and quit
        /deleteonreboot "c:\file.sys" - delete the specified file after system rebooting using PendingFileRenameOperations mechanism
        /accepteula 	- accept the agreement. It will not be displayed when program start
@@ -269,6 +269,7 @@
        /SysTray	- run program minimized in notification area (system tray)
        /LangEN		- force use English language for user interface
        /LangRU		- force use Russian language for user interface
+       /LangUA		- force use Ukrainian language for user interface
        /debug		- tracing mode. Sequence of functions execution will be appended to main log and HiJackThis_debug.log file. You can also rename file to HiJackThis_debug.exe
        /debugtofile	- trace info will be saved to HiJackThis_debug.log file only
      
@@ -337,8 +338,8 @@
      
      Developers:
      
-     - Polshyn Stanislav { Alex Dragokas } - author of fork (major update 3), refactoring, additions, tools integration
-     - Merijn Bellekom - original author
+     - Polshyn Stanislav { Alex Dragokas } - author of fork (major v3 and all post-v2.0.5 updates), refactoring, additions, tools integration
+     - Merijn Bellekom - original author, author of the new StartupList v2 and ADS Spy
      - Trend Micro - the owner of the original version (2.0.5)
      
      Consulting:
@@ -355,6 +356,7 @@
      Translations:
      
      Russian: Dragokas, ScriptMakeR, Boris, fseto (SafeZone.cc), wylek.ru team
+     Ukrainian: Dragokas
      English: Dragokas
      
      Third-party development:
@@ -370,7 +372,7 @@
 
      License
      -------------
-     HiJackThis Fork is a fork of Trend Micro HiJackThis program, made by Alex Dragokas and SafeZone.cc team, and distributed as open source under original GPLv2 license.
+     HiJackThis Fork is a fork (modification) of Trend Micro HiJackThis original program, made by Alex Dragokas and SafeZone.cc team, and distributed as open source under original GPLv2 license.
 
      Donation
      -------------
@@ -723,13 +725,13 @@
 ;
 ; (1850 - 1899)
 ;
-1850=Authenticode EDS checker - written by Dragokas
+1850=Authenticode EDS checker - written by Stanislav
 1851=This tool will create a detail report about digital signature of files/folders you specify below:
 1852=Recursively (include subfolders)
 1853=Include files in Windows folder
 1854=Report format:
-1855=Plain Text (Short log in Unicode)
-1856=CSV (Full log in ANSI)
+1855=Plain Text (short log in Unicode)
+1856=CSV (full log in ANSI)
 1857=Go
 1858=Close
 1859=You should enter at least one path to file or folder!
@@ -748,7 +750,7 @@
 ;
 ; (1900 - 1949)
 ;
-1900=Registry Key Unlocker - written by Dragokas
+1900=Registry Key Unlocker - written by Stanislav
 1901=Enter Registry Key(s) to unlock and reset access rights:
 1902=Recursively (process keys and all subkeys)
 1903=Go
@@ -961,14 +963,14 @@
 
      O7 - TroubleShoot
      Here, incorrect OS settings are displayed, which potentially lead to various malfunctions in the software and the system as generally. These include:
-     1. [EV] Incorrect value and/or type of environment variable, such as %TEMP%, %TMP%.
+     1. [EV] Incorrect value and/or type of environment variable (for %TEMP% and %TMP%, also checking is corresponding folder exist)
      2. [Disk] Lack of free space on the system disk (less than 1 GB.)
      3. [Network] Wrong network settings, e.g. empty name of computer.
 
      >>> Action taken by HiJackThis:
       - for O7 - Policies: registry value is deleted.
       - for O7 - IPSec: all registry keys associated with the marked policy are deleted, including all the filters that apply to it.
-      - for O7 - TroubleShoot: [EV] variables will be reset to defaults.
+      - for O7 - TroubleShoot: [EV] variables will be reset to defaults (for %TEMP% and %TMP%, creating folder if it is not exist).
       - for O7 - TroubleShoot: [Disk] Microsoft disk cleanup manager CleanMgr will be launched in automatically mode.
       - for O7 - TroubleShoot: [Network] standard settings will be applied.
 ; [O8]
@@ -1051,7 +1053,7 @@
      Since both methods ensure the dll file stays loaded in memory the entire time, fixing this won't help if the dll puts back the Registry value or key immediately. In such cases, the use of the 'Delete file on reboot' function or KillBox is recommended to first delete the file.
      
      >>> Action taken by HiJackThis:
-      - for AppInit_DLLs: Registry value is cleared, but NOT deleted.
+      - for AppInit_DLLs: Concrete registry value is cleared; parameter is NOT deleted.
       - for Winlogon Notify: Registry key is deleted.
 ; [O21]
 0429=This is an undocumented Registry key that contains a list of references to CLSIDs, which in turn reference .dll files that are then loaded by Explorer.exe to its address space at system startup. The dll files stay in memory until Explorer.exe quits, which is achieved either by shutting down the system or killing the shell process.
@@ -1078,7 +1080,7 @@
       - In some cases reboot will be prompted to complete operation.
 ; [O24]
 0432=Desktop Components are ActiveX objects that can be made part of the desktop whenever Active Desktop is enabled. It runs as a (small) website widget.
-     Malware misuses this feature by setting the desktop background to a local HTML file with a large, bogus warning.
+     Malware misuses this feature by setting the desktop background to a local HTML file with a large, bogus warning, e.g. for Ransomware it's a text of ransom requirements.
      
      >>> Action taken by HiJackThis:
       - Registry key and HTML file are deleted.
@@ -1179,16 +1181,16 @@
      [Windows 2000/XP]
 0611=Some system settings are stored in *.ini files instead of in the Registry. Some of these settings can be used to start a program on system startup.
      [Windows 9x/ME]
-0612=Windows NT4, 2000 and XP (and newer) map several *.ini files to the Registry. Some of the settings can be used to start a program on system startup.
+0612=Map several *.ini files to the Registry. Some of the settings can be used to start a program on system startup.
      [Windows NT/2k/XP/2003/Vista]
 0613=The autorun.inf files on a CD tell Windows what to start when the CD is inserted. This technique can be applied to hard disks too, making Windows executing an arbitrary file when the drive is opened in Explorer.
      [Windows 95/98/NT4/2000/XP/2003]
-0614=Windows NT, 2000 and XP (and newer) can be setup to execute scripts when the system starts or shuts down, or when a user logs on or off.
+0614=Windows can be setup to execute scripts when the system starts or shuts down, or when a user logs on or off.
      [Windows 2000/XP/2003/Vista/7/8/8.1/10]
-0615=Windows 95, 98, ME (and sometimes newer) uses *.bat files for starting certain components of the system. Anything in these files is executed on system startup.
+0615=Windows uses *.bat files for starting certain components of the system. Anything in these files is executed on system startup.
      [winstart.bat,dosstart.bat: Windows 95/98/98SE]
      [autoexec.bat,config.sys: Windows 9x/ME]
-     [autoexec.nl,config.nt: Windows NT4/2000/XP/2003/Vista]
+     [autoexec.nt,config.nt: Windows NT4/2000/XP/2003/Vista]
 0616=Windows can be setup to perform actions (such as deleting or renaming a file) when the system is restarted. These instructions can be present in the Registry or in the wininit.ini file. The wininit.bak file is a backup of the wininit.ini used last time and is created by Windows itself.
      [wininit.ini: Windows 9x/ME]
      [other: Windows NT4/2000/XP/2003/Vista]
@@ -1227,7 +1229,7 @@
 0632=When an item is added to the right-click menu of certain items, the associated dll library is loaded into memory when the system starts.
      [All Windows versions]
 0633=Programmers can add custom columns to Explorer and 'Detailed' view item. The dll library associated with the column is loaded into memory whenever the 'Detailed' view or additional columns are active.
-     [Windows ME/2000/XP/2003/Vista/7/8/8.1/10]
+     [Windows ME/2000/XP/2003]
 0634=This Registry key lists all COM objects (dll libraries) that trap execute commands.
      [All Windows versions]
 0635=User interface extensions that are approved by the system or the user.
@@ -1616,4 +1618,4 @@
 ; Empty
 ;
 ; (2300 - ...)
-;                   
+;                     

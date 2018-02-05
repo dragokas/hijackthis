@@ -237,6 +237,7 @@ Private Sub Form_Load()
 
     bForceRU = InStr(1, AppExeName(), "_RU", 1) Or InStr(1, Command$(), "/langRU", 1)
     bForceEN = InStr(1, AppExeName(), "_EN", 1) Or InStr(1, Command$(), "/langEN", 1)
+    bForceUA = InStr(1, AppExeName(), "_UA", 1) Or InStr(1, Command$(), "/langUA", 1)
 
     bIsWOW64 = IsWow64()
 
@@ -330,6 +331,8 @@ Sub Localize()
         LoadLanguage &H409, True, PreLoadNativeLang:=True
     ElseIf bForceRU Then
         LoadLanguage &H419, True, PreLoadNativeLang:=True
+    ElseIf bForceUA Then
+        LoadLanguage &H422, True, PreLoadNativeLang:=True
     Else
         LoadLanguage 0, False, PreLoadNativeLang:=True
     End If

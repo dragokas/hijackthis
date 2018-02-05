@@ -29,11 +29,11 @@ Begin VB.Form frmUnlockRegKey
    End
    Begin VB.CheckBox chkRecur 
       Caption         =   "Recursively (process keys and all subkeys)"
-      Height          =   375
+      Height          =   495
       Left            =   240
       TabIndex        =   2
       Top             =   2520
-      Width           =   3495
+      Width           =   3615
    End
    Begin VB.TextBox Text1 
       Height          =   1815
@@ -50,7 +50,7 @@ Begin VB.Form frmUnlockRegKey
       Left            =   240
       TabIndex        =   0
       Top             =   240
-      Width           =   4335
+      Width           =   8055
    End
 End
 Attribute VB_Name = "frmUnlockRegKey"

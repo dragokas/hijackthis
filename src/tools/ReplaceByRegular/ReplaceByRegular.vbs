@@ -1,8 +1,8 @@
-Option Explicit		'ver 1.9 beta
+Option Explicit		'ReplaceByRegular by Dragokas - ver 1.13 beta
 
 
 ' Указать список расширений для обработки (через знак ;)
-Dim Exts: Exts = "rc"
+Dim Exts: Exts = "htm;html;txt"
 
 ' Файл со списком регулярок и замен для них
 Dim PattSrc: PattSrc = "Regular.txt"
@@ -21,7 +21,7 @@ Dim aExts: aExts = Split(Exts, ";")
 
 Dim oFSO: Set oFSO = CreateObject("Scripting.FileSystemObject")
 Dim oRegEx: Set oRegEx = CreateObject("VBScript.Regexp")
-Dim bUTF16, FileFormat, FileToProcess, sArg
+Dim bUTF16, FileFormat, FileToProcess, sArg, bDisableExtFiltering
 
 oRegEx.IgnoreCase = IgnoreCase
 oRegEx.Global = true
@@ -90,6 +90,7 @@ if len(Patterns(0)) = 0 then msgbox "Во внешнем файле нет информации для составл
 if not oFSO.FolderExists(Folder) then msgbox "Папка " & Folder & " не существует!": WScript.Quit
 
 if Len(FileToProcess) <> 0 then
+	bDisableExtFiltering = true
 	ProcessFile oFSO.GetFile(FileToProcess)
 else
 	Dim oRoot: Set oRoot = oFSO.GetFolder(Folder)
@@ -98,6 +99,15 @@ end if
 
 WScript.Echo "Finished."
 
+Function RowNumberByIndex(sText, nIdx)
+	Dim p, r
+	p = 0
+	do
+		r = r + 1
+		p = instr(p + 1, sText, vbLf)
+	loop until (p > nIdx) or (p = 0)
+	RowNumberByIndex = r
+End Function
 
 Function ReplaceEscapes(sText)
 	Dim sReturn: sReturn = sText
@@ -126,12 +136,12 @@ Sub ProcessFolder(oFolder)
     Next
 
     For Each oSubfolder In oFolder.Subfolders
-        scanFolder oSubfolder 'рекурсия
+        ProcessFolder oSubfolder 'рекурсия
     Next
 End Sub
 
 Sub ProcessFile(oFile)
-	Dim fPath, content, contentNew, oMatches, oMatch, oldReplacePatt, sTMP
+	Dim fPath, content, contentNew, oMatches, oMatch, oldReplacePatt, sTMP, bDoRewrite, nShift
 
 	  fPath = oFile.Path
 	  '	если не этот скрипт и не файл-лог и совпадает с одним из списка заданных расширений
@@ -150,46 +160,57 @@ Sub ProcessFile(oFile)
 			.Close
 		end with
 		contentNew = content
+		bDoRewrite = false
 		sTMP = ""
 		For i = 0 to Ubound(Patterns)
 			oRegEx.Pattern = Patterns(i)
+			'новое смещение относительно oMatches.FirstIndex в связи с последовательными заменами в цикле
+			nShift = 0
 			set oMatches = oRegEx.Execute(contentNew)
 			if oMatches.Count > 0 then
 				oldReplacePatt = Replaces(i)
 				For Each oMatch in oMatches
 					if instr(1, Replaces(i), "{{{utf8toANSI}}}", 1) <> 0 then
 						Replaces(i) = Replace(Replaces(i), "{{{utf8toANSI}}}", "", 1, -1, 1)
-						Replaces(i) = Replace(Replaces(i), "\@", Recode(oMatch, "utf-8", "windows-1251"), 1, -1, 1)
+						Replaces(i) = Replace(Replaces(i), "\@", Recode(oMatch, "utf-8", "windows-1251"), 1, 1, 1)
 						's = Recode(oMatch, "utf-8", "windows-1251")
 						s = oMatch ' Пусть будет в оригинале (utf-8), чтобы было понятно в отчете
-						sTMP = sTMP & s & "   ->   " & Replaces(i) & vbNewLine
+						sTMP = sTMP & s & "   ->   " & Replaces(i)
 					elseif instr(1, Replaces(i), "{{{ANSItoUTF8}}}", 1) <> 0 then
 						Replaces(i) = Replace(Replaces(i), "{{{ANSItoUTF8}}}", "", 1, -1, 1)
-						Replaces(i) = Replace(Replaces(i), "\@", Recode(oMatch, "windows-1251", "utf-8"), 1, -1, 1)
+						Replaces(i) = Replace(Replaces(i), "\@", Recode(oMatch, "windows-1251", "utf-8"), 1, 1, 1)
 						s = oMatch
-						sTMP = sTMP & s & "   ->   " & Replaces(i) & vbNewLine
+						sTMP = sTMP & s & "   ->   " & Replaces(i)
 					elseif i mod 2 = 0 then
 						' 0 - ANSI
 						if instr(1, Replaces(i), "$$$file$$$", 1) <> 0 then
-							sTMP = sTMP & oMatch & "   ->   " & Replace(Replaces(i), "$$$file$$$", oFile.Name) & vbNewLine
+							sTMP = sTMP & oMatch & "   ->   " & Replace(Replaces(i), "$$$file$$$", oFile.Name)
 							Replaces(i) = Replace(Replaces(i), "$$$file$$$", Recode(oFile.Name, "windows-1251", "utf-8"))
 						else
-							sTMP = sTMP & oMatch & "   ->   " & Replaces(i) & vbNewLine
+							sTMP = sTMP & oMatch & "   ->   " & Replaces(i)
 						end if
 					else
 						' 1 - utf-8
 						if instr(1, Replaces(i), "$$$file$$$", 1) <> 0 then Replaces(i) = Replace(Replaces(i), "$$$file$$$", Recode(oFile.Name, "windows-1251", "utf-8"))
 						s = oMatch & "   ->   " & Replaces(i)
 						s = Recode(s, "utf-8", "windows-1251")
-						sTMP = sTMP & s & vbNewLine
+						sTMP = sTMP & s
 					end if
-					contentNew = Replace(contentNew, oMatch, Replaces(i), 1,1,1)
+					sTMP = sTMP & " (строка: " & RowNumberByIndex(contentNew, oMatch.FirstIndex + 1 + nShift) & ")" & vbNewLine
+					'начать замену текста с конкретного индекса символа (поскольку Replace отрезает весь текст, что находится перед 4-м арг., добавляем Left())
+					contentNew = Left(contentNew, oMatch.FirstIndex + nShift) & Replace(contentNew, oMatch, Replaces(i), oMatch.FirstIndex + 1 + nShift, 1, 1)
+					bDoRewrite = true
+					'delta
+					'примечание: дельта не влияет на первую замену в последовательности, поэтому рассчитываем её после операции замены
+					'порядок индексов всегда возрастающий, поэтому не нужно учитывать их распределение
+					nShift = nShift + Len(Replaces(i)) - Len(oMatch)
 				Next
 				Replaces(i) = oldReplacePatt
 				if i mod 2 = 0 then i = i + 1 ' если вариант UTF-8 подошел, то незачем проверять по варианту ANSI
 			end if
 		Next
-		if contentNew <> content then	'если были изменения
+		if bDoRewrite then
+		  if contentNew <> content then	'если были изменения
 			with oFile.OpenAsTextStream(ForWriting, FileFormat)
 				on error resume next
 				.Write contentNew
@@ -202,7 +223,7 @@ Sub ProcessFile(oFile)
 				.Close
 			end with
 			'WriteToFile contentNew, fPath 'Byte data
-
+		  end if
 		end if
 	  end if
 End Sub
@@ -236,6 +257,10 @@ End Function
 
 Function IsValidExtension(Extension) ' проверка на совпадение найденного расширения со списком заданных
 	Dim myExt
+	if bDisableExtFiltering then
+		IsValidExtension = true
+		Exit Function
+	end if
 	IsValidExtension = false
 	For each myExt in aExts
 		if StrComp(Extension, myExt, 1) = 0 then IsValidExtension = true: Exit For
@@ -317,8 +342,8 @@ End Function
 '' SIG '' MIIMNAYJKoZIhvcNAQcCoIIMJTCCDCECAQExCzAJBgUr
 '' SIG '' DgMCGgUAMGcGCisGAQQBgjcCAQSgWTBXMDIGCisGAQQB
 '' SIG '' gjcCAR4wJAIBAQQQTvApFpkntU2P5azhDxfrqwIBAAIB
-'' SIG '' AAIBAAIBAAIBADAhMAkGBSsOAwIaBQAEFEyX6S9jQSCW
-'' SIG '' 4hphh8P9mI0JEbF0oIICDDCCAggwggF1oAMCAQICEPTb
+'' SIG '' AAIBAAIBAAIBADAhMAkGBSsOAwIaBQAEFPMJNAz/ReO9
+'' SIG '' cbYGIDBLqieu0Ph/oIICDDCCAggwggF1oAMCAQICEPTb
 '' SIG '' 3W6cNZGsSlw56VqCU28wCQYFKw4DAh0FADAYMRYwFAYD
 '' SIG '' VQQDEw1BbGV4IERyYWdva2FzMB4XDTE0MDYzMDIwNTk0
 '' SIG '' MloXDTM5MTIzMTIzNTk1OVowGDEWMBQGA1UEAxMNQWxl
@@ -338,18 +363,18 @@ End Function
 '' SIG '' VQQDEw1BbGV4IERyYWdva2FzAhD0291unDWRrEpcOela
 '' SIG '' glNvMAkGBSsOAwIaBQCgUjAQBgorBgEEAYI3AgEMMQIw
 '' SIG '' ADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAjBgkq
-'' SIG '' hkiG9w0BCQQxFgQUBbqPOsyV7vh+jVHkZXpFqBL3MQYw
-'' SIG '' DQYJKoZIhvcNAQEBBQAEgYBIvR1qAe+Wsa+WhcYce/yy
-'' SIG '' Iy4VL9vuI953VzOMpAstLmPjbousC/e3IK5jx03mDMH6
-'' SIG '' ou2r8QPORDpboqR9+xJR8Fc1sDeWqtR0rPvEvhx3WfMh
-'' SIG '' 3Y5Icg42+/6Dzfett7tG7R1UVJtIN9/a+4xX2VF3ONfJ
-'' SIG '' FLgE3lb2k57mJ6TEcKGCCGowgghmBgorBgEEAYI3AwMB
+'' SIG '' hkiG9w0BCQQxFgQU9Qt9s/Idelp5VZ6XO2ErShKWy7sw
+'' SIG '' DQYJKoZIhvcNAQEBBQAEgYCOahbaa2G5eFZVhryPoKJ0
+'' SIG '' kUb5SpQ2C4HdH+0a4/JaNk5iu+M8dJS46wNL1RETzQZU
+'' SIG '' ZxtsE8V7OhvC4K1t7tVG0/NrQR5VcGcEyk0mzicl/5ip
+'' SIG '' nR6X4RXmg5ly90I9b76yI78yYITfmtAiX15BfHmoXhyB
+'' SIG '' i2JFaq9/0Uw9yUg9caGCCGowgghmBgorBgEEAYI3AwMB
 '' SIG '' MYIIVjCCCFIGCSqGSIb3DQEHAqCCCEMwggg/AgEDMQ8w
 '' SIG '' DQYJYIZIAWUDBAIBBQAwggEOBgsqhkiG9w0BCRABBKCB
 '' SIG '' /gSB+zCB+AIBAQYKKwYBBAGyMQIBATAxMA0GCWCGSAFl
-'' SIG '' AwQCAQUABCBadyFv4kDifDXSIt76RPo6VU6hYPfhRRet
-'' SIG '' 7Abb8yA7FAIUKWC1RPrLR2oGywE9ZzNTa0fUxlwYDzIw
-'' SIG '' MTgwMTI5MjEzOTU4WqCBjKSBiTCBhjELMAkGA1UEBhMC
+'' SIG '' AwQCAQUABCC/ZdhQX1M191+TKHeSaBG8T7Cpio2OOWiV
+'' SIG '' GpXzmHbFpAIUTmo+JOgPkE0zplsRYRbJPRR8MdwYDzIw
+'' SIG '' MTgwMjA1MTkwMTAzWqCBjKSBiTCBhjELMAkGA1UEBhMC
 '' SIG '' R0IxGzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQ
 '' SIG '' MA4GA1UEBxMHU2FsZm9yZDEaMBgGA1UEChMRQ09NT0RP
 '' SIG '' IENBIExpbWl0ZWQxLDAqBgNVBAMTI0NPTU9ETyBTSEEt
@@ -397,16 +422,16 @@ End Function
 '' SIG '' VQQDExRVVE4tVVNFUkZpcnN0LU9iamVjdAIQTrCHj8wk
 '' SIG '' NTay2Mn3vzlVdzANBglghkgBZQMEAgEFAKCBmDAaBgkq
 '' SIG '' hkiG9w0BCQMxDQYLKoZIhvcNAQkQAQQwHAYJKoZIhvcN
-'' SIG '' AQkFMQ8XDTE4MDEyOTIxMzk1OFowKwYLKoZIhvcNAQkQ
+'' SIG '' AQkFMQ8XDTE4MDIwNTE5MDEwM1owKwYLKoZIhvcNAQkQ
 '' SIG '' AgwxHDAaMBgwFgQUNlJ9T6JqaPnrRZbx2Zq7LA6nbfow
-'' SIG '' LwYJKoZIhvcNAQkEMSIEILaIzUMjpa+7Csu7e/4Dmwla
-'' SIG '' JWmphVyVZGrh1sKNNEJQMA0GCSqGSIb3DQEBAQUABIIB
-'' SIG '' AMgzVS6thv73hfDlsg+EwjfQftnpnxQNrHl/Q7eKNT3e
-'' SIG '' 6NwdSgBUx0T2H7PDkiC9ZjS4lBN76BEGu9PXhGbfHqdJ
-'' SIG '' pv37O0EVJOLkqIS7UGK3epqq+62dUzfpJoh8Y7w1q8pH
-'' SIG '' f08OCR3pdSzq9GwJQFUCTYrKzcaXpQeVogIw72t/YzwT
-'' SIG '' 3Uxx8POV5C1HmkMqIw3zGXIO3QPXTY358XQinAPAsQjZ
-'' SIG '' GdAYmuS/D6DDgaq37jv1+4fRVJLpqAfEExbILo0iuBqd
-'' SIG '' +/n9rHX7bNRdYHpu7J/dbmPMQ+t4oEc76Ow2gP9Z2yn6
-'' SIG '' oyLpJopZxnNeNF3tlSnjlpOEDiLRL66gi7g=
+'' SIG '' LwYJKoZIhvcNAQkEMSIEIEAyc/ngECsft83CE1GauKtQ
+'' SIG '' v2ZyAyIU8oT1kYd5W+5LMA0GCSqGSIb3DQEBAQUABIIB
+'' SIG '' AIbzb0iOxGK8xv+7wLkDdRseFs4kpg6ukc+evcpXzJRL
+'' SIG '' 2I3C63F1b3de9jpwbi7feBxorxc5AlZhK+3i79T2yx5l
+'' SIG '' T0np5bPTq3GzgdhcEf8bsV1k77dLyKosRaQW+6+YV1aL
+'' SIG '' GlM8+FZ9vb3uuD6gKWOqZMjCdw6CCaJtgc/mI8Vb3SvZ
+'' SIG '' SoE0MhYguIwsjZF0iMbB2TULIfo+jbHRYiqV5ZSe74Vl
+'' SIG '' pH8HVq0ipsYr3LG5SIQbQO9jh7JHuTC5ljgrgL5zEyjo
+'' SIG '' 9xaautEPQEoy9q0k0LrT+Sz+2I9Cpc98CcK5OOAsoYXB
+'' SIG '' ZT65RHaLtY5roTWOCAmBs53n6Ri3BYriZJ8=
 '' SIG '' End signature block

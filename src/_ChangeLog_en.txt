@@ -8,9 +8,12 @@
 1. HiJackThis: changelog
 -----------------------------
 
+[2.8.0.4] - February 05, 2018
+Added translation into Ukrainian.
+
 [2.8.0.3] - February 03, 2018
 Disabled O7 - IPSEC items is removed from the log.
-Improved working of options "Ignore Microsoft entries" and "Ignore All whitelists" with unchecked checkbox.
+Improved working of options "Ignore Microsoft entries" and "Ignore All whitelists" when switching a checkbox to non-default value.
 O22 - Task: fixed error in output of status "(disabled)".
 
 [2.8.0.2] - February 02, 2018
@@ -1157,4 +1160,4 @@ saved and edited in Wordpad.
 [v1.00] - Aug 27, 2004
 * Original release.
 
-                 
+                  

@@ -32,6 +32,7 @@ call :AddResource + 103 CUSTOM _ChangeLog_en.txt
 call :AddResource + 104 CUSTOM _ChangeLog_ru.txt
 call :AddResource + 201 CUSTOM _Lang_EN.lng
 call :AddResource + 202 CUSTOM _Lang_RU.lng
+call :AddResource + 203 CUSTOM _Lang_UA.lng
 call :AddResource - 301 CUSTOM tools\PCRE2\pcre2-16.dll
 call :AddResource - 302 CUSTOM tools\ABR\abr.exe
 call :AddResource - 303 CUSTOM tools\ABR\restore.exe
@@ -134,6 +135,7 @@ Exit /B
   copy /y VerInfo_DE.rc VerInfo_DE.rc.bak
   copy /y VerInfo_FR.rc VerInfo_FR.rc.bak
   copy /y VerInfo_RU.rc VerInfo_RU.rc.bak
+  copy /y VerInfo_UA.rc VerInfo_UA.rc.bak
   (
     echo word1=1\.2\.3\.4
     echo word2=%Major%.%Minor%.%Build%.%Revision%
@@ -145,6 +147,7 @@ Exit /B
   cscript.exe //nologo tools\ReplaceByRegular\ReplaceByRegular.vbs "%~dp0VerInfo_DE.rc"
   cscript.exe //nologo tools\ReplaceByRegular\ReplaceByRegular.vbs "%~dp0VerInfo_FR.rc"
   cscript.exe //nologo tools\ReplaceByRegular\ReplaceByRegular.vbs "%~dp0VerInfo_RU.rc"
+  cscript.exe //nologo tools\ReplaceByRegular\ReplaceByRegular.vbs "%~dp0VerInfo_UA.rc"
 
   del "tools\ReplaceByRegular\Replace - log.log"
 
@@ -154,6 +157,13 @@ Exit /B
     echo.& echo -------   SUCCESS
   ) || (
     echo Error occured during creation resource from: VerInfo_RU.rc
+    pause
+  )
+  2>NUL del VerInfo_UA.res
+  "%PF%\Microsoft Visual Studio\VB98\Wizards\rc.exe" /r /v /fo VerInfo_UA.res /l 0x422 VerInfo_UA.rc && (
+    echo.& echo -------   SUCCESS
+  ) || (
+    echo Error occured during creation resource from: VerInfo_UA.rc
     pause
   )
   2>NUL del VerInfo_FR.res
@@ -175,12 +185,13 @@ Exit /B
   :: Trying to append such .res file cause your project failed to compile.
   :: To do such a job you need to patch .exe file or fill required info in .vbp file.
 
-  copy /b /y VerInfo_RU.res + VerInfo_FR.res + VerInfo_DE.res VerInfo.res
-  
+  copy /b /y VerInfo_RU.res + VerInfo_UA.res + VerInfo_FR.res + VerInfo_DE.res VerInfo.res
+
   del /f /a VerInfo_*.res
   move /y VerInfo_DE.rc.bak VerInfo_DE.rc
   move /y VerInfo_FR.rc.bak VerInfo_FR.rc
   move /y VerInfo_RU.rc.bak VerInfo_RU.rc
+  move /y VerInfo_UA.rc.bak VerInfo_UA.rc
   del tools\ReplaceByRegular\Regular.txt
   ren tools\ReplaceByRegular\Regular.txt.bak Regular.txt
 exit /b

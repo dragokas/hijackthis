@@ -12,6 +12,10 @@ Public Const MAX_MODULE_NAME32 As Long = 255&
 
 Public TaskBar As TaskbarLib.TaskbarList
 
+#If False Then
+    Public X, Y, Length, Index, sFilename, i, j, k, State, Frm, Ret
+#End If
+
 Public Enum HE_HIVE
     HE_HIVE_ALL = 7
     HE_HIVE_HKLM = 1
@@ -176,6 +180,7 @@ Public bIsWin32 As Boolean
 Public inIDE    As Boolean
 Public bForceRU As Boolean
 Public bForceEN As Boolean
+Public bForceUA As Boolean
 
 Public SysDisk          As String
 Public sWinDir          As String

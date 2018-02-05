@@ -8528,7 +8528,7 @@ Private Function IsWinServiceFileName(sFilePath As String, sServiceName As Strin
     Static IsInit As Boolean
     Static oDictSRV As clsTrickHashTable
     Dim sCompany As String
-    Dim sFileName As String
+    Dim sFilename As String
     Dim sArgBase As String
     
     If Not IsInit Then
@@ -8901,9 +8901,9 @@ Private Function IsWinServiceFileName(sFilePath As String, sServiceName As Strin
             
             If IsFileSFC(sFilePath) Then
                 
-                sFileName = GetFileName(sFilePath, True)
+                sFilename = GetFileName(sFilePath, True)
                 
-                If Not inArraySerialized(sFileName, "rundll32.exe|schtasks.exe|sc.exe|cmd.exe|wscript.exe|" & _
+                If Not inArraySerialized(sFilename, "rundll32.exe|schtasks.exe|sc.exe|cmd.exe|wscript.exe|" & _
                                                     "mshta.exe|pcalua.exe|powershell.exe", "|", , , vbTextCompare) Then
                     IsWinServiceFileName = True
                 End If
@@ -9970,7 +9970,7 @@ ErrorHandler:
 End Function
 
 Public Sub SilentDeleteOnReboot(sCmd$)
-    Dim sDummy$, sFileName$
+    Dim sDummy$, sFilename$
     'sCmd is all command-line parameters, like this
     '/param1 /deleteonreboot c:\progra~1\bla\bla.exe /param3
     '/param1 /deleteonreboot "c:\program files\bla\bla.exe" /param3
@@ -9978,17 +9978,17 @@ Public Sub SilentDeleteOnReboot(sCmd$)
     sDummy = Mid$(sCmd, InStr(sCmd, "/deleteonreboot") + Len("/deleteonreboot") + 1)
     If InStr(sDummy, """") = 1 Then
         'enclosed in quotes, chop off at next quote
-        sFileName = Mid$(sDummy, 2)
-        sFileName = Left$(sFileName, InStr(sFileName, """") - 1)
+        sFilename = Mid$(sDummy, 2)
+        sFilename = Left$(sFilename, InStr(sFilename, """") - 1)
     Else
         'no quotes, chop off at next space if present
         If InStr(sDummy, " ") > 0 Then
-            sFileName = Left$(sDummy, InStr(sDummy, " ") - 1)
+            sFilename = Left$(sDummy, InStr(sDummy, " ") - 1)
         Else
-            sFileName = sDummy
+            sFilename = sDummy
         End If
     End If
-    DeleteFileOnReboot sFileName, True
+    DeleteFileOnReboot sFilename, True
 End Sub
 
 'Public Sub DeleteFileShell(ByVal sFile$)
@@ -10137,7 +10137,7 @@ Public Sub InitVariables()
     ReDim tim(10)
     For i = 0 To UBound(tim)
         Set tim(i) = New clsTimer
-        tim(i).index = i
+        tim(i).Index = i
     Next
     
     SysDisk = Space$(MAX_PATH)
@@ -10619,18 +10619,18 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function GetCollectionKeyByIndex(ByVal index As Long, Col As Collection) As String ' Thanks to 'The Trick' (А. Кривоус) for this code
+Public Function GetCollectionKeyByIndex(ByVal Index As Long, Col As Collection) As String ' Thanks to 'The Trick' (А. Кривоус) for this code
     'Fixed by Dragokas
     On Error GoTo ErrorHandler:
     Dim lpSTR As Long, ptr As Long, Key As String
     If Col Is Nothing Then Exit Function
-    Select Case index
+    Select Case Index
     Case Is < 1, Is > Col.Count: Exit Function
     Case Else
         ptr = ObjPtr(Col)
-        Do While index
+        Do While Index
             GetMem4 ByVal ptr + 24, ptr
-            index = index - 1
+            Index = Index - 1
         Loop
     End Select
     GetMem4 ByVal VarPtr(Key), lpSTR
@@ -11256,7 +11256,7 @@ MakeLog:
     End If
     
     sLog.Append "Ran by:    " & GetUser() & vbTab & "(group: " & OSver.UserType & ") on " & GetComputer() & _
-        ", " & "(SID: " & OSver.SID_CurrentProcess & ") " & "FirstRun: " & IIf(bFirstRebootScan, "yes", "no") & vbCrLf & vbCrLf
+        ", " & IIf(bDebugMode, "(SID: " & OSver.SID_CurrentProcess & ") ", "") & "FirstRun: " & IIf(bFirstRebootScan, "yes", "no") & vbCrLf & vbCrLf
     
     
     Dim tmp$
