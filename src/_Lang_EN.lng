@@ -895,7 +895,7 @@
       - corresponding file is NOT deleted.
 ; [O1]
 0409=1) Windows uses records in the 'hosts' file to look-up domain names before querying internet DNS servers. Changes to the 'hosts' file can make Windows believe that e.g. 'google.com' has a different IP than it actually has, leading browsers to open a different page. It can also block site(s) entirely by redirecting them to localhost or a non-existent IP. 
-     2) Attackers can also hijack the DNSApi.dll file to alter where the system loads the hosts file (all OS versions). Example: Hijacker.DNS.Hosts / Trojan.Win32.Patched.qw.
+     2) Attackers can also hijack the DNSApi.dll file to alter the location where the system loads the hosts file (all OS versions). Example: Hijacker.DNS.Hosts / Trojan.Win32.Patched.qw.
      3) Attackers can also change registry DatabasePath values (Win XP and older).
      4) Hosts.ics file is created automatically when you share internet access. It contains a mapping between IP and home (local) network domain and can be hijacked in the same way as a hosts file.
      
