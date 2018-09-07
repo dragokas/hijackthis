@@ -17,20 +17,20 @@
 ;
 0001=Welcome to HiJackThis Fork.
      This program will generate a report of unusual items
-     (files, registry modifications etc.) in the most vulnerable areas of the operating system
+     (files, registry modifications etc.) in the most vulnerable areas of the operating system,
      commonly manipulated by malware as well as good software.
-0002=HiJackThis is already run.
-     Are you sure you want to launch one more copy?
-0004=Below are the results of HiJackThis scan. Be careful what you delete with 'Fix checked' button.
-     Scan results do not determine whether an item is bad or not. If you think that your machine is infected,
-     press 'AnalyzeThis' button, sign up, read instruction, make required logs
-     and show them to our consultants by creating new thread.
+0002=HiJackThis is already running.
+     Are you sure you want to launch another copy?
+0004=Below are the results of the HiJackThis scan. Be careful what you delete with 'Fix checked' button.
+     Scan results do not determine whether an item is good or bad. If you think  your machine is infected,
+     press the 'AnalyzeThis' button, sign up, read instructions, make required logs,
+     and show them to our consultants by creating a new thread.
 0007=It looks like you're running HiJackThis from a read-only device like a CD-ROM. If you want to make backups of items you fix, you must copy HiJackThis.exe to your hard disk first, and run it from there.
      
-     If you continue, you might get 'Path/File Access' errors.
-0008=Launch from the archive is forbidden !
+     If you continue, you might encounter 'Path/File Access' errors.
+0008=Launching from an archive is forbidden!
      
-     May I unzip to desktop for you ?
+     May I unzip to the desktop for you?
 0009=Main Menu
 0010=Scan && fix stuff
 0011=Scan
@@ -44,7 +44,7 @@
 0019=Report
 0020=Add checked to ignorelist
 0025=This will set HiJackThis to ignore the checked items, unless they change. Continue?
-0026=Write access was denied to the location you specified. Try a different location please.
+0026=Write access was denied to the location you specified. Please try a different location.
 0027=The logfile has been saved to [].
      You can open it in a text editor like Notepad.
 0028=Unable to list running processes
@@ -56,27 +56,27 @@
 1004=No suspicious items found!
 1005=Unable to connect to the Internet.
 1006=Done.
-1007=Could not unzip file to Desktop! Please, unzip it manually.
-1008=The value '[*]' could not be written to the settings file '[**]'. Please, verify that write access is allowed to that file.
-1010=Scanning is not finished yet! Are you really sure you want to forcibly close the program?
+1007=Could not unzip file to Desktop! Please unzip it manually.
+1008=The value '[*]' could not be written to the settings file '[**]'. Please verify that write access is enabled for that file.
+1010=Scanning is not finished yet! Do you still want to forcibly close the program?
 1011=Warning: Ignore list contains [] items.
 1012=Warning: General scanning was not performed.
-1013=You have the most fresh version.
+1013=You have the most recent version.
 1014=Update is available.
 1015=Do you want to open download page?
 1016=Visit product description page?
 1020=Number
 1021=Path
-1022=Could not create folder '[]'. Please, verify that write access is allowed to this location.
-1023=Warning! Integrity of HiJackThis program is corrupted.
-     Perhaps, file is patched or infected by file virus.
+1022=Could not create folder '[]'. Please verify that write access is enabled for this location.
+1023=Warning! The integrity of this HiJackThis instance is corrupted.
+     Perhaps the file has been patched or infected by a virus.
      It is recommended to download the program again from official source: https://github.com/dragokas/hijackthis
-     If error repeats, check your PC on viruses by boot disk LiveCD, e.g.: https://support.kaspersky.com/viruses/rescuedisk
+     If this error repeats, check your PC using a boot disk or LiveCD, e.g.: https://support.kaspersky.com/viruses/rescuedisk
 1024=Download the program via Internet?
-1025=Error has occured while downloading!
-1026=Downloading is completed. Run the program?
+1025=Error occurred while downloading!
+1026=Downloading complete. Run the program?
 1027=!!! HiJackThis was shut down due to exceeding the maximum allowed timeout: [] sec. !!! Report file will be incomplete!
-     Please, restart the program manually (not via Autologger).
+     Please restart the program manually (not via Autologger).
 1030=Processes
 1031=Include list of running processes in logfiles
 1032=Environment variables
@@ -99,11 +99,11 @@
 ; (1090-1099)
 ;
 1090=Welcome to HiJackThis Fork 3
-1091=    HiJackThis is a free and open source tool designed to combat against malware and unwanted adware. It is provided "AS IS"
+1091=    HiJackThis is a free and open source tool designed to combat malware and unwanted adware. It is provided "AS IS"
 
      without warranty of any kind. You may use this software at your own risk.
          This software is not permitted for commercial purposes.
-         You need to read and accept license agreement to continue:
+         You must read and accept the license agreement to continue:
 1092=HiJackThis Fork - License Agreement
 1093=I Accept
 1094=I DO NOT Accept
@@ -119,7 +119,7 @@
 1114=List of Backups
 1115=Misc Tools
 1116=Online Guide
-1117=None of above, just start the program
+1117=None of the above, just start the program
 1118=Do not show this menu after starting the program
 1119=Language:
 ;
@@ -261,23 +261,23 @@
        /md5		- calculate md5 hash of files
        /default		- load default settings (they will not be saved)
        /install     	- install HiJackThis to 'Program Files' folder and create shortcuts
-       /autostart   	- set Windows for automatical run the HJT scanning after system boot up (use with /install key)
+       /autostart   	- set Windows to automatically run HJT scanning after system boot up (use with /install key)
        /uninstall	- remove all HiJackThis Registry entries, backups and quit
        /deleteonreboot "c:\file.sys" - delete the specified file after system rebooting using PendingFileRenameOperations mechanism
-       /accepteula 	- accept the agreement. It will not be displayed when program start
+       /accepteula 	- accept the agreement. It will not be displayed when program starts
        /noGUI		- do not show program window during the scan
        /SysTray	- run program minimized in notification area (system tray)
        /LangEN		- force use English language for user interface
        /LangRU		- force use Russian language for user interface
        /LangUA		- force use Ukrainian language for user interface
-       /debug		- tracing mode. Sequence of functions execution will be appended to main log and HiJackThis_debug.log file. You can also rename file to HiJackThis_debug.exe
+       /debug		- tracing mode. Sequence of function execution will be appended to main log and HiJackThis_debug.log file. You can also rename the file to HiJackThis_debug.exe
        /debugtofile	- trace info will be saved to HiJackThis_debug.log file only
      
      
      2. StartupList
      ----------------
      
-     Next keys affects on StartupList module settings only.
+     These keys affect StartupList module settings only.
      It can be launched manually from the section "Main menu" -> "Misc Tools" -> "StartupList Scan" 
      or via the key /StartupList
      
@@ -296,8 +296,8 @@
      3. How to use command line keys?
      -----------------------------------------
      
-     Create text file run.txt near the program HiJackThis.exe. Rename it into extension .bat
-     Right mouse click on file run.bat. Choose "Edit".
+     Create text file run.txt near the program HiJackThis.exe. Rename run.txt to run.bat.
+     Right-click run.bat. Choose "Edit".
      
      Example of .bat file code:
      
@@ -310,11 +310,11 @@
      Description
      -------------
      
-	HiJackThis Fork is a tool for scanning your computer to find and fix settings changed by adware, spyware, malware and other unwanted programs.
-	HiJackThis checking is not based on black lists, specific programs or URLs. It checks the methods only used by hijackers to force you onto their sites.
-	Thereby, false positives are imminent. Unless you are sure what you're doing, you should always consult with knowledgeable folks BEFORE DELETING ANYTHING.
+	HiJackThis Fork scans your computer for settings changed by adware, spyware, malware and other unwanted programs.
+	HiJackThis Fork results are not based on blacklists, specific programs or URLs. Instead, they are based on common methods and techniques used by hijackers.
+	Therefore, FALSE POSITIVES ARE LIKELY. If you are ever unsure, you should consult with a knowledgeable expert BEFORE deleting anything.
      
-	HiJackThis comes with several useful tools available under button 'Misc Tools' and new bar in menu 'Tools':
+	HiJackThis comes with several useful tools available under the button 'Misc Tools', and the new bar in menu 'Tools':
      
        - StartupList 2
        - Process Manager
@@ -330,7 +330,7 @@
      System Compatibility
      -------------------------
      
-      * Microsoft™ Windows™ 10 / 8.1 / 8 / 7 / Vista / XP / 2000, include Server editions, both 32 and 64 bitness.
+      * Microsoft™ Windows™ 10 / 8.1 / 8 / 7 / Vista / XP / 2000, include Server editions, both 32 and 64-bit.
 
 
      Authors and copyrights
@@ -340,7 +340,7 @@
      
      - Polshyn Stanislav { Alex Dragokas } - author of fork (major v3 and all post-v2.0.5 updates), refactoring, additions, tools integration
      - Merijn Bellekom - original author, author of the new StartupList v2 and ADS Spy
-     - Trend Micro - the owner of the original version (2.0.5)
+     - Trend Micro - owner of the original version (2.0.5)
      
      Consulting:
      
@@ -372,11 +372,11 @@
 
      License
      -------------
-     HiJackThis Fork is a fork (modification) of Trend Micro HiJackThis original program, made by Alex Dragokas and SafeZone.cc team, and distributed as open source under original GPLv2 license.
+     HiJackThis Fork is a fork (modification) of Trend Micro's original HiJackThis program.  It is made by Alex Dragokas and the SafeZone.cc team, and distributed as open source under its original GPLv2 license.
 
      Donation
      -------------
-     If you liked my HiJackThis modification and you want to donate me
+     If you like my HiJackThis modification and want to donate 
      for creative inspiration and further active development of the project, I'll be always glad:
 
 0034=
@@ -414,17 +414,17 @@
 0063=Default Search Assistant:
 0064=Default Search Customize:
 0065=Sorry! Not implemented yet.
-0066=This will install HJT to 'Program Files' folder and set Windows for automatically run the scanning after system startup.
+0066=This will install HJT to 'Program Files' folder and set Windows to automatically run a scan after system startup.
 
      Continue?
 
-     Note: it is recommended that you add all safe items to ignore list (e.g. with context menu -> Add ALL to ignore list), so the results window will appear after system startup if only new item will be found.
-     Also, it's can be useful to mark checkbox "Mark everything found for fixing after scan".
-0067=Task scheduler service is required to be run for this action. Do you want to run it now and set for automatically start at system boot?
+     Note: it is recommended that you add all safe items to the ignore list (e.g. with context menu -> Add ALL to ignore list), so the results window will appear after system startup only when new items are found.
+     Also, it can be useful to mark the checkbox "Mark everything found for fixing after scan".
+0067=Task scheduler service is required for this action. Do you want to run it now and set it to automatically start at system boot?
 0068=Error! Could not launch Task scheduler service.
-0069=Installation is completed. Do you want to create shortcut in Desktop?
+0069=Installation complete. Do you want to create a shortcut on the Desktop?
 1400=Add HiJackThis to startup
-1401=Run HiJackThis scan at Windows startup in silent mode and show results if only something is found
+1401=Run silent mode HiJackThis scan at Windows startup, and show results only when something is found
 ;
 ; ============= IgnoreList ============
 ;
@@ -434,7 +434,7 @@
 0071=Delete
 0072=Delete all
 0073=Are you sure?
-     This will delete ALL ignore list.
+     This will delete ALL ignore list items.
 ;
 ; ============= Backup ===============
 ;
@@ -451,21 +451,21 @@
 0088=Are you sure you want to delete ALL backups?
 0089=Restore for this item is not implemented:
 1550=Cannot execute requested operation!
-     The system restore via restore points is not available for this system.
-1551=Are you sure, you want to restore system from this restore point:
+     System restore via restore points is not available for this system.
+1551=Are you sure you want to restore system from this restore point:
      [] ?
 
-     System will be rebooted automatically.
-1552=Are you sure, you want to remove this restore point?
+     The system will be rebooted automatically.
+1552=Are you sure you want to remove this restore point?
 1553=Error! Could not enable system restore.
 1554=Error! Could not launch WMI service.
-1555=Not enough free disk space. Required at least
+1555=Not enough free disk space. Requires at least
 1556=Failure while creating the restore point.
-1557=System restore point is successfully created.
-1558=WMI service is required to be run for this action. Do you want to run it now?
-1560=Are you sure, you want to recover registry saved on: [] ?
+1557=System restore point created successfully.
+1558=WMI service is required for this action. Do you want to run it now?
+1560=Are you sure you want to recover the registry saved on: [] ?
 
-     System will be rebooted automatically.
+     The system will be rebooted automatically.
 1561=Failure while creating the registry backup.
 1562=You already have a backup for this day.
      Continue with overwriting it?
@@ -474,15 +474,15 @@
 1564=You are about to remove ALL registry backups!
      Are you sure?
 1565=Could not remove backup.
-1566=Error! This backup is no longer exists.
-1567=Full registry backup is successfully created.
-1568=Error! File to be restored is no longer exists in backup. Cannot continue repairing.
+1566=Error! This backup no longer exists.
+1567=Full registry backup created successfully.
+1568=Error! File to be restored no longer exists in backup. Cannot continue repairing.
 1569=Error! File to be restored from backup is corrupted. Cannot continue repairing.
 1570=Create registry backup
 1571=Create restore point
 1572=Show System Restore Points
 1573=Error! Registry entry to be restored from backup is corrupted. Cannot continue repairing.
-1574=Unknown error happened during restore item: []. Item is restored partially only.
+1574=Unknown error happened during restore item: []. Item was only partially restored.
 ;
 ; ============= Misc Tools =============
 ;
@@ -490,14 +490,14 @@
 ;
 0091=StartupList scan
 0092=
-     A simple tool that lists all and every auto starting program on your system. Commonly used to troubleshoot malfunctioning systems, trojan/viral infections, new spyware/malware breed and the likes.
+     A simple tool that lists every auto-starting program on this system. Commonly used to troubleshoot malfunctioning systems, trojan/virus infections, and new spyware/malware types.
 0100=System tools
 0101=Process manager
 0102=Small process manager, working much like the Task Manager
 0103=Hosts file manager
 0104=Editor for the 'hosts' file
 0105=Delete a file on reboot...
-0106=If a file cannot be removed from the disk, Windows can be setup to delete it when the system is restarted
+0106=If a file cannot be removed from the disk, Windows can be configured to delete it when the system restarts
 0107=Delete a Windows service...
 0108=Delete a Windows Service (O23)
      USE WITH CAUTION!
@@ -522,8 +522,8 @@
 0144=Current version is:
 0149=Removing HJT
 0150=Uninstall HiJackThis
-0152=Removes all settings, backups and quit
-0153=This will remove HiJackThis' settings and backups. Note that you will have to delete the HiJackThis.exe file manually.
+0152=Removes all settings and backups, then quits
+0153=This will remove HiJackThis settings and backups. Note that you will have to delete the HiJackThis.exe file manually.
      
      Continue with uninstall?
 0154=This will completely remove HiJackThis, including settings and backups. Continue?
@@ -557,11 +557,11 @@
 0176=E&xit
 0177=Double-click a file to view its properties
 0178=Loaded DLL libraries by selected process:
-0179=Are you sure you want to close the processes []?
-0180=Any unsaved data in it will be lost.
+0179=Are you sure you want to close these processes []?
+0180=Any unsaved data will be lost.
 0181=Run
 0182=Type the name of a program, folder, document or Internet resource, and Windows will open it for you.
-0184=You should select the process first you want to kill!
+0184=You must first select the process you want to kill!
 0185=Platform
 0186=[full path to filename]
 0187=[file version]
@@ -573,7 +573,7 @@
 1653=The selected process could not be killed. It may be protected by Windows.
 1654=The selected process could not be killed. It may have already closed, or it may be protected by Windows.
 
-     This process might be a service, which you can stop from the Services applet in Admin Tools of Control panel.
+     This process might be a service, which you can stop from the Services applet in Control Panel -> Admin Tools.
      (To load this window, click 'Win + R' and enter 'services.msc')
 ;
 ; ================= ADS Spy =================
@@ -595,7 +595,7 @@
 0202=View stream contents
 0203=Save scan results to disk...
 0204=Enumerating system drives
-0205=	Alternate Data Streams (ADSs) are pieces of info hidden as metadata on files. They are not visible in Explorer and the size they take up is not reported by Windows. Recent browser hijackers started hiding their files inside ADSs, and very few anti-malware scanners detect this (yet).
+0205=	Alternate Data Streams (ADSs) are pieces of info hidden as file metadata. They are not visible in Explorer and their size is not reported by Windows. Recent browser hijackers have started hiding files inside ADSs, and very few anti-malware scanners detect this (yet).
      	Use ADS Spy to find and remove these streams.
      	Note: this app also displays legitimate ADS streams. Do not delete streams if you are not completely sure they are malicious!
 0206=Full scan (all NTFS drives)
@@ -618,7 +618,7 @@
 2212=Scan ABORTED, found [] alternate data streams (ADS's) in [*] sec.
 2213=Scan complete, found [] alternate data streams (ADS's).
 2214=Scan ABORTED, found [] alternate data streams (ADS's).
-2215=Are you sure you want to remove the selected [] ADS's from your system? They will be deleted permanently!
+2215=Are you sure you want to remove the selected [] ADS's from your system? They will be permanently deleted!
 2216=Removing selected streams...
 2217=The following ADS streams could not be deleted. They may be locked by another program:
 2218=unknown type
@@ -632,7 +632,7 @@
      Since there are no NTFS volumes on this system, ADS Spy will now exit.
 2226=Scan results saved to
 2227=Reading stream...
-2228=The stream '[]' contains binary data and will most likely not display properly or completely.
+2228=The stream '[]' contains binary data and is unlikely to display properly.
 2229=Viewing contents of [].
 2230=Show file in Explorer
 2231=Copy
@@ -646,7 +646,7 @@
 ; (210 - 229, 1700 - 1749)
 ;
 0210=Remove programs Manager
-0211=Here you can see the list of programs in the 'Remove Software' list in the Control Panel. You can edit the uninstall command, or the record only or uninstall the program completely. Beware, restoring a deleted record or application is not possible!
+0211=Here you can see the list of programs in the 'Remove Software' list in the Control Panel. You can edit the uninstall command, or the record only, or uninstall the program completely. Beware, restoring a deleted record or application is not possible!
 0212=Name:
 0213=Uninstall command:
 0214=Delete this entry
@@ -674,10 +674,10 @@
 0235=O3 - Toolbar enumeration
 0236=O4 - Registry && Start Menu autoruns
 0237=O5 - Control Panel: IE Options
-0238=O6 - Policies: IE Options menuitem
+0238=O6 - Policies: IE Options menu item
 0239=O7 - Policies: Regedit / IP Security
 0240=O8 - IE contextmenu items enumeration
-0241=O9 - IE 'Tools' menuitems and buttons enumeration
+0241=O9 - IE 'Tools' menu items and buttons enumeration
 0242=O10 - Winsock LSP hijackers
 0243=O11 - Extra options groups in IE Advanced Options
 0244=O12 - IE plugins enumeration
@@ -710,7 +710,7 @@
 0273=Toggle line(s)
 0274=Open in editor
 0275=Back
-0276=Note: changes to the hosts file take effect when you restart your browser.
+0276=Note: changes to the hosts file don't take effect until you restart your browser.
 0277=Attributes:
 0278=Lines:
 0279=Loading hosts file, please wait...
@@ -719,14 +719,14 @@
 0281=No hosts file found.
 0282=The hosts file is locked for reading and cannot be edited.
      Make sure you have privileges to modify the hosts file and no program is protecting it against changes.
-0303=HiJackThis could not write the selected changes to your hosts file. The probably cause is that some program is denying access to it, or that your user account doesn't have the rights to write to it.
+0303=HiJackThis could not write the selected changes to your hosts file. Another program may be denying access to it, or your user account may have insufficient rights to access it.
 ;
 ; =========== Digital signature checker ==========
 ;
 ; (1850 - 1899)
 ;
 1850=Authenticode EDS checker - written by Stanislav
-1851=This tool will create a detail report about digital signature of files/folders you specify below:
+1851=This tool will create a detailed report about the digital signatures of files/folders you specify below:
 1852=Recursively (include subfolders)
 1853=Include files in Windows folder
 1854=Report format:
@@ -741,9 +741,9 @@
 1863=Filter
 1864=All Files
 1865=by extension
-1866=Digital signature is present, but damaged (probably, file is patched)
-1867=Enumerating files. Please, wait...
-1868=Preparing a report. Please, wait...
+1866=Digital signature is present, but damaged (the file has probably been patched)
+1867=Enumerating files. Please wait...
+1868=Preparing a report. Please wait...
 1869=Cannot open report file. Write access is restricted by another program.
 ;
 ; ============= Registry Key Unlocker =========
@@ -755,7 +755,7 @@
 1902=Recursively (process keys and all subkeys)
 1903=Go
 1904=Close
-1905=You should enter at least one key!
+1905=You must enter at least one key!
 1906=[OK]
 1907=(recursively)
 1908=[Fail]
@@ -769,7 +769,7 @@
 1952=Enter file name:
 1953=Unlock & Delete
 1954=Could not delete file.
-     Possible, it is locked by another process.
+     It may be locked by another process.
 1955=File: [] deleted successfully.
 ;
 ; =============== Fixes ==================
@@ -777,34 +777,34 @@
 ; (310 - 399)
 ;
 0310=HiJackThis is about to remove a BHO and the corresponding file from your system. Close all Internet Explorer windows AND all Windows Explorer windows before continuing for the best chance of success.
-0311=Internet Explorer still run. Would you like HJT close IE forcibly?
-     WARNING: current browser session will be lost!
-0320=Unable to delete the file:
+0311=Internet Explorer is still running. Would you like HJT to forcibly close IE?
+     WARNING: the current browser session will be lost!
+0320=Unable to delete file:
      []
      
      The file may be in use.
-0321=Use Task Manager to shutdown the program
-0322=Use a process killer like Sysinternals ProcMon to shutdown the program
+0321=Use Task Manager to shut down the program
+0322=Use a process killer like Sysinternals ProcMon to shut down the program
 0323=and run HiJackThis again to delete the file.
 0330=HiJackThis is about to remove a plugin from your system. Close all Internet Explorer windows before continuing for the best chance of success.
 0342=The file '[]' will be deleted by Windows when the system restarts.
 0343=The service '[]'  has been marked for deletion.
 0344=Nothing selected! Continue?
-0345=You selected to fix everything HiJackThis has found. This could mean items important to your system will be deleted and the full functionality of your system will degrade.
+0345=You selected to fix everything found by HiJackThis. Important system items may be deleted and system functionality may degrade.
      
-     If you aren't sure how to use HiJackThis, you should ask for help, not blindly fix things. Many 3rd party resources are available on the web that will gladly help you with your log.
+     If you aren't sure how to use HiJackThis, you should ask for help, not blindly fix things. Many 3rd-party resources are available on the web that will gladly help you with your log.
      
      Are you sure you want to fix all items in your scan results?
-0346=Fix [] selected items? This will permanently delete and/or repair what you selected
+0346=Fix [] selected items? This will permanently delete and/or repair all selected items
 0347=unless you enable backups.
 0348=Fixing of [] is not implemented yet.
 0349=Cure for this object is not provided: []
 
      You need to manually set the DNS address on the router specified in the contract with your internet provider.
 0350=HiJackThis needs to restart the system.
-     Please, save your work and press 'OK'.
-0351=Please, wait until Microsoft disk cleanup manager finish its work and press OK.
-0352=The server needs to be rebooted to complete required operations. Please, do it on your own.
+     Please save your work, then press 'OK'.
+0351=Please wait until Microsoft disk cleanup manager finishes its work, then press OK.
+0352=The server needs to be rebooted to complete required operations. Please reboot it manually.
 ;
 ; ============ Help on selected item (Sections) ================
 ;
@@ -812,41 +812,41 @@
 ;
 0400=Detailed information on item
 ; [R0]
-0401=A Registry value that has been changed from the default, resulting in a changed IE Home page, Search Page, Search Bar Page or Search Assistant.
+0401=A Registry value changed from the default setting, resulting in a different IE Home page, Search Page, Search Bar Page or Search Assistant.
      
      >>> Action taken by HiJackThis:
-      - registry value is restored to preset URL.
+      - registry value is restored to default URL.
 ; [R1]
-0402=A Registry value that has been created and is not present in a default Windows install nor needed, possibly resulting in a changed characteristics related to Internet search and other (IE Window Title, ProxyServer, ProxyOverride, Internet Connection Wizard, ShellNext etc.)
+0402=A Registry value not present in a default Windows install, possibly resulting in changed settings for Internet searches or other IE settings (IE Window Title, ProxyServer, ProxyOverride, Internet Connection Wizard, ShellNext, etc.)
      
      >>> Action taken by HiJackThis:
       - Registry value is deleted.
 ; [R2]
-0403=A Registry key that has been created and is not present in a default Windows install nor needed. Currently, this section is not used (no database entries).
+0403=A Registry key not present in a default Windows install. Currently, this section is not used (no database entries).
      
      >>> Action taken by HiJackThis:
       - Registry key is deleted, with everything in it.
 ; [R3]
-0404=Detected more than one value inside URLSearchHooks regkey. If you specify URL address without http://, ftp:// prefix, browser will attempt to figure out the correct protocol on its own using the list in UrlSearchHook.
+0404=Detected more than one value inside URLSearchHooks regkey. If you specify a URL address without http:// or ftp:// prefixes, the browser will attempt to figure out the correct protocol using the list in UrlSearchHook.
      
      >>> Action taken by HiJackThis:
       - Registry value is deleted;
       - default URLSearchHook value is restored.
 ; [F0]
-0405=An inifile value that has been changed from the default value, possibly resulting in program(s) loading at Windows startup. Often used to autostart a program.
+0405=An ini-file value changed from the default value, possibly resulting in program(s) loading at Windows startup. Often used to autostart a program.
 
-     File been checked: C:\Windows\system.ini
+     File checked: C:\Windows\system.ini
      
      Default: Shell=explorer.exe
      Infected example: Shell=explorer.exe,openme.exe
      
      >>> Action taken by HiJackThis:
-      - default inifile value is restored;
+      - default ini-file value is restored;
       - corresponding file is NOT deleted.
 ; [F1]
-0406=An inifile value that has been created and is not present in a default Windows install nor needed, possibly resulting in program(s) loading at Windows startup. Often used to autostart a program.
+0406=An ini-file value that is not present in a default Windows install, possibly resulting in program(s) loading at Windows startup. Often used to autostart a program.
 
-     File been checked: C:\Windows\win.ini
+     File checked: C:\Windows\win.ini
      
      Default:
      run=
@@ -855,12 +855,12 @@
      Infected example: run=dialer.exe
      
      >>> Action taken by HiJackThis: 
-      - inifile value is deleted;
+      - ini-file value is deleted;
       - corresponding file is NOT deleted.
 ; [F2]
-0407=F2 section corresponds to the equivalent location in registry for system.ini file (F0).
+0407=F2 section corresponds to the equivalent location in the registry for the system.ini file (F0).
 
-     A registry value that has been changed from the default value, possibly resulting in program(s) loading at Windows startup. Often used to autostart a program.
+     A registry value changed from the default value, possibly resulting in program(s) loading at Windows startup. Often used to autostart a program.
      
      To be checked: \Software\Microsoft\Windows NT\CurrentVersion\WinLogon => Shell, UserInit
      
@@ -880,9 +880,9 @@
       - default registry value is restored;
       - corresponding file is NOT deleted.
 ; [F3]
-0408=F3 section corresponds to the equivalent location in registry for win.ini file (F1).
+0408=F3 section corresponds to the equivalent location in the registry for the win.ini file (F1).
 
-     A registry value that has been created and is not present in a default Windows install nor needed, possibly resulting in program(s) loading at Windows startup. Often used to autostart a program.
+     A registry value not present in a default Windows install, possibly resulting in program(s) loading at Windows startup. Often used to autostart a program.
 
      To be checked: \Software\Microsoft\Windows NT\CurrentVersion\Windows => run, load
      
@@ -894,10 +894,10 @@
       - registry value is deleted;
       - corresponding file is NOT deleted.
 ; [O1]
-0409=1) Windows uses records in the 'hosts' file to lookup domain names before querying internet DNS servers. Changes to 'hosts' file effectively making Windows believe that e.g. 'google.com' has a different IP than it really has and thus making browser open the wrong page. It also uses to block some site(s) usual antivirus one by redirecting it to localhost or any other incorrect IP. 
-     2) Attacker can also hijack DNSApi.dll file to alter location where the system loads hosts file (all OS versions). Example: Hijacker.DNS.Hosts / Trojan.Win32.Patched.qw.
-     3) For the same reason attacker can change registry DatabasePath value (Win XP and older).
-     4) Hosts.ics file is created automatically when you share internet access. It contains a mapping between IP and home (local) network domain and can be hijacked in the same way as hosts file.
+0409=1) Windows uses records in the 'hosts' file to look-up domain names before querying internet DNS servers. Changes to the 'hosts' file can make Windows believe that e.g. 'google.com' has a different IP than it actually has, leading browsers to open a different page. It can also block site(s) entirely by redirecting them to localhost or a non-existent IP. 
+     2) Attackers can also hijack the DNSApi.dll file to alter the location where the system loads the hosts file (all OS versions). Example: Hijacker.DNS.Hosts / Trojan.Win32.Patched.qw.
+     3) Attackers can also change registry DatabasePath values (Win XP and older).
+     4) Hosts.ics file is created automatically when you share internet access. It contains a mapping between IP and home (local) network domain and can be hijacked in the same way as a hosts file.
      
      Infected examples:
      213.67.109.7	google.com
@@ -912,20 +912,20 @@
       - For hosts and hosts.ics entries - Line is deleted from file.
       - For DNSApi - dll file is recovered if available using SFC subsystem.
       - For altered hosts location - default registry value is restored.
-      - Also, DNS cache entries are flushes and DNS chaching service will be restarted.
+      - Also, DNS cache entries are flushed and DNS caching services are restarted.
 ; [O2]
-0410=A BHO (Browser Helper Object) is a specially crafted program that integrates into IE, and has virtually unlimited access rights on your system. Though BHO's can be helpful (like the Google Toolbar), hijackers often use them for malicious purposes such as tracking your online behavior, displaying popup ads etc.
+0410=A BHO (Browser Helper Object) is a specially crafted program that integrates into IE, and has virtually unlimited access rights. Though BHO's can be helpful (like the Google Toolbar), hijackers often use them for malicious purposes such as tracking your online behavior, displaying popup ads, etc.
      
      >>> Action taken by HiJackThis:
-      - BHO registry key and all corresponding keys (like CLSID and special IE BHO policies) are deleted;
-      - BHO dll file is deleted.
+      - Delete BHO registry key and all corresponding keys (like CLSID and special IE BHO policies);
+      - Delete BHO dll file.
 ; [O3]
-0411=IE Toolbars are part of BHO's (Browser Helper Objects) like the Google Toolbar that are helpful, but can also be annoying and malicious by tracking your behavior and displaying popup ads.
+0411=IE Toolbars are part of BHO's (Browser Helper Objects) like the Google Toolbar that may be helpful, but can also be annoying or malicious by tracking your behavior and displaying popup ads.
      
      >>> Action taken by HiJackThis:
-      - Registry value and all corresponding keys (like settings and special IE BHO policies) are deleted.
+      - Delete registry value and all corresponding keys (like settings and special IE BHO policies).
 ; [O4]
-0412=This part of the scan checks for several suspicious entries that autoload when Windows starts. Autoloading registry entries may cause loading a script (VBS, JS, HTA file and so on) possibly causing the Start Page, Search Page, Search Bar and Search Assistant to revert back to a hijacker's page. Besides, a DLL file can be loaded that can hook into several parts of your system. Also, script, other program or fileless registry entry (e.g. legit system file PowerShell.exe with arguments) in autostart can be used as a dropper and cause a loading another malicious files via internet, ensure the survival of malware after OS reboot.
+0412=This part of the scan checks for several suspicious entries that autoload when Windows starts. Autoloading registry entries may load a script (VBS, JS, HTA file, etc) possibly causing the Start Page, Search Page, Search Bar or Search Assistant to redirect to a hijacker's page. A DLL file can also be loaded that hooks into different parts of your system. Scripts, other programs, or fileless registry entries (e.g. legit system file PowerShell.exe with arguments) in autostart can also be used as droppers that load other malicious files via the internet, or ensure the survival of malware after a reboot.
      O4 section also includes listing of autorun disabled items (MSConfig / TaskMgr).
      
      Area to be checked: registry keys and 'Autostart' folder.
@@ -933,11 +933,11 @@
      Infected example: regedit c:\windows\system\sp.tmp /s
      
      >>> Action taken by HiJackThis:
-      - in case autostarting registry entries - registry value is deleted.
-      - in case 'AutoStart' folder - autoloading file is deleted.
-      - in case disabled autorun items - registry entry is deleted (For Windows 8+: autoloading file is deleted too. For Windows 7 and older: autoloading file left in the folder: C:\Windows\pss).
+      - Autostarting registry entries - registry value is deleted.
+      - 'AutoStart' folder - autoloading file is deleted.
+      - Disabled autorun items - registry entry is deleted (For Windows 8+: autoloading file is deleted too. For Windows 7 and older: autoloading file left in the folder: C:\Windows\pss).
 ; [O5]
-0413=Modifying CONTROL.INI can cause Windows to hide certain icons in the Control Panel. Though originally meant to speed up loading of Control Panel and reducing clutter, it can be used by a hijacker to prevent access to the 'Internet Options' window.
+0413=Modifying CONTROL.INI can cause Windows to hide certain icons in the Control Panel. Though originally meant to speed up Control Panel loading and reduce clutter, it can also be used by hijackers to prevent access to the 'Internet Options' window.
      
      Infected examples:
      [don't load]
@@ -947,7 +947,7 @@
      >>> Action taken by HiJackThis:
       - Line is deleted from Control.ini file.
 ; [O6]
-0414=Disabling of the 'Internet Options' menu menu entry in the 'Tools' menu of IE is done by using Windows Policies. Normally used by administrators to restrict their users, it can be used by hijackers to prevent access to the 'Internet Options' window.
+0414=Disabling the 'Internet Options' menu entry in the 'Tools' menu of IE is done using Windows Policies. Normally used by administrators to restrict user access, it can also be used by hijackers to prevent access to the 'Internet Options' window.
      
      StartPage Guard also uses Policies to restrict homepage changes, done by hijackers.
      
@@ -956,149 +956,149 @@
 ; [O7]
 0415=
      O7 - Policies
-     Disabling of Regedit is done by using Windows Policies. Normally used by administrators to restrict their users, it can be used by hijackers to prevent access to the Registry editor. This results in a message saying that your administrator has not given you privilege to use Regedit when running it.
+     Disabling of Regedit is done using Windows Policies. Normally used by administrators to restrict users, it can also be used by hijackers to prevent access to the Registry editor. This results in a message saying that your administrator does not allow you to access Regedit.
      
      O7 - IPSec
-     IP Security Policies provides the ability to allow or block network data packets, as well as fine-tune the source and destination packet filter, for instance, IP address (including subnet), type, port number and more.
+     IP Security Policies allow or block network data packets, and fine-tune source and destination packet filters like IP address (including subnet), type, port number and more.
 
-     O7 - TroubleShoot
-     Here, incorrect OS settings are displayed, which potentially lead to various malfunctions in the software and the system as generally. These include:
-     1. [EV] Incorrect value and/or type of environment variable (for %TEMP% and %TMP%, also checking is corresponding folder exist)
-     2. [Disk] Lack of free space on the system disk (less than 1 GB.)
-     3. [Network] Wrong network settings, e.g. empty name of computer.
+     O7 - Troubleshoot
+     Here, incorrect OS settings are displayed, which potentially lead to system and software malfunctions. These include:
+     1. [EV] Incorrect value and/or type of environment variable (for %TEMP% and %TMP%, also check if the corresponding folder exists)
+     2. [Disk] Lack of free space on the system disk (less than 1 GB).
+     3. [Network] Wrong network settings, e.g. empty computer name.
 
      >>> Action taken by HiJackThis:
       - for O7 - Policies: registry value is deleted.
       - for O7 - IPSec: all registry keys associated with the marked policy are deleted, including all the filters that apply to it.
-      - for O7 - TroubleShoot: [EV] variables will be reset to defaults (for %TEMP% and %TMP%, creating folder if it is not exist).
-      - for O7 - TroubleShoot: [Disk] Microsoft disk cleanup manager CleanMgr will be launched in automatically mode.
+      - for O7 - TroubleShoot: [EV] variables will be reset to defaults (for %TEMP% and %TMP%, creating folder if it doesn't exist).
+      - for O7 - TroubleShoot: [Disk] Microsoft disk cleanup manager CleanMgr will be launched in automatic mode.
       - for O7 - TroubleShoot: [Network] standard settings will be applied.
 ; [O8]
-0416=Extra items in the context (right-click) menu can prove helpful or annoying. Some recent hijackers add an item to the context menu. The Internet Explorer PowerTweaks Web Accessory adds several useful items, among which "Highlight", "Zoom In/Out", "Links list", "Images list" and "Web Search".
+0416=Extra items in the context (right-click) menu can prove helpful or annoying. Some recent hijackers add items to the context menu. The Internet Explorer PowerTweaks Web Accessory adds several useful items, including "Highlight", "Zoom In/Out", "Links list", "Images list" and "Web Search".
      
      >>> Action taken by HiJackThis:
       - Registry key is deleted.
 ; [O9]
-0417=Extra items in the Internet Explorer 'Tools' menu and extra buttons in the main toolbar are usually present as branding (Dell Home button) or after system updates (MSN Messenger button) and rarely by hijackers. The Internet Explorer PowerTweaks Web Accessory adds two menu items, being "Add site to Trusted Zone" and "Add site to Restricted Zone".
+0417=Extra items in the Internet Explorer 'Tools' menu and extra buttons in the main toolbar are usually present as branding (Dell Home button) or added after system updates (MSN Messenger button) and rarely by hijackers. The Internet Explorer PowerTweaks Web Accessory adds two menu items, "Add site to Trusted Zone" and "Add site to Restricted Zone".
      
      >>> Action taken by HiJackThis:
       - Registry key is deleted.
 ; [O10]
-0418=The Windows Socket system (Winsock) uses a list of providers for resolving DNS names (i.e. translating www.microsoft.com into an IP address). This is called the Layered Service Provider (LSP). A few programs are capable of injecting their own (spyware) providers in the LSP. If files referenced by the LSP are missing or the 'chain' of providers is broken, none of the programs on your system can access the Internet. Removing references to missing files and repairing the chain will restore your Internet access.
+0418=The Windows Socket system (Winsock) uses a list of providers for resolving DNS names (i.e. translating www.microsoft.com into an IP address). This is called the Layered Service Provider (LSP). Some programs are capable of injecting their own (spyware) providers in the LSP. If files referenced by the LSP are missing or the 'chain' of providers is broken, none of the programs on your system can access the Internet. Removing references to missing files and repairing the chain will generally restore Internet access.
      
      Note: LSP fixing is a risky procedure. You can get WinSockReset from https://www.foolishit.com/vb6-projects/winsockreset/ to repair the Winsock stack.
      
      >>> Action taken by HiJackThis:
-      - Not provided. You will be asked to go to www.foolishit.com for downloading the WinSockReset program.
+      - Not provided. You will be asked to go to www.foolishit.com and download the WinSockReset program.
 ; [O11]
-0419=The options in the 'Advanced' tab of Internet Explorer options are stored in the Registry, and extra options can be added easily by creating extra Registry keys. Very rarely, spyware/hijackers add their own options there which are hard to remove. E.g. CommonName adds a section 'CommonName' with a few options.
+0419=Options in the 'Advanced' tab of Internet Explorer options are stored in the Registry, and extra options can be added by creating extra Registry keys. Very rarely, spyware/hijackers add their own options which are hard to remove. (e.g. CommonName adds a section 'CommonName' with a few options.)
      
      >>> Action taken by HiJackThis:
       - Registry key is deleted.
 ; [O12]
-0420=Plugins handle filetypes that aren't supported natively by Internet Explorer. Common plugins handle Macromedia Flash, Acrobat PDF documents and Windows Media formats, enabling the browser to open these itself instead of launching a separate program. When hijackers or spyware add plugins for their filetypes, the danger exists that they get reinstalled if everything except the plugin has been removed, and the browser opens such a file.
+0420=Plugins handle filetypes that aren't supported natively by Internet Explorer. Common plugins handle Macromedia Flash, Acrobat PDF documents, and Windows Media formats, enabling the browser to open these itself instead of launching a separate program. When hijackers or spyware add plugins for their filetypes, malware - even if it's been removed - may be reinstalled if the browser opens a file handled by that plugin.
      
      >>> Action taken by HiJackThis:
       - Registry key and plugin file are deleted.
 ; [O13]
-0421=When you type an URL into Internet Explorer's Address bar without the prefix (http://), it is automatically added when you hit Enter. This prefix is stored in the Registry, together with the default prefixes for FTP, Gopher and a few other protocols. When a hijacker changes these to the URL of his server, you always get redirected there when you forget to type the prefix. Prolivation uses this hijack.
+0421=When you type a URL into Internet Explorer's Address bar without the prefix (http://), a prefix is automatically added when you hit Enter. This prefix is stored in the Registry, together with the default prefixes for FTP, Gopher and other protocols. When a hijacker changes these to the URL of their server, you are always redirected there when you do not enter a prefix. For example, Prolivation uses this hijack.
      
      >>> Action taken by HiJackThis:
       - Registry value is restored to default data.
 ; [O14]
-0422=When you hit 'Reset Web Settings' on the 'Programs' tab of the Internet Explorer Options dialog, your homepage, search page and a few other sites get reset to their defaults. These defaults are stored in C:\Windows\Inf\Iereset.inf. When a hijacker changes these to his own URLs, you get (re)infected rather than cured when you click 'Reset Web Settings'. SearchALot uses this hijack.
+0422=When you hit 'Reset Web Settings' on the 'Programs' tab of the Internet Explorer Options dialog, your homepage, search page and a few other sites are reset to default values. These defaults are stored in C:\Windows\Inf\Iereset.inf. When a hijacker changes these to his own URLs, 'Reset Web Settings' causes you to be (re)infected. For example, SearchALot uses this hijack.
      
      >>> Action taken by HiJackThis:
       - Value in the Inf file is restored to default data.
 ; [O15]
-0423=Websites in the Trusted Zone (see Tools => Internet Options => Security => Trusted sites => Sites) are allowed to use normally dangerous scripts and ActiveX objects normal sites aren't allowed to use. Some programs will automatically add a site to the Trusted Zone without you knowing. Only a very few legitimate programs are known to do this. A lot of browser hijackers add sites with ActiveX content to them.
+0423=Websites in the Trusted Zone (see Tools => Internet Options => Security => Trusted sites => Sites) are allowed to use potentially dangerous scripts and ActiveX objects. Some programs automatically add sites to the Trusted Zone without you knowing. Only a very few legitimate programs are known to do this. 
      
      >>> Action taken by HiJackThis:
       - Registry key is deleted.
       - Protocol to Zone mapping defaults is restored.
 ; [O16]
-0424=The Download Program Files (DPF) folder in your Windows base folder holds various types of programs that were downloaded from the Internet. These programs are loaded whenever Internet Explorer is active. Legitimate examples are the Java VM, Microsoft XML Parser and the Google Toolbar. When deleted, these objects are downloaded and installed again (after prompting).
-     Unfortunately, due to the lack security of IE, it lets malicious sites automatically download porn dialers, bogus plugins, ActiveX Objects etc to this folder, which haunt you with popups, huge phone bills, random crashes, browser hijackings and whatnot.
+0424=The Download Program Files (DPF) folder in your Windows base folder holds various programs that were downloaded from the Internet. These programs are loaded whenever Internet Explorer is active. Legitimate examples include the Java VM, Microsoft XML Parser and Google Toolbar. When deleted, these objects are downloaded and installed again (after prompting).
+     Unfortunately, IE also lets malicious sites automatically download things like porn dialers, bogus plugins, and ActiveX Objects to this folder, which haunt you with popups, large phone bills, random crashes, and other browser hijackings.
      
       >>> Action taken by HiJackThis:
       - registration of DPF CLSID is cancelled.
       - dll file and downloaded file are deleted.
 ; [O17]
-0425=Windows uses several registry values as a help to resolve domain names into IP addresses. Hijacking these values can cause all programs that use the Internet to be redirected to other pages.
-     Lop.com use this method, together with a (huge) list of cryptic domains.
+0425=Windows uses several registry values to help resolve domain names into IP addresses. Hijacking these values can cause all programs that use the Internet to redirect to other pages.
+     Lop.com uses this method, together with a (huge) list of cryptic domains.
 
-     DHCP DNS in this section displays the DNS address issued by the router by DHCP, i.e. when the "Automatically receive DNS address" checkbox is selected in the network connection settings.
+     DHCP DNS in this section displays the DNS address issued by the router by DHCP, i.e. when the "Automatically receive DNS address" checkbox is selected in network connection settings.
      
      >>> Action taken by HiJackThis:
       - Registry value is deleted.
-      - When fixing DHCP DNS, DNS Resolver Cache is flushed. The user must configure the router himself by entering the address specified in the contract with the provider before fixing this item in HiJackThis. 
+      - When fixing DHCP DNS, DNS Resolver Cache is flushed. The user must manually configure the router by entering the address specified by their contract provider BEFORE fixing this item in HiJackThis. 
 ; [O18]
-0426=A protocol is a 'language' Windows uses to 'talk' to programs, servers or itself. Webservers use the 'http:' protocol, FTP servers use the 'ftp:' protocol, Windows Explorer uses the 'file:' protocol. Introducing a new protocol to Windows or changing an existing one can burrow deep into how Windows handles files.
-     CommonName and Lop.com both register a new protocol when installed (cn: and ayb:).
+0426=A protocol is a 'language' Windows uses to 'talk' to programs, servers or itself. Webservers use the 'http:' protocol, FTP servers use the 'ftp:' protocol, Windows Explorer uses the 'file:' protocol. Introducing a new protocol to Windows or changing an existing one can change how Windows handles files.
+     CommonName and Lop.com both register new protocols when installed (cn: and ayb:).
      
-     The filters are content types accepted by Internet Explorer (and internally by Windows). If a filter exists for a content type, it passes through the file handling that content type first. Several variants of the CWS trojan add a text/html and text/plain filters, allowing them to hook all of the webpage content passed through Internet Explorer.
+     Filters are content types accepted by Internet Explorer (and internally by Windows). If a filter exists for a content type, data will pass through the content-type file handler first. Several variants of the CWS trojan add a text/html and text/plain filters, allowing them to hook all webpage content passed through Internet Explorer.
      
      >>> Action taken by HiJackThis:
       - Registry key is deleted.
       - Default CLSID value for filter and protocol is restored.
 ; [O19]
-0427=IE has an option to use a user-defined stylesheet for all pages instead of the default one, to enable handicapped users to better view the pages.
-     An especially vile hijacking method made by Datanotary has surfaced, which overwrites any stylesheet the user has setup and replaces it with one that causes popups, as well a system slowdown when typing or loading pages with many pictures.
+0427=IE has an option to use a user-defined stylesheet for all pages instead of the default one, to enable handicapped users to better view webpages.
+     An especially vile hijacking method made by Datanotary has surfaced, which overwrites any stylesheet the user has configured and replaces it with one that causes popups, as well a system slowdown when typing or loading pages with many pictures.
      
      >>> Action taken by HiJackThis:
       - Registry value is deleted.
 ; [O20]
-0428=Files specified in the AppInit_DLLs Registry value are loaded very early in Windows startup and stay in memory until system shutdown. This way of loading a .dll is hardly ever used, except by trojans. Examples of legitimate records here can be libraries of video drivers and cryptographic systems. AppInit_DLLs will not load if Secure Boot is enabled.
-     The WinLogon Notify Registry subkeys load dll files into memory at about the same point in the boot process, keeping them loaded into memory until the session ends. Apart from several Windows system components, the adware like VX2, ABetterInternet and Look2Me use this Registry key.
-     Since both methods ensure the dll file stays loaded in memory the entire time, fixing this won't help if the dll puts back the Registry value or key immediately. In such cases, the use of the 'Delete file on reboot' function or KillBox is recommended to first delete the file.
+0428=Files specified in the AppInit_DLLs Registry value are loaded very early during Windows startup and stay in memory until system shutdown. This way of loading a .dll is rarely used, except by trojans. Examples of legitimate records here can be libraries of video drivers or cryptographic systems. AppInit_DLLs will not load if Secure Boot is enabled.
+     The WinLogon Notify Registry subkeys load dll files into memory at a similar point in the boot process, keeping them loaded into memory until the session ends. Apart from several Windows system components, adware like VX2, ABetterInternet and Look2Me use this Registry key.
+     Since both methods ensure the dll file stays loaded in memory, fixing this won't help if the dll restores Registry values or keys after you fix them. In such cases, it is recommended to use the 'Delete file on reboot' function or KillBox to first delete the file.
      
      >>> Action taken by HiJackThis:
       - for AppInit_DLLs: Concrete registry value is cleared; parameter is NOT deleted.
       - for Winlogon Notify: Registry key is deleted.
 ; [O21]
-0429=This is an undocumented Registry key that contains a list of references to CLSIDs, which in turn reference .dll files that are then loaded by Explorer.exe to its address space at system startup. The dll files stay in memory until Explorer.exe quits, which is achieved either by shutting down the system or killing the shell process.
-     ShellIconOverlayIdentifiers - works similarly. This registry key contains several subkeys with identifiers referring to the files that are loaded to Explorer.exe. Usually, one program registers several such handlers at once. Name of the key often starts with a few spaces. These libraries are responsible for selecting the type of drawing the file icon in Windows Explorer, depending on certain conditions (the name of this file or other factors). An example of a legitimate program can be a client for cloud storage of Yandex.Disk, which changes the appearance of the icon depending on the state of file synchronization. The malicious program that installed the handler can execute any arbitrary code via dll.
+0429=This is an undocumented Registry key that contains a list of CLSID references, which in turn reference .dll files that are loaded by Explorer.exe at system startup. The dll files stay in memory until Explorer.exe quits, which is achieved either by shutting down the system or killing the shell process.
+     ShellIconOverlayIdentifiers works similarly. This registry key contains several subkeys with identifiers of the files loaded to Explorer.exe. Usually, one program registers several such handlers at once. Key names often start with a few spaces. These libraries are responsible for handling file icon rendering in Windows Explorer, depending on certain conditions (file types or other factors). An example of a legitimate program can be a client for cloud storage like DropBox or Yandex.Disk, which changes the appearance of the icon depending on the state of file synchronization. Malicious programs may install handlers that also execute arbitrary code.
      
      Action taken by HiJackThis:
       - Registry value or key is deleted together with CLSID identifier key.
       - dll file is deleted.
 ; [O22]
-0430=Task Scheduler is a service that can be configured to run an arbitrary process at a specified time or at a certain periodicity. One such setting is called a Job. Job (task) can be run with elevated privileges without requesting UAC, be bound to a specific user, contain the path to the process, arguments, state, and so on. Malware often uses tasks to provide autorun and survive after the process is restarted.
+0430=Task Scheduler is a service that can be configured to run an arbitrary process at a specified time or on a certain schedule. One such setting is called a Job. Jobs (tasks) can be run with elevated privileges without requesting UAC, be bound to specific users, contain paths to processes, arguments, states, and so on. Malware often uses tasks to provide autorun and still survive after a process is restarted.
      Tasks can be managed through the Task Scheduler snap-in (taskschd.msc).
 
      >>> Action taken by HiJackThis:
       - The task is disabled.
-      - Tasks' process is killed.
+      - The task's process is killed.
       - The task file and all associated registry keys are deleted.
       - The executable file of task is NOT deleted.
 ; [O23]
-0431=The 'Services' are a special type of programs that are essential to the system and are required for proper functioning of the system. Service processes are started before the user logs in and are protected by Windows. They can only be stopped from the services dialog in the Administrative Tools window.
-     Malware that registers itself as a service is subsequently also harder to kill.
+0431='Services' are a special type of program required for proper system functionality. Service processes are started before the user logs in and are protected by Windows. They can only be stopped from the services dialog in the Administrative Tools window.
+     Malware that registers itself as a service is therefore harder to kill.
      
      >>> Action taken by HiJackThis:
       - Services is disabled, stopped and removed.
       - In some cases reboot will be prompted to complete operation.
 ; [O24]
-0432=Desktop Components are ActiveX objects that can be made part of the desktop whenever Active Desktop is enabled. It runs as a (small) website widget.
-     Malware misuses this feature by setting the desktop background to a local HTML file with a large, bogus warning, e.g. for Ransomware it's a text of ransom requirements.
+0432=Desktop Components are ActiveX objects that can be made part of the desktop whenever Active Desktop is enabled. They run as (small) website widgets.
+     Malware abuses this feature by setting the desktop background to a local HTML file with a large, bogus warning, e.g. for Ransomware it may show text of ransom requirements.
      
      >>> Action taken by HiJackThis:
       - Registry key and HTML file are deleted.
-      - Desktop background is being updated.
+      - Desktop background is updated.
 ; [O25]
-0433=Windows Management Instrumentation is a default Windows service. It can be used to create permanent event consumer for both legitimate and malicious purposes. These events can collect hardware and software data to automate malware activities like spying. They can create a pipe to connect between machines, execute external script file or script code stored inside (fileless). Events can be triggered by WMI subsystem at intervals of time (like Task Scheduler) or manually when some application executes a special query to WMI.
+0433=Windows Management Instrumentation is a default Windows service. It can create permanent event consumers for both legitimate and malicious purposes. These events can collect hardware and software data to automate malware activities like spying. They can create pipes to connect between machines, or execute external script files or script code stored inside (fileless). Events can be triggered by the WMI subsystem at set intervals (like Task Scheduler) or manually when applications execute special WMI queries.
 
      >>> Action taken by HiJackThis:
       - event consumer, filter, timer and binding are deleted in WMI database;
       - associated file is also deleted.
 ; [R4]
-0434=Internet Explorer browser uses search provider (DefaultScope) to show list of tips in the search bar when you are typing search query in the address bar. IE allows replacing default provider with any from the list (SearchScopes).
+0434=Internet Explorer uses search provider (DefaultScope) to show a list of tips in the search bar while you type search queries into the address bar. IE allows you to replace its default provider with any from the list (SearchScopes).
 
      >>> Action taken by HiJackThis:
-      - key of particular provider is deleted;
+      - provider key is deleted;
       - default value of DefaultScope (Microsoft Bing) and provider parameters are recovered.
 ; [O26]
-0435=In the 'Image File Execution' Registry key, a program can be setup to be used together with a debugger. Whenever the host program is started, the 'debugger' program is loaded instead.
+0435=In the 'Image File Execution' Registry key, a program can be set up to use a debugger. Whenever the host program is started, the 'debugger' program is loaded instead.
      Note: when a debugger file deleted but still set, the host program will not start!
 
      >>> Action taken by HiJackThis:
@@ -1110,7 +1110,7 @@
 ; (500 - 529)
 ;
 0502=Unknown owner
-0503=file missing
+0503=File missing
 0504=The service [] is system-critical! It can't be deleted.
 0505=Short name
 0506=Full name
@@ -1118,15 +1118,15 @@
 0508=Owner
 0509=Access denied during removing the service '[]'. Make sure the service is not running.
 0510=Unable to delete the service '[]'. Make sure the name is entered correctly.
-0511=Unknown error occurred during deletion of the service '[]'.
+0511=Unknown error occurred during service deletion '[]'.
 0512=Library or registry entries are damaged
-0513=The service [] belongs to Microsoft! Are you really sure you want to delete it?
+0513=The service [] belongs to Microsoft! Are you sure you want to delete it?
 ;
 ; ================== Errors, Error window ===================
 ;
 ; (530 - 599)
 ;
-0530=Unable to create folder to place backups in. Backups of fixed items cannot be saved!
+0530=Unable to create folder to store backups. Backups of fixed items cannot be saved!
 0531=Not implemented yet, item '[]' will not be backed up!
 0532=bad coder - no donuts
 0533=I'm so stupid I forgot to implement this. Bug me about it.
@@ -1142,7 +1142,7 @@
 0553=No
 0554=First you have to mark a checkbox next to at least one item!
 0570=The language file '[]' is invalid (ambiguous id numbers).
-0572=Invalid language File. Reset to default (English)?
+0572=Invalid language file. Reset to default (English)?
 0580=HiJackThis cannot repair O10 Winsock LSP entries.
      Use the program WinsockReset from https://www.foolishit.com/vb6-projects/winsockreset/
      
@@ -1168,62 +1168,62 @@
 0600=Click an item to see a description of its function and origin.
 0601=These are the startup items for other users.
 0602=These are the startup items for other hardware configurations.
-0603=This group contains sections that cover files that get loaded just by being there.
-0604=This group contains sections that cover Internet Explorer in some way.
-0605=This group contains sections that cover system components that can be hijacked in some way, though not in a way to launch files.
-0606=This group contains sections that cover disabled or blocked items, either for protection or for system optimization.
+0603=This group contains files that get loaded just by being there.
+0604=This group involves Internet Explorer in some way.
+0605=This group contains system components that can be hijacked, though not in a way to launch files.
+0606=This group contains sections that cover disabled or blocked items, either for protection or system optimization.
 0607=This group contains all sections that originate from the Registry.
-0608=Processes that are currently running in memory, as well as all dll libraries loaded by each process.
+0608=Processes currently running in memory, including dll libraries loaded by each process.
      [All Windows versions]
 0609=Special folders that contain files that are started when users logon.
      [All Windows versions]
-0610=The folder that contains all jobs of the Windows Task Scheduler that can be setup to run periodically.
+0610=This folder contains all Windows Task Scheduler jobs that can be set up to run periodically.
      [Windows 2000/XP]
-0611=Some system settings are stored in *.ini files instead of in the Registry. Some of these settings can be used to start a program on system startup.
+0611=Some system settings are stored in *.ini files instead of the Registry. Some of these settings can be used to start programs at system startup.
      [Windows 9x/ME]
-0612=Map several *.ini files to the Registry. Some of the settings can be used to start a program on system startup.
+0612=Map several *.ini files to the Registry. Some of the settings can be used to start programs at system startup.
      [Windows NT/2k/XP/2003/Vista]
-0613=The autorun.inf files on a CD tell Windows what to start when the CD is inserted. This technique can be applied to hard disks too, making Windows executing an arbitrary file when the drive is opened in Explorer.
+0613=On CDs, an autorun.inf file tells Windows what file to auto-start. This technique can also be applied to hard disks, making Windows execute arbitrary files when the drive is opened in Explorer.
      [Windows 95/98/NT4/2000/XP/2003]
-0614=Windows can be setup to execute scripts when the system starts or shuts down, or when a user logs on or off.
+0614=Windows can execute scripts when the system starts or shuts down, or when a user logs on or off.
      [Windows 2000/XP/2003/Vista/7/8/8.1/10]
-0615=Windows uses *.bat files for starting certain components of the system. Anything in these files is executed on system startup.
+0615=Windows uses *.bat files for starting certain system components. Anything in these files is executed at system startup.
      [winstart.bat,dosstart.bat: Windows 95/98/98SE]
      [autoexec.bat,config.sys: Windows 9x/ME]
      [autoexec.nt,config.nt: Windows NT4/2000/XP/2003/Vista]
-0616=Windows can be setup to perform actions (such as deleting or renaming a file) when the system is restarted. These instructions can be present in the Registry or in the wininit.ini file. The wininit.bak file is a backup of the wininit.ini used last time and is created by Windows itself.
+0616=Windows can perform actions (such as deleting or renaming a file) when the system is restarted. These instructions can be stored in the Registry or the wininit.ini file. The wininit.bak file is a backup of wininit.ini, and it is created by Windows itself.
      [wininit.ini: Windows 9x/ME]
      [other: Windows NT4/2000/XP/2003/Vista]
-0617=These settings control what Windows does when a certain filetype is opened - if it is run by itself or if some application is used to open it. This setting can be hijacked to load a different or additional program.
+0617=These settings control what Windows does when certain filetypes are opened - if a file is run by itself, or if an application is used to open it. This setting can be hijacked to load different or additional programs.
      [All Windows versions]
-0618=The Windows services play an important role in Windows NT4, 2000 and XP (and newer), and a smaller one in Windows 95, 98 and ME. All listed items are started on system startup.
+0618=Windows services play an important role in Windows NT4, 2000 and XP (and newer), and a smaller one in Windows 95, 98 and ME. All listed items are started at system startup.
      [NT Services: Windows NT4/2000/XP/2003/Vista/7/8/8.1/10]
      [VxD Services: Windows XP and older]
-0619=Device drivers can be setup to insert themselves into the chain of drivers for a hardware device, either above it (UpperFilters) or below it (LowerFilters), enabling them to filter messages before passing them on to other drivers. The class filters apply to generic types of hardware. The device filters apply to specific devices only.
+0619=Device drivers can insert themselves into the chain of drivers for a hardware device, either above it (UpperFilters) or below it (LowerFilters), enabling them to filter messages before passing them on to other drivers. The class filters apply to generic types of hardware. The device filters apply to specific devices only.
      [Windows NT4/2000/XP/2003/Vista/7/8/8.1/10]
-0620=When a user logs on, winlogon.exe performs a number of actions. A number of DLL libraries and programs are started and will stay loaded until the user logs off. The Notify subkey contains links to dll libraries that are loaded when a particular event occurs, like logging on/off, starting up, shutting down, or activating the screensaver.
+0620=When a user logs on, winlogon.exe performs a number of actions. Certain DLL libraries and programs are started and will stay loaded until the user logs off. The Notify subkey contains links to dll libraries that are loaded when a particular event occurs, like logging on/off, starting up, shutting down, or activating a screensaver.
      [Windows NT4/2000/XP/2003/Vista/7/8/8.1/10]
-0621=Browser Helper Objects are loaded with Internet Explorer (and sometimes Windows Explorer) and can view, control and modify everything that Internet Explorer does.
+0621=Browser Helper Objects are loaded with Internet Explorer (and sometimes Windows Explorer) and can view, control and modify everything inside Internet Explorer.
      [Internet Explorer 4.0 and newer]
-0622=ActiveX objects. When loaded for the first time, these objects will run before the user logs on.
+0622=ActiveX objects. When loaded for the first time, these objects run before the user logs on.
      [All Windows versions]
-0623=The toolbars that are loaded and displayed (if enabled) when Internet Explorer is loaded.
+0623=Toolbars loaded and displayed (if enabled) when Internet Explorer is loaded.
      [Internet Explorer 4.0 and newer]
-0624=The additional buttons and tools that are loaded and displayed (if enabled) when Internet Explorer is loaded.
+0624=Additional buttons and tools that are loaded and displayed (if enabled) when Internet Explorer is loaded.
      [Internet Explorer 4.0 and newer]
-0625=The additional special bars that are loaded and displayed (if enabled) when Internet Explorer is loaded.
+0625=Additional special bars that are loaded and displayed (if enabled) when Internet Explorer is loaded.
      [Internet Explorer 4.0 and newer]
-0626=The additional commands in the right-click menu of websites that are loaded and displayed (if enabled) when Internet Explorer is loaded.
+0626=Additional commands in the right-click menu of websites that are loaded and displayed (if enabled) when Internet Explorer is loaded.
      [Internet Explorer 4.0 and newer]
-0627=All the bands that exist on the system that are loaded and displayed (if enabled) when Internet Explorer is loaded. The Search bar is an example of a band.
+0627=All bands that are loaded and displayed (if enabled) when Internet Explorer is loaded. The Search bar is an example of a band.
      [Internet Explorer 4.0 and newer]
 0628=The objects in the 'Downloaded Program Files' are additional plug-ins to Internet Explorer and are loaded when it starts. When deleted, these objects are downloaded and installed again (after prompting).
      [Internet Explorer 4.0 and newer]
 0629=Hooks that can intercept and redirect URLs entered into the Internet Explorer address bar.
      [Internet Explorer 4.0 and newer]
-0630=Due to the way Windows looks up paths for files, putting a file Explorer.exe in folders other than the Windows folder can cause them to be executed instead of the normal Explorer.exe file. There should be only an Explorer.exe file in the Windows directory.
+0630=Due to the way Windows looks up paths for files, putting a file Explorer.exe in folders other than the Windows folder can cause them to be executed instead of the normal Explorer.exe file. Explorer.exe should only exist in the Windows directory.
      [All Windows versions]
-0631=In the 'Image File Execution' Registry key, a program can be setup to be used together with a debugger. Whenever the host program is started, the 'debugger' program is loaded instead.
+0631=In the 'Image File Execution' Registry key, a program can be setup to be used with a debugger. Whenever the host program is started, the 'debugger' program is loaded instead.
      Note: when a debugger file deleted but still set, the host program will not start!
      [Windows NT4/2000/XP/2003/Vista/7/8/8.1/10]
 0632=When an item is added to the right-click menu of certain items, the associated dll library is loaded into memory when the system starts.
@@ -1232,88 +1232,88 @@
      [Windows ME/2000/XP/2003]
 0634=This Registry key lists all COM objects (dll libraries) that trap execute commands.
      [All Windows versions]
-0635=User interface extensions that are approved by the system or the user.
+0635=User interface extensions approved by the system or the user.
      [All Windows versions]
-0636=There are several 'Run' keys in the Registry that contain values that are executed on system startup or when the user logs on. This type of autostart location is very common.
+0636=The Registry contains 'Run' keys with values that are executed on system startup or when the user logs on. This type of autostart location is very common.
      [Run,RunOnce,RunOnceEx: All Windows versions]
      [RunServices,RunServicesOnce, Windows 9x/ME]
-0637=There are several 'Run' keys in the Registry that have subkeys which contain values themselves, that are executed on system startup (mostly only once, after which they keys are deleted by Windows).
+0637=The Registry contains 'Run' keys with subkeys that contain values that are executed on system startup (mostly only once, after which the keys are deleted by Windows).
      [All Windows versions]
-0638=The Windows Policies can be used to start applications when the system is started or a user logs in. Also, it can be used to setup the work environment (Shell) for a user, including any restrictions to the user's actions.
+0638=Windows Policies can be used to start applications when the system is started or a user logs in. Also, they can be used to set up the work environment (Shell) for a user, including any restrictions.
      [All Windows versions]
-0639=The pluggable MIME filters and protocol handlers can see and manipulate everything that passes through them through Internet Explorer and the URL Moniker.
+0639=Pluggable MIME filters and protocol handlers can see and manipulate everything that passes through them through Internet Explorer and the URL Moniker.
      [All Windows versions]
-0640=The Accessibility Utility Manager controls if programs like Magnifier and Screen Reader are loaded when Windows starts up. It can also be configured to start other programs on system startup.
+0640=The Accessibility Utility Manager determines if programs like Magnifier and Screen Reader are loaded when Windows starts. It can also start other programs on system startup.
      [Windows 2000/XP/2003/Vista]
-0641=WOW is the 16-bit compatibility manager of Windows. Its Registry key contains several values that can be used to start programs or dll libraries under certain conditions. The KnownDlls lists contain all dll libraries that can be run from the System folder only. If a dll with the same name is present somewhere else, it will not be loaded.
+0641=WOW is the 16-bit compatibility manager of Windows. Its Registry key contains several values that can be used to start programs or dll libraries under certain conditions. The KnownDlls lists contain all dll libraries that can be run from the System folder only. If a dll with the same name is present elsewhere, it will not be loaded.
      [Windows NT4/2000/XP/2003/Vista]
-0642=The shell Service Objects are loaded by Explorer as soon as it starts.
+0642=Shell Service Objects are loaded by Explorer as soon as it starts.
      [All Windows versions]
-0643=The shared Task Scheduler items (in the Registry) are loaded everytime you open Explorer.
+0643=Sshared Task Scheduler items (in the Registry) are loaded every time you open Explorer.
      [All Windows versions]
 0644=Similar to the 'Notify' Registry key in Windows 2000/XP, this Registry key can be used by Windows 95/98/ME to load a dll.
      [Windows 9x/ME]
 0645=When the Windows 2000/XP command line is opened (CMD.EXE), it will look for this Registry value and execute any program in it before starting.
      [Windows NT4/2000/XP/2003/Vista]
-0646=Layered Service Providers (LSP) are small pieces of software that can be added or inserted into the Windows TCP/IP handler by other software. Data outward bound from your computer to a legitimate destination on the Internet can be intercepted by an LSP and sent somewhere other than where you intend it to go. They are executed before user login.
+0646=Layered Service Providers (LSP) are small programs that can be added or inserted into the Windows TCP/IP handler by other software. Data outward bound from your computer to a legitimate destination on the Internet can be intercepted by an LSP and sent to a new destination. They are executed before the user logs in.
      [All Windows versions]
 0647=Autostarts from non-Microsoft programs.
-0648=ICQ contains a component named ICQNET that will run any applications setup for it when an Internet connection is detected.
-0649=mIRC can be setup to load custom scripts that have malicious purposes. These scripts can perform virtually any action on a system.
+0648=ICQ contains a component named ICQNET that can run other applications when an Internet connection is detected.
+0649=mIRC can load custom scripts that have malicious purposes. These scripts can perform virtually any action on a system.
 0650=All autostart items that are disabled, or serve only to block websites, domains, ActiveX objects, etc.
 0651=The most common places on a Windows system that a browser hijacker will hook into, apart from the autostart locations.
 0652=The URLs that Internet Explorer is reset to are stored in a file called IERESET.INF, and these URLs are used whenever you use 'Reset Web Settings'.
      [Internet Explorer 5 and newer]
-0653=All URLs that have been setup for Internet Explorer to use as start pages, search pages, search bars, etc. Note: some of these are only used under certain conditions.
+0653=All URLs that have been set up for Internet Explorer to use as start pages, search pages, search bars, etc. Note: some of these are only used under certain conditions.
      [All Internet Explorer versions]
-0654=When an address is typed into the Address Bar without the usual 'http://' or 'www' prefix, Internet Explorer will look here for the default text to prefix.
+0654=When an address is typed into the Address Bar without 'http://' or 'www' prefixes, Internet Explorer will look here for the default text to prefix.
      [Internet Explorer 5 and newer]
 0655=The location of the hosts file can be changed from the default in Windows 2000/XP (c:\windows\system32\drivers\etc). If a hosts file is present at any other location, it is ignored.
      [Windows NT4/2000/XP/Vista/2003]
-0656=The hosts file is a file that can be used somewhat like a local DNS server, mapping host names to IP addresses. While this speeds up name resolving, it can also be used to completely block a domain by mapping it to a non-routable IP address like 127.0.0.1 or 0.0.0.0.
+0656=The hosts file can be used like a local DNS server, mapping host names to IP addresses. While this speeds up name resolving, it can also be used to block domains by mapping them to a non-routable IP addresses like 127.0.0.1 or 0.0.0.0.
      [All Windows versions]
-0657=Internet Explorer checks this Registry key before loading and executing an ActiveX control. If the CLSID of the control is marked as incompatible (using a 'kill bit'), it will not be loaded. Note that only blocked ActiveX objects that actually exist on the system are listed here.
+0657=Internet Explorer checks this Registry key before loading and executing an ActiveX control. If the CLSID of the control is marked as incompatible (using a 'kill bit'), it will not be loaded. Only blocked ActiveX objects that actually exist on the system are listed here.
      [Internet Explorer 4 and newer]
-0658=Internet Explorer uses several zones to determine the security policy for websites, some with more permissions (Trusted Zone) or with less permissions (Restricted Zone). This can be used to allow a site more privileges (e.g. ActiveX, Java, scripting) or defang it.
+0658=Internet Explorer uses several zones to determine security policies for websites, some with more permissions (Trusted Zone) or with less permissions (Restricted Zone). This can allow or prevent a site from executing ActiveX, Java, scripting, or other objects.
      [Internet Explorer 4 and newer]
-0659=All the autostart items that are disabled using the MSConfig tool in Windows 98/ME.
+0659=All autostart items that are disabled using the MSConfig tool in Windows 98/ME.
      [Windows 98/ME]
-0660=All the autostart items that are disabled using the MSConfig tool in Windows XP.
+0660=All autostart items that are disabled using the MSConfig tool in Windows XP.
      [Windows XP/2000/Vista]
-0661=NT Services that are not currently running, either because they are stopped, set to run manually, or are disabled.
+0661=NT Services that are not currently running, either because they are stopped, set to run manually, or disabled.
      [Windows NT4/2000/XP/2003/Vista]
-0662=Windows has a central controlpoint, called Security Center, where antivirus, firewall and update settings are managed from the Control Panel. However, all three monitors can be overridden or disabled.
+0662=Windows has a central control point, called Security Center, where antivirus, firewall and update settings are managed. However, all three monitors can be overridden or disabled.
      [Windows XP Service Pack 2]
-0663=Windows XP has a feature called System Restore which enables the user to save snapshots of the system configuration, and rollback to one of those snapshots later. While restore points can consume a lot of disk space, the rollbacks are very effective.
+0663=Windows XP has a feature called System Restore which enables the user to save snapshots of system configurations, and roll back to one of those snapshots later. While restore points can consume a lot of disk space, rollbacks are very effective.
      [Windows ME/XP]
-0664=The Windows Firewall can be setup to allow programs through based on a filename or a port number (though not both in one rule). While it has rudimentary options to set the remote IP range for a 'rule' as well, all rules are stored in the Registry unencrypted, allowing any program to add itself to the Exceptions list.
+0664=Windows Firewall can allow programs to send or receive data based on filenames or port numbers (though not both in one rule). While it has rudimentary options to set remote IP ranges for a 'rule', all rules are stored in the Registry unencrypted, allowing any program to add itself to the Exceptions list.
      [Windows XP SP2/2003/Vista/7/8/8.1/10]
 0665=This Registry key contains all drivers that monitor print ports.
      [All Windows versions]
-0666=This Registry value contains a list of DLL filenames that are loaded by Windows at startup.
+0666=This Registry value contains a list of DLL files loaded by Windows at startup.
      [All Windows versions]
 0667=Desktop Components are ActiveX objects that can be made part of the desktop whenever Active Desktop is enabled, where it runs as a (small) website widget.
      [Windows 98/ME/2000/XP/2003/Vista]
-0668=The 'App Paths' Registry key maps an executable to its full path, so you can type 'wordpad' without a path in the Run dialog to start Wordpad. It is also possible to modify the setting to start a completely different program, though.
+0668=The 'App Paths' Registry key maps an executable to its full path, so for example you can type 'wordpad' in the Run dialog to start the actual Wordpad app. It is also possible to modify the setting to start completely different programs.
      [All Windows versions]
-0669=Much like the autorun.inf file, Windows has a Registry key that can set a program to automatically start when a diskette or CD is inserted into the computer. This MountPoints key can also be configured to start a program when a user opens or explores a hard drive.
+0669=Much like the autorun.inf file, Windows has a Registry key that can set a program to automatically start when a disk or CD is inserted. This MountPoints key can also be configured to start a program when a user opens or explores a hard drive.
      [All Windows versions]
-0670=When the system is started in Safe Mode, Windows will load these services ONLY, instead of all of the ones listed above. When using Safe Mode with Network Support, a few more services are loaded to for network support.
+0670=When the system is started in Safe Mode, Windows will load these services ONLY, instead of all of the ones listed above. When using Safe Mode with Network Support, some network services are also loaded.
      [Windows NT4/2000/XP/2003/Vista]
 0671=When the system is started in Safe Mode with Command Prompt, this value sets the filename for the command prompt which replaces the standard shell (Explorer.exe). For reasons unknown, this alternate shell is also used (if enabled) when starting the system in normal mode (!).
      [Windows NT4/2000/XP/2003/Vista]
-0672=The Microsoft Window Defender can be disable with a single Registry value. When this is to 1, the system is not protected.
+0672=Microsoft Windows Defender can be disabled with a single Registry value. When this is to 1, the system is not protected.
      [Windows XP/2003/Vista]
-0673=The packages listed here are part of the Windows NT Local Security Authority (LSA) and are called on certain system events.
+0673=Packages listed here are part of the Windows NT Local Security Authority (LSA) and are called on certain system events.
      Authentication packages are called when a user attempts to log on to Windows.
      Notification packages are called when passwords are set or changed.
      Security packages are implementations of security protocols such as Kerberos, SSL and TLS.
      [Windows 2000/XP/2003/Vista]
-0674=The drivers and libraries here are loaded whenever the application involved requires it.
+0674=These drivers and libraries are loaded whenever the application involved requires it.
      [Windows NT/2000/XP/2003/Vista]
-0675=The Windows Policies can be used to restrict individual users in what they can do on the system. Mostly this involves restricting access to system tools and system functions.
-0676=These are the startup items for the user
-0677=These are the startup items for the hardware configuration
+0675=Windows Policies can be used to restrict individual user accounts. This primarily involves restricting access to system tools and functions.
+0676=Startup items for the user
+0677=Startup items for the hardware configuration
 0678=The time it took StartupList to enumerate the items in this section.
 ;
 ; StartupList (controls)
@@ -1508,10 +1508,10 @@
      If you find this program useful, please donate!
      http://www.merijn.org/donate.php
 0949=Node text copied to clipboard.
-0950=Node path & text copied to clipboard.
+0950=Node path and text copied to clipboard.
 0951=Node tree copied to clipboard.
-0952=Filename was copied to the clipboard.
-0953=Registry key name was copied to the clipboard.
+0952=Filename copied to the clipboard.
+0953=Registry key name copied to the clipboard.
 0954=partial report
      Root node was []
      Full path to root node:
