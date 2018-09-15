@@ -1,4 +1,4 @@
-;[English]
+﻿;[English]
 ;
 ;
 ; Rules for translators:
@@ -7,9 +7,9 @@
 ; 2. First ";" character is a mark of comment
 ; 3. [], [*], [**] should not be modified or deleted !!!
 ; 4. You should not add empty lines for just convenience unless it is a part of translation string.
-; 5. "&" signs can be removed, but instead preferred to place them next to the nonrepeatable characters among nearby rows
-; (these signs are responsible for hotkeys: ALT + letter, which is located next to the sign "&" will cause opening of the corresponding menu)
-; 6. "\\p" signs are intended to devide a long text into several pieces, so each of them fit into the window as a whole.
+; 5. "&" signs can be removed, but if you can, please place them next to a character unique to that row
+; (these signs determine the hotkey for a menu item; e.g. ALT + letter, where letter is the character following the "&" sign)
+; 6. "\\p" signs divide a long text into several pieces, so each of them fit into the window as a whole.
 ;
 ;
 ; ============ Main window, Results window, Engine =========
@@ -60,14 +60,14 @@
 1006=Done.
 1007=Could not unzip file to Desktop! Please unzip it manually.
 1008=The value '[*]' could not be written to the settings file '[**]'. Please verify that write access is enabled for that file.
-1010=Scanning is not finished yet! Do you still want to forcibly close the program?
+1010=Scanning is not finished! Do you still want to forcibly close the program?
 1011=Warning: Ignore list contains [] items.
 1012=Warning: General scanning was not performed.
 1013=You have the most recent version.
 1014=Update is available.
 1015=Do you want to open download page?
 1016=Visit product description page?
-1017=Warning: Ignore list contains [] items, but they are displayed in log, because [*] switch is used.
+1017=Warning: Ignore list contains [] items, but these still appear in the log, because the [*] switch was used.
 1020=Number
 1021=Path
 1022=Could not create folder '[]'. Please verify that write access is enabled for this location.
@@ -216,9 +216,9 @@
          O2 - Internet Explorer: BHO
          O3 - Internet Explorer: toolbars
          O4 - Autoloading Registry entries and 'Autostart' folder / msconfig disabled items
-         O5 - Hiding of Control Panel items
+         O5 - Hiding Control Panel items
          O6 - IE Policy: Disabling of 'Internet Options' main tab
-         O7 - Policies: Regedit, Explorer, TaskMgr / IP Security / Certificates / OS troubleshoot
+         O7 - Policies: Regedit, Explorer, TaskMgr / IP Security / Certificates / OS troubleshooting
          O8 - Internet Explorer: Extra context menu items
          O9 - Internet Explorer: Extra services and buttons
          O10 - Breaking of Internet access due to the damage or infection in Winsock LSP
@@ -251,7 +251,7 @@
      1. HiJackThis
      ---------------
      
-       /startupscan	- automatically scan the system in silent mode and show the window if only items were found
+       /startupscan	- automatically scan the system in silent mode and only show a window if items were found
        /autolog		- automatically scan the system, save a logfile and open it
        /silentautolog	- automatically scan the system, save a logfile and close the program
        /timeout:sec	- number of seconds allowed for HiJackThis to be run in /silentautolog mode (180 by default; 0 - to disable).
@@ -264,17 +264,17 @@
        /md5		- calculate md5 hash of files
        /default		- load default settings (they will not be saved)
        /install     	- install HiJackThis to 'Program Files' folder and create shortcuts
-       /autostart   	- set Windows to automatically run HJT scanning after system boot up (use with /install key)
-       /uninstall	- remove all HiJackThis Registry entries, backups and quit
-       /silentuninstall - /uninstall analogue, except it disable confirmation request.
+       /autostart   	- set Windows to automatically run a HJT scan after system boot up (use with /install key)
+       /uninstall	- remove all HiJackThis Registry entries and backups, then quit.
+       /silentuninstall - /uninstall analogue, except it disables confirmation requests.
        /deleteonreboot "c:\file.sys" - delete the specified file after system rebooting using PendingFileRenameOperations mechanism
-       /accepteula 	- accept the agreement. It will not be displayed when program starts
+       /accepteula 	- accept the agreement. It will not be displayed when program start
        /noGUI		- do not show program window during the scan
        /SysTray	- run program minimized in notification area (system tray)
        /LangEN		- force use English language for user interface
        /LangRU		- force use Russian language for user interface
        /LangUA		- force use Ukrainian language for user interface
-       /debug		- tracing mode. Sequence of function execution will be appended to main log and HiJackThis_debug.log file. You can also rename the file to HiJackThis_debug.exe
+       /debug		- tracing mode. Function names will be appended to main log and HiJackThis_debug.log file. You can also rename the file to HiJackThis_debug.exe
        /debugtofile	- trace info will be saved to HiJackThis_debug.log file only
      
      
@@ -350,7 +350,7 @@
      
      - regist -= VIRUSNET association =- valuable tips and ideas, user's manual, database updates, closed and beta-testing
      - Sandor -= VIRUSNET association =- beta-testing, PC treatment on GitHub and forums of association
-     - SafeZone.cc team - promotion and support, PC treatment on forums of association
+     - SafeZone.cc team - promotion and support, PC treatment on SafeZone.cc forums
      
      Coordination:
 
@@ -362,7 +362,7 @@
      
      Russian: Dragokas, ScriptMakeR, Boris, fseto (SafeZone.cc), wylek.ru team
      Ukrainian: Dragokas
-     English: Dragokas, Tannerhelland
+     English: Dragokas, Tanner Helland
      
      Third-party development:
 
@@ -408,13 +408,13 @@
 0044=Misc Tools
 0045=Font of lists:
 0046=Size:
-0047=Apply font on whole interface
-0048=This applies to all tools (like list in ADS Spy, Startuplist tree e.t.c.)
+0047=Apply font to whole interface
+0048=This applies to all tools (like list in ADS Spy, Startuplist tree, etc)
 0050=Mark everything found for fixing after scan (DANGEROUS !!!)
 0051=Make backups before fixing items
 0052=Confirm fixing && ignoring of items (safe mode)
 0053=Ignore non-standard but safe domains in IE (e.g. msn.com, microsoft.com)
-0054=This can be useful when you are adding HiJackThis to startup
+0054=This can be useful when adding HiJackThis to startup
 0055=Do not show main menu at startup
 0057=Are you sure you want to enable this option?
      HiJackThis is not a 'click & fix' program. Because it targets *general* hijacking methods, false positives are a frequent occurrence.
@@ -437,10 +437,10 @@
 0068=Error! Could not launch Task scheduler service.
 0069=Installation complete. Do you want to create a shortcut on the Desktop?
 1400=Add HiJackThis to startup
-1401=Run silent mode HiJackThis scan at Windows startup, and show results only when something is found
-1402=The version of HiJackThis you launched is newer than installed one.
+1401=Run silent mode HiJackThis scan at Windows startup, and show results only if something is found
+1402=This version of HiJackThis is newer than the installed one.
      Update it?
-1403=To increase system loading speed it is recommended to set a delay before launching HiJackThis on user logon.
+1403=To improve system loading speed, we recommend setting a delay before launching HiJackThis after user logon.
      Specify the delay (in seconds):
 ;
 ; ============= IgnoreList ============
@@ -502,8 +502,7 @@
 1574=Unknown error happened during restore item: []. Item was only partially restored.
 1575=Error! Could not start the service:
 1576=Error! Cannot find the local file to apply repair settings:
-1577=Cannot start restoring until the system will be rebooted!
->>>>>>> devel
+1577=Cannot start restoring until the system is rebooted!
 ;
 ; ============= Misc Tools =============
 ;
@@ -674,7 +673,7 @@
      Beware, restoring a deleted record or application is not possible!
 0212=Name
 0213=Uninstall command
-0214=Web-site
+0214=Website
 0215=Registry key
 0216=Edit
 0217=Open
@@ -695,7 +694,7 @@
 1710=Are you sure you want to delete this item from the list?
 1711=Save "Intalled Software list" to disk...
 1712=Text files
-1713=You should be logged as user '[]' to do this action!
+1713=You need to be logged in as user '[]' to perform this action!
 ;
 ; ============= Help (progressbar) ===============
 ;
@@ -929,7 +928,6 @@
              A registry value not present in a default Windows install, possibly resulting in program(s) loading at Windows startup. Often used to autostart a program.
 
      To be checked: \Software\Microsoft\Windows NT\CurrentVersion\Windows => run, load
-     
      Default: run=
      Default: load=
      Infected example: run=С:\WINDOWS\inet20001\services.exe
@@ -942,7 +940,7 @@
 
              2) Attackers can also hijack the DNSApi.dll file to alter the location where the system loads the hosts file (all OS versions). Example: Hijacker.DNS.Hosts / Trojan.Win32.Patched.qw.
 
-             3) Attackers can also change registry DatabasePath values (Win XP and older).
+             3) Attackers can also change registry DatabasePath values (Win XP/2003 and older).
 \\p
              4) Hosts.ics file is created automatically when you share internet access. It contains a mapping between IP and home (local) network domain and can be hijacked in the same way as a hosts file.
      
@@ -1007,7 +1005,7 @@
 0415=
      O7 - Policies: Regedit, TaskMgr, Explorer and "Start" menu
 
-             Disabling of Regedit is done using Windows Policies. Normally used by administrators to restrict users, it can also be used by hijackers to prevent access to the Registry editor. This results in a message saying that your administrator does not allow you to access Regedit.
+             Regedit is disabled using Windows Policies. Normally used by administrators to restrict users, it can also be used by hijackers to prevent access to the Registry editor. This results in a message saying that your administrator does not allow you to access Regedit.
              Malicious programs also disable access to the Task Manager to protect themselves from termination.
              Some items may be blocked in Explorer and Start menu, making navigation difficult. For instance, the disc is hidden in "My Computer" folder.
 \\p
@@ -1199,7 +1197,7 @@
 0508=Owner
 0509=Access denied during removing the service '[]'. Make sure the service is not running.
 0510=Unable to delete the service '[]'. Make sure the name is entered correctly.
-0511=Unknown error occurred during service deletion '[]'.
+0511=Unknown error occurred when deleting service '[]'.
 0512=Library or registry entries are damaged
 0513=The service [] belongs to Microsoft! Are you sure you want to delete it?
 ;
