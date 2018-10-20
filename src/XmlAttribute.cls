@@ -11,6 +11,8 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
+'[CXmlAttribute.cls]
+
 ' It's a part of XML Parser by Jason Thorn
 ' see: XmlUtil.bas file for copyrights remark.
 
@@ -64,6 +66,6 @@ Err_Trap:
             ErrorMsg Err, "CXmlAttribute.Parse"
     
     End Select
-    If InIDE Then Stop: Resume Next
+    If inIDE Then Stop: Resume Next
 End Sub
 

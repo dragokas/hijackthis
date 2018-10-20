@@ -1,6 +1,7 @@
-# HiJackThis Fork v3
+﻿# HiJackThis Fork v3
 
-Hi, I am Polshyn Stanislav from Ukraine ([colony of USA](https://youtu.be/puLPOPKypEg?t=7218), [Chernobyl](https://en.wikipedia.org/wiki/Chernobyl_disaster), [Klitschko](https://en.wikipedia.org/wiki/Wladimir_Klitschko), [Na'Vi](https://en.wikipedia.org/wiki/Natus_Vincere)). 
+Hi, I am Polshyn Stanislav from Ukraine ([colony of USA](https://youtu.be/puLPOPKypEg?t=7218), [Chernobyl](https://en.wikipedia.org/wiki/Chernobyl_disaster), [Klitschko](https://en.wikipedia.org/wiki/Wladimir_Klitschko), [Na'Vi](https://en.wikipedia.org/wiki/Natus_Vincere)).
+
 I am happy to present a continuation of Trend Micro HiJackThis development.
 
 ## Overview

@@ -9,7 +9,7 @@
         type="win32">
     </assemblyIdentity>
 
-    <description>Creates a report of non-standard parameters of registry and file system for selectively removal of items related to the activities of malware and security risks</description>
+    <description>HiJackThis creates a report of non-standard parameters of registry and file system for selectively removal of items related to the activities of malware and security risks</description>
 
     <dependency>
         <dependentAssembly>
@@ -132,4 +132,4 @@
     <comInterfaceExternalProxyStub name="IVBDataObject" iid="{2334D2B1-713E-11CF-8AE5-00AA00C00905}" proxyStubClsid32="{00020424-0000-0000-C000-000000000046}" baseInterface="{00000000-0000-0000-C000-000000000046}" tlbid="{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}" />
     <comInterfaceExternalProxyStub name="IVBDataObjectFiles" iid="{2334D2B3-713E-11CF-8AE5-00AA00C00905}" proxyStubClsid32="{00020424-0000-0000-C000-000000000046}" baseInterface="{00000000-0000-0000-C000-000000000046}" tlbid="{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}" />
 
-</assembly>  
+</assembly>   

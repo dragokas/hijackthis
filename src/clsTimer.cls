@@ -11,6 +11,8 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
+'[clsTimer.cls]
+
 '
 ' Timer class by Dragokas
 '
@@ -25,7 +27,7 @@ Dim tim1 As Currency
 Dim tim2 As Currency
 Dim delta As Currency
 Dim bFreeze As Boolean
-Dim Idx As Long
+Dim idx As Long
 
 Private Sub Class_Initialize()
     QueryPerformanceFrequency freq
@@ -65,9 +67,9 @@ Public Property Get isFreezed() As Boolean
 End Property
 
 Public Property Get Index() As Long
-    Index = Idx
+    Index = idx
 End Property
 
 Public Property Let Index(p_Index As Long)
-    Idx = p_Index
+    idx = p_Index
 End Property

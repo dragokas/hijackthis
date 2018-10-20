@@ -1,4 +1,6 @@
 Attribute VB_Name = "modService"
+'[modService.bas]
+
 '
 ' Windows Services module by Alex Dragokas
 '
@@ -25,6 +27,7 @@ Public Enum SERVICE_STATE
     SERVICE_START_PENDING = &H2&
     SERVICE_STOP_PENDING = &H3&
     SERVICE_STOPPED = &H1&
+    SERVICE_STATE_UNKNOWN = 0&
 End Enum
 #If False Then
     Dim SERVICE_CONTINUE_PENDING, SERVICE_PAUSE_PENDING, SERVICE_PAUSED, SERVICE_RUNNING, SERVICE_START_PENDING, SERVICE_STOP_PENDING, SERVICE_STOPPED
@@ -72,13 +75,13 @@ Private Type SERVICE_STATUS
     WaitHint                As Long
 End Type
 
-Private Declare Function OpenSCManager Lib "advapi32.dll" Alias "OpenSCManagerW" (ByVal lpMachineName As Long, ByVal lpDatabaseName As Long, ByVal dwDesiredAccess As Long) As Long
-Private Declare Function OpenService Lib "advapi32.dll" Alias "OpenServiceW" (ByVal hSCManager As Long, ByVal lpServiceName As Long, ByVal dwDesiredAccess As Long) As Long
-Private Declare Function DeleteService Lib "advapi32.dll" (ByVal hService As Long) As Long
-Private Declare Function CloseServiceHandle Lib "advapi32.dll" (ByVal hSCObject As Long) As Long
-Private Declare Function QueryServiceStatus Lib "advapi32.dll" (ByVal hService As Long, lpServiceStatus As Any) As Long
-Private Declare Function RegOpenKeyEx Lib "advapi32.dll" Alias "RegOpenKeyExW" (ByVal hKey As Long, ByVal lpSubKey As Long, ByVal ulOptions As Long, ByVal samDesired As Long, phkResult As Long) As Long
-Private Declare Function RegQueryValueExLong Lib "advapi32.dll" Alias "RegQueryValueExW" (ByVal hKey As Long, ByVal lpValueName As Long, ByVal lpReserved As Long, ByRef lpType As Long, szData As Long, ByRef lpcbData As Long) As Long
+Private Declare Function OpenSCManager Lib "Advapi32.dll" Alias "OpenSCManagerW" (ByVal lpMachineName As Long, ByVal lpDatabaseName As Long, ByVal dwDesiredAccess As Long) As Long
+Private Declare Function OpenService Lib "Advapi32.dll" Alias "OpenServiceW" (ByVal hSCManager As Long, ByVal lpServiceName As Long, ByVal dwDesiredAccess As Long) As Long
+Private Declare Function DeleteService Lib "Advapi32.dll" (ByVal hService As Long) As Long
+Private Declare Function CloseServiceHandle Lib "Advapi32.dll" (ByVal hSCObject As Long) As Long
+Private Declare Function QueryServiceStatus Lib "Advapi32.dll" (ByVal hService As Long, lpServiceStatus As Any) As Long
+Private Declare Function RegOpenKeyEx Lib "Advapi32.dll" Alias "RegOpenKeyExW" (ByVal hKey As Long, ByVal lpSubKey As Long, ByVal ulOptions As Long, ByVal samDesired As Long, phkResult As Long) As Long
+Private Declare Function RegQueryValueExLong Lib "Advapi32.dll" Alias "RegQueryValueExW" (ByVal hKey As Long, ByVal lpValueName As Long, ByVal lpReserved As Long, ByRef lpType As Long, szData As Long, ByRef lpcbData As Long) As Long
 
 Private Const SC_MANAGER_CREATE_SERVICE     As Long = &H2&
 Private Const SC_MANAGER_ENUMERATE_SERVICE  As Long = &H4&
@@ -169,6 +172,8 @@ Public Function StopService(sServiceName As String) As Boolean
     
     '//TODO: Add stopping dependent services:
     'https://msdn.microsoft.com/en-us/library/windows/desktop/ms686335(v=vs.85).aspx
+    '
+    'P.S. Already done by /y command line switch
     
     Dim NetPath As String, ServState As Long, nSec As Long
     
@@ -197,7 +202,7 @@ Public Function StopService(sServiceName As String) As Boolean
     
     Do While ServState = SERVICE_STOP_PENDING And nSec < 10
         DoEvents
-        Sleep 1000
+        SleepNoLock 1000
         nSec = nSec + 1
         ServState = GetServiceRunState(sServiceName)
     Loop
@@ -210,7 +215,8 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function StartService(sServiceName As String, Optional bWait As Boolean = True) As Boolean
+'default timeout = 10 sec.
+Public Function StartService(sServiceName As String, Optional bWait As Boolean = True, Optional bSilent As Boolean = True) As Boolean
     On Error GoTo ErrorHandler:
 
     '//TODO: Add starting dependent services:
@@ -239,7 +245,7 @@ Public Function StartService(sServiceName As String, Optional bWait As Boolean =
         Else
             'async mode
             'cmd.exe /c "start "" net.exe start "service""
-            Proc.ProcessRun CmdPath, "/c START """" net.exe start """ & sServiceName & """""", , vbHide
+            Proc.ProcessRun CmdPath, "/d /c START """" net.exe start """ & sServiceName & """""", , vbHide
         End If
     End If
     
@@ -248,13 +254,20 @@ Public Function StartService(sServiceName As String, Optional bWait As Boolean =
     If bWait Then
         Do While ServState = SERVICE_START_PENDING And nSec < 10
             DoEvents
-            Sleep 1000
+            SleepNoLock 1000
             nSec = nSec + 1
             ServState = GetServiceRunState(sServiceName)
         Loop
+        If (ServState = SERVICE_RUNNING) Then
+            StartService = True
+        Else
+            If Not bSilent Then
+                MsgBoxW Translate(1575) & " " & sServiceName, vbExclamation
+            End If
+        End If
+    Else
+        StartService = True
     End If
-    
-    If (ServState = SERVICE_RUNNING) Then StartService = True
 
     Exit Function
 ErrorHandler:
@@ -445,19 +458,22 @@ Public Function CleanServiceFileName(sFilename As String, sServiceName As String
             
             'add .exe if not specified
             If Len(sFile) > 3 Then ext = Mid$(sFile, Len(sFile) - 3)
-            If StrComp(ext, ".exe", 1) <> 0 And _
-                StrComp(ext, ".sys", 1) <> 0 Then
-                  pos = InStr(sFile, " ")
-                  If pos <> 0 Then
-                    If FileExists(sFile & ".exe") Then
-                        sFile = sFile & ".exe"
-                    Else
-                        sFile = Left$(sFile, pos - 1)
+            
+            If Not FileExists(sFile) Then
+                If StrComp(ext, ".exe", 1) <> 0 And _
+                    StrComp(ext, ".sys", 1) <> 0 Then
+                      pos = InStr(sFile, " ")
+                      If pos <> 0 Then
+                        If FileExists(sFile & ".exe") Then
+                            sFile = sFile & ".exe"
+                        Else
+                            sFile = Left$(sFile, pos - 1)
+                            sFile = FindOnPath(sFile, True)
+                        End If
+                      Else
                         sFile = FindOnPath(sFile, True)
-                    End If
-                  Else
-                    sFile = FindOnPath(sFile, True)
-                  End If
+                      End If
+                End If
             End If
             
             'wow64 correction

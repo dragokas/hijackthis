@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <version>2.8.0.4</version>
+    <id>hijackthis</id>
+    <title>HiJackThis Fork</title>
+    <authors>Stanislav Polshyn &amp; Trend Micro</authors>
+    <copyright>Stanislav Polshyn &amp; Trend Micro</copyright>
+    <owners>Dragokas</owners>
+    <licenseUrl>http://www.gnu.org/licenses/gpl-2.0.html</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <tags>malware hijacking-methods expert adware security scanner tuneup cleanup toolbars unwanted pup portable</tags>
+    <projectUrl>http://sourceforge.net/projects/hjt/</projectUrl>
+    <projectSourceUrl>https://github.com/dragokas/hijackthis</projectSourceUrl>
+    <packageSourceUrl>https://github.com/dragokas/chocolatey-packages</packageSourceUrl>
+    <releaseNotes>https://github.com/dragokas/hijackthis/blob/devel/src/_ChangeLog_en.txt</releaseNotes>
+    <docsUrl>https://github.com/dragokas/hijackthis/wiki/HJT:-Tutorial</docsUrl>
+    <mailingListUrl>https://safezone.cc/threads/hijackthis-fork-i-voprosy-k-razrabotchikam.28770/</mailingListUrl>
+    <bugTrackerUrl>https://github.com/dragokas/hijackthis/issues</bugTrackerUrl>
+    <iconUrl>https://cdn.rawgit.com/dragokas/hijackthis/devel/src/ico/main/hijackthis.png</iconUrl>
+    <summary>HiJackThis is intended to quickly spot browser hijackers and startup programs that you do not want to start automatically.</summary>
+    <description>HiJackThis is a program that can be used to quickly spot browser hijackers, startup programs that you do not want to start automatically and other security risks. This program is a not anti-virus program, but rather a enumerator that lists programs that are starting up automatically on your computer as well as other configuration information that is commonly hijacked. Since there is no filter on what it reports, you should research each entry before you remove anything using this tool.</description>
+    <!--<dependencies>
+      <dependency id="" version="" />
+    </dependencies>-->
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>

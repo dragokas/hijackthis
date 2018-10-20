@@ -19,6 +19,14 @@ Begin VB.Form frmCheckDigiSign
    ScaleHeight     =   4680
    ScaleWidth      =   9255
    StartUpPosition =   3  'Windows Default
+   Begin VB.CommandButton cmdSelectFile 
+      Caption         =   "Add file(s) ..."
+      Height          =   375
+      Left            =   7320
+      TabIndex        =   14
+      Top             =   120
+      Width           =   1815
+   End
    Begin VB.Frame fraReportFormat 
       Caption         =   "Report format:"
       Height          =   1335
@@ -111,7 +119,7 @@ Begin VB.Form frmCheckDigiSign
       Top             =   4080
       Width           =   1575
    End
-   Begin VB.TextBox Text1 
+   Begin VB.TextBox txtPaths 
       Height          =   2055
       Left            =   240
       MultiLine       =   -1  'True
@@ -157,8 +165,9 @@ Begin VB.Form frmCheckDigiSign
       Height          =   195
       Left            =   480
       TabIndex        =   1
-      Top             =   240
+      Top             =   120
       Width           =   6555
+      WordWrap        =   -1  'True
    End
 End
 Attribute VB_Name = "frmCheckDigiSign"
@@ -166,6 +175,8 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+'[frmCheckDigiSign.frm]
+
 '
 ' Digital Signature checker by Alex Dragokas
 '
@@ -179,6 +190,7 @@ Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteW" (B
 
 Private Const CERT_E_UNTRUSTEDROOT          As Long = &H800B0109
 Private Const TRUST_E_NOSIGNATURE           As Long = &H800B0100
+Private Const CRYPT_E_BAD_MSG               As Long = &H8009200D
 
 Dim isRan As Boolean
 
@@ -195,6 +207,7 @@ Private Sub cmdGo_Click()
     Dim arrTmp()        As String
     Dim i               As Long
     Dim SignResult      As SignResult_TYPE
+    Dim LastSignResult  As SignResult_TYPE
     Dim hFile           As Long
     Dim sFile           As String
     Dim pos             As Long
@@ -204,8 +217,10 @@ Private Sub cmdGo_Click()
     Dim OriginPath      As String
     Dim SFCFiles()      As String
     Dim sTmp            As String
+    Dim cnt             As Long
+    Dim hResult         As Long
     
-    Static IsInit       As Boolean
+    Static isInit       As Boolean
     Static oDictSFC     As Object
     
     '// TODO: add checkbox 'Revocation checking' (warn. about: require internet connection)
@@ -213,8 +228,8 @@ Private Sub cmdGo_Click()
     
     If isRan Then Exit Sub
     
-    Set oDictFiles = CreateObject("Scripting.Dictionary")
-    Set oDictSFC = CreateObject("Scripting.Dictionary")
+    Set oDictFiles = New clsTrickHashTable  'CreateObject("Scripting.Dictionary")
+    Set oDictSFC = New clsTrickHashTable  'CreateObject("Scripting.Dictionary")
     oDictFiles.CompareMode = vbTextCompare
     oDictSFC.CompareMode = vbTextCompare
     
@@ -224,7 +239,7 @@ Private Sub cmdGo_Click()
     bCSV = OptCSV.Value               'CSV (in ANSI)
     bPlainText = optPlainText.Value   'Plain (in Unicode)
     
-    sPathes = Text1.Text
+    sPathes = txtPaths.Text
     
     If sPathes = "" And Not bListSystemPath Then
         'You should enter at least one path to file or folder!
@@ -238,16 +253,8 @@ Private Sub cmdGo_Click()
     ReportPath = BuildPath(App.Path(), "DigiSign") & IIf(bCSV, ".csv", ".log")
     
     If FileExists(ReportPath) Then Call DeleteFileW(StrPtr(ReportPath))
+    
     'Searching files / folders
-    
-    OpenW ReportPath, FOR_OVERWRITE_CREATE, hFile
-    
-    If hFile <= 0 Then
-        'Cannot open report file. Write access is restricted by another program.
-        MsgBoxW Translate(1869) & vbCrLf & vbCrLf & ReportPath
-        Exit Sub
-    End If
-    
     'Enumerating files. Please wait...
     lblStatus.ForeColor = vbBlack
     lblStatus.Caption = Translate(1867)
@@ -255,7 +262,6 @@ Private Sub cmdGo_Click()
     DoEvents
     
     For Each vPath In aPathes
-    
         vPath = Trim$(vPath)
         If Left$(vPath, 1) = """" Then
             pos = InStr(2, vPath, """")
@@ -319,12 +325,11 @@ Private Sub cmdGo_Click()
     'No files found.
     If oDictFiles.Count = 0 Then
         MsgBoxW Translate(1860)
-        CloseW hFile
         Exit Sub
     End If
     
     'Abort
-    CmdExit.Caption = Translate(1861)
+    cmdExit.Caption = Translate(1861)
     
     Dim bWHQL As Boolean
     Dim bWPF As Boolean
@@ -333,13 +338,27 @@ Private Sub cmdGo_Click()
     Dim sLogLine As String
     Dim bData() As Byte
     Dim bPE_File As Boolean
+    Dim AddFlags As Long
+    
+    If oDictFiles.Count > 100 Then
+        AddFlags = SV_EnableHashPrecache
+        
+        DoEvents
+        'Precaching security catalogues ...
+        lblStatus.ForeColor = vbBlack
+        lblStatus.Visible = True
+        lblStatus.Caption = Translate(1871)
+        Me.Refresh
+        SignVerify "", SV_EnableHashPrecache, SignResult
+        lblStatus.ForeColor = vbYellow
+    End If
     
     lblStatus.Caption = ""
     lblStatus.Visible = True
     shpBack.Visible = True
     
-    If Not IsInit Then
-        IsInit = True
+    If Not isInit Then
+        isInit = True
         If bIsWinVistaAndNewer Then
             SFCFiles = SFCList_Vista()
         Else
@@ -367,7 +386,7 @@ Private Sub cmdGo_Click()
         
         'досрочное прерывание работы программы
         If isRan = False Then
-            CloseW hFile
+            CloseW hFile, True
             cmdGo.Enabled = True
             lblStatus.Caption = ""
             lblStatus.Visible = False
@@ -384,25 +403,59 @@ Private Sub cmdGo_Click()
             shpFore.Width = CLng((shpBack.Width / oDictFiles.Count) * i)
         End If
         
-        
         'bWPF = inArray(arrFiles(i), SFCFiles, , , vbTextCompare)
         bWPF = oDictSFC.Exists(sFile)
         If Not bWPF Then bWPF = SfcIsFileProtected(0&, StrPtr(sFile))
-        
         
         bPE_File = isPE(sFile)
         
         'If bPE_File Then
             If StrComp(GetExtensionName(sFile), ".sys", 1) = 0 Then
-                SignVerify sFile, SV_isDriver, SignResult ' or SV_CheckEmbeddedPresence
-                bWHQL = SignResult.isLegit
+            
+                'Signature of driver can consist of both:
+                ' - signature in catalogue (3-d party + MS)
+                ' - internal signature (3-d party + MS)
+                
+                'So to check for WHQL and for legit 3d-party signature, you need to:
+                '1) check by catalogue first by passing SV_isDriver flag, so SignVerify will use DRIVER_ACTION_VERIFY provider and return result in .IsWHQL,
+                '   if found legit Microsoft signature
+            
+                'check WHQL mainly by the catalog
+                SignVerify sFile, SV_isDriver Or SV_CheckEmbeddedPresence Or AddFlags, SignResult
+                'save the state
+                bWHQL = SignResult.isWHQL
+'                bWHQL = SignResult.isLegit
+
                 bIsDriver = True
-                If CERT_E_UNTRUSTEDROOT = SignResult.ReturnCode Then
-                    bWHQL = False
-                    SignVerify sFile, SV_CacheDoNotLoad, SignResult ' or SV_CheckEmbeddedPresence
+
+                '2) check 3d-party signature with forcing WINTRUST_ACTION_GENERIC_VERIFY_V2 policy because in case driver has no corresponding
+                '   Microsoft signature, WinVerifyTrust + DRIVER_ACTION_VERIFY will return CERT_E_UNTRUSTEDROOT
+
+                'Since Microsoft SignTool also using WINTRUST_ACTION_GENERIC_VERIFY_V2, I commented this code and revoked SV_DefaultVerifyPolicy flag
+'                'next we are checking for legit in usual way
+'                SignVerify sFile, SV_isDriver Or SV_PreferInternalSign Or SV_DefaultVerifyPolicy Or SV_CacheDoNotLoad Or AddFlags, SignResult
+'                If bWHQL Then
+'                    SignResult.isWHQL = True
+'                End If
+
+                'If previous check identified Microsoft signature and internal signature is not verified yet, we need to check it for 3d-party publisher
+                If SignResult.isMicrosoftSign And SignResult.isSignedByCert And SignResult.isEmbedded Then
+                    LastSignResult = SignResult
+                    hResult = SignVerify(sFile, SV_isDriver Or SV_PreferInternalSign Or SV_CacheDoNotLoad Or AddFlags, SignResult)
+                    SignResult.isWHQL = True
+                    'For some reason "termdd.sys" has broken internal signature in XP
+                    If hResult = CRYPT_E_BAD_MSG Then
+                        SignResult = LastSignResult
+                    End If
                 End If
+                
+                'SignVerify returns CERT_E_UNTRUSTEDROOT if we check 3d-party signature that has no corresponding Microsoft signature
+'                If CERT_E_UNTRUSTEDROOT = SignResult.ReturnCode Then
+'                    bWHQL = False
+'                    SignVerify sFile, SV_isDriver Or SV_CacheDoNotLoad Or AddFlags, SignResult
+'                End If
             Else
-                SignVerify sFile, SV_CheckEmbeddedPresence, SignResult
+                SignVerify sFile, SV_CheckEmbeddedPresence Or AddFlags, SignResult
             End If
         'End If
         
@@ -438,7 +491,7 @@ Private Sub cmdGo_Click()
                 aLogLine(i) = aLogLine(i) & ";" & .ReturnCode
                 aLogLine(i) = aLogLine(i) & ";" & .ShortMessage
                 aLogLine(i) = aLogLine(i) & ";" & .FullMessage
-                aLogLine(i) = aLogLine(i) & ";" & IIf(.DateTimeStamp = #12:00:00 AM#, "", .DateTimeStamp)
+                aLogLine(i) = aLogLine(i) & ";" & IIf(.DateTimeStamp = #12:00:00 AM#, "", Format$(.DateTimeStamp, "yyyy\/MM\/dd HH:nn:ss"))
             End If
         End With
 
@@ -478,10 +531,12 @@ Private Sub cmdGo_Click()
         
         sLogLine = sTmp & vbCrLf & sLogLine
     Else
-        sLogLine = ChrW$(-257) & _
-            "FileName - Is legitimate - (Microsoft, WFP)" & vbCrLf & _
-            "-------------------------------------------" & vbCrLf & _
-            sLogLine
+        sLogLine = ChrW$(-257) & "Logfile of Digital Signature Checker (HJT v." & AppVerString & ")" & vbCrLf & vbCrLf & _
+            MakeLogHeader() & vbCrLf & _
+            "Is legitimate | FileName | Is Microsoft | Is WFP" & vbCrLf & _
+            "------------------------------------------------" & vbCrLf & _
+            sLogLine & vbCrLf & vbCrLf & _
+            "--" & vbCrLf & "End of file"
     End If
     
     If bCSV Then
@@ -490,28 +545,27 @@ Private Sub cmdGo_Click()
         bData() = sLogLine
     End If
     
-    PutW hFile, 1&, VarPtr(bData(0)), UBound(bData) + 1, doAppend:=True
-    
     lblStatus.Visible = False
     shpFore.Visible = False
     shpBack.Visible = False
     
-    CloseW hFile
-    
     isRan = False
     cmdGo.Enabled = True
-    CmdExit.Caption = Translate(1858)
+    cmdExit.Caption = Translate(1858)
     
-    If FileExists(ReportPath) Then
-        'Shell "rundll32.exe shell32.dll,ShellExec_RunDLL " & """" & ReportPath & """", vbNormalFocus
-        
-        If ShellExecute(Me.hwnd, StrPtr("open"), StrPtr(ReportPath), 0&, 0&, 1) <= 32 Then
-            'system doesn't know what .csv is
-            If FileExists(sWinDir & "\notepad.exe") Then
-                ShellExecute Me.hwnd, StrPtr("open"), StrPtr(sWinDir & "\notepad.exe"), StrPtr(ReportPath), 0&, 1
-            End If
+    If OpenW(ReportPath, FOR_OVERWRITE_CREATE, hFile, g_FileBackupFlag) Then
+        PutW hFile, 1&, VarPtr(bData(0)), UBound(bData) + 1, doAppend:=True
+        CloseW hFile, True
+    Else
+        If hFile <= 0 Then
+            'Cannot open report file. Write access is restricted by another program.
+            MsgBoxW Translate(1869) & vbCrLf & vbCrLf & ReportPath
+            Exit Sub
         End If
     End If
+    
+    'rundll32.exe shell32.dll,ShellExec_RunDLL / or notepad
+    OpenLogFile ReportPath
     
     Exit Sub
 ErrorHandler:
@@ -522,11 +576,11 @@ ErrorHandler:
         isRan = False
         cmdGo.Enabled = True
     End If
-    CloseW hFile
+    CloseW hFile, True
 End Sub
 
 Sub CopyArrayToDictionary(arr() As String, oDict As Object)
-    If Not IsArrDimmed(arr) Then Exit Sub
+    If 0 = AryItems(arr) Then Exit Sub
     Dim i As Long
     For i = 0 To UBound(arr)
         If Not oDict.Exists(arr(i)) Then
@@ -539,11 +593,22 @@ Private Sub cmdExit_Click()
     If isRan Then
         isRan = False
         ToggleWow64FSRedirection True
-        CmdExit.Caption = Translate(1858)
+        cmdExit.Caption = Translate(1858)
     Else
         Me.Hide
         'Unload Me
     End If
+End Sub
+
+Private Sub cmdSelectFile_Click()
+    Dim aFile() As String
+    Dim i As Long
+    Dim sExt As String
+    sExt = "*.exe;*.msi;*.dll;*.sys;*.ocx"
+    'PE; All files
+    For i = 1 To OpenFileDialog_Multi(aFile, Translate(122), Desktop, "PE (" & sExt & ")|" & sExt & "|" & Translate(1003) & " (*.*)|*.*", Me.hwnd)
+        txtPaths.Text = txtPaths.Text & vbCrLf & aFile(i)
+    Next
 End Sub
 
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
@@ -552,17 +617,18 @@ End Sub
 
 Private Sub Form_Load()
     Dim OptB As OptionButton
-    Dim ctl As Control
+    Dim Ctl As Control
     
     'Me.Icon = frmMain.Icon
     CenterForm Me
+    SetAllFontCharset Me, g_FontName, g_FontSize
     Call ReloadLanguage(True)
     
     ' if Win XP -> disable all window styles from option buttons
     If bIsWinXP Then
-        For Each ctl In Me.Controls
-            If TypeName(ctl) = "OptionButton" Then
-                Set OptB = ctl
+        For Each Ctl In Me.Controls
+            If TypeName(Ctl) = "OptionButton" Then
+                Set OptB = Ctl
                 SetWindowTheme OptB.hwnd, StrPtr(" "), StrPtr(" ")
             End If
         Next
@@ -593,14 +659,14 @@ Private Sub Form_Resize()
     If Me.Width < 8350 Then Me.Width = 8350
     If Me.Height < 3650 Then Me.Height = 3650
     
-    Text1.Width = Me.Width - 630
-    Text1.Height = Me.Height - 3500
+    txtPaths.Width = Me.Width - 630
+    txtPaths.Height = Me.Height - 3500
     
     TopLevel1 = Me.Height - 1300
     TopLevel2 = TopLevel1 - 1440
     
     cmdGo.Top = TopLevel1
-    CmdExit.Top = TopLevel1
+    cmdExit.Top = TopLevel1
     
     shpBack.Top = TopLevel1 + 120
     shpFore.Top = TopLevel1 + 120
@@ -628,7 +694,7 @@ Private Sub AddObjToList(Data As DataObject)
     Dim vObj
     If Data.GetFormat(vbCFFiles) Then
         For Each vObj In Data.Files
-            Text1.Text = Text1.Text & IIf(Right$(Text1.Text, 2) <> vbCrLf And Len(Text1.Text) > 0, vbCrLf, "") & CStr(vObj)
+            txtPaths.Text = txtPaths.Text & IIf(Right$(txtPaths.Text, 2) <> vbCrLf And Len(txtPaths.Text) > 0, vbCrLf, "") & CStr(vObj)
         Next
     End If
 End Sub

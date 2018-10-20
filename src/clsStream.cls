@@ -11,6 +11,8 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
+'[clsStream.cls]
+
 ' // clsStream.cls - binary stream class
 ' // © Krivous Anatoly Anatolevich (The trick), 2016
 
@@ -302,42 +304,50 @@ Public Function LoadFileToStream( _
     Dim sizeOfFile  As LARGE_INTEGER
     Dim binData()   As Byte
     Dim dwRead      As Long
-    Dim Ret         As Long
+    Dim ret         As Long
     
     On Error GoTo error_handler
     
     Err.Clear
     
-    Ret = -1
+    ret = -1
     
-    hFile = CreateFile(StrPtr(sFilename), GENERIC_READ, 0, ByVal 0&, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0)
+    hFile = CreateFile(StrPtr(sFilename), GENERIC_READ, _
+        FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, ByVal 0&, OPEN_EXISTING, g_FileBackupFlag, 0)
+        
     If hFile = INVALID_HANDLE_VALUE Then
-        Err.Raise 75
+        ErrorMsg Err, "LoadFileToStream", "CreateFile", sFilename
+        If inIDE Then Stop
+        GoTo error_handler:
     End If
 
     ' // Check size
     GetFileSizeEx hFile, sizeOfFile
     If sizeOfFile.highpart <> 0 Or sizeOfFile.lowpart > 100000000 Or sizeOfFile.lowpart <= 0 Then
-        Err.Raise 7
+        ErrorMsg Err, "LoadFileToStream", "GetFileSizeEx => File is too big: ", sFilename
+        If inIDE Then Stop
+        GoTo error_handler:
     End If
     
     ReDim binData(sizeOfFile.lowpart - 1)
     
     If ReadFile(hFile, binData(0), sizeOfFile.lowpart, dwRead, ByVal 0&) = 0 Then
-        Err.Raise 3040
+        ErrorMsg Err, "LoadFileToStream", "ReadFile", sFilename
+        If inIDE Then Stop
+        GoTo error_handler:
     End If
 
     ' // Save to stream
     oStream.WriteData VarPtr(binData(0)), dwRead
     
-    Ret = dwRead
+    ret = dwRead
     
 error_handler:
     
     ' // Clean up
-    CloseHandle hFile
+    If hFile > 0 Then CloseHandle hFile
     
-    LoadFileToStream = Ret
+    LoadFileToStream = ret
     
     If Err.Number Then Err.Raise Err.Number
     
@@ -351,17 +361,19 @@ Public Function SaveStreamToFile( _
     Dim hFile       As Long
     Dim binData()   As Byte
     Dim dwWritten   As Long
-    Dim Ret         As Long
+    Dim ret         As Long
     
     On Error GoTo error_handler
     
     Err.Clear
     
-    Ret = -1
+    ret = -1
     
-    hFile = CreateFile(StrPtr(sFilename), GENERIC_WRITE, 0, ByVal 0&, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)
+    hFile = CreateFile(StrPtr(sFilename), GENERIC_WRITE, FILE_SHARE_READ, ByVal 0&, CREATE_ALWAYS, FILE_ATTRIBUTE_ARCHIVE Or g_FileBackupFlag, 0)
     If hFile = INVALID_HANDLE_VALUE Then
-        Err.Raise 75
+        ErrorMsg Err, "SaveStreamToFile", "CreateFile", sFilename
+        If inIDE Then Stop
+        GoTo error_handler:
     End If
     
     If oStream.Size > 0 Then
@@ -374,19 +386,22 @@ Public Function SaveStreamToFile( _
         oStream.ReadData VarPtr(binData(0)), oStream.Size
         
         If WriteFile(hFile, binData(0), oStream.Size, dwWritten, ByVal 0&) = 0 Then
-            Err.Raise 3040
+            'Err.Raise 3040
+            ErrorMsg Err, "SaveStreamToFile", "WriteFile", sFilename
+            If inIDE Then Stop
+            GoTo error_handler:
         End If
         
     End If
     
-    Ret = dwWritten
+    ret = dwWritten
     
 error_handler:
     
     ' // Clean up
-    CloseHandle hFile
+    If hFile > 0 Then CloseHandle hFile
 
-    SaveStreamToFile = Ret
+    SaveStreamToFile = ret
     
     If Err.Number Then Err.Raise Err.Number
     

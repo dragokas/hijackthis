@@ -11,8 +11,19 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
+'[clsMath.cls]
+
 'Bitwise math class by The Trick
+'
 'Forked by Dragokas
+' - Program is now IDE-compatible (doesn't crash)
+' - Added .UIntToInt
+' - Added .ShortIntToUShortInt
+' - Added .LOWORD
+' - Added .HIWORD
+' - Added .Int64ToInt
+' - Added .IntToInt64
+' - Added .MBToInt64
  
 Option Explicit
  

@@ -34,6 +34,8 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+'[frmSysTray.frm]
+
 '
 ' AnotherSysTray by Brian Reilly
 '
@@ -108,6 +110,7 @@ Public Property Let TrayIcon(Value As Variant)
 End Property
 
 Private Sub Form_Load()
+    SetAllFontCharset Me, g_FontName, g_FontSize
     ReloadLanguage True
     Me.Visible = False
     Tooltip = "HiJackThis v. " & AppVerString

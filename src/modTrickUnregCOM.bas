@@ -1,4 +1,6 @@
 Attribute VB_Name = "UnregCOM"
+'[UnregCOM.bas]
+
 ' The module modTrickUnregCOM.bas - for working with COM libraries without registration.
 ' © Krivous Anatolii Anatolevich (The trick), 2015
 
@@ -47,7 +49,7 @@ Private Declare Function memcpy Lib "kernel32" _
                          Alias "RtlMoveMemory" ( _
                          ByRef Destination As Any, _
                          ByRef Source As Any, _
-                         ByVal length As Long) As Long
+                         ByVal Length As Long) As Long
 Private Declare Function CreateStdDispatch Lib "oleaut32" ( _
                          ByVal pUnkOuter As IUnknown, _
                          ByVal pvThis As IUnknown, _
@@ -64,7 +66,7 @@ Private Const TKIND_INTERFACE     As Long = 3
 
 Dim iidClsFctr      As UUID
 Dim iidUnk          As UUID
-Dim IsInit          As Boolean
+Dim isInit          As Boolean
 
 ' // Get all co-classes described in type library.
 Public Function GetAllCoclasses( _
@@ -77,7 +79,7 @@ Public Function GetAllCoclasses( _
     Dim typeInf As IUnknown
     Dim ret     As Long
     Dim Count   As Long
-    Dim index   As Long
+    Dim Index   As Long
     Dim pAttr   As Long
     Dim tKind   As Long
     
@@ -96,9 +98,9 @@ Public Function GetAllCoclasses( _
         ReDim listOfClsid(Count - 1)
         ReDim listOfNames(Count - 1)
         
-        For index = 0 To Count - 1
+        For Index = 0 To Count - 1
         
-            ret = ITypeLib_GetTypeInfo(typeLib, index, typeInf)
+            ret = ITypeLib_GetTypeInfo(typeLib, Index, typeInf)
                         
             If ret Then
                 Err.Raise ret
@@ -274,10 +276,10 @@ Public Function CreateObjectEx( _
         Exit Function
     End If
 
-    If Not IsInit Then
+    If Not isInit Then
         CLSIDFromString StrPtr(IID_IClassFactory), iidClsFctr
         CLSIDFromString StrPtr(IID_IUnknown), iidUnk
-        IsInit = True
+        isInit = True
     End If
     
     Dim ret     As Long
@@ -316,7 +318,7 @@ Public Function UnloadLibrary( _
     Dim lpAddr  As Long
     Dim ret     As Long
     
-    If Not IsInit Then Exit Function
+    If Not isInit Then Exit Function
     
     hLib = GetModuleHandle(StrPtr(Path))
     If hLib = 0 Then Exit Function
@@ -426,7 +428,7 @@ End Function
 ' // Call "ITypeLib:GetTypeInfo" method.
 Private Function ITypeLib_GetTypeInfo( _
                  ByVal Obj As IUnknown, _
-                 ByVal index As Long, _
+                 ByVal Index As Long, _
                  ByRef ppTInfo As IUnknown) As Long
     
     Dim params(1)   As Variant
@@ -436,7 +438,7 @@ Private Function ITypeLib_GetTypeInfo( _
     Dim pIndex      As Long
     Dim pReturn     As Variant
     
-    params(0) = index
+    params(0) = Index
     params(1) = VarPtr(ppTInfo)
     
     For pIndex = 0 To UBound(params)

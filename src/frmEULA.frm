@@ -11,19 +11,27 @@ Begin VB.Form frmEULA
    MinButton       =   0   'False
    ScaleHeight     =   7200
    ScaleWidth      =   6750
-   ShowInTaskbar   =   0   'False
    StartUpPosition =   2  'CenterScreen
-   Begin VB.TextBox txtText1 
+   Begin VB.TextBox txtEULA 
       Height          =   4695
-      Left            =   0
+      Left            =   120
       MultiLine       =   -1  'True
       ScrollBars      =   2  'Vertical
       TabIndex        =   2
       Top             =   1920
-      Width           =   6735
+      Width           =   6615
    End
    Begin VB.CommandButton cmdNotAgree 
       Caption         =   "I Do Not Accept"
+      BeginProperty Font 
+         Name            =   "Tahoma"
+         Size            =   8.25
+         Charset         =   204
+         Weight          =   400
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
       Height          =   375
       Left            =   3480
       TabIndex        =   1
@@ -32,6 +40,15 @@ Begin VB.Form frmEULA
    End
    Begin VB.CommandButton cmdAgree 
       Caption         =   "I Accept"
+      BeginProperty Font 
+         Name            =   "Tahoma"
+         Size            =   8.25
+         Charset         =   204
+         Weight          =   400
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
       Height          =   375
       Left            =   5160
       TabIndex        =   0
@@ -41,7 +58,16 @@ Begin VB.Form frmEULA
    Begin VB.Label lblAware 
       AutoSize        =   -1  'True
       BackStyle       =   0  'Transparent
-      Caption         =   $"frmEULA.frx":000C
+      Caption         =   $"frmEULA.frx":4B2A
+      BeginProperty Font 
+         Name            =   "Tahoma"
+         Size            =   8.25
+         Charset         =   204
+         Weight          =   400
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
       Height          =   780
       Left            =   120
       TabIndex        =   4
@@ -76,6 +102,8 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+'[frmEULA.frm]
+
 '
 ' License agreement form
 '
@@ -96,24 +124,41 @@ Private ControlsEvent As clsEvents
 
 Private Sub Form_Initialize()
     On Error GoTo ErrorHandler:
-
+    
     Dim ICC         As tagINITCOMMONCONTROLSEX
     Dim lr          As Long
     Dim hModShell   As Long
     Dim pos         As Long
     Dim sTime       As String
+    Dim sCmdLine    As String
+    Dim sPath       As String
+    Dim sFile       As String
+    Dim ExeName     As String
     
     ' Code launched from IDE ?
     Debug.Assert CheckIDE(inIDE)
     
+    If InStr(1, Command$(), "/release", 1) <> 0 Then Exit Sub
+    
+    Call AcquirePrivileges
+    
+    Set OSver = New clsOSInfo
+    
     ' boost priority
-    Call SetPriorityProcess(GetCurrentProcess(), HIGH_PRIORITY_CLASS)
+    If InStr(1, Command$(), "StartupScan", 1) > 0 Then '/StartupScan
+        bStartupScan = True
+        Call SetPriorityProcess(GetCurrentProcess(), BELOW_NORMAL_PRIORITY_CLASS)
+        Call SetProcessIOPriority(GetCurrentProcessId(), 1) 'Low
+    Else
+        Call SetPriorityProcess(GetCurrentProcess(), HIGH_PRIORITY_CLASS)
+        Call SetProcessIOPriority(GetCurrentProcessId(), 3) 'High
+    End If
     
     ' Enable visual styles
     If Not inIDE Then
         hModShell = LoadLibrary(StrPtr("shell32.dll"))
     End If
-
+    
     If hModShell <> 0 And Not inIDE Then
 
         With ICC
@@ -133,9 +178,10 @@ Private Sub Form_Initialize()
     End If
     
     Perf.MAX_TimeOut = MAX_TIMEOUT_DEFAULT
-    pos = InStr(1, Command$(), "/timeout", 1)
+    '/timeout
+    pos = InStr(1, Command$(), "timeout", 1)
     If pos <> 0 Then
-        sTime = Mid$(Command$(), pos + Len("/timeout") + 1)
+        sTime = Mid$(Command$(), pos + Len("timeout") + 1)
         pos = InStr(sTime, " ")
         If pos <> 0 Then
             sTime = Left$(sTime, pos - 1)
@@ -159,16 +205,24 @@ Private Sub Form_Initialize()
         bCryptDisable = True
     #End If
     
-    If InStr(1, Command$(), "/autolog", 1) > 0 Then bAutoLog = True
-    If InStr(1, Command$(), "/silentautolog", 1) > 0 Then bAutoLog = True: bAutoLogSilent = True
+    '/autolog
+    If InStr(1, Command$(), "/autolog", 1) > 0 _
+      Or InStr(1, Command$(), "-autolog", 1) > 0 Then
+        bAutoLog = True
+    End If
+    '/silentautolog
+    If InStr(1, Command$(), "silentautolog", 1) > 0 Then bAutoLog = True: bAutoLogSilent = True
     
     If bAutoLog Then Perf.StartTime = GetTickCount()
     
     Set Reg = New clsRegistry
     Set ErrLogCustomText = New clsStringBuilder 'tracing
     
+    '/debug
     If InStr(1, Command$(), "/debug ", 1) <> 0 Or _
         StrEndWith(Command$(), "/debug") Or _
+        InStr(1, Command$(), "-debug ", 1) <> 0 Or _
+        StrEndWith(Command$(), "-debug") Or _
         InStr(1, AppExeName(), "_debug", 1) <> 0 Or _
         InStr(1, AppExeName(), "_dbg", 1) <> 0 Then
         bDebugMode = True
@@ -179,8 +233,6 @@ Private Sub Form_Initialize()
         End 'do crash ^_^
     End If
     
-    Set OSver = New clsOSInfo
-    
     If OSver.MajorMinor >= 6.1 Then ' Windows 7 and Later
         lr = SetCurrentProcessExplicitAppUserModelID(StrPtr("Alex.Dragokas.HiJackThis"))
     End If
@@ -188,27 +240,101 @@ Private Sub Form_Initialize()
     Set oDictFileExist = New clsTrickHashTable  'file exists cache
     oDictFileExist.CompareMode = 1
     
-    If InStr(1, Command(), "/nogui", 1) <> 0 _
-      Or InStr(1, Command(), "/StartupScan", 1) <> 0 _
-      Or InStr(1, Command(), "/install", 1) <> 0 Then
+    '/nogui
+    If InStr(1, Command$(), "nogui", 1) <> 0 _
+      Or InStr(1, Command$(), "StartupScan", 1) <> 0 _
+      Or InStr(1, Command$(), "/install", 1) <> 0 _
+      Or InStr(1, Command$(), "-install", 1) <> 0 Then
         gNoGUI = True
+    End If
+    
+    sCmdLine = Replace$(Command$(), ":", "+")
+    
+    '/Tool:xxx
+    If Len(sCmdLine) <> 0 Then
+        If InStr(1, sCmdLine, "tool+StartupList", 1) <> 0 Then bRunToolStartupList = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+UninstMan", 1) <> 0 Then bRunToolUninstMan = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+DigiSign", 1) <> 0 Then bRunToolEDS = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+RegUnlocker", 1) <> 0 Then bRunToolRegUnlocker = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+ADSSpy", 1) <> 0 Then bRunToolADSSpy = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+Hosts", 1) <> 0 Then bRunToolHosts = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+ProcMan", 1) <> 0 Then bRunToolProcMan = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+CheckLNK", 1) <> 0 Then bRunToolCBL = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+ClearLNK", 1) <> 0 Then bRunToolClearLNK = True: gNoGUI = True
+    End If
+    
+    ExeName = GetFileName(AppPath(True))
+    
+    If StrBeginWith(ExeName, "StartupList") Then bRunToolStartupList = True: gNoGUI = True
+    If StrBeginWith(ExeName, "UninstMan") Then bRunToolUninstMan = True: gNoGUI = True
+    If StrBeginWith(ExeName, "DigiSignChecker") Then bRunToolEDS = True: gNoGUI = True
+    If StrBeginWith(ExeName, "RegUnlocker") Then bRunToolRegUnlocker = True: gNoGUI = True
+    If StrBeginWith(ExeName, "ADSSpy") Then bRunToolADSSpy = True: gNoGUI = True
+    If StrBeginWith(ExeName, "HostsMan") Then bRunToolHosts = True: gNoGUI = True
+    If StrBeginWith(ExeName, "ProcMan") Then bRunToolProcMan = True: gNoGUI = True
+    
+    '/saveLog "c:\LogPath"
+    '/saveLog "c:\LogPath\LogName.log"
+    If InStr(1, Command$, "saveLog", vbTextCompare) > 0 Then
+        'path to save logfile to
+        sPath = Mid$(Command$, InStr(1, Command$, "saveLog", 1) + 8)
+        If Left$(sPath, 1) = """" Then
+            'path enclosed in quotes, get what's between
+            sPath = Mid$(sPath, 2)
+            If InStr(sPath, """") > 0 Then
+                sPath = Left$(sPath, InStr(sPath, """") - 1)
+            Else
+                'no closing quote
+                sPath = vbNullString
+            End If
+        Else
+            'path has no quotes, stop at first space
+            If InStr(sPath, " ") > 0 Then
+                sPath = Left$(sPath, InStr(sPath, " ") - 1)
+            End If
+        End If
+    End If
+    
+    If Len(sPath) <> 0 Then
+        If Not FolderExists(sPath, , True) Then
+            If Not MkDirW(sPath, StrEndWith(sPath, ".log")) Then
+                sPath = ""
+            End If
+        End If
+    End If
+    If Len(sPath) <> 0 Then
+        If StrEndWith(sPath, ".log") Then
+            g_sLogFile = sPath
+            g_sDebugLogFile = BuildPath(GetParentDir(sPath), "HiJackThis_debug.log")
+        Else
+            g_sLogFile = BuildPath(sPath, "HiJackThis.log")
+            g_sDebugLogFile = BuildPath(sPath, "HiJackThis_debug.log")
+        End If
+        'check write access
+        If Not CheckAccessWrite(g_sLogFile, True) Then sPath = ""
+    End If
+    If Len(sPath) = 0 Then
+        g_sLogFile = BuildPath(AppPath(), "HiJackThis.log")
+        g_sDebugLogFile = BuildPath(AppPath(), "HiJackThis_debug.log")
     End If
     
     If bAutoLog Then
         OpenLogHandle
     End If
     
-    If InStr(1, Command$(), "/DebugToFile", 1) <> 0 Then
+    '/DebugToFile
+    If InStr(1, Command$(), "DebugToFile", 1) <> 0 Then
         bDebugToFile = True
     End If
-    If InStr(1, Command$(), "/debug", 1) <> 0 Then
-        bDebugToFile = True
+    If bDebugMode Then
         OpenDebugLogHandle
     End If
-    
+
     Exit Sub
 ErrorHandler:
-    MsgBoxW "Error in frmEULA.Form_Initialize. Err. number = " & Err.Number & " - " & Err.Description & ". LastDllErr = " & Err.LastDllError
+    If InStr(1, Command$(), "silentautolog", 1) = 0 Then
+        MsgBoxW "Error in frmEULA.Form_Initialize. Err. number = " & Err.Number & " - " & Err.Description & ". LastDllErr = " & Err.LastDllError
+    End If
     If inIDE Then Stop
     Resume Next
 End Sub
@@ -226,23 +352,31 @@ Private Sub Form_Load()
     End If
 
     If inIDE Then
-        AppVerString = GetVersionFromVBP(BuildPath(AppPath(), App.EXEName & ".vbp")) '_HijackThis.vbp"
+        AppVerString = GetVersionFromVBP(BuildPath(AppPath(), App.ExeName & ".vbp")) '_HijackThis.vbp"
     Else
         AppVerString = GetFilePropVersion(AppPath(True))
     End If
     
-    AppendErrorLogCustom "HiJackThis version is: " & AppVerString
+    'header of tracing log
+    AppendErrorLogCustom vbCrLf & vbCrLf & "Logfile ( tracing ) of HiJackThis Fork v." & AppVerString & vbCrLf & vbCrLf & _
+        "Command line: " & AppPath(True) & " " & Command() & vbCrLf & vbCrLf & MakeLogHeader()
     
     'Me.Caption = Me.Caption & AppVerString
 
-    bForceRU = InStr(1, AppExeName(), "_RU", 1) Or InStr(1, Command$(), "/langRU", 1)
-    bForceEN = InStr(1, AppExeName(), "_EN", 1) Or InStr(1, Command$(), "/langEN", 1)
-    bForceUA = InStr(1, AppExeName(), "_UA", 1) Or InStr(1, Command$(), "/langUA", 1)
+    bForceRU = InStr(1, AppExeName(), "_RU", 1) Or InStr(1, Command$(), "langRU", 1) '/langRU
+    bForceEN = InStr(1, AppExeName(), "_EN", 1) Or InStr(1, Command$(), "langEN", 1) '/langEN
+    bForceUA = InStr(1, AppExeName(), "_UA", 1) Or InStr(1, Command$(), "langUA", 1) '/langUA
 
     bIsWOW64 = IsWow64()
 
-    If InStr(1, Command$, "/accepteula", 1) <> 0 Or _
+    #If DoCrash Then
+        DoCrash
+    #End If
+
+    '/accepteula
+    If InStr(1, Command$, "accepteula", 1) <> 0 Or _
         InStr(1, Command$, "/uninstall", 1) <> 0 Or _
+        InStr(1, Command$, "-uninstall", 1) <> 0 Or _
         Reg.KeyExists(HKEY_LOCAL_MACHINE, "Software\TrendMicro\HiJackThisFork") Then
             EULA_Agree
             Me.Hide
@@ -251,9 +385,9 @@ Private Sub Form_Load()
             Unload Me
     Else
         Localize
-        txtText1.Text = GetEULA()
+        txtEULA.Text = GetEULA()
         Set ControlsEvent = New clsEvents
-        Set ControlsEvent.txtBoxInArr = txtText1   'focus on txtbox to add scrolling support
+        Set ControlsEvent.txtBoxInArr = txtEULA   'focus on txtbox to add scrolling support
         bFirstRun = True
     End If
     
@@ -289,7 +423,7 @@ Sub WatchForProcess()   'waiting for process completion to release unpacked reso
     
     Dim ProcessID As Long
     Dim hProc As Long
-    Dim lRet As Long
+    Dim lret As Long
     Dim sPathComCtl1 As String
     Dim sPathComCtl2 As String
     
@@ -307,8 +441,8 @@ Sub WatchForProcess()   'waiting for process completion to release unpacked reso
             CloseHandle hProc
         End If
         
-        lRet = DeleteFileW(StrPtr(sPathComCtl1))
-        lRet = DeleteFileW(StrPtr(sPathComCtl2))
+        lret = DeleteFileW(StrPtr(sPathComCtl1))
+        lret = DeleteFileW(StrPtr(sPathComCtl2))
     End If
     
     Exit Sub

@@ -55,23 +55,23 @@ Function FileLenW(Optional Path As String, Optional hFileHandle As Long) As Curr
 End Function
 
 
-Public Function OpenW(FileName As String, Access As VB_FILE_ACCESS_MODE, retHandle As Long) As Boolean
+Public Function OpenW(Filename As String, Access As VB_FILE_ACCESS_MODE, retHandle As Long) As Boolean
     
     Dim FSize As Currency
     
     If Access And (FOR_READ Or FOR_READ_WRITE) Then
-        If Not FileExists(FileName) Then
+        If Not FileExists(Filename) Then
             retHandle = INVALID_HANDLE_VALUE
             Exit Function
         End If
     End If
     
     If Access = FOR_READ Then
-        retHandle = CreateFile(StrPtr(FileName), GENERIC_READ, FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, ByVal 0&, OPEN_EXISTING, ByVal 0&, ByVal 0&)
+        retHandle = CreateFile(StrPtr(Filename), GENERIC_READ, FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, ByVal 0&, OPEN_EXISTING, ByVal 0&, ByVal 0&)
     ElseIf Access = FOR_OVERWRITE_CREATE Then
-        retHandle = CreateFile(StrPtr(FileName), GENERIC_WRITE, FILE_SHARE_READ, ByVal 0&, CREATE_ALWAYS, ByVal 0&, ByVal 0&)
+        retHandle = CreateFile(StrPtr(Filename), GENERIC_WRITE, FILE_SHARE_READ, ByVal 0&, CREATE_ALWAYS, ByVal 0&, ByVal 0&)
     ElseIf Access = FOR_READ_WRITE Then
-        retHandle = CreateFile(StrPtr(FileName), GENERIC_READ Or GENERIC_WRITE, FILE_SHARE_READ, ByVal 0&, OPEN_EXISTING, ByVal 0&, ByVal 0&)
+        retHandle = CreateFile(StrPtr(Filename), GENERIC_READ Or GENERIC_WRITE, FILE_SHARE_READ, ByVal 0&, OPEN_EXISTING, ByVal 0&, ByVal 0&)
     Else
         Debug.Print "Wrong access mode!"
     End If

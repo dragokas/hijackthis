@@ -18,7 +18,6 @@
 :: - concatenate external files to 1 resource (calling separate script)
 :: - upx it
 :: - add digital signature (external script) (currently disabled)
-:: - send file for virus checking (using either PhrozenSoft VirusTotal Uploader or Aitotal by Alex1983; separate script)
 :: - zip it to storage (folder 'Archive')
 :: - all operations (compile / zip / sign / upload) is under checksum/error validation.
 
@@ -43,7 +42,7 @@ set AppName=
 set NoUPX=true
 
 :: List of file extensions and additional folders in project's directory to include in zip-backup
-set arcList=*.vbp *.vbw *.rc *.res *.exe *.frm *.frx *.lvw *.cmd *.csi *.csv *.txt *.log *.PDM *.SCC *.lng *.pdb *.tlb *.ocx *.dll *.md *.gitignore *.bak
+set arcList=*.vbp *.vbw *.rc *.res *.exe *.frm *.frx *.lvw *.cmd *.csi *.csv *.txt *.log *.PDM *.SCC *.lng *.pdb *.tlb *.ocx *.dll *.md *.gitignore *.bak *.odl *.idl
 
 :: Folder for backup of archive
 set ArcFolder=Archive
@@ -73,11 +72,6 @@ set FlagsPatcher=Tools\TSAwarePatch\TSAwarePatch.exe
 set CheckPDB=true
 set CheckPDB_tool=tools\ChkMatch\ChkMatch.exe
 
-:: Check for viruses via Virustotal
-set CheckVT=true
-set VTScanToolPath=tools\Aitotal\Aitotal.exe
-set VTScanToolArg=/min /scan
-
 :: -------------------------------------------------------------------------------------------
 
 if "%~1"=="Fast" set bFast=true
@@ -88,6 +82,12 @@ echo.
 
 :: Searching for non-screened STOP statements
 call _5_Check_Stop_Statements.cmd
+
+:: Checking for non-default conditional constant set and forgot
+< frmEULA.frm find /i "#Const" | find /i "= True" && (echo.& echo Non-default constant has been detected !!!& echo.& pause)
+
+:: Cleaning logs etc.
+call _4_Clear.cmd
 
 :: Searching project's file name
 if not Defined ProjFile For %%a in (*.vbp) do set ProjFile=%%a
@@ -195,6 +195,9 @@ set "arc=%ArcFolder%\%ProjTitle%_%newVersion%"
 ::call :UpdateProject
 ::::::::::::::::::::::::::::::
 
+for %%a in ("%AppName%") do set "ExeName=%%~na"
+del %ExeName%.pdb 2>NUL
+
 echo Starting compilation ...
 
 if exist "%AppName%" del "%AppName%"
@@ -218,10 +221,14 @@ if exist "%AppName%" del "%AppName%"
 :::::::::::::::::::::::::::::::
 
 :: TS aware + ASLR + DEP
+echo.
+echo. Applying ASLR, DEP, TSAWARE, Subsystem version fix ...
+echo.
 "%FlagsPatcher%" "%cd%\%AppName%" || (echo.& pause)
 
 :: for update checker (in future)
 > "%cd%\HiJackThis-update.txt" set /p "=%newVersion%"<NUL
+> "%cd%\HiJackThis-update-test.txt" set /p "=%newVersion%"<NUL
 
 :: Adding high-quality icon
 if Defined icoFile if exist "%icoFile%" (Tools\ChangeIcon\IC.exe "%cd%\%AppName%" "%icoFile%") else (echo Icon file isn't found !!! & echo. & pause)
@@ -251,6 +258,7 @@ For /F "delims=" %%a in ("%AppName%") do set "AppTitle=%%~na"
 
 :: Checking debug. symbols for matching the image
 if /i "%CheckPDB%"=="true" (
+  echo.
   echo Checking debug. symbols ...
   "%CheckPDB_tool%" -c "%cd%\%AppTitle%.exe" "%cd%\%AppTitle%.pdb" | find /i "Result: Matched" || (
     "%CheckPDB_tool%" -c "%cd%\%AppTitle%.exe" "%cd%\%AppTitle%.pdb"
@@ -328,13 +336,6 @@ echo "%cd%\%AppName%" | clip
 echo Path to HiJackThis.exe has been copied to clipboard (for VT check).
 echo.
 
-set ch=Y
-if /i "%CheckVT%"=="true" set /p "ch=Check on VirusTotal? (Y/N) "
-if /i "%ch%"=="N" set CheckVT=false
-if /i "%CheckVT%"=="true" start "" /min "%VTScanToolPath%" %VTScanToolArg% "%cd%\%AppTitle%.exe"
-
-::ping -n 2 127.1 >NUL
-
 :skipVT
 if defined bFast goto skipAskHotUpdate
 
@@ -347,11 +348,6 @@ if /i "%ch%" neq "n" (
 )
 
 :skipAskHotUpdate
-
-echo.
-echo "%cd%\%AppTitle%.zip" | clip
-echo Path to HiJackThis.zip has been copied to clipboard (for server uploading).
-echo.
 
 :: test running HJT scan from Autologger (2 logs should be created - HiJackThis.log and HiJackThis_debug.log)
 if not defined bFast call _10_Scan_Execution_Test.cmd Ask

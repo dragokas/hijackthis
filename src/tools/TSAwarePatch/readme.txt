@@ -1,6 +1,7 @@
 TSAwarePatch by Alex Dragokas - Terminal server awareness patch 
 
 Used to add PE flags for supporting ASLR, DEP and avoiding differrent kinds of redirections on server systems.
+Also, it patch MajorSubsystemVersion and MajorOperatingSystemVersion fields to revert 4.0 subsystem in order to support Win 2k/XP just in case you used new version of linker from modern Visual Studio.
 
 Usage:
 

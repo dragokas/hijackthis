@@ -1,4 +1,6 @@
 Attribute VB_Name = "modShortcut"
+'[modShortcut.bas]
+
 '
 ' Shortcut parser (light version) module by Alex Dragokas
 '
@@ -20,7 +22,7 @@ Private Type UUID
 End Type
 
 Private Declare Function GetLongPathName Lib "kernel32.dll" Alias "GetLongPathNameW" (ByVal lpszShortPath As Long, ByVal lpszLongPath As Long, ByVal cchBuffer As Long) As Long
-'Private Declare Function CreateFile Lib "kernel32.dll" Alias "CreateFileW" (ByVal lpFileName As Long, ByVal dwDesiredAccess As Long, ByVal dwShareMode As Long, lpSecurityAttributes As Any, ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, ByVal hTemplateFile As Long) As Long
+
 Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
 
 Private Declare Function CLSIDFromString Lib "ole32.dll" (ByVal lpszGuid As Long, pGuid As UUID) As Long
@@ -115,7 +117,7 @@ Public Function GetPathFromIDL(sIDL As String) As String
     End If
     If Left$(sIDL, 4) = "::\{" Then sIDL = "::" & Mid$(sIDL, 4) 'trim \
     
-    Set fld = Shl.Namespace$(CVar(sIDL))
+    Set fld = Shl.NameSpace$(CVar(sIDL))
     
     If (Err.Number <> 0) Or (fld Is Nothing) Then Exit Function
     
@@ -150,13 +152,14 @@ Public Sub GetTargetShellLinkW(LNK_file As String, Optional Target As String, Op
     Dim fd              As WIN32_FIND_DATAW
     Dim ptr             As Long
     Dim lr              As Long
+    Dim Flags           As Long
     
     Static bTerminalServerEmulation As Boolean
     Static SysRoot2                 As String
-    Static IsInit                   As Boolean
+    Static isInit                   As Boolean
     
-    If Not IsInit Then
-        IsInit = True
+    If Not isInit Then
+        isInit = True
         If OSver.IsServer Then
             SysRoot2 = String$(MAX_PATH, 0&)
             lr = GetWindowsDirectory(StrPtr(SysRoot2), MAX_PATH)
@@ -183,16 +186,20 @@ Public Sub GetTargetShellLinkW(LNK_file As String, Optional Target As String, Op
     
     oPFile.Load LNK_file, STGM_READ
 
-    If oSLDL.GetFlags And SLDF_HAS_EXP_SZ Then
+    If S_OK = oSLDL.GetFlags(Flags) Then
     
-        ptr = oSLDL.CopyDataBlock(EXP_SZ_LINK_SIG)
-
-        If ptr Then
-            CallWindowProcA AddressOf DerefDataBlock, ptr, VarPtr(Target)
-
-            ptr = LocalFree(ptr)
-
-            Target = EnvironW(Target)
+        If Flags And SLDF_HAS_EXP_SZ Then
+            
+            If S_OK = oSLDL.CopyDataBlock(EXP_SZ_LINK_SIG, ptr) Then
+    
+                If ptr Then
+                    CallWindowProcA AddressOf DerefDataBlock, ptr, VarPtr(Target)
+        
+                    ptr = LocalFree(ptr)
+        
+                    Target = EnvironW(Target)
+                End If
+            End If
         End If
     End If
     
@@ -207,6 +214,16 @@ Public Sub GetTargetShellLinkW(LNK_file As String, Optional Target As String, Op
                 Target = Replace$(Target, SysRoot2, sWinDir, 1, 1, vbTextCompare)
             End If
         End If
+        
+        If OSver.IsLocalSystemContext Then
+            Target = PathSubstituteProfile(Target, LNK_file)
+        End If
+        
+        'temporarily hack - substitute profile in any case
+        'to do it normally, I need make manual parsing of LNK (already done) and return 'Special Folder' ID,
+        'or just check if first token in IDList represent link to 'Special folder ID'. In such case call PathSubstituteProfile
+        
+        Target = PathSubstituteProfile(Target, LNK_file)
     End If
     
     Target = GetFullPath(Left$(Target, lstrlen(StrPtr(Target))))
@@ -241,7 +258,7 @@ Public Function GetHeaderFromFile(FileName As String, BytesCnt As Long) As Byte(
     Dim Size As Currency
     Dim Data() As Byte
     
-    OpenW FileName, FOR_READ, ff
+    OpenW FileName, FOR_READ, ff, g_FileBackupFlag
     If ff < 1 Then Exit Function
     
     Size = LOFW(ff)
@@ -267,7 +284,7 @@ Private Function isFileFilledByNUL(FileName As String) As Boolean
     Dim Data As String
     Dim i As Long
     
-    OpenW FileName, FOR_READ, ff
+    OpenW FileName, FOR_READ, ff, g_FileBackupFlag
     If ff < 1 Then Exit Function
     
     Size = LOFW(ff)
@@ -401,17 +418,17 @@ ErrorHandler:
 End Function
 
 ' Нормализация пути
-Public Function GetFullPath(sFileName As String) As String
+Public Function GetFullPath(sFilename As String) As String
     On Error GoTo ErrorHandler
     Dim cnt        As Long
     Dim sFullName  As String
     
     sFullName = String$(MAX_PATH_W, 0)
-    cnt = GetFullPathName(StrPtr(sFileName), MAX_PATH_W, StrPtr(sFullName), 0&)
+    cnt = GetFullPathName(StrPtr(sFilename), MAX_PATH_W, StrPtr(sFullName), 0&)
     If cnt Then
         GetFullPath = Left$(sFullName, cnt)
     Else
-        GetFullPath = sFileName
+        GetFullPath = sFilename
     End If
     Exit Function
 ErrorHandler:
@@ -440,7 +457,7 @@ Public Function GetPIF_target(FileName As String, Target As String, Argument As 
     pif_Target = String$(63&, vbNullChar)
     pif_Arg = String$(64&, vbNullChar)
   
-    If Not OpenW(FileName, FOR_READ, ff) Then Exit Function
+    If Not OpenW(FileName, FOR_READ, ff, g_FileBackupFlag) Then Exit Function
     FLen = LOFW(ff)
     
     If FLen >= &H187& Then    '  NT / 2000
@@ -487,12 +504,13 @@ Public Function GetEncoding(aBytes() As Byte, Optional Percent As Long, Optional
 
     AppendErrorLogCustom "Parser.GetEncoding - Begin"
 
+
     Dim MLang       As CMultiLanguage
     Dim IMLang2     As IMultiLanguage2
     Dim Encoding()  As tagDetectEncodingInfo
     Dim encCount    As Long
     'Dim inp()       As Byte
-    Dim index       As Long
+    Dim Index       As Long
     'Dim J           As Long
     
 '    Open file For Binary As #1
@@ -508,16 +526,16 @@ Public Function GetEncoding(aBytes() As Byte, Optional Percent As Long, Optional
     'IMLang2.DetectInputCodepage 0, 0, inp(0), UBound(inp) + 1, Encoding(0), encCount
     IMLang2.DetectInputCodepage 0, 0, aBytes(0), UBound(aBytes) + 1, Encoding(0), encCount
     
-    For index = 0 To encCount - 1
+    For Index = 0 To encCount - 1
         
 '        Debug.Print file
 '        Debug.Print "Задетектирован " & Encoding(index).nCodePage & _
 '            ", кол-во: " & Encoding(index).nDocPercent & "%" & _
 '            ", вероятность " & Encoding(index).nConfidence & "%"
         
-        Percent = Encoding(index).nDocPercent
+        Percent = Encoding(Index).nDocPercent
         'BytesCnt = Encoding(index).nConfidence
-        GetEncoding = Encoding(index).nCodePage
+        GetEncoding = Encoding(Index).nCodePage
         
 '        If inIDE Then
 '            If encCount > 1 Then
@@ -592,20 +610,50 @@ ErrorHandler:
 End Function
 
 Public Function ByteArrayToHex(arr() As Byte) As String
-    Dim i&, S&
+    Dim i&, s As String
     For i = 0 To UBound(arr)
-        S = S & Right$("0" & Hex$(arr(i)), 2)
+        s = s & Right$("0" & Hex$(arr(i)), 2)
     Next
-    ByteArrayToHex = S
+    ByteArrayToHex = s
 End Function
 
 
 Public Function CreateHJTShortcuts(HJT_Location As String) As Boolean
     Dim bSuccess As Boolean
+    Dim hFile As Long
     bSuccess = True
-    Call MkDirW(BuildPath(StartMenuPrograms, "HiJackThis Fork"))
+    bSuccess = bSuccess And MkDirW(BuildPath(StartMenuPrograms, "HiJackThis Fork"))
+    bSuccess = bSuccess And MkDirW(BuildPath(StartMenuPrograms, "HiJackThis Fork\Tools"))
+    bSuccess = bSuccess And MkDirW(BuildPath(StartMenuPrograms, "HiJackThis Fork\Plugins"))
+    
     bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis Fork\HiJackThis.lnk"), HJT_Location)
     bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis Fork\Uninstall HJT.lnk"), HJT_Location, "/uninstall")
+    
+    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis Fork\Tools\StartupList.lnk"), HJT_Location, "/tool+StartupList", , , "Lists startup items in a convenient way")
+    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis Fork\Tools\Uninstall Manager.lnk"), HJT_Location, "/tool+UninstMan", , , "Manage the list of installed software")
+    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis Fork\Tools\Digital Signature Checker.lnk"), HJT_Location, "/tool+DigiSign", , , "Check your PE EXE files digital signature")
+    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis Fork\Tools\Registry Key Unlocker.lnk"), HJT_Location, "/tool+RegUnlocker", , , "Unlock and reset permissions on registry key")
+    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis Fork\Tools\ADS Spy.lnk"), HJT_Location, "/tool+ADSSpy", , , "Alternative Data Streams Scanner & Remover")
+    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis Fork\Tools\Hosts File Manager.lnk"), HJT_Location, "/tool+Hosts", , , "Manage entries in hosts file")
+    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis Fork\Tools\Process Manager.lnk"), HJT_Location, "/tool+ProcMan", , , "Little tool like Task Manager")
+    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis Fork\Plugins\Check Browsers' LNK.lnk"), HJT_Location, "/tool+CheckLNK", , , "Checks your PC for shortcuts infection")
+    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis Fork\Plugins\ClearLNK.lnk"), HJT_Location, "/tool+ClearLNK", , , "LNK / URL Shortcuts cleaner & restorer")
+    
+    'Users manual url shortcut
+    If IsRussianLangCode(OSver.LangSystemCode) Or IsRussianLangCode(OSver.LangDisplayCode) Then
+    
+        If OpenW(BuildPath(StartMenuPrograms, "HiJackThis Fork\" & LoadResString(607) & ".url"), FOR_OVERWRITE_CREATE, hFile) Then
+            PrintW hFile, "[InternetShortcut]", False
+            PrintW hFile, "URL=http://regist.safezone.cc/hijackthis_help/hijackthis.html", False
+            CloseW hFile
+        End If
+    Else
+        If OpenW(BuildPath(StartMenuPrograms, "HiJackThis Fork\Users manual (short).url"), FOR_OVERWRITE_CREATE, hFile) Then
+            PrintW hFile, "[InternetShortcut]", False
+            PrintW hFile, "URL=http://dragokas.com/tools/help/hjt_tutorial.html", False
+            CloseW hFile
+        End If
+    End If
     CreateHJTShortcuts = bSuccess
 End Function
 
@@ -616,18 +664,10 @@ End Function
 Public Function RemoveHJTShortcuts() As Boolean
     Dim bSuccess As Boolean
     bSuccess = True
-    Dim aFile(3) As String
-    Dim i As Long
-    aFile(0) = BuildPath(StartMenuPrograms, "HiJackThis Fork\HiJackThis.lnk")
-    aFile(1) = BuildPath(StartMenuPrograms, "HiJackThis Fork\Uninstall HJT.lnk")
-    aFile(2) = BuildPath(StartMenuPrograms, "HiJackThis Fork\Uninstall HJT.lnk")
-    aFile(3) = BuildPath(Desktop, "HiJackThis Fork.lnk")
-    For i = 0 To UBound(aFile)
-        If FileExists(aFile(i)) Then
-            bSuccess = bSuccess And CBool(DeleteFileW(StrPtr(aFile(i))))
-        End If
-    Next
-    bSuccess = bSuccess And CBool(RemoveDirectory(StrPtr(BuildPath(StartMenuPrograms, "HiJackThis Fork"))))
+    bSuccess = bSuccess And DeleteFolderForce(BuildPath(StartMenuPrograms, "HiJackThis Fork"))
+    If FileExists(BuildPath(Desktop, "HiJackThis Fork.lnk")) Then
+        bSuccess = bSuccess And CBool(DeleteFileW(StrPtr(BuildPath(Desktop, "HiJackThis Fork.lnk"))))
+    End If
     RemoveHJTShortcuts = bSuccess
 End Function
 

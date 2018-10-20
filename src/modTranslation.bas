@@ -1,4 +1,6 @@
 Attribute VB_Name = "modTranslation"
+'[modTranslation.bas]
+
 '
 ' Translation module by Alex Dragokas
 '
@@ -68,7 +70,7 @@ Sub ExtractLanguage(sLangFileContents As String, Optional sFilename As String) '
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "ExtractLanguage - Begin", "File: " & sFilename
 
-    Dim Lines() As String, i As Long, Idx&, ch$, pos&
+    Dim Lines() As String, i As Long, idx&, ch$, pos&
     
     ReDim gLines(MAX_LOCALE_LINES) ' erase
     
@@ -81,10 +83,10 @@ Sub ExtractLanguage(sLangFileContents As String, Optional sFilename As String) '
             ch = Left$(Lines(i), 4)
             If Not IsNumeric(ch) Then
                 If Left$(Lines(i), 5) = "     " Then Lines(i) = Mid$(Lines(i), 6)
-                gLines(Idx) = gLines(Idx) & vbCrLf & Lines(i) ' continuance of last line
+                gLines(idx) = gLines(idx) & vbCrLf & Lines(i) ' continuance of last line
             Else
-                Idx = CLng(ch)
-                If Idx > UBound(Translate) Or Idx < LBound(Translate) Then
+                idx = CLng(ch)
+                If idx > UBound(Translate) Or idx < LBound(Translate) Then
                     'current is 9999 (look at the top of this module)
                     If 0 <> Len(Translate(570)) Then
                         MsgBoxW Replace$(Translate(570), "[]", sFilename)
@@ -96,7 +98,7 @@ Sub ExtractLanguage(sLangFileContents As String, Optional sFilename As String) '
                     Exit Sub
                 Else
                     pos = InStr(Lines(i), "=")
-                    gLines(Idx) = Mid$(Lines(i), pos + 1)
+                    gLines(idx) = Mid$(Lines(i), pos + 1)
                 End If
             End If
         End If
@@ -129,9 +131,9 @@ Public Sub LoadLanguage(lCode As Long, Force As Boolean, Optional PreLoadNativeL
     ' Force choosing of language: no checks for non-Unicode language settings
     If Force Then
         Select Case lCode
-        Case &H422&
+        Case &H422& 'Ukrainian
             LangUA
-        Case &H419&, &H423&  'Russian, Ukrainian, Belarusian
+        Case &H419&, &H423&  'Russian, Belarusian
             LangRU
         Case &H409& 'English
             LoadDefaultLanguage
@@ -145,13 +147,13 @@ Public Sub LoadLanguage(lCode As Long, Force As Boolean, Optional PreLoadNativeL
         ' first load native system language strings for special purposes
     
         Select Case OSver.LangDisplayCode
-        Case &H419&, &H423&  'Russian, Ukrainian, Belarusian
+        Case &H419&, &H423&  'Russian, Belarusian
             If HasSupportSlavian Then
                 LangRU
             Else
                 LoadDefaultLanguage
             End If
-        Case &H422&
+        Case &H422& 'Ukrainian
             If HasSupportSlavian Then
                 LangUA
             Else
@@ -166,13 +168,13 @@ Public Sub LoadLanguage(lCode As Long, Force As Boolean, Optional PreLoadNativeL
         ReloadLanguageNative    'fill TranlateNative() array
     
         Select Case lCode 'OSVer.LangDisplayCode
-        Case &H419&, &H423& 'Russian, Ukrainian, Belarusian
+        Case &H419&, &H423& 'Russian, Belarusian
             If HasSupportSlavian Then
                 LangRU
             Else
                 NotSupportedByCP = True
             End If
-        Case &H422&
+        Case &H422& 'Ukrainian
             If HasSupportSlavian Then
                 LangUA
             Else
@@ -189,9 +191,17 @@ Public Sub LoadLanguage(lCode As Long, Force As Boolean, Optional PreLoadNativeL
                 "First, you must set language for non-Unicode programs to Russian" & vbCrLf & _
                 "through the Control panel -> system language settings.", vbCritical
             If Not bAutoLog Then
-                MsgBoxW "Не могу выбрать русский язык!" & vbCrLf & _
-                    "Сперва Вам необходимо выставить язык для программ, не поддерживающих Юникод, на Русский" & vbCrLf & _
-                    "через Панель управления -> Региональные стандарты.", vbCritical
+                If lCode = &H422& Then
+                  'MsgBoxW "Не можу обрати цю мову!" & vbCrLf & _
+                  '  "Спершу Вам необхідно обрати мову для програм, що не підтримують Юнікод, - Українську" & vbCrLf & _
+                  '  "через Панель керування -> Регіональні стандарти.", vbCritical
+                  MsgBoxW STR_CONST.UA_CANT_LOAD_LANG, vbCritical
+                Else
+                  'MsgBoxW "Не могу выбрать этот язык!" & vbCrLf & _
+                  '  "Сперва Вам необходимо выставить язык для программ, не поддерживающих Юникод, на Русский" & vbCrLf & _
+                  '  "через Панель управления -> Региональные стандарты.", vbCritical
+                  MsgBoxW STR_CONST.RU_CANT_LOAD_LANG, vbCritical
+                End If
             End If
             LoadDefaultLanguage
         End If
@@ -238,8 +248,8 @@ Sub LoadLangFile(sFilename As String, Optional ResID As Long, Optional UseResour
     Dim sPath As String, sText As String, b() As Byte
     sPath = BuildPath(AppPath(), sFilename)
     
-    If Not IsArrDimmed(Translate) Then ReDim Translate(MAX_LOCALE_LINES)
-    If Not IsArrDimmed(TranslateNative) Then ReDim TranslateNative(MAX_LOCALE_LINES)
+    If 0 = AryItems(Translate) Then ReDim Translate(MAX_LOCALE_LINES)
+    If 0 = AryItems(TranslateNative) Then ReDim TranslateNative(MAX_LOCALE_LINES)
     
     If FileExists(sPath) And Not UseResource Then
         sText = ReadFileContents(sPath, isUnicode:=False)
@@ -372,7 +382,8 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     Case "0004": .lblInfo(1).Caption = Translation
                     Case "1004": .txtNothing.Text = Translation
                     Case "0010": .fraScan.Caption = Translation
-                    Case "0011": .cmdScan.Caption = Translation
+                    Case "0011": If .cmdScan.Tag = "1" Then .cmdScan.Caption = Translation 'scan
+                    Case "0012": If .cmdScan.Tag = "2" Then .cmdScan.Caption = Translation 'save log...
                     Case "0013": .cmdFix.Caption = Translation
                     Case "0014": .cmdInfo.Caption = Translation
                     Case "1000": .cmdAnalyze.Caption = Translation
@@ -410,7 +421,9 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     Case "1211": .mnuToolsRegUnlockKey.Caption = Translation
                     Case "1212": .mnuToolsADSSpy.Caption = Translation
                     Case "1213": .mnuToolsDigiSign.Caption = Translation
-                    Case "1214": .mnuToolsUninst.Caption = Translation
+                    Case "1214":
+                        .mnuToolsUninst.Caption = Translation
+                        .cmdARSMan.Caption = Translation
                     Case "1215": .mnuHelp.Caption = Translation
                     Case "1216": .mnuHelpManual.Caption = Translation
                     Case "1217": .mnuHelpManualEnglish.Caption = Translation
@@ -430,7 +443,6 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     Case "1231": .mnuToolsService.Caption = Translation
                     Case "1232": .mnuToolsStartupList.Caption = Translation
                     Case "1233": .mnuHelpManualBasic.Caption = Translation
-                    Case "1234": .mnuHelpManualAddition.Caption = Translation
                     Case "1235": .mnuFileInstallHJT.Caption = Translation
                     Case "1236": .mnuToolsShortcuts.Caption = Translation
                     Case "1237": .mnuToolsShortcutsChecker.Caption = Translation
@@ -472,7 +484,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     Case "0109": .cmdADSSpy.Caption = Translation
                     Case "0110": .lblADSSpyAbout.Caption = Translation
                     
-                    Case "0224": .cmdARSMan.Caption = Translation
+                    'Case "1214": .cmdARSMan.Caption = Translation
                     Case "0112": .lblARSManAbout.Caption = Translation
                     
                     Case "0119": .cmdRegKeyUnlocker.Caption = Translation
@@ -492,12 +504,20 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     Case "0140": .FraUpdateCheck.Caption = Translation
                     Case "0141": .cmdCheckUpdate.Caption = Translation
                     Case "0142": .chkCheckUpdatesOnStart.Caption = Translation
-                    Case "0143": .lblUseProxy.Caption = Translation
-                    Case "0144": .lblVersion.Caption = Translation
+                    Case "0143": .chkUpdateToTest.Caption = Translation
+                    Case "0144": .chkUpdateSilently.Caption = Translation
+                    Case "0145": .lblUpdateServer.Caption = Translation
+                    Case "0146": .lblUpdatePort.Caption = Translation
+                    Case "0147": .chkUpdateUseProxyAuth.Caption = Translation
+                    Case "0148": .lblUpdateLogin.Caption = Translation
+                    Case "0149": .lblUpdatePass.Caption = Translation
+                    Case "0155": .OptProxyDirect.Caption = Translation
+                    Case "0156": .optProxyIE.Caption = Translation
+                    Case "0157": .optProxyManual.Caption = Translation
                     
                     'uninstall frame
-                    Case "0149": .FraRemoveHJT.Caption = Translation
-                    Case "0150": .cmdUninstall.Caption = Translation
+                    Case "0150": .FraRemoveHJT.Caption = Translation
+                    Case "0151": .cmdUninstall.Caption = Translation
                     Case "0152": .lblUninstallHJT.Caption = Translation
                     
                     '; ============= Backup ===============
@@ -522,11 +542,17 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     
                     Case "0040": .fraConfig.Caption = Translation
                     Case "0041": .chkConfigTabs(0).Caption = Translation
+                    
+                    Case "0045": .lblFont.Caption = Translation
+                    Case "0046": .lblFontSize.Caption = Translation
+                    Case "0047": .chkFontWholeInterface.Caption = Translation
+                    Case "0048": .lblFont.ToolTipText = Translation
 
                     Case "0050": .chkAutoMark.Caption = Translation
                     Case "0051": .chkBackup.Caption = Translation
                     Case "0052": .chkConfirm.Caption = Translation
                     'Case "0053": .chkIgnoreSafeDomains.Caption = Translation
+                    Case "0054": .chkAutoMark.ToolTipText = Translation
                     Case "0055": .chkSkipIntroFrameSettings.Caption = Translation
                     
                     Case "0058": .chkSkipErrorMsg.Caption = Translation
@@ -551,20 +577,6 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     Case "0275": .cmdHostsManBack.Caption = Translation
                     Case "0276": .lblConfigInfo(15).Caption = Translation
                     
-                    '; =============== Uninstall manager ==============
-
-                    Case "0210": .fraUninstMan.Caption = Translation
-                    Case "0211": .lblInfo(11).Caption = Translation
-                    Case "0212": .lblInfo(8).Caption = Translation
-                    Case "0213": .lblInfo(10).Caption = Translation
-                    Case "0214": .cmdUninstManDelete.Caption = Translation
-                    Case "0215": .cmdUninstManEdit.Caption = Translation
-                    Case "0216": .cmdUninstManOpen.Caption = Translation
-                    Case "0217": .cmdUninstManRefresh.Caption = Translation
-                    Case "0218": .cmdUninstManSave.Caption = Translation
-                    Case "0219": .cmdUninstManBack.Caption = Translation
-                    Case "0227": .cmdUninstManUninstall.Caption = Translation
-                    
                     '; === Other ===
                     'Case "9999": SetCharSet CInt(Translation)
                     Case Else
@@ -574,6 +586,40 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                   
                 If bAnotherForm Then
                     If True Then
+                    
+                        ' ================ Uninstall Software manager =================
+                        
+                        If IsFormInit(frmUninstMan) Then
+                            With frmUninstMan
+                                
+                                Select Case ID
+                                    Case "0210": .Caption = Translation & " v." & UninstManVer
+                                    Case "0211": .lblAbout.Caption = Translation
+                                    Case "0212": .lblName.Caption = Translation
+                                    Case "0213": .lblUninstCmd.Caption = Translation
+                                    Case "0214": .lblWebSite.Caption = Translation
+                                    Case "0215": .lblKey.Caption = Translation
+                                    Case "0216":
+                                        .cmdNameEdit.Caption = Translation
+                                        .cmdUninstStrEdit.Caption = Translation
+                                    Case "0217": .cmdWebSiteOpen.Caption = Translation
+                                    Case "0218": .cmdKeyJump.Caption = Translation
+                                    Case "0220": .cmdUninstall.Caption = Translation
+                                    Case "0221": .cmdDelete.Caption = Translation
+                                    Case "0222": .cmdRefresh.Caption = Translation
+                                    Case "0223": .cmdSave.Caption = Translation
+                                    Case "0224": .cmdOpenCP.Caption = Translation
+                                    Case "1700": .fraFilter.Caption = Translation
+                                    Case "1701": .chkFilterNoUninstStr.Caption = Translation
+                                    Case "1702": .chkFilterHidden.Caption = Translation
+                                    Case "1703": .chkFilterCommon.Caption = Translation
+                                    Case "1704": .chkFilterHKLM.Caption = Translation
+                                    Case "1705": .chkFilterHKCU.Caption = Translation
+                                    Case "1706": .chkFilterHKU.Caption = Translation
+                                End Select
+                            End With
+                        End If
+                        
                         ' ================ ADS Spy =================
                     
                         If IsFormInit(frmADSspy) Then
@@ -588,6 +634,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                                     Case "0203": .mnuPopupSave.Caption = Translation
                                     Case "2230": .mnuPopupShowFile.Caption = Translation
                                     ' Main window
+                                    Case "0012": .cmdSave.Caption = Translation
                                     Case "0190": .Caption = Replace$(Translation, "[]", ADSspyVer)
                                     Case "0191": .optScanLocation(0).Caption = Translation
                                     Case "0206": .optScanLocation(1).Caption = Translation
@@ -595,9 +642,10 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                                     Case "0208": .cmdScanFolder.Caption = Translation
                                     Case "0192": .chkIgnoreEncryptable.Caption = Translation
                                     Case "0193": .chkCalcMD5.Caption = Translation
-                                    Case "0196": .cmdScan.Caption = Translation
                                     Case "0198": .cmdRemove.Caption = Translation
                                     Case "0205": .txtUselessBlabber.Text = Translation
+                                    Case "2208": If .cmdScan.Tag = "2" Then .cmdScan.Caption = Translation 'abort scan
+                                    Case "2210": If .cmdScan.Tag = "1" Then .cmdScan.Caption = Translation 'scan
                                     Case "2231": .cmdViewCopy.Caption = Translation
                                     Case "2232": .cmdViewSave.Caption = Translation
                                     Case "2233": .cmdViewEdit.Caption = Translation
@@ -625,6 +673,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                                     Case "1863": .fraFilter.Caption = Translation
                                     Case "1864": .OptAllFiles.Caption = Translation
                                     Case "1865": .OptExtension.Caption = Translation
+                                    Case "1870": .cmdSelectFile.Caption = Translation
                                 End Select
                             End With
                         End If
@@ -863,6 +912,8 @@ Public Sub GetInfo(ByVal sItem$)
     On Error GoTo ErrorHandler:
     
     Dim sMsg$, sPrefix$, pos&
+    Dim aPage() As String, i&
+    
     If Len(sItem) = 0 Then Exit Sub
     
     If InStr(sItem, vbCrLf) > 0 Then sItem = Left$(sItem, InStr(sItem, vbCrLf) - 1)
@@ -941,11 +992,16 @@ Public Sub GetInfo(ByVal sItem$)
         Case Else
             Exit Sub
     End Select
+    
     'Detailed information on item
     sMsg = Translate(400) & " " & sPrefix & ":" & vbCrLf & vbCrLf & sMsg
-    MsgBoxW sItem & vbCrLf & vbCrLf & sMsg, vbInformation
-    Exit Sub
+    aPage = Split(sMsg, "\\p")
+    aPage(0) = sItem & vbCrLf & vbCrLf & aPage(0)
+    For i = 0 To UBound(aPage)
+        MsgBoxW aPage(i), , IIf(UBound(aPage) > 0, CStr(i + 1) & "/" & CStr(UBound(aPage) + 1), "")
+    Next
     
+    Exit Sub
 ErrorHandler:
     ErrorMsg Err, "modInfo_GetInfo", "sItem=", sItem
     If inIDE Then Stop: Resume Next
@@ -953,6 +1009,9 @@ End Sub
 
 '// Info on items for StartupList2 module
 Public Function GetHelpStartupList$(sNodeName$)
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "GetHelpStartupList$ - Begin"
+
     Dim sName$, sHelp$, CantFound As Boolean
     
     sName = sNodeName
@@ -1117,9 +1176,18 @@ Public Function GetHelpStartupList$(sNodeName$)
     End Select
     
     GetHelpStartupList = sHelp
+    
+    AppendErrorLogCustom "GetHelpStartupList - End"
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetHelpStartupList$"
+    If inIDE Then Stop: Resume Next
 End Function
 
 Public Function GetSectionFromKey$(sName$)
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "GetSectionFromKey - Begin"
+
     Dim i&
     'strip usernames from node name
     For i = 0 To UBound(sUsernames)
@@ -1176,6 +1244,12 @@ Public Function GetSectionFromKey$(sName$)
     If InStr(sName, "AutoStartFolders Startup") > 0 Then sName = Replace$(sName, "Folders Startup", "FoldersUser Startup")
     If InStr(sName, "AutoStartFolders Common Startup") > 0 Then sName = Replace$(sName, "Folders Common", "FoldersUser Common")
     GetSectionFromKey = sName
+    
+    AppendErrorLogCustom "GetSectionFromKey - End"
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetSectionFromKey"
+    If inIDE Then Stop: Resume Next
 End Function
 
 Public Function IsRunningInIDE() As Boolean

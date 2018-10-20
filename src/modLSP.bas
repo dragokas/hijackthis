@@ -1,4 +1,6 @@
 Attribute VB_Name = "modLSP"
+'[modLSP.bas]
+
 '
 ' LSP module by Merijn Bellekom
 '
@@ -109,7 +111,7 @@ Public Function EnumWinsockProtocol$()
     If lNumProtocols <> SOCKET_ERROR Then
         For i = 0 To lNumProtocols - 1
             memcpy ByVal VarPtr(uWSAProtInfo), ByVal VarPtr(uBuffer(i * LenB(uWSAProtInfo))), LenB(uWSAProtInfo)
-            sGUID = GuidTostring(uWSAProtInfo.ProviderId)
+            sGUID = GUIDToString(uWSAProtInfo.ProviderId)
             sFile = GetProviderFile(uWSAProtInfo.ProviderId)
             sLSPName = TrimNull(uWSAProtInfo.szProtocol)
             If bShowCLSIDs Then
@@ -147,7 +149,7 @@ Public Function EnumWinsockNameSpace$()
     If lNumNameSpace <> SOCKET_ERROR Then
         For i = 0 To lNumNameSpace - 1
             memcpy ByVal VarPtr(uWSANameSpaceInfo), ByVal VarPtr(uBuffer(i * LenB(uWSANameSpaceInfo))), LenB(uWSANameSpaceInfo)
-            sGUID = GuidTostring(uWSANameSpaceInfo.NSProviderId)
+            sGUID = GUIDToString(uWSANameSpaceInfo.NSProviderId)
             strSize = lstrlen(uWSANameSpaceInfo.lpszIdentifier)
             sLSPName = String$(strSize, 0)
             lstrcpyn StrPtr(sLSPName), uWSANameSpaceInfo.lpszIdentifier, strSize + 1
@@ -172,11 +174,11 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Private Function GuidTostring(uGuid As UUID)
+Private Function GUIDToString(uGuid As UUID)
     Dim sGUID$
     sGUID = String$(39, 0)
     If StringFromGUID2(uGuid, StrPtr(sGUID), Len(sGUID)) > 0 Then
-        GuidTostring = TrimNull(sGUID)
+        GUIDToString = TrimNull(sGUID)
     End If
 End Function
 
@@ -232,6 +234,7 @@ Public Sub CheckLSP()
     Dim sFile$, hKey&, sHit$, sDummy$, sFindFile$
     Dim oUnknFile As clsTrickHashTable
     Dim oMissingFile As clsTrickHashTable
+    Dim bSafe As Boolean, result As SCAN_RESULT
     
     Set oUnknFile = New clsTrickHashTable    'for removing duplicate records
     Set oMissingFile = New clsTrickHashTable
@@ -247,7 +250,6 @@ Public Sub CheckLSP()
             'broken LSP detected!
             sHit = "O10 - Broken Internet access because of LSP chain gap (#" & CStr(i) & " in chain of " & CStr(lNumNameSpace) & " missing)"
             If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O10", sHit
-            Exit Sub
         End If
     Next i
     For i = 1 To lNumProtocol
@@ -257,16 +259,14 @@ Public Sub CheckLSP()
             'shit, not again!
             sHit = "O10 - Broken Internet access because of LSP chain gap (#" & CStr(i) & " in chain of " & CStr(lNumProtocol) & " missing)"
             If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O10", sHit
-            Exit Sub
         End If
     Next i
     
     'check all LSP providers are present
     For i = 1 To lNumNameSpace
         sFile = Reg.GetString(HKEY_LOCAL_MACHINE, sKeyNameSpace & "\Catalog_Entries\" & String$(12 - Len(CStr(i)), "0") & CStr(i), "LibraryPath")
-        sFile = LCase$(Replace$(sFile, "%SYSTEMROOT%", sWinDir, , , vbTextCompare))
-        sFile = LCase$(Replace$(sFile, "%windir%", sWinDir, , , vbTextCompare))
-        If sFile <> vbNullString Then
+        sFile = EnvironW(sFile)
+        If Len(sFile) <> 0 Then
             sFindFile = FindOnPath(sFile)
             If 0 <> Len(sFindFile) Then
                 sFile = sFindFile
@@ -283,32 +283,44 @@ Public Sub CheckLSP()
                     If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O10", sHit
                 Else
                     sDummy = Mid$(sFile, InStrRev(sFile, "\") + 1)
-                    If InStr(1, sSafeLSPFiles, "*" & sDummy & "*", vbTextCompare) = 0 Or bIgnoreAllWhitelists Then
+                    
+                    bSafe = False
+                    If InStr(1, sSafeLSPFiles, "*" & sDummy & "*", vbTextCompare) <> 0 Then
+                        If IsMicrosoftFile(sFile) Then bSafe = True
+                    End If
+                    
+                    If Not bSafe Or Not bHideMicrosoft Then
                         If Not oUnknFile.Exists(sFile) Then
                             oUnknFile.Add sFile, 0
                             sHit = "O10 - Unknown file in Winsock LSP: " & sFile
-                            If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O10", sHit
+                            If bMD5 Then sHit = sHit & GetFileMD5(sFile)
+                            If Not IsOnIgnoreList(sHit) Then
+                                With result
+                                    .Section = "O10"
+                                    .HitLineW = sHit
+                                    AddFileToFix .File, JUMP_FILE, sFile
+                                    .CureType = CUSTOM_BASED
+                                End With
+                                AddToScanResults result
+                            End If
                         End If
                     End If
                 End If
             Else
                 'damn, file is gone
-                If InStr(1, sSafeLSPFiles, "*" & sFile & "*", vbTextCompare) = 0 Or bIgnoreAllWhitelists Then
-                    If Not oMissingFile.Exists(sFile) Then
-                        oMissingFile.Add sFile, 0
-                        sHit = "O10 - Broken Internet access because of LSP provider '" & sFile & "' missing"
-                        If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O10", sHit
-                    End If
+                If Not oMissingFile.Exists(sFile) Then
+                    oMissingFile.Add sFile, 0
+                    sHit = "O10 - Broken Internet access because of LSP provider '" & sFile & "' missing"
+                    If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O10", sHit
                 End If
-                Exit Sub
             End If
         End If
     Next i
     
     For i = 1 To lNumProtocol
-        sFile = Reg.GetFileFromBinary(HKEY_LOCAL_MACHINE, sKeyProtocol & "\Catalog_Entries\" & String$(12 - Len(CStr(i)), "0") & CStr(i), "PackedCatalogItem")
+        sFile = Reg.GetFilenameFromBinaryKey(HKEY_LOCAL_MACHINE, sKeyProtocol & "\Catalog_Entries\" & String$(12 - Len(CStr(i)), "0") & CStr(i), "PackedCatalogItem")
         
-        If sFile <> vbNullString Then
+        If Len(sFile) <> 0 Then
             sFile = EnvironW(sFile)
             
             sFindFile = FindOnPath(sFile)
@@ -328,24 +340,36 @@ Public Sub CheckLSP()
                     If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O10", sHit
                 Else
                     sDummy = LCase$(Mid$(sFile, InStrRev(sFile, "\") + 1))
-                    If InStr(1, sSafeLSPFiles, "*" & sDummy & "*", vbTextCompare) = 0 Or bIgnoreAllWhitelists Then
+                    
+                    bSafe = False
+                    If InStr(1, sSafeLSPFiles, "*" & sDummy & "*", vbTextCompare) <> 0 Then
+                        If IsMicrosoftFile(sFile) Then bSafe = True
+                    End If
+                    
+                    If Not bSafe Or Not bHideMicrosoft Then
                         If Not oUnknFile.Exists(sFile) Then
                             oUnknFile.Add sFile, 0
                             sHit = "O10 - Unknown file in Winsock LSP: " & sFile
-                            If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O10", sHit
+                            If bMD5 Then sHit = sHit & GetFileMD5(sFile)
+                            If Not IsOnIgnoreList(sHit) Then
+                                With result
+                                    .Section = "O10"
+                                    .HitLineW = sHit
+                                    AddFileToFix .File, JUMP_FILE, sFile
+                                    .CureType = CUSTOM_BASED
+                                End With
+                                AddToScanResults result
+                            End If
                         End If
                     End If
                 End If
             Else
                 'damn - crossed again!
-                If InStr(1, sSafeLSPFiles, "*" & sFile & "*", vbTextCompare) = 0 Or bIgnoreAllWhitelists Then
-                    If Not oMissingFile.Exists(sFile) Then
-                        oMissingFile.Add sFile, 0
-                        sHit = "O10 - Broken Internet access because of LSP provider '" & sFile & "' missing"
-                        If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O10", sHit
-                    End If
+                If Not oMissingFile.Exists(sFile) Then
+                    oMissingFile.Add sFile, 0
+                    sHit = "O10 - Broken Internet access because of LSP provider '" & sFile & "' missing"
+                    If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O10", sHit
                 End If
-                Exit Sub
             End If
         End If
     Next i
@@ -444,7 +468,7 @@ End Sub
 '    Next i
 '
 '    For i = 1 To lNumProtocol
-'        sFile = Reg.GetFileFromBinary(HKEY_LOCAL_MACHINE, sKeyProtocol & "\Catalog_Entries\" & String$(12 - Len(CStr(i)), "0") & CStr(i), "PackedCatalogItem")
+'        sFile = Reg.GetFilenameFromBinaryKey(HKEY_LOCAL_MACHINE, sKeyProtocol & "\Catalog_Entries\" & String$(12 - Len(CStr(i)), "0") & CStr(i), "PackedCatalogItem")
 '        sFile = lcase$(Replace$(sFile, "%SYSTEMROOT%", sWinDir, , , vbTextCompare))
 '        sFile = lcase$(Replace$(sFile, "%windir%", sWinDir, , , vbTextCompare))
 '        If sFile <> vbNullString And DirW$(sFile, vbFile) <> vbNullString Then

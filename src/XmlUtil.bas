@@ -1,4 +1,6 @@
 Attribute VB_Name = "XmlUtil"
+'[XmlUtil.bas]
+
 '
 ' XML Parser by Jason Thorn (Fork by Alex Dragokas)
 '

@@ -11,6 +11,8 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
+'[clsStringBuilder.cls]
+
 Option Explicit
 
 #Const UseUndo = True 'adds .Undo method. If you disable #UseUndo it can slightly increase speed in methods .Overwrite / .Remove.
@@ -387,7 +389,7 @@ End Sub
 '   buffer plus additional CrLf characters
 '
 ' #############################
-Public Sub AppendLine(str As String)
+Public Sub AppendLine(Optional str As String)
     If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     Dim pTo As Long
     

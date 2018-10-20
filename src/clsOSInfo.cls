@@ -13,10 +13,12 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Attribute VB_Ext_KEY = "SavedWithClassBuilder6" ,"Yes"
 Attribute VB_Ext_KEY = "Top_Level" ,"Yes"
+'[clsOSInfo.cls]
+
 Option Explicit
 
 ' OSInfo class by Alex Dragokas
-' ver 1.6
+' ver 1.9
 '
 
 'Tips:
@@ -46,7 +48,7 @@ Option Explicit
 
 ' Last Service Packs:
 
-' 10     | SP0, ReleaseId=1703+, Build=16176+ (Creators Update)
+' 10     | SP0, ReleaseId=1803+, Build=17134+ (Creators Update)
 ' 8.1    | SP0, Update 1+, Build=9600
 ' 8      | SP0, Build=9200
 ' 7      | SP1, Build=7601
@@ -64,9 +66,26 @@ Private Enum ePlatformID
     Win32Windows = 1
     Win32NT = 2
     WinCE = 3
+    UNIX = 4
+    Xbox = 5
+    MacOSX = 6
 End Enum
 
 Private Type RTL_OSVERSIONINFOEXW
+    dwOSVersionInfoSize As Long
+    dwMajorVersion As Long
+    dwMinorVersion As Long
+    dwBuildNumber As Long
+    dwPlatformId As Long
+    szCSDVersion(127) As Integer
+    wServicePackMajor As Integer
+    wServicePackMinor As Integer
+    wSuiteMask As Integer
+    wProductType As Byte
+    wReserved As Byte
+End Type
+
+Private Type OSVERSIONINFOEXW
     dwOSVersionInfoSize As Long
     dwMajorVersion As Long
     dwMinorVersion As Long
@@ -101,19 +120,28 @@ Private Type TOKEN_PRIVILEGES
     Attributes      As Long
 End Type
 
+Private Type OBJECT_ATTRIBUTES
+    Length                   As Long
+    RootDirectory            As Long
+    ObjectName               As Long
+    Attributes               As Long
+    SecurityDescriptor       As Long
+    SecurityQualityOfService As Long
+End Type
+
 Private Declare Function GetLocaleInfo Lib "kernel32.dll" Alias "GetLocaleInfoW" (ByVal lcid As Long, ByVal LCTYPE As Long, ByVal lpLCData As Long, ByVal cchData As Long) As Long
 Private Declare Function GetUserDefaultUILanguage Lib "kernel32.dll" () As Long
 Private Declare Function GetSystemDefaultUILanguage Lib "kernel32.dll" () As Long
 Private Declare Function GetSystemDefaultLCID Lib "kernel32.dll" () As Long
 'Private Declare Function GetUserDefaultLCID Lib "kernel32.dll" () As Long
 Private Declare Function IsWow64Process Lib "kernel32.dll" (ByVal hProc As Long, bWow64Process As Long) As Long
-'Private Declare Function GetVersionEx Lib "kernel32.dll" Alias "GetVersionExW" (lpVersionInformation As OSVERSIONINFOEX) As Long
-Private Declare Function RtlGetVersion Lib "NTDLL.DLL" (lpVersionInformation As RTL_OSVERSIONINFOEXW) As Long
+Private Declare Function GetVersionEx Lib "kernel32.dll" Alias "GetVersionExW" (lpVersionInformation As RTL_OSVERSIONINFOEXW) As Long 'OSVERSIONINFOEXW
+Private Declare Function RtlGetVersion Lib "ntdll.dll" (lpVersionInformation As RTL_OSVERSIONINFOEXW) As Long
 Private Declare Function GetSystemMetrics Lib "user32.dll" (ByVal nIndex As Long) As Long
 Private Declare Function GetProductInfo Lib "kernel32.dll" (ByVal dwOSMajorVersion As Long, ByVal dwOSMinorVersion As Long, ByVal dwSpMajorVersion As Long, ByVal dwSpMinorVersion As Long, pdwReturnedProductType As Long) As Long
 'Private Declare Function CheckTokenMembership Lib "advapi32.dll" (ByVal TokenHandle As Long, ByVal SidToCheck As Long, IsMember As Long) As Long
-Private Declare Function OpenProcessToken Lib "advapi32.dll" (ByVal ProcessHandle As Long, ByVal DesiredAccess As Long, TokenHandle As Long) As Long
-Private Declare Function GetTokenInformation Lib "advapi32.dll" (ByVal TokenHandle As Long, ByVal TokenInformationClass As Long, TokenInformation As Any, ByVal TokenInformationLength As Long, ReturnLength As Long) As Long
+Private Declare Function OpenProcessToken Lib "Advapi32.dll" (ByVal ProcessHandle As Long, ByVal DesiredAccess As Long, TokenHandle As Long) As Long
+Private Declare Function GetTokenInformation Lib "Advapi32.dll" (ByVal TokenHandle As Long, ByVal TokenInformationClass As Long, TokenInformation As Any, ByVal TokenInformationLength As Long, ReturnLength As Long) As Long
 'Private Declare Function OpenThreadToken Lib "advapi32.dll" (ByVal ThreadHandle As Long, ByVal DesiredAccess As Long, ByVal OpenAsSelf As Long, TokenHandle As Long) As Long
 'Private Declare Function GetCurrentThread Lib "kernel32.dll" () As Long
 Private Declare Function GetCurrentProcess Lib "kernel32.dll" () As Long
@@ -121,27 +149,32 @@ Private Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (dest As
 Private Declare Function GetMem4 Lib "msvbvm60.dll" (Src As Any, Dst As Any) As Long
 Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
 Private Declare Function LocalFree Lib "kernel32.dll" (ByVal hMem As Long) As Long
-Private Declare Sub FreeSid Lib "advapi32.dll" (ByVal pSid As Long)
-Private Declare Function AllocateAndInitializeSid Lib "advapi32.dll" (pIdentifierAuthority As Any, ByVal nSubAuthorityCount As Byte, ByVal nSubAuthority0 As Long, ByVal nSubAuthority1 As Long, ByVal nSubAuthority2 As Long, ByVal nSubAuthority3 As Long, ByVal nSubAuthority4 As Long, ByVal nSubAuthority5 As Long, ByVal nSubAuthority6 As Long, ByVal nSubAuthority7 As Long, lpPSid As Long) As Long
-Private Declare Function IsValidSid Lib "advapi32.dll" (ByVal pSid As Long) As Long
-Private Declare Function GetSidSubAuthority Lib "advapi32.dll" (ByVal pSid As Long, ByVal nSubAuthority As Long) As Long
-Private Declare Function GetSidSubAuthorityCount Lib "advapi32.dll" (ByVal pSid As Long) As Long
-Private Declare Function EqualSid Lib "advapi32.dll" (pSid1 As Any, pSid2 As Any) As Long
-Private Declare Function RegOpenKeyEx Lib "advapi32.dll" Alias "RegOpenKeyExW" (ByVal hKey As Long, ByVal lpSubKey As Long, ByVal ulOptions As Long, ByVal samDesired As Long, phkResult As Long) As Long
-Private Declare Function RegCloseKey Lib "advapi32.dll" (ByVal hKey As Long) As Long
-Private Declare Function RegQueryValueExStr Lib "advapi32.dll" Alias "RegQueryValueExW" (ByVal hKey As Long, ByVal lpValueName As Long, ByVal lpReserved As Long, lpType As Long, ByVal szData As Long, lpcbData As Long) As Long
-Private Declare Function RegQueryValueExLong Lib "advapi32.dll" Alias "RegQueryValueExW" (ByVal hKey As Long, ByVal lpValueName As Long, ByVal lpReserved As Long, lpType As Long, szData As Long, lpcbData As Long) As Long
+Private Declare Sub FreeSid Lib "Advapi32.dll" (ByVal pSid As Long)
+Private Declare Function AllocateAndInitializeSid Lib "Advapi32.dll" (pIdentifierAuthority As Any, ByVal nSubAuthorityCount As Byte, ByVal nSubAuthority0 As Long, ByVal nSubAuthority1 As Long, ByVal nSubAuthority2 As Long, ByVal nSubAuthority3 As Long, ByVal nSubAuthority4 As Long, ByVal nSubAuthority5 As Long, ByVal nSubAuthority6 As Long, ByVal nSubAuthority7 As Long, lpPSid As Long) As Long
+Private Declare Function IsValidSid Lib "Advapi32.dll" (ByVal pSid As Long) As Long
+Private Declare Function GetSidSubAuthority Lib "Advapi32.dll" (ByVal pSid As Long, ByVal nSubAuthority As Long) As Long
+Private Declare Function GetSidSubAuthorityCount Lib "Advapi32.dll" (ByVal pSid As Long) As Long
+Private Declare Function EqualSid Lib "Advapi32.dll" (pSid1 As Any, pSid2 As Any) As Long
+Private Declare Function RegOpenKeyEx Lib "Advapi32.dll" Alias "RegOpenKeyExW" (ByVal hKey As Long, ByVal lpSubKey As Long, ByVal ulOptions As Long, ByVal samDesired As Long, phkResult As Long) As Long
+Private Declare Function RegCloseKey Lib "Advapi32.dll" (ByVal hKey As Long) As Long
+Private Declare Function RegQueryValueExStr Lib "Advapi32.dll" Alias "RegQueryValueExW" (ByVal hKey As Long, ByVal lpValueName As Long, ByVal lpReserved As Long, lpType As Long, ByVal szData As Long, lpcbData As Long) As Long
+Private Declare Function RegQueryValueExLong Lib "Advapi32.dll" Alias "RegQueryValueExW" (ByVal hKey As Long, ByVal lpValueName As Long, ByVal lpReserved As Long, lpType As Long, szData As Long, lpcbData As Long) As Long
+Private Declare Function RegQueryValueEx Lib "Advapi32.dll" Alias "RegQueryValueExW" (ByVal hKey As Long, ByVal lpValueName As Long, ByVal lpReserved As Long, lpType As Long, ByVal lpData As Any, lpcbData As Long) As Long
 Private Declare Function LoadLibrary Lib "kernel32.dll" Alias "LoadLibraryW" (ByVal lpFileName As Long) As Long
 Private Declare Function FreeLibrary Lib "kernel32.dll" (ByVal hLibModule As Long) As Long
 Private Declare Function GetProcAddress Lib "kernel32.dll" (ByVal hModule As Long, ByVal lpProcName As String) As Long
 Private Declare Function lstrlenW Lib "kernel32.dll" (ByVal lpString As Long) As Long
 Private Declare Function lstrcpyW Lib "kernel32.dll" (ByVal lpStrDest As Long, ByVal lpStrSrc As Long) As Long
-Private Declare Function ConvertSidToStringSid Lib "advapi32.dll" Alias "ConvertSidToStringSidW" (ByVal pSid As Long, StringSid As Long) As Long
+Private Declare Function ConvertSidToStringSid Lib "Advapi32.dll" Alias "ConvertSidToStringSidW" (ByVal pSid As Long, StringSid As Long) As Long
 Private Declare Function GetModuleHandle Lib "kernel32.dll" Alias "GetModuleHandleW" (ByVal lpModuleName As Long) As Long
-Private Declare Sub RtlGetNtVersionNumbers Lib "NTDLL.DLL" (Major As Long, Minor As Long, Build As Long)
-Private Declare Function LookupPrivilegeValue Lib "advapi32.dll" Alias "LookupPrivilegeValueW" (ByVal lpSystemName As Long, ByVal lpName As Long, lpLuid As Long) As Long
-Private Declare Function AdjustTokenPrivileges Lib "advapi32.dll" (ByVal TokenHandle As Long, ByVal DisableAllPrivileges As Long, NewState As TOKEN_PRIVILEGES, ByVal BufferLength As Long, ByVal PreviousState As Long, ByVal ReturnLength As Long) As Long
-Private Declare Function OpenThreadToken Lib "advapi32.dll" (ByVal ThreadHandle As Long, ByVal DesiredAccess As Long, ByVal OpenAsSelf As Long, TokenHandle As Long) As Long
+Private Declare Sub RtlGetNtVersionNumbers Lib "ntdll.dll" (Major As Long, Minor As Long, Build As Long)
+Private Declare Function LookupPrivilegeValue Lib "Advapi32.dll" Alias "LookupPrivilegeValueW" (ByVal lpSystemName As Long, ByVal lpName As Long, lpLuid As Long) As Long
+Private Declare Function AdjustTokenPrivileges Lib "Advapi32.dll" (ByVal TokenHandle As Long, ByVal DisableAllPrivileges As Long, NewState As TOKEN_PRIVILEGES, ByVal BufferLength As Long, ByVal PreviousState As Long, ByVal ReturnLength As Long) As Long
+Private Declare Function OpenThreadToken Lib "Advapi32.dll" (ByVal ThreadHandle As Long, ByVal DesiredAccess As Long, ByVal OpenAsSelf As Long, TokenHandle As Long) As Long
+Private Declare Function GetCurrentThread Lib "kernel32.dll" () As Long
+Private Declare Function NtOpenSymbolicLinkObject Lib "ntdll.dll" (LinkHandle As Long, ByVal DesiredAccess As Long, ObjectAttributes As OBJECT_ATTRIBUTES) As Long
+Private Declare Function NtOpenDirectoryObject Lib "ntdll.dll" (DirectoryHandle As Long, ByVal DesiredAccess As Long, ObjectAttributes As OBJECT_ATTRIBUTES) As Long
+Private Declare Function NtClose Lib "ntdll.dll" (ByVal Handle As Long) As Long
 
 Private Const SM_SERVERR2               As Long = 89&
 Private Const SM_MEDIACENTER            As Long = 87&
@@ -170,12 +203,17 @@ Private Const LOCALE_USER_DEFAULT       As Long = &H400&
 Private Const LOCALE_SENGLANGUAGE       As Long = &H1001&
 Private Const HKEY_LOCAL_MACHINE        As Long = &H80000002
 Private Const KEY_WOW64_64KEY           As Long = &H100&
+Private Const DIRECTORY_QUERY           As Long = 1&
 
+Private Const ERROR_SUCCESS             As Long = 0&
 Private Const TOKEN_QUERY               As Long = &H8&
 Private Const ERROR_NO_TOKEN            As Long = 1008&
 Private Const TokenElevation            As Long = 20&
 Private Const TOKEN_ADJUST_PRIVILEGES   As Long = &H20
 Private Const SE_PRIVILEGE_ENABLED      As Long = 2&
+Private Const STATUS_ACCESS_DENIED      As Long = &HC0000022
+Private Const STATUS_OBJECT_NAME_NOT_FOUND As Long = &HC0000034
+
 
 Dim osi As RTL_OSVERSIONINFOEXW
 
@@ -222,6 +260,8 @@ Dim inIDE                   As Boolean
 Dim IsWin64_                As Boolean
 Dim SecureBoot_             As Boolean
 Dim PlatformID_             As Long
+Dim IsLocalSystemContext_   As Boolean
+Dim IsSystemCaseSensitive_  As Boolean
 
 
 Private Sub Class_Initialize()
@@ -231,7 +271,7 @@ Private Sub Class_Initialize()
     
     Dim dec             As Single
     Dim ProductType     As Long
-    Dim lRet            As Long
+    Dim lret            As Long
     Dim pos             As Long
     Dim tmp             As String
     Dim hLib            As Long
@@ -254,7 +294,12 @@ Private Sub Class_Initialize()
     LangNonUnicodeNameFull_ = GetLangNameFullByCultureCode(LangNonUnicodeCode_)
     
     osi.dwOSVersionInfoSize = Len(osi)
-    RtlGetVersion osi
+    
+    GetVersionEx osi
+    
+    If (STATUS_SUCCESS <> RtlGetVersion(osi)) Then
+        GetVersionEx osi
+    End If
     
     If inIDE Then
         'query correct OS version without manifest
@@ -294,9 +339,9 @@ Private Sub Class_Initialize()
     
     IsWin64_ = (Bitness_ = "x64")
     
-    lRet = GetSystemMetrics(SM_CLEANBOOT)
-    IsSafeBoot_ = (lRet > 0)
-    Select Case lRet
+    lret = GetSystemMetrics(SM_CLEANBOOT)
+    IsSafeBoot_ = (lret > 0)
+    Select Case lret
         Case 1
             SafeBootMode_ = "Safe mode"
         Case 2
@@ -477,6 +522,9 @@ Private Sub Class_Initialize()
     ElseIf osi.dwPlatformId = WinCE Then
         OSName_ = "Windows CE"
         Platform_ = "WinCE"
+    ElseIf osi.dwPlatformId = UNIX Then
+        OSName_ = "Unix"
+        Platform_ = "Unix"
     End If
     
     If OSName_ = "" Then
@@ -545,7 +593,38 @@ Private Sub Class_Initialize()
     
     SID_CurrentProcess_ = GetCurrentProcessSID()
     
+    IsLocalSystemContext_ = (SID_CurrentProcess_ = "S-1-5-18")
+    
     SecureBoot_ = SecureBootState()
+    
+    'http://www.nicklowe.org/2012/02/understanding-case-sensitivity-in-windows-obcaseinsensitive-file_case_sensitive_search/
+    Dim hDir    As Long
+    Dim OA      As OBJECT_ATTRIBUTES
+    Dim UniStr  As UNICODE_STRING
+    
+    If Me.MajorMinor <= 5 Then  'Win2000-
+        IsSystemCaseSensitive_ = True
+    Else
+        With UniStr
+            .Length = LenB("\SYSTEMROOT")
+            .MaximumLength = .Length
+            .Buffer = StrPtr("\SYSTEMROOT")
+        End With
+    
+        With OA
+            .Length = LenB(OA)
+            .ObjectName = VarPtr(UniStr)
+            .Attributes = 0
+        End With
+        
+        lret = NtOpenSymbolicLinkObject(hDir, DIRECTORY_QUERY, OA)
+        
+        If hDir <> 0 Then NtClose hDir
+        
+        If lret = STATUS_OBJECT_NAME_NOT_FOUND Then
+            IsSystemCaseSensitive_ = True
+        End If
+    End If
     
     AppendErrorLogCustom "clsOSver.Class_Initialize - End"
     
@@ -990,13 +1069,13 @@ Function GetProductName(ProductType As Long) As String
     Case &H2&
         ProductName = "Home Basic"
     Case &H43&
-        ProductName = "Not supported"
+        ProductName = "Home Basic Enterprise"
     Case &H5&
         ProductName = "Home Basic N"
     Case &H3&
         ProductName = "Home Premium"
     Case &H44&
-        ProductName = "Not supported"
+        ProductName = "Home Premium Enterprise"
     Case &H1A&
         ProductName = "Home Premium N"
     Case &H22&
@@ -1026,7 +1105,7 @@ Function GetProductName(ProductType As Long) As String
     Case &H30&
         ProductName = "Pro"
     Case &H45&
-        ProductName = "Not supported"
+        ProductName = "Pro Enterprise"
     Case &H31&
         ProductName = "Pro N"
     Case &H67&
@@ -1070,7 +1149,7 @@ Function GetProductName(ProductType As Long) As String
     Case &HB&
         ProductName = "Starter"
     Case &H42&
-        ProductName = "Not supported"
+        ProductName = "Starter Enterprise"
     Case &H2F&
         ProductName = "Starter N"
     Case &H17&
@@ -1093,12 +1172,10 @@ Function GetProductName(ProductType As Long) As String
         ProductName = "Storage Server Workgroup"
     Case &H2D&
         ProductName = "Storage Server Workgroup (core installation)"
-    Case &H0&
-        ProductName = "An unknown product"
     Case &H1&
         ProductName = "Ultimate"
     Case &H47&
-        ProductName = "Not supported"
+        ProductName = "Ultimate Enterprise"
     Case &H1C&
         ProductName = "Ultimate N"
     Case &H11&
@@ -1407,19 +1484,19 @@ End Function
 
 Function IsWow64() As Boolean   ' Разрядность ОС
     Dim hModule As Long, procAddr As Long, lIsWin64 As Long
-    Static IsInit As Boolean, Result As Boolean
+    Static isInit As Boolean, result As Boolean
     
-    If IsInit Then
-        IsWow64 = Result
+    If isInit Then
+        IsWow64 = result
     Else
-        IsInit = True
+        isInit = True
         hModule = LoadLibrary(StrPtr("kernel32.dll"))
         If hModule Then
             procAddr = GetProcAddress(hModule, "IsWow64Process")
             If procAddr <> 0 Then
                 IsWow64Process GetCurrentProcess(), lIsWin64
-                Result = CBool(lIsWin64)
-                IsWow64 = Result
+                result = CBool(lIsWin64)
+                IsWow64 = result
             End If
             FreeLibrary hModule
         End If
@@ -1431,31 +1508,6 @@ Private Function SecureBootState() As Boolean
     If MajorMinor_ >= 6.2 Then ' Win8+
         lState = RegRead_REG_DWORD("SYSTEM\CurrentControlSet\Control\SecureBoot\State", "UEFISecureBootEnabled")
         If lState = 1 Then SecureBootState = True
-    End If
-End Function
-
-Public Function SetCurrentProcessPrivileges(PrivilegeName As String) As Boolean
-    
-    Dim tp As TOKEN_PRIVILEGES, hToken&
-    
-    If LookupPrivilegeValue(0&, StrPtr(PrivilegeName), tp.LuidLowPart) Then
-    
-        If 0 = OpenThreadToken(GetCurrentThread(), TOKEN_ADJUST_PRIVILEGES Or TOKEN_QUERY, 1&, hToken) Then
-        
-            If Err.LastDllError = ERROR_NO_TOKEN Then
-            
-                If 0 = OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES Or TOKEN_QUERY, hToken) Then
-                    Exit Function
-                End If
-            Else
-                Exit Function
-            End If
-        End If
-
-        tp.PrivilegeCount = 1
-        tp.Attributes = SE_PRIVILEGE_ENABLED
-        SetCurrentProcessPrivileges = AdjustTokenPrivileges(hToken, 0&, tp, 0&, 0&, 0&)
-        CloseHandle hToken
     End If
 End Function
 
@@ -1631,6 +1683,10 @@ Public Property Get IsWin64() As Boolean
     IsWin64 = IsWin64_
 End Property
 
+Public Property Get IsWin32() As Boolean
+    IsWin32 = Not IsWin64_
+End Property
+
 Public Property Get PlatformID() As Long
     PlatformID = PlatformID_
 End Property
@@ -1639,4 +1695,10 @@ Public Property Get SecureBoot() As Boolean
     SecureBoot = SecureBoot_
 End Property
 
+Public Property Get IsLocalSystemContext() As Boolean
+    IsLocalSystemContext = IsLocalSystemContext_
+End Property
 
+Public Property Get IsSystemCaseSensitive() As Boolean
+    IsSystemCaseSensitive = IsSystemCaseSensitive_
+End Property

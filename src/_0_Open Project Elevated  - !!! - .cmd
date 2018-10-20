@@ -25,10 +25,10 @@ if defined TaskExist (
 ) else (
   if "%~1" neq "Admin" (
     call :GetPrivileges
-    tools\RegTLib\REGTLIB.EXE %SystemRoot%\System32\msdatsrc.tlb
-    tools\RegTLib\REGTLIB.EXE %SystemRoot%\SysWow64\msdatsrc.tlb
-    regsvr32.exe /s MSCOMCTL.OCX
   ) else (
+    tools\RegTLib\REGTLIB.EXE %SystemRoot%\System32\msdatsrc.tlb /admin
+    tools\RegTLib\REGTLIB.EXE %SystemRoot%\SysWow64\msdatsrc.tlb /admin
+    regsvr32.exe /s MSCOMCTL.OCX
     call :CreateTask
     call :RunProject
   )

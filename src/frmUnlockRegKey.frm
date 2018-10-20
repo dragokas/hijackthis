@@ -35,7 +35,7 @@ Begin VB.Form frmUnlockRegKey
       Top             =   2520
       Width           =   3615
    End
-   Begin VB.TextBox Text1 
+   Begin VB.TextBox txtKeys 
       Height          =   1815
       Left            =   240
       MultiLine       =   -1  'True
@@ -58,6 +58,8 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+'[frmUnlockRegKey.frm]
+
 '
 ' Registry key unlocker by Alex Dragokas
 '
@@ -77,16 +79,27 @@ Private Sub cmdGo_Click()
     Dim sLogPath    As String
     Dim TimeStarted As String
     Dim TimeFinished As String
+    Dim sList As clsStringBuilder
     
     sLogPath = BuildPath(AppPath(), "FixReg.log")
     
-    sKeys = Text1.Text
+    sKeys = txtKeys.Text
     
     If sKeys = "" Then
         'You should enter at least one key!
         MsgBoxW Translate(1905), vbExclamation
         Exit Sub
     End If
+    
+    TimeStarted = GetTime()
+    
+    Set sList = New clsStringBuilder
+    sList.Append ChrW$(-257)
+    sList.AppendLine "Logfile of Registry Key Unlocker (HJT v." & AppVerString & ")"
+    sList.AppendLine
+    sList.AppendLine MakeLogHeader()
+    sList.AppendLine "Logging started at:      " & TimeStarted
+    sList.AppendLine
     
     TimeStarted = GetTime()
     
@@ -100,46 +113,28 @@ Private Sub cmdGo_Click()
             If True = modPermissions.RegKeyResetDACL(0&, CStr(vKey), False, Recursively) Then
                 '[OK]
                 '(recursively)
-                FixLines = FixLines & Translate(1906) & " - " & vKey & IIf(Recursively, " " & Translate(1907), "") & vbCrLf
+                sList.AppendLine Translate(1906) & " - " & vKey & IIf(Recursively, " " & Translate(1907), "")
             Else
                 '[Fail]
-                FixLines = FixLines & Translate(1908) & " - " & vKey & vbCrLf
+                sList.AppendLine Translate(1908) & " - " & vKey
             End If
         End If
     Next
     
-    'If Not FileExists(sLogPath) Then
-        sHeader = "Logfile of Registry Key Unlocker (HJT v." & AppVerString & ")" & vbCrLf & vbCrLf
+    sList.AppendLine
+    TimeFinished = GetTime()
+    sList.AppendLine "Logging finished at:     " & TimeFinished
+    sList.AppendLine
+    sList.Append "--" & vbCrLf & "End of file"
     
-        sHeader = sHeader & "Platform:  " & OSver.Bitness & " " & OSver.OSName & IIf(OSver.Edition <> "", " (" & OSver.Edition & ")", "") & ", " & _
-            OSver.Major & "." & OSver.Minor & "." & OSver.Build & "." & OSver.Revision & _
-            IIf(OSver.ReleaseId <> 0, " (ReleaseId: " & OSver.ReleaseId & ")", "") & ", " & _
-            "Service Pack: " & OSver.SPVer & "" & IIf(OSver.IsSafeBoot, " (Safe Boot)", "") & vbCrLf
-        sHeader = sHeader & "Language:  " & "OS: " & OSver.LangSystemNameFull & " (" & "0x" & Hex$(OSver.LangSystemCode) & "). " & _
-            "Display: " & OSver.LangDisplayNameFull & " (" & "0x" & Hex$(OSver.LangDisplayCode) & "). " & _
-            "Non-Unicode: " & OSver.LangNonUnicodeNameFull & " (" & "0x" & Hex$(OSver.LangNonUnicodeCode) & ")" & vbCrLf
-        
-        If OSver.MajorMinor >= 6 Then
-            sHeader = sHeader & "Elevated:  " & IIf(OSver.IsElevated, "Yes", "No") & vbCrLf
-        End If
-    
-        sHeader = sHeader & "Ran by:    " & GetUser() & vbTab & "(group: " & OSver.UserType & ") on " & GetComputer()
-    'End If
-    
-    OpenW sLogPath, FOR_OVERWRITE_CREATE, hFile
-    If hFile > 0 Then
-        'If Len(sHeader) <> 0 Then Print #ff, sHeader
-        PrintW hFile, sHeader
-        PrintW hFile, ""
-        PrintW hFile, "Logging started at:      " & TimeStarted
-        PrintW hFile, ""
-        PrintW hFile, FixLines
-        TimeFinished = GetTime()
-        PrintW hFile, "Logging finished at:     " & TimeFinished & vbCrLf
-        CloseW hFile
+    If OpenW(sLogPath, FOR_OVERWRITE_CREATE, hFile, g_FileBackupFlag) Then
+        PutW hFile, 1, StrPtr(sList.ToString), sList.Length * 2
+        CloseW hFile, True
     End If
     
-    Shell "notepad.exe" & " " & """" & sLogPath & """", vbNormalFocus
+    OpenLogFile sLogPath
+    
+    Set sList = Nothing
     
     Exit Sub
 ErrorHandler:
@@ -161,6 +156,7 @@ Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
 End Sub
 
 Private Sub Form_Load()
+    SetAllFontCharset Me, g_FontName, g_FontSize
     ReloadLanguage True
     CenterForm Me
     'Me.Icon = frmMain.Icon
@@ -179,8 +175,8 @@ Private Sub Form_Resize()
         If Me.Width < 7860 Then Me.Width = 7860
         If Me.Height < 2570 Then Me.Height = 2570
     End If
-    Text1.Width = Me.Width - 630
-    Text1.Height = Me.Height - 2010
+    txtKeys.Width = Me.Width - 630
+    txtKeys.Height = Me.Height - 2010
     chkRecur.Top = Me.Height - 1300
     cmdGo.Top = Me.Height - 1300
     cmdExit.Top = Me.Height - 1300

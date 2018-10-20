@@ -11,10 +11,36 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
+'[clsHiveEnum.cls]
+
 '
 ' Hives Enumerator class by Alex Dragokas
 '
-' v.1.3 (22.12.2017)
+
+'1.10
+'Added .SID property (it's empty for non-HKCU/HKU hives)
+
+'1.9
+'HE_SID_NO_VIRTUAL is added to default .Init options. Specify zero to enum everything.
+'".bak" and "{" char. in SID is added as sign of Virtual user.
+
+'1.8
+'Added new optional argument to .Init method: "Flags":
+' - Added HE_CONTROLSET_ALL flag - adds ability for auto-enumeration of all ControlSets under HKLM\SYSTEM\ControlSetXXX
+'(key should begin with SYSTEM\CurrentControlSet to activate this trigger; this flag is NOT set by default)
+' - Added HE_CONTROLSET_EXCLUDE_CURRENT flag - to exclude SYSTEM\CurrentControlSet key itself from HE_CONTROLSET_ALL enumeration.
+' - Added HE_KEY_MUST_EXIST flag - to enum. only existent keys.
+
+'1.7
+'Added method .Clear - to remove all keys and reset enumerator state (.Init data is saved)
+
+'1.6.
+'Added new methods: Uniq_AddKey, Uniq_MoveNext, Uniq_Repeat, Uniq_ClearKeys. New property: .Value
+'It enum unique keys, manually specified by Uniq_AddKey method.
+
+'1.5.
+'Added support when program launched via Local System context (see constant #Hide_HKCU_For_Local_System)
+'Added HE_SID_NO_VIRTUAL flag - allow excluding virtual users from HKU\<SID> enumeration, like 'Sandboxie' users (currently, it's alpha-version feature)
 
 '1.4.
 'Fixed wrong enumeration if first item of supplied array does not meet specified criteria
@@ -26,15 +52,23 @@ Attribute VB_Exposed = False
 '1.2.
 'Added recognition of NetShowServices' SID on Win2k
 
-'intended to replace several 'for each' statements while iterating:
+' ------ DESCRIPTION -------
+
+'This class is intended to replace several 'for each' statements while iterating:
 '1. HKLM / HKCU / HKU + each sid
 '2. WOW and not WOW keys
+'3. ControlSetXXX keys
 '
-'Additionally (if AddKeys / AddKey option is used, and BOTH redirection modes requested):
-' - Automatically recognize 'Shared' or 'Usual' (not 'redirected') keys
+'Additionally (if AddKeys / AddKey option is used, and BOTH redirection modes is requested):
+' - It automatically recognize 'Shared' or 'Usual' (not 'redirected') keys
 '     and doesn't produce WOW iteration for it avoiding access to the same phisical key again in current request.
-
+'
+'Also it allow to filter unique keys, specified by user (see .Uniq_ methods).
+'
 Option Explicit
+
+'true, to return none when user query for HKCU hive and program is launched via Local System context
+#Const Hide_HKCU_For_Local_System = True
 
 'Private Enum KEY_INFORMATION_CLASS
 '    KeyBasicInformation = 0
@@ -56,38 +90,47 @@ Option Explicit
 '    ObjectHandleInformation
 'End Enum
     
+Private Type USER_INFO
+    SID     As String
+    Name    As String
+    Virtual As Boolean
+End Type
    
 Private Type PACKED_CELL
+    'in
+    la_Keys()         As String
+    la_Placeholder()  As String
+
     'out
     ls_Key            As String
     ls_KeyAndHive     As String
+    ls_Value          As String 'For Uniq methods only
     '    le_Hive         As ENUM_REG_HIVE <- state_Hive used
     ls_HiveName       As String
     ls_HiveNameAndSID As String
+    ls_SID            As String
     ls_UserName       As String
     '    lb_Redirection  As Boolean <- state_Redir used
     ll_KeyIndex       As Long
 
     'cache
-    la_SID()          As String
-    la_User()         As String
+    la_User()         As USER_INFO
     ls_CurUser        As String
     ls_CurSID         As String
     lb_User_dimmed    As Boolean
     lb_KeysPredefined As Boolean
     lb_OS_32          As Boolean
     ls_SID_NetShowServices As String
+    lb_LocalSysContext As Boolean
+    aControlSet()     As String
 
     'State
-    la_Keys()         As String
-    la_Placeholder()  As String
     lb_HaveKeys       As Boolean
     lb_HavePlaceHolders As Boolean
     '    l_SeqInit       As Long
     '    l_SeqKey        As Long
-    
+    state_CS          As Long
     state_SID         As Long
-    
     lb_FirstMove      As Boolean
     lb_Class_Init     As Boolean
     lb_NewKey         As Boolean
@@ -95,14 +138,16 @@ Private Type PACKED_CELL
     lb_SidService     As Boolean
     lb_SidUser        As Boolean
     lb_SidDefault     As Boolean
+    EOF               As Boolean
 End Type
 
 Private cell As PACKED_CELL
 
 'in
-Private req_Hive             As HE_HIVE
-Private req_SID              As HE_SID
-Private req_Redir            As HE_REDIRECTION
+Private req_Hive          As HE_HIVE
+Private req_SID           As HE_SID
+Private req_Redir         As HE_REDIRECTION
+Private req_Flags         As HE_OPTIONAL_FLAGS
 
 'cache
 Private la_predefHive()   As ENUM_REG_HIVE
@@ -111,6 +156,21 @@ Private la_predefHive()   As ENUM_REG_HIVE
 Private state_Hive        As ENUM_REG_HIVE
 Private state_Redir       As ENUM_REG_REDIRECTION
 
+Private Type UNIQ_REG_KEY_DATA
+    hHive                 As ENUM_REG_HIVE
+    KeyName               As String
+    ValueName             As String
+    Redir                 As Boolean
+    KeyIndex              As Long 'user defined data
+End Type
+
+Private Type UNIQ_DATA
+    Index                 As Long
+    KeyData()             As UNIQ_REG_KEY_DATA
+    dictKey               As clsTrickHashTable
+End Type
+
+Private UNIQ As UNIQ_DATA
 
 'Private Declare Function CompareObjectHandles Lib "Kernelbase.dll" (ByVal hFirstObjectHandle As Long, ByVal hSecondObjectHandle As Long) As Long
 'Private Declare Function NtQueryObject Lib "ntdll.dll" (ByVal Handle As Long, ByVal ObjectInformationClass As OBJECT_INFORMATION_CLASS, ObjectInformation As Any, ByVal ObjectInformationLength As Long, ReturnLength As Long) As Long
@@ -130,7 +190,7 @@ Private Const INVALID_HANDLE_VALUE      As Long = &HFFFFFFFF
 ' {
 '   1. Keys (if supplied)
 '   {
-'     2. HKLM / HKCU / HKU...
+'     2. HKLM / ControlSets / HKCU / HKU... <SIDs>
 '     {
 '       3. REDIR_WOW (redirected) / REDIR_NO_WOW
 '     }
@@ -140,8 +200,9 @@ Private Const INVALID_HANDLE_VALUE      As Long = &HFFFFFFFF
 '// set iterator settings about requested Hives / SIDs for HKU (if defined one) / WOW modes
 Public Sub Init( _
     Hive_requested As HE_HIVE, _
-    Optional SID_requested As HE_SID = HE_SID_ALL, _
-    Optional Redirection_requested As HE_REDIRECTION = HE_REDIR_BOTH)
+    Optional SID_requested As HE_SID = HE_SID_ALL Or HE_SID_NO_VIRTUAL, _
+    Optional Redirection_requested As HE_REDIRECTION = HE_REDIR_BOTH, _
+    Optional Flags As HE_OPTIONAL_FLAGS = 0&)
     
     If Not cell.lb_Class_Init Then
         cell.lb_Class_Init = True
@@ -151,15 +212,58 @@ Public Sub Init( _
     req_Hive = Hive_requested
     req_SID = SID_requested
     req_Redir = Redirection_requested
+    req_Flags = Flags
     
-    'clear last session
+    cell.lb_LocalSysContext = (OSver.SID_CurrentProcess() = "S-1-5-18")
+    
+    Clear
+    
+    'HE_CONTROLSET_EXCLUDE_CURRENT flag should be used together with HE_CONTROLSET_ALL
+    If (req_Flags And HE_CONTROLSET_EXCLUDE_CURRENT) Then
+        If Not CBool(req_Flags And HE_CONTROLSET_ALL) Then
+            req_Flags = req_Flags Or HE_CONTROLSET_ALL
+        End If
+    End If
+    If (req_Flags And HE_CONTROLSET_ALL) Then
+        FillControlSet
+    End If
+End Sub
+
+Private Sub FillControlSet()
+    Static bInit As Boolean
+    
+    Dim iTotal As Long
+    Dim i As Long
+    Dim sKey As String
+    
+    If Not bInit Then
+        bInit = True
+        ReDim cell.aControlSet(0)
+        cell.aControlSet(0) = "SYSTEM\CurrentControlSet"
+        iTotal = 1
+        For i = 1 To 999
+            sKey = "SYSTEM\ControlSet" & Right$("00" & CStr(i), 3)
+            If Reg.KeyExists(HKLM, sKey) Then
+                ReDim Preserve cell.aControlSet(iTotal)
+                cell.aControlSet(iTotal) = "SYSTEM\" & sKey
+                iTotal = iTotal + 1
+            Else
+                Exit For
+            End If
+        Next
+        ReDim Preserve cell.aControlSet(iTotal - 1)
+    End If
+End Sub
+
+'// Clear last session
+' Initialization data is saved
+Public Sub Clear()
     Erase cell.la_Keys
     cell.lb_HaveKeys = False
     cell.lb_HavePlaceHolders = False
     cell.lb_KeysPredefined = False
-    
     cell.ll_KeyIndex = -1
-    
+    cell.state_CS = 0
     ResetState
 End Sub
 
@@ -174,6 +278,7 @@ Private Sub ResetState()
     state_Hive = 0
     state_Redir = [_REG_REDIRECTION_NOT_DEFINED]
     cell.lb_NewKey = True
+    cell.EOF = False
 End Sub
 
 '// optional. Set array of keys to iterate through and check appropriate state of iterator settings
@@ -196,9 +301,10 @@ Public Sub AddKeys(aKeys() As String)
         MsgBoxW "Class should be initialized first with .Init !!!"
         Exit Sub
     End If
-    If AryPtr(aKeys) Then
+    If AryItems(aKeys) Then
         cell.la_Keys = aKeys
         'FillPredefinedKeys
+        ReDim Preserve cell.la_Placeholder(UBound(cell.la_Keys))
         cell.lb_HaveKeys = True
         cell.ll_KeyIndex = LBound(cell.la_Keys)
     End If
@@ -209,6 +315,7 @@ End Sub
 'Note: you can append own 'Placeholder' to the key. It mean, class will not use this placeholder internally in checkings,
 '  but it will return 'key + placeholder' in .Key and .KeyAndHive properties.
 '  You can use such placeholder further, e.g. for replacing {CLSID} with real CLSID that you was unable to get before you initialized this class.
+'Specify Hive_Apply to apply key to specific hive only
 Public Sub AddKey(sKey As String, Optional sAppendPlaceholder As String)
     If Not cell.lb_Class_Init Then
         MsgBoxW "Class should be initialized first with .Init !!!"
@@ -276,7 +383,7 @@ Public Function MoveNext() As Boolean
             Exit Function
         End If
         If Not NextWOW() Then 'get the first redirection state
-            MoveNext = MoveNextKey()
+            MoveNext = MoveNextKey() 'just in case
             Exit Function
         End If
         If Not KeySuitableWOW() Then
@@ -284,6 +391,7 @@ Public Function MoveNext() As Boolean
             Exit Function
         End If
     Else
+        If cell.EOF Then Exit Function
         If NextWOW() Then               'iterate most embedded cycle (WOW mode)
             If Not KeySuitableWOW() Then
                 MoveNext = MoveNext()
@@ -297,6 +405,7 @@ Public Function MoveNext() As Boolean
                 End If
             Else                        'last hive -> +1 to root cycle (key)
                 MoveNext = MoveNextKey()
+                If Not MoveNext Then cell.EOF = True
                 Exit Function
             End If
         End If
@@ -377,15 +486,16 @@ End Function
 '// Move Hive state
 'returns false, if the 'hive' state is not suitable against requested mask or 'End of state' is reached
 Private Function NextHive() As Boolean
-
+    
     On Error GoTo ErrorHandler:
-
-    Dim sSID As String
+    
+    Dim sSID_Key    As String
+    Dim bControlSet As Boolean
     
     cell.lb_SidService = False
     cell.lb_SidUser = False
     cell.lb_SidDefault = False
-
+    
     If state_Hive = 0 Then          'NOT DEFINED -> HKLM
         state_Hive = HKLM
         If Not CBool(req_Hive And HE_HIVE_HKLM) Then
@@ -400,11 +510,31 @@ Private Function NextHive() As Boolean
                 End If
             End If
         End If
+        If (req_Flags And HE_CONTROLSET_ALL) Then
+            If PathBeginWith(cell.la_Keys(cell.ll_KeyIndex), "SYSTEM\CurrentControlSet") Then
+                If (cell.state_CS = 0) And (req_Flags And HE_CONTROLSET_EXCLUDE_CURRENT) Then
+                    cell.state_CS = 1
+                End If
+                If cell.state_CS > 0 Then
+                    If cell.state_CS > UBound(cell.aControlSet) Then
+                        NextHive = NextHive()
+                        Exit Function
+                    End If
+                End If
+                'state_CS = state_CS + 1 'moved to the end of sub
+                bControlSet = True
+                state_Hive = 0
+            End If
+        End If
         cell.ls_HiveName = "HKLM"
         cell.ls_UserName = "All users"
         
     ElseIf state_Hive = HKLM Then   'HKLM -> HKCU
         state_Hive = HKCU
+        If cell.lb_LocalSysContext Then
+            NextHive = NextHive()
+            Exit Function
+        End If
         If Not CBool(req_Hive And HE_HIVE_HKCU) Then
             NextHive = NextHive()
             Exit Function
@@ -419,6 +549,7 @@ Private Function NextHive() As Boolean
         End If
         cell.ls_HiveName = "HKCU"
         cell.ls_UserName = cell.ls_CurUser
+        cell.ls_SID = cell.ls_CurSID
         
     ElseIf state_Hive = HKCU Then   'HKCU -> HKU (.DEFAULT)
         
@@ -442,14 +573,14 @@ Private Function NextHive() As Boolean
                 Exit Function
             End If
             cell.ls_UserName = "Default user" '(HKU\S-1-5-18)
-            sSID = ".DEFAULT"
+            sSID_Key = ".DEFAULT"
+            cell.ls_SID = "S-1-5-18"
             cell.lb_SidDefault = True
-            
         Else
             Exit Function
         End If
     ElseIf state_Hive = HKU Then    'HKU -> index += 1
-    
+            
         Select Case cell.state_SID
         
         Case -4, -3, -2 '.DEFAULT (-4) -> S-1-5-19 (-2) -> S-1-5-20 (-1)
@@ -460,7 +591,7 @@ Private Function NextHive() As Boolean
                 Exit Function
             End If
             cell.state_SID = cell.state_SID + 1
-            
+                        
             If OSver.MajorMinor = 5 And Len(cell.ls_SID_NetShowServices) <> 0 Then
                 'do nothing
             Else
@@ -469,11 +600,12 @@ Private Function NextHive() As Boolean
             End If
             
             Select Case cell.state_SID
-            Case -3: sSID = cell.ls_SID_NetShowServices: cell.ls_UserName = "NetShowServices"
+            Case -3: cell.ls_SID = cell.ls_SID_NetShowServices: cell.ls_UserName = "NetShowServices"
                         'HKU\S-1-5-18 -> is a symlink to HKU\.DEFAULT
-            Case -2: sSID = "S-1-5-19": cell.ls_UserName = "Local service"
-            Case -1: sSID = "S-1-5-20": cell.ls_UserName = "Network service"
+            Case -2: cell.ls_SID = "S-1-5-19": cell.ls_UserName = "Local service"
+            Case -1: cell.ls_SID = "S-1-5-20": cell.ls_UserName = "Network service"
             End Select
+            sSID_Key = cell.ls_SID
             cell.lb_SidService = True
             
         Case Is >= -1 'S-1-5-20 -> Other users' SID
@@ -482,9 +614,16 @@ Private Function NextHive() As Boolean
                 Exit Function
             End If
             If cell.lb_User_dimmed Then
-                If cell.state_SID < UBound(cell.la_SID) Then
+                If cell.state_SID < UBound(cell.la_User) Then
                     cell.state_SID = cell.state_SID + 1
-                    sSID = cell.la_SID(cell.state_SID): cell.ls_KeyAndHive = "HKU": cell.ls_UserName = cell.la_User(cell.state_SID)
+                    If CBool(req_SID And HE_SID_NO_VIRTUAL) Then
+                        If cell.la_User(cell.state_SID).Virtual Then
+                            NextHive = NextHive()
+                            Exit Function
+                        End If
+                    End If
+                    cell.ls_SID = cell.la_User(cell.state_SID).SID: cell.ls_KeyAndHive = "HKU": cell.ls_UserName = cell.la_User(cell.state_SID).Name
+                    sSID_Key = cell.ls_SID
                     cell.lb_SidUser = True
                 Else
                     Exit Function
@@ -498,17 +637,31 @@ Private Function NextHive() As Boolean
     cell.ls_Key = ""
     cell.ls_HiveNameAndSID = cell.ls_HiveName
     If state_Hive = HKU Then 'append SID
-        cell.ls_Key = sSID
-        cell.ls_HiveNameAndSID = cell.ls_HiveNameAndSID & "\" & sSID
+        cell.ls_Key = sSID_Key
+        cell.ls_HiveNameAndSID = cell.ls_HiveNameAndSID & "\" & sSID_Key
     End If
     If cell.lb_HaveKeys Then 'append Key from array
-        cell.ls_Key = IIf(Len(cell.ls_Key) <> 0, cell.ls_Key & "\", "") & cell.la_Keys(cell.ll_KeyIndex)
+        If bControlSet Then
+            cell.ls_Key = cell.aControlSet(cell.state_CS) & Mid$(cell.la_Keys(cell.ll_KeyIndex), 25&)
+            cell.state_CS = cell.state_CS + 1
+        Else
+            'add SID subkey if supplied
+            cell.ls_Key = IIf(Len(cell.ls_Key) <> 0, cell.ls_Key & "\", "") & cell.la_Keys(cell.ll_KeyIndex)
+        End If
     End If
     If cell.lb_HaveKeys Then
         If (la_predefHive(cell.ll_KeyIndex) = HKCR) Then 'append merged symlink prefix after convertion HKCR -> to HKCU/HKLM
             cell.ls_Key = "Software\Classes" & IIf(cell.ls_Key = "", "", "\" & cell.ls_Key)
         End If
     End If
+    
+    If (req_Flags And HE_KEY_MUST_EXIST) Then
+        If Not Reg.KeyExists(state_Hive, cell.ls_Key, CBool(state_Redir)) Then
+            NextHive = NextHive()
+            Exit Function
+        End If
+    End If
+    
     cell.ls_KeyAndHive = cell.ls_HiveName & IIf(Len(cell.ls_Key) <> 0, "\" & cell.ls_Key, "")
     
     NextHive = True
@@ -568,13 +721,20 @@ Private Function KeySuitableWOW() As Boolean
     End If
 End Function
 
+Private Function PathBeginWith(sPath, sBeginPart As String) As Boolean
+    If StrComp(Left$(sPath, Len(sBeginPart)), sBeginPart, 1) = 0 Then
+        If Len(sPath) = Len(sBeginPart) Or Mid$(sPath, Len(sBeginPart) + 1, 1) = "\" Then PathBeginWith = True
+    End If
+End Function
+
 Private Sub Class_Initialize()
     GetHKU_Sids
 End Sub
 
 Private Sub Class_Terminate()
-    Erase cell.la_SID
     Erase cell.la_User
+    Erase UNIQ.KeyData
+    Set UNIQ.dictKey = Nothing
 End Sub
 
 '// getting other users' SID and map it to the corresponding username
@@ -583,6 +743,7 @@ Private Sub GetHKU_Sids()
     AppendErrorLogCustom "clsHiveEnum.GetHKU_Sids - Begin"
     
     Dim i&, k&, sUsername$, aTmpSID() As String
+    Dim bVirtual As Boolean
     
     cell.ls_CurUser = GetUser()
     k = -1
@@ -593,24 +754,35 @@ Private Sub GetHKU_Sids()
         If aTmpSID(i) Like "S-#-#-#*" And (Not StrEndWith(aTmpSID(i), "_Classes")) And _
           aTmpSID(i) <> "S-1-5-18" And aTmpSID(i) <> "S-1-5-19" And aTmpSID(i) <> "S-1-5-20" Then
           
-          sUsername = MapSIDToUsername(aTmpSID(i))
+            bVirtual = False
+            sUsername = MapSIDToUsername(aTmpSID(i))
             
-          If OSver.MajorMinor = 5 And sUsername = "NetShowServices" Then 'Win2k
-            cell.ls_SID_NetShowServices = aTmpSID(i)
-          Else
+            '// TODO: maybe, better validate it using ConvertStringSidToSid() ?
             
-            If StrComp(sUsername, cell.ls_CurUser, 1) <> 0 Then
-                k = k + 1
-                ReDim Preserve cell.la_SID(k)
-                ReDim Preserve cell.la_User(k)
-                cell.la_SID(k) = aTmpSID(i)
-                cell.la_User(k) = sUsername
-                cell.lb_User_dimmed = True
-            Else
-                'current user
-                cell.ls_CurSID = aTmpSID(i)
+            If sUsername = "unknown" Then
+                sUsername = sUsername & ": " & aTmpSID(i)
+                bVirtual = True
+            ElseIf StrEndWith(aTmpSID(i), ".bak") Then
+                bVirtual = True
+            ElseIf InStr(aTmpSID(i), "{") <> 0 Then 'AV Sandboxie
+                bVirtual = True
             End If
-          End If
+            
+            If OSver.MajorMinor = 5 And sUsername = "NetShowServices" Then 'Win2k
+                cell.ls_SID_NetShowServices = aTmpSID(i)
+            Else
+                If StrComp(sUsername, cell.ls_CurUser, 1) <> 0 Then
+                    k = k + 1
+                    ReDim Preserve cell.la_User(k)
+                    cell.la_User(k).SID = aTmpSID(i)
+                    cell.la_User(k).Name = sUsername
+                    cell.la_User(k).Virtual = bVirtual
+                    cell.lb_User_dimmed = True
+                Else
+                    'current user
+                    cell.ls_CurSID = aTmpSID(i)
+                End If
+            End If
         End If
     Next i
     
@@ -645,6 +817,10 @@ Public Property Get KeyAndHive() As String
         KeyAndHive = cell.ls_KeyAndHive
     End If
 End Property
+'// get value part of Uniq key
+Public Property Get Value() As String
+    Value = cell.ls_Value
+End Property
 '// get hive pseudo-handle of current iteration
 Public Property Get Hive() As ENUM_REG_HIVE
     Hive = state_Hive
@@ -656,6 +832,10 @@ End Property
 '// get short hive name + SID (if available) of current iteration, e.g. "HKU\S-1-5-19", or "HKU\.DEFAULT"
 Public Property Get HiveNameAndSID() As String
     HiveNameAndSID = cell.ls_HiveNameAndSID
+End Property
+'// get SID of current iteration, e.g. "S-1-5-19"
+Public Property Get SID() As String
+    SID = cell.ls_SID
 End Property
 '// get user name associated with a hive of current iteration
 Public Property Get UserName() As String
@@ -687,7 +867,9 @@ Public Property Get IsSidDefault() As Boolean
 End Property
 
 '// Clone the state and all data of this class to another class
-Public Function Clone(DestinationClass As clsHiveEnum, Optional DoNotUseValue As Variant, Optional DoNotUseName As Variant) As Boolean
+Public Function Clone(DestinationClass As clsHiveEnum, _
+    Optional DoNotUseValue As Variant, _
+    Optional DoNotUseName As String) As Boolean
     
     On Error GoTo ErrorHandler:
     
@@ -699,8 +881,9 @@ Public Function Clone(DestinationClass As clsHiveEnum, Optional DoNotUseValue As
     Dim BytesRead As Long
     Dim bIncoming As Boolean
     Dim bPipeRequired As Boolean
+    Dim i As Long
     
-    bIncoming = Not IsMissing(DoNotUseName)
+    bIncoming = Not IsMissing(DoNotUseValue)
     
     If bIncoming Then
         If DoNotUseName = "cell" Then bPipeRequired = True
@@ -740,6 +923,9 @@ Public Function Clone(DestinationClass As clsHiveEnum, Optional DoNotUseValue As
         Case "req_Redir"
             req_Redir = DoNotUseValue
             Clone = True
+        Case "req_Flags"
+            req_Flags = DoNotUseValue
+            Clone = True
         Case "la_predefHive"
             la_predefHive = DoNotUseValue
             Clone = True
@@ -749,6 +935,10 @@ Public Function Clone(DestinationClass As clsHiveEnum, Optional DoNotUseValue As
         Case "state_Redir"
             state_Redir = DoNotUseValue
             Clone = True
+'        Case "la_HiveApplied()"
+'            ReDim Preserve la_HiveApplied(DoNotUseIndex)
+'            la_HiveApplied(DoNotUseIndex) = DoNotUseValue
+'            Clone = True
         End Select
     Else
         'outcoming
@@ -777,9 +967,16 @@ Public Function Clone(DestinationClass As clsHiveEnum, Optional DoNotUseValue As
         Clone = Clone And DestinationClass.Clone(Me, req_Hive, "req_Hive")
         Clone = Clone And DestinationClass.Clone(Me, req_SID, "req_SID")
         Clone = Clone And DestinationClass.Clone(Me, req_Redir, "req_Redir")
+        Clone = Clone And DestinationClass.Clone(Me, req_Flags, "req_Flags")
         Clone = Clone And DestinationClass.Clone(Me, la_predefHive, "la_predefHive")
         Clone = Clone And DestinationClass.Clone(Me, state_Hive, "state_Hive")
         Clone = Clone And DestinationClass.Clone(Me, state_Redir, "state_Redir")
+        
+'        If cell.lb_HaveKeys Then
+'            For i = 0 To UBound(la_HiveApplied)
+'                Clone = Clone And DestinationClass.Clone(Me, la_HiveApplied(i), "la_HiveApplied()", i)
+'            Next
+'        End If
     End If
     
     Exit Function
@@ -787,6 +984,112 @@ ErrorHandler:
     ErrorMsg Err, "clsHiveEnum.Clone"
     If inIDE Then Stop: Resume Next
 End Function
+
+
+'Methods to work with unique keys, added by user
+'It allow to filter duplicte keys (by its Hive / Key name / Value name / Redirection state)
+
+'Currently, only these properties are supported:
+' - Hive
+' - HiveName
+' - HiveNameAndSID
+' - Key
+' - KeyAndHive
+' - Redirected
+' - KeyIndex
+
+Public Function Uniq_ClearKeys()
+    With UNIQ
+        Erase .KeyData
+        .Index = 0
+        If Not (.dictKey Is Nothing) Then .dictKey.RemoveAll
+    End With
+End Function
+
+Public Function Uniq_Exists(hHive As ENUM_REG_HIVE, ByVal KeyName As String, Optional ValueName As String, Optional bUseWow64 As Boolean) As Boolean
+    Dim s As String
+    
+    If UNIQ.dictKey Is Nothing Then Exit Function
+    
+    s = BuildPath(CStr(hHive), KeyName, ValueName, CStr(bUseWow64))
+    
+    Uniq_Exists = UNIQ.dictKey.Exists(s)
+End Function
+
+'Note: KeyIndex - is a user defined data
+
+Public Function Uniq_AddKey(hHive As ENUM_REG_HIVE, ByVal KeyName As String, Optional ValueName As String, Optional bUseWow64 As Boolean, Optional KeyIndex As Long) As Boolean
+    
+    Dim s As String
+    
+    With UNIQ
+        If .dictKey Is Nothing Then
+            Set .dictKey = New clsTrickHashTable
+            .dictKey.CompareMode = vbTextCompare
+        End If
+        
+        s = BuildPath(CStr(hHive), KeyName, ValueName, CStr(bUseWow64))
+        
+        If Not .dictKey.Exists(s) Then
+        
+            If 0 = AryPtr(.KeyData) Then
+                ReDim .KeyData(0)
+            Else
+                ReDim Preserve .KeyData(UBound(.KeyData) + 1)
+            End If
+            
+            .dictKey.Add (s), UBound(.KeyData)
+            
+            With .KeyData(UBound(.KeyData))
+                .hHive = hHive
+                .KeyName = KeyName
+                .ValueName = ValueName
+                .Redir = bUseWow64
+                .KeyIndex = KeyIndex
+            End With
+            
+            Uniq_AddKey = True
+        End If
+    End With
+    
+End Function
+
+Public Function Uniq_MoveNext() As Boolean
+    With UNIQ
+        If 0 = AryPtr(.KeyData) Then Exit Function
+    
+        If .Index <= UBound(.KeyData) Then
+            
+            With .KeyData(.Index)
+                state_Redir = .Redir
+                state_Hive = .hHive
+                cell.ls_HiveName = Reg.GetShortHiveName(Reg.GetHiveNameByHandle(.hHive))
+                cell.ls_Key = .KeyName
+                cell.ls_Value = .ValueName
+                cell.ls_KeyAndHive = BuildPath(cell.ls_HiveName, cell.ls_Key)
+                cell.ll_KeyIndex = .KeyIndex
+                
+                If .hHive = HKU Then
+                    If Len(.KeyName) > 0 Then
+                        cell.ls_HiveNameAndSID = BuildPath(cell.ls_HiveName, GetRootPath(.KeyName))
+                    Else
+                        cell.ls_HiveNameAndSID = cell.ls_HiveName
+                    End If
+                Else
+                    cell.ls_HiveNameAndSID = cell.ls_HiveName
+                End If
+            End With
+            
+            .Index = .Index + 1
+            Uniq_MoveNext = True
+        End If
+    End With
+End Function
+
+Public Sub Uniq_Repeat()
+    UNIQ.Index = 0
+End Sub
+
 
 'Public Sub TestClass()
 '    Dim HE As clsHiveEnum

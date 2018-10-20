@@ -1,4 +1,6 @@
 Attribute VB_Name = "modWFP"
+'[modWFP.bas]
+
 '
 ' WPF Enumerator by Alex Dragokas
 '
@@ -59,17 +61,17 @@ Private Function SfcGetFiles(ByVal Addr As Long, ProtFileData As PPROTECT_FILE_E
 
 
 Private Sub InitVars()
-    Dim Ret             As Long
+    Dim ret             As Long
     SystemRoot = Space$(MAX_PATH)
-    Ret = GetWindowsDirectory(StrPtr(SystemRoot), Len(SystemRoot))
-    SystemRoot = Left$(SystemRoot, Ret) & "\"
+    ret = GetWindowsDirectory(StrPtr(SystemRoot), Len(SystemRoot))
+    SystemRoot = Left$(SystemRoot, ret) & "\"
     Debug.Assert CheckIDE(inIDE)
 End Sub
 
 Public Function SFCList_XP() As String()
     On Error GoTo ErrorHandler:
 
-    Dim Ret                     As Long
+    Dim ret                     As Long
     Dim hSfc_Lib                As Long
     Dim SfcGetNextProtFileAddr  As Long
     Dim pfd                     As PROTECTED_FILE_DATA
@@ -88,9 +90,9 @@ Public Function SFCList_XP() As String()
     
     Do
         ' by Patch
-        Ret = SfcGetNextProtectedFile(SfcGetNextProtFileAddr, 0&, pfd)
+        ret = SfcGetNextProtectedFile(SfcGetNextProtFileAddr, 0&, pfd)
         
-        If Ret Then
+        If ret Then
             If UBound(SFCList) < i Then ReDim Preserve SFCList(i + 100)
             SFCList(i) = TrimChar0(pfd.FileName)
         End If
@@ -100,7 +102,7 @@ Public Function SFCList_XP() As String()
         'If ret Then Print #ff, StrConv(pfd.FileName, vbFromUnicode)
     
         i = i + 1
-    Loop While Ret
+    Loop While ret
 
     If i = 0 Then
         ReDim SFCList(0)
@@ -118,7 +120,7 @@ End Function
 Public Function SFCList_XP_0() As String()  ' with SFCFILES.dll
     On Error GoTo ErrorHandler:
 
-    Dim Ret                     As Long
+    Dim ret                     As Long
     Dim hSfcFil_Lib             As Long
     Dim SfcGetFilesAddr         As Long
     Dim FileCount               As Long
@@ -140,7 +142,7 @@ Public Function SFCList_XP_0() As String()  ' with SFCFILES.dll
     If SfcGetFilesAddr = 0 Then Debug.Print "Error: cannot get SfcGetFiles function address!": Exit Function
     
     FileCount = 0
-    Ret = SfcGetFiles(SfcGetFilesAddr, pfe, FileCount)
+    ret = SfcGetFiles(SfcGetFilesAddr, pfe, FileCount)
 
     'Debug.Print "FileName=" & pfe.FileName
     'Debug.Print "InfName=" & pfe.InfName
@@ -182,7 +184,7 @@ Public Function SFCList_Vista() As String()
     Dim pData            As PPROTECTED_FILE_INFO
     Dim hSfc_os_Lib      As Long
     Dim hSFC             As Long
-    Dim Ret              As Long
+    Dim ret              As Long
     Dim BeginFileMapAddr As Long
     Dim GetNextFileAddr  As Long
     Dim CloseFileMapAddr As Long
@@ -201,7 +203,7 @@ Public Function SFCList_Vista() As String()
     BeginFileMapAddr = GetProcAddress(hSfc_os_Lib, "BeginFileMapEnumeration")
     If BeginFileMapAddr = 0 Then Debug.Print "Error: cannot get BeginFileMapEnumeration function address!": Exit Function
     
-    Ret = BeginFileMapEnumeration(BeginFileMapAddr, 0&, 0&, hSFC)
+    ret = BeginFileMapEnumeration(BeginFileMapAddr, 0&, 0&, hSFC)
     If hSFC = 0 Then Debug.Print "Error! Cannot get handle of first element of BeginFileMapEnumeration."
     
     dwBufferSize = Len(pData)
@@ -211,7 +213,7 @@ Public Function SFCList_Vista() As String()
     ReDim SFCList(300)
     
     Do
-        Ret = GetNextFileMapContent(GetNextFileAddr, 0&, hSFC, dwBufferSize, pData, dwNeeded)
+        ret = GetNextFileMapContent(GetNextFileAddr, 0&, hSFC, dwBufferSize, pData, dwNeeded)
     
         Select Case Err.LastDllError ' <--- Does not working here !!!
         

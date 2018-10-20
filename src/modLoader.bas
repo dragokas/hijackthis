@@ -1,4 +1,6 @@
 Attribute VB_Name = "modLoader"
+'[modLoader.bas]
+
 ' // modLoader.bas - EXE (VB6) loader from memory
 ' // © Krivous Anatoly Anatolevich (The trick), 2016
 
@@ -126,7 +128,7 @@ Private Type IMAGE_BASE_RELOCATION
 End Type
 
 Private Type UNICODE_STRING
-    length                          As Integer
+    Length                          As Integer
     MaxLength                       As Integer
     lpBuffer                        As Long
 End Type
@@ -143,7 +145,7 @@ Public Type LIST_ENTRY
     Blink                           As Long
 End Type
 Public Type PEB_LDR_DATA
-    length                          As Long
+    Length                          As Long
     Initialized                     As Long
     SsHandle                        As Long
     InLoadOrderModuleList           As LIST_ENTRY
@@ -199,17 +201,17 @@ Private Const ProcessBasicInformation               As Long = 0
 ' // Obtain string from resource (it should be less or equal MAX_PATH)
 Public Function ResGetString( _
                 ByVal ID As MessagesID) As Long
-    
+        
     Dim hInstance As Long
     
-    ResGetString = SysAllocStringLen(0, MAX_PATH)
+    ResGetString = llib.SysAllocStringLen(0, MAX_PATH)
     
     If ResGetString Then
         
-        hInstance = GetModuleHandle(ByVal 0&)
+        hInstance = llib.GetModuleHandle(ByVal 0&)
     
-        If LoadString(hInstance, ID, ResGetString, MAX_PATH) = 0 Then SysFreeString ResGetString: ResGetString = 0: Exit Function
-        If SysReAllocString(ResGetString, ResGetString) = 0 Then SysFreeString ResGetString: ResGetString = 0: Exit Function
+        If llib.LoadString(hInstance, ID, ResGetString, MAX_PATH) = 0 Then llib.SysFreeString ResGetString: ResGetString = 0: Exit Function
+        If llib.SysReAllocString(ResGetString, ResGetString) = 0 Then llib.SysFreeString ResGetString: ResGetString = 0: Exit Function
         
     End If
     
@@ -222,11 +224,11 @@ Public Function RunExeFromMemory(pFileInMemory As Long, dwSize As Long) As Boole
     Dim pFileData   As Long
     
     ' // Alloc memory within top memory addresses
-    pFileData = VirtualAlloc(ByVal 0&, dwSize, MEM_TOP_DOWN Or MEM_COMMIT, PAGE_READWRITE)
+    pFileData = llib.VirtualAlloc(ByVal 0&, dwSize, MEM_TOP_DOWN Or MEM_COMMIT, PAGE_READWRITE)
     If pFileData = 0 Then Exit Function
     
     ' // Copy raw exe file to this memory
-    CopyMemory ByVal pFileData, ByVal pFileInMemory, dwSize
+    llib.CopyMemory ByVal pFileData, ByVal pFileInMemory, dwSize
     
     ' // Free decompressed project data
     'HeapFree GetProcessHeap(), HEAP_NO_SERIALIZE, pProjectData
@@ -241,7 +243,7 @@ Public Function RunExeFromMemory(pFileInMemory As Long, dwSize As Long) As Boole
     ' // An error occurs
     ' // Clean memory
     
-    VirtualFree ByVal pFileData, 0, MEM_RELEASE
+    llib.VirtualFree ByVal pFileData, 0, MEM_RELEASE
     
 End Function
 
@@ -249,18 +251,18 @@ End Function
 Private Function RunExeFromMemoryEx( _
                 ByVal pExeData As Long, _
                 ByVal IgnoreError As Boolean) As Boolean
-    Dim length  As Long:    Dim pCode       As Long
+    Dim Length  As Long:    Dim pCode       As Long
     Dim pszMsg  As Long:    Dim pMsgTable   As Long
-    Dim index   As Long:    Dim pCurMsg     As Long
+    Dim Index   As Long:    Dim pCurMsg     As Long
     
     ' // Get size of shellcode
-    length = GetAddr(AddressOf ENDSHELLLOADER) - GetAddr(AddressOf BEGINSHELLLOADER)
+    Length = GetAddr(AddressOf ENDSHELLLOADER) - GetAddr(AddressOf BEGINSHELLLOADER)
     
     ' // Alloc memory within top addresses
-    pCode = VirtualAlloc(ByVal 0&, length, MEM_TOP_DOWN Or MEM_COMMIT, PAGE_EXECUTE_READWRITE)
+    pCode = llib.VirtualAlloc(ByVal 0&, Length, MEM_TOP_DOWN Or MEM_COMMIT, PAGE_EXECUTE_READWRITE)
     
     ' // Copy shellcode to allocated memory
-    CopyMemory ByVal pCode, ByVal GetAddr(AddressOf BEGINSHELLLOADER), length
+    llib.CopyMemory ByVal pCode, ByVal GetAddr(AddressOf BEGINSHELLLOADER), Length
     
     Dbg "pCode = " & pCode
     
@@ -280,31 +282,31 @@ Private Function RunExeFromMemoryEx( _
         Dbg "VirtualAlloc"
         
         ' // Alloc memory for messages table
-        pMsgTable = VirtualAlloc(ByVal 0&, 1024, MEM_TOP_DOWN Or MEM_COMMIT, PAGE_READWRITE)
+        pMsgTable = llib.VirtualAlloc(ByVal 0&, 1024, MEM_TOP_DOWN Or MEM_COMMIT, PAGE_READWRITE)
         If pMsgTable = 0 Then GoTo CleanUp
         
         ' // Skip pointers
         pCurMsg = pMsgTable + EM_END * 4
         
-        For index = 0 To EM_END - 1
+        For Index = 0 To EM_END - 1
         
-            Dbg "GetString" & index
+            Dbg "GetString" & Index
         
             ' // Load message string
-            pszMsg = ResGetString(MSG_LOADER_ERROR + index)
+            pszMsg = ResGetString(MSG_LOADER_ERROR + Index)
             If pszMsg = 0 Then GoTo CleanUp
             
-            length = SysStringLen(pszMsg)
+            Length = llib.SysStringLen(pszMsg)
 
-            lstrcpyn ByVal pCurMsg, ByVal pszMsg, length + 1
+            llib.lstrcpyn ByVal pCurMsg, ByVal pszMsg, Length + 1
             
             ' // Store pointer
-            CopyMemory ByVal pMsgTable + index * 4, pCurMsg, Len(pCurMsg)
+            llib.CopyMemory ByVal pMsgTable + Index * 4, pCurMsg, Len(pCurMsg)
             
             ' // Next message offset
-            pCurMsg = pCurMsg + (length + 1) * 2
+            pCurMsg = pCurMsg + (Length + 1) * 2
             
-            SysFreeString pszMsg
+            llib.SysFreeString pszMsg
             
         Next
         
@@ -318,11 +320,11 @@ Private Function RunExeFromMemoryEx( _
 CleanUp:
     
     If pMsgTable Then
-        VirtualFree ByVal pMsgTable, 0, MEM_RELEASE
+        llib.VirtualFree ByVal pMsgTable, 0, MEM_RELEASE
     End If
     
     If pCode Then
-        VirtualFree ByVal pCode, 0, MEM_RELEASE
+        llib.VirtualFree ByVal pCode, 0, MEM_RELEASE
     End If
     
 End Function
@@ -365,8 +367,8 @@ Private Function InitShellLoader( _
         Dbg "Get module handle"
         
         ' // Get module handle
-        hLib = GetModuleHandle(ByVal sName): If hLib = 0 Then Exit Function
-        SysFreeString sName
+        hLib = llib.GetModuleHandle(ByVal sName): If hLib = 0 Then Exit Function
+        llib.SysFreeString sName
         
         ' // Go thru functions
         Do While fncIdx
@@ -379,8 +381,8 @@ Private Function InitShellLoader( _
             sFunc = ToAnsi(sName): If sFunc = 0 Then Exit Function
             
             ' // Get function address
-            lpAddr = GetProcAddress(hLib, sFunc)
-            SysFreeString sName: SysFreeString sFunc
+            lpAddr = llib.GetProcAddress(hLib, sFunc)
+            llib.SysFreeString sName: llib.SysFreeString sFunc
             
             Dbg "Addr of function: " & libName & " is " & lpAddr
             
@@ -408,8 +410,8 @@ Private Function InitShellLoader( _
     ' // push eax   - 0x50
     ' // jmp ecx    - 0xFFE1
     
-    CopyMemory ByVal lpAddr, &HFF505958, 4
-    CopyMemory ByVal lpAddr + 4, &HE1, 1
+    llib.CopyMemory ByVal lpAddr, &HFF505958, 4
+    llib.CopyMemory ByVal lpAddr + 4, &HE1, 1
 
     ' // Success
     InitShellLoader = True
@@ -421,24 +423,24 @@ Private Sub Splice( _
             ByVal Func As Long, _
             ByVal NewAddr As Long)
     ' // Set memory permissions
-    VirtualProtect ByVal Func, 5, PAGE_EXECUTE_READWRITE, 0
-    CopyMemory ByVal Func, &HE9, 1                      ' // JMP
-    CopyMemory ByVal Func + 1, NewAddr - Func - 5, 4    ' // Relative address
+    llib.VirtualProtect ByVal Func, 5, PAGE_EXECUTE_READWRITE, 0
+    llib.CopyMemory ByVal Func, &HE9, 1                      ' // JMP
+    llib.CopyMemory ByVal Func + 1, NewAddr - Func - 5, 4    ' // Relative address
 End Sub
 
 ' // Unicode->Ansi
 Private Function ToAnsi( _
-                 ByVal S As Long) As Long
+                 ByVal s As Long) As Long
     Dim Size As Long
     
     ' // Get string size
-    Size = SysStringLen(S)
+    Size = llib.SysStringLen(s)
     
     ' // Alloc memory for ansi string
-    ToAnsi = SysAllocStringByteLen(0, Size)
+    ToAnsi = llib.SysAllocStringByteLen(0, Size)
     
     ' // Translate
-    WideCharToMultiByte CP_ACP, 0, S, Size, ToAnsi, Size, 0, 0
+    llib.WideCharToMultiByte CP_ACP, 0, s, Size, ToAnsi, Size, 0, 0
     
 End Function
 
@@ -460,7 +462,7 @@ Private Function LoadExeFromMemory( _
                  ByVal pErrMsgTable As Long) As Boolean
     Dim NtHdr   As IMAGE_NT_HEADERS
     Dim pBase   As Long
-    Dim index   As Long
+    Dim Index   As Long
     Dim iError  As ERROR_MESSAGES
     Dim pszMsg  As Long
     
@@ -477,7 +479,7 @@ Private Function LoadExeFromMemory( _
        (NtHdr.FileHeader.Characteristics And IMAGE_FILE_32BIT_MACHINE) = 0 Then Exit Function
 
     ' // Release main EXE memory. After that main exe is unloaded from memory.
-    ZwUnmapViewOfSection GetCurrentProcess(), GetModuleHandle(ByVal 0&)
+    llib.ZwUnmapViewOfSection llib.GetCurrentProcess(), llib.GetModuleHandle(ByVal 0&)
 
     ' // Reserve memory for EXE
     iError = ReserveMemory(pRawData, pBase)
@@ -578,7 +580,7 @@ Private Function UpdateNewBaseAddress( _
     tCopyMemory PBI.PebBaseAddress, IntPtr(cPEB.NotUsed), Len(cPEB)
     
     ' // Fix base address in PEB_LDR_DATA list
-    tCopyMemory IntPtr(ldrData.length), cPEB.LoaderData, Len(ldrData)
+    tCopyMemory IntPtr(ldrData.Length), cPEB.LoaderData, Len(ldrData)
     
     ' // Get first element
     tCopyMemory IntPtr(ldrMod.InLoadOrderModuleList.Flink), ldrData.InLoadOrderModuleList.Flink, Len(ldrMod)

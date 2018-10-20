@@ -1,4 +1,6 @@
 Attribute VB_Name = "modTasks"
+'[modTasks.bas]
+
 Option Explicit
 
 ' Windows Scheduled Tasks Enumerator/Killer by Alex Dragokas
@@ -12,6 +14,8 @@ Option Explicit
 'regexp replacing (for CLSID):
 '^(.*?): (\(disabled\) )?(.*?) - (.*?) - (.*?)( \(Microsoft\))?
 ' \3; \4; \5
+
+'https://docs.microsoft.com/en-us/windows/desktop/taskschd/task-scheduler-objects
 
 ' Action type constants
 Private Enum TASK_ACTION_TYPE
@@ -160,9 +164,96 @@ Private Const TASK_ENUM_HIDDEN          As Long = 1&
 
 Private Declare Sub Sleep Lib "kernel32.dll" (ByVal dwMilliseconds As Long)
 
-Private bCreateLogFile As Boolean
 Private LogHandle As Integer
 
+Public Function CreateTask(TaskName As String, FullPath As String, Arguments As String, Optional Description As String, Optional DelaySec As Long = 0) As Boolean
+    On Error GoTo ErrorHandler
+    AppendErrorLogCustom "CreateTask - Begin"
+    
+    Dim pService            As Object
+    Dim pRegInfo            As IRegistrationInfo
+    Dim pRootFolder         As ITaskFolder
+    Dim pTask               As ITaskDefinition
+    Dim pPrincipal          As IPrincipal
+    Dim pSettings           As ITaskSettings
+    Dim pTriggerCollection  As ITriggerCollection
+    Dim pTrigger            As ITrigger
+    Dim pRegistrationTrigger As IRegistrationTrigger
+    Dim pLogonTrigger       As ILogonTrigger
+    Dim pActionCollection   As IActionCollection
+    Dim pAction             As IAction
+    Dim pExecAction         As IExecAction
+    Dim pRegisteredTask     As IRegisteredTask
+    
+    Set pService = CreateObject("Schedule.Service")
+    pService.Connect
+
+    If (pService.Connected) Then
+        
+        Set pRootFolder = pService.GetFolder("\")
+        On Error Resume Next
+        pRootFolder.DeleteTask TaskName, 0 'delete task if it's already exist
+        On Error GoTo ErrorHandler
+        
+        Set pTask = pService.NewTask(0)
+        
+        If Not (pTask Is Nothing) Then
+        
+            Set pRegInfo = pTask.RegistrationInfo
+            pRegInfo.Author = GetCompName(ComputerNameNetBIOS) & "\" & GetUser() 'Username or %UserDomain%\%UserName%
+            pRegInfo.Description = Description
+            Set pRegInfo = Nothing
+            
+            Set pPrincipal = pTask.Principal
+            pPrincipal.RunLevel = TASK_RUNLEVEL_HIGHEST
+            Set pPrincipal = Nothing
+            
+            Set pSettings = pTask.Settings
+            pSettings.Enabled = True
+            'https://docs.microsoft.com/en-us/windows/desktop/taskschd/tasksettings-priority
+            pSettings.Priority = 8 'BELOW_NORMAL_PRIORITY_CLASS
+            Set pSettings = Nothing
+            
+            Set pTriggerCollection = pTask.Triggers
+            Set pTrigger = pTriggerCollection.Create(TASK_TRIGGER_LOGON)
+            Set pLogonTrigger = pTrigger
+            
+            'https://docs.microsoft.com/en-us/windows/desktop/TaskSchd/logontrigger-delay
+            pLogonTrigger.Delay = "PT" & CStr(DelaySec) & "S" 'S - mean sec. delay 'format is PnYnMnDTnHnMnS, where T - is date/time separator
+            pLogonTrigger.Enabled = True
+            pLogonTrigger.UserId = GetCompName(ComputerNameNetBIOS) & "\" & GetUser()  'UserDomain\UserName, like "Alex-PC\Alex"
+            Set pTrigger = Nothing
+            Set pTriggerCollection = Nothing
+            
+            Set pActionCollection = pTask.Actions
+            Set pAction = pActionCollection.Create(TASK_ACTION_EXEC)
+            Set pExecAction = pAction
+            pExecAction.Path = FullPath
+            pExecAction.Arguments = Arguments
+            pExecAction.WorkingDirectory = GetParentDir(FullPath)
+            Set pAction = Nothing
+            Set pActionCollection = Nothing
+            
+            Set pRegisteredTask = pRootFolder.RegisterTaskDefinition( _
+                TaskName, pTask, TASK_CREATE_OR_UPDATE, "", "", TASK_LOGON_INTERACTIVE_TOKEN, "")
+            
+            If Not (pRegisteredTask Is Nothing) Then
+                CreateTask = True
+            End If
+            
+            Set pRegisteredTask = Nothing
+            Set pTask = Nothing
+        End If
+        
+        Set pService = Nothing
+    End If
+    
+    AppendErrorLogCustom "CreateTask - End"
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "CreateTask"
+    If inIDE Then Stop: Resume Next
+End Function
 
 'Public Sub EnumTasks(Optional MakeCSV As Boolean)
 '    On Error GoTo ErrorHandler
@@ -664,29 +755,46 @@ Private LogHandle As Integer
 '    If inIDE Then Stop: Resume Next
 'End Sub
 
-Public Function PathNormalize(ByVal sFilename As String) As String
+Public Function PathNormalize(ByVal sPath As String) As String
     
-    AppendErrorLogCustom "PathNormalize - Begin", "File: " & sFilename
+    AppendErrorLogCustom "PathNormalize - Begin", "File: " & sPath
     
     Dim sTmp As String, bShouldSeek As Boolean
     
-    sFilename = UnQuote(sFilename)
+    sPath = UnQuote(sPath)
     
-    If Mid$(sFilename, 2, 1) <> ":" Then
+    If StrBeginWith(sPath, "!\??\") Then sPath = Mid$(sPath, 6)
+    If StrBeginWith(sPath, "\??\") Then sPath = Mid$(sPath, 5)
+    If StrBeginWith(sPath, "\\?\") Then sPath = Mid$(sPath, 5)
+    If StrBeginWith(sPath, "\\.\") Then sPath = Mid$(sPath, 5)
+    If StrBeginWith(sPath, "file:///") Then sPath = Mid$(sPath, 9)
+    If StrBeginWith(sPath, "\SystemRoot\") Then sPath = sWinDir & Mid$(sPath, 12)
+    
+    If StrBeginWith(sPath, "\\") Then
+        PathNormalize = sPath
+        Exit Function
+    End If
+    
+    If StrBeginWith(sPath, "\") Then sPath = SysDisk & sPath
+    
+    '???
+    'sPath = Replace(sPath, "/", "\")
+    
+    If Mid$(sPath, 2, 1) <> ":" Then
         bShouldSeek = True  'relative or on the %PATH%
     Else
-        If Not FileExists(sFilename) Then bShouldSeek = True 'e.g. no extension
-        sFilename = GetLongPath(sFilename)
+        If Not FileExists(sPath) Then bShouldSeek = True 'e.g. no extension
+        sPath = GetLongPath(sPath)
     End If
     
     If bShouldSeek Then
-        sTmp = FindOnPath(sFilename)
+        sTmp = FindOnPath(sPath)
         If Len(sTmp) <> 0 Then
-            sFilename = sTmp
+            sPath = sTmp
         End If
     End If
     
-    PathNormalize = sFilename
+    PathNormalize = sPath
     
     AppendErrorLogCustom "PathNormalize - End"
 End Function
@@ -722,11 +830,34 @@ Public Function isInTasksWhiteList(sPathName As String, sTargetFile As String, s
     
     WL_ID = oDict.TaskWL_ID(sPathName)
     
+    Dim MyArray() As String
+    Dim i As Long
+    Dim bSafe As Boolean
+    
     With g_TasksWL(WL_ID)
         'verifying all components
-        If inArraySerialized(sTargetFile, .RunObj, "|", , , 1) And _
-          inArraySerialized(sArguments, .Args, "|", , , 1) Then
-            isInTasksWhiteList = True
+        
+        'If inArraySerialized(sTargetFile, .RunObj, "|", , , 1) Then
+        
+        MyArray = Split(.RunObj, "|")
+        
+        For i = 0 To UBound(MyArray)
+            If Left$(MyArray(i), 1) <> "{" Then 'not CLSID-based ?
+                If InStr(MyArray(i), "\") = 0 Then
+                    'if full path not set in database, comparing by filename only
+                    If StrComp(GetFileNameAndExt(sTargetFile), MyArray(i), vbTextCompare) = 0 Then bSafe = True: Exit For
+                Else
+                    If StrComp(sTargetFile, MyArray(i), vbTextCompare) = 0 Then bSafe = True: Exit For
+                End If
+            Else
+                If StrComp(sTargetFile, MyArray(i), vbTextCompare) = 0 Then bSafe = True: Exit For
+            End If
+        Next
+        
+        If bSafe Then
+            If inArraySerialized(sArguments, .Args, "|", , , 1) Then
+                isInTasksWhiteList = True
+            End If
         End If
     End With
     
@@ -940,14 +1071,14 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
     Dim odRegTasks      As clsTrickHashTable
     Dim i               As Long
     Dim j               As Long
-    Dim Result          As SCAN_RESULT
+    Dim result          As SCAN_RESULT
     Dim DirParent       As String
     Dim DirFull         As String
     Dim TaskName        As String
     Dim sHit            As String
     Dim NoFile          As Boolean
     Dim isSafe          As Boolean
-    Dim SignResult      As SignResult_TYPE
+    'Dim SignResult      As SignResult_TYPE
     Dim bIsMicrosoftFile As Boolean
     Dim aFiles()        As String
     Dim te()            As TASK_ENTRY
@@ -996,7 +1127,7 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
     
     aFiles = ListFiles(sWinTasksFolder, "", True)
     
-    If AryPtr(aFiles) Then
+    If AryItems(aFiles) Then
       For i = 0 To UBound(aFiles)
       
         AppendErrorLogCustom "Task: " & aFiles(i)
@@ -1017,7 +1148,9 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
         
         For j = 0 To numTasks - 1
             
-            WipeSignResult SignResult
+            'WipeSignResult SignResult
+            
+            bIsMicrosoftFile = False
             
             If MakeCSV Then
                 'taskState
@@ -1045,13 +1178,15 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
             
             If isSafe Or StrBeginWith(DirFull, "\Microsoft\") Then
                 If te(j).ActionType = TASK_ACTION_EXEC Then
-                    If InStr(1, DirFull, "Windows Defender", 1) = 0 Then
+                    'If InStr(1, DirFull, "Windows Defender", 1) = 0 Then
                         te(j).RunObj = PathNormalize(te(j).RunObj)
-                        SignVerify te(j).RunObj, SV_LightCheck Or SV_PreferInternalSign, SignResult
-                    End If
+                        'SignVerify te(j).RunObj, SV_LightCheck, SignResult
+                        bIsMicrosoftFile = IsMicrosoftFile(te(j).RunObj)
+                    'End If
                 ElseIf te(j).ActionType = TASK_ACTION_COM_HANDLER Then
                     te(j).RunObjCom = PathNormalize(te(j).RunObjCom)
-                    SignVerify te(j).RunObjCom, SV_LightCheck Or SV_PreferInternalSign, SignResult
+                    'SignVerify te(j).RunObjCom, SV_LightCheck, SignResult
+                    bIsMicrosoftFile = IsMicrosoftFile(te(j).RunObjCom)
                 End If
             End If
             
@@ -1061,7 +1196,7 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
                 
                 If te(j).ActionType = TASK_ACTION_EXEC Then
                     
-                    bIsMicrosoftFile = (SignResult.isMicrosoftSign And SignResult.isLegit)
+                    'bIsMicrosoftFile = (SignResult.isMicrosoftSign And SignResult.isLegit)
                     
                     isSafe = (bIsMicrosoftFile And bHideMicrosoft And Not bIgnoreAllWhitelists)
                     
@@ -1074,9 +1209,10 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
                   'for some reason, part of CLSID records on Win10 is not registered
                   If te(j).RunObjCom <> "(no file)" Then
                 
-                    SignVerify te(j).RunObjCom, SV_LightCheck Or SV_PreferInternalSign, SignResult
-                
-                    bIsMicrosoftFile = (SignResult.isMicrosoftSign And SignResult.isLegit)
+                    'SignVerify te(j).RunObjCom, SV_LightCheck, SignResult
+                    'bIsMicrosoftFile = (SignResult.isMicrosoftSign And SignResult.isLegit)
+                    
+                    bIsMicrosoftFile = IsMicrosoftFile(te(j).RunObjCom)
                     
                     isSafe = (bIsMicrosoftFile And bHideMicrosoft And Not bIgnoreAllWhitelists)
                     
@@ -1109,15 +1245,25 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
                 
                 sRunFilename = GetFileName(te(j).RunObj, True)
                 
-                If InStr(1, DirParent, "Customer Experience", 1) <> 0 Then bTelemetry = True
-                If InStr(1, DirParent, "Application Experience", 1) <> 0 Then bTelemetry = True
-                If InStr(1, DirParent, "telemetry", 1) <> 0 Then bTelemetry = True
-                If InStr(1, TaskName, "telemetry", 1) <> 0 Then bTelemetry = True
-                If StrComp(sRunFilename, "OLicenseHeartbeat.exe", 1) = 0 Then bTelemetry = True
-                If StrComp(DirFull, "\Microsoft\Windows\IME\SQM data sender", 1) = 0 Then bTelemetry = True
+                If InStr(1, DirParent, "Customer Experience", 1) <> 0 Then
+                    bTelemetry = True
+                ElseIf InStr(1, DirParent, "Application Experience", 1) <> 0 Then
+                    bTelemetry = True
+                ElseIf InStr(1, DirParent, "telemetry", 1) <> 0 Then
+                    bTelemetry = True
+                ElseIf InStr(1, TaskName, "telemetry", 1) <> 0 Then
+                    bTelemetry = True
+                ElseIf StrComp(sRunFilename, "NvTmMon.exe", 1) = 0 Then
+                    bTelemetry = True
+                ElseIf StrComp(sRunFilename, "OLicenseHeartbeat.exe", 1) = 0 Then
+                    bTelemetry = True
+                ElseIf StrComp(DirFull, "\Microsoft\Windows\IME\SQM data sender", 1) = 0 Then
+                    bTelemetry = True
+                End If
                 
                 If InStr(1, DirParent, "Activation", 1) <> 0 Then
-                    If SignResult.isMicrosoftSign Then
+                    'If SignResult.isMicrosoftSign Then
+                    If bIsMicrosoftFile Then
                         '\Microsoft\Windows\Windows Activation Technologies\ValidationTask - C:\Windows\system32\Wat\WatAdminSvc.exe /run (Microsoft)
                         bActivation = True
                     ElseIf StrComp(sRunFilename, "schtasks.exe", 1) = 0 Then
@@ -1125,27 +1271,37 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
                         bActivation = True
                     End If
                 End If
-                If InStr(1, DirParent, "gwx", 1) <> 0 Then
+                If InStr(1, DirParent, "gwx", 1) <> 0 Then '(Get Windows 10)
                     '\Microsoft\Windows\Setup\gwx\refreshgwxconfig - C:\Windows\system32\GWX\GWXConfigManager.exe /RefreshConfig (Microsoft)
                     '\Microsoft\Windows\Setup\gwx\refreshgwxcontent - C:\Windows\system32\GWX\GWXConfigManager.exe /RefreshContent (Microsoft)
                     '\Microsoft\Windows\Setup\gwx\runappraiser - C:\Windows\system32\GWX\GWXConfigManager.exe /RunAppraiser (Microsoft)
-                    If SignResult.isMicrosoftSign Then bUpdate = True
+                    'If SignResult.isMicrosoftSign Then bUpdate = True
+                    If bIsMicrosoftFile Then bUpdate = True
                 End If
                 
                 'skip signature mark for host processes
-                If SignResult.isMicrosoftSign Then
+                'If SignResult.isMicrosoftSign Then
+                If bIsMicrosoftFile Then
                     If inArraySerialized(sRunFilename, "rundll32.exe|schtasks.exe|sc.exe|cmd.exe|wscript.exe|" & _
-                      "mshta.exe|pcalua.exe|powershell.exe|svchost.exe|msiexec.exe", "|", , , vbTextCompare) Then SignResult.isMicrosoftSign = False
+                      "mshta.exe|pcalua.exe|powershell.exe|svchost.exe|msiexec.exe", "|", , , vbTextCompare) Then
+                        'SignResult.isMicrosoftSign = False
+                        bIsMicrosoftFile = False
+                    End If
                       
-                    If SignResult.isMicrosoftSign And Len(te(j).RunArgs) <> 0 Then
+                    'If SignResult.isMicrosoftSign And Len(te(j).RunArgs) <> 0 Then
+                    If bIsMicrosoftFile And Len(te(j).RunArgs) <> 0 Then
                         If InStr(1, te(j).RunArgs, "http:", 1) <> 0 Then
-                            SignResult.isMicrosoftSign = False
+                            'SignResult.isMicrosoftSign = False
+                            bIsMicrosoftFile = False
                         ElseIf InStr(1, te(j).RunArgs, "ftp:", 1) <> 0 Then
-                            SignResult.isMicrosoftSign = False
+                            'SignResult.isMicrosoftSign = False
+                            bIsMicrosoftFile = False
                         ElseIf InStr(1, EnvironW(te(j).RunArgs), "http:", 1) <> 0 Then
-                            SignResult.isMicrosoftSign = False
+                            'SignResult.isMicrosoftSign = False
+                            bIsMicrosoftFile = False
                         ElseIf InStr(1, EnvironW(te(j).RunArgs), "ftp:", 1) <> 0 Then
-                            SignResult.isMicrosoftSign = False
+                            'SignResult.isMicrosoftSign = False
+                            bIsMicrosoftFile = False
                         End If
                     End If
                 End If
@@ -1156,10 +1312,15 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
                   IIf(bUpdate, "(update) ", "") & _
                   IIf(DirParent = "{root}", TaskName, DirParent & "\" & TaskName)
                 
-                sHit = sHit & " - " & te(j).RunObj & _
+                'sHit = sHit & " - " & te(j).RunObj & _
                   IIf(Len(te(j).RunArgs) <> 0, " " & te(j).RunArgs, "") & _
                   IIf(te(j).FileMissing And Not bNoFile, " (file missing)", "") & _
                   IIf(SignResult.isMicrosoftSign, " (Microsoft)", "")
+                
+                sHit = sHit & " - " & te(j).RunObj & _
+                  IIf(Len(te(j).RunArgs) <> 0, " " & te(j).RunArgs, "") & _
+                  IIf(te(j).FileMissing And Not bNoFile, " (file missing)", "") & _
+                  IIf(bIsMicrosoftFile, " (Microsoft)", "")
                 
                 If Not IsOnIgnoreList(sHit) Then
               
@@ -1169,10 +1330,11 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
                         End If
                     End If
                     
-                    With Result
+                    With result
                         .Section = "O22"
                         .HitLineW = sHit
                         AddFileToFix .File, REMOVE_FILE, aFiles(i)
+                        AddFileToFix .File, REMOVE_FILE, te(j).RunObj
                         
                         te(j).RegID = Reg.GetString(HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree" & DirFull, "Id")
                         If te(j).RegID <> "" Then
@@ -1187,7 +1349,7 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
                         
                         .CureType = FILE_BASED Or REGISTRY_BASED Or PROCESS_BASED
                     End With
-                    AddToScanResults Result
+                    AddToScanResults result
                 End If
             End If
             
@@ -1434,16 +1596,18 @@ Public Sub EnumJobs()
     Dim j As Long
     Dim sTmp As String
     Dim sHit As String
-    Dim Result As SCAN_RESULT
+    Dim result As SCAN_RESULT
     Dim sJobName As String
     Dim bEnabled As Boolean
     Dim sRunState As String
+    Dim bUpdate As Boolean
+    Dim bActivation As Boolean
     
     TaskFolder = BuildPath(sWinDir, "Tasks")
     
     aFiles = ListFiles(TaskFolder, ".job", False)
     
-    If IsArrDimmed(aFiles) Then
+    If AryItems(aFiles) Then
         For i = 0 To UBound(aFiles)
             
             Call ParseJob(aFiles(i), Job)
@@ -1477,20 +1641,36 @@ Public Sub EnumJobs()
                 'case 0x41302: is some undoc. state (possible, disabled)
             End Select
             
-            sHit = "O22 - Task (Job): " & IIf(bEnabled, "", "(disabled) ") & IIf(sRunState <> "", "(" & sRunState & ") ", "") & sJobName & " - " & _
+            bUpdate = False
+            bActivation = False
+            If StrEndWith(Job.prop.AppName.Data, "xp_eos.exe") Then 'End of Windows XP support
+                If IsMicrosoftFile(Job.prop.AppName.Data) Then bUpdate = True
+            ElseIf StrEndWith(Job.prop.AppName.Data, "wgasetup.exe") Then
+                If IsMicrosoftFile(Job.prop.AppName.Data) Then bActivation = True
+            End If
+            
+            Job.prop.AppName.Data = FormatFileMissing(Job.prop.AppName.Data)
+            
+            sHit = "O22 - Task (.job): " & IIf(bEnabled, "", "(disabled) ") & IIf(sRunState <> "", "(" & sRunState & ") ", "") & _
+                IIf(bUpdate, "(update) ", "") & _
+                IIf(bActivation, "(activation) ", "") & _
+                sJobName & " - " & _
                 Job.prop.AppName.Data & IIf(Job.prop.Parameters.Length > 1, " " & Job.prop.Parameters.Data, "")
+
+            If bMD5 Then sHit = sHit & GetFileMD5(Job.prop.AppName.Data)
 
             If Not IsOnIgnoreList(sHit) Then
             
-                With Result
+                With result
                     .Section = "O22"
                     .HitLineW = sHit
                     AddFileToFix .File, REMOVE_FILE, aFiles(i)
+                    AddFileToFix .File, REMOVE_FILE, Job.prop.AppName.Data
                     AddRegToFix .Reg, REMOVE_VALUE, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\CompatibilityAdapter\Signatures", sJobName
                     AddRegToFix .Reg, REMOVE_VALUE, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\CompatibilityAdapter\Signatures", sJobName & ".fp"
                     .CureType = FILE_BASED Or REGISTRY_BASED
                 End With
-                AddToScanResults Result
+                AddToScanResults result
             End If
         Next
     End If

@@ -11,6 +11,8 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
+'[clsTrickHashTable.cls]
+
 ' // clsTrickHashTable.cls  - Hash table class
 ' // © Krivous Anatoly Anatolevich (The trick), 2014-2016
 ' // Version 1.3
@@ -77,7 +79,7 @@ Private Declare Function memcpy Lib "kernel32" _
                          Alias "RtlMoveMemory" ( _
                          ByRef Destination As Any, _
                          ByRef Source As Any, _
-                         ByVal length As Long) As Long
+                         ByVal Length As Long) As Long
 Private Declare Function VarCmp Lib "oleaut32" ( _
                          ByRef pvarLeft As Any, _
                          ByRef pvarRight As Any, _
@@ -119,7 +121,7 @@ Private Const HASH_SIZE                 As Long = 2999
 
 Private Type tPointer                                                           ' // Index into the object table
     hash            As Integer                                                  ' // Hash value
-    index           As Integer                                                  ' // Index
+    Index           As Integer                                                  ' // Index
 End Type
 Private Type tElement                                                           ' // Column of the hash table
     Key             As Variant                                                  ' // Key
@@ -160,7 +162,7 @@ Attribute NewEnum.VB_MemberFlags = "40"
     Dim enumObject  As Long
     
     enumObject = CreateEnumObject()
-    If enumObject = 0 Then Exit Function
+    If enumObject = 0 Then Exit Property
     GetMem4 enumObject, ByVal NewEnum
     
 End Property
@@ -194,12 +196,12 @@ Attribute Add.VB_Description = "Add the new item"
         Exit Sub
     End If
     
-    If pt.index <> -1 Then
+    If pt.Index <> -1 Then
         Err.Raise 457
         Exit Sub
     End If
     
-    pt.index = List(pt.hash).ElementsCount
+    pt.Index = List(pt.hash).ElementsCount
     
     Add_ pt, Key, Value
     
@@ -216,8 +218,8 @@ Attribute Item.VB_UserMemId = 0
         Exit Property
     End If
     
-    If pt.index = -1 Then Err.Raise 5: Exit Property
-    VariantCopy Item, List(pt.hash).Elements(pt.index).Value
+    If pt.Index = -1 Then Err.Raise 5: Exit Property
+    VariantCopy Item, List(pt.hash).Elements(pt.Index).Value
     
 End Property
 
@@ -230,15 +232,15 @@ Public Property Let Item(Key As Variant, Value As Variant)
         Exit Property
     End If
     
-    If pt.index = -1 Then
+    If pt.Index = -1 Then
     
-        pt.index = List(pt.hash).ElementsCount
+        pt.Index = List(pt.hash).ElementsCount
         Add_ pt, Key, Value
         Exit Property
         
     End If
     
-    List(pt.hash).Elements(pt.index).Value = Value
+    List(pt.hash).Elements(pt.Index).Value = Value
     
 End Property
 
@@ -251,15 +253,15 @@ Public Property Set Item(Key As Variant, Value As Variant)
         Exit Property
     End If
     
-    If pt.index = -1 Then
+    If pt.Index = -1 Then
     
-        pt.index = List(pt.hash).ElementsCount
+        pt.Index = List(pt.hash).ElementsCount
         Add_ pt, Key, Value
         Exit Property
         
     End If
     
-    Set List(pt.hash).Elements(pt.index).Value = Value
+    Set List(pt.hash).Elements(pt.Index).Value = Value
     
 End Property
 
@@ -290,7 +292,7 @@ Attribute Exists.VB_Description = "Determine whether exist the element with the 
         Exit Function
     End If
     
-    Exists = pt.index <> -1
+    Exists = pt.Index <> -1
 End Function
 
 ' // Remove the item, having the specified key
@@ -300,14 +302,14 @@ Attribute Remove.VB_Description = "Remove the item, having the specified key"
     Dim ln  As tPointer
     Dim lp  As tPointer
     Dim p   As tPointer
-    Dim l   As Long
+    Dim L   As Long
     
     If Not GetFromKey(Key, pt) Then
         Err.Raise 5
         Exit Sub
     End If
     
-    If pt.index = -1 Then
+    If pt.Index = -1 Then
         Err.Raise 5
         Exit Sub
     End If
@@ -335,8 +337,8 @@ Attribute Items.VB_Description = "Retrieve the list of the values"
     
     Do
     
-        VariantCopy ret(i), List(pt.hash).Elements(pt.index).Value
-        pt = List(pt.hash).Elements(pt.index).Next
+        VariantCopy ret(i), List(pt.hash).Elements(pt.Index).Value
+        pt = List(pt.hash).Elements(pt.Index).Next
         i = i + 1
         
     Loop While i < mCount
@@ -357,8 +359,8 @@ Attribute Keys.VB_Description = "Retrieves the list of the keys"
     
     Do
     
-        VariantCopy ret(i), List(pt.hash).Elements(pt.index).Key
-        pt = List(pt.hash).Elements(pt.index).Next
+        VariantCopy ret(i), List(pt.hash).Elements(pt.Index).Key
+        pt = List(pt.hash).Elements(pt.Index).Next
         i = i + 1
         
     Loop While i < mCount
@@ -385,30 +387,30 @@ End Function
 ' //
 Private Sub Add_(pt As tPointer, Key As Variant, Value As Variant)
 
-    If pt.index Then
-        If pt.index > UBound(List(pt.hash).Elements) Then
+    If pt.Index Then
+        If pt.Index > UBound(List(pt.hash).Elements) Then
             ReDim Preserve List(pt.hash).Elements(UBound(List(pt.hash).Elements) + GRANULARITY)
         End If
     Else
         ReDim Preserve List(pt.hash).Elements(GRANULARITY - 1)
     End If
     
-    List(pt.hash).ElementsCount = pt.index + 1
+    List(pt.hash).ElementsCount = pt.Index + 1
     
-    VariantCopyInd List(pt.hash).Elements(pt.index).Value, Value
-    VariantCopyInd List(pt.hash).Elements(pt.index).Key, Key
+    VariantCopyInd List(pt.hash).Elements(pt.Index).Value, Value
+    VariantCopyInd List(pt.hash).Elements(pt.Index).Key, Key
     
     If Last.hash >= 0 Then
-        List(Last.hash).Elements(Last.index).Next = pt
-        List(pt.hash).Elements(pt.index).Prev = Last
+        List(Last.hash).Elements(Last.Index).Next = pt
+        List(pt.hash).Elements(pt.Index).Prev = Last
     Else
-        List(pt.hash).Elements(pt.index).Prev.hash = -1
-        List(pt.hash).Elements(pt.index).Prev.index = -1
+        List(pt.hash).Elements(pt.Index).Prev.hash = -1
+        List(pt.hash).Elements(pt.Index).Prev.Index = -1
         First = pt
     End If
     
-    List(pt.hash).Elements(pt.index).Next.hash = -1
-    List(pt.hash).Elements(pt.index).Next.index = -1
+    List(pt.hash).Elements(pt.Index).Next.hash = -1
+    List(pt.hash).Elements(pt.Index).Next.Index = -1
     
     Last = pt
     mCount = mCount + 1
@@ -419,38 +421,38 @@ Private Sub Remove_(pt As tPointer)
     Dim ln  As tPointer
     Dim lp  As tPointer
     Dim p   As tPointer
-    Dim l   As Long
+    Dim L   As Long
 
-    lp = List(pt.hash).Elements(pt.index).Prev
-    ln = List(pt.hash).Elements(pt.index).Next
+    lp = List(pt.hash).Elements(pt.Index).Prev
+    ln = List(pt.hash).Elements(pt.Index).Next
     
-    For l = pt.index To List(pt.hash).ElementsCount - 2
+    For L = pt.Index To List(pt.hash).ElementsCount - 2
     
-        List(pt.hash).Elements(l) = List(pt.hash).Elements(l + 1)
+        List(pt.hash).Elements(L) = List(pt.hash).Elements(L + 1)
         
         ' // Update the references to the item
-        p = List(pt.hash).Elements(l).Prev
+        p = List(pt.hash).Elements(L).Prev
         
-        If p.index >= 0 Then List(p.hash).Elements(p.index).Next.index = List(p.hash).Elements(p.index).Next.index - 1
+        If p.Index >= 0 Then List(p.hash).Elements(p.Index).Next.Index = List(p.hash).Elements(p.Index).Next.Index - 1
             
-        p = List(pt.hash).Elements(l).Next
+        p = List(pt.hash).Elements(L).Next
         
-        If p.index >= 0 Then List(p.hash).Elements(p.index).Prev.index = List(p.hash).Elements(p.index).Prev.index - 1
+        If p.Index >= 0 Then List(p.hash).Elements(p.Index).Prev.Index = List(p.hash).Elements(p.Index).Prev.Index - 1
         
     Next
     
-    l = List(pt.hash).ElementsCount - 1: List(pt.hash).ElementsCount = l
+    L = List(pt.hash).ElementsCount - 1: List(pt.hash).ElementsCount = L
     
-    If l Then
-        If (l Mod GRANULARITY) = 0 Then ReDim Preserve List(pt.hash).Elements(l - 1)
+    If L Then
+        If (L Mod GRANULARITY) = 0 Then ReDim Preserve List(pt.hash).Elements(L - 1)
     Else
         Erase List(pt.hash).Elements()
     End If
     
-    If lp.index >= 0 Then List(lp.hash).Elements(lp.index).Next = ln
-    If ln.index >= 0 Then List(ln.hash).Elements(ln.index).Prev = lp
-    If lp.index = -1 Then First = ln
-    If ln.index = -1 Then Last = lp
+    If lp.Index >= 0 Then List(lp.hash).Elements(lp.Index).Next = ln
+    If ln.Index >= 0 Then List(ln.hash).Elements(ln.Index).Prev = lp
+    If lp.Index = -1 Then First = ln
+    If ln.Index = -1 Then Last = lp
     
     mCount = mCount - 1
     
@@ -466,18 +468,18 @@ Private Sub Key_(Key As Variant, NewKey As Variant)
         Exit Sub
     End If
     
-    If pt1.index = -1 Then Err.Raise 5: Exit Sub
+    If pt1.Index = -1 Then Err.Raise 5: Exit Sub
     
     If Not GetFromKey(NewKey, pt2) Then
         Err.Raise 5
         Exit Sub
     End If
     
-    If pt2.index <> -1 Then Err.Raise 457: Exit Sub
+    If pt2.Index <> -1 Then Err.Raise 457: Exit Sub
 
-    VariantCopy Value, List(pt1.hash).Elements(pt1.index).Value
+    VariantCopy Value, List(pt1.hash).Elements(pt1.Index).Value
     Remove_ pt1
-    pt2.index = List(pt2.hash).ElementsCount
+    pt2.Index = List(pt2.hash).ElementsCount
     Add_ pt2, NewKey, Value
     
 End Sub
@@ -507,7 +509,7 @@ Private Function GetFromKey(Key As Variant, Pointer As tPointer) As Boolean
             For i = 0 To List(hash).ElementsCount - 1
                 
                 If VarCmp(List(hash).Elements(i).Key, keyi, lcid, mCompareMode) = 1 Then
-                    Pointer.index = i
+                    Pointer.Index = i
                     Exit Function
                 End If
                 
@@ -525,7 +527,7 @@ Private Function GetFromKey(Key As Variant, Pointer As tPointer) As Boolean
                     
                     If List(hash).Elements(i).Key Is keyi Then
                     
-                        Pointer.index = i
+                        Pointer.Index = i
                         Exit Function
                         
                     End If
@@ -540,7 +542,7 @@ Private Function GetFromKey(Key As Variant, Pointer As tPointer) As Boolean
 
                 If IsNull(List(hash).Elements(i).Key) Then
                 
-                    Pointer.index = i
+                    Pointer.Index = i
                     Exit Function
                     
                 End If
@@ -553,7 +555,7 @@ Private Function GetFromKey(Key As Variant, Pointer As tPointer) As Boolean
 
                 If IsEmpty(List(hash).Elements(i).Key) Then
                 
-                    Pointer.index = i
+                    Pointer.Index = i
                     Exit Function
                     
                 End If
@@ -565,7 +567,7 @@ Private Function GetFromKey(Key As Variant, Pointer As tPointer) As Boolean
             For i = 0 To List(hash).ElementsCount - 1
                 
                 If List(hash).Elements(i).Key = keyi Then
-                    Pointer.index = i
+                    Pointer.Index = i
                     Exit Function
                 End If
                 
@@ -575,7 +577,7 @@ Private Function GetFromKey(Key As Variant, Pointer As tPointer) As Boolean
                 
     End If
     
-    Pointer.index = -1
+    Pointer.Index = -1
     
 End Function
 
@@ -583,7 +585,7 @@ Private Function CalcHash(Value As Variant) As Long
     Dim i       As Long
     Dim typ     As Integer
     Dim ptr     As Long
-    Dim length  As Long
+    Dim Length  As Long
     Dim dbl     As Double
     Dim cur     As Currency
     Dim sgl     As Single
@@ -614,22 +616,22 @@ Private Function CalcHash(Value As Variant) As Long
         
         If ptr = 0 Then CalcHash = 0: Exit Function
         
-        GetMem4 ByVal ptr - 4, length
-        length = length \ 2
+        GetMem4 ByVal ptr - 4, Length
+        Length = Length \ 2
         
-        If length >= UBound(locbuf) Then
-            ReDim locbuf(length + 1)
+        If Length >= UBound(locbuf) Then
+            ReDim locbuf(Length + 1)
         End If
         
         If mCompareMode = vbTextCompare Then
         
-            LCMapString lcid, LCMAP_LOWERCASE, ByVal ptr, length, locbuf(0), length
+            LCMapString lcid, LCMAP_LOWERCASE, ByVal ptr, Length, locbuf(0), Length
         Else
         
-            memcpy locbuf(0), ByVal ptr, length * 2&
+            memcpy locbuf(0), ByVal ptr, Length * 2&
         End If
         
-        For i = 0 To length - 1
+        For i = 0 To Length - 1
             CalcHash = (CalcHash * 37& + locbuf(i) And &HFFFF&)
         Next
         
@@ -819,9 +821,9 @@ Private Sub Class_Initialize()
     ReDim locbuf(255)
     
     First.hash = -1
-    First.index = -1
+    First.Index = -1
     Last.hash = -1
-    Last.index = -1
+    Last.Index = -1
     mCount = 0
     lcid = GetUserDefaultLCID()
     decMin = CDec(-9999999)

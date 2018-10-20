@@ -1,0 +1,7 @@
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text eol=auto
+*.ps1 text eol=crlf
+*.nuspec text eol=crlf
+*.bat text eol=crlf
+*.png binary
+*.nupkg binary

@@ -11,6 +11,8 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
+'[clsIniFile.cls]
+
 Option Explicit
 
 'IniFile class by Alex Dragokas
@@ -109,7 +111,7 @@ Private Sub LoadFile()
     
     aContents = ReadFileToArray(ms_IniFile, mb_IsUnicode)
     
-    If IsArrDimmed(aContents) Then
+    If AryItems(aContents) Then
         Do
             aContents(i) = Trim$(aContents(i))
             
@@ -402,7 +404,7 @@ Public Function ExistData(sSection As Variant, sData As Variant) As Boolean
     Dim aNames() As Variant
     Dim i As Long
     aNames = GetParamNames(sSection)
-    If IsArrDimmed(aNames) Then
+    If AryItems(aNames) Then
         For i = 0 To UBound(aNames)
             If StrComp(CStr(sData), ReadParam(sSection, aNames(i)), mb_CompareMode) = 0 Then
                 ExistData = True
@@ -422,7 +424,7 @@ Public Function GetParamNameByData(sSection As Variant, sData As Variant) As Str
     Dim aNames() As Variant
     Dim i As Long
     aNames = GetParamNames(sSection)
-    If IsArrDimmed(aNames) Then
+    If AryItems(aNames) Then
         For i = 0 To UBound(aNames)
             If StrComp(CStr(sData), ReadParam(sSection, aNames(i)), mb_CompareMode) = 0 Then
                 GetParamNameByData = aNames(i)

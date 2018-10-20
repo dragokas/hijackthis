@@ -3,10 +3,144 @@
 1. HiJackThis
 2. StartupList
 3. ADSspy
+4. ProcMan
 
 
-1. HiJackThis: changelog
------------------------------
+===========================================================
+||||||||       1. HiJackThis: changelog         |||||||||||
+===========================================================
+
+[2.9.0.1] - October 20, 2018
+Log:
+v Improved format of the log lines.
+v Added mark "No suspicious items found!", if the number of entries = 0.
+v Added display of 'Scan mode': if enabled "Additional scan", "Environment variables", "Ignore ALL Whitelists" or disabled "Processes", "Hide Microsoft entries".
+
+Backups:
+v Added backup/restore of O23, O25.
+v Restoring of library registration.
+v Restoring of the file attributes and time stamps.
+v Restoring of initial security rights on file / registry key (thanks to Kazakevich Aleh for help).
+v ABR from Dmitriy Kuznetsov is updated to v1.05 (improved compatibility with Win10 build 1803).
+
+Main scan:
+v O5 - 'Blocked IE Options' - section is renamed and expanded to cover any hidden control panel items; added compatibility with Vista+.
+v O7 - Added detection of policies: NoViewOnDrive, RestrictRun, DisallowRun, NoControlPanel, LockTaskbar, NoDispCpl, NoDrives, DisableTaskMgr.
+v O7 - Added detection of restricted DACL permissions on some Policy and Certificate keys.
+v O7 - TroubleShooting: (EV) - added checking presence of essential system folders in %PATH%.
+v O10 - LSP: whitelist is removed. Checking is performed by EDS.
+v O10 - LSP: is now display all chain gaps and unknown providers and doesn't stop on the first found.
+v O18 - Protocols/Filters: criteria of checking is replaced with EDS; added check for registry subkeys.
+v O22, O23 - Windows Defender items are temporarily added to whitelist.
+v O26 - Added detection of UWP applications debugger
+
+"Additional scan":
+v Added subsection O23 - Drivers: - list of loaded drivers.
+v Added subsection O23 - Dependency: (experimental), consist of 3 groups:
+ - Microsoft Service 'X' depends on non-legit service: 'Y'
+ - Microsoft Service 'X' depends on non-legit group: 'Y'
+ - Microsoft Service Group 'X' contains non-legit service: 'Y' (Note: some 3d-party services can legally add their records to Microsoft Service Group)
+
+"Environment variables" scan:
+v Added listing of special folders.
+v The environment variables are supplemented and divided into categories "[User]", "[System]", "[Current process]".
+
+Fixes:
+v O22 - Added removing of task's executable (if it is not belong to Microsoft).
+v O23 - Added cleaning of legit services dependency from the service that is being deleted.
+
+Compatibility:
+v Added compatibility with DBCS-systems (locale-independence).
+v Added compatibility when launch via Local System context:
+ - also mark "<=== Attention! ('Local System' account)" will be displayed in the log.
+ - some tools will not be available in this mode due to security reasons.
+v Reduced CPU loading in the "Scan on system boot" mode.
+v File choosing dialog boxes are now support x64 bit folders (c:\Windows\System32).
+v Checking the write access for new log is replaced by AccessCheck() API to not interfere with AV.
+v Improved protection against BSOD.
+
+Errors:
+v Bug: Fixed cases in Win8/10 when line O4 is marked as StartupApproved (disabled) instead of Run\Run32.
+v Bug: Fixed crash while HiJackThis finishing its work when launched from archive.
+v Bug: Fixed issue with 0 bytes size of the log, if StartupList was start just right before.
+v Bug: Fixed access denied while reading some tasks (thanks to Sandor for testing).
+v Bug: Fixed the failure of some functions when setting a specific date format in the system.
+v Bug: Fixed issue with displaying binary data in LSP log.
+v Finished "Jump to Registry/File" menu for O23 and other sections.
+v StartupList: added tracing the errors in /debug mode, fixed some errors that caused crash (thanks @Hostn4me for testing).
+
+Updates checking:
+v Bug: Fixed updates checking. The program is untied from github due to problems with https on XP and is now downloaded from dragokas.com.
+v Added proxy support (Note: Socks5 is not supported) (thanks Sandor for testing).
+v Added option "Update to test versions" - if you want to receive the latest updates without waiting for a stable release.
+v Added option "Update in silent mode" - the program will automatically update and restart with the initial command line keys.
+
+Interface:
+v Added ability to choose the font (for whole interface or for scan results list and input fields only).
+v Improved interface navigation during scanning.
+v The autoscrolling of the scan results list has been removed.
+v Horizontal scroll bar is added before scan is complete.
+
+Translation:
+ - The translation into Russian of the list of changes to individual Misc tools was completed.
+ - Added ProcMan list of updates.
+ - The Netherlands part is translated into English.
+ - The spelling of the Ukrainian translation has been improved.
+ - Updated English text with spell and grammar checking (thanks to Tanner Helland).
+
+Tools:
+v START menu is appended with shortcuts of separate tools and plugins (upon installation of HiJackThis).
+v Accordingly, added command line keys:
+ - /tool+StartupList
+ - /tool+UninstMan
+ - /tool+DigiSign
+ - /tool+RegUnlocker
+ - /tool+ADSSpy
+ - /tool+Hosts
+ - /tool+ProcMan
+ - /tool+CheckLNK
+ - /tool+ClearLNK
+
+v Uninstall programs manager is updated to v2.0:
+ - Interface and format of the log lines is changed.
+ - Improved x64 compatibility.
+ - Added "Hidden" mark for the programs that could not be uninstalled via default Control Panel snap-in.
+ - Added (no Uninstall command) mark for the programs that have no string to call uninstaller.
+ - Added (User: username) mark for the programs that requires log in of another user to be properly uninstalled.
+ - Added jump to registry key.
+ - Added filter by HKCU / HKLM / HKU / Hidden / No uninstall command / Common Software.
+
+v Digital Signature Checker:
+ - Fixed errors "Access denied" when verifying some files, protected with DACL.
+ - Increased speed of system folder verifying.
+ - Fixed issue with failure to work on Windows 7x64 SP0 and under some another conditions.
+ - Added ability to verify and show 3d-party publisher of drivers on Vista+.
+
+v ProcMan: added ability to enum modules of 64-bit processes.
+v ADS Spy: added button "Save log".
+v ADS Spy: added support of ReFS file system.
+
+Tutorial:
+v Completed work on the renewed Russian manual for the Fork and v2.0.5: https://regist.safezone.cc/hijackthis_help/hijackthis.html (thanks to regist)
+v Updated short help on sections (on English, Russian and Ukrainian), available inside the program and web-site: http://dragokas.com/tools/help/hjt_tutorial.html
+
+Command line keys:
+v Added and modified /Area command line keys (the old version will remain working for backward compatibility):
+ - /Area:Processes is replaced by /Area+Processes.
+ - /Area:Modules is replaced by /Area+Modules.
+ - /Area:Environment is replaced by /Area+Environment.
+ - /Area:Additional is replaced by /Area+Additional.
+ - Added key: /Area+Modules - adds a list of modules loaded by processes. In this case, their PIDs are displayed in the list of processes.
+ - Added keys: /Area-Processes, /Area-Modules, /Area-Environment, /Area-Additional - forcibly exclude the corresponding section from the log, even if it is enabled by user settings.
+ - Keys /Area have the highest priority over the others.
+v Added key /saveLog "Path" (or /saveLog "Path\File.log") - saves the report to the specified folder (and under the specified name, if the extension is specified as .log).
+v The key /silentautolog is now display a window in a miniature form.
+v The syntax of all keys is extended and now allows you to specify them with a hyphen, for example: -autolog
+
+Other:
+v Installation of HiJackThis Fork is now available via command line (Chocolatey): 'choco install hijackthis'
+v Maximum limit of the file size to calculate MD5 is increased up to 100 MB. Added MD5 calculation to sections where it was forgotten.
+v Whitelists are updated for R4, O4, O7 - Untrusted certificates, O22, O23.
 
 [2.8.0.4] - February 05, 2018
 Added translation into Ukrainian.
@@ -18,7 +152,7 @@ O22 - Task: fixed error in output of status "(disabled)".
 
 [2.8.0.2] - February 02, 2018
 Logs:
-Log "Environment variables" replaced by with the output of all environment variables of the current process.
+Log "Environment variables" replaced by the output of all environment variables of the current process.
 O7 - Policy: [Untrusted Certificate] Black list of certificates and "Well-Known cert." attribute are removed.
 Added option "Additional scan" (disabled, by default). It can be enabled in File -> Settings
 
@@ -291,7 +425,7 @@ v Changed encryption:
 
 v O26 - Image File Execution Options:
  - added detection of AVRF Hook/DoubleAgent
- - added checking of HKCU ш Wow64.
+ - added checking of HKCU and Wow64.
 
 v Compatibility impovements:
  - Windows Server with Terminal services.
@@ -761,6 +895,8 @@ O22 - SheduledTasks - added compatibility with Windows Vista and newer (checking
 * Firefox / Opera / Chrome / IE version checking improvements
 * Added unlocking NTFS permissions when deleting files
 
+========== All next updates are Fork by Dragokas =============
+
 [v2.0.6 Beta official (unreleased) (r35)] - Jul 10, 2013
 * Added O4-64 - Autorun on Wow64 registry keys
 * Added cheking of Opera version
@@ -770,7 +906,6 @@ O22 - SheduledTasks - added compatibility with Windows Vista and newer (checking
 * Changed URL where crash window refer to
 * Removed ADS Spy
 * Removed URL check when clicking 'Analyze this'
-* Removed code of version checker
 * Removed code of SpyBot and AdAware version checking
 
 [v2.0.5 Beta official (r21)] - May 17, 2013
@@ -941,8 +1076,10 @@ O22 - SheduledTasks - added compatibility with Windows Vista and newer (checking
 
 
 
-2. StartupList: changelog
-------------------------------
+
+===========================================================
+||||||||       2. StartupList: changelog        |||||||||||
+===========================================================
 
 [v.2.10 (first fork by Dragokas)]
 * WinTrustVerifyChildNodes. Fixed error with empty node
@@ -951,49 +1088,51 @@ O22 - SheduledTasks - added compatibility with Windows Vista and newer (checking
 * MSComCtl.dll library placed in resources
 * fixed proram crash when checking LSP, fixed receiving paths to NS providers.
 
+========== All next updates are Fork by Dragokas =============
+
 [v2.02]
-* appinit_dlls zit in Windows key, niet Winlogon
-* path voor log bij /autosave kunnen aangeven
+* appinit_dlls is in Windows key, not Winlogon
+* ability to indicate path for log via /autosave
 
 [v2.01]
-* ICQ/mIRC help text
+* ICQ / mIRC help text
 * save node tree to disk
-* mirc voor 3rd party autoruns
-* winnt4 process enum werkt niet
-* help text voor: wininit.bak
-* root zones (my computer/local intranet) voor other users leeg
+* mirc for 3rd party autoruns
+* winnt4 process enum does not work
+* help text for: wininit.bak
+* root zones (my computer / local intranet) empty for other users
 * zone 0 in EnumZones
 * view warning log
 * refresh knoppie e.d.
-* meer info voor error
-* progress voor large hosts/zones
+* more info for error
+* progress for large hosts / zones
 * mnuPopupCopyTree
-* skippen van grote hostsfile & zones, cmdline arguments
-* node right-click wat beter
+* skipping large hosts file & zones, cmdline arguments
+* right-click node better
 
 [v2.00]
-* Checken of alle stuff te zien is bij bShowEmpty
-* Users Software \ DisabledEnums \ Zones is leeg, moet weg (win98)
-* Abort knopje tijdens scan/save log?
-* HKLM\SYSTEM\CurrentControlSet\Control\SafeBoot\Minimal en Network (services)
-* HKLM\SYSTEM\CurrentControlSet\Control\SafeBoot,AlternateShell
-* VxD services voor andere hardware cfgs
-* Als wmi niet werkt -> geen usernames maar SIDs
-* Windows versions in modHelp.bas voor sections
+* Check if all stuff can be seen at bShowEmpty
+* Users Software \ DisabledEnums \ Zones is empty, must go (win98)
+* Abort button during scan / save log?
+* HKLM \ SYSTEM \ CurrentControlSet \ Control \ SafeBoot \ Minimal and Network (services)
+* HKLM \ SYSTEM \ CurrentControlSet \ Control \ SafeBoot, AlternateShell
+* VxD services for other hardware cfgs
+* If wmi does not work -> no usernames but SIDs
+* Windows versions in modHelp.bas for sections
 * Printer monitors
-* EnumXPSecurity voor andere users
-* EnumPolicies voor andere users
-* EnumZones: ZoneMap\Domains root value
+* EnumXPSecurity for other users
+* EnumPolicies for other users
+* EnumZones: ZoneMap \ Domains root value
 * Windows XP Security Center stuff:
-* SOFTWARE\Microsoft\Security Center
-* Software\Microsoft\Windows NT\CurrentVersion\systemrestore
-* fix bug in EnumZones when ZoneMap key is missing (HKCU/HKLM/HKUS)
-* fix Win2003 Small Biz Server being recognized as WinXP 64-bit
-* duplicate process/module entries in win9x
-* disable contextmenu items
+* SOFTWARE \ Microsoft \ Security Center
+* Software \ Microsoft \ Windows NT \ CurrentVersion \ systemrestore
+* fix bug in EnumZones when ZoneMap key is missing (HKCU / HKLM / HKUS)
+* Win2003 Small Biz Server fix is recognized as WinXP 64-bit
+* duplicate process / module entries in win9x
+* disable context menu items
 * dll modules loaded by running processes?
 * use marcin's code for regedit jump
-* registry jump - werkt soms niet ?
+* registry jump - does not work sometimes?
 * policies subkeys?
 * Help texts
 * Triage
@@ -1087,16 +1226,21 @@ O22 - SheduledTasks - added compatibility with Windows Vista and newer (checking
 * Initial release
 
 
-3. ADSspy: changelog
---------------------------
+
+
+===========================================================
+||||||||         3. ADSspy: changelog           |||||||||||
+===========================================================
 
 [v1.13] (first fork by Dragokas)
 * Partially added unicode support
-* Fixed infinite loop in symlinks.
+* Fixed infinite loop in symlinks
 * Added x64 OS bitness support
 * Added view stream contents on double click
 * Fixed bug when 'cannot open file' to read stream contents
-* WhiteList updated
+* WhiteList updated with :Win32App_1:$DATA and :favicon:$DATA streams
+
+========== All next updates are Fork by Dragokas =============
 
 [v1.12]
 * Added Q30lsldxJoudresxAaaqpcawXc to the safelist
@@ -1160,4 +1304,39 @@ saved and edited in Wordpad.
 [v1.00] - Aug 27, 2004
 * Original release.
 
-                  
+
+
+
+===========================================================
+||||||||         4. ProcMan: changelog          |||||||||||
+===========================================================
+
+[v1.06] (first fork by Dragokas)
+* Replaced Process listing function by Nt version
+
+========== All next updates are Fork by Dragokas =============
+
+[v1.05]
+* dll list is updated when browsing process list with keyboard
+
+[v1.04]
+* Processes that fail to be killed are now resumed again
+
+[v1.03] 
+* Fixed killing multiple processes
+* Added PauseProcess to the killing subs :D (excludes self)
+* Added right-click menu to listboxes
+* Fixed a crash bug with the CompanyName property of RAdmin.exe
+
+[v1.02]
+* Added PID numbers to process list
+
+[v1.01.1]
+* Fixed crash bug in form_resize, added version number to frame
+
+[v1.01] 
+* Added label for dlls, keyboard shortcuts
+
+[v1.00]
+* Original release, later added copy to clipboard button
+     

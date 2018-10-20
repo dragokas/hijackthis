@@ -4,7 +4,7 @@
 	version(1.23)
  ]
 
-library TrickVB6LauncherTypeLibrary
+library LLib
 {
 	const int MAX_PATH					= 260;
 	const int STANDARD_RIGHTS_READ		= 0x20000;

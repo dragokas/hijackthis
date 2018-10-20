@@ -11,6 +11,8 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
+'[cRegExp.cls]
+
 ' ----------------------------------------------------------------------------
 '          VBScript.RegExp - PCRE2 portable proxy wrapper class
 ' ----------------------------------------------------------------------------
@@ -110,7 +112,7 @@ Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) 
 Private Declare Function GetFileAttributes Lib "kernel32.dll" Alias "GetFileAttributesW" (ByVal lpFileName As Long) As Long
 Private Declare Function GetModuleFileName Lib "kernel32.dll" Alias "GetModuleFileNameW" (ByVal hModule As Long, ByVal lpFileName As Long, ByVal nSize As Long) As Long
 Private Declare Function GetModuleHandle Lib "kernel32.dll" Alias "GetModuleHandleW" (ByVal lpModuleName As Long) As Long
-Private Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal length As Long)
+Private Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
 Private Declare Function LoadLibrary Lib "kernel32.dll" Alias "LoadLibraryW" (ByVal p_LibraryFileName As Long) As Long
 Private Declare Function FreeLibrary Lib "kernel32.dll" (ByVal p_Hmodule As Long) As Long
 Private Declare Function CLSIDFromString Lib "ole32.dll" (ByVal lpszGuid As Long, pGuid As UUID) As Long
@@ -352,7 +354,7 @@ End Function
 Friend Sub IRegExpMatch_Init(FirstIndex As Long, Value As String, SubMatches As IRegExpSubMatches)
     With mo_RegexMatch
         .FirstIndex = FirstIndex
-        .length = Len(Value)
+        .Length = Len(Value)
         Set .SubMatches = SubMatches
         .Value = Value
     End With
@@ -363,7 +365,7 @@ Public Property Get IRegExpMatch_FirstIndex() As Long
 End Property
 
 Public Property Get IRegExpMatch_Length() As Long
-    IRegExpMatch_Length = mo_RegexMatch.length
+    IRegExpMatch_Length = mo_RegexMatch.Length
 End Property
 
 Public Property Get IRegExpMatch_SubMatches() As IRegExpSubMatches
@@ -385,8 +387,8 @@ Public Property Get IRegExpMatchCollection_Count() As Long
     IRegExpMatchCollection_Count = mo_RegexMatches.Count
 End Property
 
-Public Property Get IRegExpMatchCollection_Item(index As Long) As IRegExpMatch
-    Set IRegExpMatchCollection_Item = mo_RegexMatches.Item(index + 1)
+Public Property Get IRegExpMatchCollection_Item(Index As Long) As IRegExpMatch
+    Set IRegExpMatchCollection_Item = mo_RegexMatches.Item(Index + 1)
 End Property
 
 Public Function IRegExpMatchCollection_Enumerator() As IEnumVARIANT
@@ -419,8 +421,8 @@ Public Property Get IRegExpSubMatches_Count() As Long
     IRegExpSubMatches_Count = mo_RegexSubmatches.Count
 End Property
 
-Public Property Get IRegExpSubMatches_Item(index As Long) As String
-    IRegExpSubMatches_Item = mo_RegexSubmatches.Item(index + 1)
+Public Property Get IRegExpSubMatches_Item(Index As Long) As String
+    IRegExpSubMatches_Item = mo_RegexSubmatches.Item(Index + 1)
 End Property
 
 Public Function IRegExpSubMatches_Enumerator() As IEnumVARIANT
@@ -664,7 +666,7 @@ Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_Regex
       l_GlobalSearch = IPcre_Options.General.GlobalSearch
    End If
    
-   l_MatchOptions = IPcre_Options.Match.OptionFlags   ' Cache match options
+   l_MatchOptions = IPcre_Options.match.OptionFlags   ' Cache match options
    
    Do
       l_MatchCount = pcre2_match(m_CompiledRegexHandle, StrPtr(p_TextToSearch), Len(p_TextToSearch), 0, l_MatchOptions, m_MatchDataHandle, m_MatchContextHandle)
@@ -695,7 +697,7 @@ Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_Regex
             
             If l_MatchLen = 0 Then
                 ' Empty match
-                If Not (IPcre_Options.Match.MatchIfEmpty Or IPcre_Options.Match.MatchIfEmptyAtStart) Then
+                If Not (IPcre_Options.match.MatchIfEmpty Or IPcre_Options.match.MatchIfEmptyAtStart) Then
                    ' We don't want empty matches, so go to cleanup
                    GoTo NoErrorCleanup
                 End If
@@ -705,7 +707,7 @@ Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_Regex
             l_MatchText = Mid$(l_SearchChunk, l_MatchStart + 1)
             l_OriginalMatchText = l_MatchText
             
-            If IPcre_Options.Match.MatchedEventEnabled Then
+            If IPcre_Options.match.MatchedEventEnabled Then
                ' Check if we have a substitution stored in our cache
                l_Substitute = False
                
@@ -741,7 +743,7 @@ Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_Regex
                         lo_SubstitutionCache.Add l_MatchText, "KEY_" & l_OriginalMatchText
                            
                         ' Make sure cache doesn't get too big
-                        For ii = IPcre_Options.Match.MatchedEventSubstitutionCacheSize - 1 To lo_SubstitutionCache.Count - 1
+                        For ii = IPcre_Options.match.MatchedEventSubstitutionCacheSize - 1 To lo_SubstitutionCache.Count - 1
                            lo_SubstitutionCache.Remove 0
                         Next ii
                      
@@ -1634,7 +1636,7 @@ Private Function UnpackResource(ResourceID As Long, DestinationPath As String) A
     
     b = LoadResData(ResourceID, "CUSTOM")
     
-    hFile = CreateFile(StrPtr(DestinationPath), GENERIC_WRITE, FILE_SHARE_READ, ByVal 0&, CREATE_ALWAYS, ByVal 0&, ByVal 0&)
+    hFile = CreateFile(StrPtr(DestinationPath), GENERIC_WRITE, FILE_SHARE_READ, ByVal 0&, CREATE_ALWAYS, FILE_ATTRIBUTE_ARCHIVE, ByVal 0&)
     
     If hFile <> INVALID_HANDLE_VALUE Then
         If WriteFile(hFile, VarPtr(b(0)), UBound(b) + 1, lBytesWrote, 0&) Then UnpackResource = True

@@ -1,0 +1,8 @@
+# About .gitignore:
+# EN: https://git-scm.com/docs/gitignore
+# RU: https://orlov.io/ru/articles/podrobnee-o-faile-gitignore
+
+# Files:
+
+*.sh
+/_9_upload_git.cmd

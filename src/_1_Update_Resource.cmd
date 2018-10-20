@@ -129,7 +129,7 @@ Exit /B
     if /i "%%a"=="BuildVer" set "Build=%%b"
     if /i "%%a"=="RevisionVer" set "Revision=%%b"
   )
-  if not defined BuildVer set BuildVer=0
+  if not defined Build set Build=0
 
   ren tools\ReplaceByRegular\Regular.txt Regular.txt.bak
   copy /y VerInfo_DE.rc VerInfo_DE.rc.bak
@@ -232,4 +232,12 @@ BEGIN
 504, 	"Unable to protect memory"
 505, 	"LoadLibrary failed"
 506, 	"Process information not found"
+600,	"Ссылки"
+601,	"(Нет)"
+602,	"Не можу обрати цю мову!\nСпершу Вам необхідно обрати мову для програм, що не підтримують Юнікод, - Українську\nчерез Панель керування -> Регіональні стандарти."
+603,	"Не могу выбрать этот язык!\nСперва Вам необходимо выставить язык для программ, не поддерживающих Юникод, на Русский\nчерез Панель управления -> Региональные стандарты."
+604,	"Корпорация Майкрософт"
+605,	"Компьютер\"
+606,	"Рабочий стол"
+607,	"Руководство пользователя"
 END 

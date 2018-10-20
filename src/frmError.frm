@@ -9,6 +9,7 @@ Begin VB.Form frmError
    LinkTopic       =   "Form1"
    ScaleHeight     =   5040
    ScaleWidth      =   7080
+   ShowInTaskbar   =   0   'False
    StartUpPosition =   3  'Windows Default
    Begin VB.PictureBox Picture1 
       Height          =   735
@@ -56,6 +57,8 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+'[frmError.frm]
+
 '
 ' Errors window by Alex Dragokas
 '
@@ -65,7 +68,7 @@ Option Explicit
 Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteW" (ByVal hwnd As Long, ByVal lpOperation As Long, ByVal lpFile As Long, ByVal lpParameters As Long, ByVal lpDirectory As Long, ByVal nShowCmd As Long) As Long
 Private Declare Function MessageBeep Lib "user32.dll" (ByVal uType As Long) As Long
 Private Declare Function LoadIcon Lib "user32.dll" Alias "LoadIconW" (ByVal hInstance As Long, ByVal lpIconName As Long) As Long
-Private Declare Function DrawIcon Lib "user32.dll" (ByVal hdc As Long, ByVal x As Long, ByVal y As Long, ByVal hIcon As Long) As Long
+Private Declare Function DrawIcon Lib "user32.dll" (ByVal hdc As Long, ByVal X As Long, ByVal Y As Long, ByVal hIcon As Long) As Long
 
 Private Const IDI_ASTERISK      As Long = 32516&    'Information
 Private Const IDI_EXCLAMATION   As Long = 32515&    'Exclamation
@@ -97,10 +100,11 @@ End Sub
 Private Sub Form_Load()
     Dim Icon As Long
     
+    SetAllFontCharset Me, g_FontName, g_FontSize
     'ReloadLanguage
     
     With Me
-        If IsArrDimmed(TranslateNative) Then
+        If AryItems(TranslateNative) Then
             .Caption = TranslateNative(550)
             .chkNoMoreErrors.Caption = TranslateNative(551)
             .cmdYes.Caption = TranslateNative(552)

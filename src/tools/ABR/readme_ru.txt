@@ -1,4 +1,4 @@
-ABR - Autobackup registry v1.04 Copyright(c) 2017 by D.Kuznetsov
+ABR - Autobackup registry v1.05 Copyright(c) 2017-2018 by D.Kuznetsov
 Поддерживаемые системы: Win2k-Win10 x86/x64
 Freeware
 

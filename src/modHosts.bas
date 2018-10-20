@@ -1,4 +1,6 @@
 Attribute VB_Name = "modHosts"
+'[modHosts.bas]
+
 '
 ' Hosts file module by Merijn Bellekom
 '
@@ -57,7 +59,7 @@ Public Sub ListHostsFile(objList As ListBox, objInfo As Label)
         objList.AddItem CStr(vContent(i))
     Next i
 
-    'objInfo.Caption = "Hosts file is located at: " & sHostsFile & "Line: [], Attributes: []"
+    'objInfo.Caption = "Hosts file is located at " & sHostsFile & "Line: [], Attributes: []"
     objInfo.Caption = Translate(271) & " " & sHostsFile & _
                       " (" & Translate(278) & " " & objList.ListCount & ", " & Translate(277) & " " & _
                       sAttr & ")"
