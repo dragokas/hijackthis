@@ -261,6 +261,8 @@ Private Sub cmdGo_Click()
     lblStatus.Visible = True
     DoEvents
     
+    txtPaths.Enabled = False
+    
     For Each vPath In aPathes
         vPath = Trim$(vPath)
         If Left$(vPath, 1) = """" Then
@@ -325,6 +327,7 @@ Private Sub cmdGo_Click()
     'No files found.
     If oDictFiles.Count = 0 Then
         MsgBoxW Translate(1860)
+        txtPaths.Enabled = True
         Exit Sub
     End If
     
@@ -392,6 +395,7 @@ Private Sub cmdGo_Click()
             lblStatus.Visible = False
             shpBack.Visible = False
             shpFore.Visible = False
+            txtPaths.Enabled = True
             Exit Sub
         End If
         bIsDriver = False
@@ -551,6 +555,7 @@ Private Sub cmdGo_Click()
     
     isRan = False
     cmdGo.Enabled = True
+    txtPaths.Enabled = True
     cmdExit.Caption = Translate(1858)
     
     If OpenW(ReportPath, FOR_OVERWRITE_CREATE, hFile, g_FileBackupFlag) Then

@@ -296,6 +296,7 @@ if %errorlevel% neq 0 (pause & exit /B)
 :: For debug purposes
 copy /y "%cd%\%AppTitle%.exe" "%AppTitle%_dbg.exe"
 Tools\7zip\7za.exe a -mx9 -y -o"%cd%" "%AppTitle%_dbg.zip" "%AppTitle%_dbg.exe"
+copy /y "%AppTitle%_dbg.zip" "%AppTitle%_dbg_test.zip"
 
 :: Pseudo-polymorph
 copy /y "%cd%\%AppTitle%.exe" "HJT_poly.pif"

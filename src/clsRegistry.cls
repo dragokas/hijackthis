@@ -1587,7 +1587,6 @@ Public Function EnumSubKeysToArray( _
                 End If
             Else
                 ReDim Preserve aSubKeys(1 To BeginIdx + idx)
-                EnumSubKeysToArray = UBound(aSubKeys)
             End If
             
           Loop While lret = ERROR_SUCCESS
@@ -1596,14 +1595,14 @@ Public Function EnumSubKeysToArray( _
             If hKey <> 0 Then RegCloseKey hKey: hKey = 0
             
             For i = BeginIdx + 1 To UBound(aSubKeys)
-                EnumSubKeysToArray = EnumSubKeysToArray + _
-                  EnumSubKeysToArray(lHive, aSubKeys(i), aSubKeys, bUseWow64, ForceUnlock, True)
+                Call EnumSubKeysToArray(lHive, aSubKeys(i), aSubKeys, bUseWow64, ForceUnlock, True)
             Next
           End If
         End If
     End If
     
     If hKey <> 0 Then RegCloseKey hKey
+    EnumSubKeysToArray = UBoundSafe(aSubKeys)
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "EnumSubKeysToArray", lHive & "," & sKey
@@ -1696,7 +1695,6 @@ Public Function NtEnumSubKeysToArray( _
     
     If (BeginIdx + idx) > 0 Then
         ReDim Preserve aSubKeys(1 To BeginIdx + idx)
-        NtEnumSubKeysToArray = UBound(aSubKeys)
     Else
         Erase aSubKeys
     End If
@@ -1705,10 +1703,11 @@ Public Function NtEnumSubKeysToArray( _
     
     If bRecursively Then
         For i = BeginIdx + 1 To UBound(aSubKeys)
-            NtEnumSubKeysToArray = NtEnumSubKeysToArray + _
-              NtEnumSubKeysToArray(lHive, aSubKeys(i), aSubKeys, bUseWow64, ForceUnlock, True)
+            Call NtEnumSubKeysToArray(lHive, aSubKeys(i), aSubKeys, bUseWow64, ForceUnlock, True)
         Next
     End If
+    
+    NtEnumSubKeysToArray = UBoundSafe(aSubKeys)
     
     Exit Function
 ErrorHandler:

@@ -1822,37 +1822,19 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function SerializeStringArray(sArr() As String) As String
-    Dim i&
-    If 0 = AryItems(sArr) Then Exit Function
-    For i = LBound(sArr) To UBound(sArr)
-        SerializeStringArray = SerializeStringArray & sArr(i) & vbNullChar
-    Next
-    SerializeStringArray = Left$(SerializeStringArray, Len(SerializeStringArray) - 1)
-End Function
-
-Public Function DeSerializeToStringArray(sSerialArray As String) As String()
-    If Len(sSerialArray) <> 0 Then
-        DeSerializeToStringArray = Split(sSerialArray, vbNullChar)
-    End If
-End Function
-
-'Public Function SerializeByteArray(bArr() As Byte) As String
+'Public Function SerializeStringArray(sArr() As String) As String
 '    Dim i&
-'    If Not IsArrDimmed(bArr) Then Exit Function
-'    For i = LBound(bArr) To UBound(bArr)
-'        SerializeByteArray = SerializeByteArray & Right$("0" & Hex(bArr(i)), 2)
+'    If 0 = AryItems(sArr) Then Exit Function
+'    For i = LBound(sArr) To UBound(sArr)
+'        SerializeStringArray = SerializeStringArray & sArr(i) & vbNullChar
 '    Next
+'    SerializeStringArray = Left$(SerializeStringArray, Len(SerializeStringArray) - 1)
 'End Function
 '
-'Public Function DeSerializeToByteArray(sSerialArray As String) As Byte()
-'    If Len(sSerialArray) < 2 Then Exit Function
-'    ReDim bArr(Len(sSerialArray) \ 2 - 1) As Byte
-'    Dim i As Long
-'    For i = 1 To Len(sSerialArray) Step 2
-'        bArr((i - 1) \ 2) = CLng("&H" & Mid$(sSerialArray, i, 2))
-'    Next
-'    DeSerializeToByteArray = bArr
+'Public Function DeSerializeToStringArray(sSerialArray As String) As String()
+'    If Len(sSerialArray) <> 0 Then
+'        DeSerializeToStringArray = Split(sSerialArray, vbNullChar)
+'    End If
 'End Function
 
 Public Function HasBOM_UTF16(sText As String) As Boolean

@@ -680,14 +680,20 @@ End Function
 Public Function LiteCookies(cookies As String) As String
     On Error GoTo ErrorHandler:
     Dim rStr   As String
-    Dim oRegexp    As Object
+    'Dim oRegexp As Object
     Dim matchs As Object, match As Object
     cookies = Replace$(cookies, ";HttpOnly", ";", , , vbTextCompare)
     cookies = Replace$(cookies, vbCrLf, ";" & vbCrLf)
     cookies = Replace$(cookies, ";;", ";")
     cookies = Replace$(cookies, ";", "; ")
 
-    Set oRegexp = CreateObject("vbscript.regExp")
+    'Set oRegexp = CreateObject("vbscript.regExp")
+    
+    If Not g_bRegexpInit Then
+        Set oRegexp = New cRegExp
+        g_bRegexpInit = True
+    End If
+    
     oRegexp.Global = True
     oRegexp.IgnoreCase = True
     oRegexp.MultiLine = True

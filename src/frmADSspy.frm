@@ -599,8 +599,7 @@ Private Sub cmdViewBack_Click()
 End Sub
 
 Private Sub cmdViewCopy_Click()
-    Clipboard.Clear
-    Clipboard.SetText txtADSContent.Text
+    ClipboardSetText txtADSContent.Text
     'The contents of the currently displayed ADS have been copied to the clipboard.
     Status Translate(2200)
 End Sub

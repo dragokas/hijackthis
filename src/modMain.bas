@@ -1527,6 +1527,7 @@ End Sub
 
 Public Sub UpdateProgressBar(Section As String, Optional sAppendText As String)
     On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "Progressbar - " & Section & " " & sAppendText
     
     Dim lTag As Long
     
@@ -4003,8 +4004,9 @@ Sub CheckO4_RegRuns()
                 If bHideMicrosoft Then
                     If OSver.MajorMinor = 5 Then 'Win2k
                         If StrComp(sData, "autochk *", 1) = 0 Or StrComp(sData, "DfsInit", 1) = 0 Then bSafe = True
-                    ElseIf OSver.MajorMinor = 6.2 And OSver.IsServer Then '2012 Server
+                    ElseIf OSver.MajorMinor >= 6.2 And OSver.IsServer Then '2012 Server, 2012 Server R2 (2016 too ?)
                         If StrComp(sData, "autochk /q /v *", 1) = 0 Then bSafe = True
+                        If StrComp(sData, BuildPath(sWinSysDir, "autochk.exe") & " /q /v *", 1) = 0 Then bSafe = True
                     Else
                         If StrComp(sData, "autochk *", 1) = 0 Then bSafe = True
                     End If
@@ -5276,6 +5278,8 @@ End Sub
 Private Sub CheckSystemProblems()
     On Error GoTo ErrorHandler:
     
+    AppendErrorLogCustom "CheckSystemProblems - Begin"
+    
     'Checking for present and correct type of parameters:
     'HKCU\Environment => temp, tmp
     '+HKU
@@ -5432,6 +5436,8 @@ Private Sub CheckSystemProblems()
         Next
     Loop
     
+    AppendErrorLogCustom "CheckSystemProblems - TroubleShooting: (Disc)"
+    
     Dim cFreeSpace As Currency
     
     cFreeSpace = GetFreeDiscSpace(SysDisk, False)
@@ -5450,6 +5456,8 @@ Private Sub CheckSystemProblems()
         End If
     End If
     
+    AppendErrorLogCustom "CheckSystemProblems - TroubleShooting: (Network)"
+    
     Dim sNetBiosName As String
     
     If GetCompName(ComputerNamePhysicalDnsHostname) = "" Then
@@ -5467,6 +5475,7 @@ Private Sub CheckSystemProblems()
         End If
     End If
     
+    AppendErrorLogCustom "CheckSystemProblems - End"
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "CheckSystemProblems"
@@ -5475,6 +5484,8 @@ End Sub
 
 Public Sub CheckCertificatesEDS()
     On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "CheckCertificatesEDS - Begin"
+    
     'Checking for untrusted code signing root certificates
     'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\SystemCertificates\Disallowed\Certificates
     
@@ -5583,9 +5594,10 @@ Public Sub CheckCertificatesEDS()
     Next
     
     Set HE = Nothing
+    AppendErrorLogCustom "CheckCertificatesEDS - End"
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "CheckSystemProblems"
+    ErrorMsg Err, "CheckCertificatesEDS"
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -5682,6 +5694,7 @@ End Function
 
 Private Sub CheckPolicyACL()
     On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "CheckPolicyACL - Begin"
     
     Dim result As SCAN_RESULT
     Dim i As Long
@@ -5712,20 +5725,16 @@ Private Sub CheckPolicyACL()
         End If
     Next
     
+    AppendErrorLogCustom "CheckPolicyACL - End"
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "CheckPolicyACL"
     If inIDE Then Stop: Resume Next
 End Sub
 
-Private Sub CheckO7Item()
+Private Sub CheckPolicies()
     On Error GoTo ErrorHandler:
-    AppendErrorLogCustom "CheckO7Item - Begin"
-    
-    Dim lData&, sHit$, sHit1$, sHit2$, result As SCAN_RESULT
-    Dim i As Long, bData() As Byte, sDrv As String, aValue() As String
-    
-    'http://www.oszone.net/11424
+    AppendErrorLogCustom "CheckPolicies - Begin"
     
     '//TODO:
     '%WinDir%\System32\GroupPolicyUsers"
@@ -5734,6 +5743,11 @@ Private Sub CheckO7Item()
     'HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Group Policy Objects
     'HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies
 
+    'http://www.oszone.net/11424
+
+    Dim sDrv As String, aValue() As String, i&, lData&, bData() As Byte
+    Dim sHit$, result As SCAN_RESULT
+    
     HE.Init HE_HIVE_ALL, , HE_REDIR_NO_WOW
     HE.AddKey "Software\Microsoft\Windows\CurrentVersion\Policies\System"
     
@@ -5846,33 +5860,41 @@ Private Sub CheckO7Item()
             End If
         Next
     Loop
-       
+    
+    AppendErrorLogCustom "CheckPolicies - End"
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "CheckPolicies"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Private Sub CheckO7Item()
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "CheckO7Item - Begin"
+    
+    Dim sHit$, sHit1$, sHit2$, result As SCAN_RESULT
+    Dim i As Long
+    
+    'Policies
+    CheckPolicies
     
     'Untrusted certificates
     UpdateProgressBar "O7-Cert"
-    
     Call CheckCertificatesEDS
-    
     If Not bAutoLogSilent Then DoEvents
-    
     
     ' System troubleshooting
     UpdateProgressBar "O7-Trouble"
-    
     Call CheckSystemProblems '%temp%, %tmp%, disk free space < 1 GB.
-    
     If Not bAutoLogSilent Then DoEvents
     
     'Check for DACL lock on Policy key
     UpdateProgressBar "O7-ACL"
-    
     Call CheckPolicyACL
-    
     If Not bAutoLogSilent Then DoEvents
     
     'IPSec policy
     UpdateProgressBar "O7-IPSec"
-    
     'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\IPSec\Policy\Local\
     'secpol.msc
     
@@ -5900,9 +5922,9 @@ Private Sub CheckO7Item()
     
     Dim KeyPolicy() As String, IPSecName$, KeyNFA() As String, KeyNegotiation() As String, dModify As Date, lModify As Long, IPSecID As String
     Dim KeyISAKMP As String, j As Long, KeyFilter() As String, k As Long, NegAction As String, NegType As String, bEnabled As Boolean, sActPolicy As String
-    Dim bFilterData() As Byte, IP(1) As String, RuleAction As String, bMirror As Boolean, DataSerialized As String
+    Dim bRegexpInit As Boolean, bFilterData() As Byte, IP(1) As String, RuleAction As String, bMirror As Boolean, DataSerialized As String
     Dim Packet_Type(1) As String, M As Long, n As Long, PortNum(1) As Long, ProtocolType As String, idxBaseOffset As Long, IpFil As IPSEC_FILTER_RECORD, RecCnt As Byte
-    Dim bRegexpInit As Boolean, oMatches As IRegExpMatchCollection, IPTypeFlag(1) As Long, b() As Byte, bAtLeastOneFilter As Boolean, bNoFilter As Boolean
+    Dim oMatches As IRegExpMatchCollection, IPTypeFlag(1) As Long, b() As Byte, bAtLeastOneFilter As Boolean, bNoFilter As Boolean
     Dim bSafe As Boolean
     Dim odHit As clsTrickHashTable
     Set odHit = New clsTrickHashTable
@@ -6034,14 +6056,23 @@ Private Sub CheckO7Item()
                     
                     If AryItems(bFilterData) Then
 
+                      AppendErrorLogCustom "CheckO7Item - Regexp - Begin"
+
+                      If Not g_bRegexpInit Then
+                        Set oRegexp = New cRegExp
+                        g_bRegexpInit = True
+                      End If
+
                       If Not bRegexpInit Then
                         bRegexpInit = True
                         oRegexp.IgnoreCase = True
                         oRegexp.Global = True
                         oRegexp.Pattern = "(00|01)(000000)(........)(00000000|FFFFFFFF)(........)(00000000|FFFFFFFF)(00000000)(((06|11)000000........)|((00|01|06|08|11|14|16|1B|42|FF|..)00000000000000))00(00|01|02|03|04|81|82|83|84)0000"
                       End If
+                      
+                      Set oMatches = oRegexp.Execute(SerializeByteArray(bFilterData))
                     
-                      Set oMatches = oRegexp.Execute(SerializeByteArray(bFilterData, ""))
+                      AppendErrorLogCustom "CheckO7Item - Regexp - End"
     
                       For n = 0 To oMatches.Count - 1
                       
@@ -6250,13 +6281,13 @@ End Sub
 'byte array -> to Hex String
 Public Function SerializeByteArray(b() As Byte, Optional Delimiter As String = "") As String
     Dim i As Long
-    'If isarrdimmed(b) Then
-        For i = LBound(b) To UBound(b)
-            SerializeByteArray = SerializeByteArray & Right$("0" & Hex$(b(i)), 2) & Delimiter
-        Next
-        
-        If Len(Delimiter) <> 0 Then SerializeByteArray = Left$(SerializeByteArray, Len(SerializeByteArray) - Len(Delimiter))
-    'End If
+    Dim s As String
+    SerializeByteArray = String$((UBound(b) + 1) * 2, "0")
+       
+    For i = 0 To UBound(b)
+        s = Hex$(b(i))
+        Mid$(SerializeByteArray, (i * 2) + 1 + IIf(Len(s) = 2, 0, 1)) = s
+    Next
 End Function
 
 'Serialized Hex String of bytes -> byte array
@@ -6571,8 +6602,8 @@ Public Sub CheckO9Item()
                 sFile = UnQuote(EnvironW(sFile))
                 
                 'strip stuff from res://[dll]/page.htm to just [dll]
-                If InStr(1, sFile, "res://", vbTextCompare) = 1 And _
-                   (LCase$(Right$(sFile, 4)) = ".htm" Or LCase$(Right$(sFile, 4)) = "html") Then
+                If InStr(1, sFile, "res://", vbTextCompare) = 1 Then
+                    'And (LCase$(Right$(sFile, 4)) = ".htm" Or LCase$(Right$(sFile, 4)) = "html") Then
                     sFile = Mid$(sFile, 7)
                 End If
                 
@@ -8797,7 +8828,7 @@ Public Sub CheckO23Item()
         
         If lType < 16 Then 'Driver
             If Not bAdditional Then 'if 'O23 - Driver' check is skipped
-                dLegitService.Add sName, 4&
+                If Not dLegitService.Exists(sName) Then dLegitService.Add sName, 4&
                 sGroup = Reg.GetString(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\" & sName, "Group")
                 If Len(sGroup) <> 0 Then
                     If Not dLegitGroups.Exists(sGroup) Then dLegitGroups.Add sGroup, 4&
@@ -9008,7 +9039,7 @@ Public Sub CheckO23Item()
                 'добавляем в список легитимных служб для дальнейшего использования при проверке зависимостей
                 'If Not (bSuspicious Or bDllMissing Or Not (.isMicrosoftSign And .isLegit)) Then
                 If Not (bSuspicious Or bDllMissing Or Not (bMicrosoft)) Then
-                    dLegitService.Add sName, 0&
+                    If Not dLegitService.Exists(sName) Then dLegitService.Add sName, 0&
                 End If
                 
                 ' если корневой сертификат цепочки доверия принадлежит Майкрософт + с учётом, что файл проходит по базе, то исключаем службу из лога
@@ -10206,7 +10237,6 @@ End Function
 
 Public Sub ErrorMsg(ErrObj As ErrObject, sProcedure$, ParamArray vCodeModule())
     Dim sMsg$, sParameters$, hResult$, HRESULT_LastDll$, sErrDesc$, iErrNum&, iErrLastDll&, i&
-    Dim hwnd As Long, ptr As Long, hMem As Long
     Dim DateTime As String, curTime As Date, ErrText$
     Dim sErrHeader$
     
@@ -10282,32 +10312,9 @@ Public Sub ErrorMsg(ErrObj As ErrObject, sProcedure$, ParamArray vCodeModule())
     '"Windows version: " & sWinVersion & vbCrLf & vbCrLf & AppVer
     
     If Not bAutoLogSilent Then
-    
-      Clipboard.Clear
-      Clipboard.SetText sMsg
-      
-      If OpenClipboard(hwnd) Then
-        hMem = GlobalAlloc(GMEM_MOVEABLE, 4)
-        If hMem <> 0 Then
-            ptr = GlobalLock(hMem)
-            If ptr <> 0 Then
-                GetMem4 &H419, ByVal ptr
-                GlobalUnlock hMem
-                SetClipboardData CF_LOCALE, hMem
-            End If
-        End If
-        hMem = GlobalAlloc(GMEM_MOVEABLE, LenB(sMsg))
-        If hMem <> 0 Then
-            ptr = GlobalLock(hMem)
-            If ptr <> 0 Then
-                lstrcpyn ByVal ptr, ByVal StrPtr(sMsg), LenB(sMsg)
-                'CopyMemory ByVal ptr, ByVal StrPtr(sMsg), LenB(sMsg)
-                GlobalUnlock hMem
-                SetClipboardData CF_UNICODETEXT, hMem
-            End If
-        End If
-        CloseClipboard
-      End If
+        'Clipboard.Clear
+        'ClipboardSetText sMsg
+        ClipboardSetText sMsg
     End If
     
     ' Append error log
@@ -10365,6 +10372,36 @@ Public Sub ErrorMsg(ErrObj As ErrObject, sProcedure$, ParamArray vCodeModule())
     
     If inIDE Then Stop
 End Sub
+
+Public Function ClipboardSetText(sText As String) As Boolean
+    Dim hMem As Long
+    Dim ptr As Long
+    If OpenClipboard(0) Then
+        If Len(sText) = 0 Then
+            ClipboardSetText = EmptyClipboard()
+        Else
+            hMem = GlobalAlloc(GMEM_MOVEABLE, 4)
+            If hMem <> 0 Then
+                ptr = GlobalLock(hMem)
+                If ptr <> 0 Then
+                    GetMem4 &H419, ByVal ptr
+                    GlobalUnlock hMem
+                    SetClipboardData CF_LOCALE, hMem
+                End If
+            End If
+            hMem = GlobalAlloc(GMEM_MOVEABLE, LenB(sText))
+            If hMem <> 0 Then
+                ptr = GlobalLock(hMem)
+                If ptr <> 0 Then
+                    lstrcpyn ByVal ptr, ByVal StrPtr(sText), LenB(sText)
+                    GlobalUnlock hMem
+                    ClipboardSetText = SetClipboardData(CF_UNICODETEXT, hMem)
+                End If
+            End If
+        End If
+        CloseClipboard
+    End If
+End Function
 
 Public Sub AppendErrorLogNoErr(ErrObj As ErrObject, sProcedure As String, ParamArray CodeModule())
     'to append error log without displaying error message to user
@@ -11581,7 +11618,7 @@ Public Sub InitVariables()
     FillUsers
     
     Set cMath = New clsMath
-    Set oRegexp = New cRegExp
+    'Set oRegexp = New cRegExp
     
     LIST_BACKUP_FILE = BuildPath(AppPath(), "Backups\List.ini")
     
@@ -14965,13 +15002,36 @@ End Sub
 '
 Public Sub OpenLogFile(sLogFile As String)
     If Not FileExists(sLogFile, , True) Then Exit Sub
+    
+    Dim bAssoc As Boolean
+    Dim bFailed As Boolean
+    Dim sClassID As String
+    Dim sOpenCmd As String
+    Dim sOpenProg As String
+    
+    sClassID = Reg.GetString(HKEY_CLASSES_ROOT, GetExtensionName(sLogFile), "")
+    
+    If sClassID <> "" Then
+        sOpenCmd = EnvironW(Reg.GetString(HKEY_CLASSES_ROOT, sClassID & "\shell\open\command", ""))
+        
+        SplitIntoPathAndArgs sOpenCmd, sOpenProg, , True
+        
+        If FileExists(sOpenProg) Then
+            bAssoc = True
+        End If
+    End If
 
-    If OSver.IsWindowsXPOrGreater Then
-        Proc.ProcessRunUnelevated2 BuildPath(sWinDir, "explorer.exe"), sLogFile
-        Exit Sub
+    If bAssoc Then
+        If OSver.IsWindowsXPOrGreater Then
+            If Proc.ProcessRunUnelevated2(BuildPath(sWinDir, "explorer.exe"), sLogFile) Then Exit Sub
+        End If
     End If
     
-    If ShellExecute(g_HwndMain, StrPtr("open"), StrPtr(sLogFile), 0&, 0&, 1) <= 32 Then
+    If bAssoc Then
+        bFailed = ShellExecute(g_HwndMain, StrPtr("open"), StrPtr(sLogFile), 0&, 0&, 1) <= 32
+    End If
+    
+    If Not bAssoc Or bFailed Then
         'system doesn't know what .log is
         If FileExists(sWinDir & "\notepad.exe") Then
             ShellExecute g_HwndMain, StrPtr("open"), StrPtr(sWinDir & "\notepad.exe"), StrPtr(sLogFile), 0&, 1

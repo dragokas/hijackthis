@@ -638,9 +638,6 @@ Public Function ProcessRunUnelevated2( _
     AppendErrorLogCustom "ProcessRunUnelevated2 - Begin", "FileName: " & FileName, "CommandLine: " & CommandLine, "CurDir: " & CurrentDirectory, _
         "WindowStyle: " & WindowStyle
     
-    '// TODO
-    ' Check for explorer.exe process presence
-    
     Const CC_STDCALL = 4&, QueryActiveShellView_Offset = 15& * 4&, GetItemObject_Offset = 15& * 4&
     Const NOERROR = 0&, S_OK = 0&, SVGIO_BACKGROUND = 0&, SWC_DESKTOP = 8&, SWFO_NEEDDISPATCH = 1&
 
@@ -680,8 +677,9 @@ Public Function ProcessRunUnelevated2( _
     
     If DispCallFunc(ObjPtr(IShellView), GetItemObject_Offset, CC_STDCALL, vbLong, 3&, VT(0&), pv(0&), RV) <> S_OK Or RV <> S_OK Then Exit Function
     
-    ProcessRunUnelevated2 = (ShellFolderView.Application.ShellExecute( _
-        FileName, vCommandLine, vCurrentDirectory, vOperation, vWindowStyle) > 32)
+    ShellFolderView.Application.ShellExecute FileName, vCommandLine, vCurrentDirectory, vOperation, vWindowStyle
+    
+    ProcessRunUnelevated2 = True
     
     AppendErrorLogCustom "ProcessRunUnelevated - End"
     Exit Function
@@ -699,7 +697,7 @@ Private Sub ParseCommandLine(Line As String, argc As Long, argv() As String)
     
     ptr = CommandLineToArgvW(StrPtr(Line), argc)
     ReDim argv(argc)
-    argv(0) = App.Path & "\" & App.EXEName & ".exe"
+    argv(0) = App.Path & "\" & App.ExeName & ".exe"
     If argc = 0 Then Exit Sub
     
     For Index = 1 To argc

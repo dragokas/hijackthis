@@ -133,7 +133,8 @@ Private Declare Function pcre2_get_error_message Lib "pcre2-16.dll" Alias "_pcre
 
 
 Private Sub Class_Initialize() ' added this especially for HJT to support Err.Raise event in case both VBScript and PCRE2 version are failed
-    Init_VBS_Regexp
+    'Init_VBS_Regexp
+    'disabled, because it cause unnecessary init of new "VBScript.Regexp" instances each time when new interface is called.
 End Sub
 
 Private Sub Class_Terminate()
@@ -157,17 +158,41 @@ Private Sub IRegExp_InitClass()  'initialized manually at first touch of IRegExp
 End Sub
 
 Private Sub Init_VBS_Regexp()
-    On Error Resume Next
+    On Error GoTo ErrorHandler:
+    Dim Stady As Long
+    Dim bErrFlag As Boolean
+    
+    AppendErrorLogCustom "Init_VBS_Regexp"
+    
+    Stady = 1
     Set mo_RegexVB = CreateObject("VBScript.Regexp")
-    If Err.Number <> 0 Then    'if VBScript.Regexp is failed
+    AppendErrorLogCustom "VBScript.Regexp instance creation call is finished."
+    
+    If bErrFlag Then    'if VBScript.Regexp is failed
+        bErrFlag = False
+        
         'try manual binding
         Dim iidRegExp As UUID
+        AppendErrorLogCustom "Regexp failed! Init with UnregCOM"
         CLSIDFromString StrPtr("{3F4DACA4-160D-11D2-A8E9-00104B365C9F}"), iidRegExp
         Set mo_RegexVB = UnregCOM.CreateObjectEx(GetWindowsDir() & "\system32\vbscript.dll", iidRegExp)
+        
         'if failed again
         If mo_RegexVB Is Nothing Then
+            AppendErrorLogCustom "UnregCOM failed!"
+            AddWarning "VBScript.Regexp reg. info emulation is failed too. Switching to PCRE..."
             IRegExp_UsePcre = True 'use PCRE2
         End If
+    End If
+    
+    Exit Sub
+ErrorHandler:
+    If Stady = 1 Then
+        AddWarning "VBScript.Regexp is not functioning! Perhaps, reg. info is damaged. Err: " & Err.Number & ", LastDllErr: " & Err.LastDllError
+        bErrFlag = True: Resume Next
+    Else
+        ErrorMsg Err, "cRegExp.Init_VBS_Regexp"
+        If inIDE Then Stop: Resume Next
     End If
 End Sub
 
@@ -1607,12 +1632,19 @@ End Property
 '-----------------------------------------------------------------------------
 
 Private Function UnpackLibPCRE() As Boolean
+    AppendErrorLogCustom "UnpackLibPCRE - Begin"
     Dim sLibPath As String
     sLibPath = AppPathW() & "\" & "pcre2-16.dll"
     If Not FileExists(sLibPath) Then
         UnpackLibPCRE = UnpackResource(PCRE_LIB_RESOURCE_ID, sLibPath)
     End If
-    If CheckConsistency(sLibPath) Then UnpackLibPCRE = True
+    AppendErrorLogCustom "UnpackLibPCRE - Unpacked"
+    If CheckConsistency(sLibPath) Then
+        UnpackLibPCRE = True
+    Else
+        AddWarning "PCRE lib. hash is mismatched or access denied."
+    End If
+    AppendErrorLogCustom "UnpackLibPCRE - Hash checked. Result: " & UnpackLibPCRE
 End Function
 
 Private Function CheckConsistency(sLibPath As String) As Boolean
@@ -1672,7 +1704,7 @@ Private Function AppPathW(Optional bGetFullPath As Boolean) As String
  
     If App.LogMode = 0 Then 'inIDE ?
         If bGetFullPath Then
-            AppPathW = App.Path & "\" & App.EXEName & ".exe"
+            AppPathW = App.Path & "\" & App.ExeName & ".exe"
         Else
             AppPathW = App.Path
         End If

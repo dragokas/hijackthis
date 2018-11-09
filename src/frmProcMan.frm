@@ -384,8 +384,7 @@ Public Sub CopyProcessList(objProcess As ListBox, objDLL As ListBox, Optional bD
     
     sList = sList & "--" & vbCrLf & "End of file"
     
-    Clipboard.Clear
-    Clipboard.SetText sList
+    ClipboardSetText sList
     If bDoDLLs Then
         'The process list and dll list have been copied to your clipboard.
         MsgBoxW Translate(1650), vbInformation

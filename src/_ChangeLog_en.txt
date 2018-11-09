@@ -10,6 +10,19 @@
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[2.9.0.6] - Nov 9, 2018
+CSV-reports are now open in Notepad if association is not defined.
+
+[2.9.0.5] - Nov 8, 2018
+Improved speed of O7 - IPSec analysis.
+
+[2.9.0.4] - Nov 7, 2018
+Fixed critical error when recursive read registry key (app crash on some backups).
+Improved speed of regular expressions.
+
+[2.9.0.2] - Nov 6, 2018
+Fixed cases with failures in reading O23 (error: "Collection key in not unique").
+
 [2.9.0.1] - October 20, 2018
 Log:
 v Improved format of the log lines.
@@ -1339,4 +1352,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-     
+          

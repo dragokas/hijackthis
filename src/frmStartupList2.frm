@@ -2653,8 +2653,7 @@ Private Sub mnuFileCopy_Click()
         mnuFileCopy.Enabled = False
         sLog = GetStartupListReport
         If Not bSL_Abort Then
-            Clipboard.Clear
-            Clipboard.SetText sLog
+            ClipboardSetText sLog
             'The StartupList report has been copied to your clipboard.
             Status Translate(930) & " (" & Format$(Len(sLog) / 1024, "#,00") & " Kb)"
         Else
@@ -2666,7 +2665,7 @@ Private Sub mnuFileCopy_Click()
     Else
         sLog = GetTriageReport
         'Clipboard.Clear
-        'Clipboard.SetText sLog
+        'ClipboardSetText sLog
         'Status "The Triage report has been copied to your clipboard."
     End If
     AppendErrorLogCustom "mnuFileCopy_Click - End"
@@ -3156,16 +3155,14 @@ Private Sub mnuOptionsShowUsers_Click()
 End Sub
 
 Private Sub mnuPopupCopyNode_Click()
-    Clipboard.Clear
-    Clipboard.SetText tvwMain.SelectedItem.Text
+    ClipboardSetText tvwMain.SelectedItem.Text
     'Node text copied to clipboard.
     Status Translate(949)
 End Sub
 
 Private Sub mnuPopupCopyPath_Click()
-    Clipboard.Clear
     'This Computer
-    Clipboard.SetText Replace$(tvwMain.SelectedItem.FullPath, tvwMain.Nodes("System").Text, Translate(956))
+    ClipboardSetText Replace$(tvwMain.SelectedItem.FullPath, tvwMain.Nodes("System").Text, Translate(956))
     'Node path & text copied to clipboard.
     Status Translate(950)
 End Sub
@@ -3187,16 +3184,14 @@ Private Sub mnuPopupCopyTree_Click()
     sReport = Me.Caption & Replace$(Translate(954), "[]", "'" & tvwMain.SelectedItem.Text & "'") & _
         " " & Replace$(tvwMain.SelectedItem.FullPath, tvwMain.Nodes("System").Text, Translate(956)) & vbCrLf & _
               sReport
-    Clipboard.Clear
-    Clipboard.SetText sReport
+    ClipboardSetText sReport
     'Node tree copied to clipboard.
     Status Translate(951)
 End Sub
 
 Private Sub mnuPopupFilenameCopy_Click()
     If tvwMain.SelectedItem.Tag <> vbNullString Then
-        Clipboard.Clear
-        Clipboard.SetText tvwMain.SelectedItem.Tag
+        ClipboardSetText tvwMain.SelectedItem.Tag
         'Filename was copied to the clipboard.
         Status Translate(952)
     End If
@@ -3237,16 +3232,14 @@ Private Sub mnuPopupRegkeyCopy_Click()
                  MyNode = tvwMain.Nodes("Hardware")
             Set MyNode = MyNode.Parent
             If InStr(1, MyNode.Tag, "HKEY_") = 1 Then
-                Clipboard.Clear
-                Clipboard.SetText MyNode.Tag
+                ClipboardSetText MyNode.Tag
                 'Registry key name was copied to the clipboard.
                 Status Translate(953)
                 Exit Sub
             End If
         Loop
     Else
-        Clipboard.Clear
-        Clipboard.SetText tvwMain.SelectedItem.Tag
+        ClipboardSetText tvwMain.SelectedItem.Tag
         'Registry key name was copied to the clipboard.
         Status Translate(953)
     End If

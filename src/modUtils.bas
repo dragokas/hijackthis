@@ -157,8 +157,9 @@ End Type
 
 Public BROWSERS As MY_BROWSERS
 
-Public hLibPcre2    As Long
-Public oRegexp      As IRegExp
+Public hLibPcre2        As Long
+Public oRegexp          As IRegExp
+Public g_bRegexpInit    As Boolean
 
 Private lpPrevWndProc As Long
 
@@ -678,7 +679,7 @@ Public Function AppPath(Optional bGetFullPath As Boolean) As String
     
     If App.LogMode = 0 Then
         If bGetFullPath Then
-            AppPath = GetDOSFilename(App.Path, bReverse:=True) & "\" & GetValueFromVBP(BuildPath(App.Path, App.EXEName & ".vbp"), "ExeName32")
+            AppPath = GetDOSFilename(App.Path, bReverse:=True) & "\" & GetValueFromVBP(BuildPath(App.Path, App.ExeName & ".vbp"), "ExeName32")
             ProcPathFull = AppPath
         Else
             AppPath = GetDOSFilename(App.Path, bReverse:=True)
@@ -751,7 +752,7 @@ Public Function AppExeName(Optional WithExtension As Boolean) As String
     End If
 
     If inIDE Then
-        AppExeName = App.EXEName & IIf(WithExtension, ".exe", "")
+        AppExeName = App.ExeName & IIf(WithExtension, ".exe", "")
         Exit Function
     End If
 
@@ -767,7 +768,7 @@ Public Function AppExeName(Optional WithExtension As Boolean) As String
     End If
     
     If cnt = 0 Then                          'clear path
-        ProcPath = App.EXEName & IIf(WithExtension, ".exe", "")
+        ProcPath = App.ExeName & IIf(WithExtension, ".exe", "")
     Else
         ProcPath = Left$(ProcPath, cnt)
         
