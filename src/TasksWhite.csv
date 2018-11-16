@@ -489,6 +489,7 @@ OSver;Dir\Name;RunObj;Args;Note
 10; \Microsoft\Windows\WwanSvc\NotificationTask; %SystemRoot%\System32\WiFiTask.exe; wwan
 10; \Microsoft\Windows\PushToInstall\Registration; %SystemRoot%\system32\sc.exe; start pushtoinstall registration
 10; \Microsoft\Windows\UpdateOrchestrator\USO_Broker_Display; %SystemRoot%\system32\MusNotification.exe; Display
+10; \Microsoft\Windows\UpdateOrchestrator\Schedule Retry Scan; %SystemRoot%\system32\usoclient.exe; StartScan
 10; \OfficeSoftwareProtectionPlatform\SvcRestartTask; %SystemRoot%\system32\sc.exe; start osppsvc
 10; \Microsoft\Windows\InstallService\ScanForUpdates; {A558C6A5-B42B-4C98-B610-BF9559143139}; %SystemRoot%\System32\InstallServiceTasks.dll
 10; \Microsoft\Windows\InstallService\ScanForUpdatesAsUser; {DDAFAEA2-8842-4E96-BADE-D44A8D676FDB}; %SystemRoot%\System32\InstallServiceTasks.dll
@@ -502,5 +503,4 @@ OSver;Dir\Name;RunObj;Args;Note
 10; \Microsoft\Windows\Windows Defender\Windows Defender Scheduled Scan; %ProgramFiles%\Windows Defender\MpCmdRun.exe; Scan -ScheduleJob;;
 10; \Microsoft\Windows\Windows Defender\Windows Defender Scheduled Scan; MpCmdRun.exe; Scan -ScheduleJob -ScanTrigger 55
 10; \Microsoft\Windows\Windows Defender\Windows Defender Verification; %ProgramFiles%\Windows Defender\MpCmdRun.exe; -IdleTask -TaskName WdVerification;Note;Error
-10; \Microsoft\Windows\Windows Defender\Windows Defender Verification; MpCmdRun.exe; -IdleTask -TaskName WdVerification
-      
+10; \Microsoft\Windows\Windows Defender\Windows Defender Verification; MpCmdRun.exe; -IdleTask -TaskName WdVerification 

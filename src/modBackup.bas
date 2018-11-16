@@ -341,7 +341,7 @@ Public Function MakeBackup(result As SCAN_RESULT) As Boolean
                             MyReg.Redirected = .Redirected
                             MyReg.ActionType = .ActionType
                             If (.ActionType And RESTORE_KEY_PERMISSIONS_RECURSE) Then
-                                Erase aSubKeys
+                                
                                 For j = 1 To Reg.EnumSubKeysToArray(.Hive, .Key, aSubKeys(), .Redirected, False, True)
                                     MyReg.Key = aSubKeys(j)
                                     lRegID = BackupAllocReg(MyReg, True)
@@ -820,9 +820,9 @@ Public Function BackupKey( _
         '-----------------------
         
         'enumerate all values
-        Erase aSubKeys
+        
         For j = 1 To Reg.EnumSubKeysToArray(hHive, sKey, aSubKeys(), bUseWow64, True, True)
-            Erase aValues
+            
             For k = 1 To Reg.EnumValuesToArray(hHive, aSubKeys(j), aValues(), bUseWow64)
                 MyReg.Key = aSubKeys(j)
                 MyReg.Param = aValues(k)
@@ -848,7 +848,7 @@ Public Function BackupKey( _
         BackupAddCommand REGISTRY_BASED, VERB_RESTORE_REG_VALUE, OBJ_REG_VALUE, lRegID
         
         'backup values of root key
-        Erase aValues
+        
         For k = 1 To Reg.EnumValuesToArray(hHive, sKey, aValues(), bUseWow64)
             MyReg.Key = sKey
             MyReg.Param = aValues(k)

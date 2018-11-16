@@ -905,17 +905,16 @@ Public Function EnumValuesAndData(lHive As ENUM_REG_HIVE, ByVal KeyName As Strin
     Dim sData        As String
     Dim qData        As Currency
     
+    Erase aValueNames
+    Erase aDataValues
+    Erase aTypes
+    
     Call NormalizeKeyNameAndHiveHandle(lHive, KeyName)
     
     lret = RegOpenKeyEx(lHive, StrPtr(KeyName), 0&, KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
     
     If lret <> ERROR_SUCCESS Then
-    
-        ReDim aValueNames(1 To 1)
-        ReDim aDataValues(1 To 1)
-        ReDim aTypes(1 To 1)
         Exit Function
-    
     Else
         
         lret = RegQueryInfoKey(hKey, ByVal 0&, ByVal 0&, 0&, ByVal 0&, ByVal 0&, ByVal 0&, ValuesCnt, cNameMax, cDataMax, ByVal 0&, ByVal 0&)
@@ -1303,7 +1302,6 @@ Public Function DeleteAllSubKeys(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional b
     
     Flag = True
     
-    Erase aSubKeys
     For i = 1 To EnumSubKeysToArray(lHive, sKey, aSubKeys(), bUseWow64, True)
         sSubKey = sKey & "\" & aSubKeys(i)
         Flag = Flag And DeleteAllSubKeys(lHive, sSubKey, bUseWow64)   '< --- recursively
@@ -1506,7 +1504,8 @@ Public Function EnumSubKeysToArray( _
     aSubKeys() As String, _
     Optional bUseWow64 As Boolean, _
     Optional ForceUnlock As Boolean, _
-    Optional bRecursively As Boolean) As Long
+    Optional bRecursively As Boolean, _
+    Optional bEraseArray As Boolean = True) As Long
     
     On Error GoTo ErrorHandler:
     Dim hKey        As Long
@@ -1518,6 +1517,8 @@ Public Function EnumSubKeysToArray( _
     Dim SubkeysCnt  As Long
     Dim BeginIdx    As Long
     Dim i           As Long
+    
+    If bEraseArray Then Erase aSubKeys
     
     Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
     
@@ -1595,7 +1596,7 @@ Public Function EnumSubKeysToArray( _
             If hKey <> 0 Then RegCloseKey hKey: hKey = 0
             
             For i = BeginIdx + 1 To UBound(aSubKeys)
-                Call EnumSubKeysToArray(lHive, aSubKeys(i), aSubKeys, bUseWow64, ForceUnlock, True)
+                Call EnumSubKeysToArray(lHive, aSubKeys(i), aSubKeys, bUseWow64, ForceUnlock, True, False)
             Next
           End If
         End If
@@ -1616,7 +1617,8 @@ Public Function NtEnumSubKeysToArray( _
     aSubKeys() As String, _
     Optional bUseWow64 As Boolean, _
     Optional ForceUnlock As Boolean, _
-    Optional bRecursively As Boolean) As Long
+    Optional bRecursively As Boolean, _
+    Optional bEraseArray As Boolean = True) As Long
     
     On Error GoTo ErrorHandler:
     Dim hKey        As Long
@@ -1630,6 +1632,8 @@ Public Function NtEnumSubKeysToArray( _
     Dim reqSize     As Long
     Dim kfi         As KEY_FULL_INFORMATION
     Dim strLength   As Long
+    
+    If bEraseArray Then Erase aSubKeys
     
     Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
     
@@ -1703,7 +1707,7 @@ Public Function NtEnumSubKeysToArray( _
     
     If bRecursively Then
         For i = BeginIdx + 1 To UBound(aSubKeys)
-            Call NtEnumSubKeysToArray(lHive, aSubKeys(i), aSubKeys, bUseWow64, ForceUnlock, True)
+            Call NtEnumSubKeysToArray(lHive, aSubKeys(i), aSubKeys, bUseWow64, ForceUnlock, True, False)
         Next
     End If
     
@@ -1787,6 +1791,8 @@ Public Function EnumValuesToArray(lHive As ENUM_REG_HIVE, ByVal KeyName$, aValue
     Dim lret         As Long
     Dim sName        As String
     Dim ValuesCnt    As Long
+    
+    Erase aValues()
     
     Call NormalizeKeyNameAndHiveHandle(lHive, KeyName)
     

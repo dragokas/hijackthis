@@ -3820,7 +3820,7 @@ Sub CheckO4_RegRuns()
     
     Do While HE.MoveNext
         
-        Erase aValue
+        
         For i = 1 To Reg.EnumValuesToArray(HE.Hive, HE.Key, aValue(), HE.Redirected)
         
             isDisabledWin8 = False
@@ -4250,9 +4250,9 @@ Sub CheckO4_RegRuns()
     
     Do While HE.MoveNext
         If Reg.KeyHasSubKeys(HE.Hive, HE.Key, HE.Redirected) Then
-            Erase aSubKey
+            
             For i = 1 To Reg.EnumSubKeysToArray(HE.Hive, HE.Key, aSubKey(), HE.Redirected, , False)
-                Erase aValue
+                
                 For j = 1 To Reg.EnumValuesToArray(HE.Hive, HE.Key & "\" & aSubKey(i), aValue(), HE.Redirected)
                     
                     sData = Reg.GetString(HE.Hive, HE.Key & "\" & aSubKey(i), aValue(j), HE.Redirected)
@@ -4371,7 +4371,7 @@ Sub CheckO4_RegRuns()
     aVerb = Split("shell\AutoRun\command|shell\open\command|shell\explore\command", "|")
 
     Do While HE.MoveNext
-        Erase aSubKey
+        
         For i = 1 To Reg.EnumSubKeysToArray(HE.Hive, HE.Key, aSubKey, HE.Redirected)
             For j = 0 To UBound(aVerb)
                 sKey = HE.Key & "\" & aSubKey(i) & "\" & aVerb(j)
@@ -4484,7 +4484,7 @@ Sub CheckO4_MSConfig(aHives() As String, aUser() As String)
                     Exit For
                 End If
             
-                Erase Values
+                
                 For j = 1 To Reg.EnumValuesToArray(0&, sHive & "\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\" & _
                         IIf(bIsWin64 And Wow6432Redir, "Run32", "Run"), Values())
             
@@ -4614,7 +4614,7 @@ Sub CheckO4_MSConfig(aHives() As String, aUser() As String)
         
         sKey = "HKLM\SOFTWARE\Microsoft\Shared Tools\MSConfig\startupfolder"
         
-        Erase aSubKey
+        
         For i = 1 To Reg.EnumSubKeysToArray(0&, sKey, aSubKey())
         
             sFile = Reg.GetData(0&, sKey & "\" & aSubKey(i), "backup")
@@ -5929,7 +5929,7 @@ Private Sub CheckO7Item()
     Dim odHit As clsTrickHashTable
     Set odHit = New clsTrickHashTable
     
-    Erase KeyPolicy
+    
     For i = 1 To Reg.EnumSubKeysToArray(0&, "HKLM\SOFTWARE\Policies\Microsoft\Windows\IPSec\Policy\Local", KeyPolicy())
     
       If StrBeginWith(KeyPolicy(i), "ipsecPolicy{") Then
@@ -7771,7 +7771,7 @@ Public Sub CheckO17Item()
             
             'HKLM\System\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\.. subkeys
             'HKLM\System\CS*\Services\Tcpip\Parameters\Interfaces\.. subkeys
-            Erase aNames
+            
             For n = 1 To Reg.EnumSubKeysToArray(HKEY_LOCAL_MACHINE, CSKey & "\Services\Tcpip\Parameters\Interfaces", aNames)
                 
                 sData = Reg.GetString(HKEY_LOCAL_MACHINE, CSKey & "\Services\Tcpip\Parameters\Interfaces\" & aNames(n), sParam)
@@ -8522,7 +8522,7 @@ Public Sub CheckO21Item()
     
     Do While HE.MoveNext
         
-        Erase aSubKey
+        
         If Reg.EnumSubKeysToArray(HE.Hive, HE.Key, aSubKey, HE.Redirected) > 0 Then
         
             For i = 1 To UBound(aSubKey)
@@ -8587,7 +8587,7 @@ Public Sub CheckO21Item()
     HE.AddKey "SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\ShellExecuteHooks"
     
     Do While HE.MoveNext
-        Erase aValue
+        
         For i = 1 To Reg.EnumValuesToArray(HE.Hive, HE.Key, aValue, HE.Redirected)
             sCLSID = aValue(i)
             
@@ -12174,7 +12174,7 @@ Public Sub GetProfiles()    'result -> in global variable 'colProfiles' (collect
     ProfileListKey = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList"
     ProfilesDirectory = Reg.GetData(0&, ProfileListKey, "ProfilesDirectory")
 
-    Erase ProfileSubKey
+    
     If Reg.EnumSubKeysToArray(0&, ProfileListKey, ProfileSubKey()) > 0 Then
         For i = 1 To UBound(ProfileSubKey)
             If Not (ProfileSubKey(i) = "S-1-5-18" Or _

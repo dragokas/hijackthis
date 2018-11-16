@@ -10,6 +10,9 @@
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[2.9.0.7] - Nov 16, 2018
+Fixed false positives (e.g. O26) due to problems with buffer cleaning in registry operations.
+
 [2.9.0.6] - Nov 9, 2018
 CSV-reports are now open in Notepad if association is not defined.
 
@@ -22,6 +25,7 @@ Improved speed of regular expressions.
 
 [2.9.0.2] - Nov 6, 2018
 Fixed cases with failures in reading O23 (error: "Collection key in not unique").
+Fixed issues when copying to the clipboard.
 
 [2.9.0.1] - October 20, 2018
 Log:

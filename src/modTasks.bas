@@ -1114,7 +1114,7 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
     End If
     
 '    'enum registry info first
-'    Erase aID
+
 '    For i = 1 To Reg.EnumSubKeysToArray(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks", aID())
 '        DirFull = Reg.GetString(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\" & aID(i), "Path")
 '        'cache full names that points to xml file
@@ -1398,7 +1398,7 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
     
 '    'Stady 2
 '    'if \Tree\ still contains leftovers
-'    Erase aSubKeys
+
 '    For i = 1 To Reg.EnumSubKeysToArray(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree", aSubKeys(), , , True)
 '
 '        DirFull = Mid$(aSubKeys(i), Len("SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree") + 1)
