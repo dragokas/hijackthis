@@ -97,7 +97,7 @@ Begin VB.Form frmStartupList2
                   BeginProperty Font 
                      Name            =   "MS Sans Serif"
                      Size            =   8.25
-                     Charset         =   204
+                     Charset         =   1
                      Weight          =   700
                      Underline       =   0   'False
                      Italic          =   0   'False
@@ -115,7 +115,7 @@ Begin VB.Form frmStartupList2
                   BeginProperty Font 
                      Name            =   "MS Sans Serif"
                      Size            =   8.25
-                     Charset         =   204
+                     Charset         =   1
                      Weight          =   700
                      Underline       =   0   'False
                      Italic          =   0   'False
@@ -193,7 +193,7 @@ Begin VB.Form frmStartupList2
                   BeginProperty Font 
                      Name            =   "MS Sans Serif"
                      Size            =   8.25
-                     Charset         =   204
+                     Charset         =   1
                      Weight          =   700
                      Underline       =   0   'False
                      Italic          =   0   'False
@@ -242,7 +242,7 @@ Begin VB.Form frmStartupList2
                   BeginProperty Font 
                      Name            =   "MS Sans Serif"
                      Size            =   8.25
-                     Charset         =   204
+                     Charset         =   1
                      Weight          =   700
                      Underline       =   0   'False
                      Italic          =   0   'False
@@ -341,7 +341,7 @@ Begin VB.Form frmStartupList2
                   BeginProperty Font 
                      Name            =   "MS Sans Serif"
                      Size            =   8.25
-                     Charset         =   204
+                     Charset         =   1
                      Weight          =   700
                      Underline       =   0   'False
                      Italic          =   0   'False
@@ -670,7 +670,7 @@ Begin VB.Form frmStartupList2
                   BeginProperty Font 
                      Name            =   "MS Sans Serif"
                      Size            =   8.25
-                     Charset         =   204
+                     Charset         =   1
                      Weight          =   700
                      Underline       =   0   'False
                      Italic          =   0   'False
@@ -689,7 +689,7 @@ Begin VB.Form frmStartupList2
                   BeginProperty Font 
                      Name            =   "MS Sans Serif"
                      Size            =   8.25
-                     Charset         =   204
+                     Charset         =   1
                      Weight          =   700
                      Underline       =   0   'False
                      Italic          =   0   'False

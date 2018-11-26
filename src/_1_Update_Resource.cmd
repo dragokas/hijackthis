@@ -8,7 +8,7 @@ SetLocal EnableExtensions EnableDelayedExpansion
 set "TaskName=Run HJT Project"
 
 :CheckRun
-schtasks.exe /query /FO LIST /tn "%TaskName%" | findstr /i /C:"Running" /C:"Выполняется" && (
+tasklist /v /FI "IMAGENAME eq VB6.exe" 2>NUL|>NUL find /i "HiJackThis" && (
   echo.&echo Project already run !& echo Please, close it first.
   pause >NUL
   goto CheckRun
@@ -33,6 +33,7 @@ call :AddResource + 104 CUSTOM _ChangeLog_ru.txt
 call :AddResource + 201 CUSTOM _Lang_EN.lng
 call :AddResource + 202 CUSTOM _Lang_RU.lng
 call :AddResource + 203 CUSTOM _Lang_UA.lng
+call :AddResource + 204 CUSTOM _Lang_FR.lng
 call :AddResource - 301 CUSTOM tools\PCRE2\pcre2-16.dll
 call :AddResource - 302 CUSTOM tools\ABR\abr.exe
 call :AddResource - 303 CUSTOM tools\ABR\restore.exe
@@ -78,7 +79,7 @@ For /L %%C in (1 1 %ResCnt%) do (
 set StrN=0
 set Label=STRINGS
 for /f "delims=[]" %%a in ('^< "%~f0" find /n ":%Label%"') do set StrN=%%a
-if "%StrN%" neq "0" more +%StrN% < "%~f0" >> 1.RC
+if "%StrN%" neq "0" more /E +%StrN% < "%~f0" >> 1.RC
 
 :: preparing multilingual VerInfo section
 call :Make_VerInfo_res

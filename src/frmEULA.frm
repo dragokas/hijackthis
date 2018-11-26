@@ -26,7 +26,7 @@ Begin VB.Form frmEULA
       BeginProperty Font 
          Name            =   "Tahoma"
          Size            =   8.25
-         Charset         =   204
+         Charset         =   1
          Weight          =   400
          Underline       =   0   'False
          Italic          =   0   'False
@@ -43,7 +43,7 @@ Begin VB.Form frmEULA
       BeginProperty Font 
          Name            =   "Tahoma"
          Size            =   8.25
-         Charset         =   204
+         Charset         =   1
          Weight          =   400
          Underline       =   0   'False
          Italic          =   0   'False
@@ -62,7 +62,7 @@ Begin VB.Form frmEULA
       BeginProperty Font 
          Name            =   "Tahoma"
          Size            =   8.25
-         Charset         =   204
+         Charset         =   1
          Weight          =   400
          Underline       =   0   'False
          Italic          =   0   'False
@@ -83,7 +83,7 @@ Begin VB.Form frmEULA
       BeginProperty Font 
          Name            =   "Constantia"
          Size            =   15
-         Charset         =   204
+         Charset         =   1
          Weight          =   700
          Underline       =   0   'False
          Italic          =   0   'False
@@ -366,6 +366,7 @@ Private Sub Form_Load()
     bForceRU = InStr(1, AppExeName(), "_RU", 1) Or InStr(1, Command$(), "langRU", 1) '/langRU
     bForceEN = InStr(1, AppExeName(), "_EN", 1) Or InStr(1, Command$(), "langEN", 1) '/langEN
     bForceUA = InStr(1, AppExeName(), "_UA", 1) Or InStr(1, Command$(), "langUA", 1) '/langUA
+    bForceFR = InStr(1, AppExeName(), "_FR", 1) Or InStr(1, Command$(), "langFR", 1) '/langUA
 
     bIsWOW64 = IsWow64()
 
@@ -467,6 +468,8 @@ Sub Localize()
         LoadLanguage &H419, True, PreLoadNativeLang:=True
     ElseIf bForceUA Then
         LoadLanguage &H422, True, PreLoadNativeLang:=True
+    ElseIf bForceFR Then
+        LoadLanguage &H40C, True, PreLoadNativeLang:=True
     Else
         LoadLanguage 0, False, PreLoadNativeLang:=True
     End If

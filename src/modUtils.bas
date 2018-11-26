@@ -171,6 +171,8 @@ Public Sub SubClassScroll(SwitchON As Boolean)
         If lpPrevWndProc Then SetWindowLong frmMain.hwnd, GWL_WNDPROC, lpPrevWndProc: lpPrevWndProc = 0
     End If
     
+    'Debug.Print "SubClassScroll: " & SwitchON
+    
 '    If SwitchON Then
 '        If lpPrevWndProc = 0 Then lpPrevWndProc = SetWindowSubclass(frmMain.hwnd, AddressOf WndProc, ObjPtr(frmMain), 0&)
 '    Else
@@ -193,11 +195,15 @@ Private Function WndProc(ByVal hwnd As Long, ByVal uMsg As Long, ByVal wParam As
     On Error Resume Next
     
     Select Case uMsg
+    
     Case WM_NCDESTROY
         SubClassScroll False
+        
     Case WM_UAHDESTROYWINDOW 'dilettante's trick
         SubClassScroll False
+        
     Case WM_MOUSEWHEEL
+        'If Not g_bMiscToolsTab Then Exit Function
         If Not IsMouseWithin(frmMain.hwnd) Then Exit Function ' mouse is outside the form
         Dim MouseKeys&, Rotation&, NewValue%
         MouseKeys = wParam And &HFFFF&
@@ -208,10 +214,66 @@ Private Function WndProc(ByVal hwnd As Long, ByVal uMsg As Long, ByVal wParam As
             If NewValue > .Max Then NewValue = .Max
             .Value = NewValue   'change scroll value
         End With
+    Case WM_KEYDOWN ' Ctrl + A
+        'Debug.Print "Keydown: " & wParam
+        'If wParam = Asc("A") And GetKeyState(VK_CONTROL) < 0 Then
+        'End If
+        
+    Case WM_HOTKEY
+        If wParam = HOTKEY_ID_CTRL_F Then DoSearchWindow
+        
     Case Else
         WndProc = CallWindowProc(lpPrevWndProc, hwnd, uMsg, wParam, lParam)
         'WndProc = DefSubclassProc(hwnd, uMsg, wParam, lParam)
     End Select
+End Function
+
+Sub DoSearchWindow()
+
+    Exit Sub ' not yet implemented
+
+    Dim sSearch As String
+    Dim sActiveFrame As String
+    
+    If SearchAllowed(sActiveFrame) Then
+        sSearch = InputBox("Enter the search phrase", "Search...")
+        
+        Select Case sActiveFrame
+        
+        Case "ListResults"
+            
+            
+                
+        End Select
+    End If
+End Sub
+
+Function SearchAllowed(out_sFrameAlias As String) As Boolean
+    Dim bCanSearch As Boolean
+    Dim hActiveWnd As Long
+    Dim sActiveFrm As String
+    Dim Frm As Form
+    
+    hActiveWnd = GetForegroundWindow()
+    
+    For Each Frm In Forms
+        If Frm.hwnd = hActiveWnd Then sActiveFrm = Frm.Name: Exit For
+    Next
+    
+    If sActiveFrm = "frmSearch" Then
+        hActiveWnd = GetWindow(hActiveWnd, GW_HWNDNEXT) 'this is a search window => get window below Z-order
+        For Each Frm In Forms
+            If Frm.hwnd = hActiveWnd Then sActiveFrm = Frm.Name: Exit For
+        Next
+    End If
+    
+    Select Case sActiveFrm
+    Case "frmMain"
+        If frmMain.lstResults.Visible Then bCanSearch = True: out_sFrameAlias = "ListResults"
+        
+    End Select
+    
+    SearchAllowed = bCanSearch
 End Function
 
 Public Function GetStringFromBinary(Optional ByVal sFile As String, Optional ByVal nid As Long, Optional ByVal FileAndIDHybrid As String) As String

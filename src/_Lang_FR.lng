@@ -1,0 +1,1707 @@
+﻿;[French]
+;
+;
+; Rules for translators:
+; ----------------------
+; 1. First 5 space characters "     " are ignored
+; 2. First ";" character is a mark of comment
+; 3. [], [*], [**] should not be modified or deleted !!!
+; 4. You should not add empty lines for just convenience unless it is a part of translation string.
+; 5. "&" signs can be removed, but if you can, please place them next to a character unique to that row
+; (these signs determine the hotkey for a menu item; e.g. ALT + letter, where letter is the character following the "&" sign)
+; 6. "\\p" signs divide a long text into several pieces, so each of them fit into the window as a whole.
+;
+;
+; ============ Main window, Results window, Engine =========
+;
+; (1-29, 1000-1089)
+;
+0001=Bienvenue dans HiJackThis Fork.
+     Ce programme va générer un rapport d'éléments non usuels (modifications du registre,
+     de fichiers, etc...) des zones les plus vulnérables du Système d'exploitation, souvent modifiés par des logiciels officiels ou malveillants.
+
+0002=HiJackThis est déja en cours d'exécution.
+     Etes-vous sûr de vouloir lancer une autre copie?
+0004=Voici les résultats du scan de HiJackThis. Faites attention à ce que vous allez supprimer en cliquant sur le bouton 'Corriger'. Les résultats du scan ne déterminent pas si un élément est bon ou mauvais. Si vous pensez que votre machine est infectée, cliquez sur le bouton 'AnalyzeThis', inscrivez-vous, lisez les instructions, créez le rapport requis et montrez-le à nos consultants (en Anglais).
+0007=Il semblerait que vous utilisez HiJackThis à partir d'un périphérique en lecture seule tel qu'un CD-ROM. Si vous souhaitez faire des sauvegardes des éléments que vous avez corrigés, vous devez d'abord copier HiJackThis.exe sur votre disque dur, puis l'exécuter à partir de là.
+     
+     Si vous continuez, vous risquez de rencontrer des erreurs d'"Accès chemin/fichier".
+0008=Il est interdit de le lancer depuis une archive!
+     
+     Puis-je le dézipper sur le bureau pour vous?
+0009=Menu principal
+0010=   Scanner et corriger
+0011=Scanner
+0012=Enregistrer le rapport...
+0013=Corriger
+0014=Infos sur l'élément coché
+0015=   Autres actions
+0016=Aide
+0017=Retour
+0018=Paramètres
+0019=Rapport
+0020=Ajouter les éléments cochés à la liste 'Ignorer'
+0021=Modules chargés
+0025=Ceci configurera HiJackThis pour qu'il ignore les éléments cochés, à moins qu'ils ne soit modifiés ultérieurement. Continuer?
+0026=L'accès en écriture a été refusé dans le dossier que vous avez indiqué. Veuillez essayer un autre dossier, merci!
+0027=Le rapport a été enregistré dans [].
+      Vous pouvez l'ouvrir avec un éditeur de texte tel que Notepad.
+0028=Impossible de lister les processus en cours
+0029=Processus en cours
+1000=AnalyzeThis
+1001=Enregistrer le rapport...
+1002=Rapports
+1003=Tous les fichiers
+1004=Aucun objet suspect trouvé!
+1005=Impossible de se connecter à Internet.
+1006=Fait.
+1007=Impossible de décompresser le fichier sur le bureau! Veuillez le décompresser manuellement.
+1008=La valeur '[*]' n'a pas pu être écrite dans le fichier des paramètres '[**]'. Veuillez vérifier que l'accès en écriture soit activé pour ce fichier.
+1010=L'analyse n'est pas terminée! Voulez-vous toujours forcer la fermeture du programme?
+1011=Avertissement: la liste Ignorer contient [] éléments.
+1012=Avertissement: l'analyse générale n'a pas été effectuée.
+1013=Vous avez la version la plus récente.
+1014=Une mise à jour est disponible.
+1015=Voulez-vous ouvrir la page de téléchargement?
+1016=Visitez la page de description du produit?
+1017=Avertissement: la liste 'Ignorer' contient [] éléments, mais ceux-ci apparaissent toujours dans le rapport, car le commutateur [*] a été utilisé.
+1020=Nombre
+1021=Chemin
+1022=Impossible de créer le dossier '[]'. Veuillez vérifier que l'accès en écriture soit activé pour cet emplacement.
+1023=Avertissement! L'intégrité de cette instance de HiJackThis est corrompue.
+     Il se pourrait que le fichier ait été modifié ou infecté par un virus.
+     Il est recommandé de retélécharger le programme à partir de la source officielle: https://github.com/dragokas/hijackthis
+     Si cette erreur se répète, vérifiez votre ordinateur à l'aide d'une disquette de démarrage ou d'un LiveCD, par exemple: https://support.kaspersky.com/viruses/rescuedisk
+1024=Télécharger le programme via Internet?
+1025=Une erreur s'est produite lors du téléchargement!
+1026=Téléchargement terminé. Lancer le programme?
+1027=!!! HiJackThis a été arrêté en raison du dépassement du délai maximal autorisé: [] sec. !!! Le rapport sera incomplet!
+     Veuillez redémarrer le programme manuellement (et non pas automatiquement).
+1028=Voulez-vous fermer le programme et le mettre à jour?
+1030=Processus
+1031=Inclure la liste des processus en cours d'exécution dans le rapport
+1032=Variables d'environnement
+1033=Inclure les variables d'environnement et les dossiers spéciaux dans le rapport
+1034=Scan supplémentaire
+1035=Inclure les sections spécifiques, O4 - RenameOperations, MountPoints2, Autorun.inf, O23 - Pilotes
+1040=Masquer les entrées Microsoft
+1041=Ne pas inclure dans les rapports les fichiers et le registre liés à Microsoft
+1042=Ignorer TOUTES les listes blanches
+1043=Inclure dans le rapport toutes les entrées indépendamment de la liste blanche
+1044=Calculer le MD5
+1045=Si possible, calculer la somme de contrôle des fichiers (MD5)
+1050=Zone du scan
+1051=Options du scan
+1052=Correction && Sauvegarde
+1053=Interface
+1070=Ligne de commande
+;
+; ============== EULA ============
+;
+; (1090-1099)
+;
+1090=Bienvenue dans HiJackThis Fork 3
+1091=     HiJackThis est un outil gratuit et Open source conçu pour lutter contre les logiciels malveillants et les logiciels publicitaires indésirables. Il est fourni "TEL QUEL"
+          sans garantie d'aucune sorte. Vous pouvez utiliser ce logiciel à vos risques et périls.
+          Ce logiciel n'est pas autorisé à des fins commerciales.
+          Vous devez lire et accepter le contrat de licence pour continuer:
+1092=HiJackThis Fork - Contrat de licence
+1093=J'accepte
+1094=Je n'accepte pas
+;
+; ================ Start window =================
+;
+; (1110-1159)
+;
+1110=Menu principal
+1111=Que voulez-vous faire?
+1112=Effectuer un scan du système
+et enregistrer un rapport
+1113=Effectuer un scan du système
+1114=Liste des sauvegardes
+1115=Outils divers
+1116=Aide en ligne
+1117=Ne rien faire, démarrer simplement le programme
+1118=Ne pas afficher ce menu au démarrage du programme
+1119=Langue:
+;
+; ================ Context menu ==============
+;
+; (1160-1179)
+;
+1160=Corriger
+1161=Ajouter à la liste 'Ignorer'
+1162=Info sur l'élément sélectionné
+1163=Recherche sur Google
+1164=Rescanner
+1165=TOUT ajouter à la liste 'Ignorer'
+1166=Aller au Registre/Fichier
+1167=Enregistrer le rapport...
+;
+; =============== System Tray ================
+;
+; (1180-1199)
+;
+1180=Quitt&er
+;
+; ================ System Menu ===============
+;
+; (1200 - 1299)
+;
+1200=Fichier
+1201=Paramètres
+1202=Désinstaller HiJackThis
+1203=Quitter
+1204=Outils
+1205=Gestionnaire de processus
+1206=Gestionnaire de fichiers Hosts
+1207=Suppression de fichier
+1208=Déverrouiller && Supprimer un fichier...
+1209=Planification de suppression d'un fichier au redémarrage...
+1210=Supprimer un service
+1211=Clé de déverrouillage
+1212=Espionnage alternatif des flux de données
+1213=Vérificateur de signatures numériques
+1214=Outils de désinstallation
+1215=Aide
+1216=Manuel de l'utilisateur
+1217=Anglais (court)
+1218=Russe (parachever)
+1219=Français [obsolète]
+1220=Allemand [obsolète]
+1221=Espagnol [obsolète]
+1222=Portugais [obsolète]
+1223=Néerlandais [obsolète]
+1224=Vérifier les mises à jour
+1225=A propos de HiJackThis...
+1226=Support
+1227=Descriptions de section
+1228=Touches de ligne de commande
+1229=Registre
+1230=Fichiers
+1231=Services
+1232=Liste de démarrage
+1233=Manuel de base
+1235=Installer HiJackThis
+1236=Raccourcis
+1237=Vérifier les raccourcis via Check Browsers' LNK
+1238=Corriger les raccourcis via ClearLNK
+;
+; ============== Help window: About, Sections, Keys  =============
+;
+; (30-39, 1300-1399)
+;
+0030=Aide
+0031=
+     Sections
+     ----------
+     
+     Les différentes sections des sources de détournement ont été classés dans les groupes suivants: 
+	 
+      R - Modifications des paramètres de base d'Internet Explorer:
+         R0 - Valeur de registre modifiée
+         R1 - Valeur de registre créée
+         R2 - Clé de registre créée
+         R3 - Paramètres de registre supplémentaires créés où un seul devrait suffire
+         R4 - Moteur de recherche (SearchScopes)
+      F - Chargement automatique à partir de fichiers INI et des emplacements de registre correspondants
+         F0 - Valeur du fichier ini modifiée (system.ini)
+         F1 - Paramètre ini-file créé (win.ini)
+         F2 - Valeur de registre modifiée qui remplace les paramètres du fichier ini (shell, userinit)
+         F3 - Paramètre de registre créé qui remplace les paramètres du fichier ini (chargement, exécution)
+      O - Autres sections:
+         O1 - Redirections dans les fichiers Hosts et hosts.ics/DNSApi
+         O2 - Internet Explorer: BHO
+         O3 - Internet Explorer: barres d'outils
+         O4 - Chargement automatique des entrées du registre et du dossier 'Démarrage automatique'/éléments désactivés de msconfig
+         O5 - Masquer les éléments du panneau de configuration
+         O6 - Politique IE: Désactivation de l'onglet principal "Options Internet"
+         O7 - Stratégies: Dépannage Regedit, Explorer, TaskMgr/Sécurité IP/Certificats/Système d'exploitation
+         O8 - Internet Explorer: Eléments du menu contextuel supplémentaires
+         O9 - Internet Explorer: Services supplémentaires et boutons
+         O10 - Interruption de l'accès à Internet en raison d'un dommage ou d'une infection survenue dans LSP Winsock
+         O11 - Internet Explorer: Options de l'onglet "Avancé"
+         O12 - Internet Explorer: Plugins pour les extensions de fichiers ou les types MIME
+         O13 - Internet Explorer: Détournement de préfixes d'URL
+         O14 - Internet Explorer: Changement de IERESET.INF
+         O15 - Internet Explorer: Sites Web et protocoles dans la "zone de confiance"
+         O16 - Eléments des programmes téléchargés (DPF)
+         O17 - Piratage de domaine et DNS/DNS émis par un routeur via DHCP
+         O18 - Détournement de protocoles et de filtres
+         O19 - Détournement d'utilisateur
+         O20 - Notifications AppInit_DLLs, Winlogon
+         O21 - Clé de Registre ShellServiceObjectDelayLoad en démarrage automatique (SSODL), superposition d'icônes shell (SIOI), ShellExecuteHooks (SEH)
+         O22 - Démarrage du planificateur de tâches partagées
+         O23 - Services et pilotes Windows, dépendances
+         O24 - Composants ActiveX Desktop
+         O25 - Consommateurs d'événements permanents WMI
+         O26 - Débogueurs de processus
+0032=
+     Clés de ligne de commande:
+     --------------------------------
+
+     1. HiJackThis
+     2. StartupList
+     3. Comment l'utiliser?
+
+     
+     
+     1. HiJackThis
+     ---------------
+     
+       /accepteula  - accepte le contrat. Il ne sera pas affiché au démarrage du programme.
+       /autolog     - scanne automatiquement le système, enregistre un Rapport et l’ouvre.
+       /silentautolog  - Scanne automatiquement le système, enregistre un Rapport et ferme le programme.
+       /startupScan - scanne automatiquement le système en mode silencieux et affiche une fenêtre si des éléments ont été trouvés.
+       /StartupList - lance le scan avec le module 'StartupList'.
+       /noGUI       - n'affiche pas la fenêtre du programme pendant le can.
+       /sysTray - réduire le programme exécuté dans la zone de notification (barre d'état système).
+       /saveLog "c:\Path" - enregistre le journal dans le dossier spécifié (ou /saveLog "c:\Path\Name.log" - pour modifier également un nom de journal).
+       /default     - charge les paramètres par défaut (ils ne seront pas enregistrés).
+       /area+Process - inclut la liste des processus en cours d'exécution dans le rapport (indiquer les sections-Processus à exclure).
+       /area+Modules - inclut la liste des modules chargés par les processus (indiquer les sections-Processus à exclure).
+       /area+Environment - Inclut les variables d'environnement et les dossiers spéciaux dans le rapport (indiquer les Environnements-Processus à exclure).
+       /area+Additional - exécute le scan additionnel" (entrée /area-Additional pour exclusion).
+       /skipIgnoreList - ne charge pas la liste des ignorés.
+       /ihatewhitelists   - ignore toutes les listes blanches internes.
+       /md5     - calcule le hash md5 des fichiers.
+       /timeout:sec - total de secondes autorisées pour l'exécution de HiJackThis en mode silencieux (180 par défaut; 0 - pour désactiver).
+       /autostart       - configure Windows pour qu'il exécute automatiquement un scan de HJT après le démarrage du système (à utiliser avec la clé/installation).
+       /install         - installe HiJackThis dans le dossier 'Program Files' et crée des raccourcis.
+       /uninstall   - supprime toutes les entrées et sauvegardes du registre HiJackThis, puis quitte le programme.
+       /silentuninstall - /désinstallation analogue, sauf si désactivation des demandes de confirmation.
+       /deleteonreboot "c:\fichier.sys" - supprime le fichier spécifié après le redémarrage du système à l'aide du mécanisme PendingFileRenameOperations.
+       /LangEN      - force la langue anglaise pour l'interface utilisateur.
+       /LangFR      - force la langue française pour l'interface utilisateur.
+       /LangRU      - force la langue russe pour l'interface utilisateur.
+       /LangUA      - force la langue ukrainienne pour l'interface utilisateur.
+       /debug       - mode de traçage. Les noms de fonction seront ajoutés au rapport principal et au fichier HiJackThis_debug.log. Vous pouvez également renommer le fichier HiJackThis_debug.exe.
+       /debugtofile - les informations de traces seront enregistrées dans le fichier HiJackThis_debug.log uniquement.
+     
+     
+     2. StartupList
+     ----------------
+     
+      Ces clés affectent uniquement les paramètres du module StartupList.
+      Il peut être lancé manuellement à partir de la section "Menu principal" -> "Outils divers" -> "Scan StartupList"
+      ou via la clé /StartupList
+     
+       /showempty	- Afficher les sections vides
+       /showcmts	- Afficher les commentaires dans les fichiers .bat
+       /noshowclsids	- Masquer les identifiants de classe
+       /noshowprivate	- Masquer les noms d'utilisateur et le nom de l'ordinateur
+       /noshowusers	- Masquer les entrées des autres utilisateurs
+       /noshowhardware	- Masquer les entrées des autres configurations matérielles
+       /showlargehosts	- Afficher le fichier hosts même s'il contient plus de 1000 lignes
+       /showlargezones	- Afficher les Zones même lorsqu'elles ont plus de 1000 domaines
+       /autosave	- Exécution masquée, enregistre automatiquement un rapport et quitte
+       /autosavepath:"c:\scan.log" - Indique l'emplacement de l'enregistrement du rapport lors de l'utilisation de /autosave
+     
+     
+     3. Comment utiliser les clés de ligne de commande?
+     -----------------------------------------
+     
+     Créez un fichier texte run.txt à proximité du programme HiJackThis.exe. Renommez run.txt en run.bat.
+     Clic droit sur run.bat. Choisir "Editer".
+     
+     Exemple sur le code du fichier .bat:
+     
+     HiJackThis.exe /autolog /ihatewhitelists
+     
+     Lancer le fichier run.bat.
+     Vous pouvez également créer un raccourci (.lnk) vers HiJackThis.exe, ouvrir la fenêtre des propriétés du raccourci et y ajouter la(les) clé(s) à la fin de la ligne dans la zone 'Cible'.     
+
+0033=
+     Description
+     -------------
+     
+HiJackThis Fork analyse votre ordinateur à la recherche de paramètres modifiés par les logiciels publicitaires, espions, malveillants ou autres programmes indésirables.
+Les résultats de HiJackThis Fork ne sont pas basés sur des listes noires, des programmes spécifiques ou des URL. En fait, ils sont basés sur des méthodes et techniques courantes utilisées par les pirates.
+Se SONT donc probablement de FAUX POSITIFS. En cas de doute, consultez un expert AVANT de supprimer quoi que ce soit.
+     
+HiJackThis est livré avec plusieurs outils, disponibles sous le bouton "Outils divers" et la nouvelle barre du menu "Outils":
+     
+        - StartupList 2
+        - Gestionnaire de processus
+        - Gestionnaire de fichiers HOSTS
+        - Spy alternatif de données
+        - Outils de désinstallation
+        - Outil de suppression de services
+        - Outil de suppression de fichiers verrouillés
+        - Déblocage de clé de registre
+        - Vérificateur de signatures numériques par lots
+        - Vérifier les liens des navigateurs LNK & ClearLNK (composants téléchargeables)
+
+     Systèmes compatibles
+     -------------------------
+     
+      * Microsoft™ Windows™ 10 / 8.1 / 8 / 7 / Vista / XP / 2000 et les éditions Serveurs en 32 et 64-bits.
+
+
+     Auteurs et copyrights
+     ----------------------------
+     
+     Développeurs:
+     
+     - Polshyn Stanislav { Alex Dragokas } - auteur de fork (v3 majeure et toutes les mises à jour post-v2.0.6), refactoring, ajouts et intégration d'outils
+     - Merijn Bellekom - auteur original, auteur des nouveaux StartupList v2 et ADS Spy
+     - Trend Micro - propriétaire de la version (2.0.5) originale
+     
+     Consultant:
+     
+     - regist -= VIRUSNET association =- conseils et idées utiles, manuel d'utilisation, mises à jour de la base de données et bêta-testeurs
+     - Sandor -= VIRUSNET association =- béta-testeurs, traitement des PC sur GitHub et les forums
+     - SafeZone.cc team - promotion et support, traitement des PC sur les forums associés
+     
+     Coordination:
+
+     - regist
+     - Fernando Mercês -= Trend Micro =-
+     - Loucif Kharouni -= Trend Micro =-
+     
+     Traductions:
+     
+     Russe: Dragokas, ScriptMakeR, Boris, fseto (SafeZone.cc), wylek.ru team
+     Ukrainien: Dragokas
+     Anglais: Dragokas, Tanner Helland
+     Français: Colok du site Colok-Traductions.com
+	 
+     Développement tiers:
+
+     HJT utilise des extraits de codes et de développements tiers écrits par:
+     
+     - Anatolii Krivous { The Trick } - 'HashTable', classes 'Flux binaires', 'UnregCOM', modules de 'chargement d'EXE', Décalage arithmétique des bits
+     - Boris Fayfel { Catstail } - 'Processus' et  classes 'CRC32'
+     - VolteFace - 'StringBuilder' classe
+     - Jason Peter Brown - Empaqueteur pour les bibliothèques d'expressions régulières PCRE2
+     - Philip Hazel - bibliothèques d'expressions régulières PCRE2
+     - Dmitriy Kuznetsov { demkd } - Sauvegarde automatique du Registe (ABR)
+     - xxdoc123 - classe 'Http Helps' 
+     - Jason Thorn - classe 'XML Parser'
+     - fafalone - Modern Shell Interface Type Library (oleexp), dialogue d'ouverture Modern file
+
+     Licence
+     -------------
+HiJackThis Fork est une modification du programme HiJackThis original de Trend Micro. Il a été développé par Alex Dragokas et l'équipe de SafeZone.cc. Il est distribué en open source sous sa licence GPLv2 originale. Il inclut également plusieurs plugins disponibles sous forme d'outils gratuits.
+
+     Donation
+     -------------
+     Si vous appréciez les modifications que j'ai faites dans HiJackThis et que vous souhaitez faire un don 
+     pour avoir une inspiration créative et m'aider à poursuivre un développement actif du projet, j'en serai très content :
+
+0034=
+     BTC: 17hkU3eKPngHrG3P9uqXwMLE3ztmtfGDZ4
+     Ethereum: 0xc6B421AeeC879F6603f86117a792e0bb1c67C7A5
+
+0035=Sections
+0036=Clés
+0037=Objectif
+0038=Auteurs
+0039=Historique
+;
+; ============== Settings ===============
+;
+; (40-69, 1400-1499)
+;
+;40 - title of frame in the settings window (absent, by default)
+0040=
+0041=Paramètres
+0042=Eléments ignorés
+0043=Sauvegardes
+0044=Outils divers
+0045=Caractères des listes:
+0046=Taille:
+0047=Appliquer la police à toute l'interface
+0048=Ceci s’applique à tous les outils (par ex. la liste dans ADS Spy ou l’arborescence de Startuplist, etc...)
+0050=Cocher tout ce qui a été trouvé pour correction après le scan (ATTENTION: DANGER!!)
+0051=Sauvegarder avant de corriger les éléments.
+0052=Confirmer la correction ou l'omission d'éléments (mode sécurisé) 
+0053=Ignorer les domaines non standards mais sécurisés dans IE (ex. msn.com, microsoft.com)
+0054=Ceci peut être utile lors de l'ajout de HiJackThis au démarrage.
+0055=Ne pas afficher le menu principal au démarrage
+0057=Vous êtes sûr de vouloir activer cette option ?
+     HiJackThis n'est pas un programme 'clic & corriger'. Car il cible les méthodes de détournement *générales*, les faux positifs sont fréquents.
+     Si vous activez cette option, vous pouvez désactiver des programmes ou des pilotes dont vous avez besoin. Cependant, il est très peu probable que vous endommagiez votre système après la réparation. Vous ne devriez donc activer cette option que si vous savez ce que vous faites !
+0058=Ne pas afficher les messages d'erreur
+0059=Minimiser le programme dans la zone de notification en cliquant sur le bouton_ 
+0060=Les URL ci-dessous seront utilisées pour réparer les pages Internet Explorer piratées/non désirées:
+0061=Page de démarrage par défaut:
+0062=Page de recherche par défaut:
+0063=Assistant de recherche par défaut:
+0064=Personnaliser la recherche par défaut:
+0065=Désolé ! Non encore implémentée.
+0066=Ceci installera HiJackThis dans le dossier 'Program Files' et configurera Windows pour qu'il lance automatiquement un scan après le démarrage du système.
+ 
+     Continuer?
+
+     Note: il est recommandé d'ajouter tous les éléments sûrs à la liste 'Ignorer' (ex. avec le menu contextuel -> Ajouter TOUT à la liste à Ignorer), de sorte que la fenêtre des résultats n'apparaisse après le démarrage du système que lorsque de nouveaux éléments ne soient trouvés.
+     Aussi, il peut être utile de cocher la case "Cocher tout ce qui a été trouvé pour correction après le scan".
+0067=Un service de planification de tâches est requis pour cette action. Voulez-vous l'exécuter maintenant et le configurer pour qu'il démarre automatiquement au démarrage du système ?
+0068=Erreur ! Impossible de lancer le service de Planification de tâches.
+0069=Installation terminée. Voulez-vous créer un raccouri sur le bureau?
+1400=Ajouter HiJackThis au démarrage
+1401=Lancer le scan de HijackThis en mode silencieux au démarrage de Windows et afficher les résultats seulement si quelque chose est trouvé.
+1402=Cette version de HiJackThis est plus récente que celle installée.
+     La mettre à jour ?
+1403=Pour améliorer la vitesse de chargement du système, nous recommandons de régler un délai avant de lancer HiJackThis après l'authentification de l'utilisateur.
+     Préciser le délai (en secondes):
+;
+; ============= IgnoreList ============
+;
+; (70-79, 1500 - 1549)
+;
+0070=Les éléments ci-dessous seront ignorés lors de vos prochaines analyses
+0071=Supprimer
+0072=Tout effacer
+0073=Etes-vous sûr?
+     Cela supprimera TOUS les éléments de la liste 'Ignorer'.
+;
+; ============= Backup ===============
+;
+; (80-89, 1550 - 1599)
+;
+0080=Ceci est votre liste d'éléments sauvegardés. Vous pouvez les restaurer (HiJackThis les redétectera lors d'une prochaine exécution) sauf si vous les placez dans la liste des items à Ignorer ou les supprimer à partir d'ici. (Les programmes antivirus peuvent détecter les sauvegardes de HiJackThis!)
+0081=Restaurer
+0082=Supprimer
+0083=Tout supprimer
+0084=Etes-vous sûr de vouloir supprimer this Sauvegarde?
+0085=Etes-vous sûr de vouloir supprimer ces [] sauvegardes?
+0086=Restaurer cet élément?
+0087=Restaurer ces [] éléments?
+0088=Etes-vous sûr de vouloir supprimer toutes les sauvegardes?
+0089=La restauration pour cet élément n'est pas implémentée :
+1550=Il n'est pas possible d'exécuter l'opération demandée!
+     La restauration du système via les points de restauration n'est pas disponible pour ce système.
+1551=Etes-vous sûr de vouloir restaurer le système à partir de ce point de restauration:
+     [] ?
+
+     Le système redémarrera automatiquement.
+1552=Etes-vous sûr de vouloir supprimer ce point de restauration?
+1553=Erreur! Impossible de lancer la restauration du système.
+1554=Erreur! Impossible de lancer le service WMI.
+1555=Il n'y a pas assez d'espace disque disponible. Nécessite au moins
+1556=Echec lors de la création du point de restauration.
+1557=point de restauration du système créé avec succès.
+1558=Le service WMI est requis pour cette action. Voulez-vous le lancer maintenant ?
+1560=Vous êtes sûr de vouloir restaurer le registre sur lequel vous avez enregistré: [] ?
+
+     Le système sera redémarré automatiquement.
+1561=Echec lors de la création de la Sauvegarde du registre.
+1562=Vous avez déjà une Sauvegarde pour ce jour.
+     Continuer et la remplacer ?
+1563=Cela supprimera la Sauvegarde du registre: [].
+     Continuer?
+1564=Vous êtes sur le point de supprimer TOUTES les sauvegardes de registre!
+     Etes-vous sûr?
+1565=Impossible de supprimer la Sauvegarde.
+1566=Erreur! Cette Sauvegarde n'existe plus.
+1567=Sauvegarde complète du registre créée avec succès.
+1568=Erreur! Le fichier qui doit être restauré n'existe plus dans Sauvegarde. Impossible de continuer la réparation.
+1569=Erreur! Le fichier qui doit être restauré depuis la Sauvegarde est corrompu. Impossible de continuer la réparation.
+1570=Créer une sauvegarde du registre
+1571=Créer un point de restauration
+1572=Afficher les points de restauration du système
+1573=Erreur! L'entrée du registre à restaurer à partir de la Sauvegarde est corrompue. Impossible de continuer la réparation.
+1574=Une erreur inconnue s'est produite pendant la restauration de l'élément: []. L'objet n'a été que partiellement restauré.
+1575=Erreur! Impossible de démarrer Le service :
+1576=Erreur! Impossible de trouver le fichier local pour appliquer les paramètres de réparation:
+1577=Il est impossible de lancer la restauration tant que le système n'a pas été redémarré!
+;
+; ============= Misc Tools =============
+;
+; (90-159, 1600 - 1649)
+;
+0091=Scan StartupList
+0092=
+     Un outil simple qui liste tous les programmes de démarrage automatique de ce système. Utilisé couramment pour dépanner les systèmes défectueux, les infections par chevaux de Troie/virus et les nouveaux types de logiciels espions et malveillants.
+0100=Outils système
+0101=Gestionnaire de processus
+0102=Petit gestionnaire de processus, semblable au gestionnaire de tâches
+0103=Gestionnaire de fichiers Hosts
+0104=Editeur pour le fichier 'Hosts'.
+0105=Supprimer un fichier au redémarrage.....
+0106=Si un fichier ne peut pas être supprimé du disque, Windows peut être configuré pour le supprimer lorsque le système redémarra.
+0107=Supprimer un service...
+0108=Supprimer un service Windows (O23)
+     A UTILISER AVEC PRÉCAUTION!
+0109=ADS Spy
+0110=Scan des flux de données cachées
+0112=Gestion des éléments dans le module de 'Désinstallation d'un programme'
+0113=Entrer le nom exact du service tel qu'il apparaît dans les résultats du scan ou le nom court entre parenthèses, si celui-ci est indiqué.
+0114=Supprimer un service Windows NT
+0115=Le service '[]' n'a pas été trouvé dans le Registre.
+     Assurez-vous d'avoir correctement saisi le nom du service.
+0117=Le service suivant a été trouvé :
+0118=Etes-vous absolument sûr de vouloir supprimer ce service?
+0119=Déblocage des clés de registre
+0120=Réinitialiser les permissions sur la liste des clés de registre donnée
+0121=Vérificateur de signature numérique
+0122=Vérifier les signatures numériques authentifiées sur la liste dse fichiers de données
+0140=Mises à jour
+0141=Vérification en ligne
+0142=Vérifier les mises à jour au démarrage du programme
+0143=Mettre à jour les versions de test
+0144=Mise à jour en mode silencieux
+0145=Serveur
+0146=Port
+0147=Identification
+0148=Login
+0149=Mot de passe
+0150=Suppression de HJT
+0151=Désinstaller HiJackThis
+0152=Supprime tous les paramètres, sauvegardes et quitte. 
+0153=Cela supprimera les paramètres et les sauvegardes de HiJackThis . Notez que vous devrez supprimer manuellement le fichier HiJackThis.exe.
+     
+     Continuer avec la désinstallation?
+0154=Cela supprimera complètement HiJackThis, y compris les paramètres et les sauvegardes. Continuer?
+0155=Connexion directe
+0156=Paramètres de IE
+0157=Proxy
+1600=Plugins
+1601=Check Browsers' LNK
+1602=Identifier les raccourcis infectés (.LNK) qui occasionnent de la publicité non désirée dans les navigateurs
+1603=ClearLNK
+1604=Nettoyer et restaurer la liste des raccourcis infectés (.LNK), trouvés via le plugin LNK de Check Browsers
+;
+; ================ Process Manager =============
+;
+; (160 - 189, 1650 - 1699)
+;
+0160=Itty Bitty Process Manager v.
+0161=Arréter le(s) processus
+0162=Copier la liste dans le presse-papiers
+0163=Enregistrer la liste sur le disque...
+0164=Propriétés du fichier
+0165=Copier la liste des processus dans le presse-papiers
+0166=Enregistrer la liste des processus dans le fichier ...
+0167=Fichiers texte
+0168=Tous les fichiers
+0170=Gestionnaire de processus
+0171=Processus en cours d'exécution:
+0172=Afficher les &DLLs
+0173=Arré&ter le(s) processus
+0174=Réactualiser
+0175=Exécute&r...
+0176=Quitter
+0177=Double-cliquez sur un fichier pour voir ses propriétés
+0178=Librairies DLL chargées par processus sélectionné:
+0179=Vous êtes sûr de vouloir fermer ces [] processus?
+0180=Toutes les données non sauvegardées seront perdues.
+0181=Exécution
+0182=Taper le nom d'un programme, dossier, document ou ressource Internet et Windows l'ouvrira pour vous.
+0184=Vous devez d'abord sélectionner le processus que vous voulez arrêter!
+0186=[chemin complet vers le nom du fichier] 
+0187=[version du fichier]
+0188=[nom de l'entreprise]
+0189=DLL chargées par le processus
+1650=La liste des processus et la liste des fichiers dll ont été copiées dans votre presse-papiers.
+1651=La liste des processus a été copiée dans votre presse-papiers.
+1652=Ce processus ne peut être arrêté. Il se peut qu'il soit déjà Fermé ou qu'il soit protégé par Windows.
+1653=Ce processus ne peut être arrêté. Il peut être protégé par Windows.
+1654=Ce processus ne peut être arrêté. Il se peut qu'il soit déjà Fermé ou qu'il soit protégé par Windows.
+
+     Ce processus peut être un service que vous pouvez arrêter à partir de l'onglet Services dans le Panneau de configuration -> Outils d'administration.
+	 (Pour ouvrir cette fenêtre, cliquez sur les boutons 'Win + R' et entrez 'services.msc').
+;
+; ================= ADS Spy =================
+;
+; (190 - 209, 2200-2299)
+;
+0190=ADS Spy v[] fork - écrit par Merijn
+0191=Scan rapide (dossier de base de Windows uniquement)
+0192=Ignorer le flux d'informations sécurisés du système
+0193=Calculer la somme de contrôle MD5 du contenu du flux
+0194=Sélectionner un dossier à scanner:
+0195=Le dossier que vous avez sélectionné ne se trouve pas sur un lecteur NTFS / ReFS.
+0197=Liste des lecteurs...
+0198=Supprimer les flux sélectionnés
+0199=Tout sélectionner
+O200=Ne rien sélectionner.
+0201=Inverser la sélection
+0202=Voir le contenu du flux
+0203=Enregistrer les résultats du scan sur le disque...
+0204=Enumération des lecteurs système
+0205=     Les flux de données alternatifs (ADS) sont des informations cachées sous forme de fichiers de métadonnées. Ils ne sont pas visibles dans l'Explorateur et leur taille n'est pas indiquée par Windows. Les derniers pirates de navigateur ont commencé à cacher des fichiers à l'intérieur des ADS et très peu de logiciels anti-malware ne détectent ce problème (pour l'instant).
+          Utiliser ADS Spy pour trouver et supprimer ces flux.
+          Note: cette application affiche également les flux ADS légitimes. Ne supprimez pas les flux si vous n'êtes pas complètement sûr qu'ils soient nuisibles!
+0206=Scan complet (tous les lecteurs NTFS et ReFS)
+0207=Scanner seulement ce dossier:
+0208=Sélection...
+0209=Prêt.
+2200=Le contenu ADS actuellement affiché a été copié dans le presse-papiers.
+2201=Impossible d'ouvrir ADS pour modification: Wordpad introuvable.
+2202=Enregistrer le contenu dans le fichier...
+2203=Fichiers binaires
+2204=Fichiers texte
+2205=Tous les fichiers
+2206=Contenu du flux enregistré dans
+2207=Une erreur s'est produite lors de l'enregistrement du flux sur le disque.
+2208=Arréter le scan
+2209=Impossible de scanner le dossier Windows, car le volume contenant ce dossier n'utilise pas le format NTFS.
+     Décocher l'option 'Scan rapide' pour analyser tous les lecteurs au format NTFS.
+2210=Scan
+2211=Scan terminée, [] flux de données alternatifs (ADS) ont été trouvés en [*] sec.
+2212=Scan abandonné, a trouvé [] flux de données alternatifs (ADS) en [*] sec.
+2213=Scan terminé, [] flux de données alternatifs (ADS) trouvés.
+2214=Scan abandonné, [] flux de données alternatifs (ADS) trouvés.
+2215=Etes-vous sûr de vouloir supprimer les [] ADS sélectionnés de votre système? Ils seront définitivement effacés!
+2216=Supprimer les flux sélectionnés...
+2217=Les flux ADS suivants n'ont pas pu être supprimés. Ils peuvent être verrouillés par un autre programme:
+2218=type inconnu
+2219=amovible
+2220=corrigé
+2221=réseau
+2222=CD-ROM
+2223=RAMdisk
+2224=supports ADS
+2225=Les flux de données alternatifs (ADS) ne sont disponibles que sur les systèmes NTFS.
+     Comme il n'y a pas de volumes NTFS sur ce système, ADS Spy va maintenant se fermer.
+2226=Les résultats du scan sont enregistrés dans
+2227=Lecture du flux...
+2228=Le flux '[]' contient des données binaires et il est peu probable qu'il s'affiche correctement.
+2229=Visualisation du contenu de [].
+2230=Afficher le fichier dans Explorer
+2231=Copier
+2232=Enregistrer sur le disque...
+2233=Modifier dans le bloc-notes
+2234=Retour
+2235=Quitter
+2236=Enregistrer le rapport
+;
+; =============== Uninstall manager ==============
+;
+; (210 - 229, 1700 - 1749)
+;
+0210=Gestionnaire de désinstallation de programmes
+0211=Ici vous trouverez la liste des programmes similaires à la désinstallation de programmes du Panneau de configuration.
+     Vous pouvez Editer la commande de désinstallation, l'enregistrer seulement ou désinstaller complètement le programme.
+     Attention, la restauration d'un enregistrement ou d'une application supprimé n'est pas possible !
+0212=Nom
+0213=Commande de désinstallation
+0214=Website
+0215=Clé du registre
+0216=Editer 
+0217=Ouvrir
+0218=Sauter
+0219=Enregistrer
+0220=Désinstaller l'application
+0221=Supprimer cette entrée
+0222=Réactualiser la liste
+0223=Enregistrer la liste...
+0224=Ouvrir le panneau de configuration "Désinstaller un programme".
+1700=Filtre
+1701=Aucune commande
+1702=Cachée
+1703=Logiciel commun
+1704=HKLM (tous les utilisateurs)
+1705=HKCU (cet utilisateur)
+1706=HKU (autres utilisateurs)
+1710=Etes-vous sûr de vouloir supprimer cet élément de la liste?
+1711=Enregistrer la "liste des logiciels installés" sur le disque...
+1712=Fichiers texte
+1713=Vous devez être identifié en tant qu'utilisateur '[]' pour effectuer cette action!
+;
+; ============= Help (progressbar) ===============
+;
+; (230 - 269, 1750 - 1799)
+;
+0230=Valeur du registre IE
+0231=Valeurs du fichier INI
+0233=O1 - Redirection des Hosts
+0234=O2 - BHO
+0235=O3 - Barre d'outils
+0236=O4 - Démarrage automatique: Registre && Menu Démarrer
+0237=O5 - Verrouillage des options IE et du panneau de contrôle
+0238=O6 - Politiques: Elément du menu Options de IE
+0239=O7 - Politiques: Regedit, Explorer
+0240=O8 - Menu contextuel IE
+0241=O9 - Menu et boutons 'Outils' d'IE
+0242=O10 - Winsock LSP
+0243=O11 - Groupes d'options supplémentaires des options avancées de IE
+0244=O12 - Plugins IE
+0245=O13 - Préfixe URL
+0246=O14 - IERESET.INF
+0247=O15 - Zone de confiance
+0248=O16 - DPF
+0249=O17 - Suffixe DNS && DNS
+0250=O18 - Protocole && Filtre
+0251=O19 - Fiche de style utilisateur
+0252=O20 - AppInit_DLLs et Notification de connexion
+0253=O21 - Objets à chargement retardé (SSODL), SIOI, SEH
+0254=O22 - Planificateur de tâches
+0255=O23 - Services
+0256=Terminé!
+0257=O24 - Composants de bureau ActiveX
+0258=O25 - Utilisateurs d'événements WMI
+0259=Faire une sauvegarde
+0260=Vérification des processus
+0261=O26 - Options d'exécution de fichier image
+0262=Enregistrement du rapport
+0263=O23 - Drivers
+0264=O7 - Certificats
+0265=O7 - Dépannage du système d'exploitation
+0266=O7 - Sécurité IP
+0267=O7 - Politiques des clés d'autorisation
+0268=Liste des modules
+;
+; ================ Hosts ==================
+;
+; (270 - 309, 1800 - 1849)
+;
+0270=Gestionnaire de fichiers Host
+0271=Le fichier Host se trouve à l'adresse suivante
+0272=Supprimer la ou les lignes
+0273=Basculer la ou les lignes
+0274=Ouvrir dans l'éditeur
+0275=Retour
+0276=Note: les modifications apportées au fichier hosts ne prendront effet que lorsque vous redémarrerez votre navigateur.
+0277=Attributs:
+0278=Lignes:
+0279=Chargement du fichier hosts, veuillez patienter...
+0280=N'arrive pas à trouver le fichier hosts.
+     Voulez-vous créer un nouveau fichier hosts par défaut ?
+0281=Aucun fichier hosts trouvé.
+0282=Le fichier hosts est verrouillé en lecture et ne peut pas être modifié.
+     Assurez-vous d'avoir les privilèges pour modifier le fichier hosts et qu'aucun programme ne le protège contre tout changement.
+0303=HiJackThis n'a pas pu écrire les modifications sélectionnées dans votre fichier hosts. Un autre programme peut en refuser l'accès ou votre compte d'utilisateur peut ne pas disposer de droits suffisants pour y accéder.
+;
+; =========== Digital signature checker ==========
+;
+; (1850 - 1899)
+;
+1850=Authenticode EDS checker - écrit par Stanislav
+1851=Cet outil créera un rapport détaillé sur les signatures numériques des fichiers/dossiers que vous indiquerez ci-dessous :
+1852=Recursivement (inclure les sous-dossiers)
+1853=Inclure les fichiers dans le dossier Windows
+1854=Format du rapport:
+1855=Texte brut (rapport court en Unicode)
+1856=CSV (rapport complet en ANSI)
+1857=Go
+1858=Fermer
+1859=Vous devez entrer au moins un chemin d'accès au fichier ou au dossier!
+1860=Aucun fichier trouvé.
+1861=Abandonner
+1862=La signature est endommagée!
+1863=Filtre
+1864=Tous les fichiers
+1865=par extension
+1866=La signature numérique est présente, mais endommagée (le fichier a probablement été retouché).
+1867=Comptage des dossiers. Veuillez patienter...
+1868=Préparation du rapport. Veuillez patienter...
+1869=Impossible d'ouvrir le rapport. L'accès en écriture est limité par un autre programme.
+1870=Ajout de fichier...
+1871=Mise en cache des catalogues de sécurité...
+;
+; ============= Registry Key Unlocker =========
+;
+; (1900 - 1949)
+;
+1900=Déblocage de la Clé de Registre - écrit par Stanislav
+1901=Entrer la Clé de registre pour déverrouiller et réinitialiser les droits d'accès:
+1902=Récursivement (inclure les sous-clés)
+1903=Go
+1904=Fermer
+1905=Vous devez entrer au moins une clé!
+1906=[OK]
+1907=(récursivement)
+1908=[Echec]
+;
+; ============ Delete on reboot & unlock file staff ========
+;
+; (1950-1999)
+;
+1950=Entrer le nom du fichier:
+1951=Supprimer au redémarrage
+1952=Entrer le nom du fichier:
+1953=Déverrouiller & Supprimer
+1954=Impossible de supprimer le fichier.
+     Il peut être verrouillé par un autre processus.
+1955=Dossier: [] supprimé avec succès.
+1956=Bibliothèques
+1957=Programmes
+;
+; =============== Fixes ==================
+;
+; (310 - 399)
+;
+0310=HiJackThis est sur le point de supprimer un BHO et le fichier correspondant de votre système. Fermer toutes les fenêtres d'Internet Explorer ET toutes les fenêtres de Windows Explorer avant de continuer pour avoir de toutes chances de réussite.
+0311=Internet Explorer fonctionne toujours. Souhaitez-vous que HJT force la fermeture de IE?
+     ATTENTION: la session actuelle du navigateur sera perdue!
+0320=Impossible de supprimer le fichier:
+     []
+     
+     Le fichier peut être en cours d'utilisation.
+0321=Utiliser le Gestionnaire des tâches pour arrêter le programme
+0322=Utiliser un logiciel de traitement comme Sysinternals ProcMon pour arrêter le programme
+0323=et relancer HiJackThis pour supprimer le fichier.
+0330=HiJackThis est sur le point de supprimer un plugin de votre système. Fermer toutes les fenêtres d'Internet Explorer avant de continuer pour les meilleures chances de succès.
+0342=Le fichier '[]' sera supprimé par Windows lorsque le système redémarrera.
+0343=Le service '[]' a été coché pour être supprimé.
+0344=Rien n'a été sélectionné! Continuer ?
+0345=Vous avez choisi de corriger tout ce qui a été trouvé par HiJackThis. Des éléments importants du système peuvent être supprimés et la fonctionnalité du système peut être altérée.
+     
+     Si vous n'êtes pas sûr de savoir comment utiliser HiJackThis, vous devriez demander de l'aide et ne pas corriger aveuglément les choses. De nombreuses ressources tierces sont disponibles sur le Web qui se feront un plaisir de vous aider avec votre rapport.
+     
+     Etes-vous sûr de vouloir corriger tous les éléments résultants du scan?
+0346=[] élément(s) sélectionné(s): lancer la réparation? Ceci supprimera et/ou réparera définitivement tous les éléments sélectionnés.
+0347=à moins que vous n'activiez les sauvegardes.
+0348=La correction de [] n'est pas encore implémentée.
+0349=Le traitement pour cet objet n'est pas disponible: []
+
+     Vous devez régler manuellement l'adresse DNS du routeur qui se trouve dans le contrat de votre fournisseur d'accès Internet.
+0350=HiJackThis doit redémarrer le système pour appliquer les modifications.
+     Veuillez enregistrer votre travail, puis appuyez sur 'OUI' si vous acceptez de redémarrer maintenant.
+0351=Attendez que le gestionnaire de nettoyage de disque de Microsoft termine son travail, puis appuyez sur OK.
+0352=Le serveur doit être redémarré pour terminer les opérations requises. Veuillez le redémarrer manuellement.
+;
+; ============ Help on selected item (Sections) ================
+;
+; (400 - 499)
+;
+0400=Informations détaillées de l'élément
+; [R0]
+0401= Une valeur de Registre a changé par rapport au paramètre par défaut, résultant en une page d'accueil IE, une page de recherche, une page de barre de recherche ou un assistant de recherche différents.     
+
+     >>> Action prise par HiJackThis:
+      - la valeur de registre sera réinitialisée à l'URL par défaut.
+; [R1]
+0402= Une valeur de Registre non présente dans une installation de Windows par défaut, ce qui peut entraîner une modification des paramètres de recherche Internet ou d'autres paramètres IE (IE Window Title, ProxyServer, ProxyOverride, Internet Connection Wizard, ShellNext, etc...)
+     
+     >>> Action prise par HiJackThis:
+      - La valeur de registre sera supprimée.
+; [R2]
+0403=        La clé de Registre n'est pas présente dans une installation Windows par défaut. Actuellement, cette section n'est pas utilisée (aucune entrée dans la base de données).     
+    
+     >>> Action prise par HiJackThis:
+      - La clé de Registre sera supprimée, avec tout ce qu'elle contient.
+; [R3]
+0404=        Plus d'une valeur détectée dans URLSearchHooks regkey. Si vous spécifiez une adresse URL sans préfixes http:// ou ftp://, le navigateur tentera de trouver le bon protocole en utilisant la liste dans UrlSearchHook.
+     
+     >>> Action prise par HiJackThis :
+      - La valeur de registre sera supprimée ;
+      - la valeur par défaut de URLSearchHook sera restaurée.
+; [F0]
+0405=        Une valeur dans le fichier ini a changé par rapport à la valeur par défaut, ce qui peut entraîner le chargement du ou de programmes au démarrage de Windows. Souvent utilisé pour démarrer automatiquement un programme.
+
+             Fichier vérifié: C:\Windowssystem.ini
+     
+     Par défaut: Shell=explorer.exe
+     Exemple infecté : Shell=explorer.exe,openme.exe
+     
+     >>> Action prise par HiJackThis :
+      - la valeur par défaut du fichier ini sera restaurée ;
+      - le fichier correspondant ne sera PAS supprimé.
+; [F1]
+0406=        Une valeur du fichier ini n'est pas présente dans l'installation de Windows par défaut, ce qui peut entraîner le chargement d'un ou de plusieurs programmes au démarrage de Windows. Souvent utilisé pour démarrer automatiquement un programme.
+
+     Fichier vérifié: C:\Windows\win.ini
+     
+     Défaut:
+     exécuter=
+     charger=
+     
+     Exemple d'infection:: run=dialer.exe
+     
+     >>> Action prise par HiJackThis: 
+      - la valeur de ini-file sera supprimée;
+      - le fichier correspondant ne sera PAS supprimé.
+; [F2]
+0407=        La section F2 correspond à l'emplacement équivalent dans le registre du fichier system.ini (F0).
+
+             Une valeur de registre a changé par rapport à la valeur par défaut, ce qui peut entraîner le chargement de programmes au démarrage de Windows. Souvent utilisé pour démarrer automatiquement un programme.
+     
+     A vérifier: \Logiciel\Microsoft\Windows NT\Version courante\WinLogon => Shell, UserInit
+\\p
+     Par défaut: UserInit=C:\Windows\System32\UserInit.exe,
+     Exemple d'infection: UserInit=C:\Windows\System32\UserInit.exe,C:\Windows\apppatch\capejw.exe,
+     
+     Valeurs par défaut:
+     UserInit=C:\Windows\System32\UserInit.exe,
+     Shell=explorer.exe
+     Shell=%WINDIR%\explorer.exe
+     
+     Exemples d'infection:
+     UserInit=C:\Windows\System32\UserInit.exe,C:\Windows\apppatch\capejw.exe,
+     Shell=explorer.exe "C:\Program Files\Common Files\Microsoft Shared\Web Folders\ibm00001.exe"
+
+     >>> Action prise par HiJackThis:
+      - la valeur par défaut du registre sera restaurée;
+      - le fichier correspondant ne sera PAS supprimé.
+; [F3]
+0408=             La section F3 correspond à l'emplacement équivalent dans le registre du fichier win.ini (F1).
+
+             Une valeur du registre qui n'est pas présente dans une installation Windows par défaut, ce qui peut entraîner le chargement d'un programme au démarrage de Windows. Souvent utilisé pour démarrer automatiquement un programme.
+	 
+     A vérifier: \Software\Microsoft\Windows NT\CurrentVersion\Windows => run, load
+     Par défaut: run=
+     Par défaut: load=
+     Exemple d'infection: run=С:\WINDOWS\inet20001\services.exe
+     
+     >>> Action prise par HiJackThis:
+      - La valeur du registre sera supprimée;
+      - le fichier correspondant ne sera PAS supprimé.
+; [O1]
+0409=        1) Windows utilise les entrées du fichier 'hosts' pour rechercher les noms de domaine avant d'interroger les serveurs DNS Internet. Les modifications apportées au fichier 'hosts' peuvent faire croire à Windows que, par exemple, 'google.com' a une adresse IP différente de celle qu'il a réellement, ce qui conduit les navigateurs à Ouvrir une page différente. Il peut également bloquer le(s) site(s) entièrement en les redirigeant vers localhost ou une IP inexistante. 
+
+             2) Les pirates peuvent également détourner le fichier DNSApi.dll pour modifier l'emplacement où le système charge le fichier hosts (toutes les versions d'OS). Exemple : Hijacker.DNS.Hosts / Trojan.Win32.Patched.qw.
+\\p
+             3) Les pirates peuvent également modifier les valeurs de DatabasePath du registre (Win XP/2003 et versions antérieures).
+
+             4) Le fichier Hosts.ics est créé automatiquement lorsque vous partagez un accès Internet. Il contient un mappage entre l'IP et le domaine réseau domestique (local) et peut être piraté de la même manière qu'un fichier Hosts.
+     
+     Exemples d'infection :
+     213.67.109.7	google.com
+     127.0.0.1	kaspersky.ru
+     DNSApi: Le fichier est retouché - c:\Windows\system32\dnsapi.dll
+     L'emplacement du fichier hosts est le suivant: c:\windows\System32\drivers\etc\hoctc
+     
+     Exemple d'entrée légale:
+     Hosts.ics: 192.168.137.1 AnakonDA.mshome.net # 2018 5 2 22 8 3 40 685
+\\p
+     >>> Action prise par HiJackThis:
+      - Pour les entrées - ligne hosts et hosts.ics seront supprimées du fichier.
+      - Pour le fichier DNSApi - la dll sera récupéré si disponible en utilisant le sous-système SFC.
+     - Pour les emplacements hosts altérés - la valeur par défaut du registre sera restaurée.
+      - En outre, les entrées de cache DNS seront vidées et les services de cache DNS redémarreront.
+; [O2]
+0410=        Un BHO (Browser Helper Object) est un programme spécialement conçu qui s'intègre dans IE, et a des droits d'accès pratiquement illimités. Bien que les BHO puissent être utiles (comme la barre d'outils Google), les pirates les utilisent souvent à des fins malveillantes telles que le suivi de votre comportement en ligne, l'affichage de popups publicitaires, etc...
+     
+     >>> Action prise par HiJackThis :
+      - Supprimer la clé de Registre BHO et toutes les clés correspondantes (comme CLSID et les polices IE BHO spéciales) ;
+      - Supprimer le fichier dll BHO.
+; [O3]
+0411=        Les barres d'outils IE font partie des BHO (Browser Helper Objects) comme la barre d'outils Google qui peut être utile, mais qui peut aussi être gênante ou malveillante en suivant votre comportement et en affichant des popups publicitaires.
+     
+     >>> Action prise par HiJackThis :
+      - Supprimer la valeur de registre et toutes les clés correspondantes (comme les paramètres et les politiques spéciales d'IE BHO).
+      - La dll sera supprimée.
+; [O4]
+0412=        Cette partie du scan vérifie plusieurs entrées suspectes qui se chargent automatiquement au démarrage de Windows. Le chargement automatique des entrées du registre peut charger un script (VBS, JS, fichier HTA, etc...), ce qui peut rediriger la page de démarrage, la page de recherche, la barre de recherche ou l'assistant de recherche vers la page du pirate. Il est également possible de charger un fichier DLL qui se charge dans différentes parties de votre système. Des scripts, d'autres programmes ou des entrées de registre sans fichier (par exemple le fichier système légitime PowerShell.exe avec arguments) peuvent également être utilisés en démarrage automatique pour charger d'autres fichiers malveillants via Internet ou assurer la persistance des programmes malveillants après un redémarrage.
+\\p
+             La section O4 comprend également la liste des éléments désactivés en exécution automatique (MSConfig / TaskMgr).
+
+     Zone à vérifier : clés de registre et dossier de démarrage automatique.
+
+     Exemple d'infection: regedit c:\windows\system\sp.tmp /s
+     
+     >>> Action prise par HiJackThis:
+      - Démarrage automatique des entrées du registre - la valeur du registre sera supprimée.
+      - également, le processus correspondant sera arrêté ou gèlé.
+      - Dossier 'Démarrage automatique' - le fichier de chargement automatique sera supprimé.
+      - Désactiver l'exécution automatique des éléments - l'entrée du registre et le fichier de chargement automatique seront supprimées.
+; [O5]
+0413=        La modification de CONTROL.INI peut amener Windows à masquer certaines icônes dans le Panneau de configuration. Bien que conçu à l'origine pour accélérer le chargement du Panneau de contrôle et réduire la surcharge, il peut également être utilisé par les pirates, par exemple, pour empêcher l'accès à la fenêtre "Options Internet".
+     
+     Zone à vérifier: le fichier control.ini et les emplacements équivalents dans le registre.
+
+     Exemples d'infection:
+     control.ini: [ne pas charger] inetcpl.cpl=yes (panneau de configuration Internet)
+     HKCU\Control Panel\ne pas charger: [Firewall.cpl]  (panneau de configuration du pare-feu Windows)
+     
+     >>> Action prise par HiJackThis:
+      - selon l'emplacement, la ligne sera supprimée du fichier Control.ini ou la valeur du registre sera supprimée.
+; [O6]
+0414=        La désactivation de l'entrée du menu 'Options Internet' dans le menu 'Outils' d'IE se fait en utilisant les stratégies Windows. Normalement utilisé par les administrateurs pour restreindre l'accès des utilisateurs. Il peut également être utilisé par les pirates pour empêcher l'accès à la fenêtre "Options Internet".
+     
+             StartPage Guard utilise également des politiques pour restreindre les modifications de la page d'accueil, effectuées par des pirates.
+     
+     >>> Action prise par HiJackThis :
+      - les informations correspondantes seront supprimées du registre.
+; [O7]
+0415=
+     O7 - Politiques : Regedit, TaskMgr, Explorer et menu "Démarrer
+
+             Regedit est désactivé à l'aide des stratégies Windows. Normalement utilisé par les administrateurs pour restreindre les utilisateurs, il peut également être utilisé par les pirates pour empêcher l'accès à l'éditeur du Registre. Il en résulte un message indiquant que votre administrateur ne vous permet pas d'accéder à Regedit.
+             Les programmes malveillants désactivent également l'accès au Gestionnaire des tâches pour se protéger contre la désinstallation.
+             Certains éléments peuvent être bloqués dans les menus Explorer et Démarrer, ce qui rend la navigation difficile. Par exemple, le disque est caché dans le dossier "Poste de travail".
+\\p
+     O7 - IPSec
+
+            Politiques Sécurité IP permettent ou bloquent les paquets de données réseau et affinent les filtres de paquets source et la destination comme l'adresse IP (y compris le sous-réseau), le type, le numéro de port etc...
+
+     O7 - Certificat non fiable
+
+             Les programmes malveillants peuvent ajouter des hachages de signatures numériques antivirus à la liste des certificats non fiables, bloquant ainsi le lancement de fichiers exécutables.
+
+     O7 - Dépannage
+
+             Ici, des paramètres incorrects de l'OS sont affichés, ce qui peut entraîner des dysfonctionnements du système et des dysfonctionnements logiciels :
+     1.  [EV] Valeur et/ou type de variables d'environnement incorrects. Vérifiez les chemins importants dans la variable %PATH%.
+     2.  [Disk] Manque d'espace libre sur le disque système (moins de 1 Go.)
+     3.  [Network] Mauvais réglages réseau, par ex. nom de l'ordinateur vide.
+\\p
+     >>> Action prise par HiJackThis :
+      - pour O7 - Politiques: la valeur du registre sera supprimée.
+      - pour O7 - IPSec : toutes les clés de registre associées à la politique sélectionnée seront supprimées, y compris tous les filtres qui s'y rapportent.
+      - pour O7 - Untrust Certificate: la clé de Registre sera  supprimée.
+      - pour O7 - Dépannage: [EV] Les variables seront réinitialisées aux valeurs par défaut. Pour %PATH% - le chemin manquant sera ajouté.
+      - pour O7 - Dépannage: [Disk] le gestionnaire de nettoyage de disques de Microsoft, CleanMgr, sera lancé en mode automatique.
+      - pour O7 - Dépannage: [Network] les réglages standard seront appliqués.
+; [O8]
+0416=        Des éléments supplémentaires dans le menu contextuel (clic droit) peuvent s'avérer utiles ou ennuyeux. Certains pirates ajoutent des éléments au menu contextuel. L'Accessoire Web d'Internet Explorer PowerTweaks ajoute plusieurs éléments utiles, notamment "Surligner", "Zoom +/-", "Liste de liens", "Liste d'images" et "Recherche Web".
+     
+     >>> Action prise par HiJackThis :
+      - La clé de Registre sera supprimée.
+; [O9]
+0417=        Des éléments dans le menu 'Outils' d'Internet Explorer et des boutons supplémentaires dans la barre d'outils principale sont généralement présents sous forme de vignettes (boutonAccueil de Dell) ou ajoutés après des mises à jour système (bouton MSN Messenger) et rarement par des pirates. L'Accessoire Web d'Internet Explorer PowerTweaks ajoute deux éléments au menu, "Ajouter le site à la Zone de confiance" et "Ajouter le site à la Zone de restriction".
+     
+     >>> Action prise par HiJackThis :
+      - La clé de Registre sera supprimée.
+; [O10]
+0418=        Le système Windows Socket (Winsock) utilise une liste de prestataires pour résoudre les noms DNS (c'est-à-dire pour traduire www.microsoft.com en adresse IP). C'est ce qu'on appelle le fournisseur de services multicouches (FSL). Certains programmes sont capables d'injecter leurs propres prestataires (spyware) dans le FSL. Si les fichiers référencés par le FSL sont manquants ou si la "série" des fournisseurs est endommagée, aucun des programmes sur votre système ne pourra accéder à l'Internet. En supprimant les références des fichiers manquants et en réparant la série, vous rétablirez généralement l'accès à Internet.
+\\p
+             Note : La réparation des LSP est une procédure risquée. Vous pouvez obtenir WinSockReset de https://www.foolishit.com/vb6-projects/winsockreset/ pour réparer la pile Winsock.
+     
+     >>> Action prise par HiJackThis :
+      - Non prévu. Il vous sera demandé d'aller sur www.foolishit.com et de télécharger le programme WinSockReset.
+; [O11]
+0419=        Les options de l'onglet 'Avancé' des options d'Internet Explorer sont stockées dans le Registre, et des options supplémentaires peuvent être ajoutées en créant des clés de Registre supplémentaires. Très rarement, les spywares et pirates ajoutent leurs propres options qui sont difficiles à supprimer. (par exemple, CommonName ajoute une section 'CommonName' avec quelques options).
+     
+     >>> Action prise par HiJackThis :
+      - La clé du Registre sera supprimée.
+; [O12]
+0420=        Les plugins gèrent les types de fichiers qui ne sont pas supportés nativement par Internet Explorer. Les plugins courants gèrent les formats Macromedia Flash, Acrobat PDF et Windows Media, ce qui permet au navigateur de les ouvrir au lieu de lancer un programme spécifique. Lorsque des pirates ou des logiciels espions ajoutent des plugins pour ces types de fichiers, les logiciels malveillants - même s'ils ont été supprimés - peuvent être réinstallés si le navigateur ouvre un fichier traité par ce plugin.
+     
+     >>> Action prise par HiJackThis :
+      - La clé de Registre et le fichier plugin seront supprimés.
+; [O13]
+0421=        Lorsque vous tapez une URL dans la barre d'adresse d'Internet Explorer sans le préfixe (http://), un préfixe est automatiquement ajouté lorsque vous appuyez sur Entrée. Ce préfixe est stocké dans le Registre, avec les préfixes par défaut pour FTP, Gopher et autres protocoles. Lorsqu'un pirate modifie ces URL vers son serveur, vous serez toujours redirigé lorsque vous n'entrez pas de préfixe. Par exemple, Prolivation utilise ce détournement.
+     
+     >>> Action prise par HiJackThis :
+      - La valeur du registre sera restaurée aux données par défaut.
+; [O14]
+0422=        Lorsque vous cliquez sur 'Réinitialiser les paramètres Web' dans l'onglet 'Programmes' de la boîte de dialogue des options d'Internet Explorer, votre page d'accueil, votre page de recherche et quelques autres sites seront réinitialisés aux valeurs par défaut. Ces valeurs par défaut sont enregistrées dans C:\Windows\Inf\Iereset.inf. Lorsqu'un pirate modifie ces URL vers ses propres URL, 'Réinitialiser les paramètres Web' vous infectera de nouveau. Par exemple, SearchALot utilise ce détournement.
+     
+     >>> Action prise par HiJackThis :
+      - La valeur du fichier Inf sera restaurée avec les données par défaut.
+; [O15]
+0423=        Les sites Web de la Zone de confiance (voir Outils => Options Internet => Sécurité => Sites de confiance => Sites) sont autorisés à utiliser des scripts et objets ActiveX potentiellement dangereux. Certains programmes ajoutent automatiquement des sites à la Zone de confiance à votre insu. Seul un très petit nombre de programmes légitimes sont connus pour faire cela. 
+     
+     >>> Action prise par HiJackThis :
+      - La clé de Registre sera supprimée.
+      - Les valeurs par défaut du protocole de mappage de la zone seront restaurées.
+; [O16]
+0424=        Le dossier Download Program Files (DPF) de votre dossier de base de Windows contient divers programmes qui ont été téléchargés depuis Internet. Ces programmes sont chargés lorsque Internet Explorer est actif. Parmi les exemples légitimes, citons Java VM, Microsoft XML Parser et Google Toolbar. Une fois supprimés, ces objets sont téléchargés et réinstallés (à la demande).
+             Malheureusement, IE permet aussi aux sites malveillants de télécharger automatiquement des fichiers tels que des Numéroteurs pornographiques, de faux plugins et des objets ActiveX dans ce dossier, qui vous harcèleront avec des popups, des factures téléphoniques élevées, des crashs aléatoires et autres piratages du navigateur.
+\\p
+      >>> Action prise par HiJackThis :
+      - L'enregistrement du DPF CLSID sera annulé.
+      - La dll et le fichier téléchargé seront supprimés.
+; [O17]
+0425=        Windows utilise plusieurs valeurs de registre pour aider à convertir les noms de domaine en adresses IP. Le détournement de ces valeurs peut entraîner la redirection vers d'autres pages de tous les programmes qui utilisent Internet.
+             Lop.com utilise cette méthode, ainsi qu'une longue liste de domaines énigmatiques.
+
+             DHCP DNS dans cette section affiche l'adresse DNS émise par le routeur par DHCP, c'est-à-dire lorsque la case "Recevoir automatiquement l'adresse DNS" est cochée dans les paramètres de connexion réseau.
+\\p
+     >>> Action prise par HiJackThis :
+      - La valeur du registre sera supprimée.
+      - Lors de la réparation d'un DNS DHCP, la mémoire cache de la résolution DNS sera vidée. L'utilisateur devra configurer manuellement le routeur en entrant l'adresse spécifiée par son fournisseur de contrat AVANT de corriger cet élément avec HiJackThis. 
+; [O18]
+0426=        Un protocole est un 'langage' que Windows utilise pour 'parler' aux programmes, aux serveurs ou à lui-même. Les serveurs Web utilisent le protocole 'http:', les serveurs FTP utilisent le protocole 'ftp:', Windows Explorer utilise le protocole `fichier'. L'introduction d'un nouveau protocole dans Windows ou la modification d'un protocole existant peut modifier la façon dont Windows gère les fichiers.
+             CommonName et Lop.com enregistrent tous deux, de nouveaux protocoles lorsqu'ils sont installés (cn : et ayb :).
+\\p
+             Les filtres sont des types de contenu acceptés par Internet Explorer (et en interne par Windows). S'il existe un filtre pour un type de contenu, les données passeront d'abord par le gestionnaire de fichiers de type contenu. Plusieurs variantes du cheval de Troie CWS ajoutent des filtres texte/html et texte/plain, ce qui leur permet de détourner tout le contenu des pages Web transmises par Internet Explorer.
+     
+     >>> Action prise par HiJackThis :
+      - La valeur CLSID sera restaurée (si possible), sinon la clé sera effacée.
+      - Le fichier sera supprimé (s'il n'appartient pas à Microsoft).
+; [O19]
+0427=        IE a la possibilité d'utiliser une feuille de style définie par l'utilisateur pour toutes les pages, au lieu de la feuille de style par défaut, pour permettre aux utilisateurs handicapés de mieux visualiser les pages Web.
+             Une méthode de détournement particulièrement vile faite par Datanotary a fait son apparition, qui écrase toute feuille de style configurée par l'utilisateur et la remplace par une autre qui provoque des popups, ainsi qu'un ralentissement du système lorsque l'on saisit ou charge plusieurs pages ayant plusieurs images.
+     
+     >>> Action prise par HiJackThis :
+      - La valeur du registre sera supprimée.
+      - L'utilisation du style sera désactivée.
+; [O20]
+0428=        Les fichiers spécifiés dans la valeur de registre AppInit_DLLs sont chargés très tôt lors du démarrage de Windows et restent en mémoire jusqu'à l'arrêt du système. Cette façon de charger un fichier .dll est rarement utilisée, sauf par les chevaux de Troie. Les bibliothèques de Drivers vidéo ou les systèmes de chiffrement peuvent être des exemples d'enregistrements légitimes. AppInit_DLLs ne se chargera pas si Secure Boot est activé.
+             Les sous-clés WinLogon Notify Registry chargent les fichiers dll en mémoire à un moment similaire du processus de démarrage, les gardant chargés en mémoire jusqu'à la fin de la session. Outre plusieurs composants système Windows, des logiciels publicitaires comme VX2, ABetterInternet et Look2Me utilisent cette clé du registre.
+\\p
+             Puisque les deux méthodes assurent que le fichier dll reste chargé en mémoire, la correction de ce problème n'aidera pas si la dll restaure les valeurs de Registre ou les clés après que vous les ayez corrigées. Dans ce cas, il est recommandé d'utiliser la fonction 'Supprimer le fichier au redémarrage' ou KillBox pour supprimer le fichier en premier.
+     
+     >>> Action prise par HiJackThis:
+      - pour AppInit_DLL: la valeur de registre concrète sera effacée; les paramètres ne seront PAS supprimés.
+      - pour Winlogon Notify : la clé de Registre sera supprimée.
+; [O21]
+0429=        Il s'agit d'une clé de Registre non documentée qui contient une liste de références CLSID, qui à leur tour référencent les fichiers .dll qui sont chargés par Explorer.exe au démarrage du système. Les fichiers dll restent en mémoire jusqu'à ce qu'Explorer.exe cesse de fonctionner, ce qui se fait soit en arrêtant le système, soit en arrêtant le processus Shell.
+\\p
+             ShellIconOverlayIdentifiers fonctionne de la même manière. Cette clé de Registre contient plusieurs sous-clés avec les identifiants des fichiers chargés dans Explorer.exe. Habituellement, un programme enregistre plusieurs modules de ce type à la fois. Ces bibliothèques sont responsables de la gestion du rendu des icônes de fichiers dans l'explorateur de Windows, en fonction de certaines conditions (types de fichiers ou autres facteurs).
+             Un exemple de programme légitime peut être un client de stockage dans le Cloud, comme DropBox ou Yandex.Disk, qui modifie l'apparence de l'icône en fonction de l'état de synchronisation des fichiers. Les programmes malveillants peuvent installer des modules de gestion qui exécutent également du code arbitraire.
+     
+     >>> Action prise par HiJackThis :
+      - La valeur ou la clé de registre sera supprimée avec la clé d'identification CLSID.
+      - La dll sera supprimée.
+      - L'explorateur redémarrera.
+; [O22]
+0430=        Le Planificateur de tâches est un service qui peut être configuré pour exécuter un processus à un moment précis ou selon une certaine horaire. L'un de ces réglages s'appelle une tache. Les tâches peuvent être exécutées avec des privilèges élevés sans demander d'UAC, être liées à des utilisateurs spécifiques, contenir des chemins vers des processus, des arguments, des états, etc... Les logiciels malveillants utilisent souvent certaines tâches pour assurer l'exécution automatique tout en survivant après le redémarrage d'un processus.
+             Les tâches peuvent être gérées via les Déclencheurs du planificateur de tâches (taskschd.msc).
+\\p
+     >>> Action prise par HiJackThis :
+      - La tâche sera désactivée.
+      - Le processus de la tâche sera arrêté.
+      - Le fichier de la tâche, le fichier exécutable et toutes les clés de registre associées seront supprimés.
+; [O23]
+0431=O23 - Service
+
+             Les "services" sont un type particulier de programmes requis pour le bon fonctionnement du système. Les processus de services sont lancés avant que l'utilisateur ne se connecte et sont protégés par Windows. Ils ne peuvent être arrêtés qu'à partir de la boîte de dialogue des services dans la fenêtre Outils d'administration.
+             Les logiciels malveillants qui s'enregistrent en tant que service sont donc plus difficiles à éradiquer.
+\\p
+     O23 - Driver
+             (la sous-section n'est disponible qu'en mode "Scan additionnel")
+
+             Le Driver est une sorte de service lancé avant le démarrage du système et fonctionne avec les privilèges du noyau. Les programmes malveillants peuvent également installer leurs drivers. Par exemple, ceci est utilisé pour empêcher la suppression (les programmes en cours d'exécution avec les droits Administrateur ou Système local ne peuvent pas arrêter les processus de niveau noyau), ainsi que pour masquer leur présence, les fichiers ou les processus (appelés rootkits).
+             Note : les éléments "Driver R" sans caractère numérique dans le rapport- sont des drivers chargés dynamiquement (pas par le registre).
+\\p
+     O23 - Dépendance
+             (la sous-section n'est disponible qu'en mode "Scan additionnel")
+
+             Les programmes malveillants peuvent s'inscrire dans la liste des dépendances du service système pour se protéger contre la suppression. Après avoir supprimé un tel service, un service Microsoft légitime ne pourra plus démarrer. Certains services Windows sont essentiels au fonctionnement normal du système d'exploitation. Leur non-lancement peut avoir des conséquences négatives sur le fonctionnement d'autres programmes, jusqu'à ce que le démarrage complet de l'OS échoue.
+             Certains services sont également regroupés au sein d'un groupe de services, qui porte son nom. Si Le service dépend du groupe de services, il ne démarrera pas tant que tous les services appartenant au groupe de services n'auront pas démarré. HiJackThis vérifie également les services tiers qui ont été ajoutés dans le groupe de services Microsoft.
+\\p
+     >>> Action prise par HiJackThis :
+      - Le Service (ou le  driver) sera désactivé, arrêté et supprimé.
+      - Un redémarrage sera demandé.
+      - Pour O23 - Dépendance : la dépendance sera supprimée du registre.
+; [O24]
+0432=        Les composants de bureau sont des objets ActiveX qui peuvent faire partie du bureau lorsque Active Desktop est activé. Ils fonctionnent comme de (petits) widgets de site Web.
+             Les logiciels malveillants exploitent cette fonction de façon malveillante en paramétrant l'arrière-plan du bureau sur un fichier HTML local avec un grand avertissement bidon, par exemple, pour un Ransomware, il peut afficher le texte des exigences de demande de rançon.
+     
+     >>> Action prise par HiJackThis :
+      - La clé de Registre et le fichier seront supprimés.
+      - L'explorateur sera redémarré et l'arrière-plan du bureau sera mis à jour.
+; [O25]
+0433=        Windows Management Instrumentation est un service Windows par défaut. Il peut créer des événements permanents à des fins légitimes et malveillantes. Ces événements peuvent collecter des données matérielles et logicielles pour automatiser des activités malveillantes telles que l'espionnage. Ils peuvent créer des liens entre des machines, exécuter des fichiers de script externes ou du code de script stocké à l'intérieur (sans fichier). Les événements peuvent être déclenchés par le sous-système WMI à des intervalles déterminés (comme planificateur de tâches) ou manuellement lorsque les applications exécutent des requêtes WMI spéciales.
+\\p
+             Note : seul le client testé. S'il n'y a qu'un filtre, une reliure et/ou une temporisation (sans client), l'élément n'e seras pas affiché dans le rapport.
+
+     >>> Action prise par HiJackThis :
+      - évènements client, filtre, temporisation et engagement seront supprimés de la base de données WMI;
+     - le fichier associé sera également supprimé.
+; [R4]
+0434=        Internet Explorer utilise le service de recherche (DefaultScope) pour afficher une liste de conseils dans la barre de recherche lorsque vous saisissez des requêtes de recherche dans la barre d'adresse. IE vous permet de remplacer son prestataire par défaut par un autre de la liste (SearchScopes).
+
+     >>> Action prise par HiJackThis :
+      - la clé du prestataire sera supprimée ;
+      - la valeur par défaut de DefaultScope (Microsoft Bing) et les paramètres du prestataire seront rétablis.
+; [O26]
+0435=        Dans la clé de registre  'Execution du fichier Image', un programme peut être configuré pour utiliser un débogueur. Chaque fois que le programme Hosts est démarré, le programme 'Debugger' est lancé à sa place.
+             Note: lorsqu'un fichier de débogage est effacé mais toujours actif, le programme Hosts ne démarre pas !
+             Le pirate peut aussi configurer le débogueur pour qu'il fonctionne avec les applications UWP par défaut, comme 'Cortana' ou 'People' (Win 10 uniquement). Comme ces applications démarrent généralement automatiquement au démarrage du système, le pirate assure l'exécution automatique (un peu comme O4) de ses programmes malveillants en utilisant cette méthode.
+
+     >>> Action prise par HiJackThis :
+      - La valeur du registre sera supprimée.
+0490=Informations détaillées sur les sections:
+;
+; ========== Delete Service ==========
+;
+; (500 - 529)
+;
+0502=Propriétaire inconnu
+0503=Fichier manquant
+0504=Le service [] est essentiel pour le système! Il ne peut être supprimé.
+0505=Nom court
+0506=Nom complet
+0507=Fichier
+0508=Propriétaire
+0509=Accès refusé lors de la suppression du service '[]'. Assurez-vous que le service ne soit pas en cours d'exécution.
+0510=Impossible de supprimer le service '[]'. Assurez-vous que le nom soit correctement saisi.
+0511=Une erreur inconnue s'est produite lors de la suppression du service '[]'.
+0512=Les entrées de la bibliothèque ou du registre sont endommagées
+0513=Le service [] appartient à Microsoft! Etes-vous sûr de vouloir le supprimer?
+;
+; ================== Errors, Error window ===================
+;
+; (530 - 599)
+;
+0530=Impossible de créer un dossier pour stocker les sauvegardes. Les sauvegardes des éléments fixes ne peuvent pas être enregistrées !
+0531=Pas encore implémenté, l'élément '[]' ne sera pas sauvegardé !
+0532=mauvais codeur - aucun don
+0533=Je suis tellement stupide que j'ai oublié de l'implémenter. Envoyez-moi un message.
+0534=d'oh !
+0535=Les fichiers de sauvegarde pour cet élément n'ont pas été trouvés. Il n'a pas pu être restauré.
+0536=Le fichier de sauvegarde pour cet élément n'a pas été trouvé. Il n'a pas pu être restauré.
+0538=Fichier BHO pour '[]' n'a pas été trouvé. Les données du Registre ont été restaurées, mais le fichier ne l'a pas été.
+0539=Impossible de restaurer cette sauvegarde : trop d'objets dans votre Zone de confiance !
+0540=Impossible de restaurer l'élément : Le protocole '[]' a été réglé sur une zone inconnue.
+0550=ERREUR
+0551=Ne plus afficher ce message
+0552=Oui
+0553=Non
+0554=Il n'y a pas de correction à faire. Vous devez cocher une case pour sélectionner, au moins, un élément!
+0570=Le fichier de langue '[]' n'est pas valide (numéros d'identification ambigus).
+0572=Le fichier de langue n'est pas valide. Réinitialiser aux valeurs par défaut (Anglais) ?
+0580=HiJackThis ne peut réparer les entrées O10 Winsock LSP.
+     Utiliser le programme WinsockReset de https://www.foolishit.com/vb6-projects/winsockreset/
+     
+     Voulez-vous visiter ce site ?
+0590=Une erreur inattendue s'est produite !
+
+     Aidez-nous à améliorer HiJackThis en signalant cette erreur.
+     
+     Le message d'erreur a été copié dans le presse-papiers.
+     Cliquez sur 'Oui' pour nous le soumettre.
+     
+     Détails :
+     Erreur de fonction :
+0591=Erreur
+0592=Il n'est pas possible de trouver une routine de traitement appropriée pour les noms de domaine en:
+0593=Erreur lors de l'installation de HiJackThis dans le dossier 'Program files'. Copie impossible. Erreur =
+0594=Erreur lors de la création de la tâche.
+;
+; ==================== StatupList ===================
+;
+; (600 - 699)
+;
+0600=Cliquer sur un élément pour afficher la description de sa fonction et de son origine.
+0601=Ce sont les éléments de démarrage pour les autres utilisateurs.
+0602=Il s'agit des éléments de démarrage pour les autres configurations matérielles.
+0603=Ce groupe contient les fichiers qui se chargent en étant seulement là.
+0604=Ce groupe implique Internet Explorer d'une certaine façon.
+0605=Ce groupe contient les composants du système qui peuvent être piratés, mais pas de manière à lancer des fichiers.
+0606=Ce groupe contient toutes les sections qui couvrent les éléments désactivés ou bloqués, soit pour la protection ou l'optimisation du système.
+0607=Ce groupe contient toutes les sections qui proviennent du Registre.
+0608=Processus en cours d'exécution en mémoire, y compris les bibliothèques dll chargées par chaque processus.
+     [Toutes les versions de Windows]
+0609=Dossiers spéciaux qui contiennent les fichiers qui sont lancés lorsque les utilisateurs se connectent.
+     [Toutes les versions de Windows]
+0610=Ce dossier contient toutes les tâches du Planificateur de tâches de Windows qui peuvent être configurées pour s'exécuter périodiquement.
+     [Windows 2000/XP]
+0611=Certains paramètres système sont stockés dans des fichiers *.ini au lieu du Registre. Certains de ces paramètres peuvent être utilisés pour démarrer les programmes au démarrage du système.
+     [Windows 9x/ME]
+0512=Map plusieurs fichiers *.ini dans le Registre. Certains paramètres peuvent être utilisés pour démarrer les programmes au démarrage du système.
+     [Windows NT/2k/XP/2003/Vista]
+0613=Sur les CD, un fichier autorun.inf indique à Windows quel fichier va démarrer automatiquement. Cette technique peut également être appliquée aux disques durs, ce qui permet à Windows d'exécuter des fichiers arbitraires lorsque le lecteur est ouvert dans l'explorateur.
+     [Windows 95/98/NT4/2000/XP/2003]
+0614=Windows peut exécuter des scripts lorsque le système démarre ou s'arrête ou lorsqu'un utilisateur ouvre ou ferme une session.
+     [Windows 2000/XP/2003/Vista/7/8/8.1/10].
+0615=Windows utilise des fichiers *.bat pour démarrer certains composants du système. Tout ce qui se trouve dans ces fichiers est exécuté au démarrage du système.
+     [winstart.bat,dosstart.bat : Windows 95/98/98SE]
+     [autoexec.bat,config.sys : Windows 9x/ME]
+     [autoexec.nt,config.nt : Windows NT4/2000/XP/2003/Vista]
+0616=Windows peut effectuer des actions (telles que supprimer ou renommer un fichier) lorsque le système redémarre. Ces instructions peuvent être stockées dans le Registre ou dans le fichier wininit.ini. Le fichier wininit.bak est une sauvegarde de wininit.ini et il est créé par Windows lui-même.
+     [wininit.ini : Windows 9x/ME]
+     [Autre: Windows NT4/2000/XP/2003/Vista].
+0617=Ces paramètres contrôlent ce que Windows fait quand certains types de fichiers sont ouverts - si un fichier est exécuté par lui-même ou si une application est utilisée pour l'ouvrir. Ce paramètre peut être détourné pour charger des programmes différents ou supplémentaires.
+     [Toutes les versions de Windows]
+0618=Les services Windows jouent un rôle important dans Windows NT4, 2000 et XP (et plus récents) et un rôle moins important dans Windows 95, 98 et ME. Tous les éléments listés sont lancés au démarrage du système.
+     [Services NT : Windows NT4/2000/XP/2003/Vista/7/8/8.1/10].
+     [Services VxD : Windows XP et versions antérieures]
+0619=Les pilotes de périphérique peuvent s'insérer dans la chaîne de pilotes d'un périphérique matériel, soit au-dessus (UpperFilters), soit en dessous (LowerFilters), ce qui leur permet de filtrer les messages avant de les transmettre aux autres pilotes. Les filtres de classe s'appliquent aux types génériques de matériel. Les filtres d'appareils ne s'appliquent qu'à des appareils spécifiques.
+     [Windows NT4/2000/XP/2003/Vista/7/8/8.1/10].
+0620=Quand un utilisateur se connecte, winlogon.exe effectue un certain nombre d'actions. Certaines bibliothèques et certains programmes DLL sont démarrés et resteront chargés jusqu'à ce que l'utilisateur se déconnecte. La sous-clé Notification contient des liens vers des bibliothèques dll qui sont chargées lorsqu'un événement particulier se produit, comme la connexion/déconnexion, le démarrage, l'arrêt ou l'activation d'un écran de veille.
+     [Windows NT4/2000/XP/2003/Vista/7/8/8.1/10].
+0621=Les Browser Helper Objects sont chargés avec Internet Explorer (et parfois Windows Explorer) et peuvent tout afficher, contrôler et modifier dans Internet Explorer.
+     [Internet Explorer 4.0 et plus récent]
+0622=Objets ActiveX. Lorsqu'ils sont chargés pour la première fois, ils s'exécutent avant que l'utilisateur ne se connecte.
+     [Toutes les versions de Windows]
+0623=Barre d'outils chargée et affichée (si activée) quand Internet Explorer est chargé.
+     [Internet Explorer 4.0 et plus récent]
+0624=Boutons et outils supplémentaires qui sont chargés et affichés (si activés) lorsque Internet Explorer est chargé.
+     [Internet Explorer 4.0 et plus récent]
+0625=Barres spéciales supplémentaires qui sont chargées et affichées (si activées) lorsque Internet Explorer est chargé.
+     [Internet Explorer 4.0 et plus récent]
+0626=Commandes supplémentaires dans le menu contextuel des sites Web qui sont chargés et affichés (si activé) lorsque Internet Explorer est chargé.
+     [Internet Explorer 4.0 et plus récent]
+0627=Toutes les bandes qui sont chargées et affichées (si activé) quand Internet Explorer est chargé. La barre de recherche est un exemple de bande.
+     [Internet Explorer 4.0 et plus récent]
+0628=Les objets dans les 'Fichiers de programme téléchargés' sont des plug-ins supplémentaires à Internet Explorer et sont chargés quand il démarre. Une fois supprimés, ces objets sont téléchargés et réinstallés (à la demande).
+     [Internet Explorer 4.0 et plus récent]
+0629=Hooks qui peuvent intercepter et rediriger les URL saisies dans la barre d'adresse d'Internet Explorer.
+     [Internet Explorer 4.0 et plus récent]
+0630=En se référant à la façon dont Windows recherche les chemins d'accès aux fichiers, le fait de placer un fichier Explorer.exe dans des dossiers autres que le dossier Windows, peut entraîner leur exécution au lieu du fichier Explorer.exe normal. Explorer.exe ne doit exister que dans le répertoire Windows.
+     [Toutes les versions de Windows]
+0631=Dans la clé de registre 'Exécution de fichier image', un programme peut être configuré pour être utilisé avec un débogueur. Chaque fois que le programme Hosts est démarré, le programme 'Debugger' est chargé à sa place.
+     Note: lorsqu'un fichier de débogage est effacé mais toujours actif, le programme Hosts ne démarre pas!
+     [Windows NT4/2000/XP/2003/Vista/7/8/8.1/10].
+0632=Lorsqu'un élément est ajouté au menu contextuel de certains éléments, la bibliothèque dll associée est chargée en mémoire lorsque le système démarre.
+     [Toutes les versions de Windows]
+0633=Les programmeurs peuvent ajouter des colonnes personnalisées à Explorer et à l'élément d'affichage 'Détaillé ". La bibliothèque dll associée à la colonne est chargée en mémoire chaque fois que l'affichage 'Détaillé' ou les colonnes supplémentaires sont actives.
+     [Windows ME/2000/XP/2003]
+0634=Cette clé de Registre liste tous les objets COM (librairies dll) qui exécutent les commandes piégées.
+     [Toutes les versions de Windows]
+0635= Extensions d'interface utilisateur approuvées par le système ou l'utilisateur.
+     [Toutes les versions de Windows]
+0636=Le Registre contient des clés 'Exécuter' avec des valeurs qui sont exécutées au démarrage du système ou lorsque l'utilisateur se connecte. Ce type d'emplacement de démarrage automatique est très courant.
+     [Run,RunOnce,RunOnceEx : Toutes les versions de Windows]
+     [RunServices,RunServicesOnce, Windows 9x/ME]
+0637=Le Registre contient des clés 'Exécuter' avec des sous-clés qui contiennent des valeurs qui sont exécutées au démarrage du système (la plupart du temps une seule fois, après quoi les clés sont supprimées par Windows).
+     [Toutes les versions de Windows]
+0638=Les Politiques Windows peuvent être utilisées pour démarrer des applications lorsque le système est démarré ou qu'un utilisateur se connecte. Ils peuvent également être utilisés pour configurer l'environnement de travail (Shell) d'un utilisateur, y compris toute restriction.
+     [Toutes les versions de Windows]
+0639=Les filtres MIME et les gestionnaires de protocole connectés peuvent voir et manipuler tout ce qui passe à travers eux via Internet Explorer et le Moniteur d'URL.
+     [Toutes les versions de Windows]
+0640=Le Gestionnaire de l'utilitaire d'accessibilité détermine si des programmes comme la Loupe et Lecteur d'écran sont chargés au démarrage de Windows. Il peut également lancer d'autres programmes au démarrage du système.
+     [Windows 2000/XP/2003/Vista]
+0641=WOW est le gestionnaire de compatibilité 16 bits de Windows. Sa clé de Registre contient plusieurs valeurs qui peuvent être utilisées pour démarrer des programmes ou des bibliothèques dll sous certaines conditions. Les listes KnownDlls contiennent toutes les bibliothèques dll qui peuvent être exécutées à partir du dossier System uniquement. Si une dll du même nom est présente ailleurs, elle ne sera pas chargée.
+     [Windows NT4/2000/XP/2003/Vista]
+0642=Les objets de service Shell sont chargés par Explorer dès qu'il démarre.
+     [Toutes les versions de Windows]
+0643=Les éléments du Planificateur de tâches partagées (dans le Registre) sont chargés chaque fois que vous ouvrez Explorer.
+     [Toutes les versions de Windows]
+0644=Semblable à la clé de registre 'Notification' sous Windows 2000/XP, cette clé de Registre peut être utilisée par Windows 95/98/ME pour charger une dll.
+     [Windows 9x/ME]
+0645=Lorsque la ligne de commande sous Windows 2000/XP est ouverte (CMD.EXE), elle recherchera cette valeur de Registre et exécutera tout programme avant de commencer.
+     [Windows NT4/2000/XP/2003/Vista]
+0646=Layered Service Providers (LSP) sont de petits programmes qui peuvent être ajoutés ou insérés dans le gestionnaire TCP/IP de Windows par un autre logiciel. Les données sortantes de votre ordinateur vers une destination légitime sur Internet peuvent être interceptées par un FSL et envoyées vers une nouvelle destination. Elles sont exécutées avant que l'utilisateur ne se connecte.
+     [Toutes les versions de Windows]
+0647=Démarre automatiquement à partir de programmes non-Microsoft.
+0648=ICQ contient un composant nommé ICQNET qui peut exécuter d'autres applications lorsqu'une connexion Internet est détectée.
+0649=mIRC peut charger des scripts personnalisés à des fins malveillantes. Ces scripts peuvent exécuter pratiquement toutes les actions sur un système.
+0650=Tous les éléments de démarrage automatique qui sont désactivés ou qui servent uniquement à bloquer les sites Web, domaines, objets ActiveX, etc.
+0651=Les endroits les plus courants sur un système Windows où un pirate de navigateur se connectera, en dehors des emplacements de démarrage automatique.
+0652=Les URL sur lesquelles Internet Explorer est réinitialisé sont stockées dans un fichier appelé IERESET.INF, et ces URL sont utilisées lorsque vous utilisez 'Réinitialiser les paramètres Web'.
+     [Internet Explorer 5 et plus récent]
+0653=Toutes les URL qui ont été configurées pour qu'Internet Explorer puisse être utilisé comme pages de démarrage, pages de recherche, barres de recherche, etc... Note : certains d'entre euxs ne sont utilisés que sous certaines conditions.
+     [Toutes les versions d'Internet Explorer]
+0654=Lorsqu'une adresse est saisie dans la barre d'adresse sans les préfixes 'http://' ou 'www', Internet Explorer va chercher ici le texte par défaut à préfixer.
+     [Internet Explorer 5 et plus récent]
+0655=L'emplacement du fichier hosts peut être modifié à partir de la valeur par défaut de Windows 2000/XP (c:\windows\system32\drivers\drivers\etc). Si un fichier hosts est disponible dans un autre emplacement, il sera ignoré.
+     [Windows NT4/2000/XP/Vista/2003]
+0656=Le fichier hosts peut être utilisé comme un serveur DNS local, en mappant les noms d'Hosts aux adresses IP. Bien que cela accélère la résolution des noms, il peut également être utilisé pour bloquer des domaines en les mappant à une adresse IP non-routable comme 127.0.0.0.1 ou 0.0.0.0.0.
+     [Toutes les versions de Windows]
+0657=Internet Explorer vérifie cette clé de Registre avant de charger et exécuter un contrôle ActiveX. Si le CLSID du contrôle est jugé incompatible (en utilisant un'kill bit'), il ne sera pas chargé. Seuls les objets ActiveX bloqués qui existent réellement sur le système sont listés ici.
+     [Internet Explorer 4 et plus récent]
+0658=Internet Explorer utilise plusieurs zones pour déterminer les politiques de sécurité des sites Web, certaines avec plus de permissions (Zone de confiance) ou avec moins de permissions (Zone de restriction). Ceci peut permettre ou empêcher un site d'exécuter ActiveX, Java, des scripts ou d'autres objets.
+     [Internet Explorer 4 et plus récent]
+0659=Tous les éléments du démarrage automatique qui sont désactivés à l'aide de l'outil MSConfig dans Windows 98/ME.
+     [Windows 98/ME]
+0660=Tous les éléments de démarrage automatique qui sont désactivés à l'aide de l'outil MSConfig sous Windows XP.
+     [Windows XP/2000/Vista]
+0661=Les services NT qui ne sont pas en cours d'exécution, soit parce qu'ils sont arrêtés, programmés pour fonctionner manuellement, soit parce qu'ils sont désactivés.
+     [Windows NT4/2000/XP/2003/Vista]
+0662=Windows dispose d'un point de contrôle central, appelé Security Center, où sont gérés les paramètres antivirus, du pare-feu et des mises à jour. Cependant, les trois surveillances peuvent être remplacées ou désactivées.
+     [Windows XP Service Pack 2]
+0663=Windows XP possède une fonction appelée restauration du système qui permet à l'utilisateur d'enregistrer des instantanés des configurations du système et de revenir en arrière à un de ces instantanés pour l'Enregistrer. Alors que les points de restauration peuvent consommer beaucoup d'espace disque, les retour en arrière sont très efficaces.
+     [Windows ME/XP]
+0664=Le Firewall de Windows peut permettre aux programmes d'envoyer ou de recevoir des données basées sur des noms de fichiers ou des numéros de port (mais pas les deux en une seule règle). Bien qu'il dispose d'options rudimentaires pour définir des plages d'adresses IP distantes pour une 'règle', toutes les règles sont stockées dans le Registre en clair, permettant à tout programme de s'ajouter à la liste des exceptions.
+     [Windows XP SP2/2003/Vista/7/8/8.1/10].
+0665=Cette clé de Registre contient tous les drivers qui surveillent les ports d'impression.
+     [Toutes les versions de Windows]
+0666=Cette valeur de Registre contient une liste des fichiers DLL chargés par Windows au démarrage.
+     [Toutes les versions de Windows]
+0667=Les composants du bureau sont des objets ActiveX qui peuvent faire partie du bureau lorsque Active Desktop est activé, où il fonctionne comme un widget de site Web.
+     [Windows 98/ME/2000/XP/2003/Vista]
+0668=La clé de Registre  'Chemins d'Applications' mappe un exécutable vers son chemin complet, par exemple, vous pouvez taper 'Wordpad' dans le dialogue Exécuter, pour démarrer l'application Wordpad. Il est également possible de modifier le réglage pour démarrer des programmes complètement différents.
+     [Toutes les versions de Windows]
+0669=Tout comme le fichier autorun.inf, Windows a une clé de Registre qui peut configurer un programme pour qu'il démarre automatiquement quand un disque ou un CD est inséré. Cette clé MountPoints peut également être configurée pour démarrer un programme lorsqu'un utilisateur ouvre ou explore un disque dur.
+     [Toutes les versions de Windows]
+0670=Lorsque le système est démarré en mode sans échec, Windows charge ces services UNIQUEMENT, à la place de tous ceux énumérés ci-dessus. Lors de l'utilisation du mode sans échec avec prise en charge réseau, certains services réseau sont également chargés.
+     [Windows NT4/2000/XP/2003/Vista]
+0671=Quand le système est démarré en mode sans échec avec l'Invite de commandes, cette valeur définit le nom de fichier de l'invite de commandes qui remplace le shell standard (Explorer.exe). Pour des raisons inconnues, ce shell alternatif est également utilisé (si activé) lors du démarrage du système en mode normal ( !).
+     [Windows NT4/2000/XP/2003/Vista]
+0672=Microsoft Windows Defender peut être désactivé avec une seule valeur de Registre. Lorsque cette valeur est à 1, le système n'est pas protégé.
+     [Windows XP/2003/Vista]
+0673=Les paquets listés ici font partie de l'Autorité locale de sécurité de Windows NT (LSA) et sont appelés pour certains événements du système.
+     Les paquets d'authentification sont activés lorsqu'un utilisateur tente de se connecter à Windows.
+     Les paquets de notification sont activés lorsque les mots de passe sont définis ou modifiés.
+     Les packages de sécurité sont des implémentations de protocoles de sécurité tels que Kerberos, SSL et TLS.
+     [Windows 2000/XP/2003/Vista]
+0674=ces drivers et les bibliothèques sont chargés chaque fois que l'application concernée l'exige.
+     [Windows NT/2000/XP/2003/Vista]
+0675=Les politiques Windows peuvent être utilisées pour restreindre les comptes utilisateurs individuels. Il s'agit principalement de restreindre l'accès aux outils et fonctions du système.
+0676=Les éléments de démarrage pour l'utilisateur
+0677=Les éléments de démarrage pour la configuration matérielle
+0678=Le temps qu'il a fallu à StartupList pour énumérer les éléments de cette section.
+;
+; StartupList (controls)
+;
+; (700-799)
+;
+0700=Fichiers chargés/chargés automatiquement
+0701=Processus en cours d'exécution
+0702=Dossiers de démarrage automatique
+0703=Tâches du planificateur de tâches
+0704=Valeurs du fichier .Ini
+0705=Fichiers Autorun.inf
+0706=Démarrage automatique des fichiers batch
+0707=Clones d'Explorer.exe
+0708=Eléments d'Internet Explorer
+0709=Objets d'aide au navigateur BHO
+0710=Barres d'outils IE
+0711=Boutons / Outils IE
+0712=Barres IE
+0713=Extensions du menu IE
+0714=Bandes IE
+0715=Objets ActiveX (DPF)
+0716=ActiveX exécution automatique
+0717=Composants de bureau
+0718=URLSearchHooks
+0719=Commandes de piratage
+0720=Réinitialiser les URL des paramètres Web
+0721=Internet Explorer URL
+0722=Préfixes URL par défaut
+0723=Chemin de fichier Hosts
+0724=Eléments désactivés, protection
+0725=Eléments du fichier hosts
+0726=ActiveX kill bits
+0727=Zones
+0728=Eléments désactivés Msconfig 9x/ME
+0729=Eléments désactivés Msconfig XP/Vista/7 
+0730=Services interrompus/désactivés
+0731=Centre de sécurité Windows
+0732=Eléments du registre
+0733=Chemins d'applications
+0734=Extensions Shell approuvées
+0735=ColumnHandlers
+0736=Démarrage automatique du processeur de commande
+0737=ContextMenuHandlers
+0738=Filtres des drivers
+0739=Bibliothèques Drivers32 
+0740=ImageFileExecution
+0741=Paquets LSA
+0742=Mountpoints
+0743=MPRServices
+0744=Actions au redémarrage
+0745=Politiques
+0746=Ecran de visualisation des impressions
+0747=Gestionnaires filtres/protocoles
+0748=Fichiers .ini mappés dans le registre
+0749=Clés 'Exécuter' du registre
+0750=Sous-clés 'Exécuter' du registre
+0751=Prestataires de services de sécurité
+0752=Services
+0753=Planificateur de tâches partagées
+0754=Commandes shell
+0755=ShellExecuteHooks
+0756=ShellServiceObjectDelayLoad
+0757=Gestionnaire d'utilitaires de démarrage automatiquement
+0758=Ouverture de session automatique
+0759=Politiques de script WinNT
+0760=Winsock LSPs
+0761=WOW
+0762=lancement automatiques de parties tiers
+0763=Eléments pour les autres utilisateurs
+0764=Eléments pour l'autre matériel cfgs
+0765=Réactualiser (F5)
+0766=Abandonner (Esc)
+0767=Veuillez sélectionner les sections que vous voulez inclure dans le rapport. Les sections désactivées ne sont pas présentes sur votre système. Note: vous pouvez faire un clic droit sur les nœuds dans l'arborescence et enregistrer uniquement la branche dans le rapport.
+0768=OK
+0769=Annuler
+;
+; StartupList (menu)
+;
+; (800 - 899)
+;
+0800=&Fichier
+0801=Enregi&strer sous...
+0802=&Copier dans le presse-papiers
+0803=Soumettre au &Triage!
+0804=Fermer le compte-&rendu de triage
+0805=Vérifier toutes les signatures des fichiers.
+0806=Quitter
+0807=Rec&hercher
+0808=Rec&hercher...
+0809=Rechercher le suiva&nt
+0810=Afficha&ge
+0811=Tout dév&elopper
+0812=To&ut réduire
+0813=&Réactualiser
+0814=&Options
+0815=Afficher les s&ections vides
+0816=Afficher les &CLSID
+0817=Afficher les co&mmentaires dans les fichiers.bat
+0818=Afficher les données relatives à la protection de la vie privée
+0819=Afficher les autres &utilisateurs
+0820=Afficher les &autres configurations matérielles
+0821=Afficher le grand fichier hosts (>1000 lignes)
+0822=Afficher les vastes zones (>1000 domaines)
+0823=Ai&de
+0824=A&fficher le texte de l'aide
+0825=Afficher le journal des a&vertissements
+0826=&A propos...
+0827=Afficher ce fichier
+0828=Afficher les propriétés de ce fichier
+0829=Envoyer le fichier dans Notepad
+0830=Copier le nom du fichier dans le presse-papiers
+0831=Vérifier la signature du fichier
+0832=Chercher le fichier sur RunScanner.net...
+0833=Chercher CLSID sur RunScanner.net
+0834=Chercher sur Google...
+0835=Chercher CLSID sur Google...
+0836=Regedit jump
+0837=Copier le nom de la clé du Registre dans le presse-papiers
+0838=Copier le texte du nœud dans le presse-papiers
+0839=Copier le chemin du nœud et le texte dans le presse-papiers
+0840=Copier le nœud et tous les sous-nœuds dans le presse-papiers
+0841=Enregistrer le nœud et tous les sous-nœuds sous...
+;
+; StartupList (other text)
+;
+; (900 - 999)
+;
+0900=Enregistrer le fichier...
+0901=Fichiers texte
+0902=Tous les fichiers
+0903=La création du rapport StartupList a été interrompue !
+0904=Le journal StartupList ne pouvait pas être écrit sur le disque
+0905=Le journal StartupList a été écrit sur le disque
+0906=vérification de [] groupes du démarrage automatique!
+0907=Utiliser ces Options
+0908=Utiliser le menu Options pour passer outre les éléments ignorés.
+     Cliquer sur Aide > Afficher les avertissements pour Fermer ce message.
+0909=Chargement...
+0910=Chargement... noms d'utilisateurs
+0911=Chargement... configurations matérielles
+0912=Chargement... Fichier Hosts
+0913=Chargement... éléments désactivés Msconfig 9x/ME
+0914=Chargement... éléments désactivés Msconfig XP/Vista/7
+0915=Chargement... Services Arrêtés/désactivés 
+0916=Chargement... Paramètres du Centre de sécurité Windows
+0917=Chargement... Réinitialiser les URL des paramètres Web
+0918=Chargement... URL de IE
+0919=Chargement... Préfixes URL par défaut
+0920=Chargement... Chemin d'accès du fichier Hosts
+0921=Chargement... Bandes Internet Explorer
+0922=Chargement... ActiveX killbits
+0923=Chargement... Sites de confiance et sites à accès restreint
+0924=Chargement... Sites de confiance et sites restreints (cet utilisateur)
+0925=Chargement... Sites de confiance et sites à accès restreint (tous les utilisateurs)
+; do not translate 'user' and 'computer' !!!
+0926=[*user*] sur [*computer*]
+0927=Autres utilisateurs de cet ordinateur
+0928=Autres configurations matérielles
+0929=Abandonné!
+0930=Le rapport StartupList a été copié dans votre presse-papiers.
+0931=La génération du rapport StartupList a été interrompue!
+0932=Cela enverra votre rapport StartupList au serveur XBlock Triage pour une analyse en direct.
+     Pour obtenir un rapport de triage plus précis, il est recommandé d'activer les ID de classe avant l'envoi (cette option est disponible dans le menu Options). Il n'est actuellement pas activé .
+
+     Activer les ID de classe et continuer?
+0933=Continuer?
+0934=Créer un rapport de triage à envoyer...
+0935=Processus en cours d'exécution
+0936=Clés 'Exécuter' du registre
+0937=Démarrages automatiques ActiveX
+0938=Clones Explorer
+0939=Objets d'aide au navigateur BHO
+0940=ShellServiceObjectDelayLoad
+0941=Planificateur de tâches partagées
+0942=Envoi du rapport de triage...
+0943=Prêt.
+0944=Vérification abandonnée.
+0945=Vérification faite.
+0946=Entrez un nom de fichier, un mot ou une expression à rechercher:
+0947=Rechercher...
+0948=StartupList
+     Ecrit par Merijn Bellekom - http://www.merijn.org/
+
+     Basé sur StartupList v1, TonyKlein's Collection of Autostart Locations et Andrew Aronoff's SilentRunners
+
+     Merci également à:
+     Mosaic1, Philip Sloss, Gkweb, Dmitry Sokolov, Oleg Lembievskiy
+
+     Note : StartupList ne modifie rien et ne peut rien modifier sur le système.
+
+     Si vous trouvez ce programme utile, faites un don !
+     http://www.merijn.org/donate.php
+0949=Texte du nœud copié dans le presse-papiers.
+0950=Chemin du nœud et du texte copié dans le presse-papiers.
+0951=Arborescence du nœud copié dans le presse-papiers.
+0952=Nom de fichier copié dans le presse-papiers.
+0953=Nom de la clé de Registre copiée dans le presse-papiers.
+0954=rapport partiel
+     Le noeud racine était []
+     Chemin complet vers le nœud racine:
+0955=Pas d'autres résultats à ce stade.
+0956=Cet ordinateur
+0957=Entrer le nom du fichier pour enregistrer l'arborescence du nœud dans...
+0958=Arborescence des nœuds enregistrée sur le disque sous
+0959=Echec de l'enregistrement de l'Arborescence sur le disque
+0960=erreur
+0961=Fait.
+0962=Génération du rapport...
+0963=* Utilisation des options par défaut (voir les options possibles à la fin du rapport).
+0964=* Afficher les sections vides
+0965=* Masquer les CLSID
+0966=* Afficher les commentaires dans les fichiers ini/bat
+0967=* Masquer les entrées aux autres utilisateurs
+0968=* Masquer les entrées des autres configurations matérielles
+0969=* Sauvegarde automatique d'un rapport et arrêt de l'analyse
+0970=Options de ligne de commande :
+        /showempty      - Afficher les sections vides
+        /showcmts       - Afficher les commentaires dans les fichiers.bat
+        /noshowclsids   - Masquer les ID de classe
+        /noshowprivate  - Masquer les noms d'utilisateurs et le nom de l'ordinateur
+        /noshowusers    - Masquer les entrées des autres utilisateurs
+        /noshowhardware - Masquer les entrées d'autres configurations matérielles
+        /showlargehosts - Afficher le fichier des hosts même quand il contient plus de 1000 lignes
+        /showlargezones - Afficher les zones même lorsque il y a plus de 1000 domaines
+        /autosave       - Exécution masquée, sauvegarde automatique d'un rapport et arrêt du programme
+        /autosavepath:  - Indiquer où enregistrer le rapport, lorsque vous utilisez /autosave.
+                          Utilisez des guillemets pour les chemins ayant des espaces.
+0971=pas encore fait :/
+0972=Winsock 2 n'est pas installé
+0973=Vérification de la signature du fichier:
+0974=Prêt.
+;
+; StartupList (module)
+;
+; (2000 - 2150)
+;
+2000=Processus en cours d'exécution
+2001=Dossiers de démarrage automatique
+2002=Planificateur de tâches
+2003=Valeurs du fichiers.Ini
+2004=Fichiers Autorun.inf
+2005=Démarrage automatique des fichiers batch
+2006=Clones Explorer.exe
+2007=Objets d'aide au navigateur BHO
+2008=Barres d'outils de IE
+2009=Boutons / Outils de IE
+2010=Barres de IE
+2011=Extensions du menu de IE
+2012=Bandes de IE
+2013=Dossiers de programmes téléchargés
+2014=Objets ActiveX
+2015=Composants du bureau
+2016=URL Search Hooks
+2017=Chemins des applications
+2018=Approbation des extensions Shell
+2019=Gestionnaires de colonnes
+2020=Démarrage automatique du processus de commande
+2021=Gestionnaires de menus contextuels
+2022=Filtres des drivers
+2023=Bibliothèquesde drivers32
+2024=Exécution du fichier image
+2025=Paquets LSA
+2026=Points de montage
+2027=Services MPR
+2028=Activités au redémarrage
+2029=Politiques
+2030=Ecrans de visualisation de l'impression
+2031=Gestionnaires de protocoles/filtres
+2032=Fichiers .ini mappés au registre
+2033=Clés 'Exécuter' du registre
+2034=Sous-clés 'Exécuter' du registre
+2035=Prestataires de services de sécurité
+2036=Services
+2037=Planificateur de tâches partagées
+2038=Commandes shell
+2039=Shell Execute Hooks
+2040=ShellServiceObjectDelayLoad
+2041=Utilitaire de gestion de démarrages automatiques
+2042=Démarrage automatique de la session
+2043=Stratégies de script WinNT
+2044=Winsock LSPs
+2045=Compatibilité WOW
+2046=Démarrage automatique de programmes tiers
+2047=Réinitialiser les paramètres URL Internet
+2048=URL Internet Explorer
+2049=Préfixes URL par défaut
+2050=Chemin de fichier Hosts
+2051=Eléments du fichier Hosts
+2052=Process de désactivation ActiveX
+2053=Zones de sécurité IE 
+2054=éléments désactivés Msconfig 9x/ME
+2055=éléments désactivés Msconfig XP/Vista/7
+2056=Services arrêtés/désactivés
+2057=Centre de sécurité de Windows
+;
+2100=Impossible de démarrer Regedit.
+2101=Sauter les zones pour cet utilisateur, puisqu'il y a plus de 1000 domaines. ([] pour être exact)
+2102=Sauter les zones pour tous les utilisateurs, puisqu'il y a plus de 1000 domaines. ([] pour être exact)
+2103=Sauter les zones pour l'utilisateur [*], puisqu'il y a plus de 1000 domaines. ([**] pour être exact)
+;
+; Vide
+;
+; (2300 - ...)
+;                 

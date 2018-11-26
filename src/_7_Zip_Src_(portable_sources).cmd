@@ -8,7 +8,7 @@ if exist "%cd%\_HJT_src.zip" (
 copy /y MSCOMCTL.OCX.bak MSCOMCTL.OCX
 
 :: Pack
-Tools\7zip\7za.exe a -mx1 -y -o"%cd%" -x!*.zip _HJT_src.zip *.* Tools
+Tools\7zip\7za.exe a -mx1 -y -o"%cd%" -x!*.zip _HJT_src.zip *.* Tools Ico
 :: Test
 Tools\7zip\7za.exe t "%cd%\_HJT_src.zip"
 :: If there was errors

@@ -2061,6 +2061,8 @@ Private Function IsBingScopeKeyPara(sRegParam As String, sURL As String) As Bool
     
     IsBingScopeKeyPara = True
     
+    If StrEndWith(sURL, ";") Then sURL = Left$(sURL, Len(sURL) - 1)
+    
     Call ParseKeysURL(sURL, aKey, aVal)
     
     Select Case UCase$(sRegParam)
@@ -5585,8 +5587,8 @@ Public Sub CheckCertificatesEDS()
             If AryItems(Blob) Then
                 ParseCertBlob Blob, CertHash, FriendlyName, IssuedTo
                 
-                If InStr(1, FriendlyName, "Microsoft", 1) <> 0 Then
-                    sData = Reg.ExportKeyToVariable(HKLM, "SOFTWARE\Microsoft\SystemCertificates\ROOT\Certificates\" & aSubKey(i), False, False, True)
+                If InStr(1, FriendlyName, "Microsoft", 1) <> 0 And IssuedTo <> "localhost" Then ' (localhost is Microsoft IIS Administration Server Certificate)
+                    sData = Reg.ExportKeyToVariable(HKLM, "SOFTWARE\Microsoft\SystemCertificates\ROOT\Certificates\" & aSubKey(i), False, True, True)
                     AddWarning "New Root certificate is detected! Report to developer, please:" & vbCrLf & Replace(sData, vbCrLf, "\n")
                 End If
             End If
@@ -9643,6 +9645,7 @@ Private Function IsWinServiceFileName(sFilePath As String, Optional sArgument As
             .Add "<PF32>\Windows Kits\8.1\App Certification Kit\fussvc.exe", 0&
             .Add "<PF32>\Skype\Updater\Updater.exe", 0&
             .Add "<PF64>\Common Files\Microsoft Shared\OfficeSoftwareProtectionPlatform\OSPPSVC.exe", 0&
+            .Add "<PF64>\Common Files\Microsoft Shared\Windows Live\WLIDSVC.EXE", 0&
             .Add "<PF64>\Microsoft SQL Server\90\Shared\sqlwriter.exe", 0&
             .Add "<PF64>\Windows Media Player\wmpnetwk.exe", 0&
             .Add "<SysRoot>\ehome\ehRecvr.exe", 0&
@@ -10384,7 +10387,7 @@ Public Function ClipboardSetText(sText As String) As Boolean
             If hMem <> 0 Then
                 ptr = GlobalLock(hMem)
                 If ptr <> 0 Then
-                    GetMem4 &H419, ByVal ptr
+                    GetMem4 OSver.LangNonUnicodeCode, ByVal ptr
                     GlobalUnlock hMem
                     SetClipboardData CF_LOCALE, hMem
                 End If
@@ -10772,7 +10775,10 @@ Public Sub SetFontCharSet(Ctl As Control, Optional sFontName As String, Optional
     SetFontDefaults Ctl
     
     'check g_FontOnInterface condition
-    If Not IsFontAllowedForControl(Ctl) Then Exit Sub
+    If Not IsFontAllowedForControl(Ctl) Then
+        Ctl.Font.Charset = DEFAULT_CHARSET
+        Exit Sub
+    End If
     
     Set ControlFont = Ctl.Font
     
@@ -14735,7 +14741,7 @@ Public Function InstallHJT(Optional bAskToCreateDesktopShortcut As Boolean, Opti
             CreateHJTShortcutDesktop HJT_Location
         Else
             'Installation is completed. Do you want to create shortcut in Desktop?
-            If MsgBoxW(Translate(69), vbYesNo) = vbYes Then
+            If MsgBoxW(Translate(69), vbYesNo, "HiJackThis") = vbYes Then
                 CreateHJTShortcutDesktop HJT_Location
             End If
         End If

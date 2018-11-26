@@ -104,9 +104,7 @@
 ; (1090-1099)
 ;
 1090=Welcome to HiJackThis Fork 3
-1091=    HiJackThis is a free and open source tool designed to combat malware and unwanted adware. It is provided "AS IS"
-
-     without warranty of any kind. You may use this software at your own risk.
+1091=    HiJackThis is a free and open source tool designed to combat malware and unwanted adware. It is provided "AS IS" without warranty of any kind. You may use this software at your own risk.
          This software is not permitted for commercial purposes.
          You must read and accept the license agreement to continue:
 1092=HiJackThis Fork - License Agreement
@@ -153,7 +151,7 @@
 ;
 1200=File
 1201=Settings
-1202=Uninstall HJT
+1202=Uninstall HiJackThis
 1203=Exit
 1204=Tools
 1205=Process Manager
@@ -168,15 +166,15 @@
 1214=Uninstall Manager
 1215=Help
 1216=User's Manual
-1217=English (outdated)
-1218=Russian
-1219=French (outdated)
-1220=German (outdated)
-1221=Spanish (outdated)
-1222=Portuguese (outdated)
-1223=Dutch (outdated)
+1217=English (short)
+1218=Russian (complete)
+1219=French [outdated]
+1220=German [outdated]
+1221=Spanish [outdated]
+1222=Portuguese [outdated]
+1223=Dutch [outdated]
 1224=Check for updates
-1225=About HJT...
+1225=About HiJackThis...
 1226=Support
 1227=Section descriptions
 1228=Command line keys
@@ -185,7 +183,7 @@
 1231=Services
 1232=StartupList
 1233=Basic manual
-1235=Install HJT
+1235=Install HiJackThis
 1236=Shortcuts
 1237=Verify shortcuts via Check Browsers' LNK
 1238=Fix shortcuts via ClearLNK
@@ -269,12 +267,13 @@
        /ihatewhitelists 	- ignore all internal whitelists.
        /md5		- calculate md5 hash of files.
        /timeout:sec	- number of seconds allowed for HiJackThis to be run in /silentautolog mode (180 by default; 0 - to disable).
-       /autostart   	- set Windows to automatically run a HJT scan after system boot up (use with /install key).
+       /autostart   	- set Windows to automatically run a HiJackThis scan after system boot up (use with /install key).
        /install     	- install HiJackThis to 'Program Files' folder and create shortcuts.
        /uninstall	- remove all HiJackThis Registry entries and backups, then quit.
        /silentuninstall - /uninstall analogue, except it disables confirmation requests.
        /deleteonreboot "c:\file.sys" - delete the specified file after system rebooting using PendingFileRenameOperations mechanism.
        /LangEN		- force use English language for user interface.
+       /LangFR		- force use French language for user interface.
        /LangRU		- force use Russian language for user interface.
        /LangUA		- force use Ukrainian language for user interface.
        /debug		- tracing mode. Function names will be appended to main log and HiJackThis_debug.log file. You can also rename the file to HiJackThis_debug.exe.
@@ -317,11 +316,11 @@
      Description
      -------------
      
-	HiJackThis Fork scans your computer for settings changed by adware, spyware, malware and other unwanted programs.
-	HiJackThis Fork results are not based on blacklists, specific programs or URLs. Instead, they are based on common methods and techniques used by hijackers.
-	Therefore, FALSE POSITIVES ARE LIKELY. If you are ever unsure, you should consult with a knowledgeable expert BEFORE deleting anything.
+          HiJackThis Fork scans your computer for settings changed by adware, spyware, malware and other unwanted programs.
+          HiJackThis Fork results are not based on blacklists, specific programs or URLs. Instead, they are based on common methods and techniques used by hijackers.
+          Therefore, FALSE POSITIVES ARE LIKELY. If you are ever unsure, you should consult with a knowledgeable expert BEFORE deleting anything.
      
-	HiJackThis comes with several useful tools available under the button 'Misc Tools', and the new bar in menu 'Tools':
+          HiJackThis comes with several useful tools available under the button 'Misc Tools', and the new bar in menu 'Tools':
      
        - StartupList 2
        - Process Manager
@@ -366,10 +365,11 @@
      Russian: Dragokas, ScriptMakeR, Boris, fseto (SafeZone.cc), wylek.ru team
      Ukrainian: Dragokas
      English: Dragokas, Tanner Helland
+     French: Colok (Colok-Traductions.com)
      
      Third-party development:
 
-     HJT uses code snippets and third-party developments written by:
+     HiJackThis uses code snippets and third-party developments written by:
      
      - Anatolii Krivous { The Trick } - 'HashTable', 'Binary Stream' classes, 'UnregCOM', 'EXE loader' modules, bitwise shift math
      - Boris Fayfel { Catstail } - 'Process' and 'CRC32' classes
@@ -392,6 +392,7 @@
 
 0034=
      BTC: 17hkU3eKPngHrG3P9uqXwMLE3ztmtfGDZ4
+     Ethereum: 0xc6B421AeeC879F6603f86117a792e0bb1c67C7A5
 
 0035=Sections
 0036=Keys
@@ -430,7 +431,7 @@
 0063=Default Search Assistant:
 0064=Default Search Customize:
 0065=Sorry! Not implemented yet.
-0066=This will install HJT to 'Program Files' folder and set Windows to automatically run a scan after system startup.
+0066=This will install HiJackThis to 'Program Files' folder and set Windows to automatically run a scan after system startup.
 
      Continue?
 
@@ -621,9 +622,9 @@
 0202=View stream contents
 0203=Save scan results to disk...
 0204=Enumerating system drives
-0205=	Alternate Data Streams (ADSs) are pieces of info hidden as file metadata. They are not visible in Explorer and their size is not reported by Windows. Recent browser hijackers have started hiding files inside ADSs, and very few anti-malware scanners detect this (yet).
-     	Use ADS Spy to find and remove these streams.
-     	Note: this app also displays legitimate ADS streams. Do not delete streams if you are not completely sure they are malicious!
+0205=     Alternate Data Streams (ADSs) are pieces of info hidden as file metadata. They are not visible in Explorer and their size is not reported by Windows. Recent browser hijackers have started hiding files inside ADSs, and very few anti-malware scanners detect this (yet).
+          Use ADS Spy to find and remove these streams.
+          Note: this app also displays legitimate ADS streams. Do not delete streams if you are not completely sure they are malicious!
 0206=Full scan (all NTFS, ReFS drives)
 0207=Scan only this folder:
 0208=Choose...
@@ -666,6 +667,7 @@
 2233=Edit in Wordpad
 2234=Back
 2235=Exit
+2236=Save log...
 ;
 ; =============== Uninstall manager ==============
 ;
@@ -824,7 +826,7 @@
 ; (310 - 399)
 ;
 0310=HiJackThis is about to remove a BHO and the corresponding file from your system. Close all Internet Explorer windows AND all Windows Explorer windows before continuing for the best chance of success.
-0311=Internet Explorer is still running. Would you like HJT to forcibly close IE?
+0311=Internet Explorer is still running. Would you like HiJackThis to forcibly close IE?
      WARNING: the current browser session will be lost!
 0320=Unable to delete file:
      []
@@ -986,7 +988,7 @@
       - Autostarting registry entries - registry value is deleted.
       - also, corresponding process will be killed or freezed.
       - 'AutoStart' folder - autoloading file is deleted.
-      - Disabled autorun items - registry entry is deleted (For Windows 8+: autoloading file is deleted too. For Windows 7 and older: autoloading file left in the folder: C:\Windows\pss).
+      - Disabled autorun items - registry entry and autoloading file are deleted.
 ; [O5]
 0413=        Modifying CONTROL.INI can cause Windows to hide certain icons in the Control Panel. Though originally meant to speed up Control Panel loading and reduce clutter, it can also be used by hijackers, for example, to prevent access to the 'Internet Options' window.
      
@@ -1005,7 +1007,7 @@
      
      >>> Action taken by HiJackThis:
       - corresponding information is deleted from the registry.
-; [O7]
+; [O7] // do not translate [EV], [Disk] and [Network] !!!
 0415=
      O7 - Policies: Regedit, TaskMgr, Explorer and "Start" menu
 
@@ -1702,4 +1704,4 @@
 ; Empty
 ;
 ; (2300 - ...)
-;             
+;                     

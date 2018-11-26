@@ -2,17 +2,18 @@
 SetLocal enableExtensions
 echo.
 ::echo Checking for non-screened STOP statements ...
+set "detected="
 
 For %%a in (*.bas *.frm *.cls) do (
   set module=%%a
   for /F "tokens=1* delims=[] " %%b in ('find /i /n "stop" ^< "%%~a" ^| find /i /v "if inIDE Then Stop" ^|findstr /r /i /c:"^]stop" /c:" stop" /c:"	stop" ^| findstr /r /i /c:"stop$" /c:"stop:" /c:"stop " /c:"stop	"') do (
     set n=%%b
     set "line=%%c"
-    call :check
+    call :check || set detected=true
   )
 )
-echo.
 ::echo Non-screened STOP statements doesn't detected.
+if defined detected exit /b 1
 goto :eof
 
 :check

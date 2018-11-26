@@ -712,13 +712,17 @@ Public Function OpenURL(sEnglishURL As String, Optional sRussianURL As String, O
             szUrl = sEnglishURL
         End If
     
-    ElseIf (IsRussianLangCode(OSver.LangSystemCode) Or IsRussianLangCode(OSver.LangDisplayCode)) And Not bForceEN Then
+    ElseIf (IsRussianLangCode(OSver.LangSystemCode) Or IsRussianLangCode(OSver.LangDisplayCode)) And Not (bForceEN Or bForceFR) Then
         szUrl = sRussianURL
     Else
         szUrl = sEnglishURL
     End If
     
     If szUrl = "" Then szUrl = szDefault
+    
+    If StrBeginWith(szUrl, "https") And OSver.MajorMinor <= 5.2 Then
+        szUrl = Replace$(szUrl, "https", "http", 1, 1, 1)
+    End If
     
     '// TODO: run ShellExecute with non-Elevated privilages
     OpenURL = (32 < ShellExecute(0&, StrPtr("open"), StrPtr(szUrl), 0&, 0&, vbNormalFocus))
@@ -734,14 +738,14 @@ Public Function DownloadUnzipAndRun(ZipURL As String, FileName As String, bSilen
     
     If Not bSilent Then
         'Download the program via Internet?
-        If MsgBoxW(Translate(1024), vbYesNo Or vbQuestion) = vbNo Then Exit Function
+        If MsgBoxW(Translate(1024), vbYesNo Or vbQuestion, GetFileName(FileName)) = vbNo Then Exit Function
     End If
     
     If DownloadFile(ZipURL, ArcPath, True) Or FileExists(ArcPath) Then
         UnpackZIP ArcPath, AppPath(False)
         'Downloading is completed. Run the program?
         If Not bSilent Then
-            bRun = MsgBoxW(Translate(1026), vbYesNo) = vbYes
+            bRun = MsgBoxW(Translate(1026), vbYesNo, GetFileName(FileName)) = vbYes
         End If
         If bRun Or bSilent Then
             DownloadUnzipAndRun = Proc.ProcessRun(ExePath, "", AppPath(False), 1, True)

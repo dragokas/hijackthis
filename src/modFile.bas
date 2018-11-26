@@ -1955,11 +1955,15 @@ Public Function ReadFileContents(sFile As String, isUnicode As Boolean) As Strin
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     If isUnicode Then
         ReadFileContents = b()
-        If b(0) = &HFF& And b(1) = &HFE& Then ReadFileContents = Mid$(ReadFileContents, 2)  ' - BOM UTF16-LE
+        If UBound(b) >= 1 Then
+            If b(0) = &HFF& And b(1) = &HFE& Then ReadFileContents = Mid$(ReadFileContents, 2)  ' - BOM UTF16-LE
+        End If
     Else
-        ReadFileContents = StrConv(b(), vbUnicode, &H419&)
-        If b(0) = &HEF& And b(1) = &HBB& And b(2) = &HBF& Then      ' - BOM UTF-8
-            ReadFileContents = Mid$(ReadFileContents, 4)
+        ReadFileContents = StrConv(b(), vbUnicode, OSver.LangNonUnicodeCode)
+        If UBound(b) >= 2 Then
+            If b(0) = &HEF& And b(1) = &HBB& And b(2) = &HBF& Then      ' - BOM UTF-8
+                ReadFileContents = Mid$(ReadFileContents, 4)
+            End If
         End If
     End If
     AppendErrorLogCustom "ReadFileContents - End"

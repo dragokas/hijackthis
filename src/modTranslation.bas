@@ -128,6 +128,8 @@ Public Sub LoadLanguage(lCode As Long, Force As Boolean, Optional PreLoadNativeL
     
     If lCode = 0 Then lCode = OSver.LangDisplayCode
     
+    ' https://docs.microsoft.com/en-us/windows/desktop/intl/language-identifier-constants-and-strings
+    
     ' Force choosing of language: no checks for non-Unicode language settings
     If Force Then
         Select Case lCode
@@ -135,6 +137,8 @@ Public Sub LoadLanguage(lCode As Long, Force As Boolean, Optional PreLoadNativeL
             LangUA
         Case &H419&, &H423&  'Russian, Belarusian
             LangRU
+        Case &H40C&, &H80C&, &HC0C&, &H140C&, &H180C&, &H100C&  'French
+            LangFR
         Case &H409& 'English
             LoadDefaultLanguage
         Case Else
@@ -148,17 +152,19 @@ Public Sub LoadLanguage(lCode As Long, Force As Boolean, Optional PreLoadNativeL
     
         Select Case OSver.LangDisplayCode
         Case &H419&, &H423&  'Russian, Belarusian
-            If HasSupportSlavian Then
+            If HasSupportSlavian Or PreLoadNativeLang Then
                 LangRU
             Else
                 LoadDefaultLanguage
             End If
         Case &H422& 'Ukrainian
-            If HasSupportSlavian Then
+            If HasSupportSlavian Or PreLoadNativeLang Then
                 LangUA
             Else
                 LoadDefaultLanguage
             End If
+        Case &H40C&, &H80C&, &HC0C&, &H140C&, &H180C&, &H100C& 'French
+            LangFR
         Case &H409& 'English
             LoadDefaultLanguage
         Case Else
@@ -169,17 +175,19 @@ Public Sub LoadLanguage(lCode As Long, Force As Boolean, Optional PreLoadNativeL
     
         Select Case lCode 'OSVer.LangDisplayCode
         Case &H419&, &H423& 'Russian, Belarusian
-            If HasSupportSlavian Then
+            If HasSupportSlavian Or PreLoadNativeLang Then
                 LangRU
             Else
                 NotSupportedByCP = True
             End If
         Case &H422& 'Ukrainian
-            If HasSupportSlavian Then
+            If HasSupportSlavian Or PreLoadNativeLang Then
                 LangUA
             Else
                 NotSupportedByCP = True
             End If
+        Case &H40C&, &H80C&, &HC0C&, &H140C&, &H180C&, &H100C& 'French
+            LangFR
         Case &H409& 'English
             LoadDefaultLanguage
         Case Else
@@ -240,6 +248,12 @@ Public Sub LangUA()
     g_VersionHistory = LoadResFile("_ChangeLog_ru.txt", 104)
 End Sub
 
+'// French
+Public Sub LangFR()
+    LoadLangFile "_Lang_FR.lng", 204
+    g_VersionHistory = LoadResFile("_ChangeLog_en.txt", 103)
+End Sub
+
 Sub LoadLangFile(sFilename As String, Optional ResID As Long, Optional UseResource As Boolean)
     On Error GoTo ErrorHandler:
 
@@ -256,7 +270,7 @@ Sub LoadLangFile(sFilename As String, Optional ResID As Long, Optional UseResour
     Else
         If ResID <> 0 Then
             b() = LoadResData(ResID, "CUSTOM")
-            sText = StrConv(b, vbUnicode, &H419&)
+            sText = StrConv(b, vbUnicode, OSver.LangNonUnicodeCode)
             If b(0) = &HEF& And b(1) = &HBB& And b(2) = &HBF& Then      ' - BOM UTF-8
                 sText = Mid$(sText, 4)
             End If
@@ -287,9 +301,11 @@ Function LoadResFile(sFilename As String, Optional ResID As Long, Optional UseRe
     Else
         If ResID <> 0 Then
             b() = LoadResData(ResID, "CUSTOM")
-            sText = StrConv(b, vbUnicode, &H419&)
-            If b(0) = &HEF& And b(1) = &HBB& And b(2) = &HBF& Then      ' - BOM UTF-8
-                sText = Mid$(sText, 4)
+            sText = StrConv(b, vbUnicode, OSver.LangNonUnicodeCode)
+            If UBound(b) >= 2 Then
+                If b(0) = &HEF& And b(1) = &HBB& And b(2) = &HBF& Then      ' - BOM UTF-8
+                    sText = Mid$(sText, 4)
+                End If
             End If
         End If
     End If
@@ -382,16 +398,17 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     Case "0004": .lblInfo(1).Caption = Translation
                     Case "1004": .txtNothing.Text = Translation
                     Case "0010": .fraScan.Caption = Translation
-                    Case "0011": If .cmdScan.Tag = "1" Then .cmdScan.Caption = Translation 'scan
-                    Case "0012": If .cmdScan.Tag = "2" Then .cmdScan.Caption = Translation 'save log...
+                    Case "0011": If .cmdScan.Tag = "1" Then .cmdScan.Caption = Translation 'Scan
+                    Case "0012": If .cmdScan.Tag = "2" Then .cmdScan.Caption = Translation 'Save log...
                     Case "0013": .cmdFix.Caption = Translation
                     Case "0014": .cmdInfo.Caption = Translation
                     Case "1000": .cmdAnalyze.Caption = Translation
                     Case "0009": .cmdMainMenu.Caption = Translation
                     Case "0015": .fraOther.Caption = Translation
-                    Case "0016": .cmdHelp.Caption = Translation
-                    Case "0018": If Not .fraConfig.Visible Then .cmdConfig.Caption = Translation
-                    Case "0019": If .fraConfig.Visible Then .cmdConfig.Caption = Translation
+                    Case "0016": If .cmdHelp.Tag = "0" Then .cmdHelp.Caption = Translation 'Help
+                    Case "0017": If .cmdHelp.Tag = "1" Then .cmdHelp.Caption = Translation 'Back
+                    Case "0018": If .cmdConfig.Tag = "0" Then .cmdConfig.Caption = Translation 'Settings
+                    Case "0019": If .cmdConfig.Tag = "1" Then .cmdConfig.Caption = Translation 'Report
                     Case "0020": .cmdSaveDef.Caption = Translation
                     Case "1000": .cmdAnalyze.Caption = Translation
                     
@@ -634,7 +651,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                                     Case "0203": .mnuPopupSave.Caption = Translation
                                     Case "2230": .mnuPopupShowFile.Caption = Translation
                                     ' Main window
-                                    Case "0012": .cmdSave.Caption = Translation
+                                    Case "2236": .cmdSave.Caption = Translation
                                     Case "0190": .Caption = Replace$(Translation, "[]", ADSspyVer)
                                     Case "0191": .optScanLocation(0).Caption = Translation
                                     Case "0206": .optScanLocation(1).Caption = Translation
@@ -1261,14 +1278,20 @@ Public Function ConvertCodePageW(Src As String, inPage As idCodePage) As String
     On Error GoTo ErrorHandler
     AppendErrorLogCustom "ConvertCodePageW - Begin"
     
+    Const MB_ERR_INVALID_CHARS As Long = 8&
+    
     Dim buf   As String
     Dim Size  As Long
+    Dim kFlags As Long
+    kFlags = 0
+    'kFlags = MB_ERR_INVALID_CHARS ' https://blogs.msdn.microsoft.com/oldnewthing/20120504-00/?p=7703
+
+    Size = MultiByteToWideChar(inPage, kFlags, Src, Len(Src), 0&, 0&)
     
-    Size = MultiByteToWideChar(inPage, 0&, Src, Len(Src), 0&, 0&)
     If Size > 0 Then
         buf = String$(Size, 0)
-        Size = MultiByteToWideChar(inPage, 0&, Src, Len(Src), StrPtr(buf), Len(Src))
-    
+        Size = MultiByteToWideChar(inPage, kFlags, Src, Len(Src), StrPtr(buf), Len(buf))
+
         If Size <> 0 Then ConvertCodePageW = Left$(buf, Size)
     End If
     
@@ -1278,4 +1301,3 @@ ErrorHandler:
     ErrorMsg Err, "ConvertCodePageW", "src: " & Src
     If inIDE Then Stop: Resume Next
 End Function
-

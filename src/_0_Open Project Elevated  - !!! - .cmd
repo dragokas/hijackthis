@@ -18,6 +18,9 @@ if "%OSBitness%"=="x32" (set "PF=%ProgramFiles%") else (set "PF=%ProgramFiles(x8
 
 if not exist "%PF%\Microsoft Visual Studio\VB98\vb6.exe" (echo VB6 IDE either not installed or located in unknown folder! & pause >NUL & exit /B)
 
+::XP ?
+ver |>NUL find " 5." && (start "" "%PF%\Microsoft Visual Studio\VB98\vb6.exe" "%~dp0%ProjFile%" & exit /b)
+
 call :TaskExist
 
 if defined TaskExist (

@@ -17,6 +17,12 @@ Option Explicit
 
 'https://docs.microsoft.com/en-us/windows/desktop/taskschd/task-scheduler-objects
 
+'Suspected in high CPU loading and other problrms:
+'
+'\Microsoft\Windows\TabletPC\InputPersonalization - C:\Program Files\Common Files\Microsoft Shared\Ink\InputPersonalization.exe (Microsoft)
+'\Microsoft\Windows Live\SOXE\Extractor Definitions Update Task - {3519154C-227E-47F3-9CC9-12C3F05817F1} - C:\Program Files\Windows Live\SOXE\wlsoxe.dll (Microsoft)
+'\Microsoft\Windows\rempl\shell - C:\Program Files\rempl\sedlauncher.exe - many complaints about waking up PC
+
 ' Action type constants
 Private Enum TASK_ACTION_TYPE
     TASK_ACTION_EXEC = 0
@@ -1258,6 +1264,10 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
                 ElseIf StrComp(sRunFilename, "OLicenseHeartbeat.exe", 1) = 0 Then
                     bTelemetry = True
                 ElseIf StrComp(DirFull, "\Microsoft\Windows\IME\SQM data sender", 1) = 0 Then
+                    bTelemetry = True
+                ElseIf StrComp(sRunFilename, "NvTmRep.exe", 1) = 0 Then
+                    bTelemetry = True
+                ElseIf StrComp(sRunFilename, "NvTmMon.exe", 1) = 0 Then
                     bTelemetry = True
                 End If
                 

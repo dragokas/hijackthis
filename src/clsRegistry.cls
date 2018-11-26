@@ -1930,7 +1930,7 @@ Public Function ExportKeyToVariable( _
     Dim sTempFile$, sData$, hFile&, FSize@, isUnicode As Boolean, pos&
 
     Randomize
-    sTempFile$ = BuildPath(AppPath(), "backups\backup_" & Int(Rnd * 10000) & ".reg")
+    sTempFile$ = BuildPath(TempCU, "backup_" & Int(Rnd * 10000) & ".reg")
     
     If lHive <> 0 Then
         sKey = GetHiveNameByHandle(lHive) & "\" & sKey

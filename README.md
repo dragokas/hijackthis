@@ -96,11 +96,14 @@ Operating System
 HiJackThis Fork by Alex Dragokas is a continuation of Trend Micro HiJackThis development, based on [v.2.0.6](https://sourceforge.net/p/hjt/code/HEAD/tree/beta/2.0.6/). It was initially supported by Trend Micro, but they have since refused support and closed the GitHub repository.
 HiJackThis Fork is distributed under the [GPLv2 license](https://github.com/dragokas/hijackthis/blob/devel/LICENSE.md). It also includes several tools and plugins available as freeware.
 
+[![](https://dragokas.com/tools/img/hjt/softpedia-reward.png)](https://www.softpedia.com/get/Security/Security-Related/HiJackThis-Fork.shtml) [![](https://dragokas.com/tools/img/hjt/mg_certified.gif)](https://www.majorgeeks.com/files/details/hijackthis_fork.html)
+
 ## Donate
 
 For more than three years, I have maintained this project in my free time.
 If you find it useful, you can support me by donating any amount to:
  * BTC: [17hkU3eKPngHrG3P9uqXwMLE3ztmtfGDZ4](https://dragokas.com/tools/img/BTC_QR.png)
+ * Ethereum: 0xc6B421AeeC879F6603f86117a792e0bb1c67C7A5
  * [Yandex.Money](https://money.yandex.ru/to/410011191892975)
  * WebMoney:
  - Z389963582741

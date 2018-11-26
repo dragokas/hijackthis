@@ -395,7 +395,7 @@ Public Function GetUrlTargetW(URLpathW As String) As String
         Stady = 3
         
         'identify codepage
-        aBuf() = StrConv(buf, vbFromUnicode, &H419&)
+        aBuf() = StrConv(buf, vbFromUnicode, OSver.LangNonUnicodeCode)
 
         Stady = 4
 

@@ -10,6 +10,23 @@
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[2.9.0.11] - Nov 26, 2018
+Source code builder script (makefile.cmd) has been improved:
+ - now it include compilation of dependencies.
+ - build Chocolatey project.
+ - source code building is verified and guaranteed on fresh Windows XP / 7 / 10.
+Most exe-files (helper-dependencies) have been removed from the GitHub repository due to false positives.
+R4 databases are updated.
+Donation information has been updated.
+
+[2.9.0.10] - Nov 23, 2018
+French translation is improved.
+
+[2.9.0.9] - Nov 19, 2018
+Added translation into French (thanks to Colok { Colok-Traductions.com }).
+Fixed problems with displaying extended character set of ANSI codepage.
+O22, O23 databases are updated.
+
 [2.9.0.7] - Nov 16, 2018
 Fixed false positives (e.g. O26) due to problems with buffer cleaning in registry operations.
 
@@ -1356,4 +1373,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-          
+                 

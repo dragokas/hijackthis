@@ -153,7 +153,6 @@ Public Declare Function LoadImageW Lib "user32.dll" (ByVal hInst As Long, ByVal 
 Public Declare Function SendMessageW Lib "user32.dll" (ByVal hwnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
 Public Declare Function SfcIsFileProtected Lib "Sfc.dll" (ByVal RpcHandle As Long, ByVal ProtFileName As Long) As Long
 
-Public Const GW_OWNER          As Long = 4
 Public Const IMAGE_ICON        As Long = 1
 Public Const ICON_SMALL        As Long = 0
 Public Const ICON_BIG          As Long = 1
@@ -234,6 +233,7 @@ Public inIDE    As Boolean
 Public bForceRU As Boolean
 Public bForceEN As Boolean
 Public bForceUA As Boolean
+Public bForceFR As Boolean
 
 Public SysDisk          As String
 Public sWinDir          As String
@@ -1965,6 +1965,9 @@ Public Declare Function DefSubclassProc Lib "comctl32" Alias "#413" (ByVal hwnd 
 Public Declare Function SHParseDisplayName Lib "shell32" (ByVal pszName As Long, ByVal IBindCtx As Long, ByRef ppidl As Long, sfgaoIn As Long, sfgaoOut As Long) As Long
 'Public Declare Function ILFree Lib "Shell32" (ByVal pidlFree As Long) As Long
 Public Declare Function NtQueryObject Lib "NTDLL.DLL" (ByVal Handle As Long, ByVal ObjectInformationClass As OBJECT_INFORMATION_CLASS, ObjectInformation As Any, ByVal ObjectInformationLength As Long, ReturnLength As Long) As Long
+Public Declare Function GetKeyState Lib "user32.dll" (ByVal nVirtKey As Long) As Integer
+Public Declare Function RegisterHotKey Lib "user32.dll" (ByVal hwnd As Long, ByVal ID As Long, ByVal fsModifiers As Long, ByVal vk As Long) As Long
+Public Declare Function UnregisterHotKey Lib "user32.dll" (ByVal hwnd As Long, ByVal ID As Long) As Long
 
 Public Const GWL_STYLE As Long = -16&
 
@@ -1988,6 +1991,23 @@ Public Const SHCNE_ATTRIBUTES   As Long = &H800&
 Public Const ERROR_FILE_NOT_FOUND      As Long = 2&
 
 Public Const RGN_OR            As Long = 2
+
+Public Const MOD_ALT            As Long = 1
+Public Const MOD_CONTROL        As Long = 2
+Public Const MOD_SHIFT          As Long = 4
+Public Const MOD_WIN            As Long = 8
+Public Const MOD_NOREPEAT       As Long = &H4000&
+
+Public Const HOTKEY_ID_CTRL_A   As Long = 1
+Public Const HOTKEY_ID_CTRL_F   As Long = 2
+
+Public Const GW_HWNDFIRST       As Long = 0
+Public Const GW_HWNDLAST        As Long = 1
+Public Const GW_HWNDNEXT        As Long = 2
+Public Const GW_HWNDPREV        As Long = 3
+Public Const GW_OWNER           As Long = 4
+Public Const GW_CHILD           As Long = 5
+Public Const GW_ENABLEDPOPUP    As Long = 6
 
 'modDigiSign
 

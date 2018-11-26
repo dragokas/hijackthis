@@ -55,6 +55,8 @@ OSver;Dir\Name;RunObj;Args;Note
 6,1; {root}\SidebarExecute; %ProgramFiles(x86)%\Windows Sidebar\sidebar.exe; /S
 6,1; {root}\SidebarExecute; %ProgramFiles%\Windows Sidebar\sidebar.exe; |/showGadgets
 6,1; \Microsoft\Configuration Manager\Configuration Manager Health Evaluation; %SystemRoot%\CCM\ccmeval.exe; 
+6,1; \Microsoft\Microsoft Antimalware\Microsoft Antimalware Scheduled Scan; %ProgramFiles%\Microsoft Security Client\MpCmdRun.exe; Scan -ScheduleJob -RestrictPrivileges
+6,1; \Microsoft\Microsoft Antimalware\MP Scheduled Scan; %ProgramFiles%\Microsoft Security Client\Antimalware\MpCmdRun.exe; Scan -ScheduleJob -WinTask -RestrictPrivilegesScan
 6,1; \Microsoft\Windows\Media Center\ActivateWindowsSearch; %SystemRoot%\ehome\ehPrivJob.exe; /DoActivateWindowsSearch
 6,1; \Microsoft\Windows\Media Center\ConfigureInternetTimeService; %SystemRoot%\ehome\ehPrivJob.exe; /DoConfigureInternetTimeService
 6,1; \Microsoft\Windows\Media Center\DispatchRecoveryTasks; %SystemRoot%\ehome\ehPrivJob.exe; /DoRecoveryTasks $(Arg0)
@@ -85,7 +87,10 @@ OSver;Dir\Name;RunObj;Args;Note
 6,1; \Microsoft\Windows\NetTrace\GatherNetworkInfo; %windir%\system32\gatherNetworkInfo.vbs; 
 6,1; \Microsoft\Windows\Location\Notifications; %windir%\System32\LocationNotifications.exe; 
 6,1; \Microsoft\Windows\MUI\LPRemove; %windir%\system32\lpremove.exe; 
+6,1; \Microsoft\Windows\MUI\Lpksetup; %SystemRoot%\System32\lpksetup.exe; -v;;
+6,1; \Microsoft\Windows\MUI\Mcbuilder; %SystemRoot%\System32\mcbuilder.exe
 6,1; \Microsoft\Windows\RemoteAssistance\RemoteAssistanceTask; %windir%\system32\RAServer.exe; /offerraupdate
+6,1; \Microsoft\Windows\WindowsBackup\Windows Backup Monitor; %windir%\system32\sdclt.exe; /CHECKSKIPPED
 6,1; \Microsoft\Windows\Windows Filtering Platform\BfeOnServiceStartTypeChange; %windir%\system32\rundll32.exe; bfe.dll,BfeOnServiceStartTypeChange
 6,1; \Microsoft\Windows\Tcpip\IpAddressConflict1; %windir%\system32\rundll32.exe; ndfapi.dll,NdfRunDllDuplicateIPOffendingSystem
 6,1; \Microsoft\Windows\Tcpip\IpAddressConflict2; %windir%\system32\rundll32.exe; ndfapi.dll,NdfRunDllDuplicateIPDefendingSystem

@@ -8,7 +8,7 @@ Begin VB.Form frmSysTray
    BeginProperty Font 
       Name            =   "Tahoma"
       Size            =   8.25
-      Charset         =   204
+      Charset         =   1
       Weight          =   400
       Underline       =   0   'False
       Italic          =   0   'False

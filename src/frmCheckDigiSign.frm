@@ -62,7 +62,7 @@ Begin VB.Form frmCheckDigiSign
       Begin VB.OptionButton OptExtension 
          Caption         =   "by extension"
          Height          =   255
-         Left            =   1320
+         Left            =   1680
          TabIndex        =   13
          Top             =   240
          Value           =   -1  'True
@@ -74,7 +74,7 @@ Begin VB.Form frmCheckDigiSign
          Left            =   120
          TabIndex        =   12
          Top             =   240
-         Width           =   1215
+         Width           =   1455
       End
       Begin VB.CheckBox chkIncludeSys 
          Caption         =   "Include files in Windows\System32 (SysWOW64) folder"
@@ -95,11 +95,11 @@ Begin VB.Form frmCheckDigiSign
       End
       Begin VB.TextBox txtExtensions 
          Height          =   285
-         Left            =   3000
+         Left            =   3240
          TabIndex        =   6
          Text            =   ".exe;.dll;.sys"
          Top             =   240
-         Width           =   1935
+         Width           =   1695
       End
    End
    Begin VB.CommandButton CmdExit 
