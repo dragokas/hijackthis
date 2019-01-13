@@ -753,7 +753,7 @@ Public Function DownloadUnzipAndRun(ZipURL As String, FileName As String, bSilen
     Else
         'Downloading is failed -> trying to open link in default browser
         '// TODO: run ShellExecute with non-Elevated privilages
-        ShellExecute frmMain.hwnd, StrPtr("open"), StrPtr(ZipURL), 0&, 0&, 1
+        ShellExecute g_HwndMain, StrPtr("open"), StrPtr(ZipURL), 0&, 0&, 1
     End If
 End Function
 

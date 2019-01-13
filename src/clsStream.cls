@@ -121,7 +121,11 @@ Public Property Let BufferPointer( _
         Exit Property
     End If
 
-    mCurIndex = Value
+    If Value <= mSizeOfBuffer Then
+        mCurIndex = Value
+    Else
+        mCurIndex = mSizeOfBuffer
+    End If
     
 End Property
 
@@ -261,6 +265,10 @@ Public Sub ReadData( _
     End If
     
     mCurIndex = mCurIndex + dwSize
+    
+    If mCurIndex > mSizeOfBuffer Then
+        mCurIndex = mSizeOfBuffer
+    End If
     
 End Sub
 

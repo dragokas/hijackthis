@@ -18,17 +18,18 @@
 ;
 0001=Bienvenue dans HiJackThis Fork.
      Ce programme va générer un rapport d'éléments non usuels (modifications du registre,
-     de fichiers, etc...) des zones les plus vulnérables du Système d'exploitation, souvent modifiés par des logiciels officiels ou malveillants.
+     de fichiers, etc...) des zones les plus vulnérables du Système d'exploitation, souvent modifiées par des logiciels officiels ou malveillants.
 
 0002=HiJackThis est déja en cours d'exécution.
-     Etes-vous sûr de vouloir lancer une autre copie?
-0004=Voici les résultats du scan de HiJackThis. Faites attention à ce que vous allez supprimer en cliquant sur le bouton 'Corriger'. Les résultats du scan ne déterminent pas si un élément est bon ou mauvais. Si vous pensez que votre machine est infectée, cliquez sur le bouton 'AnalyzeThis', inscrivez-vous, lisez les instructions, créez le rapport requis et montrez-le à nos consultants (en Anglais).
-0007=Il semblerait que vous utilisez HiJackThis à partir d'un périphérique en lecture seule tel qu'un CD-ROM. Si vous souhaitez faire des sauvegardes des éléments que vous avez corrigés, vous devez d'abord copier HiJackThis.exe sur votre disque dur, puis l'exécuter à partir de là.
+     Voulez-vous vraiment lancer une autre copie?
+0004=Voici les résultats du scan de HiJackThis.
+     Attention à ce que vous allez supprimer en cliquant sur le bouton 'Corriger'. Les résultats du scan ne déterminent pas si un élément est bon ou mauvais. Si vous pensez que votre machine est infectée, cliquez sur le bouton 'Analyser ceci', inscrivez-vous, lisez les instructions, créez le rapport requis et montrez-le à nos consultants (en Anglais).
+0007=Il semblerait que vous utilisez HiJackThis à partir d'un périphérique en lecture seule tel qu'un CD-ROM. Si vous souhaitez faire des sauvegardes des éléments que vous allez corrigés, vous devez d'abord copier HiJackThis.exe sur votre disque dur, puis l'exécuter.
      
      Si vous continuez, vous risquez de rencontrer des erreurs d'"Accès chemin/fichier".
-0008=Il est interdit de le lancer depuis une archive!
+0008=Il est déconseillé de le lancer HiJackThis depuis une archive!
      
-     Puis-je le dézipper sur le bureau pour vous?
+     Voulez-vous le décompresser sur votre bureau?
 0009=Menu principal
 0010=   Scanner et corriger
 0011=Scanner
@@ -43,12 +44,12 @@
 0020=Ajouter les éléments cochés à la liste 'Ignorer'
 0021=Modules chargés
 0025=Ceci configurera HiJackThis pour qu'il ignore les éléments cochés, à moins qu'ils ne soit modifiés ultérieurement. Continuer?
-0026=L'accès en écriture a été refusé dans le dossier que vous avez indiqué. Veuillez essayer un autre dossier, merci!
+0026=L'accès en écriture a été refusé dans le dossier que vous avez indiqué. Veuillez en essayer un autre, merci!
 0027=Le rapport a été enregistré dans [].
       Vous pouvez l'ouvrir avec un éditeur de texte tel que Notepad.
 0028=Impossible de lister les processus en cours
 0029=Processus en cours
-1000=AnalyzeThis
+1000=Analyser ceci
 1001=Enregistrer le rapport...
 1002=Rapports
 1003=Tous les fichiers
@@ -122,7 +123,7 @@ et enregistrer un rapport
 1115=Outils divers
 1116=Aide en ligne
 1117=Ne rien faire, démarrer simplement le programme
-1118=Ne pas afficher ce menu au démarrage du programme
+1118=Ne plus afficher ce menu au démarrage du programme
 1119=Langue:
 ;
 ; ================ Context menu ==============
@@ -202,10 +203,10 @@ et enregistrer un rapport
          R0 - Valeur de registre modifiée
          R1 - Valeur de registre créée
          R2 - Clé de registre créée
-         R3 - Paramètres de registre supplémentaires créés où un seul devrait suffire
+         R3 - Paramètres de registre supplémentaires créés (où un seul devrait suffire)
          R4 - Moteur de recherche (SearchScopes)
       F - Chargement automatique à partir de fichiers INI et des emplacements de registre correspondants
-         F0 - Valeur du fichier ini modifiée (system.ini)
+         F0 - Valeur du fichier .ini modifiée (system.ini)
          F1 - Paramètre ini-file créé (win.ini)
          F2 - Valeur de registre modifiée qui remplace les paramètres du fichier ini (shell, userinit)
          F3 - Paramètre de registre créé qui remplace les paramètres du fichier ini (chargement, exécution)
@@ -301,7 +302,7 @@ et enregistrer un rapport
      3. Comment utiliser les clés de ligne de commande?
      -----------------------------------------
      
-     Créez un fichier texte run.txt à proximité du programme HiJackThis.exe. Renommez run.txt en run.bat.
+     Créez un fichier texte run.txt dans le dossier de HiJackThis.exe. Renommez run.txt en run.bat.
      Clic droit sur run.bat. Choisir "Editer".
      
      Exemple sur le code du fichier .bat:
@@ -316,7 +317,7 @@ et enregistrer un rapport
      -------------
      
 HiJackThis Fork analyse votre ordinateur à la recherche de paramètres modifiés par les logiciels publicitaires, espions, malveillants ou autres programmes indésirables.
-Les résultats de HiJackThis Fork ne sont pas basés sur des listes noires, des programmes spécifiques ou des URL. En fait, ils sont basés sur des méthodes et techniques courantes utilisées par les pirates.
+Les résultats de HiJackThis Fork ne sont pas basés sur des listes noires, des programmes spécifiques ou des URL. En fait, ils sont basés sur des méthodes et techniques couramment utilisées par les pirates.
 Se SONT donc probablement de FAUX POSITIFS. En cas de doute, consultez un expert AVANT de supprimer quoi que ce soit.
      
 HiJackThis est livré avec plusieurs outils, disponibles sous le bouton "Outils divers" et la nouvelle barre du menu "Outils":
@@ -387,7 +388,7 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
      Donation
      -------------
      Si vous appréciez les modifications que j'ai faites dans HiJackThis et que vous souhaitez faire un don 
-     pour avoir une inspiration créative et m'aider à poursuivre un développement actif du projet, j'en serai très content :
+     pour que je garde une créativité et m'aider à poursuivre un développement actif du projet, j'en serai très content:
 
 0034=
      BTC: 17hkU3eKPngHrG3P9uqXwMLE3ztmtfGDZ4
@@ -414,12 +415,12 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 0047=Appliquer la police à toute l'interface
 0048=Ceci s’applique à tous les outils (par ex. la liste dans ADS Spy ou l’arborescence de Startuplist, etc...)
 0050=Cocher tout ce qui a été trouvé pour correction après le scan (ATTENTION: DANGER!!)
-0051=Sauvegarder avant de corriger les éléments.
+0051=Faire une sauvegarde avant de corriger les éléments.
 0052=Confirmer la correction ou l'omission d'éléments (mode sécurisé) 
 0053=Ignorer les domaines non standards mais sécurisés dans IE (ex. msn.com, microsoft.com)
 0054=Ceci peut être utile lors de l'ajout de HiJackThis au démarrage.
 0055=Ne pas afficher le menu principal au démarrage
-0057=Vous êtes sûr de vouloir activer cette option ?
+0057=Etes-vous sûr de vouloir activer cette option ?
      HiJackThis n'est pas un programme 'clic & corriger'. Car il cible les méthodes de détournement *générales*, les faux positifs sont fréquents.
      Si vous activez cette option, vous pouvez désactiver des programmes ou des pilotes dont vous avez besoin. Cependant, il est très peu probable que vous endommagiez votre système après la réparation. Vous ne devriez donc activer cette option que si vous savez ce que vous faites !
 0058=Ne pas afficher les messages d'erreur
@@ -460,7 +461,7 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 ;
 ; (80-89, 1550 - 1599)
 ;
-0080=Ceci est votre liste d'éléments sauvegardés. Vous pouvez les restaurer (HiJackThis les redétectera lors d'une prochaine exécution) sauf si vous les placez dans la liste des items à Ignorer ou les supprimer à partir d'ici. (Les programmes antivirus peuvent détecter les sauvegardes de HiJackThis!)
+0080=Voici la liste de vos éléments sauvegardés. Vous pouvez les restaurer, mais HiJackThis les redétectera lors d'une prochaine exécution, sauf si vous les placez dans la liste des éléments à Ignorer ou si vous les supprimez. Les programmes antivirus peuvent détecter les sauvegardes de HiJackThis!
 0081=Restaurer
 0082=Supprimer
 0083=Tout supprimer
@@ -483,7 +484,7 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 1556=Echec lors de la création du point de restauration.
 1557=point de restauration du système créé avec succès.
 1558=Le service WMI est requis pour cette action. Voulez-vous le lancer maintenant ?
-1560=Vous êtes sûr de vouloir restaurer le registre sur lequel vous avez enregistré: [] ?
+1560=Etes-vous sûr de vouloir restaurer le registre sur lequel vous avez enregistré: [] ?
 
      Le système sera redémarré automatiquement.
 1561=Echec lors de la création de la Sauvegarde du registre.
@@ -491,7 +492,7 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
      Continuer et la remplacer ?
 1563=Cela supprimera la Sauvegarde du registre: [].
      Continuer?
-1564=Vous êtes sur le point de supprimer TOUTES les sauvegardes de registre!
+1564=Vous êtes sur le point de supprimer TOUTES les sauvegardes du registre!
      Etes-vous sûr?
 1565=Impossible de supprimer la Sauvegarde.
 1566=Erreur! Cette Sauvegarde n'existe plus.
@@ -513,7 +514,7 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 ;
 0091=Scan StartupList
 0092=
-     Un outil simple qui liste tous les programmes de démarrage automatique de ce système. Utilisé couramment pour dépanner les systèmes défectueux, les infections par chevaux de Troie/virus et les nouveaux types de logiciels espions et malveillants.
+     Un outil simple qui liste tous les programmes en démarrage automatique de ce système. Utilisé couramment pour dépanner les systèmes défectueux, les infections par chevaux de Troie/virus et les nouveaux types de logiciels espions et malveillants.
 0100=Outils système
 0101=Gestionnaire de processus
 0102=Petit gestionnaire de processus, semblable au gestionnaire de tâches
@@ -525,7 +526,7 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 0108=Supprimer un service Windows (O23)
      A UTILISER AVEC PRÉCAUTION!
 0109=ADS Spy
-0110=Scan des flux de données cachées
+0110=Scan des flux de fichiers cachées
 0112=Gestion des éléments dans le module de 'Désinstallation d'un programme'
 0113=Entrer le nom exact du service tel qu'il apparaît dans les résultats du scan ou le nom court entre parenthèses, si celui-ci est indiqué.
 0114=Supprimer un service Windows NT
@@ -534,9 +535,9 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 0117=Le service suivant a été trouvé :
 0118=Etes-vous absolument sûr de vouloir supprimer ce service?
 0119=Déblocage des clés de registre
-0120=Réinitialiser les permissions sur la liste des clés de registre donnée
+0120=Réinitialiser les permissions sur la liste des clés de registre données
 0121=Vérificateur de signature numérique
-0122=Vérifier les signatures numériques authentifiées sur la liste dse fichiers de données
+0122=Vérifier les signatures numériques authentifiées sur la liste des fichiers de données
 0140=Mises à jour
 0141=Vérification en ligne
 0142=Vérifier les mises à jour au démarrage du programme
@@ -549,7 +550,7 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 0149=Mot de passe
 0150=Suppression de HJT
 0151=Désinstaller HiJackThis
-0152=Supprime tous les paramètres, sauvegardes et quitte. 
+0152=Supprimera tous vos paramètres et vos sauvegardes! 
 0153=Cela supprimera les paramètres et les sauvegardes de HiJackThis . Notez que vous devrez supprimer manuellement le fichier HiJackThis.exe.
      
      Continuer avec la désinstallation?
@@ -559,9 +560,9 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 0157=Proxy
 1600=Plugins
 1601=Check Browsers' LNK
-1602=Identifier les raccourcis infectés (.LNK) qui occasionnent de la publicité non désirée dans les navigateurs
+1602=Identifier les liens infectés (.LNK) qui occasionnent de la publicité non désirée dans les navigateurs
 1603=ClearLNK
-1604=Nettoyer et restaurer la liste des raccourcis infectés (.LNK), trouvés via le plugin LNK de Check Browsers
+1604=Nettoyer et restaurer la liste des liens infectés trouvés via le plugin Check Browsers' LNK
 ;
 ; ================ Process Manager =============
 ;
@@ -573,7 +574,7 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 0163=Enregistrer la liste sur le disque...
 0164=Propriétés du fichier
 0165=Copier la liste des processus dans le presse-papiers
-0166=Enregistrer la liste des processus dans le fichier ...
+0166=Enregistrement de la liste des processus dans le fichier...
 0167=Fichiers texte
 0168=Tous les fichiers
 0170=Gestionnaire de processus
@@ -585,7 +586,7 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 0176=Quitter
 0177=Double-cliquez sur un fichier pour voir ses propriétés
 0178=Librairies DLL chargées par processus sélectionné:
-0179=Vous êtes sûr de vouloir fermer ces [] processus?
+0179=Voulez-vous vraiment fermer le processus []?
 0180=Toutes les données non sauvegardées seront perdues.
 0181=Exécution
 0182=Taper le nom d'un programme, dossier, document ou ressource Internet et Windows l'ouvrira pour vous.
@@ -596,11 +597,11 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 0189=DLL chargées par le processus
 1650=La liste des processus et la liste des fichiers dll ont été copiées dans votre presse-papiers.
 1651=La liste des processus a été copiée dans votre presse-papiers.
-1652=Ce processus ne peut être arrêté. Il se peut qu'il soit déjà Fermé ou qu'il soit protégé par Windows.
+1652=Ce processus ne peut être arrêté. Il se peut qu'il soit déjà fermé ou qu'il soit protégé par Windows.
 1653=Ce processus ne peut être arrêté. Il peut être protégé par Windows.
-1654=Ce processus ne peut être arrêté. Il se peut qu'il soit déjà Fermé ou qu'il soit protégé par Windows.
+1654=Ce processus ne peut être arrêté. Il se peut qu'il soit déjà fermé ou qu'il soit protégé par Windows.
 
-     Ce processus peut être un service que vous pouvez arrêter à partir de l'onglet Services dans le Panneau de configuration -> Outils d'administration.
+     Ce processus peut être un service que vous pouvez arrêter à partir de l'onglet Services du Panneau de configuration -> Outils d'administration.
 	 (Pour ouvrir cette fenêtre, cliquez sur les boutons 'Win + R' et entrez 'services.msc').
 ;
 ; ================= ADS Spy =================
@@ -616,10 +617,10 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 0197=Liste des lecteurs...
 0198=Supprimer les flux sélectionnés
 0199=Tout sélectionner
-O200=Ne rien sélectionner.
+0200=Ne rien sélectionner
 0201=Inverser la sélection
 0202=Voir le contenu du flux
-0203=Enregistrer les résultats du scan sur le disque...
+0203=Enregistrement des résultats du scan sur le disque.....
 0204=Enumération des lecteurs système
 0205=     Les flux de données alternatifs (ADS) sont des informations cachées sous forme de fichiers de métadonnées. Ils ne sont pas visibles dans l'Explorateur et leur taille n'est pas indiquée par Windows. Les derniers pirates de navigateur ont commencé à cacher des fichiers à l'intérieur des ADS et très peu de logiciels anti-malware ne détectent ce problème (pour l'instant).
           Utiliser ADS Spy pour trouver et supprimer ces flux.
@@ -659,10 +660,10 @@ O200=Ne rien sélectionner.
 2226=Les résultats du scan sont enregistrés dans
 2227=Lecture du flux...
 2228=Le flux '[]' contient des données binaires et il est peu probable qu'il s'affiche correctement.
-2229=Visualisation du contenu de [].
+2229=Contenu de []
 2230=Afficher le fichier dans Explorer
 2231=Copier
-2232=Enregistrer sur le disque...
+2232=Enregistrement sur le disque...
 2233=Modifier dans le bloc-notes
 2234=Retour
 2235=Quitter
@@ -673,9 +674,9 @@ O200=Ne rien sélectionner.
 ; (210 - 229, 1700 - 1749)
 ;
 0210=Gestionnaire de désinstallation de programmes
-0211=Ici vous trouverez la liste des programmes similaires à la désinstallation de programmes du Panneau de configuration.
-     Vous pouvez Editer la commande de désinstallation, l'enregistrer seulement ou désinstaller complètement le programme.
-     Attention, la restauration d'un enregistrement ou d'une application supprimé n'est pas possible !
+0211=Vous trouverez, ci-dessous, la liste des programmes que vous pouvez désinstaller (fonctions que vous retrouvez dans votre Panneau de configuration).
+     Vous pouvez Editer la commande de désinstallation, seulement l'enregistrer ou désinstaller complètement le programme.
+     Attention, la restauration d'un enregistrement ou d'une application supprimée ne sera plus possible !
 0212=Nom
 0213=Commande de désinstallation
 0214=Website
@@ -748,21 +749,21 @@ O200=Ne rien sélectionner.
 ;
 ; (270 - 309, 1800 - 1849)
 ;
-0270=Gestionnaire de fichiers Host
-0271=Le fichier Host se trouve à l'adresse suivante
+0270=Gestionnaire de fichiers Hosts
+0271=Le fichier Hosts se trouve à l'adresse suivante
 0272=Supprimer la ou les lignes
 0273=Basculer la ou les lignes
 0274=Ouvrir dans l'éditeur
 0275=Retour
-0276=Note: les modifications apportées au fichier hosts ne prendront effet que lorsque vous redémarrerez votre navigateur.
+0276=Note: les modifications ne prendront effet qu'au redémarrage de votre navigateur.
 0277=Attributs:
 0278=Lignes:
 0279=Chargement du fichier hosts, veuillez patienter...
-0280=N'arrive pas à trouver le fichier hosts.
+0280=Fichier hosts introuvable.
      Voulez-vous créer un nouveau fichier hosts par défaut ?
 0281=Aucun fichier hosts trouvé.
 0282=Le fichier hosts est verrouillé en lecture et ne peut pas être modifié.
-     Assurez-vous d'avoir les privilèges pour modifier le fichier hosts et qu'aucun programme ne le protège contre tout changement.
+     Assurez-vous d'avoir les droits administratifs pour modifier le fichier hosts et qu'aucun programme ne le protège contre toute modification.
 0303=HiJackThis n'a pas pu écrire les modifications sélectionnées dans votre fichier hosts. Un autre programme peut en refuser l'accès ou votre compte d'utilisateur peut ne pas disposer de droits suffisants pour y accéder.
 ;
 ; =========== Digital signature checker ==========
@@ -772,11 +773,11 @@ O200=Ne rien sélectionner.
 1850=Authenticode EDS checker - écrit par Stanislav
 1851=Cet outil créera un rapport détaillé sur les signatures numériques des fichiers/dossiers que vous indiquerez ci-dessous :
 1852=Recursivement (inclure les sous-dossiers)
-1853=Inclure les fichiers dans le dossier Windows
+1853=Inclure les fichiers du dossier de Windows
 1854=Format du rapport:
 1855=Texte brut (rapport court en Unicode)
 1856=CSV (rapport complet en ANSI)
-1857=Go
+1857=Créer
 1858=Fermer
 1859=Vous devez entrer au moins un chemin d'accès au fichier ou au dossier!
 1860=Aucun fichier trouvé.
@@ -799,7 +800,7 @@ O200=Ne rien sélectionner.
 1900=Déblocage de la Clé de Registre - écrit par Stanislav
 1901=Entrer la Clé de registre pour déverrouiller et réinitialiser les droits d'accès:
 1902=Récursivement (inclure les sous-clés)
-1903=Go
+1903=Réinitialiser
 1904=Fermer
 1905=Vous devez entrer au moins une clé!
 1906=[OK]
@@ -1701,7 +1702,27 @@ O200=Ne rien sélectionner.
 2102=Sauter les zones pour tous les utilisateurs, puisqu'il y a plus de 1000 domaines. ([] pour être exact)
 2103=Sauter les zones pour l'utilisateur [*], puisqu'il y a plus de 1000 domaines. ([**] pour être exact)
 ;
-; Vide
+; Search form
 ;
-; (2300 - ...)
-;                 
+; (2300 - 2349)
+;
+2300=Rechercher
+2301=Quoi:
+2302=Respecter la casse
+2303=Mot entier
+2304=Expression régulières
+2305=Mode étendu
+2306=Vers le bas
+2307=En haut
+2308=Au début
+2309=A la fin
+2310=Suivante
+2311=Recherche terminée.
+2312=Erreur de syntaxe.
+2313=Direction
+2314=Paramètres
+;
+; Empty
+;
+; (2350 - ...)
+;                    

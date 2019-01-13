@@ -1748,6 +1748,9 @@ ErrorHandler:
 End Function
 
 Private Sub Read_Job_String(cStream As clsStream, JobUniStr As JOB_UNICODE_STRING)
+    On Error GoTo ErrorHandler:
+    
+    Dim cchText As Long
     
     JobUniStr.Data = vbNullString
     
@@ -1755,10 +1758,23 @@ Private Sub Read_Job_String(cStream As clsStream, JobUniStr As JOB_UNICODE_STRIN
     
     If JobUniStr.Length > 1 Then
     
-        JobUniStr.Data = String$(JobUniStr.Length - 1, 0&)
+        cchText = JobUniStr.Length
         
-        cStream.ReadData StrPtr(JobUniStr.Data), (JobUniStr.Length - 1) * 2 'minus null terminator
+        If cchText > 300 Then cchText = 300
+    
+        JobUniStr.Data = String$(cchText - 1, 0&)
+        
+        cStream.ReadData StrPtr(JobUniStr.Data), (cchText - 1) * 2& 'minus null terminator
         
         cStream.BufferPointer = cStream.BufferPointer + 2
+        
+        If cchText < JobUniStr.Length Then 'correct ptr
+            cStream.BufferPointer = cStream.BufferPointer + (JobUniStr.Length - cchText)
+        End If
     End If
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "Read_Job_String"
+    If inIDE Then Stop: Resume Next
 End Sub

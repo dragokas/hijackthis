@@ -10,6 +10,18 @@
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[2.9.0.17] - Jan 13, 2019
+Default font for lists is replaced by "MS Sans Serif", 10pt.
+Added hotkeys: Ctrl + F (search), Ctrl + A (select all).
+Improved compatibility with 64-bit OS when you open files for editing or its properties (in ProcMan, StartupList, ADS Spy).
+Little corrections in French translation.
+Other little edits of errors and interface.
+Microsoft certificates database is updated.
+
+[2.9.0.16] - Dec 12, 2018
+Fixed crash when parsing misformatted (encrypted) jobs due to error in stream reader.
+French translation is updated.
+
 [2.9.0.11] - Nov 26, 2018
 Source code builder script (makefile.cmd) has been improved:
  - now it include compilation of dependencies.
@@ -18,6 +30,7 @@ Source code builder script (makefile.cmd) has been improved:
 Most exe-files (helper-dependencies) have been removed from the GitHub repository due to false positives.
 R4 databases are updated.
 Donation information has been updated.
+MajorGeeks and Softpedia quality badges are added on project description page.
 
 [2.9.0.10] - Nov 23, 2018
 French translation is improved.
@@ -1373,4 +1386,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                 
+                          

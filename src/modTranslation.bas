@@ -604,6 +604,28 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                 If bAnotherForm Then
                     If True Then
                     
+                        '; =============== Search form ===============
+                        
+                        If IsFormInit(frmSearch) Then
+                            With frmSearch
+                                Select Case ID
+                                    Case "2300": .Caption = Translation
+                                    Case "2301": .lblWhat.Caption = Translation
+                                    Case "2302": .chkMatchCase.Caption = Translation
+                                    Case "2303": .chkWholeWord.Caption = Translation
+                                    Case "2304": .chkRegExp.Caption = Translation
+                                    Case "2305": .chkEscSeq.Caption = Translation
+                                    Case "2306": .optDirDown.Caption = Translation
+                                    Case "2307": .optDirUp.Caption = Translation
+                                    Case "2308": .optDirBegin.Caption = Translation
+                                    Case "2309": .optDirEnd.Caption = Translation
+                                    Case "2310": .CmdFind.Caption = Translation
+                                    Case "2313": .frDir.Caption = Translation
+                                    Case "2314": .CmdMore.ToolTipText = Translation
+                                End Select
+                            End With
+                        End If
+                    
                         ' ================ Uninstall Software manager =================
                         
                         If IsFormInit(frmUninstMan) Then
@@ -654,6 +676,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                                     Case "2236": .cmdSave.Caption = Translation
                                     Case "0190": .Caption = Replace$(Translation, "[]", ADSspyVer)
                                     Case "0191": .optScanLocation(0).Caption = Translation
+                                    Case "0197": If .picStatus.Tag = "1" Then .picStatus.Cls: .picStatus.Print Translation
                                     Case "0206": .optScanLocation(1).Caption = Translation
                                     Case "0207": .optScanLocation(2).Caption = Translation
                                     Case "0208": .cmdScanFolder.Caption = Translation
@@ -662,7 +685,19 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                                     Case "0198": .cmdRemove.Caption = Translation
                                     Case "0205": .txtUselessBlabber.Text = Translation
                                     Case "2208": If .cmdScan.Tag = "2" Then .cmdScan.Caption = Translation 'abort scan
+                                    Case "0209": If .picStatus.Tag = "2" Then .picStatus.Cls: .picStatus.Print Translation
                                     Case "2210": If .cmdScan.Tag = "1" Then .cmdScan.Caption = Translation 'scan
+                                    Case "2200": If .picStatus.Tag = "3" Then .picStatus.Cls: .picStatus.Print Translation
+                                    Case "2206": If .picStatus.Tag = "4" Then .picStatus.Cls: .picStatus.Print Translation
+                                    Case "2207": If .picStatus.Tag = "5" Then .picStatus.Cls: .picStatus.Print Translation
+                                    Case "2212": If .picStatus.Tag = "6" Then .picStatus.Cls: .picStatus.Print Translation
+                                    Case "2211": If .picStatus.Tag = "7" Then .picStatus.Cls: .picStatus.Print Translation
+                                    Case "2214": If .picStatus.Tag = "8" Then .picStatus.Cls: .picStatus.Print Translation
+                                    Case "2213": If .picStatus.Tag = "9" Then .picStatus.Cls: .picStatus.Print Translation
+                                    Case "2216": If .picStatus.Tag = "10" Then .picStatus.Cls: .picStatus.Print Translation
+                                    Case "2226": If .picStatus.Tag = "11" Then .picStatus.Cls: .picStatus.Print Translation
+                                    Case "2227": If .picStatus.Tag = "12" Then .picStatus.Cls: .picStatus.Print Translation
+                                    Case "2229": If .picStatus.Tag = "13" Then .picStatus.Cls: .picStatus.Print Translation
                                     Case "2231": .cmdViewCopy.Caption = Translation
                                     Case "2232": .cmdViewSave.Caption = Translation
                                     Case "2233": .cmdViewEdit.Caption = Translation
@@ -914,10 +949,18 @@ ErrorHandler:
     End If
 End Sub
 
-Public Function IsFormInit(Frm As Form) As Boolean
+Public Function IsFormForeground(frm As Form) As Boolean
+    Dim hActiveWnd As Long
+    If IsFormInit(frm) Then
+        hActiveWnd = GetForegroundWindow()
+        If hActiveWnd = frm.hWnd Then IsFormForeground = True
+    End If
+End Function
+
+Public Function IsFormInit(frm As Form) As Boolean
     Dim cForm As Form
     For Each cForm In Forms
-        If cForm Is Frm Then
+        If cForm Is frm Then
             IsFormInit = True
             Exit For
         End If

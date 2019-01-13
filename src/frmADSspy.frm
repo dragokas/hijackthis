@@ -8,13 +8,14 @@ Begin VB.Form frmADSspy
    BeginProperty Font 
       Name            =   "Tahoma"
       Size            =   8.25
-      Charset         =   1
+      Charset         =   204
       Weight          =   400
       Underline       =   0   'False
       Italic          =   0   'False
       Strikethrough   =   0   'False
    EndProperty
    Icon            =   "frmADSspy.frx":0000
+   KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    ScaleHeight     =   6765
    ScaleWidth      =   8340
@@ -132,7 +133,7 @@ Begin VB.Form frmADSspy
       End
    End
    Begin VB.ListBox lstADSFound 
-      Height          =   1845
+      Height          =   1605
       IntegralHeight  =   0   'False
       Left            =   120
       Sorted          =   -1  'True
@@ -156,43 +157,44 @@ Begin VB.Form frmADSspy
    End
    Begin VB.CommandButton cmdViewSave 
       Caption         =   "Save to disk..."
-      Height          =   375
+      Height          =   470
       Left            =   1440
       TabIndex        =   3
-      Top             =   6000
+      Top             =   5880
       Visible         =   0   'False
       Width           =   1695
    End
    Begin VB.CommandButton cmdViewBack 
       Caption         =   "Back"
-      Height          =   375
+      Height          =   470
       Left            =   5160
       TabIndex        =   5
-      Top             =   6000
+      Top             =   5880
       Visible         =   0   'False
       Width           =   1215
    End
    Begin VB.CommandButton cmdViewEdit 
       Caption         =   "Edit in Wordpad"
-      Height          =   375
+      Height          =   470
       Left            =   3240
       TabIndex        =   4
-      Top             =   6000
+      Top             =   5880
       Visible         =   0   'False
       Width           =   1815
    End
    Begin VB.CommandButton cmdViewCopy 
       Caption         =   "Copy"
-      Height          =   375
+      Height          =   470
       Left            =   120
       TabIndex        =   2
-      Top             =   6000
+      Top             =   5880
       Visible         =   0   'False
       Width           =   1215
    End
    Begin VB.TextBox txtADSContent 
       BackColor       =   &H8000000F&
       Height          =   1815
+      HideSelection   =   0   'False
       Left            =   120
       Locked          =   -1  'True
       MultiLine       =   -1  'True
@@ -340,7 +342,7 @@ Private Declare Function GetLogicalDrives Lib "kernel32.dll" () As Long
 Private Declare Function GetDriveType Lib "kernel32.dll" Alias "GetDriveTypeA" (ByVal nDrive As String) As Long
 
 Private Declare Function CreateFileW Lib "kernel32.dll" (ByVal lpFileName As Long, ByVal dwDesiredAccess As Long, ByVal dwShareMode As Long, ByVal lpSecurityAttributes As Long, ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, ByVal hTemplateFile As Long) As Long
-Private Declare Function NtQueryInformationFile Lib "NTDLL.DLL" (ByVal FileHandle As Long, IoStatusBlock_Out As IO_STATUS_BLOCK, lpFileInformation_Out As Long, ByVal Length As Long, ByVal FileInformationClass As FILE_INFORMATION_CLASS) As Long
+Private Declare Function NtQueryInformationFile Lib "ntdll.dll" (ByVal FileHandle As Long, IoStatusBlock_Out As IO_STATUS_BLOCK, lpFileInformation_Out As Long, ByVal Length As Long, ByVal FileInformationClass As FILE_INFORMATION_CLASS) As Long
 Private Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long)
 Private Declare Function DeleteFile Lib "kernel32.dll" Alias "DeleteFileW" (ByVal lpFileName As Long) As Long
 'Private Declare Function SHFileExists Lib "shell32.dll" Alias "#45" (ByVal szPath As String) As Long
@@ -479,6 +481,7 @@ End Sub
 
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
     If KeyCode = 27 Then bAbortScanNow = True: Me.Hide
+    ProcessHotkey KeyCode, Me
 End Sub
 
 Private Sub Form_Load()
@@ -505,7 +508,7 @@ Private Sub Form_Load()
         Dim i%, s$()
         Me.Show
         'Listing drives...
-        Status Translate(197)
+        Status Translate(197), "1"
         s = Split(GetDrives, "|")
         lstADSFound.Clear
         'Enumerating system drives:
@@ -532,7 +535,7 @@ Private Sub Form_Load()
     sSafeStreams(7) = ":favicon:$DATA"
     sSafeStreams(8) = ":OECustomProperty:$DATA"
     'Ready.
-    Status Translate(209)
+    Status Translate(209), "2"
     
     Dim OptB As OptionButton
     Dim Btn As CommandButton
@@ -569,6 +572,7 @@ Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
 End Sub
 
 Private Sub Form_Resize()
+    Const BUTTON_BOTTOM_INDENT As Long = 900&
     If Me.WindowState = vbMinimized Then Exit Sub
     On Error Resume Next
     txtUselessBlabber.Width = Me.ScaleWidth - 255
@@ -578,11 +582,11 @@ Private Sub Form_Resize()
     picStatus.Width = Me.ScaleWidth - 255
     
     lstADSFound.Height = Me.ScaleHeight - 3690 - 480
-    txtADSContent.Height = Me.ScaleHeight - 4170 - 480
-    cmdViewCopy.Top = Me.ScaleHeight - 855
-    cmdViewSave.Top = Me.ScaleHeight - 855
-    cmdViewEdit.Top = Me.ScaleHeight - 855
-    cmdViewBack.Top = Me.ScaleHeight - 855
+    txtADSContent.Height = Me.ScaleHeight - 4170 - 880
+    cmdViewCopy.Top = Me.ScaleHeight - BUTTON_BOTTOM_INDENT
+    cmdViewSave.Top = Me.ScaleHeight - BUTTON_BOTTOM_INDENT
+    cmdViewEdit.Top = Me.ScaleHeight - BUTTON_BOTTOM_INDENT
+    cmdViewBack.Top = Me.ScaleHeight - BUTTON_BOTTOM_INDENT
     picStatus.Top = Me.ScaleHeight - 375
 End Sub
 
@@ -595,13 +599,13 @@ Private Sub cmdViewBack_Click()
     lstADSFound.Visible = True
     cmdRemove.Enabled = True
     'Ready.
-    Status Translate(209)
+    Status Translate(209), "2"
 End Sub
 
 Private Sub cmdViewCopy_Click()
     ClipboardSetText txtADSContent.Text
     'The contents of the currently displayed ADS have been copied to the clipboard.
-    Status Translate(2200)
+    Status Translate(2200), "3"
 End Sub
 
 Private Sub cmdViewEdit_Click()
@@ -625,9 +629,9 @@ Private Sub cmdViewEdit_Click()
     sStream = lstADSFound.List(lstADSFound.ListIndex)
     sStream = Replace$(sStream, " : ", ":")
     sStream = Left$(sStream, InStr(sStream, "  (") - 1)
-    ShellExecute Me.hwnd, "open", sWordpadPath, """" & sStream & """", vbNullString, 1
+    ShellExecute Me.hwnd, "open", sWordpadPath, """" & PathX64(sStream) & """", vbNullString, 1
     'Ready.
-    Status Translate(209)
+    Status Translate(209), "2"
 End Sub
 
 Private Sub cmdViewSave_Click()
@@ -657,10 +661,10 @@ Private Sub cmdViewSave_Click()
         
         If FileExists(sFilename) Then
             'Stream contents saved to
-            Status Translate(2206) & " " & sFilename & " (" & FileLen(sFilename) & " bytes)."
+            Status Translate(2206) & " " & sFilename & " (" & FileLen(sFilename) & " bytes).", "4"
         Else
             'An error occurred saving the stream to disk.
-            Status Translate(2207)
+            Status Translate(2207), "5"
         End If
     End If
 End Sub
@@ -752,18 +756,18 @@ Private Sub cmdScan_Click()
     If IsRunningInIDE() Then
         If bAbortScanNow Then
             'Scan ABORTED, found [] alternate data streams (ADS's) in [*] sec.
-            Status Replace$(Replace$(Translate(2212), "[]", lstADSFound.ListCount), "[*]", Format$(lTicks / 1000, "##0.00#"))
+            Status Replace$(Replace$(Translate(2212), "[]", lstADSFound.ListCount), "[*]", Format$(lTicks / 1000, "##0.00#")), "6"
         Else
             'Scan complete, found [] alternate data streams (ADS's) in [*] sec.
-            Status Replace$(Replace$(Translate(2211), "[]", lstADSFound.ListCount), "[*]", Format$(lTicks / 1000, "##0.00#"))
+            Status Replace$(Replace$(Translate(2211), "[]", lstADSFound.ListCount), "[*]", Format$(lTicks / 1000, "##0.00#")), "7"
         End If
     Else
         If bAbortScanNow Then
             'Scan ABORTED, found [] alternate data streams (ADS's).
-            Status Replace$(Translate(2214), "[]", lstADSFound.ListCount)
+            Status Replace$(Translate(2214), "[]", lstADSFound.ListCount), "8"
         Else
             'Scan complete, found [] alternate data streams (ADS's).
-            Status Replace$(Translate(2213), "[]", lstADSFound.ListCount)
+            Status Replace$(Translate(2213), "[]", lstADSFound.ListCount), "9"
         End If
     End If
     bAbortScanNow = False
@@ -779,7 +783,7 @@ Private Sub cmdRemove_Click()
     If MsgBoxW(Replace$(Translate(2215), "[]", k), vbQuestion + vbYesNo) = vbNo Then Exit Sub
     'go from bottom of list to prevent .RemoveItem messing up the For loop
     'Removing selected streams...
-    Status Translate(2216)
+    Status Translate(2216), "10"
     
     ToggleWow64FSRedirection False
     
@@ -807,7 +811,7 @@ Private Sub cmdRemove_Click()
         MsgBoxW Translate(2217) & _
                vbCrLf & vbCrLf & Left$(sLockedStreams, Len(sLockedStreams) - 2), vbExclamation
     End If
-    Status "Ready."
+    Status Translate(209), "2"
 End Sub
 
 Private Function GetDrives$()
@@ -882,10 +886,11 @@ Private Sub EnumADSInAllFiles(sFolder$)
     
     hFind = FindFirstFile(StrPtr(BuildPath(sFolder, "*.*")), uWFD)
     If hFind = INVALID_HANDLE_VALUE Then
-        Status "FindFirstFile() failed"
+        Status "FindFirstFile() failed", ""
         Exit Sub
     End If
     
+    picStatus.Tag = ""
     Do
         lpSTR = VarPtr(uWFD.dwReserved1) + 4&
         sFilename = String$(lstrlen(lpSTR), 0)
@@ -960,10 +965,11 @@ End Sub
 '    FileExists = CBool(SHFileExists(StrConv(sFile, vbUnicode)))
 'End Function
 
-Private Sub Status(s$)
+Private Sub Status(s$, Optional sTag As String)
     If Not (bQueryUnload) Then
         picStatus.Cls
-        picStatus.Print s
+        picStatus.Print " " & s
+        picStatus.Tag = sTag
     End If
     DoEvents
 End Sub
@@ -1022,7 +1028,7 @@ Private Sub mnuPopupSave_Click()
     End If
         
     'Scan results saved to
-    Status Translate(2226) & " " & sFilename & "."
+    Status Translate(2226) & " " & sFilename & ".", "11"
     
     OpenLogFile sFilename
     
@@ -1068,7 +1074,7 @@ Private Sub mnuPopupView_Click()
     
     Dim sStream$, lSize&, sStreamContents$, ff%, hFile As Long
     'Reading stream...
-    Status Translate(2227)
+    Status Translate(2227), "12"
     txtADSContent.Text = vbNullString
     sStream = lstADSFound.List(lstADSFound.ListIndex)
     sStream = Replace$(sStream, " : ", ":")
@@ -1093,8 +1099,8 @@ Private Sub mnuPopupView_Click()
         ToggleWow64FSRedirection True
         txtADSContent.Text = sStreamContents
     End If
-    'Viewing contents of [].
-    Status Replace$(Translate(2229), "[]", sStream)
+    'Contents of [].
+    Status Replace$(Translate(2229), "[]", sStream), "13"
     
     Exit Sub
 ErrorHandler:

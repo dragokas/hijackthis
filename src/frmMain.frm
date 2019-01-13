@@ -14,6 +14,7 @@ Begin VB.Form frmMain
       Strikethrough   =   0   'False
    EndProperty
    Icon            =   "frmMain.frx":0000
+   KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    ScaleHeight     =   7380
    ScaleWidth      =   8775
@@ -1596,6 +1597,7 @@ Begin VB.Form frmMain
       End
       Begin VB.TextBox txtHelp 
          Height          =   3375
+         HideSelection   =   0   'False
          Left            =   120
          Locked          =   -1  'True
          MultiLine       =   -1  'True
@@ -2000,7 +2002,23 @@ Private bLockResize     As Boolean
 Private JumpFileCache() As FIX_FILE
 Private JumpRegCache()  As FIX_REG_KEY
 
+Private Const SM_CXBORDER As Long = 5&
+Private Const SM_CYBORDER As Long = 6&
+Private Const SM_CYEDGE As Long = 46&
+Private Const SM_CXSIZEFRAME As Long = 32&
+Private Const SM_CYCAPTION As Long = 4&
+
 Public Sub Test()
+
+'    Dim RectClient  As RECT
+'    Dim RectWnd     As RECT
+'
+'    GetClientRect Me.hwnd, RectClient
+'    GetWindowRect Me.hwnd, RectWnd
+'
+'    Debug.Print (RectWnd.Bottom - RectWnd.Top - RectClient.Bottom) * Screen.TwipsPerPixelY
+    
+
     'If you need something to test after program started and initialized all required variables, please use this sub.
     
     'Debug.Print Reg.GetString(0, "HKLM\System\CurrentControlSet\Control\Session Manager", "PendingFileRenameOperations")
@@ -2081,6 +2099,10 @@ End Sub
 'End Sub
 
 
+Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
+    ProcessHotkey KeyCode, Me
+End Sub
+
 ' Tips on functions:
 
 '1. Use AddWarning() to append text to the end of the log, before debugging info.
@@ -2088,9 +2110,9 @@ End Sub
 Private Sub Form_Load()
     Static bInit As Boolean
     
-    pvSetFormIcon Me
-    
     g_HwndMain = Me.hwnd
+    
+    pvSetFormIcon Me
     
     If bInit Then
         If Not bAutoLogSilent Then
@@ -2105,6 +2127,12 @@ Private Sub Form_Load()
             Me.WindowState = vbMinimized
         End If
         tmrStart.Enabled = True
+    End If
+End Sub
+
+Private Sub lstResults_KeyDown(KeyCode As Integer, Shift As Integer)
+    If KeyCode = 93 Then ' context menu key
+        lstResults_MouseUp 2, 0, -1, -1
     End If
 End Sub
 
@@ -2158,8 +2186,8 @@ Private Sub FormStart_Stady1()
     
     If Not DisableSubclassing And Not bAutoLogSilent Then
         SubClassScroll True
-        RegisterHotKey Me.hwnd, HOTKEY_ID_CTRL_A, MOD_CONTROL Or MOD_NOREPEAT, vbKeyF
-        RegisterHotKey Me.hwnd, HOTKEY_ID_CTRL_F, MOD_CONTROL Or MOD_NOREPEAT, vbKeyF
+        'RegisterHotKey Me.hwnd, HOTKEY_ID_CTRL_A, MOD_CONTROL Or MOD_NOREPEAT, vbKeyF
+        'RegisterHotKey Me.hwnd, HOTKEY_ID_CTRL_F, MOD_CONTROL Or MOD_NOREPEAT, vbKeyF
     End If
     
     ' Result -> sWinVersion (global)
@@ -2428,12 +2456,14 @@ Private Sub FormStart_Stady1()
         fraOther.Visible = False
         lstResults.Visible = False
         fraSubmit.Visible = False
+        g_CurFrame = FRAME_ALIAS_MAIN
         
         Call RegSaveHJT("SkipIntroFrame", "0")
         
     Else
         chkSkipIntroFrame.Value = 1
         pictLogo.Visible = False
+        g_CurFrame = FRAME_ALIAS_SCAN
     End If
     
     If Not bAutoLogSilent Then
@@ -2807,7 +2837,7 @@ Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
     BackupFlush
     If g_WER_Disabled Then DisableWER bRevert:=True
     
-    Dim Frm As Form
+    Dim frm As Form
     ToggleWow64FSRedirection True
     If Not g_UninstallState Then
         SaveSettings
@@ -2818,12 +2848,12 @@ Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
         RegSaveHJT "Version", AppVerString
     End If
     SubClassScroll False
-    UnregisterHotKey Me.hwnd, HOTKEY_ID_CTRL_A
-    UnregisterHotKey Me.hwnd, HOTKEY_ID_CTRL_F
-    For Each Frm In Forms
-        If Not (Frm Is Me) And Not (Frm.Name = "frmEULA") Then
-            Unload Frm
-            Set Frm = Nothing
+    'UnregisterHotKey Me.hwnd, HOTKEY_ID_CTRL_A
+    'UnregisterHotKey Me.hwnd, HOTKEY_ID_CTRL_F
+    For Each frm In Forms
+        If Not (frm Is Me) And Not (frm.Name = "frmEULA") Then
+            Unload frm
+            Set frm = Nothing
         End If
     Next
     
@@ -2872,7 +2902,7 @@ Private Sub Form_Unload(Cancel As Integer)
     If g_hDebugLog <> 0 Then
         s = vbCrLf & "--" & vbCrLf & "Debug log closed because main form is terminated (!!!)"
         PutW g_hDebugLog, 1, StrPtr(s), LenB(s), True
-        CloseHandle g_hDebugLog
+        CloseHandle g_hDebugLog: g_hDebugLog = 0
     End If
     g_HwndMain = 0
 End Sub
@@ -3115,15 +3145,19 @@ Private Sub cmdHostsManager_Click() 'Misc Tools -> 'Hosts' file manager
     fraConfigTabs(3).Visible = False
     'SubClassScroll False
     fraHostsMan.Visible = True
+    g_CurFrame = FRAME_ALIAS_HOSTS
     ListHostsFile lstHostsMan, lblConfigInfo(14)
 End Sub
 
+'Hosts -> Back
 Private Sub cmdHostsManBack_Click()
     fraHostsMan.Visible = False
     fraConfigTabs(3).Visible = True
+    g_CurFrame = FRAME_ALIAS_MISC_TOOLS
     'SubClassScroll True
 End Sub
 
+'Hosts -> Delete line
 Private Sub cmdHostsManDel_Click()
     If lstHostsMan.ListIndex <> -1 And lstHostsMan.ListCount > 0 Then
         HostsDeleteLine lstHostsMan
@@ -3131,6 +3165,7 @@ Private Sub cmdHostsManDel_Click()
     End If
 End Sub
 
+'Hosts -> Open file
 Private Sub cmdHostsManOpen_Click()
     'ShellExecute Me.hwnd, "open", sWinDir & "\notepad.exe", sHostsFile, vbNullString, 1
     'Shell "rundll32.exe shell32.dll,ShellExec_RunDLL " & """" & sHostsFile & """", vbNormalFocus
@@ -3140,6 +3175,7 @@ Private Sub cmdHostsManOpen_Click()
     Shell sTxtProg & " " & """" & sHostsFile & """", vbNormalFocus
 End Sub
 
+'Hosts -> Toggle line
 Private Sub cmdHostsManToggle_Click()
     If lstHostsMan.ListIndex <> -1 And lstHostsMan.ListCount > 0 Then
         HostsToggleLine lstHostsMan
@@ -3150,6 +3186,7 @@ End Sub
 Private Sub cmdMainMenu_Click()
 
     txtNothing.Visible = False
+    g_CurFrame = FRAME_ALIAS_MAIN
 
     CloseProgressbar
     
@@ -3202,6 +3239,7 @@ End Sub
 
 '// None of above, just start the program
 Private Sub cmdN00bClose_Click()
+    g_CurFrame = FRAME_ALIAS_SCAN
     pictLogo.Visible = False
     fraN00b.Visible = False
     fraScan.Visible = True
@@ -3234,6 +3272,7 @@ Private Sub cmdN00bLog_Click()
     
     cmdScan.Caption = Translate(11) 'don't touch this!!!
     cmdScan.Tag = "1"
+    g_CurFrame = FRAME_ALIAS_SCAN
     
     If Not bAutoLog Then Perf.StartTime = GetTickCount()
     
@@ -3252,6 +3291,7 @@ End Sub
 Private Sub cmdN00bScan_Click()
     cmdScan.Caption = Translate(11) 'don't touch this!!!
     cmdScan.Tag = "1"
+    g_CurFrame = FRAME_ALIAS_SCAN
     If Not bAutoLog Then Perf.StartTime = GetTickCount()
     fraN00b.Visible = False
     fraScan.Visible = True
@@ -3324,9 +3364,11 @@ Private Sub chkConfigTabs_Click(Index As Integer)
     
     Case 0 'main settings
         'SubClassScroll False 'unSubClass
+        g_CurFrame = FRAME_ALIAS_SETTING
         
     Case 1 'ignore list
         'SubClassScroll False 'unSubClass
+        g_CurFrame = FRAME_ALIAS_IGNORE_LIST
         
         lstIgnore.Clear
         iIgnoreNum = CInt(RegReadHJT("IgnoreNum", "0"))
@@ -3345,10 +3387,12 @@ Private Sub chkConfigTabs_Click(Index As Integer)
         
     Case 2 'backups
         'SubClassScroll False 'unSubClass
+        g_CurFrame = FRAME_ALIAS_BACKUPS
         ListBackups
         
     Case 3 'Misc tools
         'SubClassScroll True ' mouse scrolling support
+        g_CurFrame = FRAME_ALIAS_MISC_TOOLS
         
     End Select
     
@@ -3373,11 +3417,9 @@ Private Sub cmdConfig_Click()
     
     'If cmdConfig.Caption = Translate(18) Then   'Settings
     If cmdConfig.Tag = "0" Then
-    
+        g_CurFrame = FRAME_ALIAS_SETTING
         pictLogo.Visible = False
-        
         'chkSkipIntroFrameSettings.Value = CLng(RegReadHJT("SkipIntroFrame", "0"))
-        
         lblInfo(0).Visible = False
         lblInfo(1).Visible = False
         'picPaypal.Visible = False
@@ -3400,6 +3442,7 @@ Private Sub cmdConfig_Click()
         
     Else                            'Back
         
+        g_CurFrame = FRAME_ALIAS_SCAN
         Call pvSetVisionForLabelResults '"Welcome to HJT" / or "Below are the results..."
         'picPaypal.Visible = True
         lstResults.Visible = True
@@ -3918,6 +3961,7 @@ Private Sub cmdHelp_Click()
 
     'If cmdHelp.Caption = Translate(16) Then 'Help
     If cmdHelp.Tag = "0" Then
+        g_CurFrame = FRAME_ALIAS_HELP_SECTIONS
         cmdInfo.Enabled = False
         lblInfo(0).Visible = False
         lblInfo(1).Visible = False
@@ -3937,6 +3981,7 @@ Private Sub cmdHelp_Click()
         fraHelp.ZOrder 0
         chkHelp_Click 0 'help on section
     Else
+        g_CurFrame = FRAME_ALIAS_SCAN
         Call pvSetVisionForLabelResults '"Welcome to HJT" / or "Below are the results..."
         cmdInfo.Enabled = True
         'picPaypal.Visible = True
@@ -4091,13 +4136,28 @@ Private Sub cmdScan_Click()
             End If
         End If
         
+        'we are on the results window frame?
+        If lstResults.Visible Then
+            cmdScan.Enabled = True
+            cmdFix.Enabled = True
+            cmdAnalyze.Enabled = True
+            cmdSaveDef.Enabled = True
+        End If
+        
         If Not bAutoLog Then
-            If frmMain.WindowState <> vbMinimized Then
-                SetWindowPos frmMain.hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE
-                SetWindowPos frmMain.hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE
-                SetForegroundWindow frmMain.hwnd
-                SetActiveWindow frmMain.hwnd
-                SetFocus2 frmMain.hwnd
+            If Not IsFormForeground(frmSearch) Then
+        
+                If frmMain.WindowState <> vbMinimized Then
+                    SetWindowPos g_HwndMain, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE
+                    SetWindowPos g_HwndMain, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE
+                    SetForegroundWindow g_HwndMain
+                    SetActiveWindow g_HwndMain
+                    SetFocus2 g_HwndMain
+                End If
+                
+                If cmdFix.Visible And cmdFix.Enabled Then
+                    cmdFix.SetFocus
+                End If
             End If
         End If
         
@@ -4110,21 +4170,7 @@ Private Sub cmdScan_Click()
             HJT_SaveReport '<<<<<< ------ Saving report
         End If
         
-        'we are on the results window frame?
-        If lstResults.Visible Then
-            cmdScan.Enabled = True
-            cmdFix.Enabled = True
-            cmdAnalyze.Enabled = True
-            cmdSaveDef.Enabled = True
-        End If
-        
         CloseProgressbar True
-        
-        If Not bAutoLog Then
-            If cmdFix.Visible And cmdFix.Enabled Then
-                cmdFix.SetFocus
-            End If
-        End If
         
         bAutoLog = False
         
@@ -4148,7 +4194,6 @@ Private Sub cmdScan_Click()
     End If
     
     'focus on 1-st element of list
-    Me.lstResults.ListIndex = -1
     'If Me.lstResults.Visible Then Me.lstResults.SetFocus
     
     isRanHJT_Scan = False
@@ -4454,8 +4499,18 @@ Private Sub LoadSettings()
     bSkipErrorMsg = chkSkipErrorMsg.Value
     bMinToTray = chkConfigMinimizeToTray.Value
     
-    g_FontName = RegReadHJT("FontName", "Automatic")
+    g_FontName = RegReadHJT("FontName", "")
     g_FontSize = RegReadHJT("FontSize", "Auto")
+
+    If Len(g_FontName) = 0 Then
+        If FontExist("MS Sans Serif") Then
+            g_FontName = "MS Sans Serif"
+            g_FontSize = "10"
+        Else
+            g_FontName = "Automatic"
+        End If
+    End If
+    
     chkFontWholeInterface.Value = CInt(RegReadHJT("FontOnInterface", "0"))
     
     sCurLang = RegReadHJT("LanguageFile", "English")
@@ -4724,6 +4779,7 @@ Private Sub cboN00bLanguage_Click()
     ' Do not save force mode state!
     If Not (bForceRU Or bForceEN Or bForceUA Or bForceFR) Then RegSaveHJT "LanguageFile", sFile
     
+    If cmdN00bScan.Enabled And cmdN00bScan.Visible Then cmdN00bScan.SetFocus
     AppendErrorLogCustom "frmMain.cboN00bLanguage_Click - End"
     Exit Sub
 ErrorHandler:
@@ -4746,6 +4802,7 @@ Private Sub mnuFileInstallHJT_Click()   'File -> Install HJT
 End Sub
 
 Private Sub mnuFileUninstHJT_Click()    'File -> Uninstall HJT
+    If isRanHJT_Scan Then Exit Sub
     cmdUninstall_Click
 End Sub
 
@@ -4958,7 +5015,7 @@ Private Sub lstResults_MouseUp(Button As Integer, Shift As Integer, X As Single,
     Dim idx As Long, XY As Long, XPix As Long, YPix As Long
     
     'select item by right click
-    If Button = 2 Then
+    If Button = 2 And Not (X = -1 And Y = -1) Then
         XPix = X / Screen.TwipsPerPixelX
         YPix = Y / Screen.TwipsPerPixelY
         XY = YPix * 65536 + XPix
@@ -5283,6 +5340,8 @@ Private Sub chkHelp_Click(Index As Integer)
     Select Case Index
     
     Case 0: 'Sections
+        g_CurFrame = FRAME_ALIAS_HELP_SECTIONS
+    
         aSect = Array("R0", "R1", "R2", "R3", "R4", "F0", "F1", "F2", "F3", "O1", "O2", "O3", "O4", "O5", "O6", "O7", "O8", "O9", "O10", _
             "O11", "O12", "O13", "O14", "O15", "O16", "O17", "O18", "O19", "O20", "O21", "O22", "O23", "O24", "O25", "O26")
         
@@ -5335,12 +5394,15 @@ Private Sub chkHelp_Click(Index As Integer)
         txtHelp.Text = sText
     
     Case 1: 'Keys
+        g_CurFrame = FRAME_ALIAS_HELP_KEYS
         txtHelp.Text = Translate(32)
     
     Case 2: 'Purpose, Donations
+        g_CurFrame = FRAME_ALIAS_HELP_PURPOSE
         txtHelp.Text = Translate(33) & TranslateNative(34)
     
     Case 3: 'History
+        g_CurFrame = FRAME_ALIAS_HELP_HISTORY
         ' Version history:
         txtHelp.Text = g_VersionHistory
     End Select
@@ -5549,7 +5611,7 @@ Private Sub SetFontByUserSettings()
     If bAutoLogSilent Then Exit Sub 'speed optimization
     
     Dim i As Long
-    Dim Frm As Form
+    Dim frm As Form
     If cmbFont.ListIndex <> -1 Then
         g_FontName = cmbFont.List(cmbFont.ListIndex)
         If Len(g_FontName) = 0 Then
@@ -5561,8 +5623,8 @@ Private Sub SetFontByUserSettings()
     End If
     If g_FontSize = "0" Then g_FontSize = "8"
     
-    For Each Frm In Forms
-        SetAllFontCharset Frm, g_FontName, g_FontSize
+    For Each frm In Forms
+        SetAllFontCharset frm, g_FontName, g_FontSize
         'SetMenuFont Frm.hwnd, g_FontName, g_FontSize
     Next
     

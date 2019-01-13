@@ -293,23 +293,7 @@ ErrorHandler:
 End Function
 
 Public Sub ShowFile(sFile$)
-    On Error GoTo ErrorHandler:
-    Dim sSEI As SHELLEXECUTEINFO
-    If Not FileExists(sFile) Then Exit Sub
-    With sSEI
-        .cbSize = Len(sSEI)
-        .hwnd = frmStartupList2.hwnd
-        .lpFile = sWinDir & "\explorer.exe"
-        .lpParameters = "/select," & sFile
-        .lpVerb = "open"
-        .fMask = SEE_MASK_NOCLOSEPROCESS Or SEE_MASK_INVOKEIDLIST Or SEE_MASK_FLAG_NO_UI
-        .nShow = 1
-    End With
-    ShellExecuteEx sSEI
-    Exit Sub
-ErrorHandler:
-    ErrorMsg Err, "ShowFile"
-    If inIDE Then Stop: Resume Next
+    OpenAndSelectFile PathX64(sFile)
 End Sub
 
 Public Sub SendToNotepad(sFile$)
@@ -330,7 +314,7 @@ Public Sub SendToNotepad(sFile$)
         '.lpFile = sWinDir & "\notepad.exe"
         .lpFile = sNotepad
         .lpVerb = "open"
-        .lpParameters = sFile
+        .lpParameters = PathX64(sFile)
         .fMask = SEE_MASK_DOENVSUBST Or SEE_MASK_FLAG_NO_UI Or SEE_MASK_INVOKEIDLIST Or SEE_MASK_NOCLOSEPROCESS
         .nShow = 1
     End With
@@ -573,7 +557,7 @@ Public Sub ShellRun(sFile$, Optional bHidden As Boolean = False)
     Dim uSEI As SHELLEXECUTEINFO
     With uSEI
         .cbSize = Len(uSEI)
-        .lpFile = sFile
+        .lpFile = PathX64(sFile)
         .lpVerb = "open"
         .nShow = Not Abs(CLng(bHidden))
     End With

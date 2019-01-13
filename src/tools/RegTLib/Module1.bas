@@ -105,7 +105,7 @@ Private Sub Main()
         WriteC "Failed!", cErr
     End If
     
-    MsgBox "ready"
+    'MsgBox "ready"
     ExitProcess ExitCode
     Exit Sub
 ErrorHandler:

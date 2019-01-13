@@ -8,13 +8,14 @@ Begin VB.Form frmProcMan
    BeginProperty Font 
       Name            =   "Tahoma"
       Size            =   8.25
-      Charset         =   1
+      Charset         =   204
       Weight          =   400
       Underline       =   0   'False
       Italic          =   0   'False
       Strikethrough   =   0   'False
    EndProperty
    Icon            =   "frmProcMan.frx":0000
+   KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    ScaleHeight     =   4140
    ScaleWidth      =   8610
@@ -24,7 +25,7 @@ Begin VB.Form frmProcMan
       BeginProperty Font 
          Name            =   "MS Sans Serif"
          Size            =   8.25
-         Charset         =   1
+         Charset         =   204
          Weight          =   700
          Underline       =   0   'False
          Italic          =   0   'False
@@ -218,6 +219,9 @@ Private Const HTCAPTION = 2
 Private lstProcessManagerHasFocus As Boolean
 Private lstProcManDLLsHasFocus As Boolean
 
+Public Function ProcManDLLsHasFocus() As Boolean
+    ProcManDLLsHasFocus = lstProcManDLLsHasFocus
+End Function
 
 Public Sub RefreshProcessList(objList As ListBox)
     Dim hSnap&, uPE32 As PROCESSENTRY32W
@@ -502,6 +506,7 @@ End Sub
 
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
     If KeyCode = 27 Then Me.Hide
+    ProcessHotkey KeyCode, Me
 End Sub
 
 Private Sub Form_Load()

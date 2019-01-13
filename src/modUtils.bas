@@ -145,9 +145,6 @@ End Type
 'Public Const WM_NCDESTROY As Long = &H82&
 'Public Const WM_UAHDESTROYWINDOW As Long = &H90&
 '
-'Public Declare Function SetWindowSubclass Lib "comctl32" Alias "#410" (ByVal hwnd As Long, ByVal pfnSubclass As Long, ByVal uIdSubclass As Long, ByVal dwRefData As Long) As Long
-'Public Declare Function RemoveWindowSubclass Lib "comctl32" Alias "#412" (ByVal hwnd As Long, ByVal pfnSubclass As Long, ByVal uIdSubclass As Long) As Long
-'Public Declare Function DefSubclassProc Lib "comctl32" Alias "#413" (ByVal hwnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
 'Public Declare Function SHParseDisplayName Lib "Shell32" (ByVal pszName As Long, ByVal IBindCtx As Long, ByRef ppidl As Long, sfgaoIn As Long, sfgaoOut As Long) As Long
 'Public Declare Function ILFree Lib "Shell32" (ByVal pidlFree As Long) As Long
 'Public Declare Function NtQueryObject Lib "ntdll.dll" (ByVal Handle As Long, ByVal ObjectInformationClass As OBJECT_INFORMATION_CLASS, ObjectInformation As Any, ByVal ObjectInformationLength As Long, ReturnLength As Long) As Long
@@ -161,26 +158,22 @@ Public hLibPcre2        As Long
 Public oRegexp          As IRegExp
 Public g_bRegexpInit    As Boolean
 
-Private lpPrevWndProc As Long
+Private lSubclassed As Long
+Private hGetMsgHook As Long
 
 Public Sub SubClassScroll(SwitchON As Boolean)
     If DisableSubclassing Then Exit Sub
     If SwitchON Then
-        If lpPrevWndProc = 0 Then lpPrevWndProc = SetWindowLong(frmMain.hwnd, GWL_WNDPROC, AddressOf WndProc)
+        If lSubclassed = 0 Then lSubclassed = SetWindowSubclass(g_HwndMain, AddressOf WndProc, 0&)
+        'Replaced by Form's "KeyPreview" property
+        'If hGetMsgHook = 0 Then hGetMsgHook = SetWindowsHookEx(WH_GETMESSAGE, AddressOf GetMsgProc, 0, App.ThreadID) 'hotkeys support (Thanks to ManHunter)
     Else
-        If lpPrevWndProc Then SetWindowLong frmMain.hwnd, GWL_WNDPROC, lpPrevWndProc: lpPrevWndProc = 0
+        If lSubclassed Then RemoveWindowSubclass g_HwndMain, AddressOf WndProc, 0&: lSubclassed = 0
+        'If hGetMsgHook Then UnhookWindowsHookEx hGetMsgHook: hGetMsgHook = 0
     End If
-    
-    'Debug.Print "SubClassScroll: " & SwitchON
-    
-'    If SwitchON Then
-'        If lpPrevWndProc = 0 Then lpPrevWndProc = SetWindowSubclass(frmMain.hwnd, AddressOf WndProc, ObjPtr(frmMain), 0&)
-'    Else
-'        If lpPrevWndProc Then RemoveWindowSubclass frmMain.hwnd, AddressOf WndProc, ObjPtr(frmMain): lpPrevWndProc = 0
-'    End If
 End Sub
 
-Function IsMouseWithin(hwnd As Long) As Boolean
+Public Function IsMouseWithin(hwnd As Long) As Boolean
     Dim r As RECT
     Dim p As POINTAPI
     If GetWindowRect(hwnd, r) Then
@@ -190,8 +183,49 @@ Function IsMouseWithin(hwnd As Long) As Boolean
     End If
 End Function
 
-Private Function WndProc(ByVal hwnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
-'Private Function WndProc(ByVal hWnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal dwRefData As Long) As Long
+Public Function GetCursorPosRel() As POINTAPI
+    Dim p As POINTAPI
+    If GetCursorPos(p) Then
+        ScreenToClient g_HwndMain, p
+    End If
+    GetCursorPosRel = p
+End Function
+
+'Private Function GetMsgProc(ByVal nCode As Long, ByVal wParam As Long, lParam As msg) As Long
+'    If lParam.message = WM_KEYDOWN Then
+'        'http://www.manhunter.ru/assembler/878_obrabotka_soobscheniy_ot_klaviaturi_v_dialogbox.html
+'
+'        If nCode = HC_ACTION Then
+'            'Debug.Print "MSG: " & Hex(lParam.message) & ", " & _
+'                "HWND: " & Hex(lParam.hwnd) & ", " & _
+'                "WPARAM: " & Hex(lParam.wParam) & ", " & _
+'                "LPARAM: " & Hex(lParam.lParam) & ", " & _
+'                "MSGREMOVED: " & wParam
+'
+'            If (inIDE And wParam = 0) Or Not inIDE Then
+'                If lParam.wParam = Asc("A") Then                    'Ctrl + A
+'                    If cMath.HIWORD(GetKeyState(VK_CONTROL)) Then
+'                        MsgBoxW "Ctrl + A pressed !!!"
+'                    End If
+'
+'                ElseIf lParam.wParam = Asc("F") Then                'Ctrl + F
+'                    If cMath.HIWORD(GetKeyState(VK_CONTROL)) Then
+'                        'MsgBoxW "Ctrl + F pressed !!!"
+'                        If IsFormInit(frmSearch) Then
+'                            frmSearch.Display
+'                        Else
+'                            Load frmSearch
+'                        End If
+'                        Exit Function
+'                    End If
+'                End If
+'            End If
+'        End If
+'    End If
+'    GetMsgProc = CallNextHookEx(hGetMsgHook, nCode, wParam, lParam)
+'End Function
+
+Private Function WndProc(ByVal hwnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal uIdSubclass As Long, ByVal dwRefData As Long) As Long
     On Error Resume Next
     
     Select Case uMsg
@@ -204,76 +238,31 @@ Private Function WndProc(ByVal hwnd As Long, ByVal uMsg As Long, ByVal wParam As
         
     Case WM_MOUSEWHEEL
         'If Not g_bMiscToolsTab Then Exit Function
-        If Not IsMouseWithin(frmMain.hwnd) Then Exit Function ' mouse is outside the form
+        If Not IsMouseWithin(g_HwndMain) Then Exit Function ' mouse is outside the form
         Dim MouseKeys&, Rotation&, NewValue%
         MouseKeys = wParam And &HFFFF&
-        Rotation = wParam / &HFFFF& 'direction
+        Rotation = wParam \ &HFFFF& 'direction
         With frmMain.vscMiscTools
             NewValue = .Value - .LargeChange * IIf(Rotation > 0, 1, -1)
             If NewValue < .Min Then NewValue = .Min
             If NewValue > .Max Then NewValue = .Max
             .Value = NewValue   'change scroll value
         End With
-    Case WM_KEYDOWN ' Ctrl + A
-        'Debug.Print "Keydown: " & wParam
-        'If wParam = Asc("A") And GetKeyState(VK_CONTROL) < 0 Then
-        'End If
-        
-    Case WM_HOTKEY
-        If wParam = HOTKEY_ID_CTRL_F Then DoSearchWindow
+    
+    'Case WM_KEYDOWN
+    '  - is not working here because msg is intercepted by active control.
+    ' WH_GETMESSAGE hook is required. To catch msg here, you can use SendMessage in GetMsg callback.
+
+    'Case WM_HOTKEY
+    '    If wParam = HOTKEY_ID_CTRL_F Then DoSearchWindow
+    '    WndProc = CallWindowProc(lpPrevWndProc, hwnd, uMsg, wParam, lParam)
+    ' Not the best option, because RegisterHotKey() intercepts hotkeys from whole system!
+    ' As well as not allows to use them by another programs until UnregisterHotKey() call.
         
     Case Else
-        WndProc = CallWindowProc(lpPrevWndProc, hwnd, uMsg, wParam, lParam)
-        'WndProc = DefSubclassProc(hwnd, uMsg, wParam, lParam)
+
+        WndProc = DefSubclassProc(hwnd, uMsg, wParam, lParam)
     End Select
-End Function
-
-Sub DoSearchWindow()
-
-    Exit Sub ' not yet implemented
-
-    Dim sSearch As String
-    Dim sActiveFrame As String
-    
-    If SearchAllowed(sActiveFrame) Then
-        sSearch = InputBox("Enter the search phrase", "Search...")
-        
-        Select Case sActiveFrame
-        
-        Case "ListResults"
-            
-            
-                
-        End Select
-    End If
-End Sub
-
-Function SearchAllowed(out_sFrameAlias As String) As Boolean
-    Dim bCanSearch As Boolean
-    Dim hActiveWnd As Long
-    Dim sActiveFrm As String
-    Dim Frm As Form
-    
-    hActiveWnd = GetForegroundWindow()
-    
-    For Each Frm In Forms
-        If Frm.hwnd = hActiveWnd Then sActiveFrm = Frm.Name: Exit For
-    Next
-    
-    If sActiveFrm = "frmSearch" Then
-        hActiveWnd = GetWindow(hActiveWnd, GW_HWNDNEXT) 'this is a search window => get window below Z-order
-        For Each Frm In Forms
-            If Frm.hwnd = hActiveWnd Then sActiveFrm = Frm.Name: Exit For
-        Next
-    End If
-    
-    Select Case sActiveFrm
-    Case "frmMain"
-        If frmMain.lstResults.Visible Then bCanSearch = True: out_sFrameAlias = "ListResults"
-        
-    End Select
-    
-    SearchAllowed = bCanSearch
 End Function
 
 Public Function GetStringFromBinary(Optional ByVal sFile As String, Optional ByVal nid As Long, Optional ByVal FileAndIDHybrid As String) As String
@@ -2392,3 +2381,103 @@ Public Function BStrFromLPWStr(lpWStr As Long, Optional ByVal CleanupLPWStr As B
     If CleanupLPWStr Then CoTaskMemFree lpWStr
 End Function
 
+Public Sub ProcessHotkey(KeyCode As Integer, frm As Form)
+    If KeyCode = Asc("F") Then                    'Ctrl + F
+        If Not (cMath Is Nothing) Then
+            If cMath.HIWORD(GetKeyState(VK_CONTROL)) Then LoadSearchEngine frm
+        End If
+    End If
+    If KeyCode = Asc("A") Then                    'Ctrl + F
+        If Not (cMath Is Nothing) Then
+            If cMath.HIWORD(GetKeyState(VK_CONTROL)) Then ControlSelectAll frm
+        End If
+    End If
+End Sub
+
+Public Sub LoadSearchEngine(frm As Form)
+    If IsFormInit(frmSearch) Then
+        frmSearch.Display frm
+    Else
+        Load frmSearch
+        frmSearch.Display frm
+    End If
+End Sub
+
+Sub ControlSelectAll(Optional frmExplicit As Form)
+    Dim out_Control As Control
+    Dim lst As ListBox
+    Dim txb As TextBox
+    Dim bCanSearch As Boolean
+    Dim i As Long
+
+    Select Case frmExplicit.Name
+    Case "frmMain"
+    
+        Select Case g_CurFrame
+        
+'        Case FRAME_ALIAS_SCAN
+'            bCanSearch = True
+'            Set out_Control = frmMain.lstResults
+            
+        Case FRAME_ALIAS_IGNORE_LIST
+            bCanSearch = True
+            Set out_Control = frmMain.lstIgnore
+        
+        Case FRAME_ALIAS_BACKUPS
+            bCanSearch = True
+            Set out_Control = frmMain.lstBackups
+            
+        Case FRAME_ALIAS_HOSTS
+            bCanSearch = True
+            Set out_Control = frmMain.lstHostsMan
+            
+        Case FRAME_ALIAS_HELP_SECTIONS, FRAME_ALIAS_HELP_KEYS, FRAME_ALIAS_HELP_PURPOSE, FRAME_ALIAS_HELP_HISTORY
+            bCanSearch = True
+            Set out_Control = frmMain.txtHelp
+        
+        End Select
+        
+    Case "frmADSspy"
+    
+        bCanSearch = True
+        If frmADSspy.txtADSContent.Visible Then
+            Set out_Control = frmADSspy.txtADSContent
+        Else
+            Set out_Control = frmADSspy.lstADSFound
+        End If
+    
+'    Case "frmUninstMan"
+'        bCanSearch = True
+'        Set out_Control = frmUninstMan.lstUninstMan
+    
+'    Case "frmProcMan"
+'        bCanSearch = True
+'        If frmProcMan.ProcManDLLsHasFocus Then
+'            Set out_Control = frmProcMan.lstProcManDLLs
+'        Else
+'            Set out_Control = frmProcMan.lstProcessManager
+'        End If
+        
+    Case "frmCheckDigiSign"
+        bCanSearch = True
+        Set out_Control = frmCheckDigiSign.txtPaths
+    
+    Case "frmUnlockRegKey"
+        bCanSearch = True
+        Set out_Control = frmUnlockRegKey.txtKeys
+        
+    End Select
+    
+    If bCanSearch Then
+        If TypeOf out_Control Is ListBox Then
+            Set lst = out_Control
+            For i = 0 To lst.ListCount - 1
+                lst.Selected(i) = True
+            Next
+        ElseIf TypeOf out_Control Is TextBox Then
+            Set txb = out_Control
+            txb.SelStart = 0
+            txb.SelLength = Len(txb.Text)
+        End If
+    End If
+End Sub

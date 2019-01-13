@@ -22,10 +22,10 @@
      commonly manipulated by malware as well as good software.
 0002=HiJackThis is already running.
      Are you sure you want to launch another copy?
-0004=Below are the results of the HiJackThis scan. Be careful what you delete with 'Fix checked' button.
-     Scan results do not determine whether an item is good or bad. If you think  your machine is infected,
-     press the 'AnalyzeThis' button, sign up, read instructions, make required logs,
-     and show them to our consultants by creating a new thread.
+0004=Below are the results of the HiJackThis scan.
+     Be careful what you delete with 'Fix checked' button. Scan results do not determine
+     whether an item is good or bad. If you think  your machine is infected, press the 'AnalyzeThis' button,
+     sign up, read instructions, make required logs, and show them to our consultants by creating a new thread.
 0007=It looks like you're running HiJackThis from a read-only device like a CD-ROM. If you want to make backups of items you fix, you must copy HiJackThis.exe to your hard disk first, and run it from there.
      
      If you continue, you might encounter 'Path/File Access' errors.
@@ -526,7 +526,7 @@
 0108=Delete a Windows Service (O23)
      USE WITH CAUTION!
 0109=ADS Spy
-0110=Scan for hidden data streams
+0110=Scan for hidden file streams
 0112=Managing items in the 'Uninstall a program' snap-in
 0113=Enter the exact service name as it appears in the scan results, or the short name between brackets if that is listed.
 0114=Delete a Windows NT Service
@@ -562,7 +562,7 @@
 1601=Check Browsers' LNK
 1602=Identify infected shortcuts (.LNK) which cause unwanted advertisement in browsers
 1603=ClearLNK
-1604=Clean and restore list of infected shortcuts (.LNK), found via Check Browsers' LNK plugin
+1604=Clean and restore list of infected shortcuts, found via Check Browsers' LNK plugin
 ;
 ; ================ Process Manager =============
 ;
@@ -660,7 +660,7 @@
 2226=Scan results saved to
 2227=Reading stream...
 2228=The stream '[]' contains binary data and is unlikely to display properly.
-2229=Viewing contents of [].
+2229=Contents of []
 2230=Show file in Explorer
 2231=Copy
 2232=Save to disk...
@@ -1701,7 +1701,27 @@
 2102=Skipping Zones for all users, since there are over 1000 domains in them. ([] to be exact)
 2103=Skipping Zones for user [*], since there are over 1000 domains in them. ([**] to be exact)
 ;
+; Search form
+;
+; (2300 - 2349)
+;
+2300=Find
+2301=What:
+2302=Match case
+2303=Whole word
+2304=Regular expression
+2305=Esc-sequence
+2306=Down
+2307=Up
+2308=Beginning
+2309=Ending
+2310=Find next
+2311=Search finished.
+2312=Syntax error.
+2313=Direction
+2314=Settings
+;
 ; Empty
 ;
-; (2300 - ...)
-;                     
+; (2350 - ...)
+;    

@@ -1,5 +1,5 @@
 Type=Exe
-Reference=*\G{3181A65A-CC39-4CDE-A4DF-2E889E6F1AF1}#1.51#0#..\..\..\_The Trick\ROT\olelib.tlb#Edanmo's OLE interfaces & functions v1.81
+Reference=*\G{3181A65A-CC39-4CDE-A4DF-2E889E6F1AF1}#1.51#0#..\..\..\Check Browsers LNK\olelib.tlb#Edanmo's OLE interfaces & functions v1.81
 Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#C:\Windows\SysWOW64\stdole2.tlb#OLE Automation
 Module=modOSInfo; modOSInfo.bas
 Module=modMain; Module1.bas

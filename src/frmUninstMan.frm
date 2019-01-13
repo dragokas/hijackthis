@@ -6,6 +6,7 @@ Begin VB.Form frmUninstMan
    ClientTop       =   450
    ClientWidth     =   11310
    Icon            =   "frmUninstMan.frx":0000
+   KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    ScaleHeight     =   6765
    ScaleWidth      =   11310
@@ -14,7 +15,7 @@ Begin VB.Form frmUninstMan
       BeginProperty Font 
          Name            =   "Tahoma"
          Size            =   8.25
-         Charset         =   1
+         Charset         =   204
          Weight          =   700
          Underline       =   0   'False
          Italic          =   0   'False
@@ -158,7 +159,7 @@ Begin VB.Form frmUninstMan
          BeginProperty Font 
             Name            =   "MS Sans Serif"
             Size            =   8.25
-            Charset         =   1
+            Charset         =   204
             Weight          =   700
             Underline       =   0   'False
             Italic          =   0   'False
@@ -294,6 +295,11 @@ Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
         Cancel = True
         Me.Hide
     End If
+End Sub
+
+Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
+    If KeyCode = 27 Then Me.Hide
+    ProcessHotkey KeyCode, Me
 End Sub
 
 Private Sub Form_Resize()
@@ -451,7 +457,7 @@ Private Sub cmdUninstall_Click()
                 If FileExists(sApplication) Then
                     sArguments = ExtractArguments(.UninstString)
             
-                    Proc.ProcessRunUnelevated2 sApplication, sArguments
+                    Proc.ProcessRunUnelevated2 PathX64(sApplication), sArguments
                     
                     'ShellExecute 0&, 0&, StrPtr(sApplication), StrPtr(sArguments), 0&, 1&
                 End If

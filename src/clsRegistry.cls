@@ -277,14 +277,14 @@ Private Const STATUS_SUCCESS         As Long = 0&
 Private Const STATUS_INVALID_PARAMETER As Long = &HC000000D
 
 'Private Declare Function CompareObjectHandles Lib "Kernelbase.dll" (ByVal hFirstObjectHandle As Long, ByVal hSecondObjectHandle As Long) As Long
-Private Declare Function NtQueryKey Lib "NTDLL.DLL" (ByVal KeyHandle As Long, ByVal KeyInformationClass As KEY_INFORMATION_CLASS, KeyInformation As Any, ByVal Length As Long, ResultLength As Long) As Long
-Private Declare Function NtQueryObject Lib "NTDLL.DLL" (ByVal Handle As Long, ByVal ObjectInformationClass As OBJECT_INFORMATION_CLASS, ObjectInformation As Any, ByVal ObjectInformationLength As Long, ReturnLength As Long) As Long
-Private Declare Function NtOpenKeyEx Lib "NTDLL.DLL" (KeyHandle As Long, ByVal DesiredAccess As Long, ObjectAttributes As OBJECT_ATTRIBUTES, ByVal OpenOptions As Long) As Long
-Private Declare Function NtOpenKey Lib "NTDLL.DLL" (KeyHandle As Long, ByVal DesiredAccess As Long, ObjectAttributes As OBJECT_ATTRIBUTES) As Long
+Private Declare Function NtQueryKey Lib "ntdll.dll" (ByVal KeyHandle As Long, ByVal KeyInformationClass As KEY_INFORMATION_CLASS, KeyInformation As Any, ByVal Length As Long, ResultLength As Long) As Long
+Private Declare Function NtQueryObject Lib "ntdll.dll" (ByVal Handle As Long, ByVal ObjectInformationClass As OBJECT_INFORMATION_CLASS, ObjectInformation As Any, ByVal ObjectInformationLength As Long, ReturnLength As Long) As Long
+Private Declare Function NtOpenKeyEx Lib "ntdll.dll" (KeyHandle As Long, ByVal DesiredAccess As Long, ObjectAttributes As OBJECT_ATTRIBUTES, ByVal OpenOptions As Long) As Long
+Private Declare Function NtOpenKey Lib "ntdll.dll" (KeyHandle As Long, ByVal DesiredAccess As Long, ObjectAttributes As OBJECT_ATTRIBUTES) As Long
 Private Declare Function RegFlushKey Lib "Advapi32.dll" (ByVal hKey As Long) As Long
-Private Declare Function NtSetInformationKey Lib "NTDLL.DLL" (ByVal KeyHandle As Long, ByVal KeySetInformationClass As KEY_SET_INFORMATION_CLASS, ByVal KeySetInformation As Long, ByVal KeySetInformationLength As Long) As Long
-Private Declare Function NtClose Lib "NTDLL.DLL" (ByVal Handle As Long) As Long
-Private Declare Function NtEnumerateKey Lib "NTDLL.DLL" (ByVal KeyHandle As Long, ByVal Index As Long, ByVal KeyInformationClass As KEY_INFORMATION_CLASS, ByVal KeyInformation As Any, ByVal Length As Long, ResultLength As Long) As Long
+Private Declare Function NtSetInformationKey Lib "ntdll.dll" (ByVal KeyHandle As Long, ByVal KeySetInformationClass As KEY_SET_INFORMATION_CLASS, ByVal KeySetInformation As Long, ByVal KeySetInformationLength As Long) As Long
+Private Declare Function NtClose Lib "ntdll.dll" (ByVal Handle As Long) As Long
+Private Declare Function NtEnumerateKey Lib "ntdll.dll" (ByVal KeyHandle As Long, ByVal Index As Long, ByVal KeyInformationClass As KEY_INFORMATION_CLASS, ByVal KeyInformation As Any, ByVal Length As Long, ResultLength As Long) As Long
 
 Public Function GetHKey(ByVal HKeyName As Variant) As ENUM_REG_HIVE 'Get handle of main hive
     On Error GoTo ErrorHandler:
@@ -2401,7 +2401,7 @@ Public Sub Jump(lHive As ENUM_REG_HIVE, ByVal sKey As String, Optional sValue As
         Dim thrCurrent As Long
         Dim thrRegedit As Long
         
-        thrCurrent = GetWindowThreadProcessId(frmMain.hwnd, ByVal 0)
+        thrCurrent = GetWindowThreadProcessId(g_HwndMain, ByVal 0)
         thrRegedit = GetWindowThreadProcessId(hwndListView, ByVal 0)
         
         If thrCurrent <> 0 And thrRegedit <> 0 Then

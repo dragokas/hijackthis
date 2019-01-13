@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.1#0"; "mscomctl.ocx"
+Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.1#0"; "MSCOMCTL.OCX"
 Begin VB.Form frmStartupList2 
    Caption         =   "StartupList 2"
    ClientHeight    =   4815
@@ -7,6 +7,7 @@ Begin VB.Form frmStartupList2
    ClientTop       =   630
    ClientWidth     =   8850
    Icon            =   "frmStartupList2.frx":0000
+   KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    ScaleHeight     =   4815
    ScaleWidth      =   8850
@@ -97,7 +98,7 @@ Begin VB.Form frmStartupList2
                   BeginProperty Font 
                      Name            =   "MS Sans Serif"
                      Size            =   8.25
-                     Charset         =   1
+                     Charset         =   204
                      Weight          =   700
                      Underline       =   0   'False
                      Italic          =   0   'False
@@ -115,7 +116,7 @@ Begin VB.Form frmStartupList2
                   BeginProperty Font 
                      Name            =   "MS Sans Serif"
                      Size            =   8.25
-                     Charset         =   1
+                     Charset         =   204
                      Weight          =   700
                      Underline       =   0   'False
                      Italic          =   0   'False
@@ -193,7 +194,7 @@ Begin VB.Form frmStartupList2
                   BeginProperty Font 
                      Name            =   "MS Sans Serif"
                      Size            =   8.25
-                     Charset         =   1
+                     Charset         =   204
                      Weight          =   700
                      Underline       =   0   'False
                      Italic          =   0   'False
@@ -242,7 +243,7 @@ Begin VB.Form frmStartupList2
                   BeginProperty Font 
                      Name            =   "MS Sans Serif"
                      Size            =   8.25
-                     Charset         =   1
+                     Charset         =   204
                      Weight          =   700
                      Underline       =   0   'False
                      Italic          =   0   'False
@@ -341,7 +342,7 @@ Begin VB.Form frmStartupList2
                   BeginProperty Font 
                      Name            =   "MS Sans Serif"
                      Size            =   8.25
-                     Charset         =   1
+                     Charset         =   204
                      Weight          =   700
                      Underline       =   0   'False
                      Italic          =   0   'False
@@ -670,7 +671,7 @@ Begin VB.Form frmStartupList2
                   BeginProperty Font 
                      Name            =   "MS Sans Serif"
                      Size            =   8.25
-                     Charset         =   1
+                     Charset         =   204
                      Weight          =   700
                      Underline       =   0   'False
                      Italic          =   0   'False
@@ -689,7 +690,7 @@ Begin VB.Form frmStartupList2
                   BeginProperty Font 
                      Name            =   "MS Sans Serif"
                      Size            =   8.25
-                     Charset         =   1
+                     Charset         =   204
                      Weight          =   700
                      Underline       =   0   'False
                      Italic          =   0   'False
@@ -1425,6 +1426,9 @@ Private Const REG_MULTI_SZ = 7
 Private NUM_OF_SECTIONS As Long
 Private lCountedNodes& 'for GetStartupListReport()
 
+Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
+    ProcessHotkey KeyCode, Me
+End Sub
 
 Private Sub chkSectionDisabled_Click(Index As Integer)
     On Error GoTo ErrorHandler:

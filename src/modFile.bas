@@ -268,7 +268,7 @@ Const MAX_FILE_SIZE As Currency = 104857600@
 'Private Declare Function lstrcpyn Lib "kernel32.dll" Alias "lstrcpynW" (ByVal lpDst As Long, ByVal lpSrc As Long, ByVal iMaxLength As Long) As Long
 'Private Declare Function CLSIDFromString Lib "ole32.dll" (ByVal lpszGuid As Long, pGuid As UUID) As Long
 'Private Declare Function PathFindOnPath Lib "Shlwapi.dll" Alias "PathFindOnPathW" (ByVal pszFile As Long, ppszOtherDirs As Any) As Long
-Private Declare Function NtQueryObject Lib "NTDLL.DLL" (ByVal Handle As Long, ByVal ObjectInformationClass As OBJECT_INFORMATION_CLASS, ObjectInformation As Any, ByVal ObjectInformationLength As Long, ReturnLength As Long) As Long
+Private Declare Function NtQueryObject Lib "ntdll.dll" (ByVal Handle As Long, ByVal ObjectInformationClass As OBJECT_INFORMATION_CLASS, ObjectInformation As Any, ByVal ObjectInformationLength As Long, ReturnLength As Long) As Long
 '
 'Const FILE_SHARE_READ           As Long = &H1&
 'Const FILE_SHARE_WRITE          As Long = &H2&
@@ -2273,6 +2273,17 @@ Public Function GetFileNameAndExt(ByVal Path As String) As String ' вернет тольк
     End If
 End Function
 
+Public Function PathX64(sPath As String) As String
+    If OSver.IsWin32 Then
+        PathX64 = sPath
+    Else
+        If StrBeginWith(sPath, sWinSysDir) Then
+            PathX64 = Replace$(sPath, sWinSysDir, sSysNativeDir, , 1, 1)
+        Else
+            PathX64 = sPath
+        End If
+    End If
+End Function
 
 'true if success
 Public Function FileCopyW(FileSource As String, FileDestination As String, Optional bOverwrite As Boolean = True) As Boolean
@@ -2689,7 +2700,7 @@ Public Function ShowFileProperties(sFile$, Handle As Long) As Boolean
         .cbSize = Len(uSEI)
         .fMask = SEE_MASK_INVOKEIDLIST Or SEE_MASK_NOCLOSEPROCESS Or SEE_MASK_DOENVSUBST Or SEE_MASK_FLAG_NO_UI
         .hwnd = Handle
-        .lpFile = StrPtr(sFile)
+        .lpFile = StrPtr(PathX64(sFile))
         .lpVerb = StrPtr("properties")
         .nShow = 1
     End With

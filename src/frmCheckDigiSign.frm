@@ -15,6 +15,7 @@ Begin VB.Form frmCheckDigiSign
       Strikethrough   =   0   'False
    EndProperty
    Icon            =   "frmCheckDigiSign.frx":0000
+   KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    ScaleHeight     =   4680
    ScaleWidth      =   9255
@@ -186,14 +187,12 @@ Option Explicit
 Private Declare Function DeleteFileW Lib "kernel32.dll" (ByVal lpFileName As Long) As Long
 Private Declare Function SfcIsFileProtected Lib "Sfc.dll" (ByVal RpcHandle As Long, ByVal ProtFileName As Long) As Long
 Private Declare Function SetWindowTheme Lib "UxTheme.dll" (ByVal hwnd As Long, ByVal pszSubAppName As Long, ByVal pszSubIdList As Long) As Long
-Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteW" (ByVal hwnd As Long, ByVal lpOperation As Long, ByVal lpFile As Long, ByVal lpParameters As Long, ByVal lpDirectory As Long, ByVal nShowCmd As Long) As Long
 
 Private Const CERT_E_UNTRUSTEDROOT          As Long = &H800B0109
 Private Const TRUST_E_NOSIGNATURE           As Long = &H800B0100
 Private Const CRYPT_E_BAD_MSG               As Long = &H8009200D
 
 Dim isRan As Boolean
-
 
 Private Sub cmdGo_Click()
     On Error GoTo ErrorHandler:
@@ -332,7 +331,7 @@ Private Sub cmdGo_Click()
     End If
     
     'Abort
-    cmdExit.Caption = Translate(1861)
+    CmdExit.Caption = Translate(1861)
     
     Dim bWHQL As Boolean
     Dim bWPF As Boolean
@@ -556,7 +555,7 @@ Private Sub cmdGo_Click()
     isRan = False
     cmdGo.Enabled = True
     txtPaths.Enabled = True
-    cmdExit.Caption = Translate(1858)
+    CmdExit.Caption = Translate(1858)
     
     If OpenW(ReportPath, FOR_OVERWRITE_CREATE, hFile, g_FileBackupFlag) Then
         PutW hFile, 1&, VarPtr(bData(0)), UBound(bData) + 1, doAppend:=True
@@ -598,7 +597,7 @@ Private Sub cmdExit_Click()
     If isRan Then
         isRan = False
         ToggleWow64FSRedirection True
-        cmdExit.Caption = Translate(1858)
+        CmdExit.Caption = Translate(1858)
     Else
         Me.Hide
         'Unload Me
@@ -618,6 +617,7 @@ End Sub
 
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
     If KeyCode = 27 Then cmdExit_Click
+    ProcessHotkey KeyCode, Me
 End Sub
 
 Private Sub Form_Load()
@@ -671,7 +671,7 @@ Private Sub Form_Resize()
     TopLevel2 = TopLevel1 - 1440
     
     cmdGo.Top = TopLevel1
-    cmdExit.Top = TopLevel1
+    CmdExit.Top = TopLevel1
     
     shpBack.Top = TopLevel1 + 120
     shpFore.Top = TopLevel1 + 120

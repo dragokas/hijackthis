@@ -6,6 +6,7 @@ Begin VB.Form frmUnlockRegKey
    ClientTop       =   450
    ClientWidth     =   8445
    Icon            =   "frmUnlockRegKey.frx":0000
+   KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    ScaleHeight     =   3240
    ScaleWidth      =   8445
@@ -153,6 +154,7 @@ End Sub
 
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
     If KeyCode = 27 Then Me.Hide
+    ProcessHotkey KeyCode, Me
 End Sub
 
 Private Sub Form_Load()
@@ -179,7 +181,7 @@ Private Sub Form_Resize()
     txtKeys.Height = Me.Height - 2010
     chkRecur.Top = Me.Height - 1300
     cmdGo.Top = Me.Height - 1300
-    cmdExit.Top = Me.Height - 1300
+    CmdExit.Top = Me.Height - 1300
 End Sub
 
 Private Sub Text1_KeyDown(KeyCode As Integer, Shift As Integer)

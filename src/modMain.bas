@@ -1226,6 +1226,7 @@ Public Sub LoadStuff()
         .Add "NIC CA 2014", "D2DBF71823B2B8E78F5958096150BFCB97CC388A"
         .Add "TRENDnet, Inc.", "DB5042ED256FF426867B332887ECCE2D95E79614"
         .Add "MCSHOLDING TEST", "E1F3591E769865C4E447ACC37EAFC9E2BFE4C576"
+        
     End With
     
     With colBadCert
@@ -1510,7 +1511,7 @@ Public Sub CloseProgressbar(Optional bScanCompeleted As Boolean)
         If frmMain.lstResults.Visible Then
             frmMain.lblInfo(1).Visible = True
         End If
-        If Not TaskBar Is Nothing Then TaskBar.SetProgressState frmMain.hwnd, TBPF_NOPROGRESS
+        If Not TaskBar Is Nothing Then TaskBar.SetProgressState g_HwndMain, TBPF_NOPROGRESS
     End If
 End Sub
 
@@ -2073,7 +2074,7 @@ Private Function IsBingScopeKeyPara(sRegParam As String, sURL As String) As Bool
                     Select Case LCase(aKey(i))
                     Case "q", "query"
                     '{searchTerms}
-                        If aVal(i) = "{searchTerms}" Then bSearchTermPresent = True
+                        If StrComp(aVal(i), "{searchTerms}", 1) = 0 Then bSearchTermPresent = True
                     
                     Case "src"
                     'IE-SearchBox
@@ -2145,6 +2146,8 @@ Private Function IsBingScopeKeyPara(sRegParam As String, sURL As String) As Bool
                     
                     Case "mkt"
                     Case "setlang"
+                    Case "ptag"
+                    Case "conlogo"
                     
                     Case ""
                         If Len(aVal(i)) > 0 Then IsBingScopeKeyPara = False
@@ -5575,24 +5578,29 @@ Public Sub CheckCertificatesEDS()
         AddToScanResults ResultAll
     End If
     
-    Dim sData$
-    
     'Check for new Microsoft Root certificates
-    For i = 1 To Reg.EnumSubKeysToArray(HKLM, "SOFTWARE\Microsoft\SystemCertificates\ROOT\Certificates", aSubKey())
-        
-        If Not (IsMicrosoftCertHash(aSubKey(i))) Then
-        
-            Blob = Reg.GetBinary(HKLM, "SOFTWARE\Microsoft\SystemCertificates\ROOT\Certificates\" & aSubKey(i), "Blob")
+    Dim sData$
+    Dim eHive As Long, vHive As Variant
+    
+    For Each vHive In Array(HKCU, HKLM)
+        eHive = vHive
+    
+        For i = 1 To Reg.EnumSubKeysToArray(eHive, "SOFTWARE\Microsoft\SystemCertificates\ROOT\Certificates", aSubKey())
             
-            If AryItems(Blob) Then
-                ParseCertBlob Blob, CertHash, FriendlyName, IssuedTo
+            If Not (IsMicrosoftCertHash(aSubKey(i))) Then
+            
+                Blob = Reg.GetBinary(eHive, "SOFTWARE\Microsoft\SystemCertificates\ROOT\Certificates\" & aSubKey(i), "Blob")
                 
-                If InStr(1, FriendlyName, "Microsoft", 1) <> 0 And IssuedTo <> "localhost" Then ' (localhost is Microsoft IIS Administration Server Certificate)
-                    sData = Reg.ExportKeyToVariable(HKLM, "SOFTWARE\Microsoft\SystemCertificates\ROOT\Certificates\" & aSubKey(i), False, True, True)
-                    AddWarning "New Root certificate is detected! Report to developer, please:" & vbCrLf & Replace(sData, vbCrLf, "\n")
+                If AryItems(Blob) Then
+                    ParseCertBlob Blob, CertHash, FriendlyName, IssuedTo
+                    
+                    If InStr(1, FriendlyName, "Microsoft", 1) <> 0 And IssuedTo <> "localhost" Then ' (localhost is Microsoft IIS Administration Server Certificate)
+                        sData = Reg.ExportKeyToVariable(eHive, "SOFTWARE\Microsoft\SystemCertificates\ROOT\Certificates\" & aSubKey(i), False, True, True)
+                        AddWarning "New Root certificate is detected! Report to developer, please:" & vbCrLf & Replace(sData, vbCrLf, "\n")
+                    End If
                 End If
             End If
-        End If
+        Next
     Next
     
     Set HE = Nothing
@@ -10614,7 +10622,7 @@ Public Function CheckForReadOnlyMedia() As Boolean
     AppendErrorLogCustom "CheckForReadOnlyMedia - End"
 End Function
 
-Public Sub SetAllFontCharset(Frm As Form, Optional sFontName As String, Optional sFontSize As String)
+Public Sub SetAllFontCharset(frm As Form, Optional sFontName As String, Optional sFontSize As String)
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "SetAllFontCharset - Begin"
 
@@ -10628,8 +10636,9 @@ Public Sub SetAllFontCharset(Frm As Form, Optional sFontName As String, Optional
     Dim CtlFrame    As Frame
     Dim CtlCombo    As ComboBox
     Dim CtlTree     As TreeView
+    Dim CtlPict     As PictureBox
     
-    For Each Ctl In Frm.Controls
+    For Each Ctl In frm.Controls
         Select Case TypeName(Ctl)
             Case "CommandButton"
                 Set ctlBtn = Ctl
@@ -10662,6 +10671,9 @@ Public Sub SetAllFontCharset(Frm As Form, Optional sFontName As String, Optional
             Case "TreeView"
                 Set CtlTree = Ctl
                 SetFontCharSet CtlTree, sFontName, sFontSize
+            Case "PictureBox"
+                Set CtlPict = Ctl
+                SetFontCharSet CtlPict, sFontName, sFontSize
         End Select
     Next Ctl
     
@@ -10986,7 +10998,7 @@ Public Sub RestartSystem(Optional sExtraPrompt$, Optional bSilent As Boolean, Op
     SetCurrentProcessPrivileges "SeRemoteShutdownPrivilege"
     
     If bIsWinNT Then
-        'SHRestartSystemMB frmMain.hWnd, StrConv(sExtraPrompt & IIf(sExtraPrompt <> vbNullString, vbCrLf & vbCrLf, vbNullString), vbUnicode), 2
+        'SHRestartSystemMB g_HwndMain, StrConv(sExtraPrompt & IIf(sExtraPrompt <> vbNullString, vbCrLf & vbCrLf, vbNullString), vbUnicode), 2
         
         If OSver.IsWindowsVistaOrGreater Then
             lret = ExitWindowsEx(EWX_REBOOT Or EWX_FORCEIFHUNG, SHTDN_REASON_MAJOR_APPLICATION Or SHTDN_REASON_MINOR_INSTALLATION Or SHTDN_REASON_FLAG_PLANNED)
@@ -11003,7 +11015,7 @@ Public Sub RestartSystem(Optional sExtraPrompt$, Optional bSilent As Boolean, Op
         End If
         
     Else
-        SHRestartSystemMB frmMain.hwnd, sExtraPrompt, 0
+        SHRestartSystemMB g_HwndMain, sExtraPrompt, 0
     End If
 End Sub
 
@@ -11309,13 +11321,13 @@ Public Function IsProcedureAvail(ByVal ProcedureName As String, ByVal DllFilenam
 End Function
 
 Public Function MsgBoxW(Prompt As String, Optional Buttons As VbMsgBoxStyle, Optional Title As String = " ") As VbMsgBoxResult
-    Dim hActiveWnd As Long, hMyWnd As Long, Frm As Form
+    Dim hActiveWnd As Long, hMyWnd As Long, frm As Form
     If inIDE Then
         MsgBoxW = VBA.MsgBox(Prompt, Buttons, Title) 'subclassing walkaround
     Else
         hActiveWnd = GetForegroundWindow()
-        For Each Frm In Forms
-            If Frm.hwnd = hActiveWnd Then hMyWnd = hActiveWnd: Exit For
+        For Each frm In Forms
+            If frm.hwnd = hActiveWnd Then hMyWnd = hActiveWnd: Exit For
         Next
         MsgBoxW = MessageBox(IIf(hMyWnd <> 0, hMyWnd, g_HwndMain), StrPtr(Prompt), StrPtr(Title), ByVal Buttons)
     End If
@@ -11409,14 +11421,14 @@ Public Sub InitVariables()
         sWinDir = EnvironW("%SystemRoot%")
         SysDisk = EnvironW("%SystemDrive%")
     End If
-    sWinSysDir = sWinDir & "\" & IIf(bIsWinNT, "system32", "system")
+    sWinSysDir = sWinDir & "\" & IIf(bIsWinNT, "System32", "System")
     sSysDir = sWinSysDir
-    sWinSysDirWow64 = sWinDir & "\SysWow64"
+    sWinSysDirWow64 = sWinDir & "\SysWOW64"
     
     If bIsWin64 And FolderExists(sWinDir & "\sysnative") And OSver.MajorMinor >= 6 Then
-        sSysNativeDir = sWinDir & "\sysnative"
+        sSysNativeDir = sWinDir & "\SysNative"
     Else
-        sSysNativeDir = sWinDir & "\system32"
+        sSysNativeDir = sWinDir & "\System32"
     End If
     
     If bIsWin64 Then
@@ -13551,7 +13563,13 @@ Public Sub SortSectionsOfResultList()
     
     Dim Hit() As String
     Dim i As Long
+    Dim sSelItem As String
     'HitSorted() -> is a global array
+    
+    'save selected position on listbox
+    If frmMain.lstResults.ListIndex <> -1 Then
+        sSelItem = frmMain.lstResults.List(frmMain.lstResults.ListIndex)
+    End If
     
     Erase HitSorted
     
@@ -13590,6 +13608,16 @@ Public Sub SortSectionsOfResultList()
         Next i
         
         SortSectionsOfResultList_Ex Hit, HitSorted
+    End If
+    
+    'restore selected position in listbox
+    If Len(sSelItem) <> 0 Then
+        For i = 0 To frmMain.lstResults.ListCount - 1
+            If StrComp(frmMain.lstResults.List(i), sSelItem) = 0 Then
+                frmMain.lstResults.ListIndex = i
+                Exit For
+            End If
+        Next
     End If
     
     Perf.EndTime = GetTickCount()
@@ -14662,13 +14690,13 @@ Public Function isEDS_Work(Optional sReturnMsg As String) As Boolean
     sReturnMsg = sMsg
 End Function
 
-Public Function SetTaskBarProgressValue(Frm As Form, ByVal Value As Single) As Boolean
+Public Function SetTaskBarProgressValue(frm As Form, ByVal Value As Single) As Boolean
     If Value < 0 Or Value > 1 Then Exit Function
     If Not (TaskBar Is Nothing) Then
         If Value = 0 Then
-            TaskBar.SetProgressState frmMain.hwnd, TBPF_NOPROGRESS
+            TaskBar.SetProgressState g_HwndMain, TBPF_NOPROGRESS
         Else
-            TaskBar.SetProgressValue Frm.hwnd, CCur(Value * 10000), CCur(10000)
+            TaskBar.SetProgressValue frm.hwnd, CCur(Value * 10000), CCur(10000)
         End If
     End If
 End Function
@@ -15006,7 +15034,7 @@ End Sub
 ' Opens log file in default editor / or notepad if editor is not assigned to the extension
 ' / or in explorer window with selection if all other methods failed
 '
-Public Sub OpenLogFile(sLogFile As String)
+Public Sub OpenLogFile(ByVal sLogFile As String)
     If Not FileExists(sLogFile, , True) Then Exit Sub
     
     Dim bAssoc As Boolean
@@ -15014,6 +15042,8 @@ Public Sub OpenLogFile(sLogFile As String)
     Dim sClassID As String
     Dim sOpenCmd As String
     Dim sOpenProg As String
+    
+    sLogFile = PathX64(sLogFile)
     
     sClassID = Reg.GetString(HKEY_CLASSES_ROOT, GetExtensionName(sLogFile), "")
     
