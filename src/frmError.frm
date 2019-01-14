@@ -13,7 +13,7 @@ Begin VB.Form frmError
    StartUpPosition =   3  'Windows Default
    Begin VB.PictureBox Picture1 
       Height          =   735
-      Left            =   240
+      Left            =   120
       ScaleHeight     =   675
       ScaleWidth      =   675
       TabIndex        =   4

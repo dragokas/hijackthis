@@ -27,6 +27,8 @@ if not exist "%compiler%" (
   pause
 )
 
+2>NUL del HiJackThis.pdb
+
 ::XP ?
 ver |>NUL find " 5." && (start "" "%PF%\Microsoft Visual Studio\VB98\vb6.exe" "%~dp0%ProjFile%" & exit /b)
 

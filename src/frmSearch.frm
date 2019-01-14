@@ -112,7 +112,7 @@ Begin VB.Form frmSearch
    Begin VB.CommandButton CmdMore 
       Height          =   375
       Left            =   5160
-      Picture         =   "frmSearch.frx":3AFA
+      Picture         =   "frmSearch.frx":000C
       Style           =   1  'Graphical
       TabIndex        =   2
       ToolTipText     =   "Settings"
@@ -208,7 +208,7 @@ Private Sub Form_Load()
         For Each Ctl In Me.Controls
             If TypeName(Ctl) = "OptionButton" Then
                 Set OptB = Ctl
-                SetWindowTheme OptB.hWnd, StrPtr(" "), StrPtr(" ")
+                SetWindowTheme OptB.hwnd, StrPtr(" "), StrPtr(" ")
             End If
         Next
         Set OptB = Nothing
@@ -799,13 +799,13 @@ Function SearchAllowed(Optional frmExplicit As Form, Optional out_Control As Con
         hActiveWnd = GetForegroundWindow()
         
         For Each frm In Forms
-            If frm.hWnd = hActiveWnd Then sActiveFrm = frm.Name: Exit For
+            If frm.hwnd = hActiveWnd Then sActiveFrm = frm.Name: Exit For
         Next
         
         If sActiveFrm = "frmSearch" Then ' if search windows is already on top, get owner
             hActiveWnd = GetWindow(hActiveWnd, GW_OWNER)
             For Each frm In Forms
-                If frm.hWnd = hActiveWnd Then sActiveFrm = frm.Name: Exit For
+                If frm.hwnd = hActiveWnd Then sActiveFrm = frm.Name: Exit For
             Next
         End If
     End If

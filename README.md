@@ -89,7 +89,7 @@ Operating System
 ### Thanks to:
  * **regist** (VIRUSNET) { [@regist](https://forum.kasperskyclub.ru/index.php?showuser=44533) } - for the valuable tips and ideas, user's manual, database updates, closed and beta-testing
  * **Sandor** (VIRUSNET) { [@Sandor-Helper](https://github.com/Sandor-Helper) } - for the beta-testing, PC treatment on GitHub and forums of association
- * **SafeZone.cc team** (general [VIRUSNET](https://safezone.cc/threads/specialisty-i-internet-resursy-nekommercheskoj-dobrovolnoj-associacii-virusnet.22945/) community) - for promotion and support, PC treatment on forums of association
+ * **SafeZone.cc team** (general [VIRUSNET](https://github.com/VIRUSNET-Association/VIRUSNET) community) - for promotion and support, PC treatment on forums of association
  * **Fernando Mercês** { [@merces](https://github.com/merces) } (Trend Micro) - coordinator of original HJT, for the tips, suggestions and promotion
  * **Loucif Kharouni** { [@loucifkharouni](https://github.com/loucifkharouni) } (Trend Micro) - coordinator of original HJT, for the tips & suggestions
 

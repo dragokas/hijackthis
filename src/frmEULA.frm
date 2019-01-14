@@ -26,7 +26,7 @@ Begin VB.Form frmEULA
       BeginProperty Font 
          Name            =   "Tahoma"
          Size            =   8.25
-         Charset         =   1
+         Charset         =   204
          Weight          =   400
          Underline       =   0   'False
          Italic          =   0   'False
@@ -43,7 +43,7 @@ Begin VB.Form frmEULA
       BeginProperty Font 
          Name            =   "Tahoma"
          Size            =   8.25
-         Charset         =   1
+         Charset         =   204
          Weight          =   400
          Underline       =   0   'False
          Italic          =   0   'False
@@ -62,7 +62,7 @@ Begin VB.Form frmEULA
       BeginProperty Font 
          Name            =   "Tahoma"
          Size            =   8.25
-         Charset         =   1
+         Charset         =   204
          Weight          =   400
          Underline       =   0   'False
          Italic          =   0   'False
@@ -83,7 +83,7 @@ Begin VB.Form frmEULA
       BeginProperty Font 
          Name            =   "Constantia"
          Size            =   15
-         Charset         =   1
+         Charset         =   204
          Weight          =   700
          Underline       =   0   'False
          Italic          =   0   'False
