@@ -10,7 +10,7 @@
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
-[2.9.0.17] - Jan 14, 2019
+[2.9.0.18] - Jan 14, 2019
 Fixed bug in loading HJT due to incompatible icon for 32-bit OS.
 
 [2.9.0.17] - Jan 13, 2019
