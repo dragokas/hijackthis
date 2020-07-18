@@ -21,7 +21,7 @@ Therefore, FALSE POSITIVES ARE LIKELY. If you are ever unsure, you should consul
 
 [Nightly build (private test version) for Windows](https://dragokas.com/tools/HiJackThis_test.zip)
 
-![](https://dragokas.com/tools/img/hjt/Scanning.png)
+![](https://dragokas.com/tools/img/hjt/Scanning2.png)
 
 ## Features
 
