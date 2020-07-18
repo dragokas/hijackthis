@@ -15,7 +15,7 @@ If yes, see the next step.
 
   * Read carefully: [How to make a request for help in the PC cure section](https://github.com/dragokas/hijackthis/wiki/How-to-make-a-request-for-help-in-the-PC-cure-section%3F)
 
-  * Attach 'Collection-[Date].zip' log created by [AutoLogger](https://safezone.cc/resources/autologger-regist-drongo.59/download?version=648)
+  * Attach 'Collection-[Date].zip' log created by [AutoLogger](http://tools.safezone.cc/drongo/test/AutoLogger-test.zip)
 
   * Describe your problem in details:
 
