@@ -1,8 +1,10 @@
-﻿# HiJackThis Fork v3
+# HiJackThis Fork v3
 
-Hi, I am Polshyn Stanislav from Ukraine ([colony of USA](https://youtu.be/puLPOPKypEg?t=7218), [Chernobyl](https://en.wikipedia.org/wiki/Chernobyl_disaster), [Klitschko](https://en.wikipedia.org/wiki/Wladimir_Klitschko), [Na'Vi](https://en.wikipedia.org/wiki/Natus_Vincere)).
+Hi, I am Stanislav Polshyn - a lawyer, security observer and malware researcher from Ukraine ([Chernobyl](https://en.wikipedia.org/wiki/Chernobyl_disaster), [Klitschko](https://en.wikipedia.org/wiki/Wladimir_Klitschko), [Na'Vi](https://en.wikipedia.org/wiki/Natus_Vincere)).
 
-I am happy to present a continuation of Trend Micro HiJackThis development.
+I am happy to present a continuation of Trend Micro HiJackThis development, once a well-known tool.
+
+At the moment, it is a step-by-step 100% rewritten source code of the original engine, created in my free time as a hobby for more than 4 years.
 
 ## Overview
 
@@ -89,29 +91,29 @@ Operating System
 ### Thanks to:
  * **regist** (VIRUSNET) { [@regist](https://forum.kasperskyclub.ru/index.php?showuser=44533) } - for the valuable tips and ideas, user's manual, database updates, closed and beta-testing
  * **Sandor** (VIRUSNET) { [@Sandor-Helper](https://github.com/Sandor-Helper) } - for the beta-testing, PC treatment on GitHub and forums of association
- * **SafeZone.cc team** (general [VIRUSNET](https://github.com/VIRUSNET-Association/VIRUSNET) community) - for promotion and support, PC treatment on forums of association
+ * **akok** (VIRUSNET) { [@akokSZ](https://github.com/akokSZ) } - for product promotion, providing a platform for tests and discussion, help with resolving conflicts with antiviruses
+ * **SafeZone.cc team** (general [VIRUSNET](https://github.com/VIRUSNET-Association/VIRUSNET) community) - for promotion and support, feedback and bug reports, PC treatment on forums of association
  * **Fernando Mercês** { [@merces](https://github.com/merces) } (Trend Micro) - coordinator of original HJT, for the tips, suggestions and promotion
  * **Loucif Kharouni** { [@loucifkharouni](https://github.com/loucifkharouni) } (Trend Micro) - coordinator of original HJT, for the tips & suggestions
 
-HiJackThis Fork by Alex Dragokas is a continuation of Trend Micro HiJackThis development, based on [v.2.0.6](https://sourceforge.net/p/hjt/code/HEAD/tree/beta/2.0.6/). It was initially supported by Trend Micro, but they have since refused support and closed the GitHub repository.
+HiJackThis Fork by Alex Dragokas is a continuation of Trend Micro HiJackThis development, based on [v.2.0.6](https://sourceforge.net/p/hjt/code/HEAD/tree/beta/2.0.6/) and 100% rewritten at the moment. It was initially supported by Trend Micro, but they have since refused support and closed the GitHub repository.
 HiJackThis Fork is distributed under the [GPLv2 license](https://github.com/dragokas/hijackthis/blob/devel/LICENSE.md). It also includes several tools and plugins available as freeware.
 
 [![](https://dragokas.com/tools/img/hjt/softpedia-reward.png)](https://www.softpedia.com/get/Security/Security-Related/HiJackThis-Fork.shtml) [![](https://dragokas.com/tools/img/hjt/mg_certified.gif)](https://www.majorgeeks.com/files/details/hijackthis_fork.html) [![](https://dragokas.com/tools/img/hjt/chocolatey_badge.png)](https://chocolatey.org/packages/hijackthis)
 
 ## Donate
 
-For more than three years, I have maintained this project in my free time.
-If you find it useful, you can support me by donating any amount to:
+For more than four years, I have maintained this project in my free time.
+If you find it useful, you can support me for further inspiration by donating any amount to:
+ * [Patreon](https://www.patreon.com/dragokas)
  * BTC: [17hkU3eKPngHrG3P9uqXwMLE3ztmtfGDZ4](https://dragokas.com/tools/img/BTC_QR.png)
  * Ethereum: 0xc6B421AeeC879F6603f86117a792e0bb1c67C7A5
  * [Yandex.Money](https://money.yandex.ru/to/410011191892975)
- * WebMoney:
- - Z389963582741
- - R963062285529
+ * WebMoney: Z389963582741, R963062285529
 
 ## Other projects
 
 You may also find my other programs useful:
 - [Check Browsers' LNK](https://toolslib.net/downloads/viewdownload/80-check-browsers-lnk/) & [ClearLNK](https://toolslib.net/downloads/viewdownload/81-clearlnk/) to cure shortcuts
 - [Different tools](https://github.com/SafeZone-cc) at SafeZone repository.
-- [My articles, tutorials and research](http://www.cyberforum.ru/blogs/218284/blog3628.html)
+- [My articles, tutorials and research](http://www.cyberforum.ru/blogs/218284/blog3628.html) (on Russian)
