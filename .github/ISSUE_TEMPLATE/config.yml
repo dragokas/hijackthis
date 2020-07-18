@@ -1,0 +1,11 @@
+--- 
+blank_issues_enabled: true
+contact_links: 
+  - 
+    about: "Wiki pages"
+    name: FAQ
+    url: "https://github.com/dragokas/hijackthis/wiki"
+  - 
+    about: "Automatic Logs Collector (for Cure topics)"
+    name: AutoLogger
+    url: "https://tools.safezone.cc/drongo/test/AutoLogger-test.zip"
