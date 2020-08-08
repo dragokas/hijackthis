@@ -208,9 +208,9 @@ Public Sub CheckForUpdate(bSilentIfNoUpdates As Boolean, bSilentReplace As Boole
     'sNewVersion = GetUrl("https://raw.githubusercontent.com/dragokas/hijackthis/devel/src/HiJackThis-update.txt")
     
     If bUseTestVersion Then
-        bRet = GetUrl2_Str("http://dragokas.com/tools/HiJackThis-update-test.txt", sNewVersion, lReturnCode, sErrorMsg)
+        bRet = GetUrl2_Str("https://dragokas.com/tools/HiJackThis-update-test.txt", sNewVersion, lReturnCode, sErrorMsg)
     Else
-        bRet = GetUrl2_Str("http://dragokas.com/tools/HiJackThis-update.txt", sNewVersion, lReturnCode, sErrorMsg)
+        bRet = GetUrl2_Str("https://dragokas.com/tools/HiJackThis-update.txt", sNewVersion, lReturnCode, sErrorMsg)
     End If
     
     If (Not bRet) Or (Not IsVersion(sNewVersion)) Then
@@ -250,24 +250,27 @@ Public Sub CheckForUpdate(bSilentIfNoUpdates As Boolean, bSilentReplace As Boole
     End If
     
     If bUseTestVersion Then
-        sUpdateUrl = "http://dragokas.com/tools/HiJackThis_test.zip"
+        sUpdateUrl = "https://dragokas.com/tools/HiJackThis_test.zip"
     Else
-        sUpdateUrl = "http://dragokas.com/tools/HiJackThis.zip"
+        sUpdateUrl = "https://dragokas.com/tools/HiJackThis.zip"
     End If
     
     'sUpdateUrl = "http://sourceforge.net/projects/hjt/"
     'sUpdateUrl = "https://github.com/dragokas/hijackthis/raw/devel/binary/HiJackThis.exe"
     
     If bSilentReplace And Not (Not bSilentIfNoUpdates And bNoConnection) Then
-        If Not bNoConnection And Not inIDE Then
+        If Not bNoConnection Then
         
             If DownloadAndUpdateSelf(sUpdateUrl, bSilentIfNoUpdates) Then
             
-                frmMain.ReleaseMutex
-                g_NeedTerminate = True
+                If Not inIDE Then
+            
+                    frmMain.ReleaseMutex
+                    g_NeedTerminate = True
                 
-                'relaunch new self
-                Proc.ProcessRun AppPath(True), Command$(), AppPath(False), 1, True
+                    'relaunch new self
+                    Proc.ProcessRun AppPath(True), g_sCommandLine, AppPath(False), 1, True
+                End If
             End If
         End If
     Else
@@ -381,8 +384,10 @@ Public Function GetUrl2( _
     
     On Error GoTo ErrorHandler:
     
-    Dim Frm As Form
-    Set Frm = frmMain
+    sURL = NormalizeInetProtocol(sURL)
+    
+    Dim frm As Form
+    Set frm = frmMain
     
     Dim cInet As clsHttpHelps
     Set cInet = New clsHttpHelps
@@ -391,19 +396,19 @@ Public Function GetUrl2( _
         .AutomatiRedirection = True
         .RequestMethod = cGET
         .TimeOut = 5000
-        .UseProxy = Frm.optProxyManual.Value
-        .UseProxyIE = Frm.optProxyIE.Value
+        .UseProxy = frm.optProxyManual.Value
+        .UseProxyIE = frm.optProxyIE.Value
         
         If .UseProxy Then
-            .ProxyAddress = Frm.txtUpdateProxyHost.Text & ":" & Frm.txtUpdateProxyPort.Text
-            .UseProxySocks4 = Frm.chkSocks4.Value
+            .ProxyAddress = frm.txtUpdateProxyHost.Text & ":" & frm.txtUpdateProxyPort.Text
+            .UseProxySocks4 = frm.chkSocks4.Value
         End If
         If .UseProxy Or .UseProxyIE Then
-            .UseProxyAuthorization = Frm.chkUpdateUseProxyAuth.Value
+            .UseProxyAuthorization = frm.chkUpdateUseProxyAuth.Value
             
             If .UseProxyAuthorization Then
-                .ProxyUser = Frm.txtUpdateProxyLogin.Text
-                .ProxyPass = Frm.txtUpdateProxyPass.Text
+                .ProxyUser = frm.txtUpdateProxyLogin.Text
+                .ProxyPass = frm.txtUpdateProxyPass.Text
             End If
         End If
         .UserAgent = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:60.0) Gecko/20100101 Firefox/60.0"
@@ -524,7 +529,7 @@ Public Sub AddTriageObj(sName$, sType$, sFile$, Optional sCLSID$, Optional sCode
     'sPath = Left$(sFile, InStrRev(sFile, "\") - 1)
     sFilename = Mid$(sFile, InStrRev(sFile, "\") + 1)
     sFilesize = CStr(FileLen(sFile))
-    sMD5 = GetFileMD5(sFile, , True)
+    sMD5 = GetFileCheckSum(sFile, , True)
     
     ReDim sItem(8)
     sItem(0) = sName     'id to item
@@ -549,7 +554,7 @@ End Sub
 Public Function GetTriage$()
     Dim hInternet&, hConnect&, sURL$, sUserAgent$, sPost$
     Dim hRequest&, sResponse$, sBuffer$, lBufferLen&, sHeaders$
-    sURL = "http://www.spywareguide.com/report/triage.php"
+    sURL = "https://www.spywareguide.com/report/triage.php"
     sUserAgent = "StartupList v" & App.Major & "." & Format$(App.Minor, "00")
     sPost = Mid$(URLEncode(Join(sTriageObj, "&")), 2)
     If sPost = vbNullString Then Exit Function
@@ -793,9 +798,9 @@ Private Function DownloadAndUpdateSelf(ZipURL As String, bSilent As Boolean) As 
         If FileExists(ExePath) Then
         
             'checking digital signature
-            SignVerify ExePath, SV_LightCheck Or SV_SelfTest Or SV_PreferInternalSign, SignResult
+            SignVerify ExePath, SV_PreferInternalSign, SignResult
             
-            If SignResult.HashRootCert = "05F1F2D5BA84CDD6866B37AB342969515E3D912E" Then
+            If IsDragokasSign(SignResult) Then
                 
                 If FileExists(AppPath(True) & ".bak") Then DeleteFileWEx StrPtr(AppPath(True) & ".bak"), , True
                 
@@ -812,7 +817,7 @@ Private Function DownloadAndUpdateSelf(ZipURL As String, bSilent As Boolean) As 
                         "/d /c (cd\& for /L %+ in (1,1,10) do ((timeout /t 1|| ping 127.1 -n 2)& " & _
                         "move /y """ & AppPath(True) & """" & " " & """" & AppPath(True) & ".bak" & """ && " & _
                         "move /y """ & ExePath & """ """ & AppPath(True) & """ && " & _
-                        "start """" """ & AppPath(True) & """ " & Command$() & "&& exit))", _
+                        "start """" """ & AppPath(True) & """ " & g_sCommandLine & "&& exit))", _
                         SysDisk, vbHide, True
                     
                     g_NeedTerminate = True
@@ -843,10 +848,37 @@ Private Function DownloadAndUpdateSelf(ZipURL As String, bSilent As Boolean) As 
             MsgBoxW "Cannot download the update! Try again.", vbExclamation, "HiJackThis"
         End If
     End If
-
+    
     'clear
     If FileExists(ArcPath) Then DeleteFileWEx StrPtr(ArcPath)
     
+End Function
+
+Public Function IsDragokasSign(SignResult As SignResult_TYPE) As Boolean
+
+    If (SignResult.isSelfSigned And StrComp(SignResult.HashRootCert, "05F1F2D5BA84CDD6866B37AB342969515E3D912E", 1) = 0) Then
+        IsDragokasSign = True
+    ElseIf (SignResult.isLegit) Then
+        If Date < #7/24/2023# Then
+            If StrComp(SignResult.HashFinalCert, "1B78EF517E81A07D1C1C4C6ADFA66A2B7C3269C3", 1) = 0 Then
+                IsDragokasSign = True
+            End If
+        Else
+            If InStr(1, SignResult.SubjectName, "Stanislav Polshyn", 1) <> 0 Then
+                IsDragokasSign = True
+            End If
+        End If
+    End If
+End Function
+
+Public Function NormalizeInetProtocol(ByVal sURL As String) As String
+
+    If OSver.MajorMinor >= 6 Then
+        If StrBeginWith(sURL, "http://") Then sURL = Replace$(sURL, "http://", "https://", 1, 1, 1)
+    Else
+        If StrBeginWith(sURL, "https://") Then sURL = Replace$(sURL, "https://", "http://", 1, 1, 1)
+    End If
+    NormalizeInetProtocol = sURL
 End Function
 
 Public Sub RegSaveProxySettings()

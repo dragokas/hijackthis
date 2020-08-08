@@ -2,15 +2,15 @@ VERSION 5.00
 Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.1#0"; "MSCOMCTL.OCX"
 Begin VB.Form frmStartupList2 
    Caption         =   "StartupList 2"
-   ClientHeight    =   4815
-   ClientLeft      =   165
-   ClientTop       =   630
-   ClientWidth     =   8850
+   ClientHeight    =   4812
+   ClientLeft      =   168
+   ClientTop       =   636
+   ClientWidth     =   8844
    Icon            =   "frmStartupList2.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   ScaleHeight     =   4815
-   ScaleWidth      =   8850
+   ScaleHeight     =   4812
+   ScaleWidth      =   8844
    Tag             =   "DesktopComponents"
    Begin VB.PictureBox picFrame 
       Appearance      =   0  'Flat
@@ -19,8 +19,8 @@ Begin VB.Form frmStartupList2
       ForeColor       =   &H80000008&
       Height          =   4095
       Left            =   0
-      ScaleHeight     =   4095
-      ScaleWidth      =   8805
+      ScaleHeight     =   4092
+      ScaleWidth      =   8808
       TabIndex        =   75
       Top             =   0
       Visible         =   0   'False
@@ -97,7 +97,7 @@ Begin VB.Form frmStartupList2
                   Caption         =   "Items for other hardware cfgs"
                   BeginProperty Font 
                      Name            =   "MS Sans Serif"
-                     Size            =   8.25
+                     Size            =   7.8
                      Charset         =   204
                      Weight          =   700
                      Underline       =   0   'False
@@ -115,7 +115,7 @@ Begin VB.Form frmStartupList2
                   Caption         =   "Items for other users"
                   BeginProperty Font 
                      Name            =   "MS Sans Serif"
-                     Size            =   8.25
+                     Size            =   7.8
                      Charset         =   204
                      Weight          =   700
                      Underline       =   0   'False
@@ -193,7 +193,7 @@ Begin VB.Form frmStartupList2
                   Caption         =   "Disabled items, protection"
                   BeginProperty Font 
                      Name            =   "MS Sans Serif"
-                     Size            =   8.25
+                     Size            =   7.8
                      Charset         =   204
                      Weight          =   700
                      Underline       =   0   'False
@@ -242,7 +242,7 @@ Begin VB.Form frmStartupList2
                   Caption         =   "Hijack points"
                   BeginProperty Font 
                      Name            =   "MS Sans Serif"
-                     Size            =   8.25
+                     Size            =   7.8
                      Charset         =   204
                      Weight          =   700
                      Underline       =   0   'False
@@ -341,7 +341,7 @@ Begin VB.Form frmStartupList2
                   Caption         =   "Internet Explorer items"
                   BeginProperty Font 
                      Name            =   "MS Sans Serif"
-                     Size            =   8.25
+                     Size            =   7.8
                      Charset         =   204
                      Weight          =   700
                      Underline       =   0   'False
@@ -670,7 +670,7 @@ Begin VB.Form frmStartupList2
                   Caption         =   "Registry items"
                   BeginProperty Font 
                      Name            =   "MS Sans Serif"
-                     Size            =   8.25
+                     Size            =   7.8
                      Charset         =   204
                      Weight          =   700
                      Underline       =   0   'False
@@ -689,7 +689,7 @@ Begin VB.Form frmStartupList2
                   Caption         =   "Loaded/autoloading files"
                   BeginProperty Font 
                      Name            =   "MS Sans Serif"
-                     Size            =   8.25
+                     Size            =   7.8
                      Charset         =   204
                      Weight          =   700
                      Underline       =   0   'False
@@ -823,8 +823,8 @@ Begin VB.Form frmStartupList2
       Height          =   495
       Left            =   15
       Picture         =   "frmStartupList2.frx":0512
-      ScaleHeight     =   495
-      ScaleWidth      =   495
+      ScaleHeight     =   492
+      ScaleWidth      =   492
       TabIndex        =   72
       ToolTipText     =   "Click icon to close the warning box"
       Top             =   3240
@@ -845,8 +845,8 @@ Begin VB.Form frmStartupList2
       Height          =   495
       Left            =   15
       Picture         =   "frmStartupList2.frx":0DDC
-      ScaleHeight     =   495
-      ScaleWidth      =   495
+      ScaleHeight     =   492
+      ScaleWidth      =   492
       TabIndex        =   70
       Top             =   3255
       Visible         =   0   'False
@@ -866,13 +866,13 @@ Begin VB.Form frmStartupList2
    End
    Begin MSComctlLib.StatusBar stbStatus 
       Align           =   2  'Align Bottom
-      Height          =   255
+      Height          =   252
       Left            =   0
       TabIndex        =   68
       Top             =   4560
-      Width           =   8850
-      _ExtentX        =   15610
-      _ExtentY        =   450
+      Width           =   8844
+      _ExtentX        =   15600
+      _ExtentY        =   445
       Style           =   1
       _Version        =   393216
       BeginProperty Panels {8E3867A5-8586-11D1-B16A-00C0F0283628} 
@@ -887,16 +887,16 @@ Begin VB.Form frmStartupList2
       TabIndex        =   67
       Top             =   4320
       Width           =   7215
-      _ExtentX        =   12726
-      _ExtentY        =   450
+      _ExtentX        =   12721
+      _ExtentY        =   445
       _Version        =   393216
       Appearance      =   1
    End
    Begin MSComctlLib.ImageList imlMain 
       Left            =   6480
       Top             =   120
-      _ExtentX        =   1005
-      _ExtentY        =   1005
+      _ExtentX        =   995
+      _ExtentY        =   995
       BackColor       =   -2147483643
       ImageWidth      =   16
       ImageHeight     =   16
@@ -1072,8 +1072,8 @@ Begin VB.Form frmStartupList2
       TabIndex        =   54
       Top             =   0
       Width           =   7095
-      _ExtentX        =   12515
-      _ExtentY        =   8070
+      _ExtentX        =   12510
+      _ExtentY        =   8065
       _Version        =   393217
       Indentation     =   0
       LabelEdit       =   1
@@ -1087,8 +1087,8 @@ Begin VB.Form frmStartupList2
       Top             =   0
       Visible         =   0   'False
       Width           =   6255
-      _ExtentX        =   11033
-      _ExtentY        =   7011
+      _ExtentX        =   11028
+      _ExtentY        =   7006
       _Version        =   393217
       Indentation     =   0
       Style           =   7
@@ -1819,7 +1819,7 @@ Private Sub Form_Load()
     
     If bSL_Abort Then Exit Sub
     
-    SetAllFontCharset Me, g_FontName, g_FontSize
+    SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold
     ReloadLanguage True
     LoadStrings
 

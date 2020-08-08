@@ -21,9 +21,9 @@ This program is an essential part of HiJackThis Fork project resources.
 Checksum:
 
 pcre2-16.dll
-SHA1: 76E72667E79615669079BCE9CF5B627B74C532F6
-SHA256: c304ba9a4d54f3a4cb130c7849fdfc482691fc7a526c9f73d7c9dbb3a0899307
+SHA1: 7763db5bed2bc09991df39dae604e6a49438c727
+SHA256: 84e4d71d95069d9b74c66ce7725ea9d968d9374f913e19b2ca43707c0d09ef3f
 
-Digitally signed by Alex Dragokas (using self-signed certificate).
-Certificate's thumbprint should be: 05F1F2D5BA84CDD6866B37AB342969515E3D912E
+Digitally signed by Stanislav Polshyn.
+Certificate's thumbprint should be: 1B78EF517E81A07D1C1C4C6ADFA66A2B7C3269C3
 

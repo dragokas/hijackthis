@@ -3,7 +3,7 @@ Begin VB.Form frmError
    Caption         =   "ERROR"
    ClientHeight    =   5040
    ClientLeft      =   120
-   ClientTop       =   450
+   ClientTop       =   456
    ClientWidth     =   7080
    Icon            =   "frmError.frx":0000
    LinkTopic       =   "Form1"
@@ -14,8 +14,8 @@ Begin VB.Form frmError
    Begin VB.PictureBox Picture1 
       Height          =   735
       Left            =   120
-      ScaleHeight     =   675
-      ScaleWidth      =   675
+      ScaleHeight     =   684
+      ScaleWidth      =   684
       TabIndex        =   4
       Top             =   240
       Width           =   735
@@ -99,7 +99,7 @@ End Sub
 Private Sub Form_Load()
     Dim Icon As Long
     
-    SetAllFontCharset Me, g_FontName, g_FontSize
+    SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold
     'ReloadLanguage
     
     With Me

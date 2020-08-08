@@ -185,19 +185,23 @@ Public Sub GetTargetShellLinkW(LNK_file As String, Optional Target As String, Op
     End If
     
     oPFile.Load LNK_file, STGM_READ
-
-    If S_OK = oSLDL.GetFlags(Flags) Then
     
-        If Flags And SLDF_HAS_EXP_SZ Then
+    If (oSLDL Is Nothing) Then
+        Debug.Print "oPFile.Load is failed. Error: " & Err.LastDllError & ". File: " & LNK_file
+    Else
+        If S_OK = oSLDL.GetFlags(Flags) Then
+        
+            If Flags And SLDF_HAS_EXP_SZ Then
+                
+                If S_OK = oSLDL.CopyDataBlock(EXP_SZ_LINK_SIG, ptr) Then
+        
+                    If ptr Then
+                        CallWindowProcA AddressOf DerefDataBlock, ptr, VarPtr(Target)
             
-            If S_OK = oSLDL.CopyDataBlock(EXP_SZ_LINK_SIG, ptr) Then
-    
-                If ptr Then
-                    CallWindowProcA AddressOf DerefDataBlock, ptr, VarPtr(Target)
-        
-                    ptr = LocalFree(ptr)
-        
-                    Target = EnvironW(Target)
+                        ptr = LocalFree(ptr)
+            
+                        Target = EnvironW(Target)
+                    End If
                 End If
             End If
         End If
@@ -430,6 +434,7 @@ Public Function GetFullPath(sFilename As String) As String
     Else
         GetFullPath = sFilename
     End If
+    If Right$(GetFullPath, 1) = "\" Then GetFullPath = Left$(GetFullPath, Len(GetFullPath) - 1)
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "Parser.GetFullPath"
@@ -503,7 +508,6 @@ Public Function GetEncoding(aBytes() As Byte, Optional Percent As Long, Optional
     On Error GoTo ErrorHandler
 
     AppendErrorLogCustom "Parser.GetEncoding - Begin"
-
 
     Dim MLang       As CMultiLanguage
     Dim IMLang2     As IMultiLanguage2
@@ -644,13 +648,13 @@ Public Function CreateHJTShortcuts(HJT_Location As String) As Boolean
     
         If OpenW(BuildPath(StartMenuPrograms, "HiJackThis Fork\" & LoadResString(607) & ".url"), FOR_OVERWRITE_CREATE, hFile) Then
             PrintW hFile, "[InternetShortcut]", False
-            PrintW hFile, "URL=http://regist.safezone.cc/hijackthis_help/hijackthis.html", False
+            PrintW hFile, "URL=https://regist.safezone.cc/hijackthis_help/hijackthis.html", False
             CloseW hFile
         End If
     Else
         If OpenW(BuildPath(StartMenuPrograms, "HiJackThis Fork\Users manual (short).url"), FOR_OVERWRITE_CREATE, hFile) Then
             PrintW hFile, "[InternetShortcut]", False
-            PrintW hFile, "URL=http://dragokas.com/tools/help/hjt_tutorial.html", False
+            PrintW hFile, "URL=https://dragokas.com/tools/help/hjt_tutorial.html", False
             CloseW hFile
         End If
     End If

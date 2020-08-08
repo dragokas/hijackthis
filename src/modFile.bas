@@ -496,6 +496,7 @@ Function FileLenW(Optional Path As String, Optional hFileHandle As Long) As Curr
     Dim lr          As Long
     Dim hFile       As Long
     Dim FileSize    As Currency
+    Dim Redirect    As Boolean, bOldStatus As Boolean
 
 '    If Not DoNotUseCache Then
 '        If StrComp(Path, CachedFile, 1) = 0 Then
@@ -503,8 +504,9 @@ Function FileLenW(Optional Path As String, Optional hFileHandle As Long) As Curr
 '            Exit Function
 '        End If
 '    End If
-
+    
     If hFileHandle = 0 Then
+        Redirect = ToggleWow64FSRedirection(False, Path, bOldStatus)
         hFile = CreateFile(StrPtr(Path), 0&, FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, ByVal 0&, OPEN_EXISTING, ByVal 0&, ByVal 0&)
     Else
         hFile = hFileHandle
@@ -522,6 +524,10 @@ Function FileLenW(Optional Path As String, Optional hFileHandle As Long) As Curr
         If hFileHandle = 0 Then CloseHandle hFile: hFile = 0&
     End If
     
+    If hFileHandle = 0 Then
+        If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
+    End If
+    
     AppendErrorLogCustom "FileLenW - End", "Size: " & FileSize
     Exit Function
 ErrorHandler:
@@ -536,7 +542,7 @@ Public Function OpenW(FileName As String, Access As VB_FILE_ACCESS_MODE, retHand
     
     Dim FSize As Currency
     
-    If Access And (FOR_READ Or FOR_READ_WRITE) Then
+    If Access And FOR_READ Then
         If Not FileExists(FileName) Then
             retHandle = INVALID_HANDLE_VALUE
             Exit Function
@@ -552,6 +558,12 @@ Public Function OpenW(FileName As String, Access As VB_FILE_ACCESS_MODE, retHand
     ElseIf Access = FOR_OVERWRITE_CREATE Then
         retHandle = CreateFile(StrPtr(FileName), GENERIC_WRITE, 0&, ByVal 0&, CREATE_ALWAYS, FILE_ATTRIBUTE_ARCHIVE Or Flags, ByVal 0&)
     ElseIf Access = FOR_READ_WRITE Then
+        If Not FileExists(FileName) Then
+            retHandle = CreateFile(StrPtr(FileName), GENERIC_WRITE, 0&, ByVal 0&, CREATE_ALWAYS, FILE_ATTRIBUTE_ARCHIVE Or Flags, ByVal 0&)
+            If retHandle <> INVALID_HANDLE_VALUE Then
+                CloseHandle retHandle
+            End If
+        End If
         retHandle = CreateFile(StrPtr(FileName), GENERIC_READ Or GENERIC_WRITE, FILE_SHARE_READ, ByVal 0&, OPEN_EXISTING, Flags, ByVal 0&)
     Else
         'WriteCon "Wrong access mode!", cErr
@@ -1015,6 +1027,8 @@ End Sub
 
 
 'main function to list files
+'
+'ret - string array( 0 to MAX-1 ) or non-touched array if none.
 
 Public Function ListFiles(Path As String, Optional Extension As String = "", Optional Recursively As Boolean = False) As String()
     On Error GoTo ErrorHandler
@@ -1181,12 +1195,18 @@ Public Function GetFilePropVersion(sFilename As String) As String
     Dim hData&, lDataLen&, uBuf() As Byte
     Dim uVFFI As VS_FIXEDFILEINFO, sVersion$, Redirect As Boolean, bOldStatus As Boolean
     
-    If Not FileExists(sFilename) Then Exit Function
+    If Not FileExists(sFilename) Then
+        AppendErrorLogCustom sFilename & " is not found. Err = " & Err.LastDllError
+        Exit Function
+    End If
     
     Redirect = ToggleWow64FSRedirection(False, sFilename, bOldStatus)
     
     lDataLen = GetFileVersionInfoSize(StrPtr(sFilename), ByVal 0&)
-    If lDataLen = 0 Then GoTo Finalize
+    If lDataLen = 0 Then
+        AppendErrorLogCustom "lDataLen = 0. Err = " & Err.LastDllError
+        GoTo Finalize
+    End If
     
     ReDim uBuf(0 To lDataLen - 1)
     If 0 <> GetFileVersionInfo(StrPtr(sFilename), 0&, lDataLen, uBuf(0)) Then
@@ -1203,8 +1223,14 @@ Public Function GetFilePropVersion(sFilename As String) As String
                         .dwFileVersionLSh & "." & _
                         .dwFileVersionLSl
                 End With
+            Else
+                AppendErrorLogCustom "hData = 0"
             End If
+        Else
+            AppendErrorLogCustom "VerQueryValue = 0. Err = " & Err.LastDllError
         End If
+    Else
+        AppendErrorLogCustom "GetFileVersionInfo = 0. Err = " & Err.LastDllError
     End If
     GetFilePropVersion = sVersion
     
@@ -1980,7 +2006,7 @@ Public Function IniGetString( _
     sSection As String, _
     sParameter As String, _
     Optional vDefault As Variant, _
-    Optional isUnicode As Boolean, _
+    Optional isUnicode As Variant, _
     Optional bMultiple As Boolean = False) As String
     
     On Error GoTo ErrorHandler:
@@ -2012,7 +2038,11 @@ Public Function IniGetString( _
     
     If FileLenW(sIniFile) = 0 Then Exit Function 'size == 0
     
-    aContents = ReadFileToArray(sIniFile, isUnicode)
+    If IsMissing(isUnicode) Then
+        isUnicode = (FileGetTypeBOM(sIniFile) = 1200)
+    End If
+    
+    aContents = ReadFileToArray(sIniFile, CBool(isUnicode))
     If 0 = AryItems(aContents) Then Exit Function 'file is empty
     
     'find index of section
@@ -2052,7 +2082,7 @@ Public Function IniGetString( _
     AppendErrorLogCustom "IniGetString - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "IniGetString", "sFile=", sFile, "sSection=", sSection, "sValue=", sParameter
+    ErrorMsg Err, "IniGetString", "sFile=", sFile, "sSection=", sSection, "sParameter=", sParameter
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     If inIDE Then Stop: Resume Next
 End Function
@@ -2063,8 +2093,8 @@ Public Function IniSetString( _
     sSection As String, _
     sParameter As String, _
     vData As Variant, _
-    Optional isUnicode As Boolean) As Boolean
-
+    Optional ByVal isUnicode As Variant) As Boolean
+    
     On Error GoTo ErrorHandler:
     Dim sIniFile$, i&, iSect&, aContents() As String, sNewData$
     Dim Redirect As Boolean, bOldStatus As Boolean, sDir As String
@@ -2108,13 +2138,17 @@ Public Function IniSetString( _
         End If
     End If
     
-    aContents = ReadFileToArray(sIniFile, isUnicode)
+    If IsMissing(isUnicode) Then
+        isUnicode = (FileGetTypeBOM(sIniFile) = 1200)
+    End If
+    
+    aContents = ReadFileToArray(sIniFile, CBool(isUnicode))
     
     sNewData = sParameter & "=" & vData
     
     If 0 = AryItems(aContents) Then  'file is empty
         sNewData = "[" & sSection & "]" & vbCrLf & sNewData
-        IniSetString = WriteDataToFile(sIniFile, sNewData, isUnicode, True)
+        IniSetString = WriteDataToFile(sIniFile, sNewData, CBool(isUnicode), True)
         Exit Function
     End If
     
@@ -2129,7 +2163,7 @@ Public Function IniSetString( _
     Next i
     If i = UBound(aContents) + 1 Then   'section not found
         sNewData = "[" & sSection & "]" & vbCrLf & sParameter & "=" & vData
-        IniSetString = WriteDataToFile(sIniFile, Join(aContents, vbCrLf) & vbCrLf & sNewData, isUnicode, True)
+        IniSetString = WriteDataToFile(sIniFile, Join(aContents, vbCrLf) & vbCrLf & sNewData, CBool(isUnicode), True)
         Exit Function
     End If
     
@@ -2137,12 +2171,12 @@ Public Function IniSetString( _
         
         'begin new section?
         If InStr(aContents(i), "[") = 1 Then
-            'value not found ("[" - mean next section)
+            'parameter not found ("[" - mean next section)
             'inserting two lines into one
             aContents(i) = sNewData & vbCrLf & aContents(i)
         
             'input new data, replace file
-            IniSetString = WriteDataToFile(sIniFile, Join(aContents, vbCrLf), isUnicode, True)
+            IniSetString = WriteDataToFile(sIniFile, Join(aContents, vbCrLf), CBool(isUnicode), True)
             Exit Function
         End If
         
@@ -2154,17 +2188,119 @@ Public Function IniSetString( _
             
                 aContents(i) = sNewData
                 'input new data, replace file
-                IniSetString = WriteDataToFile(sIniFile, Join(aContents, vbCrLf), isUnicode, True)
+                IniSetString = WriteDataToFile(sIniFile, Join(aContents, vbCrLf), CBool(isUnicode), True)
                 Exit Function
             End If
         End If
     Next i
     
     'It is a last section, but no value in it -> just add a value
-    IniSetString = WriteDataToFile(sIniFile, Join(aContents, vbCrLf) & vbCrLf & sNewData, isUnicode, True)
+    IniSetString = WriteDataToFile(sIniFile, Join(aContents, vbCrLf) & vbCrLf & sNewData, CBool(isUnicode), True)
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "IniSetString", "sFile=", sFile, "sSection=", sSection, "sValue=", sParameter, "sData=", vData
+    ErrorMsg Err, "IniSetString", "sFile=", sFile, "sSection=", sSection, "sParameter=", sParameter, "sData=", vData
+    If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function IniRemoveString( _
+    sFile As String, _
+    sSection As String, _
+    sParameter As String, _
+    Optional ByVal isUnicode As Variant) As Boolean
+    
+    On Error GoTo ErrorHandler:
+    Dim sIniFile$, i&, iSect&, aContents() As String
+    Dim Redirect As Boolean, bOldStatus As Boolean
+    
+    sIniFile = sFile
+    
+    If Not FileExists(sFile) Then
+        'relative path -> search %windir%, %windir%\System32
+        If InStr(sFile, "\") = 0 Then
+            If FileExists(sWinSysDir & "\" & sFile) Then
+                sIniFile = sWinSysDir & "\" & sFile
+            ElseIf FileExists(sWinDir & "\" & sFile) Then
+                sIniFile = sWinDir & "\" & sFile
+            Else
+                IniRemoveString = True
+                Exit Function
+            End If
+        Else
+            IniRemoveString = True
+            Exit Function
+        End If
+    End If
+
+    If Not CheckAccessWrite(sIniFile) Then
+        TryUnlock sIniFile
+        If Not CheckAccessWrite(sIniFile) Then
+            If Not bAutoLogSilent Then
+                'The parameter '[*]' could not be removed from the settings file '[**]'. Please verify that write access is allowed for that file.
+                MsgBoxW Replace$(Replace$(Translate(1009), "[*]", sParameter), "[**]", sIniFile), vbCritical
+            End If
+            Exit Function
+        End If
+    End If
+    
+    If FileLenW(sIniFile) = 0 Then
+        IniRemoveString = True
+        Exit Function
+    End If
+    
+    If IsMissing(isUnicode) Then
+        isUnicode = (FileGetTypeBOM(sIniFile) = 1200)
+    End If
+    
+    aContents = ReadFileToArray(sIniFile, CBool(isUnicode))
+    
+    If 0 = AryItems(aContents) Then  'file is empty
+        IniRemoveString = True
+        Exit Function
+    End If
+    
+    For i = 0 To UBound(aContents)
+        If Len(Trim$(aContents(i))) <> 0 Then
+            If StrComp(aContents(i), "[" & sSection & "]", vbTextCompare) = 0 Then
+                'found the correct section
+                iSect = i
+                Exit For
+            End If
+        End If
+    Next i
+    If i = UBound(aContents) + 1 Then   'section not found
+        IniRemoveString = True
+        Exit Function
+    End If
+    
+    For i = iSect + 1 To UBound(aContents)
+        
+        'begin new section?
+        If InStr(aContents(i), "[") = 1 Then
+            'parameter not found ("[" - mean next section)
+            IniRemoveString = True
+            Exit Function
+        End If
+        
+        'found parameter?
+        If InStr(1, aContents(i), sParameter, vbTextCompare) = 1 Then
+            
+            'if next char is =, excluding space characters after parameter's name
+            If Left$(LTrim$(Mid$(aContents(i), Len(sParameter) + 1)), 1) = "=" Then
+                'erase parameter
+                aContents(i) = ""
+                'replace file
+                IniRemoveString = WriteDataToFile(sIniFile, Join(aContents, vbCrLf), CBool(isUnicode), True)
+                Exit Function
+            End If
+        End If
+    Next i
+    
+    'It is a last section, but no value in it -> do nothing
+    IniRemoveString = True
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "IniRemoveString", "sFile=", sFile, "sSection=", sSection, "sParameter=", sParameter
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     If inIDE Then Stop: Resume Next
 End Function
@@ -2180,6 +2316,8 @@ Public Function WriteDataToFile(sFile As String, sContents As String, Optional i
     iAttr = GetFileAttributes(StrPtr(sFile))
     If (iAttr And 2048) Then iAttr = iAttr And Not 2048
     
+    If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
+    
     If 0 = DeleteFileWEx(StrPtr(sFile)) Then
         If (Not bAutoLogSilent) And bShowWarning Then
             'The value '[*]' could not be written to the settings file '[**]'. Please verify that write access is allowed to that file.
@@ -2187,6 +2325,8 @@ Public Function WriteDataToFile(sFile As String, sContents As String, Optional i
         End If
         Exit Function
     End If
+    
+    Redirect = ToggleWow64FSRedirection(False, sFile, bOldStatus)
     
     OpenW sFile, FOR_OVERWRITE_CREATE, hFile, g_FileBackupFlag
     If hFile > 0 Then
@@ -2423,9 +2563,9 @@ Public Function FindOnPath(ByVal sAppName As String, Optional bUseSourceValueOnF
 
         ToggleWow64FSRedirection True
     End If
-
+    
     AppendErrorLogCustom "FindOnPath - App Paths"
-
+    
     If Len(FindOnPath) = 0 And Not bFullPath Then
         sFile = Reg.GetString(HKEY_LOCAL_MACHINE, "Software\Microsoft\Windows\CurrentVersion\App Paths\" & sAppName, vbNullString)
         If 0 <> Len(sFile) Then
@@ -2434,11 +2574,26 @@ Public Function FindOnPath(ByVal sAppName As String, Optional bUseSourceValueOnF
             End If
         End If
     End If
+    
+    If Len(FindOnPath) = 0 Then
+        sFile = vbNullString
+        If StrBeginWith(sAppName, "\systemroot") Then
+            sFile = Replace$(sAppName, "\systemroot", sWinDir, , 1, vbTextCompare)
+        ElseIf StrBeginWith(sAppName, "system32\") Then
+            sFile = sWinDir & "\" & sAppName
+        ElseIf StrBeginWith(sAppName, "SysWOW64\") Then
+            sFile = sWinDir & "\" & sAppName
+        End If
+        
+        If FileExists(sFile) Then
+            FindOnPath = sFile
+        End If
+    End If
 
     If Len(FindOnPath) = 0 And bUseSourceValueOnFailure Then
         FindOnPath = sAppName
     End If
-
+    
     AppendErrorLogCustom "FindOnPath - End"
 
     Exit Function
@@ -3036,5 +3191,58 @@ Public Function GetVolumeFlags(ByVal sVolume) As VOLUME_INFO_FLAGS
     
     If GetVolumeInformation(sVolume, sVolName, Len(sVolName), lVolSN, lMaxCompLength, Flags, sFS, Len(sFS)) Then
         GetVolumeFlags = Flags
+    End If
+End Function
+
+Public Function FileHasBOM_UTF16(sFile As String) As Boolean
+    Dim Redirect As Boolean, bOldStatus As Boolean, hFile As Long, lSize As Long
+    If Not FileExists(sFile) Then Exit Function
+    Redirect = ToggleWow64FSRedirection(False, sFile, bOldStatus)
+    OpenW sFile, FOR_READ, hFile, g_FileBackupFlag
+    If hFile <= 0 Then Exit Function
+    lSize = LOFW(hFile)
+    If lSize < 2 Then CloseW hFile: Exit Function
+    ReDim b(1) As Byte
+    GetW hFile, 1, , VarPtr(b(0)), UBound(b) + 1
+    CloseW hFile
+    If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
+    If b(0) = &HFF& And b(1) = &HFE& Then FileHasBOM_UTF16 = True
+End Function
+
+Public Function FileHasBOM_UTF8(sFile As String) As Boolean
+    Dim Redirect As Boolean, bOldStatus As Boolean, hFile As Long, lSize As Long
+    If Not FileExists(sFile) Then Exit Function
+    Redirect = ToggleWow64FSRedirection(False, sFile, bOldStatus)
+    OpenW sFile, FOR_READ, hFile, g_FileBackupFlag
+    If hFile <= 0 Then Exit Function
+    lSize = LOFW(hFile)
+    If lSize < 3 Then CloseW hFile: Exit Function
+    ReDim b(2) As Byte
+    GetW hFile, 1, , VarPtr(b(0)), UBound(b) + 1
+    CloseW hFile
+    If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
+    If b(0) = &HEF& And b(1) = &HBB& And b(2) = &HBF& Then FileHasBOM_UTF8 = True
+End Function
+
+Public Function FileGetTypeBOM(sFile As String) As Long
+    Dim Redirect As Boolean, bOldStatus As Boolean, hFile As Long, lSize As Long
+    If Not FileExists(sFile) Then Exit Function
+    Redirect = ToggleWow64FSRedirection(False, sFile, bOldStatus)
+    OpenW sFile, FOR_READ, hFile, g_FileBackupFlag
+    If hFile <= 0 Then Exit Function
+    lSize = LOFW(hFile)
+    If lSize < 2 Then CloseW hFile: Exit Function
+    ReDim b(IIf(lSize < 3, 2, 3)) As Byte
+    GetW hFile, 1, , VarPtr(b(0)), UBound(b) + 1
+    CloseW hFile
+    If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
+    If b(0) = &HFF& And b(1) = &HFE& Then
+        FileGetTypeBOM = 1200
+        Exit Function
+    End If
+    If UBound(b) > 1 Then
+        If b(0) = &HEF& And b(1) = &HBB& And b(2) = &HBF& Then
+            FileGetTypeBOM = 65001
+        End If
     End If
 End Function

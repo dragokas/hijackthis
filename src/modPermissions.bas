@@ -349,6 +349,7 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
         'System Mandatory Level - S-1-16-16384
         'Protected Process Mandatory Level - S-1-16-20480
         'Secure Process Mandatory Level - S-1-16-28672
+        'Authenticated Users (Прошедшие проверку) - S-1-5-11
         
     End If
     
@@ -1358,31 +1359,6 @@ Public Function SetFileStringSD(sFile As String, StrSD As String) As Boolean
     End If
 End Function
 
-Public Function SetKeyStringSD(lHive As ENUM_REG_HIVE, ByVal sKey As String, StrSD As String, Optional bUseWow64 As Boolean) As Boolean
-    
-    '// TODO: check it!
-    
-    Dim hKey As Long
-    Dim lret As Long
-    Dim SD() As Byte
-    
-    SD = ConvertStringSDToSD(StrSD)
-    
-    If AryPtr(SD) Then
-    
-        Call Reg.NormalizeKeyNameAndHiveHandle(lHive, sKey)
-        
-        lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, READ_CONTROL Or WRITE_OWNER Or WRITE_DAC Or ACCESS_SYSTEM_SECURITY Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
-        
-        If lret = ERROR_SUCCESS Then
-        
-            SetKeyStringSD = SetSecurityDescriptor(hKey, SE_REGISTRY_KEY, SD)
-            
-            RegCloseKey hKey
-        End If
-    End If
-End Function
-
 Public Function ConvertStringSDToSD(StrSD As String) As Byte()
     
     Dim SD() As Byte
@@ -1496,7 +1472,6 @@ Public Function SetSecurityDescriptor(hObject As Long, ObjType As SE_OBJECT_TYPE
     
 End Function
 
-
 Public Function GetRegKeyStringSD(lHive As ENUM_REG_HIVE, ByVal KeyName As String, Optional bUseWow64 As Boolean) As String
     On Error GoTo ErrorHandler:
     
@@ -1522,15 +1497,17 @@ Public Function SetRegKeyStringSD(lHive As ENUM_REG_HIVE, ByVal KeyName As Strin
     Dim SD() As Byte
     Dim ObjType As SE_OBJECT_TYPE
     
-    'Note: Although, READ_CONTROL is not necessary
-    
-    If ERROR_SUCCESS <> RegOpenKeyEx(lHive, StrPtr(KeyName), REG_OPTION_BACKUP_RESTORE, _
-        READ_CONTROL Or WRITE_OWNER Or WRITE_DAC Or ACCESS_SYSTEM_SECURITY Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) Then Exit Function
+    Call Reg.NormalizeKeyNameAndHiveHandle(lHive, KeyName)
     
     SD = ConvertStringSDToSD(StringSD)
     
     If AryPtr(SD) Then
     
+        'Note: Although, READ_CONTROL is not necessary
+    
+        If ERROR_SUCCESS <> RegOpenKeyEx(lHive, StrPtr(KeyName), REG_OPTION_BACKUP_RESTORE, _
+            READ_CONTROL Or WRITE_OWNER Or WRITE_DAC Or ACCESS_SYSTEM_SECURITY Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) Then Exit Function
+
 '        If OSver.IsWin32 Then
 '            ObjType = SE_REGISTRY_KEY
 '        Else
@@ -1547,12 +1524,79 @@ Public Function SetRegKeyStringSD(lHive As ENUM_REG_HIVE, ByVal KeyName As Strin
         ObjType = SE_REGISTRY_KEY
         
         SetRegKeyStringSD = SetSecurityDescriptor(hKey, ObjType, SD)
+        
+        RegCloseKey hKey
     End If
-    
-    RegCloseKey hKey
     
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "SetRegKeyStringSD", lHive & "," & KeyName
     If inIDE Then Stop: Resume Next
 End Function
+
+Public Sub LockAutorunPoints()
+    On Error GoTo ErrorHandler:
+    
+    SetServiceStartMode "winmgmt", SERVICE_MODE_DISABLED
+    StopService "winmgmt"
+    
+    SetServiceStartMode "Schedule", SERVICE_MODE_DISABLED
+    StopService "Schedule"
+    
+    Dim i As Long
+    Dim aRegRuns(7) As String
+    aRegRuns(1) = "Software\Microsoft\Windows\CurrentVersion\Run"
+    aRegRuns(2) = "Software\Microsoft\Windows\CurrentVersion\RunServices"
+    aRegRuns(3) = "Software\Microsoft\Windows\CurrentVersion\RunOnce"
+    aRegRuns(4) = "Software\Microsoft\Windows\CurrentVersion\RunServicesOnce"
+    aRegRuns(5) = "Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run"
+    aRegRuns(6) = "SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnceEx"
+    aRegRuns(7) = "SOFTWARE\Microsoft\Windows\CurrentVersion\RunServicesOnceEx"
+
+    Dim SD As String
+    SD = "O:BAG:S-1-5-18D:PAI(D;CI;KA;;;WD)"
+    
+    For i = 1 To UBound(aRegRuns)
+        SetRegKeyStringSD HKCU, aRegRuns(i), SD, True
+        SetRegKeyStringSD HKCU, aRegRuns(i), SD, False
+        SetRegKeyStringSD HKLM, aRegRuns(i), SD, True
+        SetRegKeyStringSD HKLM, aRegRuns(i), SD, False
+    Next
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "LockAutorunPoints"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Public Sub UnlockAutorunPoints()
+    On Error GoTo ErrorHandler:
+    
+    SetServiceStartMode "winmgmt", SERVICE_MODE_AUTOMATIC
+    StartService "winmgmt"
+    
+    SetServiceStartMode "Schedule", SERVICE_MODE_AUTOMATIC
+    StartService "Schedule"
+    
+    Dim i As Long
+    Dim aRegRuns(7) As String
+    aRegRuns(1) = "Software\Microsoft\Windows\CurrentVersion\Run"
+    aRegRuns(2) = "Software\Microsoft\Windows\CurrentVersion\RunServices"
+    aRegRuns(3) = "Software\Microsoft\Windows\CurrentVersion\RunOnce"
+    aRegRuns(4) = "Software\Microsoft\Windows\CurrentVersion\RunServicesOnce"
+    aRegRuns(5) = "Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run"
+    aRegRuns(6) = "SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnceEx"
+    aRegRuns(7) = "SOFTWARE\Microsoft\Windows\CurrentVersion\RunServicesOnceEx"
+    
+    For i = 1 To UBound(aRegRuns)
+        RegKeyResetDACL HKCU, aRegRuns(i), True, True
+        RegKeyResetDACL HKCU, aRegRuns(i), False, True
+        RegKeyResetDACL HKLM, aRegRuns(i), True, True
+        RegKeyResetDACL HKLM, aRegRuns(i), False, True
+    Next
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "LockAutorunPoints"
+    If inIDE Then Stop: Resume Next
+End Sub

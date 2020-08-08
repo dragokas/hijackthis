@@ -18,7 +18,7 @@ Attribute VB_Ext_KEY = "Top_Level" ,"Yes"
 Option Explicit
 
 ' OSInfo class by Alex Dragokas
-' ver 1.9
+' ver 1.10
 '
 
 'Tips:
@@ -129,6 +129,12 @@ Private Type OBJECT_ATTRIBUTES
     SecurityQualityOfService As Long
 End Type
 
+Private Type UNICODE_STRING
+    Length                          As Integer
+    MaximumLength                   As Integer
+    Buffer                          As Long
+End Type
+
 Private Declare Function GetLocaleInfo Lib "kernel32.dll" Alias "GetLocaleInfoW" (ByVal lcid As Long, ByVal LCTYPE As Long, ByVal lpLCData As Long, ByVal cchData As Long) As Long
 Private Declare Function GetUserDefaultUILanguage Lib "kernel32.dll" () As Long
 Private Declare Function GetSystemDefaultUILanguage Lib "kernel32.dll" () As Long
@@ -175,6 +181,7 @@ Private Declare Function GetCurrentThread Lib "kernel32.dll" () As Long
 Private Declare Function NtOpenSymbolicLinkObject Lib "ntdll.dll" (LinkHandle As Long, ByVal DesiredAccess As Long, ObjectAttributes As OBJECT_ATTRIBUTES) As Long
 Private Declare Function NtOpenDirectoryObject Lib "ntdll.dll" (DirectoryHandle As Long, ByVal DesiredAccess As Long, ObjectAttributes As OBJECT_ATTRIBUTES) As Long
 Private Declare Function NtClose Lib "ntdll.dll" (ByVal Handle As Long) As Long
+Private Declare Function IsOS Lib "Shlwapi.dll" Alias "#437" (ByVal dwOS As Long) As Long
 
 Private Const SM_SERVERR2               As Long = 89&
 Private Const SM_MEDIACENTER            As Long = 87&
@@ -205,6 +212,7 @@ Private Const HKEY_LOCAL_MACHINE        As Long = &H80000002
 Private Const KEY_WOW64_64KEY           As Long = &H100&
 Private Const DIRECTORY_QUERY           As Long = 1&
 
+Private Const STATUS_SUCCESS            As Long = 0&
 Private Const ERROR_SUCCESS             As Long = 0&
 Private Const TOKEN_QUERY               As Long = &H8&
 Private Const ERROR_NO_TOKEN            As Long = 1008&
@@ -262,6 +270,7 @@ Dim SecureBoot_             As Boolean
 Dim PlatformID_             As Long
 Dim IsLocalSystemContext_   As Boolean
 Dim IsSystemCaseSensitive_  As Boolean
+Dim IsEmbedded_             As Boolean
 
 
 Private Sub Class_Initialize()
@@ -294,8 +303,6 @@ Private Sub Class_Initialize()
     LangNonUnicodeNameFull_ = GetLangNameFullByCultureCode(LangNonUnicodeCode_)
     
     osi.dwOSVersionInfoSize = Len(osi)
-    
-    GetVersionEx osi
     
     If (STATUS_SUCCESS <> RtlGetVersion(osi)) Then
         GetVersionEx osi
@@ -626,6 +633,23 @@ Private Sub Class_Initialize()
         End If
     End If
     
+    'For some reason, doesn't return correct result (at least, for Windows 8.1 Embedded Industry Pro)
+    '
+    'Const OS_EMBEDDED As Long = 13&
+    'Dim iHasFeature As Long
+    'iHasFeature = IsOS(OS_EMBEDDED)
+    
+    Dim sEditionID$, sProductName$
+    sEditionID = RegRead_REG_SZ("SOFTWARE\Microsoft\Windows NT\CurrentVersion", "EditionID")
+    sProductName = RegRead_REG_SZ("SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName")
+    
+    IsEmbedded_ = (osi.wSuiteMask And VER_SUITE_EMBEDDEDNT) Or _
+        (InStr(1, sEditionID, "Embedded", 1) <> 0) Or _
+        (InStr(1, sProductName, "Embedded", 1) <> 0)
+    
+    If InStr(1, Edition_, "Unknown", 1) <> 0 Then Edition_ = Edition_ & " (" & sEditionID & ")"
+    If IsEmbedded_ Then Edition_ = Edition_ & " (Embedded)"
+    
     AppendErrorLogCustom "clsOSver.Class_Initialize - End"
     
     Exit Sub
@@ -825,10 +849,10 @@ Public Function GetUserType(Optional hProcess As Long) As String
                         End If
                     Next
                 End If
-                If psidAdmin Then FreeSid psidAdmin
-                If psidPower Then FreeSid psidPower
-                If psidUser Then FreeSid psidUser
-                If psidGuest Then FreeSid psidGuest
+                If psidAdmin Then FreeSid psidAdmin: psidAdmin = 0
+                If psidPower Then FreeSid psidPower: psidPower = 0
+                If psidUser Then FreeSid psidUser: psidUser = 0
+                If psidGuest Then FreeSid psidGuest: psidGuest = 0
             End If
         End If
         CloseHandle hProcessToken: hProcessToken = 0
@@ -994,202 +1018,148 @@ ErrorHandler:
     If hToken Then CloseHandle hToken: hToken = 0
 End Function
 
+'https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-mde2/d92ead8f-faf3-47a8-a341-1921dc2c463b
+'https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getproductinfo
 Function GetProductName(ProductType As Long) As String
     On Error GoTo ErrorHandler
     
     Dim ProductName As String
     
     Select Case ProductType
-    Case &H6&
-        ProductName = "Business"
-    Case &H10&
-        ProductName = "Business N"
-    Case &H12&
-        ProductName = "HPC Edition"
-    Case &H40&
-        ProductName = "Server Hyper Core V"
-    Case &H65&
-        ProductName = "Home" '"Windows 8 Core"
-    Case &H62&
-        ProductName = "Home N" ' "Windows 8 N"
-    Case &H63&
-        ProductName = "Home China" ' "Windows 8 China"
-    Case &H64&
-        ProductName = "Home Single Language" ' "Windows 8 Single Language"
-    Case &H50&
-        ProductName = "Server Datacenter (evaluation installation)"
-    Case &H8&
-        ProductName = "Server Datacenter (full installation)"
-    Case &HC&
-        ProductName = "Server Datacenter (core installation)"
-    Case &H27&
-        ProductName = "Server Datacenter without Hyper-V (core installation)"
-    Case &H25&
-        ProductName = "Server Datacenter without Hyper-V (full installation)"
-    Case &H79
-        ProductName = "Education"
-    Case &H7A
-        ProductName = "Education N"
-    Case &H4&
-        ProductName = "Enterprise"
-    Case &H46&
-        ProductName = "Enterprise E"
-    Case &H48&
-        ProductName = "Enterprise Evaluation" '"Server Enterprise (EI)"
-    Case &H1B&
-        ProductName = "Enterprise N"
-    Case &H54&
-        ProductName = "Enterprise N Evaluation"
-    Case &H7D&
-        ProductName = "Enterprise 2015 LTSB"
-    Case &H81&
-        ProductName = "Enterprise 2015 LTSB Evaluation"
-    Case &H7E&
-        ProductName = "Enterprise 2015 LTSB N"
-    Case &H82&
-        ProductName = "Enterprise 2015 LTSB N Evaluation"
-    Case &HA&
-        ProductName = "Server Enterprise (full installation)"
-    Case &HE&
-        ProductName = "Server Enterprise (core installation)"
-    Case &H29&
-        ProductName = "Server Enterprise without Hyper-V (core installation)"
-    Case &HF&
-        ProductName = "Server Enterprise for Itanium-based Systems"
-    Case &H26&
-        ProductName = "Server Enterprise without Hyper-V (full installation)"
-    Case &H3B&
-        ProductName = "Windows Essential Server Solution Management"
-    Case &H3C&
-        ProductName = "Windows Essential Server Solution Additional"
-    Case &H3D&
-        ProductName = "Windows Essential Server Solution Management SVC"
-    Case &H3E&
-        ProductName = "Windows Essential Server Solution Additional SVC"
-    Case &H2&
-        ProductName = "Home Basic"
-    Case &H43&
-        ProductName = "Home Basic Enterprise"
-    Case &H5&
-        ProductName = "Home Basic N"
-    Case &H3&
-        ProductName = "Home Premium"
-    Case &H44&
-        ProductName = "Home Premium Enterprise"
-    Case &H1A&
-        ProductName = "Home Premium N"
-    Case &H22&
-        ProductName = "Windows Home Server 2011"
-    Case &H13&
-        ProductName = "Windows Storage Server 2008 R2 Essentials"
-    Case &H2A&
-        ProductName = "Microsoft Hyper-V Server"
-    Case &H7B&
-        ProductName = "IoT Core"
-    Case &H83&
-        ProductName = "IoT Core Commercial"
-    Case &H1E&
-        ProductName = "Windows Essential Business Server Management Server"
-    Case &H20&
-        ProductName = "Windows Essential Business Server Messaging Server"
-    Case &H1F&
-        ProductName = "Windows Essential Business Server Security Server"
-    Case &H68&
-        ProductName = "Mobile"
-    Case &H85&
-        ProductName = "Mobile Enterprise"
-    Case &H4C&
-        ProductName = "Windows MultiPoint Server Standard (full installation)"
-    Case &H4D&
-        ProductName = "Windows MultiPoint Server Premium (full installation)"
-    Case &H30&
-        ProductName = "Pro"
-    Case &H45&
-        ProductName = "Pro Enterprise"
-    Case &H31&
-        ProductName = "Pro N"
-    Case &H67&
-        ProductName = "Professional with Media Center"
-    Case &H36&
-        ProductName = "Server For SB Solutions EM"
-    Case &H33&
-        ProductName = "Server For SB Solutions"
-    Case &H37&
-        ProductName = "Server For SB Solutions EM"
-    Case &H18&
-        ProductName = "Windows Server 2008 for Windows Essential Server Solutions"
-    Case &H23&
-        ProductName = "Windows Server 2008 without Hyper-V for Windows Essential Server Solutions"
-    Case &H21&
-        ProductName = "Server Foundation"
-    Case &H32&
-        ProductName = "Windows Small Business Server 2011 Essentials"
-    Case &H9&
-        ProductName = "Windows Small Business Server"
-    Case &H19&
-        ProductName = "Small Business Server Premium"
-    Case &H3F&
-        ProductName = "Small Business Server Premium (core installation)"
-    Case &H38&
-        ProductName = "Windows MultiPoint Server"
-    Case &H4F&
-        ProductName = "Server Standard (evaluation installation)"
-    Case &H7&
-        ProductName = "Server Standard"
-    Case &HD&
-        ProductName = "Server Standard (core installation)"
-    Case &H24&
-        ProductName = "Server Standard without Hyper-V"
-    Case &H28&
-        ProductName = "Server Standard without Hyper-V (core installation)"
-    Case &H34&
-        ProductName = "Server Solutions Premium"
-    Case &H35&
-        ProductName = "Server Solutions Premium (core installation)"
-    Case &HB&
-        ProductName = "Starter"
-    Case &H42&
-        ProductName = "Starter Enterprise"
-    Case &H2F&
-        ProductName = "Starter N"
-    Case &H17&
-        ProductName = "Storage Server Enterprise"
-    Case &H2E&
-        ProductName = "Storage Server Enterprise (core installation)"
-    Case &H14&
-        ProductName = "Storage Server Express"
-    Case &H2B&
-        ProductName = "Storage Server Express (core installation)"
-    Case &H60&
-        ProductName = "Storage Server Standard (evaluation installation)"
-    Case &H15&
-        ProductName = "Storage Server Standard"
-    Case &H2C&
-        ProductName = "Storage Server Standard (core installation)"
-    Case &H5F&
-        ProductName = "Storage Server Workgroup (evaluation installation)"
-    Case &H16&
-        ProductName = "Storage Server Workgroup"
-    Case &H2D&
-        ProductName = "Storage Server Workgroup (core installation)"
-    Case &H1&
-        ProductName = "Ultimate"
-    Case &H47&
-        ProductName = "Ultimate Enterprise"
-    Case &H1C&
-        ProductName = "Ultimate N"
-    Case &H11&
-        ProductName = "Web Server (full installation)"
-    Case &H1D&
-        ProductName = "Web Server (core installation)"
-    Case &H4A&
-        ProductName = "Consumer Preview"
-    Case 0
+    Case &H1&:        ProductName = "Ultimate"
+    Case &H2&:        ProductName = "Home Basic"
+    Case &H3&:        ProductName = "Home Premium"
+    Case &H4&:        ProductName = "Enterprise"
+    Case &H5&:        ProductName = "Home Basic N"
+    Case &H6&:        ProductName = "Business"
+    Case &H7&:        ProductName = "Server Standard"
+    Case &H8&:        ProductName = "Server Datacenter"
+    Case &H9&:        ProductName = "Small Business Server"
+    Case &HA&:        ProductName = "Server Enterprise"
+    Case &HB&:        ProductName = "Starter"
+    Case &HC&:        ProductName = "Server Datacenter Core"
+    Case &HD&:        ProductName = "Server Standard Core"
+    Case &HE&:        ProductName = "Server Enterprise Core"
+    Case &HF&:        ProductName = "Server Enterprise for Itanium-based Systems"
+    Case &H10&:        ProductName = "Business N"
+    Case &H11&:        ProductName = "Web Server"
+    Case &H12&:        ProductName = "Cluster Server" 'HPC Edition?
+    Case &H13&:        ProductName = "Home Server" 'Storage Server 2008 R2 Essentials?
+    Case &H14&:        ProductName = "Storage Server Express"
+    Case &H15&:        ProductName = "Storage Server Standard"
+    Case &H16&:        ProductName = "Storage Server Workgroup"
+    Case &H17&:        ProductName = "Storage Server Enterprise"
+    Case &H18&:        ProductName = "Server for Small Business" 'Server 2008 for Windows Essential Server Solutions?
+    Case &H19&:        ProductName = "Small Business Server Premium"
+    Case &H1A&:        ProductName = "Home Premium N"
+    Case &H1B&:        ProductName = "Enterprise N"
+    Case &H1C&:        ProductName = "Ultimate N"
+    Case &H1D&:        ProductName = "Web Server Core"
+    Case &H1E&:        ProductName = "Medium Business Server Management 'Essential Business Server Management Server?"
+    Case &H1F&:        ProductName = "Medium Business Server Security" 'Essential Business Server Security Server
+    Case &H20&:        ProductName = "Medium Business Server Messaging" 'Essential Business Server Messaging Server
+    Case &H21&:        ProductName = "Server Foundation"
+    Case &H22&:        ProductName = "Home Premium Server" 'Home Server 2011?
+    Case &H23&:        ProductName = "Server for Small Business without Hyper-V" 'Server 2008 without Hyper-V for Windows Essential Server Solutions?
+    Case &H24&:        ProductName = "Server Standard without Hyper-V"
+    Case &H25&:        ProductName = "Server Datacenter without Hyper-V"
+    Case &H26&:        ProductName = "Server Enterprise without Hyper-V"
+    Case &H27&:        ProductName = "Server Datacenter without Hyper-V Core"
+    Case &H28&:        ProductName = "Server Standard without Hyper-V Core"
+    Case &H29&:        ProductName = "Server Enterprise without Hyper-V Core"
+    Case &H2A&:        ProductName = "Microsoft Hyper-V Server"
+    Case &H2B&:        ProductName = "Storage Server Express Core"
+    Case &H2C&:        ProductName = "Storage Server Standard Core"
+    Case &H2D&:        ProductName = "Storage Server Workgroup Core"
+    Case &H2E&:        ProductName = "Storage Server Enterprise Core"
+    Case &H2F&:        ProductName = "Starter N"
+    Case &H30&:        ProductName = "Pro"
+    Case &H31&:        ProductName = "Pro N"
+    Case &H32&:        ProductName = "Small Business Solution Server" 'Small Business Server 2011 Essentials?
+    Case &H33&:        ProductName = "Small Business Solution Server"
+    Case &H34&:        ProductName = "Server Solutions Standard" 'Server Solutions Premium
+    Case &H35&:        ProductName = "Server Solutions Standard Core" 'Server Solutions Premium Core
+    Case &H36&:        ProductName = "Server For Small Business Solutions EM"
+    Case &H37&:        ProductName = "Server For Small Business Solutions EM"
+    Case &H38&:        ProductName = "Solution Embedded Server" ' MultiPoint Server?
+    Case &H39&:        ProductName = "Solution Embedded Server Core"
+    Case &H3B&:        ProductName = "Essential Server Solution Management"
+    Case &H3C&:        ProductName = "Essential Server Solution Additional"
+    Case &H3D&:        ProductName = "Essential Server Solution Management SVC"
+    Case &H3E&:        ProductName = "Essential Server Solution Additional SVC"
+    Case &H3F&:        ProductName = "Small Business Server Premium Core"
+    Case &H40&:        ProductName = "Cluster Server V" 'Server Hyper Core V?
+    Case &H41&:        ProductName = "Embedded"
+    Case &H42&:        ProductName = "Starter Enterprise"
+    Case &H43&:        ProductName = "Home Basic Enterprise"
+    Case &H44&:        ProductName = "Home Premium Enterprise"
+    Case &H45&:        ProductName = "Pro Enterprise"
+    Case &H46&:        ProductName = "Enterprise E"
+    Case &H47&:        ProductName = "Ultimate Enterprise"
+    Case &H48&:        ProductName = "Enterprise Evaluation" '"Server Enterprise (EI)"
+    Case &H4A&:        ProductName = "Consumer Preview"
+    Case &H4C&:        ProductName = "MultiPoint Server Standard"
+    Case &H4D&:        ProductName = "MultiPoint Server Premium"
+    Case &H4F&:        ProductName = "Server Standard Evaluation"
+    Case &H50&:        ProductName = "Server Datacenter Evaluation"
+    Case &H54&:        ProductName = "Enterprise N Evaluation"
+    Case &H55&:        ProductName = "Embedded Automotive"
+    Case &H56&:        ProductName = "Embedded Industry A"
+    Case &H57&:        ProductName = "Thin PC"
+    Case &H58&:        ProductName = "Embedded A"
+    Case &H59&:        ProductName = "Embedded Industry" 'Industry Pro?
+    Case &H5A&:        ProductName = "Embedded E"
+    Case &H5B&:        ProductName = "Embedded Industry E"
+    Case &H5C&:        ProductName = "Embedded Industry A E"
+    Case &H5F&:        ProductName = "Storage Server Workgroup Evaluation"
+    Case &H60&:        ProductName = "Storage Server Standard Evaluation"
+    Case &H61&:        ProductName = "Core ARM"
+    Case &H62&:        ProductName = "Home N" ' "Windows 8 N" ' Core N
+    Case &H63&:        ProductName = "Home China" ' "Windows 8 China" 'Core Country Specific
+    Case &H64&:        ProductName = "Home Single Language" ' "Windows 8 Single Language"
+    Case &H65&:        ProductName = "Home" '"Windows 8 Core"
+    Case &H67&:        ProductName = "Professional with Media Center"
+    Case &H68&:        ProductName = "Mobile Core"
+    Case &H69&:        ProductName = "Embedded Industry Eval"
+    Case &H6A&:        ProductName = "Embedded Industry Eval E"
+    Case &H6B&:        ProductName = "Embedded Eval"
+    Case &H6C&:        ProductName = "Embedded Eval E"
+    Case &H6D&:        ProductName = "Nano Server"
+    Case &H6E&:        ProductName = "Cloud Storage Server"
+    Case &H6F&:        ProductName = "Core Connected"
+    Case &H70&:        ProductName = "Professional Student"
+    Case &H71&:        ProductName = "Core Connected N"
+    Case &H72&:        ProductName = "Professional Student N"
+    Case &H73&:        ProductName = "Core Connected Single Language"
+    Case &H74&:        ProductName = "Core Connected China"
+    Case &H75&:        ProductName = "Connected Car"
+    Case &H76&:        ProductName = "Industry Handheld"
+    Case &H77&:        ProductName = "PPI Pro"
+    Case &H78&:        ProductName = "Server ARM64"
+    Case &H79&:        ProductName = "Education"
+    Case &H7A&:        ProductName = "Education N"
+    Case &H7B&:        ProductName = "IoT Core"
+    Case &H7C&:        ProductName = "Cloud Host Infrastructure Server"
+    Case &H7D&:        ProductName = "Enterprise LTSB" 'Enterprise 2015 LTSB?
+    Case &H7E&:        ProductName = "Enterprise LTSB N" 'Enterprise 2015 LTSB N?
+    Case &H7F&:        ProductName = "Pro LTSB"
+    Case &H80&:        ProductName = "Pro LTSB N"
+    Case &H81&:        ProductName = "Enterprise LTSB Evaluation" 'Enterprise 2015 LTSB Evaluation?
+    Case &H82&:        ProductName = "Enterprise LTSB N Evaluation" 'Enterprise 2015 LTSB N Evaluation?
+    Case &H83&:        ProductName = "IoT Core Commercial"
+    Case &H85&:        ProductName = "Mobile Enterprise"
+    Case &H87&:        ProductName = "Holographic"
+    Case &H88&:        ProductName = "Holographic Business"
+    Case &H91&:        ProductName = "Server Datacenter (Semi-Annual Channel Core)"
+    Case &H92&:        ProductName = "Server Standard (Semi-Annual Channel Core)"
+    Case &HA1&:        ProductName = "Pro for Workstations"
+    Case &HA2&:        ProductName = "Pro for Workstations N"
+    Case 0:
         ProductName = "An unknown product"
     Case Else
         ProductName = "Unknown Edition (0x" & Hex$(ProductType) & ")"
     End Select
-
+    
     GetProductName = ProductName
     Exit Function
 ErrorHandler:
@@ -1505,6 +1475,9 @@ End Function
 
 Private Function SecureBootState() As Boolean
     Dim lState As Long
+    '// TODO:
+    'improvement - https://www.cyberforum.ru/win-api/thread2046367.html#post10789948
+    '++
     If MajorMinor_ >= 6.2 Then ' Win8+
         lState = RegRead_REG_DWORD("SYSTEM\CurrentControlSet\Control\SecureBoot\State", "UEFISecureBootEnabled")
         If lState = 1 Then SecureBootState = True
@@ -1701,4 +1674,8 @@ End Property
 
 Public Property Get IsSystemCaseSensitive() As Boolean
     IsSystemCaseSensitive = IsSystemCaseSensitive_
+End Property
+
+Public Property Get IsEmbedded() As Boolean
+    IsEmbedded = IsEmbedded_
 End Property

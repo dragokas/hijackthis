@@ -898,6 +898,12 @@ Public Function DeleteFileWEx(lpSTR As Long, Optional ForceDeleteMicrosoft As Bo
         Exit Function
     End If
     
+    ' prevent removing parent process
+    If StrComp(FileName, MyParentProc.Path, vbTextCompare) = 0 Then
+        DeleteFileWEx = True
+        Exit Function
+    End If
+    
     sExt = GetExtensionName(FileName)
     
     If Not ForceDeleteMicrosoft Then
@@ -910,6 +916,11 @@ Public Function DeleteFileWEx(lpSTR As Long, Optional ForceDeleteMicrosoft As Bo
                 Exit Function
             End If
         End If
+    End If
+    
+    If g_bDelModePending Then
+        DeleteFileOnReboot FileName, bNoReboot:=True
+        Exit Function
     End If
     
     Redirect = ToggleWow64FSRedirection(False, FileName, bOldStatus)
@@ -2481,3 +2492,32 @@ Sub ControlSelectAll(Optional frmExplicit As Form)
         End If
     End If
 End Sub
+
+Public Function HasCommandLineKey(ByVal sKey As String) As Boolean
+    Dim i As Long
+    Dim ch As String
+    Dim offset As Long
+    Dim bHasKey As Boolean
+    If UBound(g_sCommandLineArg) > 0 Then
+        
+        For i = 1 To UBound(g_sCommandLineArg)
+            
+            bHasKey = False
+            
+            If StrBeginWith(g_sCommandLineArg(i), "/" & sKey) Then
+                bHasKey = True
+            ElseIf StrBeginWith(g_sCommandLineArg(i), "-" & sKey) Then
+                bHasKey = True
+            End If
+            
+            If bHasKey Then
+                If Right$(sKey, 1) = ":" Then offset = -1
+                ch = Mid$(g_sCommandLineArg(i), Len(sKey) + 2 + offset, 1)
+                If (ch = "" Or ch = ":") Then
+                    HasCommandLineKey = True
+                    Exit Function
+                End If
+            End If
+        Next
+    End If
+End Function

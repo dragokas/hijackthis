@@ -3,13 +3,13 @@ Begin VB.Form frmUnlockRegKey
    Caption         =   "Registry Key Unlocker"
    ClientHeight    =   3240
    ClientLeft      =   120
-   ClientTop       =   450
-   ClientWidth     =   8445
+   ClientTop       =   456
+   ClientWidth     =   8448
    Icon            =   "frmUnlockRegKey.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    ScaleHeight     =   3240
-   ScaleWidth      =   8445
+   ScaleWidth      =   8448
    StartUpPosition =   2  'CenterScreen
    Begin VB.CommandButton cmdExit 
       Cancel          =   -1  'True
@@ -158,7 +158,7 @@ Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
 End Sub
 
 Private Sub Form_Load()
-    SetAllFontCharset Me, g_FontName, g_FontSize
+    SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold
     ReloadLanguage True
     CenterForm Me
     'Me.Icon = frmMain.Icon
@@ -181,7 +181,7 @@ Private Sub Form_Resize()
     txtKeys.Height = Me.Height - 2010
     chkRecur.Top = Me.Height - 1300
     cmdGo.Top = Me.Height - 1300
-    CmdExit.Top = Me.Height - 1300
+    cmdExit.Top = Me.Height - 1300
 End Sub
 
 Private Sub Text1_KeyDown(KeyCode As Integer, Shift As Integer)

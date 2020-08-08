@@ -246,9 +246,9 @@ Public bShowLargeHosts As Boolean, bShowLargeZones As Boolean
 
 Private Const NUM_OF_SECTIONS As Long = 58
 
-Public Function StartupList_UpdateCaption(Frm As Form) As Long
+Public Function StartupList_UpdateCaption(frm As Form) As Long
 
-    Frm.Caption = "StartupList v." & StartupListVer & " fork" & _
+    frm.Caption = "StartupList v." & StartupListVer & " fork" & _
         Replace$(" - " & Translate(906), "[]", NUM_OF_SECTIONS)
     
     StartupList_UpdateCaption = NUM_OF_SECTIONS
@@ -571,7 +571,7 @@ End Sub
 Public Sub RunScannerGetMD5(sFile$, sKey$)
     On Error GoTo ErrorHandler:
     Dim sMD5$, sAppVer$, sSection$
-    sMD5 = GetFileMD5(sFile, , True)
+    sMD5 = GetFileCheckSum(sFile, , True)
     sAppVer = "StartupList" & App.Major & "." & Format$(App.Minor, "00") & "." & App.Revision
     sSection = GetRunScannerItem(GetSectionFromKey(sKey), sKey)
     

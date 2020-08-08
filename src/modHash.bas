@@ -8,7 +8,7 @@ Option Explicit
 '' Base64 encoder/decoder by Comintern (vbforums.com) (Fork by Dragokas)
 ''
 
-Private Const MAX_HASH_FILE_SIZE As Currency = 104857600@ '100 MB. (maximum file size to calculate hash)
+Private Const MAX_HASH_FILE_SIZE As Currency = 209715200@ '200 MB. (maximum file size to calculate hash)
 
 Private Const poly As Long = &HEDB88320
 
@@ -65,8 +65,16 @@ Private clPowers6(63) As Long
 Private clPowers12(63) As Long
 Private clPowers18(63) As Long
 
+Public Function GetFileCheckSum(sFilename$, Optional lFileSize&, Optional PlainCheckSum As Boolean) As String
+    
+    If g_bUseMD5 Then
+        GetFileCheckSum = GetFileMD5(sFilename, lFileSize, PlainCheckSum)
+    Else
+        GetFileCheckSum = GetFileSHA1(sFilename, lFileSize, PlainCheckSum)
+    End If
+End Function
 
-Public Function GetFileMD5(sFilename$, Optional lFileSize&, Optional JustMD5 As Boolean) As String
+Public Function GetFileMD5(sFilename$, Optional lFileSize&, Optional PlainMD5 As Boolean) As String
     On Error GoTo ErrorHandler:
     
     AppendErrorLogCustom "GetFileMD5 - Begin", "File: " & sFilename
@@ -94,7 +102,7 @@ Public Function GetFileMD5(sFilename$, Optional lFileSize&, Optional JustMD5 As 
     If lFileSize = 0 Then lFileSize = LOFW(ff)
     If lFileSize = 0 Then
         'speed tweak :) 0-byte file always has the same MD5
-        If JustMD5 Then
+        If PlainMD5 Then
             GetFileMD5 = "D41D8CD98F00B204E9800998ECF8427E"
         Else
             GetFileMD5 = " (size: 0 bytes, MD5: D41D8CD98F00B204E9800998ECF8427E)"
@@ -102,7 +110,7 @@ Public Function GetFileMD5(sFilename$, Optional lFileSize&, Optional JustMD5 As 
         GoTo Finalize
     End If
     If lFileSize > MAX_HASH_FILE_SIZE Then
-        If Not JustMD5 Then
+        If Not PlainMD5 Then
             GetFileMD5 = " (size: " & lFileSize & " bytes)"
         End If
         GoTo Finalize
@@ -144,17 +152,17 @@ Public Function GetFileMD5(sFilename$, Optional lFileSize&, Optional JustMD5 As 
         CryptReleaseContext hCrypt, 0&
         
     Else
-        ErrorMsg Err, "modMD5_GetFileMD5", "File: ", sFilename$, "Handle: ", ff, "Size: ", lFileSize
+        ErrorMsg Err, "GetFileMD5", "File: ", sFilename$, "Handle: ", ff, "Size: ", lFileSize
     End If
     
     If Len(sMD5) <> 0 Then
-        If JustMD5 Then
+        If PlainMD5 Then
             GetFileMD5 = UCase$(sMD5)
         Else
             GetFileMD5 = " (size: " & lFileSize & " bytes, MD5: " & sMD5 & ")"
         End If
     Else
-        If Not JustMD5 Then
+        If Not PlainMD5 Then
             GetFileMD5 = " (size: " & lFileSize & " bytes)"
         End If
     End If
@@ -168,13 +176,13 @@ Finalize:
     AppendErrorLogCustom "GetFileMD5 - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "modMD5_GetFileMD5", "File: ", sFilename$, "Handle: ", ff, "Size: ", lFileSize
+    ErrorMsg Err, "GetFileMD5", "File: ", sFilename$, "Handle: ", ff, "Size: ", lFileSize
     If Redirect Then Call ToggleWow64FSRedirection(OldRedir)
     frmMain.lblMD5.Caption = ""
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function GetFileSHA1(sFilename$, Optional lFileSize&, Optional JustSHA1 As Boolean) As String
+Public Function GetFileSHA1(sFilename$, Optional lFileSize&, Optional PlainSHA1 As Boolean) As String
     On Error GoTo ErrorHandler:
     
     AppendErrorLogCustom "GetFileSHA1 - Begin", "File: " & sFilename
@@ -202,15 +210,15 @@ Public Function GetFileSHA1(sFilename$, Optional lFileSize&, Optional JustSHA1 A
     If lFileSize = 0 Then lFileSize = LOFW(ff)
     If lFileSize = 0 Then
         'speed tweak :) 0-byte file always has the same MD5
-        If JustSHA1 Then
+        If PlainSHA1 Then
             GetFileSHA1 = "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709"
         Else
-            GetFileSHA1 = " (size: 0 bytes, MD5: DA39A3EE5E6B4B0D3255BFEF95601890AFD80709)"
+            GetFileSHA1 = " (size: 0 bytes, SHA1: DA39A3EE5E6B4B0D3255BFEF95601890AFD80709)"
         End If
         GoTo Finalize
     End If
     If lFileSize > MAX_HASH_FILE_SIZE Then
-        If Not JustSHA1 Then
+        If Not PlainSHA1 Then
             GetFileSHA1 = " (size: " & lFileSize & " bytes)"
         End If
         GoTo Finalize
@@ -250,17 +258,17 @@ Public Function GetFileSHA1(sFilename$, Optional lFileSize&, Optional JustSHA1 A
         CryptReleaseContext hCrypt, 0&
         
     Else
-        ErrorMsg Err, "modMD5_GetFileMD5", "File: ", sFilename$, "Handle: ", ff, "Size: ", lFileSize
+        ErrorMsg Err, "GetFileSHA1", "File: ", sFilename$, "Handle: ", ff, "Size: ", lFileSize
     End If
     
     If Len(sSHA1) <> 0 Then
-        If JustSHA1 Then
+        If PlainSHA1 Then
             GetFileSHA1 = UCase$(sSHA1)
         Else
             GetFileSHA1 = " (size: " & lFileSize & " bytes, SHA1: " & sSHA1 & ")"
         End If
     Else
-        If Not JustSHA1 Then
+        If Not PlainSHA1 Then
             GetFileSHA1 = " (size: " & lFileSize & " bytes)"
         End If
     End If
@@ -274,7 +282,7 @@ Finalize:
     AppendErrorLogCustom "GetFileSHA1 - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "modMD5_GetFileSHA1", "File: ", sFilename$, "Handle: ", ff, "Size: ", lFileSize
+    ErrorMsg Err, "GetFileSHA1", "File: ", sFilename$, "Handle: ", ff, "Size: ", lFileSize
     If Redirect Then Call ToggleWow64FSRedirection(OldRedir)
     frmMain.lblMD5.Caption = ""
     If inIDE Then Stop: Resume Next
@@ -879,7 +887,18 @@ End Function
 Public Sub cryptInit(Optional ByVal seed As Long)
     On Error GoTo ErrorHandler
     Dim i As Long, b() As Byte
+    Dim Salt As String
     ReDim seq(255)
+    
+    CryptVer = Val(RegReadHJT("CryptVer", "1"))
+    
+    If CryptVer <= 2 Then
+        Salt = Reg.GetDword(0, "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "InstallDate")
+        If Salt = 0 Then Salt = Reg.GetBinaryToString(0, "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "DigitalProductId")
+    ElseIf CryptVer >= 3 Then
+        Salt = Reg.GetData(0, "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "DigitalProductId", bUseHexFormatForBinary:=True)
+    End If
+    sProgramVersion = "THOU SHALT NOT STEAL - " & Salt 'don't touch this, please !!!
     If seed = 0 Then
         b() = sProgramVersion
         For i = 0 To UBound(b)
@@ -963,6 +982,7 @@ Public Function Encode64(sString As String) As String
     Dim bOut() As Byte, bIn() As Byte, lOutSize As Long
     Dim lChar As Long, lTrip As Long, iPad As Integer, lLen As Long, lTemp As Long, lPos As Long
 
+    If Len(sString) = 0 Then Exit Function
 
     iPad = Len(sString) Mod 3                           'See if the length is divisible by 3
     If iPad Then                                        'If not, figure out the end pad and resize the input.

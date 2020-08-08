@@ -33,6 +33,15 @@ Private mo_Sect         As Object
 Private mb_CompareMode  As VbCompareMethod
 
 '// To begin working with the class
+'
+'@sFile         - Input file name
+'@id_Codepage   - Input codepage
+'
+'Note: supported codepages:
+' - 1251 (ANSI)
+' - 1200 (UTF-16LE)
+' - 0 (auto-detect)
+'
 Public Sub InitFile(sFile As String, id_Codepage As Long)
     On Error GoTo ErrorHandler:
     Dim sIniFile As String
@@ -77,11 +86,16 @@ End Sub
 
 Private Sub InitCodepage(id_Codepage As Long)
     On Error GoTo ErrorHandler:
-    If id_Codepage <> 1251 And id_Codepage <> 1200 Then
+    If id_Codepage <> 1251 And id_Codepage <> 1200 And id_Codepage <> 0 Then
         MsgBoxW "Incorrect codepage!"
         Exit Sub
     End If
+    Dim CP As Long
     ml_Codepage = id_Codepage
+    If ml_Codepage = 0 Then ' auto-detect
+        CP = FileGetTypeBOM(ms_IniFile)
+        If CP = 1200 Then ml_Codepage = 1200
+    End If
     mb_IsUnicode = IIf(ml_Codepage = 1200, True, False)
     Exit Sub
 ErrorHandler:
@@ -495,6 +509,25 @@ ErrorHandler:
     ErrorMsg Err, "clsIniFile_RemoveParam", sSection, sParameter
     If inIDE Then Stop: Resume Next
 End Function
+
+'// Rename parameter
+Public Sub RenameParam(sSection As Variant, sParameter As Variant, sNewParam As Variant)
+    On Error GoTo ErrorHandler:
+    Dim oDict As Object
+    If ExistSection(sSection) Then
+        Set oDict = mo_Sect(CStr(sSection))
+        If oDict.Exists(CStr(sParameter)) Then
+            Me.WriteParam sSection, sNewParam, oDict(CStr(sParameter))
+            oDict.Remove CStr(sParameter)
+        End If
+        Set oDict = Nothing
+    End If
+    mb_UnsavedData = True
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "clsIniFile_RenameParam", sSection, sParameter, sNewParam
+    If inIDE Then Stop: Resume Next
+End Sub
 
 '// Get currently loaded file name
 Public Property Get FileName() As String

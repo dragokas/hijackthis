@@ -1,20 +1,20 @@
 VERSION 5.00
 Begin VB.Form frmUninstMan 
    Caption         =   "Remove Programs Manager"
-   ClientHeight    =   6765
+   ClientHeight    =   6756
    ClientLeft      =   120
-   ClientTop       =   450
-   ClientWidth     =   11310
+   ClientTop       =   456
+   ClientWidth     =   11316
    Icon            =   "frmUninstMan.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   ScaleHeight     =   6765
-   ScaleWidth      =   11310
+   ScaleHeight     =   6756
+   ScaleWidth      =   11316
    StartUpPosition =   3  'Windows Default
    Begin VB.Frame fraUninstMan 
       BeginProperty Font 
          Name            =   "Tahoma"
-         Size            =   8.25
+         Size            =   8.4
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -158,7 +158,7 @@ Begin VB.Form frmUninstMan
          Caption         =   "Save list..."
          BeginProperty Font 
             Name            =   "MS Sans Serif"
-            Size            =   8.25
+            Size            =   7.8
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -284,7 +284,7 @@ Private Sub Form_Load()
     If OSver.MajorMinor >= 5.1 Then
         SetWindowTheme Me.fraFilter.hwnd, StrPtr(" "), StrPtr(" ")
     End If
-    SetAllFontCharset Me, g_FontName, g_FontSize
+    SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold
     ReloadLanguage True
     CenterForm Me
     cmdRefresh_Click
@@ -741,7 +741,7 @@ Private Sub cmdRefresh_Click()
         lstUninstMan.SetFocus
     End If
     
-    Set HE = Nothing
+    'Set HE = Nothing
     
     Exit Sub
 ErrorHandler:
@@ -910,7 +910,7 @@ Private Sub cmdSave_Click()
     
     OpenLogFile sFile
     
-    Set HE = Nothing
+    'Set HE = Nothing
     Set sList = Nothing
     
     Exit Sub

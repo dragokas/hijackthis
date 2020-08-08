@@ -56,7 +56,7 @@ set arcList=*.vbp *.vbw *.rc *.res *.exe *.frm *.frx *.lvw *.cmd *.csi *.csv *.t
 set ArcFolder=Archive
 
 :: Icon file (for projects without form or projects with non-standart icons). Leave this field empty, if the icon has been already defined in form or if you don't need the icon.
-set icoFile=ico\main\HJT.ico
+set icoFile=ico\main\HJT_2.ico
 
 :: Location of EXE of the program 'Manifest by The Trick'
 set ManifestEXE=
@@ -68,7 +68,7 @@ set Manifest=
 
 :: Location of script(s) for adding digital signature
 set SignScript_1=h:\_AVZ\Наши разработки\_Dragokas\DigiSign\SignME.cmd
-set SignScript_2=
+set SignScript_2=c:\DigiSign\SignME_self.cmd
 
 :: Version Patcher EXE (support for 'build' field of PE EXE version)
 set VerPatcher=Tools\VersionPatcher\VersionPatcher.exe

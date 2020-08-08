@@ -413,7 +413,7 @@ Public Sub CheckO25Item()
                             sAdditionalInfo
                         
                     If Not IsOnIgnoreList(sHit) Then
-                        If bMD5 And 0 <> Len(sScriptFile) Then sHit = sHit & GetFileMD5(sScriptFile)
+                        If g_bCheckSum And 0 <> Len(sScriptFile) Then sHit = sHit & GetFileCheckSum(sScriptFile)
                         
                         With result
                             .Section = "O25"
@@ -447,7 +447,7 @@ Public Sub CheckO25Item()
                             AddCustomToFix .Custom, CUSTOM_ACTION_O25
                             
                             If .O25.Consumer.Type = O25_CONSUMER_ACTIVE_SCRIPT Then
-                                AddFileToFix .File, REMOVE_FILE, .O25.Consumer.Script.File
+                                AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, .O25.Consumer.Script.File
                             End If
                             
                             'Jump to ...
@@ -604,13 +604,15 @@ Public Function RecoverO25Item(O25 As O25_ENTRY) As Boolean
         Set objService = GetObject("winmgmts:{impersonationLevel=Impersonate, (Security, Backup)}!\\.\root\subscription")
         
         'create filter class instance __EventFilter (events filter)
-        Set objFilter = objService.Get("__EventFilter").SpawnInstance_()
-        'set up filter properties
-        objFilter.Name = .Filter.Name
-        objFilter.QueryLanguage = "WQL"
-        objFilter.Query = .Filter.Query
-        'save filter
-        objFilter.Put_
+        If (0 <> Len(.Filter.Name)) Then
+            Set objFilter = objService.Get("__EventFilter").SpawnInstance_()
+            'set up filter properties
+            objFilter.Name = .Filter.Name
+            objFilter.QueryLanguage = "WQL"
+            objFilter.Query = .Filter.Query
+            'save filter
+            objFilter.Put_
+        End If
         
         'creating class instance ActiveScriptEventConsumer / CommandLineEventConsumer (events consumer)
         ' & set up consumer properties
@@ -620,41 +622,59 @@ Public Function RecoverO25Item(O25 As O25_ENTRY) As Boolean
             Set objConsumer = objService.Get("ActiveScriptEventConsumer").SpawnInstance_()
             
             objConsumer.ScriptingEngine = .Consumer.Script.Engine
-            objConsumer.ScriptText = .Consumer.Script.Text
-            objConsumer.ScriptFilename = .Consumer.Script.File
+            If 0 <> Len(.Consumer.Script.Text) Then ' this check is required !!!
+                objConsumer.ScriptText = .Consumer.Script.Text
+            End If
+            If 0 <> Len(.Consumer.Script.File) Then
+                objConsumer.ScriptFilename = .Consumer.Script.File
+            End If
             
         ElseIf .Consumer.Type = O25_CONSUMER_COMMAND_LINE Then
         
             Set objConsumer = objService.Get("CommandLineEventConsumer").SpawnInstance_()
         
-            objConsumer.CommandLineTemplate = .Consumer.Cmd.CommandLine
-            objConsumer.ExecutablePath = .Consumer.Cmd.ExecPath
-            objConsumer.WorkingDirectory = .Consumer.Cmd.WorkDir
+            If 0 <> Len(.Consumer.Cmd.CommandLine) Then
+                objConsumer.CommandLineTemplate = .Consumer.Cmd.CommandLine
+            End If
+            If 0 <> Len(.Consumer.Cmd.ExecPath) Then
+                objConsumer.ExecutablePath = .Consumer.Cmd.ExecPath
+            End If
+            If 0 <> Len(.Consumer.Cmd.WorkDir) Then
+                objConsumer.WorkingDirectory = .Consumer.Cmd.WorkDir
+            End If
             objConsumer.RunInteractively = .Consumer.Cmd.Interactive
             
         End If
-        objConsumer.KillTimeout = .Consumer.KillTimeout
-        objConsumer.Name = .Consumer.Name
-        'save consumer
-        objConsumer.Put_
+        
+        If Not (objConsumer Is Nothing) Then
+            objConsumer.KillTimeout = .Consumer.KillTimeout
+            objConsumer.Name = .Consumer.Name
+            'save consumer
+            objConsumer.Put_
+        End If
         
         'binding
-        Set objFilter = objService.Get("__EventFilter.Name=""" & .Filter.Name & """")
-        
+        If (0 <> Len(.Filter.Name)) Then
+            Set objFilter = objService.Get("__EventFilter.Name=""" & .Filter.Name & """")
+        End If
+            
         If .Consumer.Type = O25_CONSUMER_ACTIVE_SCRIPT Then
             Set objConsumer = objService.Get("ActiveScriptEventConsumer.Name=""" & .Consumer.Name & """")
-            
+
         ElseIf .Consumer.Type = O25_CONSUMER_COMMAND_LINE Then
             Set objConsumer = objService.Get("CommandLineEventConsumer.Name=""" & .Consumer.Name & """")
         End If
         
         'creating class instance __FilterToConsumerBinding (binding)
-        Set objBinding = objService.Get("__FilterToConsumerBinding").SpawnInstance_()
-        'set up binding properties
-        objBinding.Filter = objFilter.Path_
-        objBinding.Consumer = objConsumer.Path_
-        'save binding
-        objBinding.Put_
+        
+        If Not (objFilter Is Nothing) And Not (objConsumer Is Nothing) Then
+            Set objBinding = objService.Get("__FilterToConsumerBinding").SpawnInstance_()
+            'set up binding properties
+            objBinding.Filter = objFilter.Path_
+            objBinding.Consumer = objConsumer.Path_
+            'save binding
+            objBinding.Put_
+        End If
         
         'create timer
         'creating timer class instance & set up timer properties
@@ -672,10 +692,12 @@ Public Function RecoverO25Item(O25 As O25_ENTRY) As Boolean
             objTimer.IntervalBetweenEvents = .Timer.Interval
         End If
         
-        objTimer.SkipIfPassed = False
-        objTimer.TimerId = .Timer.ID
-        'save timer
-        objTimer.Put_
+        If Not (objTimer Is Nothing) Then
+            objTimer.SkipIfPassed = False
+            objTimer.TimerId = .Timer.ID
+            'save timer
+            objTimer.Put_
+        End If
         
         RecoverO25Item = True
         
@@ -851,7 +873,7 @@ Public Sub CheckO26Item()
         
                     If Not IsOnIgnoreList(sHit) Then
           
-                        If bMD5 Then sHit = sHit & GetFileMD5(sFile)
+                        If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                 
                         With result
                             .Section = "O26"
@@ -894,7 +916,7 @@ Public Sub CheckO26Item()
                 
                 If Not IsOnIgnoreList(sHit) Then
                     
-                    If bMD5 Then sHit = sHit & GetFileMD5(sFile)
+                    If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                     
                     With result
                         .Section = "O26"
@@ -933,7 +955,7 @@ Public Sub CheckO26Item()
                     
                     If Not IsOnIgnoreList(sHit) Then
                         
-                        If bMD5 Then sHit = sHit & GetFileMD5(sFile)
+                        If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                         
                         With result
                             .Section = "O26"
@@ -952,7 +974,7 @@ Public Sub CheckO26Item()
         End If
     Loop
     
-    Set HE = Nothing
+    'Set HE = Nothing
     
     'Check for UWP debuggers
     
@@ -970,7 +992,7 @@ Public Sub CheckO26Item()
             
             If Not IsOnIgnoreList(sHit) Then
                 
-                If bMD5 Then sHit = sHit & GetFileMD5(sFile)
+                If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                 
                 With result
                     .Section = "O26"
@@ -994,7 +1016,7 @@ Public Sub CheckO26Item()
                 
                 If Not IsOnIgnoreList(sHit) Then
                     
-                    If bMD5 Then sHit = sHit & GetFileMD5(sFile)
+                    If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                     
                     With result
                         .Section = "O26"

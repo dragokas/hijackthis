@@ -9,13 +9,16 @@ Option Explicit
 
 Private Const MAX_LOCALE_LINES As Long = 9999
 
-Enum idCodePage
+Public Enum idCodePage
     WIN = 1251
-    Dos = 866
-    Koi = 20866
-    Iso = 28595
+    DOS = 866
+    KOI = 20866
+    ISO = 28595
     UTF8 = 65001
 End Enum
+#If False Then
+    Dim WIN, DOS, KOI, ISO, UTF8
+#End If
 
 'Private Declare Function GetUserDefaultUILanguage Lib "kernel32.dll" () As Long
 'Private Declare Function GetSystemDefaultUILanguage Lib "kernel32.dll" () As Long
@@ -372,8 +375,8 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     Case "1041": .chkIgnoreMicrosoft.ToolTipText = Translation
                     Case "1042": .chkIgnoreAll.Caption = Translation
                     Case "1043": .chkIgnoreAll.ToolTipText = Translation
-                    Case "1044": .chkDoMD5.Caption = Translation
-                    Case "1045": .chkDoMD5.ToolTipText = Translation
+                    Case "1044": .chkDoCheckSum.Caption = Translation
+                    Case "1045": .chkDoCheckSum.ToolTipText = Translation
                     
                     'frame names
                     Case "1050": .FraIncludeSections.Caption = Translation
@@ -953,7 +956,7 @@ Public Function IsFormForeground(frm As Form) As Boolean
     Dim hActiveWnd As Long
     If IsFormInit(frm) Then
         hActiveWnd = GetForegroundWindow()
-        If hActiveWnd = frm.hWnd Then IsFormForeground = True
+        If hActiveWnd = frm.hwnd Then IsFormForeground = True
     End If
 End Function
 

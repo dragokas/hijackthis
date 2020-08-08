@@ -3,17 +3,17 @@ Begin VB.Form frmSearch
    AutoRedraw      =   -1  'True
    BorderStyle     =   4  'Fixed ToolWindow
    Caption         =   "Find"
-   ClientHeight    =   2310
-   ClientLeft      =   45
-   ClientTop       =   315
-   ClientWidth     =   5565
+   ClientHeight    =   2316
+   ClientLeft      =   48
+   ClientTop       =   312
+   ClientWidth     =   5568
    Icon            =   "frmSearch.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   2310
-   ScaleWidth      =   5565
+   ScaleHeight     =   2316
+   ScaleWidth      =   5568
    ShowInTaskbar   =   0   'False
    StartUpPosition =   3  'Windows Default
    Visible         =   0   'False
@@ -200,7 +200,7 @@ Private Sub Form_Load()
     
     'CenterForm Me
     Me.Height = 735
-    SetAllFontCharset Me, g_FontName, g_FontSize
+    SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold
     Call ReloadLanguage(True)
     
     ' if Win XP -> disable all window styles from option buttons

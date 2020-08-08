@@ -4,10 +4,10 @@ Begin VB.Form frmProcMan
    ClientHeight    =   4140
    ClientLeft      =   60
    ClientTop       =   -240
-   ClientWidth     =   8610
+   ClientWidth     =   8616
    BeginProperty Font 
       Name            =   "Tahoma"
-      Size            =   8.25
+      Size            =   8.4
       Charset         =   204
       Weight          =   400
       Underline       =   0   'False
@@ -18,13 +18,13 @@ Begin VB.Form frmProcMan
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    ScaleHeight     =   4140
-   ScaleWidth      =   8610
+   ScaleWidth      =   8616
    StartUpPosition =   2  'CenterScreen
    Begin VB.Frame fraProcessManager 
       Caption         =   "Itty Bitty Process Manager v."
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   8.25
+         Size            =   7.8
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -108,12 +108,12 @@ Begin VB.Form frmProcMan
          Width           =   2955
       End
       Begin VB.Image imgProcManCopy 
-         Height          =   360
+         Height          =   288
          Left            =   2400
          Picture         =   "frmProcMan.frx":1CFE
          ToolTipText     =   "Copy process list to clipboard"
-         Top             =   210
-         Width           =   360
+         Top             =   216
+         Width           =   288
       End
       Begin VB.Label lblProcManDblClick 
          Caption         =   "Double-click a file to view its properties."
@@ -134,12 +134,12 @@ Begin VB.Form frmProcMan
          Width           =   1410
       End
       Begin VB.Image imgProcManSave 
-         Height          =   360
+         Height          =   288
          Left            =   2880
          Picture         =   "frmProcMan.frx":25DC
          ToolTipText     =   "Save process list to file.."
-         Top             =   210
-         Width           =   360
+         Top             =   216
+         Width           =   288
       End
    End
    Begin VB.Menu mnuProcMan 
@@ -196,6 +196,8 @@ Option Explicit
 
 'v1.06 - Replaced Process listing function by Nt version
 'v1.07 - Added ability to enum modules of 64-bit processes
+
+'ADS Enum alternatives - see: https://www.cyberforum.ru/win-api/thread1842785.html
 
 Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
 Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteW" (ByVal hwnd As Long, ByVal lpOperation As Long, ByVal lpFile As Long, ByVal lpParameters As Long, ByVal lpDirectory As Long, ByVal nShowCmd As Long) As Long
@@ -510,7 +512,7 @@ Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
 End Sub
 
 Private Sub Form_Load()
-    SetAllFontCharset Me, g_FontName, g_FontSize
+    SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold
     ReloadLanguage True
     Me.Height = 7215
     'Process Manager

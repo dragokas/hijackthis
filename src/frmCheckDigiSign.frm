@@ -3,11 +3,11 @@ Begin VB.Form frmCheckDigiSign
    Caption         =   "Digital signature checker"
    ClientHeight    =   4680
    ClientLeft      =   120
-   ClientTop       =   465
-   ClientWidth     =   9255
+   ClientTop       =   468
+   ClientWidth     =   9252
    BeginProperty Font 
       Name            =   "Tahoma"
-      Size            =   8.25
+      Size            =   8.4
       Charset         =   204
       Weight          =   400
       Underline       =   0   'False
@@ -18,7 +18,7 @@ Begin VB.Form frmCheckDigiSign
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    ScaleHeight     =   4680
-   ScaleWidth      =   9255
+   ScaleWidth      =   9252
    StartUpPosition =   3  'Windows Default
    Begin VB.CommandButton cmdSelectFile 
       Caption         =   "Add file(s) ..."
@@ -442,7 +442,7 @@ Private Sub cmdGo_Click()
 '                End If
 
                 'If previous check identified Microsoft signature and internal signature is not verified yet, we need to check it for 3d-party publisher
-                If SignResult.isMicrosoftSign And SignResult.isSignedByCert And SignResult.isEmbedded Then
+                If SignResult.isMicrosoftSign And SignResult.isSignedByCert And SignResult.IsEmbedded Then
                     LastSignResult = SignResult
                     hResult = SignVerify(sFile, SV_isDriver Or SV_PreferInternalSign Or SV_CacheDoNotLoad Or AddFlags, SignResult)
                     SignResult.isWHQL = True
@@ -485,7 +485,7 @@ Private Sub cmdGo_Click()
                 aLogLine(i) = aLogLine(i) & ";" & .SubjectName
                 aLogLine(i) = aLogLine(i) & ";" & .SubjectEmail
                 aLogLine(i) = aLogLine(i) & ";" & IIf(.ReturnCode = TRUST_E_NOSIGNATURE, "", IIf(.isSignedByCert, "Certificate", "Internal")) 'Embedded Sign?
-                aLogLine(i) = aLogLine(i) & ";" & IIf(.isEmbedded, "yes", "no")
+                aLogLine(i) = aLogLine(i) & ";" & IIf(.IsEmbedded, "yes", "no")
                 aLogLine(i) = aLogLine(i) & ";" & .CatalogPath
                 aLogLine(i) = aLogLine(i) & ";" & .HashRootCert
                 aLogLine(i) = aLogLine(i) & ";" & .HashFileCode
@@ -626,7 +626,7 @@ Private Sub Form_Load()
     
     'Me.Icon = frmMain.Icon
     CenterForm Me
-    SetAllFontCharset Me, g_FontName, g_FontSize
+    SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold
     Call ReloadLanguage(True)
     
     ' if Win XP -> disable all window styles from option buttons

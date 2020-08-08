@@ -5,10 +5,19 @@ Option Explicit
 
 '
 ' Authenticode digital signature verifier / Driver's WHQL signature verifier
-' revision 2.14
+' revision 2.16
 '
 ' Copyrights: (ñ) Polshyn Stanislav Viktorovich aka Alex Dragokas
 '
+
+' 01.08.2020
+' Appended new errors description
+
+' 25.07.2020
+' Added .HashFinalCert property - Hash of the last certificate in the chain (signer)
+
+' 31.05.2020
+' Added several new Microsoft root certificates
 
 ' 17.08.2018
 ' Fixed bug on Win7x64 SP0 where this class is not worked
@@ -65,7 +74,7 @@ Public Type SignResult_TYPE ' out. Digital signature data
     isWHQL            As Boolean ' is Driver signed by Microsoft Hardware Dev Portal ?
     CatalogPath       As String  ' path to catalogue file
     isMicrosoftSign   As Boolean ' is signed by Microsoft ?
-    isEmbedded        As Boolean ' is signed by internal (embedded) signature? (SV_CheckEmbeddedPresence flag should be specified)
+    IsEmbedded        As Boolean ' is signed by internal (embedded) signature? (SV_CheckEmbeddedPresence flag should be specified)
     isSelfSigned      As Boolean ' is signed by self-signed certificate ?
     AlgorithmCertHash As String  ' hash algorithm of the certificate's signature
     AlgorithmSignDigest As String  ' hash algorithm of the signature's digest
@@ -73,6 +82,7 @@ Public Type SignResult_TYPE ' out. Digital signature data
     SubjectName       As String  ' signer name
     SubjectEmail      As String  ' signer email
     HashRootCert      As String  ' SHA1 hash of root certificate in the chain
+    HashFinalCert     As String  ' Hash of the last certificate in the chain (signer)
     HashFileCode      As String  ' Authenticode (PE256) hash of file
     DateCertBegin     As Date    ' certificate is valid since ...
     DateCertExpired   As Date    ' certificate is valid until ...
@@ -500,6 +510,17 @@ Private Const TRUST_E_FINANCIAL_CRITERIA    As Long = &H8009601E
 Private Const TRUST_E_NO_SIGNER_CERT        As Long = &H80096002
 Private Const TRUST_E_SYSTEM_ERROR          As Long = &H80096001
 Private Const TRUST_E_TIME_STAMP            As Long = &H80096005
+Private Const TRUST_E_FAIL                  As Long = &H800B010B
+Private Const CERT_E_CHAINING               As Long = &H800B010A
+Private Const CERT_E_UNTRUSTEDTESTROOT      As Long = &H800B010D
+Private Const CERT_E_WRONG_USAGE            As Long = &H800B0110
+Private Const CERT_E_CN_NO_MATCH            As Long = &H800B010F
+Private Const CERT_E_REVOCATION_FAILURE     As Long = &H800B010E
+Private Const PERSIST_E_NOTSELFSIZING       As Long = &H800B000B
+Private Const DIGSIG_E_DECODE               As Long = &H800B0006
+Private Const CERT_E_ROLE                   As Long = &H800B0103
+Private Const PERSIST_E_SIZEDEFINITE        As Long = &H800B0009
+Private Const DIGSIG_E_CRYPTO               As Long = &H800B0008
 
 ' OID
 Private Const szOID_CERT_STRONG_SIGN_OS_1   As String = "1.3.6.1.4.1.311.72.1.1"
@@ -572,7 +593,7 @@ Public Sub WipeSignResult(SignResult As SignResult_TYPE)
         .isWHQL = False
         .isMicrosoftSign = False
         .CatalogPath = vbNullString
-        .isEmbedded = False
+        .IsEmbedded = False
         .isSelfSigned = False
         .AlgorithmCertHash = vbNullString
         .AlgorithmSignDigest = vbNullString
@@ -857,7 +878,7 @@ Public Function SignVerify( _
         sExtension = modFile.GetExtensionName(sFilePath)
         If StrInParamArray(sExtension, ".exe", ".sys", ".dll", ".ocx") Then
             If IsInternalSignPresent(hFile) Then
-                SignResult.isEmbedded = True
+                SignResult.IsEmbedded = True
                 If Flags And SV_SelfTest Then Dbg "SkipCatCheck"
                 GoTo SkipCatCheck
             End If
@@ -1320,37 +1341,39 @@ SkipCatCheck:
     
     With SignResult
         
+        .FullMessage = ErrMessageText(ReturnVal)
+        
         Select Case ReturnVal
         Case 0
             .ShortMessage = "Legit signature."
             .isSigned = True
         Case TRUST_E_SUBJECT_NOT_TRUSTED
             .ShortMessage = "TRUST_E_SUBJECT_NOT_TRUSTED"
-            'The user clicked "No" when asked to install and run.
+            If 0 = Len(.FullMessage) Then .FullMessage = "The user clicked ""No"" when asked to install and run."
         Case TRUST_E_PROVIDER_UNKNOWN
             .ShortMessage = "TRUST_E_PROVIDER_UNKNOWN"
-            'The trust provider is not recognized on this system.
+            If 0 = Len(.FullMessage) Then .FullMessage = "The trust provider is not recognized on this system."
         Case TRUST_E_ACTION_UNKNOWN
             .ShortMessage = "TRUST_E_ACTION_UNKNOWN"
-            'The trust provider does not support the specified action.
+            If 0 = Len(.FullMessage) Then .FullMessage = "The trust provider does not support the specified action."
         Case TRUST_E_SUBJECT_FORM_UNKNOWN
             .ShortMessage = "TRUST_E_SUBJECT_FORM_UNKNOWN"
-            'This can happen when WinVerifyTrust is called on an unknown file type
+            If 0 = Len(.FullMessage) Then .FullMessage = "This can happen when WinVerifyTrust is called on an unknown file type."
         Case CERT_E_REVOKED
             .ShortMessage = "CERT_E_REVOKED"
-            'A certificate was explicitly revoked by its issuer.
+            If 0 = Len(.FullMessage) Then .FullMessage = "A certificate was explicitly revoked by its issuer."
             .isSigned = True
         Case CERT_E_EXPIRED
             .ShortMessage = "CERT_E_EXPIRED"
-            'A required certificate is not within its validity period when verifying against the current system clock or the timestamp in the signed file
+            If 0 = Len(.FullMessage) Then .FullMessage = "A required certificate is not within its validity period when verifying against the current system clock or the timestamp in the signed file."
             .isSigned = True
         Case CERT_E_PURPOSE
             .ShortMessage = "CERT_E_PURPOSE"
-            'The certificate is being used for a purpose other than one specified by the issuing CA.
+            If 0 = Len(.FullMessage) Then .FullMessage = "The certificate is being used for a purpose other than one specified by the issuing CA."
             .isSigned = True
         Case TRUST_E_BAD_DIGEST
             .ShortMessage = "TRUST_E_BAD_DIGEST"
-            'This will happen if the file has been modified or corruped.
+            If 0 = Len(.FullMessage) Then .FullMessage = "This will happen if the file has been modified or corruped."
             .isSigned = True
         Case TRUST_E_NOSIGNATURE
             .isSigned = False
@@ -1362,100 +1385,144 @@ SkipCatCheck:
                 .ShortMessage = "TRUST_E_NOSIGNATURE: Not signed"
             Else
                 .ShortMessage = "TRUST_E_NOSIGNATURE: Not valid signature"
-                'The signature was not valid or there was an error opening the file.
+                If 0 = Len(.FullMessage) Then .FullMessage = "The signature was not valid or there was an error opening the file."
             End If
         Case TRUST_E_EXPLICIT_DISTRUST
             .ShortMessage = "TRUST_E_EXPLICIT_DISTRUST: Signature is forbidden"
-            'The signature Is present, but specifically disallowed
+            If 0 = Len(.FullMessage) Then .FullMessage = "The signature Is present, but specifically disallowed."
             'The hash that represents the subject or the publisher is not allowed by the admin or user.
             .isSigned = True
         Case CRYPT_E_SECURITY_SETTINGS
             .ShortMessage = "CRYPT_E_SECURITY_SETTINGS"
-            ' The hash that represents the subject or the publisher was not explicitly trusted by the admin and the
-            ' admin policy has disabled user trust. No signature, publisher or time stamp errors.
+            If 0 = Len(.FullMessage) Then .FullMessage = "The hash that represents the subject or the publisher was not explicitly trusted" & _
+            "by the admin and the admin policy has disabled user trust. No signature, publisher or time stamp errors."
             .isSigned = True
         Case CERT_E_UNTRUSTEDROOT
             .ShortMessage = "CERT_E_UNTRUSTEDROOT: Verified, but self-signed"
-            'A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.
+            If 0 = Len(.FullMessage) Then .FullMessage = "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider."
             .isSelfSigned = True
             .isSigned = True
         Case CERT_E_CRITICAL
             .ShortMessage = "CERT_E_CRITICAL"
-            'A certificate contains an unknown extension that is marked "critical."
+            If 0 = Len(.FullMessage) Then .FullMessage = "A certificate contains an unknown extension that is marked ""critical."""
             .isSigned = True
         Case CERT_E_INVALID_NAME
             .ShortMessage = "CERT_E_INVALID_NAME"
-            'The certificate has a name that is not valid. The name is either not included in the permitted list or is explicitly excluded.
+            If 0 = Len(.FullMessage) Then .FullMessage = "The certificate has a name that is not valid. The name is either not included in the permitted list or is explicitly excluded."
             .isSigned = True
         Case CERT_E_INVALID_POLICY
             .ShortMessage = "CERT_E_INVALID_POLICY"
-            'The certificate has a policy that is not valid.
+            If 0 = Len(.FullMessage) Then .FullMessage = "The certificate has a policy that is not valid."
             .isSigned = True
         Case CERT_E_ISSUERCHAINING
             .ShortMessage = "CERT_E_ISSUERCHAINING"
-            'A parent of a given certificate in fact did not issue that child certificate.
+            If 0 = Len(.FullMessage) Then .FullMessage = "A parent of a given certificate in fact did not issue that child certificate."
             .isSigned = True
         Case CERT_E_MALFORMED
             .ShortMessage = "CERT_E_MALFORMED"
-            'A certificate is missing or has an empty value for an important field, such as a subject or issuer name.
+            If 0 = Len(.FullMessage) Then .FullMessage = "A certificate is missing or has an empty value for an important field, such as a subject or issuer name."
         Case CERT_E_PATHLENCONST
             .ShortMessage = "CERT_E_PATHLENCONST"
-            'A path length constraint in the certification chain has been violated.
+            If 0 = Len(.FullMessage) Then .FullMessage = "A path length constraint in the certification chain has been violated."
             .isSigned = True
         Case CERT_E_UNTRUSTEDCA
             .ShortMessage = "CERT_E_UNTRUSTEDCA"
-            'A certification chain processed correctly, but one of the CA certificates is not trusted by the policy provider.
+            If 0 = Len(.FullMessage) Then .FullMessage = "A certification chain processed correctly, but one of the CA certificates is not trusted by the policy provider."
             .isSigned = True
             .isSelfSigned = True
         Case CRYPT_E_NO_REVOCATION_CHECK
             .ShortMessage = "CRYPT_E_NO_REVOCATION_CHECK"
-            'The revocation function was unable to check revocation for the certificate.
+            If 0 = Len(.FullMessage) Then .FullMessage = "The revocation function was unable to check revocation for the certificate."
             .isSigned = True
         Case TRUST_E_BASIC_CONSTRAINTS
             .ShortMessage = "TRUST_E_BASIC_CONSTRAINTS"
-            'The basic constraint extension of a certificate has not been observed.
+            If 0 = Len(.FullMessage) Then .FullMessage = "The basic constraint extension of a certificate has not been observed."
             .isSigned = True
         Case TRUST_E_CERT_SIGNATURE
             .ShortMessage = "TRUST_E_CERT_SIGNATURE"
-            'The signature of the certificate cannot be verified.
+            If 0 = Len(.FullMessage) Then .FullMessage = "The signature of the certificate cannot be verified."
         Case TRUST_E_COUNTER_SIGNER
             .ShortMessage = "TRUST_E_COUNTER_SIGNER"
-            'One of the counter signatures was not valid.
+            If 0 = Len(.FullMessage) Then .FullMessage = "One of the counter signatures was not valid."
             .isSigned = True
         Case TRUST_E_FINANCIAL_CRITERIA
             .ShortMessage = "TRUST_E_FINANCIAL_CRITERIA"
-            'The certificate does not meet or contain the Authenticode financial extensions.
+            If 0 = Len(.FullMessage) Then .FullMessage = "The certificate does not meet or contain the Authenticode financial extensions."
             .isSigned = True
         Case TRUST_E_NO_SIGNER_CERT
             .ShortMessage = "TRUST_E_NO_SIGNER_CERT"
-            'The certificate for the signer of the message is not valid or not found.
+            If 0 = Len(.FullMessage) Then .FullMessage = "The certificate for the signer of the message is not valid or not found."
         Case TRUST_E_SYSTEM_ERROR
             .ShortMessage = "TRUST_E_SYSTEM_ERROR"
-            'A system-level error occurred while verifying trust.
+            If 0 = Len(.FullMessage) Then .FullMessage = "A system-level error occurred while verifying trust."
         Case TRUST_E_TIME_STAMP
             .ShortMessage = "TRUST_E_TIME_STAMP"
-            'The time stamp signature or certificate could not be verified or is malformed.
+            If 0 = Len(.FullMessage) Then .FullMessage = "The time stamp signature or certificate could not be verified or is malformed."
             .isSigned = True
+        Case CRYPT_E_BAD_MSG
+            .ShortMessage = "CRYPT_E_BAD_MSG"
+            If 0 = Len(.FullMessage) Then .FullMessage = "Not a cryptographic message or the cryptographic message is not formatted correctly."
+            .isSigned = True
+        Case TRUST_E_FAIL
+            .ShortMessage = "TRUST_E_FAIL"
+            If 0 = Len(.FullMessage) Then .FullMessage = "Generic trust failure."
+            .isSigned = True
+        Case CERT_E_CHAINING
+            .ShortMessage = "CERT_E_CHAINING"
+            If 0 = Len(.FullMessage) Then .FullMessage = "A certificate chain could not be built to a trusted root authority."
+            .isSigned = True
+        Case CERT_E_UNTRUSTEDTESTROOT
+            .ShortMessage = "CERT_E_UNTRUSTEDTESTROOT"
+            If 0 = Len(.FullMessage) Then .FullMessage = "The certification path terminates with the test root that is not trusted with the current policy settings."
+            .isSigned = True
+        Case CERT_E_WRONG_USAGE
+            .ShortMessage = "CERT_E_WRONG_USAGE"
+            If 0 = Len(.FullMessage) Then .FullMessage = "The certificate is not valid for the requested usage."
+            .isSigned = True
+        Case CERT_E_CN_NO_MATCH
+            .ShortMessage = "CERT_E_CN_NO_MATCH"
+            If 0 = Len(.FullMessage) Then .FullMessage = "The certificate's CN name does not match the passed value."
+            .isSigned = True
+        Case CERT_E_REVOCATION_FAILURE
+            .ShortMessage = "CERT_E_REVOCATION_FAILURE"
+            If 0 = Len(.FullMessage) Then .FullMessage = "The revocation process could not continue - the certificates could not be checked."
+            .isSigned = True
+        Case PERSIST_E_NOTSELFSIZING
+            .ShortMessage = "PERSIST_E_NOTSELFSIZING"
+            If 0 = Len(.FullMessage) Then .FullMessage = "This object does not read and write self-sizing data."
+        Case DIGSIG_E_DECODE
+            .ShortMessage = "DIGSIG_E_DECODE"
+            If 0 = Len(.FullMessage) Then .FullMessage = "Error due to problem in ASN.1 decoding process."
+            .isSigned = True
+        Case CERT_E_ROLE
+            .ShortMessage = "CERT_E_ROLE"
+            If 0 = Len(.FullMessage) Then .FullMessage = "A certificate that can only be used as an end entity is being used as a CA or vice versa."
+            .isSigned = True
+        Case PERSIST_E_SIZEDEFINITE
+            .ShortMessage = "PERSIST_E_SIZEDEFINITE"
+            If 0 = Len(.FullMessage) Then .FullMessage = "The size of the data could not be determined."
+        Case DIGSIG_E_CRYPTO
+            .ShortMessage = "DIGSIG_E_CRYPTO"
+            If 0 = Len(.FullMessage) Then .FullMessage = "Unspecified cryptographic failure."
         Case Else
             .ShortMessage = "Other error. Code = " & ReturnVal & ". LastDLLError = " & Err.LastDllError
-            'The UI was disabled in dwUIChoice or the admin policy has disabled user trust. ReturnVal contains the publisher or time stamp chain error.
         End Select
         
         ' Other error codes can be found on MSDN:
         ' https://msdn.microsoft.com/en-us/library/windows/desktop/aa377188%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
         ' https://msdn.microsoft.com/en-us/library/ee488436.aspx
+        ' https://winprotocoldoc.blob.core.windows.net/productionwindowsarchives/MS-ERREF/%5BMS-ERREF%5D-170601.pdf
         ' This is not an exhaustive list.
         
-        .FullMessage = ErrMessageText(ReturnVal)
         .ReturnCode = ReturnVal
         .isLegit = ReturnFlag
         SignVerify = .isLegit
         
-        If .isSigned And Not .isSignedByCert Then .isEmbedded = True
+        If .isSigned And Not .isSignedByCert Then .IsEmbedded = True
         
-        If Not .isEmbedded Then
+        If Not .IsEmbedded Then
             'force checking the presence of internal signature
-            If (Flags And SV_CheckEmbeddedPresence) Then .isEmbedded = IsInternalSignPresent(hFile)
+            If (Flags And SV_CheckEmbeddedPresence) Then .IsEmbedded = IsInternalSignPresent(hFile)
         End If
         
         If .isSigned Then
@@ -1709,6 +1776,7 @@ Private Sub GetSignerInfo(StateData As Long, SignResult As SignResult_TYPE, Flag
                         .DateCertBegin = FileTime_To_VT_Date(CertInfo.NotBefore)
                         Stady = 14
                         .DateCertExpired = FileTime_To_VT_Date(CertInfo.NotAfter)
+                        .HashFinalCert = ExtractPropertyFromCertificateByID(pCertificate, CERT_HASH_PROP_ID)
                     End If
                     
                     Stady = 15
@@ -2209,7 +2277,7 @@ End Sub
 
 Public Function IsMicrosoftCertHash(hash As String) As Boolean
     Static isInit As Boolean
-    Static Hashes(18) As String
+    Static Hashes(22) As String
     Dim i As Long
     
     If Not isInit Then
@@ -2254,6 +2322,14 @@ Public Function IsMicrosoftCertHash(hash As String) As Boolean
         Hashes(17) = "7CA9013D43721551E987380B3EAE4B442DC037EA"
         'Microsoft EV RSA Root Certificate Authority 2017; 3AD38A39CE4E88DCDF46995E969FC339D0799858; 0B94EC93356997EC26556D14594A239CD79E1DC03D74CFCBA30DB0FF8BE4C9EB7CC0A69BEF3EB2FD274939571C24CD3E; 353A2DD6EFC2500300D7AA32A4528390
         Hashes(18) = "3AD38A39CE4E88DCDF46995E969FC339D0799858"
+        'Microsoft EV RSA Root Certificate Authority 2017; ADA06E72393CCBE873648CF122A91C35EF4C984D; F798741247C5B92B1EA1B330AED475DA6F92325923093D26CB435087D35201655C2C5A377230304A603752E47445A241; 353A2DD6EFC2500300D7AA32A4528390
+        Hashes(19) = "ADA06E72393CCBE873648CF122A91C35EF4C984D"
+        'Microsoft ECC Root Certificate Authority 2017; 999A64C37FF47D9FAB95F14769891460EEC4C3C5; 255ECFBA8C9FFCE74A3904D84B31FF4B1CBE35B5404EBEFE5D51FB96C4FD02D5CD82F8FEB410F01055BB4FB271DF8ECA; B23E63132203E40391A3197668C3174D
+        Hashes(20) = "999A64C37FF47D9FAB95F14769891460EEC4C3C5"
+        'Microsoft RSA Root Certificate Authority 2017; 73A5E64A3BFF8316FF0EDCCC618A906E4EAE4D74; 4133C4E60FA183EE5E7A4416C5D54C3392C56C2F572829BF59347467BAB07BCDCF840162988341D2D284FBD856DF53B1; 109D7393793BCA32403175DC127E0EC1
+        Hashes(21) = "73A5E64A3BFF8316FF0EDCCC618A906E4EAE4D74"
+        'Microsoft EV ECC Root Certificate Authority 2017; 6B1937ABFD64E1E40DAF2262A27857C015D6228D; 174347FA325E89B84EF66CE9F54EF0F28F7BA71AB1D510D46852C0414F03034C2875D7CD4FA8699BCE91E37A3162B792; BD0202AC3BAFB63DE0402F2F3A236CCD
+        Hashes(22) = "6B1937ABFD64E1E40DAF2262A27857C015D6228D"
         
         'Root Agency (MD5 digest); FEE449EE0E3965A5246F000E87FDE2A065FD89D4
         
@@ -2724,10 +2800,10 @@ Private Sub WriteError(ByVal ErrObj As ErrObject, SignResult As SignResult_TYPE,
                 'SignResult.ShortMessage = "Digital signature is present, but damaged (probably, file is patched)." ' overwrite
             
                 'ErrReport = ErrReport & vbCrLf & "Digital signature is present, but damaged (probably, file is patched)." & ": " & SignResult.FilePathVerified
-                'ErrReport = ErrReport & vbCrLf & Translate(1866) & ": " & SignResult.FilePathVerified & GetFileMD5(SignResult.FilePathVerified)
+                'ErrReport = ErrReport & vbCrLf & Translate(1866) & ": " & SignResult.FilePathVerified & GetFileCheckSum(SignResult.FilePathVerified)
             
                 .isSigned = True
-                .isEmbedded = True
+                .IsEmbedded = True
             End If
         End With
     Else
@@ -2847,7 +2923,7 @@ Public Sub WinTrustVerifyNode(sKey$)
     End If
     'Verifying file signature of:
     Status Translate(973) & " " & sFile
-    'sMD5 = GetFileMD5(sFile)
+    'sMD5 = GetFileCheckSum(sFile)
     
     Select Case VerifyFileSignature(sFile)
         Case 1: sIcon = "wintrust1"

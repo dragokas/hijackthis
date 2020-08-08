@@ -293,7 +293,7 @@ Public Sub CheckLSP()
                         If Not oUnknFile.Exists(sFile) Then
                             oUnknFile.Add sFile, 0
                             sHit = "O10 - Unknown file in Winsock LSP: " & sFile
-                            If bMD5 Then sHit = sHit & GetFileMD5(sFile)
+                            If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                             If Not IsOnIgnoreList(sHit) Then
                                 With result
                                     .Section = "O10"
@@ -350,7 +350,7 @@ Public Sub CheckLSP()
                         If Not oUnknFile.Exists(sFile) Then
                             oUnknFile.Add sFile, 0
                             sHit = "O10 - Unknown file in Winsock LSP: " & sFile
-                            If bMD5 Then sHit = sHit & GetFileMD5(sFile)
+                            If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                             If Not IsOnIgnoreList(sHit) Then
                                 With result
                                     .Section = "O10"
@@ -515,7 +515,7 @@ End Sub
 '    Do
 '        If Reg.KeyExists(HKEY_LOCAL_MACHINE, sKeyNameSpace & "\Catalog_Entries\" & String$(12 - Len(CStr(i)), "0") & CStr(i)) Then
 '            If i > J Then
-'                Reg.RenameKey HKEY_LOCAL_MACHINE, sKeyNameSpace & "\Catalog_Entries\" & String$(12 - Len(CStr(i)), "0") & CStr(i), sKeyNameSpace & "\Catalog_Entries\" & String$(12 - Len(CStr(J)), "0") & CStr(J)
+'                Reg.RenameKey HKEY_LOCAL_MACHINE, sKeyNameSpace & "\Catalog_Entries\" & String$(12 - Len(CStr(i)), "0") & CStr(i), String$(12 - Len(CStr(J)), "0") & CStr(J)
 '            End If
 '            J = J + 1
 '        Else
@@ -535,7 +535,7 @@ End Sub
 '    Do
 '        If Reg.KeyExists(HKEY_LOCAL_MACHINE, sKeyProtocol & "\Catalog_Entries\" & String$(12 - Len(CStr(i)), "0") & CStr(i)) Then
 '            If i > J Then
-'                Reg.RenameKey HKEY_LOCAL_MACHINE, sKeyProtocol & "\Catalog_Entries\" & String$(12 - Len(CStr(i)), "0") & CStr(i), sKeyProtocol & "\Catalog_Entries\" & String$(12 - Len(CStr(J)), "0") & CStr(J)
+'                Reg.RenameKey HKEY_LOCAL_MACHINE, sKeyProtocol & "\Catalog_Entries\" & String$(12 - Len(CStr(i)), "0") & CStr(i), String$(12 - Len(CStr(J)), "0") & CStr(J)
 '            End If
 '            J = J + 1
 '        Else

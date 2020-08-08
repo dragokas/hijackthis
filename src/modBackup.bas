@@ -188,6 +188,7 @@ Public Sub InitBackupIni()
 End Sub
 
 Public Sub BackupFlush()
+    If Not bMakeBackup Then Exit Sub
     If Not tBackupList.cLastCMD Is Nothing Then
         tBackupList.cLastCMD.Flush
     End If
@@ -220,6 +221,14 @@ Public Sub IncreaseFixID()
     cBackupIni.WriteParam "main", "LastFixID", tBackupList.LastFixID
 End Sub
 
+'Public Sub MakeBackupEx(result As SCAN_RESULT)
+'    If Not bMakeBackup Then Exit Sub
+'    IncreaseFixID
+'    MakeBackup result
+'    BackupFlush
+'    g_bBackupMade = True
+'End Sub
+
 Public Function MakeBackup(result As SCAN_RESULT) As Boolean
     On Error GoTo ErrorHandler:
     
@@ -231,6 +240,7 @@ Public Function MakeBackup(result As SCAN_RESULT) As Boolean
     Dim MyReg As FIX_REG_KEY
     
     MakeBackup = True
+    If Not bMakeBackup Then Exit Function
     
     'if no backup required / possible
     If result.NoNeedBackup Then Exit Function
@@ -246,6 +256,7 @@ Public Function MakeBackup(result As SCAN_RESULT) As Boolean
             If AryPtr(.File) Then
                  For i = 0 To UBound(.File)
                     ActionMask = .File(i).ActionType
+                    ActionMask = ActionMask And Not USE_FEATURE_DISABLE
                  
                     If (.File(i).ActionType And REMOVE_FILE) Then
                         MakeBackup = MakeBackup And BackupFile(result, .File(i).Path)
@@ -307,6 +318,7 @@ Public Function MakeBackup(result As SCAN_RESULT) As Boolean
             If AryPtr(.Reg) Then
                 For i = 0 To UBound(.Reg)
                     ActionMask = .Reg(i).ActionType
+                    ActionMask = ActionMask And Not USE_FEATURE_DISABLE
                     
                     If .Reg(i).ActionType And RESTORE_VALUE_INI Then
                         lRegID = BackupAllocReg(.Reg(i))
@@ -362,11 +374,13 @@ Public Function MakeBackup(result As SCAN_RESULT) As Boolean
         End If
         
         If .CureType And SERVICE_BASED Then
-            If AryPtr(.service) Then
-                For i = 0 To UBound(.service)
-                    With .service(i)
-                        If Not (.RunState = SERVICE_STATE_UNKNOWN Or .RunState = SERVICE_STOP_PENDING Or .RunState = SERVICE_STOPPED) Then
-                            BackupServiceState result, .ServiceName
+            If AryPtr(.Service) Then
+                For i = 0 To UBound(.Service)
+                    With .Service(i)
+                        If ((.ActionType And DELETE_SERVICE) Or (.ActionType And DISABLE_SERVICE)) Then
+                            'If Not (.RunState = SERVICE_STATE_UNKNOWN Or .RunState = SERVICE_STOP_PENDING Or .RunState = SERVICE_STOPPED) Then
+                                BackupServiceState result, .ServiceName
+                            'End If
                         End If
                     End With
                 Next
@@ -554,7 +568,11 @@ End Function
 
 Public Function BackupDateToDate(dBackupDate As String) As Date
     On Error GoTo ErrorHandler
-    BackupDateToDate = CDateEx(Replace$(dBackupDate, "  -  ", " "), 1, 6, 9, 12, 15) 'yyyy/MM/dd HH:nn
+    If InStr(dBackupDate, " - ") <> 0 Then
+        BackupDateToDate = CDateEx(Replace$(dBackupDate, "  -  ", " "), 1, 6, 9, 12, 15)    'yyyy/MM/dd HH:nn
+    Else
+        BackupDateToDate = CDateEx(dBackupDate, 1, 6, 9)                                    'yyyy/MM/dd
+    End If
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "BackupDateToDate", dBackupDate
@@ -610,7 +628,7 @@ Private Function BackupAllocFile(sFilePath As String, out_FileID As Long, Option
         tBackupList.cLastCMD.WriteParam out_FileID, "name", EnvironUnexpand(sFilePath)
     End If
     
-    tBackupList.cLastCMD.WriteParam out_FileID, "hash", GetFileMD5(sFilePath, , True)
+    tBackupList.cLastCMD.WriteParam out_FileID, "hash", GetFileCheckSum(sFilePath, , True)
     
     Exit Function
 ErrorHandler:
@@ -923,7 +941,6 @@ Public Function ABR_CreateBackup(bForceIgnoreDays As Boolean) As Boolean
     Dim dToday As Date
     Dim i As Long
     Dim bBackupRequired As Boolean
-    Dim ResID As Long
     Dim hFile As Long
     Dim bLowSpace As Boolean
     Dim sCurDate As String
@@ -1008,12 +1025,6 @@ Public Function ABR_CreateBackup(bForceIgnoreDays As Boolean) As Boolean
         If Proc.ProcessRun(sUtilPath, "/days:" & g_Backup_Erase_Every_Days, , vbHide) Then
             Proc.WaitForTerminate , , , 60000
             
-            If OSver.IsWin64 Then
-                ResID = 304
-            Else
-                ResID = 303
-            End If
-            
             If FolderExists(sBackup_Folder) Then
                 bResult1 = True
             Else
@@ -1022,12 +1033,9 @@ Public Function ABR_CreateBackup(bForceIgnoreDays As Boolean) As Boolean
                 Exit Function
             End If
             
-            ' unpacking restore.exe
-            bResult2 = UnpackResource(ResID, sBackup_Folder & "\restore.exe")
-            
             'note: in contrast to UVs, HJT creates identical restore.exe and restore_x64.exe files
             If OSver.IsWin64 Then
-                Call UnpackResource(ResID, sBackup_Folder & "\restore_x64.exe")
+                FileCopyW sBackup_Folder & "\restore_x64.exe", sBackup_Folder & "\restore.exe", True
             End If
             
             ' add to HJT backup list
@@ -1093,7 +1101,7 @@ End Sub
 
 Public Sub ABR_RunBackup()
     On Error GoTo ErrorHandler:
-    'DANGER! Will crash program! See CreateRegistryBackup()
+    'DANGER! Will crash program! See ABR_CreateBackup()
     
     '
     ' WARNING! Manual in case: backup function is stop working !!!
@@ -1127,15 +1135,11 @@ Public Function ABR_RecoverFromBackup(sFolderDateName As String, Optional out_No
         Exit Function
     End If
     
-    If OSver.IsWin64 And FileExists(sRestorer & "\restore_x64.exe") Then
-        sRestorer = sRestorer & "\" & "restore_x64.exe"
-        
-    ElseIf FileExists(sRestorer & "\restore.exe") Then
-        sRestorer = sRestorer & "\" & "restore.exe"
+    sRestorer = sRestorer & "\" & IIf(OSver.IsWin64, "restore_x64.exe", "restore.exe")
     
-    Else
-        UnpackResource IIf(OSver.IsWin64, 304, 303), sRestorer & "\restore.exe"
-        sRestorer = sRestorer & "\" & "restore.exe"
+    If Not FileExists(sRestorer) Then
+        MsgBoxW "Cannot restore from this backup!" & vbCrLf & "Required file: '" & sRestorer & "' is missing!", vbCritical
+        Exit Function
     End If
     
     'If MsgBoxW("Are you sure, you want to recover registry saved on: [] ? System will be rebooted automatically.", vbQuestion Or vbYesNo) = vbNo Then Exit Sub
@@ -1307,6 +1311,9 @@ Private Function ABR_RestoreByBackupID(lBackupID As Long, Optional out_NoBackup 
     BackupExtractCommand Cmd
     If Cmd.ObjType = OBJ_ABR_BACKUP Then
         sBackupDate = Cmd.Args
+        If Format(BackupDateToDate(sBackupDate), "yyyy-mm-dd") <> Format(Now(), "yyyy-mm-dd") Then
+            ABR_RunBackup 'one more shapshoot in case restore will fail
+        End If
         ABR_RestoreByBackupID = ABR_RecoverFromBackup(sBackupDate, out_NoBackup)
     End If
     Exit Function
@@ -2383,7 +2390,7 @@ Private Function BackupValidateFileHash(lBackupID As Long, lFileID As Long) As B
         End If
     End If
     sSavedHash = tBackupList.cLastCMD.ReadParam(lFileID, "hash")
-    sRealHash = GetFileMD5(sBackupFile, , True)
+    sRealHash = GetFileCheckSum(sBackupFile, , True)
     If StrComp(sSavedHash, sRealHash, vbTextCompare) = 0 Then
         BackupValidateFileHash = True
     Else

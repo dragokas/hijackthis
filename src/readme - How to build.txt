@@ -16,7 +16,7 @@ You can find it at: https://upx.github.io/
 Download http://dsrt.dyndns.org/files/abr.zip and unpack exe-files to Tools\ABR folder.
 
 5. Go to Tools\7zip.
-Place here console version of 7zip. Rename it into 7za.exe
+Place here standalone console version of 7zip.
 You can find it at: http://www.7-zip.org/download.html
 
 6. (optional) Digital signature:

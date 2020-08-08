@@ -1,4 +1,5 @@
-﻿Version history:
+﻿
+Version history:
 
 1. HiJackThis
 2. StartupList
@@ -9,6 +10,70 @@
 ===========================================================
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
+
+[2.9.0.26] - Aug 5, 2020
+- Added partial compatibility when running as a limited user.
+
+[2.9.0.25] - Aug 2, 2020
+Databases:
+ - Updated O22, O23 bases (MS Office, MS Visual Studio are also whitelisted if possible).
+ - O22 - Added the ability to analyze Microsoft rundll32 based tasks.
+ - Updated names of Windows editions.
+ - Appended well-known DNS lists.
+ - Reference IE StartPage, SearchPage, Search & Custom Assistant are replaced with msn.com or removed due to broken links.
+
+Functional:
+ - Added checking of Windows / user startup-shutdown scripts policies.
+ - Added O18 - Printer Port: detecting suspicious file ports for Spooler Shadow Jobs (thanks to Alex Ionescu for the article and NickM for helping with the fix).
+ - When you request to restore from an ABR backup, a new backup is automatically created to enable rollback (may help to recover from a non-bootable state).
+ - Added calculation of files SHA1 hash; you can switch between SHA1 / MD5 in the settings.
+ - New switch: /sha1 - calculate SHA1 hash of files.
+ - Context menu: added "Disable / Enable" item for services and tasks.
+
+Fixes:
+ - O22 - added compatibility with tasks in UTF16 encoding.
+ - Uninstall Manager: Fixed the "Save List" button (thanks to Severnyj for the notification).
+ - Improved ini file disinfection functions, added Unicode format processing.
+ - Improved registry backup functions, QWord support.
+ - The function to get the file size sometimes returned 0 for files from System32.
+ - Context menu is no longer blocked during ReScan.
+
+Interface:
+ - Font for scan results changed "10" => "9" (Bold).
+ - Added left and right indents in the "About ..." menu windows.
+ - "About" - "Version history": fixed trimming of the end of the text.
+ - The scrolling position is no longer reset at the end of the scan.
+ - Fixed the transparency of the program icon.
+
+Other:
+ - Updated internal manual on switches.
+ - All internet links are replaced with https.
+ - Added https protocol to the verification criteria.
+ - R4 - PendingFileRenameOperations disabled in /startupscan mode due to false positives.
+
+[2.9.0.23] (Nightly) - June 09, 2020
+ - New certificates are added
+ - OSinfo: Windows Embedded is now detected and informed in log
+ - OSinfo: new OS Edition names are added
+ - Strict rules for HJT own command line parser
+ - Fixed ignore list broken due to Windows 10 specific update mechanism
+ - Some fixes on GUI, reboot, file access, path find, error description, HJT close, terminate process, shortcuts logic
+ - New private command line keys for donators are added:
+	* Silently check system using 3rd party tools such as from Sysinternals and NirSoft
+	* Automatically remove items detected on Virustotal if found
+	* Selective silent HotFixes (like clear Hosts, Policies, bad certificates and so)
+	* Basic anti-rootkit
+ - New public command line keys are added:
+	* /noBackup - disable backup creation during the fix
+	* /install /autostart d:X - install HJT in task scheduler to autorun with X sec. delay
+	* /instDir:"PATH" - alternate installation path for HJT (by default: "%ProgramFiles(x86)%\HiJackThis Fork").
+	* /noShortcuts - disable creation of shortcuts during HJT installation via /install
+	* /! - stop command line keys parsing. Everything found after this key considers as keys for HJT autorun (instead of default /startupscan).
+ - Increased GUI max lines limit for O23 up to 750 items (default for other section is 250).
+ - Added detection of: ...\Policies\Explorer\DisallowRun
+ - O23 - Service Backup is improved.
+ - O25 - Revert Backup is fixed.
+ - Windows 7 EOS (and future Win 8/8.1 EOS) detection are added to O22 - Tasks
 
 [2.9.0.18] - Jan 14, 2019
 Fixed bug in loading HJT due to incompatible icon for 32-bit OS.
@@ -1389,4 +1454,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                          
+                                

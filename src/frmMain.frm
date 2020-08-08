@@ -1,12 +1,12 @@
 VERSION 5.00
 Begin VB.Form frmMain 
    ClientHeight    =   7380
-   ClientLeft      =   4365
+   ClientLeft      =   4368
    ClientTop       =   1500
-   ClientWidth     =   8775
+   ClientWidth     =   8772
    BeginProperty Font 
       Name            =   "Tahoma"
-      Size            =   8.25
+      Size            =   8.4
       Charset         =   204
       Weight          =   400
       Underline       =   0   'False
@@ -17,17 +17,23 @@ Begin VB.Form frmMain
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    ScaleHeight     =   7380
-   ScaleWidth      =   8775
+   ScaleWidth      =   8772
    StartUpPosition =   2  'CenterScreen
+   Begin VB.Timer tmrRunScan 
+      Enabled         =   0   'False
+      Interval        =   25
+      Left            =   6840
+      Top             =   480
+   End
    Begin VB.Timer Timer1 
       Enabled         =   0   'False
-      Left            =   6480
+      Left            =   6120
       Top             =   480
    End
    Begin VB.Timer tmrStart 
       Enabled         =   0   'False
       Interval        =   50
-      Left            =   6960
+      Left            =   6480
       Top             =   480
    End
    Begin VB.Frame fraOther 
@@ -100,7 +106,7 @@ Begin VB.Form frmMain
          Caption         =   "Focus"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.4
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -125,7 +131,7 @@ Begin VB.Form frmMain
          Caption         =   "Scan"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.4
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -158,8 +164,8 @@ Begin VB.Form frmMain
       Height          =   975
       Left            =   7440
       Picture         =   "frmMain.frx":4B2A
-      ScaleHeight     =   975
-      ScaleWidth      =   1335
+      ScaleHeight     =   972
+      ScaleWidth      =   1332
       TabIndex        =   94
       TabStop         =   0   'False
       Top             =   -20
@@ -176,7 +182,7 @@ Begin VB.Form frmMain
    Begin VB.Frame fraConfig 
       BeginProperty Font 
          Name            =   "Tahoma"
-         Size            =   8.25
+         Size            =   8.4
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -193,7 +199,7 @@ Begin VB.Form frmMain
          Caption         =   "Misc Tools"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.4
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -212,7 +218,7 @@ Begin VB.Form frmMain
          Caption         =   "Backups"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.4
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -231,7 +237,7 @@ Begin VB.Form frmMain
          Caption         =   "Ignorelist"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.4
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -250,7 +256,7 @@ Begin VB.Form frmMain
          Caption         =   "Settings"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.4
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -276,6 +282,17 @@ Begin VB.Form frmMain
          Top             =   -4080
          Visible         =   0   'False
          Width           =   8055
+         Begin VB.VScrollBar vscMiscTools 
+            Height          =   4095
+            LargeChange     =   20
+            Left            =   7680
+            Max             =   100
+            SmallChange     =   20
+            TabIndex        =   57
+            TabStop         =   0   'False
+            Top             =   0
+            Width           =   255
+         End
          Begin VB.Frame fraMiscToolsScroll 
             BorderStyle     =   0  'None
             Height          =   12015
@@ -287,7 +304,7 @@ Begin VB.Form frmMain
                Caption         =   "Uninstall"
                BeginProperty Font 
                   Name            =   "Tahoma"
-                  Size            =   8.25
+                  Size            =   8.4
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -324,7 +341,7 @@ Begin VB.Form frmMain
                Caption         =   "Plugins"
                BeginProperty Font 
                   Name            =   "Tahoma"
-                  Size            =   8.25
+                  Size            =   8.4
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -380,7 +397,7 @@ Begin VB.Form frmMain
                Caption         =   "System tools"
                BeginProperty Font 
                   Name            =   "Tahoma"
-                  Size            =   8.25
+                  Size            =   8.4
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -549,7 +566,7 @@ Begin VB.Form frmMain
                Caption         =   "StartupList"
                BeginProperty Font 
                   Name            =   "Tahoma"
-                  Size            =   8.25
+                  Size            =   8.4
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -573,11 +590,11 @@ Begin VB.Form frmMain
                   AutoSize        =   -1  'True
                   BackStyle       =   0  'Transparent
                   Caption         =   $"frmMain.frx":9180
-                  Height          =   1035
+                  Height          =   1032
                   Left            =   2520
                   TabIndex        =   114
-                  Top             =   0
-                  Width           =   4635
+                  Top             =   240
+                  Width           =   4632
                   WordWrap        =   -1  'True
                End
             End
@@ -585,7 +602,7 @@ Begin VB.Form frmMain
                Caption         =   "Update check"
                BeginProperty Font 
                   Name            =   "Tahoma"
-                  Size            =   8.25
+                  Size            =   8.4
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -749,7 +766,7 @@ Begin VB.Form frmMain
                Caption         =   "Testing staff"
                BeginProperty Font 
                   Name            =   "Tahoma"
-                  Size            =   8.25
+                  Size            =   8.4
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -772,24 +789,13 @@ Begin VB.Form frmMain
                End
             End
          End
-         Begin VB.VScrollBar vscMiscTools 
-            Height          =   4095
-            LargeChange     =   20
-            Left            =   7680
-            Max             =   100
-            SmallChange     =   20
-            TabIndex        =   57
-            TabStop         =   0   'False
-            Top             =   0
-            Width           =   255
-         End
       End
       Begin VB.Frame fraConfigTabs 
          BorderStyle     =   0  'None
          Caption         =   "fraConfigMain"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.4
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -813,7 +819,7 @@ Begin VB.Form frmMain
                Caption         =   "Interface"
                BeginProperty Font 
                   Name            =   "Tahoma"
-                  Size            =   8.25
+                  Size            =   8.4
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -825,13 +831,31 @@ Begin VB.Form frmMain
                TabIndex        =   71
                Top             =   3120
                Width           =   7935
+               Begin VB.CheckBox chkFontBold 
+                  Caption         =   "B"
+                  BeginProperty Font 
+                     Name            =   "Tahoma"
+                     Size            =   7.8
+                     Charset         =   204
+                     Weight          =   700
+                     Underline       =   0   'False
+                     Italic          =   0   'False
+                     Strikethrough   =   0   'False
+                  EndProperty
+                  Height          =   280
+                  Left            =   3050
+                  Style           =   1  'Graphical
+                  TabIndex        =   151
+                  Top             =   1380
+                  Width           =   280
+               End
                Begin VB.CheckBox chkFontWholeInterface 
                   Caption         =   "Apply selected font on whole interface"
                   Height          =   255
-                  Left            =   3120
+                  Left            =   3480
                   TabIndex        =   145
                   Top             =   1400
-                  Width           =   4695
+                  Width           =   4332
                End
                Begin VB.ComboBox cmbFontSize 
                   Height          =   315
@@ -894,7 +918,7 @@ Begin VB.Form frmMain
                Caption         =   "Scan area"
                BeginProperty Font 
                   Name            =   "Tahoma"
-                  Size            =   8.25
+                  Size            =   8.4
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -939,7 +963,7 @@ Begin VB.Form frmMain
                Caption         =   "Fix && Backup"
                BeginProperty Font 
                   Name            =   "Tahoma"
-                  Size            =   8.25
+                  Size            =   8.4
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -1059,7 +1083,7 @@ Begin VB.Form frmMain
                Caption         =   "Scan options"
                BeginProperty Font 
                   Name            =   "Tahoma"
-                  Size            =   8.25
+                  Size            =   8.4
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -1071,6 +1095,25 @@ Begin VB.Form frmMain
                TabIndex        =   99
                Top             =   120
                Width           =   3855
+               Begin VB.OptionButton optMd5 
+                  Caption         =   "MD5"
+                  Enabled         =   0   'False
+                  Height          =   252
+                  Left            =   3000
+                  TabIndex        =   150
+                  Top             =   880
+                  Width           =   732
+               End
+               Begin VB.OptionButton optSha1 
+                  Caption         =   "SHA1"
+                  Enabled         =   0   'False
+                  Height          =   252
+                  Left            =   2280
+                  TabIndex        =   149
+                  Top             =   880
+                  Value           =   -1  'True
+                  Width           =   732
+               End
                Begin VB.CheckBox chkConfigStartupScan 
                   Caption         =   "Add HiJackThis to startup"
                   Height          =   270
@@ -1080,14 +1123,14 @@ Begin VB.Form frmMain
                   Top             =   1120
                   Width           =   3255
                End
-               Begin VB.CheckBox chkDoMD5 
-                  Caption         =   "Calculate MD5"
+               Begin VB.CheckBox chkDoCheckSum 
+                  Caption         =   "Calculate Checksum"
                   Height          =   195
                   Left            =   120
                   TabIndex        =   105
-                  ToolTipText     =   "Calculate checksum of files (MD5) is possible"
+                  ToolTipText     =   "Calculate checksum of files if possible"
                   Top             =   900
-                  Width           =   3015
+                  Width           =   2172
                End
                Begin VB.CheckBox chkIgnoreAll 
                   Caption         =   "Ignore ALL Whitelists"
@@ -1126,7 +1169,7 @@ Begin VB.Form frmMain
          Caption         =   "fraConfigBackup"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.4
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -1219,7 +1262,7 @@ Begin VB.Form frmMain
          Caption         =   "Hosts file manager"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.4
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -1299,7 +1342,7 @@ Begin VB.Form frmMain
          Caption         =   "fraConfigIgnorelist"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.4
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -1353,7 +1396,7 @@ Begin VB.Form frmMain
       Caption         =   "Main menu"
       BeginProperty Font 
          Name            =   "Tahoma"
-         Size            =   8.25
+         Size            =   8.4
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -1380,7 +1423,7 @@ Begin VB.Form frmMain
          Enabled         =   0   'False
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.4
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -1398,7 +1441,7 @@ Begin VB.Form frmMain
          Enabled         =   0   'False
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.4
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -1451,7 +1494,7 @@ Begin VB.Form frmMain
          Enabled         =   0   'False
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.4
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -1501,11 +1544,33 @@ Begin VB.Form frmMain
          Width           =   1935
       End
    End
+   Begin VB.TextBox txtNothing 
+      Alignment       =   2  'Center
+      BorderStyle     =   0  'None
+      Enabled         =   0   'False
+      BeginProperty Font 
+         Name            =   "Tahoma"
+         Size            =   8.4
+         Charset         =   204
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   285
+      Left            =   1080
+      Locked          =   -1  'True
+      TabIndex        =   32
+      Text            =   "No suspicious items found!"
+      Top             =   1560
+      Visible         =   0   'False
+      Width           =   4695
+   End
    Begin VB.Frame fraHelp 
       Caption         =   "Help"
       BeginProperty Font 
          Name            =   "Tahoma"
-         Size            =   8.25
+         Size            =   8.4
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -1522,7 +1587,7 @@ Begin VB.Form frmMain
          Caption         =   "History"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.4
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -1541,7 +1606,7 @@ Begin VB.Form frmMain
          Caption         =   "Purpose"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.4
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -1560,7 +1625,7 @@ Begin VB.Form frmMain
          Caption         =   "Keys"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.4
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -1579,7 +1644,7 @@ Begin VB.Form frmMain
          Caption         =   "Sections"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.4
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -1615,28 +1680,6 @@ Begin VB.Form frmMain
       TabIndex        =   0
       Top             =   960
       Width           =   6135
-   End
-   Begin VB.TextBox txtNothing 
-      Alignment       =   2  'Center
-      BorderStyle     =   0  'None
-      Enabled         =   0   'False
-      BeginProperty Font 
-         Name            =   "Tahoma"
-         Size            =   8.25
-         Charset         =   204
-         Weight          =   700
-         Underline       =   0   'False
-         Italic          =   0   'False
-         Strikethrough   =   0   'False
-      EndProperty
-      Height          =   285
-      Left            =   1080
-      Locked          =   -1  'True
-      TabIndex        =   32
-      Text            =   "No suspicious items found!"
-      Top             =   1560
-      Visible         =   0   'False
-      Width           =   4695
    End
    Begin VB.Label lblMD5 
       Alignment       =   2  'Center
@@ -1833,7 +1876,6 @@ Begin VB.Form frmMain
    End
    Begin VB.Menu mnuResultList 
       Caption         =   "Result List Popup"
-      Visible         =   0   'False
       Begin VB.Menu mnuResultFix 
          Caption         =   "Fix checked"
       End
@@ -1842,6 +1884,9 @@ Begin VB.Form frmMain
       End
       Begin VB.Menu mnuResultAddALLToIgnore 
          Caption         =   "Add ALL to ignore list"
+      End
+      Begin VB.Menu mnuResultDisable 
+         Caption         =   "Disable"
       End
       Begin VB.Menu mnuResultDelim1 
          Caption         =   "-"
@@ -2002,106 +2047,13 @@ Private bLockResize     As Boolean
 Private JumpFileCache() As FIX_FILE
 Private JumpRegCache()  As FIX_REG_KEY
 
-Private Const SM_CXBORDER As Long = 5&
-Private Const SM_CYBORDER As Long = 6&
-Private Const SM_CYEDGE As Long = 46&
-Private Const SM_CXSIZEFRAME As Long = 32&
-Private Const SM_CYCAPTION As Long = 4&
 
 Public Sub Test()
 
-'    Dim RectClient  As RECT
-'    Dim RectWnd     As RECT
-'
-'    GetClientRect Me.hwnd, RectClient
-'    GetWindowRect Me.hwnd, RectWnd
-'
-'    Debug.Print (RectWnd.Bottom - RectWnd.Top - RectClient.Bottom) * Screen.TwipsPerPixelY
-    
-
     'If you need something to test after program started and initialized all required variables, please use this sub.
-    
-    'Debug.Print Reg.GetString(0, "HKLM\System\CurrentControlSet\Control\Session Manager", "PendingFileRenameOperations")
-    
-    'Debug.Print Reg.GetKeyVirtualType(HKCU, "Software\Policies\Microsoft\Internet Explorer\Control Panel")
-    '2 - KEY_VIRTUAL_USUAL
-    '4 - KEY_VIRTUAL_SHARED
-    '8 - KEY_VIRTUAL_REDIRECTED
 
-    'Debug.Print IsMicrosoftDriverFile("C:\Windows\system32\DRIVERS\VMNET.SYS")
-    
-'    Dim aSect(), i&
-'    aSect = Array("R0", "R1", "R2", "R3", "R4", "F0", "F1", "F2", "F3", "O1", "O2", "O3", "O4", "O5", "O6", "O7", "O8", "O9", "O10", _
-'            "O11", "O12", "O13", "O14", "O15", "O16", "O17", "O18", "O19", "O20", "O21", "O22", "O23", "O24", "O25", "O26")
-'
-'    For i = 0 To UBound(aSect)
-'        Call GetInfo(aSect(i) & " - " & String$(150, "X"))
-'    Next
-    
-'    Dim hFile As Long
-'    Dim i As Long, j As Long
-'    Dim aSubKeys() As String
-'    Dim CSKey As String
-'
-'    If OpenW(AppPath() & "\ControlSet.txt", FOR_OVERWRITE_CREATE, hFile) Then
-'        PrintBOM hFile
-'
-'        PrintW hFile, "Enumerating method" & vbCrLf, True
-'
-'        For i = 1 To Reg.NtEnumSubKeysToArray(HKLM, "SYSTEM", aSubKeys)
-'            KeyShowInfo HKLM, "SYSTEM\" & aSubKeys(i), hFile
-'        Next
-'
-'        PrintW hFile, vbCrLf & "Direct query method" & vbCrLf, True
-'
-'        For j = 0 To 110
-'            CSKey = IIf(j = 0, "System\CurrentControlSet", "System\ControlSet" & Format$(j, "000"))
-'            KeyShowInfo HKLM, CSKey, hFile
-'        Next
-'
-'        CloseW hFile
-'    End If
-    
-'    Stop
 End Sub
 
-'Private Sub KeyShowInfo(hHive As Long, sSubKey As String, hFile As Long)
-'    Dim sSymTarget As String
-'    Dim sLog As String
-'    Dim bExist As Boolean
-'    Dim bExist2 As Boolean
-'    Dim hKey As Long
-'    Dim hKey2 As Long
-'
-'    bExist = False
-'    If STATUS_SUCCESS = Reg.WrapNtOpenKeyEx(hHive, sSubKey, WRITE_OWNER, hKey, , False) Then
-'        bExist = True
-'        NtClose hKey
-'    End If
-'
-'    bExist2 = False
-'    If STATUS_SUCCESS = Reg.WrapNtOpenKeyEx(hHive, sSubKey, WRITE_OWNER, hKey, , True) Then
-'        bExist2 = True
-'        NtClose hKey2
-'    End If
-'
-'    If bExist <> bExist2 Then
-'        sLog = "Warning: Key exist (with flag KEY_WOW64_64KEY) returns " & bExist & ", when without flag it returns " & bExist2
-'        PrintW hFile, sLog, True
-'    End If
-'
-'    Call Reg.NtGetKeyVirtualType(hHive, sSubKey, True, sSymTarget)
-'
-'    sLog = "HKLM\" & sSubKey & " => " & IIf(bExist, " (exist, handle = " & hKey & ")", "(not exist, handle = " & hKey & ")") & _
-'        IIf(Len(sSymTarget) <> 0, " => (symlink) " & sSymTarget, "")
-'
-'    PrintW hFile, sLog, True
-'End Sub
-
-
-Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
-    ProcessHotkey KeyCode, Me
-End Sub
 
 ' Tips on functions:
 
@@ -2121,6 +2073,7 @@ Private Sub Form_Load()
         End If
     Else
         bInit = True
+        mnuResultList.Visible = False
         If gNoGUI Then Me.Hide
         FormStart_Stady1
         If g_NeedTerminate Then
@@ -2136,10 +2089,23 @@ Private Sub lstResults_KeyDown(KeyCode As Integer, Shift As Integer)
     End If
 End Sub
 
+Private Sub optMd5_Click()
+    g_bUseMD5 = optMd5.Value
+End Sub
+
+Private Sub optSha1_Click()
+    g_bUseMD5 = optMd5.Value
+End Sub
+
 Private Sub Timer1_Timer()
     If (GetTickCount() - Perf.StartTime) / 1000 > Perf.MAX_TimeOut Then
         HJT_Shutdown
     End If
+End Sub
+
+Private Sub tmrRunScan_Timer()
+    tmrRunScan.Enabled = False
+    cmdScan_Click
 End Sub
 
 Private Sub tmrStart_Timer()
@@ -2210,7 +2176,7 @@ Private Sub FormStart_Stady1()
     
     SetCurrentDirectory StrPtr(AppPath())
     
-    'FixLog = BuildPath(AppPath(), "\HJT_Fix.log")           'not used yet
+    'FixLog = BuildPath(AppPath(), "\HiJack_Fix.log")           'not used yet
     'If FileExists(FixLog) Then DeleteFileWEx StrPtr(FixLog)
     
     bPolymorph = (InStr(1, AppExeName(), "_poly", 1) <> 0) Or (StrComp(GetExtensionName(AppExeName(True)), ".pif", 1) = 0)
@@ -2319,10 +2285,6 @@ Private Sub FormStart_Stady1()
     
     Set Proc = New clsProcess
     
-    'set encryption string
-    Salt = Reg.GetDword(0, "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "InstallDate")
-    If Salt = "0" Then Salt = Reg.GetBinaryToString(0, "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "DigitalProductId")
-    sProgramVersion = "THOU SHALT NOT STEAL - " & Salt 'don't touch this, please !!!
     cryptInit
     Base64_Init
     
@@ -2333,7 +2295,7 @@ Private Sub FormStart_Stady1()
     
     'header of tracing log
     AppendErrorLogCustom vbCrLf & vbCrLf & "Logfile ( tracing ) of HiJackThis Fork v." & AppVerString & vbCrLf & vbCrLf & _
-        "Command line: " & AppPath(True) & " " & Command() & vbCrLf & vbCrLf & MakeLogHeader()
+        "Command line: " & AppPath(True) & " " & g_sCommandLine & vbCrLf & vbCrLf & MakeLogHeader()
     
     LoadStuff 'regvals, filevals, safelspfiles, safeprotocols
     GetLSPCatalogNames
@@ -2379,9 +2341,9 @@ Private Sub FormStart_Stady1()
     End If
     
     '/ihatewhitelists
-    If InStr(1, Command$(), "ihatewhitelists", 1) > 0 Then bIgnoreAllWhitelists = True: bHideMicrosoft = False 'must go after LoadSettings !!!
+    If HasCommandLineKey("ihatewhitelists") Then bIgnoreAllWhitelists = True: bHideMicrosoft = False 'must go after LoadSettings !!!
     '/default
-    If InStr(1, Command$(), "default", 1) > 0 Then bLoadDefaults = True
+    If HasCommandLineKey("default") Then bLoadDefaults = True
     If bLoadDefaults Then
         bAutoSelect = False
         bConfirm = True
@@ -2395,16 +2357,18 @@ Private Sub FormStart_Stady1()
         bCheckForUpdates = False
         bHideMicrosoft = True
         bIgnoreAllWhitelists = False
-        bMD5 = False
+        g_bCheckSum = False
     End If
     '/skipIgnoreList
-    If InStr(1, Command$(), "skipIgnoreList", 1) > 0 Then
+    If HasCommandLineKey("skipIgnoreList") Then
         bSkipIgnoreList = True
         IsOnIgnoreList "", EraseList:=True
     End If
     
+    If HasCommandLineKey("delmode:disable") Then g_bDelmodeDisabling = True
+    
     '/Area:xxx
-    sCmdLine = Replace$(Command(), ":", "+")
+    sCmdLine = Replace$(g_sCommandLine, ":", "+")
     
     '/Area:Processes
     If InStr(1, sCmdLine, "Area+Process", 1) > 0 Then bLogProcesses = True
@@ -2499,6 +2463,10 @@ Private Sub FormStart_Stady2()
     
     Static bInit As Boolean
     Dim bSilentUninst As Boolean
+    Dim aKey() As String
+    Dim aValue() As String
+    Dim lTotal As Long
+    Dim i As Long
     
     If bInit Then
         Exit Sub
@@ -2507,10 +2475,10 @@ Private Sub FormStart_Stady2()
     End If
     
     '/silentuninstall
-    bSilentUninst = (InStr(1, Command$(), "silentuninstall", 1) > 0)
+    bSilentUninst = HasCommandLineKey("silentuninstall")
     
     '/uninstall
-    If (InStr(1, Command$(), "/uninstall", 1) > 0) Or (InStr(1, Command$(), "-uninstall", 1) > 0) Or bSilentUninst Then
+    If HasCommandLineKey("uninstall") Or bSilentUninst Then
         Me.Hide
         If Not HJT_Uninstall(bSilentUninst) Then
             g_ExitCodeProcess = 1
@@ -2521,11 +2489,12 @@ Private Sub FormStart_Stady2()
     
     If g_NeedTerminate Then Unload Me: Exit Sub
 
-    '/md5
-    If InStr(1, Command$(), "/md5", 1) > 0 Or InStr(1, Command$(), "-md5", 1) > 0 Then bMD5 = True
+    '/md5 /sha1
+    If HasCommandLineKey("md5") Then g_bCheckSum = True: g_bUseMD5 = True
+    If HasCommandLineKey("sha1") Then g_bCheckSum = True: g_bUseMD5 = False
     '/deleteonreboot
-    If InStr(1, Command$(), "deleteonreboot", 1) > 0 Then
-        SilentDeleteOnReboot UnQuote(Command$())
+    If HasCommandLineKey("deleteonreboot") Then
+        SilentDeleteOnReboot UnQuote(g_sCommandLine)
         Unload Me
         Exit Sub
     End If
@@ -2533,7 +2502,7 @@ Private Sub FormStart_Stady2()
     If (Not inIDE) And (Not bPolymorph) Then
         Err.Clear
         g_hMutex = CreateMutex(0&, 1&, StrPtr("mutex_HiJackThis_Fork"))
-        If (Err.LastDllError = ERROR_ALREADY_EXISTS) And 0 = Len(Command$()) Then
+        If (Err.LastDllError = ERROR_ALREADY_EXISTS) And 0 = Len(g_sCommandLine) Then
             If Not bAutoLogSilent Then
                 If MsgBoxW(Translate(2), vbExclamation Or vbYesNo, g_AppName) = vbNo Then Unload Me: Exit Sub
             End If
@@ -2547,15 +2516,38 @@ Private Sub FormStart_Stady2()
         End If
     End If
     
-    '/install
-    If InStr(1, Command(), "/install", 1) <> 0 Or _
-      InStr(1, Command(), "-install", 1) <> 0 Then
+    Dim sCmdLine$
+    sCmdLine = g_sCommandLine
     
+    '/install
+    If HasCommandLineKey("install") Then
+        
         '/autostart
-        If InStr(1, Command(), "autostart", 1) <> 0 Then
-            InstallAutorunHJT True
+        If HasCommandLineKey("autostart") Then
+            
+            'check /autostart d:X
+            
+            Dim bSetDelay As Boolean
+            Dim lDelay As Long
+            
+            lTotal = ParseSubCmdLine(sCmdLine, "autostart", aKey(), aValue())
+            For i = 0 To lTotal - 1
+                Select Case UCase(aKey(i))
+                Case "D"
+                    If IsNumeric(aValue(i)) Then
+                        lDelay = CLng(aValue(i))
+                        bSetDelay = True
+                    End If
+                End Select
+            Next
+            
+            If (bSetDelay) Then
+                InstallAutorunHJT True, lDelay
+            Else
+                InstallAutorunHJT True
+            End If
         Else
-            InstallHJT True, (InStr(1, Command(), "noGUI", 1) <> 0) '/noGUI
+            InstallHJT True, HasCommandLineKey("noGUI") '/noGUI
         End If
         Unload Me
         Exit Sub
@@ -2572,29 +2564,37 @@ Private Sub FormStart_Stady2()
         'check sign. of core dll
         SignVerify BuildPath(sWinDir, "system32\ntdll.dll"), SV_LightCheck Or SV_SelfTest, SignResult
         Dbg "Fingerprint should be: CDD4EEAE6000AC7F40C3802C171E30148030C072"
-        If SignResult.HashRootCert = "CDD4EEAE6000AC7F40C3802C171E30148030C072" Then
+        If StrComp(SignResult.HashRootCert, "CDD4EEAE6000AC7F40C3802C171E30148030C072", 1) = 0 Then
             Dbg "Fingerprint is mathed (OK)."
         Else
             Dbg "Fingerprint is NOT mathed (FAILED)."
         End If
         'check sign of self
-        SignVerify AppPath(True), SV_LightCheck Or SV_SelfTest Or SV_PreferInternalSign, SignResult
-        Dbg "Fingerprint should be: 05F1F2D5BA84CDD6866B37AB342969515E3D912E"
-        If SignResult.HashRootCert = "05F1F2D5BA84CDD6866B37AB342969515E3D912E" Then
-            Dbg "Fingerprint is mathed (OK)."
-        Else
-            Dbg "Fingerprint is NOT mathed (FAILED)."
+        SignVerify AppPath(True), SV_SelfTest Or SV_PreferInternalSign, SignResult
+        
+        If Not IsDragokasSign(SignResult) Then
+            Dbg "HJT internal signature is INVALID."
         End If
+    End If
+    
+    MyParentProc.pid = GetParentPID(GetCurrentProcessId())
+    If (MyParentProc.pid <> 0) Then
+        MyParentProc.Path = GetFilePathByPID(MyParentProc.pid)
     End If
     
     Test 'for all of my tests
     
-    CheckAutoLog
+    If HasCommandLineKey("noBackup") Then bMakeBackup = False
+    If HasCommandLineKey("noGUI") Then g_bNoGUI = True
     
-    If (Not inIDE) And Command() = "" Then
+    DoHotFixes
+    
+    If (Not inIDE) And g_sCommandLine = "" And Not bPolymorph Then
         If Not CheckIntegrityHJT() Then
-            'Warning! Integrity of HiJackThis program is corrupted. Perhaps, file is patched or infected by file virus.
-            MsgBoxW TranslateNative(1023), vbExclamation
+            If Not bAutoLogSilent Then
+                'Warning! Integrity of HiJackThis program is corrupted. Perhaps, file is patched or infected by file virus.
+                MsgBoxW TranslateNative(1023), vbExclamation
+            End If
         End If
     End If
     
@@ -2639,10 +2639,910 @@ Private Sub FormStart_Stady2()
         Unload Me: Exit Sub
     End If
     
+    FormStart_Stady3
+    
+    If HasCommandLineKey("Area:None") Then
+        DeleteFile StrPtr(g_sLogFile)
+    Else
+        CheckAutoLog
+    End If
+    
     AppendErrorLogCustom "frmMain.FormStart_Stady2 - End"
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "FormStart_Stady2"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Sub DoHotFixes()
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "frmMain.DoHotFixes - Begin"
+    
+    Dim result As SCAN_RESULT
+    Dim sItem As String
+    Dim i As Long
+    
+    'g_bBackupMade = False
+    
+    If InStr(1, g_sCommandLine, "/Fix", 1) <> 0 Or _
+        InStr(1, g_sCommandLine, "-Fix", 1) <> 0 Then
+        
+        g_bFixArg = True
+        lstResults.Clear
+    End If
+    
+    If HasCommandLineKey("Disinfect") Then
+        g_bFixHosts = True
+        g_bFixO4 = True
+        g_bFixPolicy = True
+        g_bFixCert = True
+        g_bFixIpSec = True
+        g_bFixEnvVar = True
+        g_bFixO20 = True
+        g_bFixO21 = True
+        g_bFixTasks = True
+        g_bFixServices = True
+        g_bFixWMIJob = True
+        g_bFixIFEO = True
+    End If
+    
+    If HasCommandLineKey("FixHosts") Then g_bFixHosts = True    'O1
+    If HasCommandLineKey("FixO4") Then g_bFixO4 = True          'O4
+    If HasCommandLineKey("FixPolicy") Then g_bFixPolicy = True  'O7
+    If HasCommandLineKey("FixCert") Then g_bFixCert = True      'O7
+    If HasCommandLineKey("FixIpSec") Then g_bFixIpSec = True    'O7
+    If HasCommandLineKey("FixEnvVar") Then g_bFixEnvVar = True  'O7
+    If HasCommandLineKey("FixO20") Then g_bFixO20 = True        'O20
+    If HasCommandLineKey("FixO21") Then g_bFixO21 = True        'O21
+    If HasCommandLineKey("FixTasks") Then g_bFixTasks = True    'O22
+    If HasCommandLineKey("FixServices") Then g_bFixServices = True  'O23
+    If HasCommandLineKey("FixWMIJob") Then g_bFixWMIJob = True      'O25
+    If HasCommandLineKey("FixIFEO") Then g_bFixIFEO = True          'O26
+    
+    If g_bFixHosts Then CheckO1Item
+    If g_bFixO4 Then CheckO4Item
+    If g_bFixPolicy Then
+        CheckPolicies
+        CheckPolicyACL
+    End If
+    If g_bFixCert Then CheckCertificatesEDS
+    If g_bFixIpSec Then CheckIPSec
+    If g_bFixEnvVar Then CheckSystemProblemsEnvVars
+    If g_bFixO20 Then CheckO20Item
+    If g_bFixO21 Then CheckO21Item
+    If g_bFixTasks Then CheckO22Item
+    If g_bFixServices Then CheckO23Item
+    If g_bFixWMIJob Then CheckO25Item
+    If g_bFixIFEO Then CheckO26Item
+    
+    If HasCommandLineKey("FreezeProcess") Then
+        Call FreezeCustomProcesses
+    End If
+    
+    If lstResults.ListCount <> 0 Then
+        For i = 0 To lstResults.ListCount - 1
+            lstResults.Selected(i) = True
+        Next
+        cmdFix_Click
+        
+        If HasCommandLineKey("LockPoints") Then
+            Call LockAutorunPoints
+        End If
+        
+        Call KillMicrosoftHostProcesses
+        
+        For i = 0 To lstResults.ListCount - 1
+            lstResults.Selected(i) = True
+        Next
+        cmdFix_Click
+    End If
+    
+    If HasCommandLineKey("LockPoints") Then
+        Call LockAutorunPoints
+    End If
+    
+'    '/FixHosts
+'    If g_bFixHosts Then 'O1
+'        lstResults.Clear
+'        CheckO1Item
+'        If lstResults.ListCount <> 0 Then
+'            sItem = lstResults.List(0)
+'            If GetScanResults(sItem, result) Then
+'                result.HitLineW = "O1 - Hosts: is empty"
+'                MakeBackupEx result
+'                FixO1Item result.HitLineW, result
+'                FlushDNS
+'            End If
+'        End If
+'    End If
+'
+'    If g_bFixO4 Then
+'        lstResults.Clear
+'        CheckO4Item
+'        If lstResults.ListCount <> 0 Then
+'            sItem = lstResults.List(0)
+'            If GetScanResults(sItem, result) Then
+'                MakeBackupEx result
+'                FixO4Item result.HitLineW, result
+'            End If
+'        End If
+'    End If
+'
+'    If g_bFixPolicy Or g_bFixCert Or g_bFixIpSec Or g_bFixEnvVar Then 'O7
+'        lstResults.Clear
+'        CheckO7Item
+'        For i = 0 To lstResults.ListCount - 1
+'            sItem = lstResults.List(i)
+'            If GetScanResults(sItem, result) Then
+'                If g_bFixPolicy Then
+'                    If StrBeginWith(sItem, "O7 - Policy:") Then MakeBackupEx result: FixO7Item sItem, result
+'                    If StrBeginWith(sItem, "O7 - Taskbar policy:") Then MakeBackupEx result: FixO7Item sItem, result
+'                    If StrBeginWith(sItem, "O7 - Explorer Policy:") Then MakeBackupEx result: FixO7Item sItem, result
+'                End If
+'                If g_bFixCert Then
+'                    If StrBeginWith(sItem, "O7 - Policy: [Untrusted Certificate]") Then
+'                        If InStr(1, sItem, "Fix all items") = 0 Then
+'                            MakeBackupEx result: FixO7Item sItem, result
+'                        End If
+'                    End If
+'                End If
+'                If g_bFixIpSec Then
+'                    If StrBeginWith(sItem, "O7 - IPSec:") Then MakeBackupEx result: FixO7Item sItem, result
+'                End If
+'                If g_bFixEnvVar Then
+'                    If StrBeginWith(sItem, "O7 - TroubleShooting: (EV)") Then MakeBackupEx result: FixO7Item sItem, result
+'                End If
+'            End If
+'        Next
+'        If lstResults.ListCount <> 0 Then
+'            If bUpdatePolicyNeeded Then UpdatePolicy
+'        End If
+'    End If
+'
+'    If g_bFixWMIJob Then 'O25
+'        lstResults.Clear
+'        CheckO25Item
+'        For i = 0 To lstResults.ListCount - 1
+'            sItem = lstResults.List(i)
+'            If GetScanResults(sItem, result) Then MakeBackupEx result: FixO25Item sItem, result
+'        Next
+'    End If
+'
+'    If g_bFixIFEO Then 'O26
+'        lstResults.Clear
+'        CheckO26Item
+'        For i = 0 To lstResults.ListCount - 1
+'            sItem = lstResults.List(i)
+'            If GetScanResults(sItem, result) Then MakeBackupEx result: FixO26Item sItem, result
+'        Next
+'    End If
+'
+'    If g_bBackupMade Then
+'        IncreaseNumberOfFixes
+'    End If
+    
+    AppendErrorLogCustom "frmMain.DoHotFixes - End"
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "FormStart_Stady2"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Sub AddFirewallAllowed(sFile As String)
+    Dim sFilename As String
+    sFilename = GetFileName(sFile, True)
+    
+    'netsh advfirewall firewall add rule name="Autoruns_in" dir=in action=allow program=".....\autorunsc.exe" enable=yes
+    
+    If Proc.ProcessRun(BuildPath(sWinSysDir, "netsh.exe"), _
+          "advfirewall firewall add rule name=""" & sFilename & "_in" & """ dir=in action=allow program=""" & sFile & """ enable=yes", , vbHide) Then
+            Proc.WaitForTerminate , , True
+    End If
+    If Proc.ProcessRun(BuildPath(sWinSysDir, "netsh.exe"), _
+          "advfirewall firewall add rule name=""" & sFilename & "_out" & """ dir=out action=allow program=""" & sFile & """ enable=yes", , vbHide) Then
+            Proc.WaitForTerminate , , True
+    End If
+End Sub
+
+Private Sub FormStart_Stady3()
+    On Error GoTo ErrorHandler:
+    
+    AppendErrorLogCustom "frmMain.FormStart_Stady2 - Begin"
+    
+    Dim i As Long, j As Long, k As Long
+    Dim sLogDir As String
+    Dim sToolsDir As String
+    Dim sFile As String
+    Dim bSigSystemOK As Boolean
+    Dim sAutorunsExe As String
+    Dim hFile As Long, hFile1 As Long, hFile2 As Long, hFile3 As Long
+    Dim sLine As String
+    Dim sLog As String
+    Dim sLogToCheck As String
+    Dim sLogClear As String
+    Dim sLogSuspicious As String
+    Dim sLogFailed As String
+    Dim sWhiteListPath As String
+    Dim bToolsExecuted As Boolean
+    
+    sToolsDir = BuildPath(AppPath(), "tools")
+    sLogDir = BuildPath(AppPath(), "LOG")
+    
+    sLogToCheck = BuildPath(sLogDir, "files_to_check.txt")
+    sLogClear = BuildPath(sLogDir, "files_clear.txt")
+    sLogSuspicious = BuildPath(sLogDir, "files_suspicious.txt")
+    sLogFailed = BuildPath(sLogDir, "files_failed.txt")
+    sWhiteListPath = BuildPath(AppPath(), "whitelists.txt")
+    
+    If (OSver.IsWin64) Then
+        sAutorunsExe = "auto64.exe"
+    Else
+        sAutorunsExe = "auto.exe"
+    End If
+
+    If HasCommandLineKey("addfirewall") Then
+
+        If bRunToolAutoruns Then
+            AddFirewallAllowed BuildPath(AppPath(), "tools\Scan\" & sAutorunsExe)
+        End If
+        
+    End If
+   
+'    bRunToolAutoruns = True
+'    bRunToolExecuted = True
+'    bRunToolLastActivity = True
+'    bRunToolServiWin = True
+'    bRunToolTaskScheduler = True
+'    g_bVTCheck = True
+'    g_bSigCheck = True
+'    g_bRawIgnoreList = True
+    
+    If bRunToolAutoruns Then
+    
+        Debug.Print "Making Autoruns log ..."
+    
+        MkDirW sLogDir
+        SetCurrentDirectory StrPtr(sLogDir)
+        
+        '-a * -m -s -u -v -vt -nobanner -o results.xml
+        'bug: -x doesn't redirect to file, so we need to intercept console by handles
+'        If Proc.ProcessRun(BuildPath(AppPath(), "tools\Scan\" & sEXE), "-a i -nobanner -x", , vbNormalFocus, , True) Then
+'            '// TODO: true if only silent mode, otherwise set value from /timeout:X
+'            Debug.Print Proc.ConsoleRead()
+'            Proc.WaitForTerminate , , True
+'            Set Proc = New clsProcess
+'        End If
+
+        If Proc.ProcessRun(Environ("ComSpec"), "/c """"" & BuildPath(AppPath(), "tools\Scan\" & sAutorunsExe) & """ -accepteula -a * -nobanner -x > """ _
+            & BuildPath(sLogDir, "results.xml") & """""", , vbHide, , False) Then
+            
+            Proc.WaitForTerminate , , True
+        End If
+        bToolsExecuted = True
+    End If
+    If bRunToolExecuted Then
+        MkDirW sLogDir
+        SetCurrentDirectory StrPtr(sLogDir)
+        If Proc.ProcessRun(BuildPath(AppPath(), "tools\Scan\executed.exe"), "/scomma executed.csv", , vbHide) Then
+            Proc.WaitForTerminate , , True
+        End If
+        bToolsExecuted = True
+    End If
+    If bRunToolLastActivity Then
+        MkDirW sLogDir
+        SetCurrentDirectory StrPtr(sLogDir)
+        If Proc.ProcessRun(BuildPath(AppPath(), "tools\Scan\lastactivity.exe"), "/scomma lastactivity.csv", , vbHide) Then
+            Proc.WaitForTerminate , , True
+        End If
+        bToolsExecuted = True
+    End If
+    If bRunToolServiWin Then
+        MkDirW sLogDir
+        SetCurrentDirectory StrPtr(sLogDir)
+        If Proc.ProcessRun(BuildPath(AppPath(), "tools\Scan\serwin.exe"), "/scomma services services.csv /status ""~started""", , vbHide) Then
+            Proc.WaitForTerminate , , True
+        End If
+        bToolsExecuted = True
+    End If
+    If bRunToolTaskScheduler Then
+        MkDirW sLogDir
+        SetCurrentDirectory StrPtr(sLogDir)
+        If Proc.ProcessRun(BuildPath(AppPath(), "tools\Scan\sheduler.exe"), "/sort ~status /scomma sheduler.csv", , vbHide) Then
+            Proc.WaitForTerminate , , True
+        End If
+        bToolsExecuted = True
+    End If
+    
+    SetCurrentDirectory StrPtr(AppPath())
+    
+    If HasCommandLineKey("delmode:pending") Then
+        g_bDelModePending = True
+    End If
+    
+    If HasCommandLineKey("autofix:vt") Then
+        g_bAutoFixVT = True
+    End If
+    
+    If HasCommandLineKey("vtcheck") Then
+        g_bVTCheck = True
+    End If
+    
+    If HasCommandLineKey("rawIgnoreList") Then
+        g_bRawIgnoreList = True
+    End If
+    
+    If HasCommandLineKey("sigcheck") Then
+        g_bSigCheck = True
+    End If
+    
+    ' ------------------------------
+    '  !!! EXIT if NONE selected !!!
+    ' ------------------------------
+    
+    If Not (g_bAutoFixVT Or g_bVTCheck) Then
+'        If bAutoLogSilent Then
+'            Unload Me
+'        End If
+        Exit Sub
+    End If
+    
+    bSigSystemOK = isEDS_Work("")
+    
+    'sigcheck
+    Dim dRunFiles As clsTrickHashTable
+    Dim dClearFiles As clsTrickHashTable
+    Dim dSuspFiles As clsTrickHashTable
+
+    Set dRunFiles = New clsTrickHashTable
+    Set dClearFiles = New clsTrickHashTable
+    Set dSuspFiles = New clsTrickHashTable
+
+    dRunFiles.CompareMode = vbTextCompare
+
+    If bRunToolAutoruns Then
+        Debug.Print "Parsing Autoruns log ..."
+        ParseFilesXML dRunFiles, BuildPath(sLogDir, "results.xml")
+    End If
+    If bRunToolExecuted Then
+        ParseFilesCSV dRunFiles, BuildPath(sLogDir, "executed.csv"), 1
+    End If
+    If bRunToolLastActivity Then
+        ParseFilesCSV dRunFiles, BuildPath(sLogDir, "lastactivity.csv"), 4, "exe,dll"
+    End If
+    If bRunToolServiWin Then
+        ParseFilesCSV dRunFiles, BuildPath(sLogDir, "services.csv"), 13
+    End If
+    If bRunToolTaskScheduler Then
+        ParseFilesCSV dRunFiles, BuildPath(sLogDir, "sheduler.csv"), 20
+    End If
+
+    ' WhiteListing
+
+    If g_bRawIgnoreList Then
+
+        OpenW sWhiteListPath, FOR_READ, hFile
+
+        If hFile > 0 Then
+            Do While LineInputW(hFile, sLine)
+                If dRunFiles.Exists(sLine) Then dRunFiles.Remove sLine
+            Loop
+            CloseW hFile
+        End If
+    End If
+    
+    If g_bSigCheck Then
+        Dim dTemp As clsTrickHashTable
+        Set dTemp = New clsTrickHashTable
+        dTemp.CompareMode = vbTextCompare
+
+        For i = 0 To dRunFiles.Count - 1
+            sFile = dRunFiles.Keys(i)
+            DoEvents
+            If Not IsMicrosoftFile(sFile, Not bSigSystemOK, True) Then
+                dTemp.Add sFile, 0
+                Debug.Print sFile
+            End If
+        Next
+        Set dRunFiles = dTemp
+        Set dTemp = Nothing
+    End If
+
+    'Logging
+
+    If dRunFiles.Count Then
+
+        If OpenW(sLogToCheck, FOR_OVERWRITE_CREATE, hFile) Then
+
+            For i = 0 To dRunFiles.Count - 1
+                sFile = dRunFiles.Keys(i)
+                PrintW hFile, sFile
+            Next
+
+            CloseW hFile, True
+        End If
+    End If
+
+    ' VIRUSTOTAL check
+
+    Debug.Print "Run VT check ..."
+
+    DeleteFile StrPtr(sLogClear)
+    DeleteFile StrPtr(sLogSuspicious)
+    DeleteFile StrPtr(sLogFailed)
+
+    OpenW sLogClear, FOR_READ_WRITE, hFile1
+    OpenW sLogSuspicious, FOR_READ_WRITE, hFile2
+    OpenW sLogFailed, FOR_READ_WRITE, hFile3
+
+    Const MAX_CHECK_ATTEMPT As Long = 20
+    Const PROC_TIMEOUT_SEC As Long = 60
+
+    Dim cProc() As clsProcess
+    Dim AppInitBak As String
+    Dim nDetects As Long
+    Dim sURL As String
+    Dim sCheckedFile As String
+    Dim dTime() As Date
+    Dim bRunned As Boolean
+    Dim bInProgress As Boolean
+    Dim nCheckIdx As Long
+    Dim nPrevIdx As Long
+    Dim bNextIdx As Boolean
+    Dim eProc1() As MY_PROC_ENTRY
+    Dim eProc2() As MY_PROC_ENTRY
+    Dim sAutorunsExePath As String
+    Dim bPidMatch As Boolean
+    Dim dNull As Date
+    
+    sAutorunsExePath = BuildPath(AppPath(), "tools\Scan\" & sAutorunsExe)
+
+    Dim lThreads As Long
+    lThreads = 10
+
+    ReDim Preserve dTime(lThreads - 1)
+    ReDim Preserve cProc(lThreads - 1)
+    For i = 0 To UBound(cProc)
+        Set cProc(i) = New clsProcess
+    Next
+
+    Do While dRunFiles.Count Or bInProgress
+
+        DoEvents
+        bInProgress = False
+        
+        For i = 0 To UBound(cProc)
+
+            bRunned = cProc(i).IsRunned
+
+            If bRunned Then
+                'check for timeout
+                bInProgress = True ' at least one file in runned process
+                
+                If DateDiff("s", dTime(i), Now()) > PROC_TIMEOUT_SEC Then
+                    If cProc(i).pid <> 0 Then
+                        cProc(i).ProcessClose
+                        cProc(i).Identifier = ""
+                        bRunned = False
+                        
+                        sLog = BuildPath(sLogDir, "vt_result_" & CStr(i) & ".xml")
+                        DeleteFile StrPtr(sLog)
+                    End If
+                    Debug.Print "[Thread:" & i & "] - TIMEOUT !"
+                End If
+            End If
+            
+            If Not bRunned Then
+                cProc(i).Identifier = ""
+                
+                'get previous result
+                sLog = BuildPath(sLogDir, "vt_result_" & CStr(i) & ".xml")
+                
+                If (ParseVTResult(sLog, sCheckedFile, nDetects, sURL)) Then
+                    
+                    If nDetects = 0 Then
+                        If sURL = "n/a" Then
+                            If (hFile3 > 0) Then
+                                PrintW hFile3, sCheckedFile
+                            End If
+                        ElseIf Not dClearFiles.Exists(sCheckedFile) Then
+                            dClearFiles.Add sCheckedFile, 0
+
+                            sLine = sCheckedFile & " - " & sURL
+
+                            If (hFile1 > 0) Then
+                                PrintW hFile1, sLine
+                            End If
+                        End If
+                    Else
+                        If Not dSuspFiles.Exists(sCheckedFile) Then
+                            dSuspFiles.Add sCheckedFile, nDetects
+
+                            sLine = sCheckedFile & " - [" & CStr(nDetects) & "] - " & sURL
+
+                            If (hFile2 > 0) Then
+                                PrintW hFile2, sLine
+                            End If
+                        End If
+                    End If
+
+                    If dRunFiles.Exists(sCheckedFile) Then
+                        dRunFiles.Remove sCheckedFile
+                    End If
+
+                    Debug.Print "[Thread:" & i & "] - Result: Detects - " & nDetects & " - " & sCheckedFile & " - " & sURL
+
+                End If
+
+                DeleteFile StrPtr(sLog)
+
+                If dRunFiles.Count Then
+
+                    AppInitBak = Reg.GetString(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Windows", "AppInit_DLLs")
+
+                    If nCheckIdx > (dRunFiles.Count - 1) Then
+                        nCheckIdx = 0
+                    End If
+
+                    ' exclude files already been checked in runned processes
+                    nPrevIdx = nCheckIdx
+                    Do
+                        sFile = dRunFiles.Keys(nCheckIdx)
+
+                        bNextIdx = False
+                        For j = 0 To UBound(cProc)
+                            If StrComp(cProc(j).Identifier, sFile, 1) = 0 Then
+                                bNextIdx = True
+                                Exit For
+                            End If
+                        Next
+                        
+                        If bNextIdx Then
+                            nCheckIdx = nCheckIdx + 1
+
+                            If nCheckIdx > (dRunFiles.Count - 1) Then
+                                nCheckIdx = 0
+                            End If
+
+                            If (nCheckIdx = nPrevIdx) Then
+                                sFile = ""
+                                Exit Do 'loop is exceeded
+                            End If
+                        End If
+                    Loop While bNextIdx
+
+                    If sFile <> "" Then
+                        'substitute the file we need to check
+                        Reg.SetStringVal HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Windows", "AppInit_DLLs", sFile
+
+                        If dRunFiles(sFile) >= MAX_CHECK_ATTEMPT Then
+
+                            dRunFiles.Remove sFile
+                            If hFile3 > 0 Then
+                                PrintW hFile3, sFile
+                            End If
+                        Else
+
+                            dRunFiles(sFile) = dRunFiles(sFile) + 1
+
+                            Debug.Print "[Thread:" & i & "] Attempt #" & dRunFiles(sFile) & ". VT Checking file: " & sFile
+                            Debug.Print "Files left: " & dRunFiles.Count
+                            
+                            GetProcesses eProc1
+                            
+                            dTime(i) = Now()
+                            cProc(i).Identifier = sFile
+                            cProc(i).ProcessRun Environ("ComSpec"), "/c """"" & sAutorunsExePath & """ -a d -vs -vt -nobanner -x > """ _
+                                & sLog & """""", , vbHide, , False
+
+                            SleepNoLock 200
+
+                            cProc(i).pid = 0
+                            cProc(i).ThreadId = 0
+                            cProc(i).HandleProc = 0
+                            cProc(i).HandleThread = 0
+                            
+                            GetProcesses eProc2
+                            
+                            'substitute autorunsc PID instead of cmd.exe and set it for current process class
+                            Do
+                                For k = 0 To UBound(eProc2)
+                                    If StrComp(sAutorunsExePath, eProc2(k).Path, 1) = 0 Then
+                                        bPidMatch = False
+                                        For j = 0 To UBound(eProc1)
+                                            If StrComp(sAutorunsExePath, eProc1(j).Path, 1) = 0 Then
+                                                If eProc1(j).pid = eProc2(k).pid Then
+                                                    bPidMatch = True
+                                                    Exit For
+                                                End If
+                                            End If
+                                        Next
+                                        If Not bPidMatch Then
+                                            cProc(i).pid = eProc2(k).pid
+                                            Exit Do
+                                        End If
+                                    End If
+                                Next
+                            Loop While 0
+                            
+                            'just in case: ensure no other autoruns process (runned from installation folder) has timed out
+                            For k = 0 To UBound(eProc2)
+                                If StrComp(sAutorunsExePath, eProc2(k).Path, 1) = 0 Then
+                                    'not null date
+                                    If eProc2(k).CreationTime <> dNull Then
+                                        If DateDiff("s", eProc2(k).CreationTime, Now()) > PROC_TIMEOUT_SEC Then
+                                            Proc.ProcessClose , , True, , eProc2(k).pid
+                                        End If
+                                    End If
+                                End If
+                            Next
+                            
+                            'restore
+                            Reg.SetStringVal HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Windows", "AppInit_DLLs", AppInitBak
+
+                            nCheckIdx = nCheckIdx + 1
+                        End If
+                    End If
+                End If
+            End If
+
+        Next
+
+        DoEvents
+        SleepNoLock 1000
+
+    Loop
+    
+    For i = 0 To UBound(cProc)
+        sLog = BuildPath(sLogDir, "vt_result_" & CStr(i) & ".xml")
+        DeleteFile StrPtr(sLog)
+    Next
+    
+    CloseW hFile1, True
+    CloseW hFile2, True
+    CloseW hFile3, True
+        
+    '=============
+    '   DO A FIX
+    '=============
+    If g_bAutoFixVT Then
+
+        For i = 0 To dSuspFiles.Count - 1
+
+            sFile = dSuspFiles.Keys(i)
+            DeleteFileWEx StrPtr(sFile), True
+
+        Next
+
+        If HasCommandLineKey("reboot") Then '/reboot
+            If dSuspFiles.Count Then
+                RestartSystem , True, True
+            End If
+        End If
+    End If
+    
+    If bAutoLogSilent Then
+        Unload Me
+        Exit Sub
+    End If
+    
+    AppendErrorLogCustom "frmMain.FormStart_Stady3 - End"
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "FormStart_Stady3"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Function ParseVTResult(sLog As String, sFile As String, nDetects As Long, sURL As String)
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "frmMain.ParseVTResult - Begin"
+
+    Dim hFile As Long
+    Dim sLine As String
+    Dim aLine() As String
+    Dim sContent As String
+    Dim i As Long
+    Dim pos As Long
+
+    sFile = ""
+    nDetects = 0
+    sURL = ""
+
+    OpenW sLog, FOR_READ, hFile
+    
+    If hFile > 0 Then
+        sContent = String$(LOFW(hFile), vbNullChar)
+        GetW hFile, 1&, sContent
+        CloseW hFile
+        
+        If Len(sContent) < 2 Then Exit Function
+        
+        If AscW(Left$(sContent, 1)) = 1103 And (AscW(Mid$(sContent, 2, 1)) = 1102) Then '"€ю"
+            sContent = StrConv(Mid$(sContent, 3), vbFromUnicode)
+        End If
+        
+        sContent = Replace(sContent, vbCr, "")
+        aLine = Split(sContent, vbLf)
+        
+        For i = 0 To UBoundSafe(aLine)
+            sLine = aLine(i)
+            
+            If (StrBeginWith(sLine, "<imagepath>")) Then
+                sLine = Mid$(sLine, Len("<imagepath>") + 1)
+                pos = InStr(1, sLine, "</imagepath>", 1)
+                If pos <> 0 Then
+                    sFile = Left$(sLine, pos - 1)
+                    sFile = Replace(sFile, "&#34;", """")
+                End If
+            ElseIf (StrBeginWith(sLine, "<vt-detection>")) Then
+                sLine = Mid$(sLine, Len("<vt-detection>") + 1)
+                pos = InStr(1, sLine, "</vt-detection>", 1)
+                If pos <> 0 Then
+                    sLine = Left$(sLine, pos - 1)
+                    If sLine = "Unknown" Then
+                        nDetects = 0
+                        ParseVTResult = True
+                    Else
+                        pos = InStr(sLine, "/")
+                        If pos <> 0 Then
+                            sLine = Left$(sLine, pos - 1)
+                            If IsNumeric(sLine) Then
+                                nDetects = CLng(sLine)
+                                ParseVTResult = True
+                            End If
+                        End If
+                    End If
+                End If
+            ElseIf (StrBeginWith(sLine, "<vt-permalink>")) Then
+                sLine = Mid$(sLine, Len("<vt-permalink>") + 1)
+                pos = InStr(1, sLine, "</vt-permalink>", 1)
+                If pos <> 0 Then
+                    sURL = Left$(sLine, pos - 1)
+                End If
+            End If
+        Next
+    End If
+    
+    AppendErrorLogCustom "frmMain.ParseVTResult - End"
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "FormStart_Stady3"
+    If inIDE Then Stop: Resume Next
+End Function
+
+Sub ParseFilesCSV(dRunFiles As clsTrickHashTable, sLog As String, lColumnPos As Long, Optional sExtensions As String = "")
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "frmMain.ParseFilesXML - Begin"
+    
+    Dim hFile As Long
+    Dim sLine As String
+    Dim bUseFilter As Boolean
+    Dim aExt() As String
+    Dim i As Long
+    Dim sFile As String
+    Dim aTok() As String
+    Dim bComply As Boolean
+    
+    If (lColumnPos < 1) Then Exit Sub 'failure
+    
+    If Len(sExtensions) <> 0 Then
+        bUseFilter = True
+        aExt = Split(sExtensions, ",")
+        For i = 0 To UBound(aExt)
+            If (Left$(aExt(i), 1) <> ".") Then aExt(i) = "." & aExt(i)
+        Next
+    End If
+    
+    OpenW sLog, FOR_READ, hFile
+    
+    If hFile > 0 Then
+        Do While LineInputW(hFile, sLine)
+            sFile = vbNullString
+            aTok = Split(sLine, ",", lColumnPos + 1)
+            If AryPtr(aTok) Then
+                If UBound(aTok) + 1 >= lColumnPos Then
+                    sFile = aTok(lColumnPos - 1)
+                End If
+            Else
+                If lColumnPos = 1 Then
+                    sFile = sLine
+                End If
+            End If
+            If Len(sFile) <> 0 Then
+                sFile = UnQuote(sFile)
+                bComply = False
+                If (bUseFilter) Then
+                    If inArray(GetExtensionName(sFile), aExt, , , vbTextCompare) Then
+                        bComply = True
+                    End If
+                Else
+                    bComply = True
+                End If
+                If bComply Then
+                    sFile = FindOnPath(sFile)
+                    If Len(sFile) <> 0 Then
+                        sFile = GetLongPath(sFile)
+                        sFile = GetFullPath(sFile)
+                        If Not dRunFiles.Exists(sFile) Then dRunFiles.Add sFile, 0
+                    End If
+                End If
+            End If
+        Loop
+        CloseW hFile
+    End If
+    
+    DoEvents
+    AppendErrorLogCustom "frmMain.ParseFilesXML - End"
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "frmMain_CheckAutoLog"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Sub ParseFilesXML(dRunFiles As clsTrickHashTable, sLog As String)
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "frmMain.ParseFilesXML - Begin"
+    
+    Dim hFile As Long
+    Dim sLine As String
+    Dim aLine() As String
+    Dim sFile As String
+    Dim sContent As String
+    Dim pos As Long
+    Dim i As Long
+    
+    OpenW sLog, FOR_READ, hFile
+    
+    If hFile > 0 Then
+        sContent = String$(LOFW(hFile), vbNullChar)
+        GetW hFile, 1&, sContent
+        CloseW hFile
+        
+        If Len(sContent) < 2 Then Exit Sub
+        
+        If AscW(Left$(sContent, 1)) = 1103 And (AscW(Mid$(sContent, 2, 1)) = 1102) Then '"€ю"
+            sContent = StrConv(Mid$(sContent, 3), vbFromUnicode)
+        End If
+        
+        sContent = Replace(sContent, vbCr, "")
+        aLine = Split(sContent, vbLf)
+        
+        For i = 0 To UBoundSafe(aLine)
+            sLine = aLine(i)
+        
+            sFile = vbNullString
+            If (StrBeginWith(sLine, "<imagepath>")) Then
+                sLine = Mid$(sLine, Len("<imagepath>") + 1)
+                pos = InStr(1, sLine, "</imagepath>", 1)
+                If pos <> 0 Then
+                    sFile = Left$(sLine, pos - 1)
+                End If
+            ElseIf (StrBeginWith(sLine, "<launchstring>")) Then
+                sLine = Mid$(sLine, Len("<launchstring>") + 1)
+                pos = InStr(1, sLine, "</launchstring>", 1)
+                If pos <> 0 Then
+                    sFile = Left$(sLine, pos - 1)
+                    sFile = Replace(sFile, "&#34;", """")
+                    SplitIntoPathAndArgs sFile, sFile, , True
+                    sFile = UnQuote(sFile)
+                    sFile = EnvironW(sFile)
+                End If
+            End If
+            If Len(sFile) <> 0 Then
+                sFile = FindOnPath(sFile)
+                If Len(sFile) <> 0 Then
+                    sFile = GetLongPath(sFile)
+                    sFile = GetFullPath(sFile)
+                    If Not dRunFiles.Exists(sFile) Then dRunFiles.Add sFile, 0
+                End If
+            End If
+        Next
+    End If
+    
+    DoEvents
+    AppendErrorLogCustom "frmMain.ParseFilesXML - End"
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "frmMain_CheckAutoLog"
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -2693,7 +3593,7 @@ Private Sub CheckAutoLog()
     End If
     
     '/StartupList
-    If InStr(1, Command$(), "StartupList", 1) > 0 Then
+    If HasCommandLineKey("StartupList") Then
         bStartupListSilent = True
         cmdN00bTools_Click
         Call chkConfigTabs_Click(3)
@@ -2701,7 +3601,7 @@ Private Sub CheckAutoLog()
     End If
     
     '/SysTray
-    If InStr(1, Command$(), "SysTray", 1) > 0 Then
+    If HasCommandLineKey("SysTray") Then
         bMinToTray = True
         Me.WindowState = vbMinimized
     End If
@@ -2737,6 +3637,7 @@ Private Sub LoadResources()
     
         If 0 <> Len(Lines(i)) Then
     
+            Lines(i) = Replace$(Lines(i), "\;", "\\\\")
             Columns = SplitSafe(Lines(i), ";")
             '---------------------------
             'Columns (0) 'OSver
@@ -2745,7 +3646,12 @@ Private Sub LoadResources()
             'Columns (3) 'Args
             'Columns (4) 'Note      (not used)
             '---------------------------
-        
+            Columns(2) = Replace$(Columns(2), "\\\\", ";")
+            
+            If UBound(Columns) > 2 Then
+                Columns(3) = Replace$(Columns(3), "\\\\", ";")
+            End If
+            
             With g_TasksWL(i)
                 .OSver = Val(Replace$(Columns(0), ",", "."))
                 
@@ -2785,7 +3691,7 @@ Private Sub LoadResources()
                         
                         'additional check in case 'FindOnPath' didn't find executable
                         g_TasksWL(ID).RunObj = g_TasksWL(ID).RunObj & IIf(Len(g_TasksWL(ID).RunObj) = 0, "", "|") & .RunObj
-                        g_TasksWL(ID).Args = g_TasksWL(ID).Args & IIf(Len(g_TasksWL(ID).Args) = 0, "", "|") & .Args
+                        g_TasksWL(ID).Args = g_TasksWL(ID).Args & "|" & .Args
                     End If
                 End If
             End With
@@ -2865,7 +3771,7 @@ Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
         Set .dSafeFilters = Nothing
     End With
     MenuReleaseIcons
-    Set HE = Nothing
+    'Set HE = Nothing
     
     'because can still be used by StartupList2
     'Set Reg = Nothing
@@ -3097,7 +4003,7 @@ Private Sub cmdDeleteService_Click() 'Misc Tools -> Delete service ...
         With result
             .Section = "O23"
             .HitLineW = "O23 - Service: " & sServiceName & " (" & sDisplayName & ")"
-            AddServiceToFix .service, DELETE_SERVICE, sServiceName
+            AddServiceToFix .Service, DELETE_SERVICE, sServiceName
             
             If Len(sDllPath) = 0 Then
                 AddFileToFix .File, BACKUP_FILE, sFile 'WARNING !!! Do not delete file (like "sweeping") here, because "ForceMicrosoft" mode is activated! You can remove svchost.exe file by mistake !!!
@@ -3264,7 +4170,7 @@ Private Sub cmdN00bHJTQuickStart_Click()
     
     'szQSUrl = "https://www.bleepingcomputer.com/tutorials/how-to-use-hijackthis/"
     
-    OpenURL "http://dragokas.com/tools/help/hjt_tutorial.html", "http://regist.safezone.cc/hijackthis_help/hijackthis.html", True
+    OpenURL "https://dragokas.com/tools/help/hjt_tutorial.html", "https://regist.safezone.cc/hijackthis_help/hijackthis.html", True
 End Sub
 
 '// Do a system scan and save a log file
@@ -3744,13 +4650,13 @@ Private Sub cmdFix_Click()
     On Error GoTo ErrorHandler:
     
     AppendErrorLogCustom "frmMain.cmdFix_Click - Begin"
-    
-    Dim i&, j&, sPrefix$, pos&, sItem$
+
+    Dim i&, j&, sPrefix$, pos&, sItem$, sSubSection$
     Dim bFlushDNS As Boolean
     Dim bO24Fixed As Boolean
     Dim bO14Fixed As Boolean
     Dim bRestartExplorer As Boolean
-    
+
     Dim result As SCAN_RESULT
     
     If lstResults.SelCount = 0 Then
@@ -3774,7 +4680,11 @@ Private Sub cmdFix_Click()
     
     If lstResults.ListCount = 0 Then Exit Sub
     
-    If (lstResults.ListCount = lstResults.SelCount) And (InStr(1, Command(), "StartupScan", 1) = 0) And (lstResults.SelCount > 5) Then '/startupscan
+    '/startupscan
+    '/noGUI
+    If (lstResults.ListCount = lstResults.SelCount) And (Not HasCommandLineKey("StartupScan")) And (lstResults.SelCount > 5) And _
+        (Not g_bNoGUI) Then
+        
         If MsgBoxW(Translate(345), vbExclamation Or vbYesNo) = vbNo Then Exit Sub
 '        If msgboxW("You selected to fix everything HiJackThis has found. " & _
 '                  "This could mean items important to your system " & _
@@ -3787,7 +4697,7 @@ Private Sub cmdFix_Click()
 '                  "results?", vbExclamation + vbYesNo) = vbNo Then Exit Sub
     End If
     
-    If bConfirm Then
+    If bConfirm And Not HasCommandLineKey("noGUI") Then
         'lstResults.ListIndex = -1
         If MsgBoxW(Replace$(Translate(346), "[]", lstResults.SelCount) & _
            IIf(bMakeBackup, ".", ", " & Translate(347)), vbQuestion + vbYesNo, g_AppName) = vbNo Then Exit Sub
@@ -3797,14 +4707,18 @@ Private Sub cmdFix_Click()
 '         IIf(bMakeBackup, ".", ", unless you enable backups."), vbQuestion + vbYesNo) = vbNo Then Exit Sub
     End If
     
-    LockInterface bAllowInfoButtons:=False, bDoUnlock:=False
+    If Not g_bNoGUI Then
+        LockInterface bAllowInfoButtons:=False, bDoUnlock:=False
+    End If
     
     IncreaseNumberOfFixes 'save number of fixes for today in registry
     
     IncreaseFixID 'to track same items
     
-    SetProgressBar lstResults.SelCount + 1
-    UpdateProgressBar "Backup"
+    If Not g_bNoGUI Then
+        SetProgressBar lstResults.SelCount + 1
+        UpdateProgressBar "Backup"
+    End If
     
     If bMakeBackup Then
         'Creating FULL registry backup
@@ -3820,6 +4734,7 @@ Private Sub cmdFix_Click()
     bShownBHOWarning = False
     bShownToolbarWarning = False
     bSeenHostsFileAccessDeniedWarning = False
+    bNeedRebuildPolicyChain = False
     
     Call GetProcesses(gProcess)
     
@@ -3838,6 +4753,7 @@ Private Sub cmdFix_Click()
             pos = InStr(sItem, "-")
             If pos <> 0 Then
                 sPrefix = Trim$(Left$(sItem, pos - 1))
+                sSubSection = Trim$(Mid$(sItem, pos + 1))
             End If
             
             If j = 0 Then
@@ -3851,11 +4767,13 @@ Private Sub cmdFix_Click()
               If j = 0 Then
                 MakeBackup result
               Else
-                UpdateProgressBar sPrefix
+                If Not g_bNoGUI Then
+                    UpdateProgressBar sPrefix
+                End If
                 
                 bRebootRequired = bRebootRequired Or result.Reboot
             
-                Select Case sPrefix ' RTrim$(Left$(lstResults.List(i), 3))
+                Select Case sPrefix
                 Case "R0", "R1", "R2": FixRegItem sItem, result
                 Case "R3":             FixR3Item sItem, result
                 Case "R4":             FixR4Item sItem, result
@@ -3895,7 +4813,9 @@ Private Sub cmdFix_Click()
                            vbInformation, "bad coder - no donuts"
                            
                     'Fixing of [] is not implemented yet."
-                    MsgBoxW Replace$(Translate(348), "[]", sPrefix, vbInformation)
+                    If Not g_bNoGUI Then
+                        MsgBoxW Replace$(Translate(348), "[]", sPrefix, vbInformation)
+                    End If
                 End Select
               End If
             End If
@@ -3909,10 +4829,13 @@ Private Sub cmdFix_Click()
     
     If bRestartExplorer Then RestartExplorer
     If bFlushDNS Then FlushDNS
+    If bNeedRebuildPolicyChain Then PolicyScripts_RebuildChain
     If bUpdatePolicyNeeded Then UpdatePolicy
     If bO24Fixed Then FixO24Item_Post ' restart shell
     
-    UpdateProgressBar "Finish"
+    If Not g_bNoGUI Then
+        UpdateProgressBar "Finish"
+    End If
     lstResults.Clear
     
     bScanExecuted = False
@@ -3922,16 +4845,36 @@ Private Sub cmdFix_Click()
         RestartExplorer
     End If
     
+    Dim bShouldReboot As Boolean
+    Dim bSilentReboot As Boolean
+    Dim bServerReboot As Boolean
+    
     If bRebootRequired Then
+        If Not g_bNoGUI Then
+            bShouldReboot = True
+            bSilentReboot = False
+            bServerReboot = False
+        Else
+            If HasCommandLineKey("reboot") Then
+                bShouldReboot = True
+                bSilentReboot = True
+                bServerReboot = True
+            End If
+        End If
+    End If
+    
+    If bShouldReboot Then
         RegSaveHJT "RebootRequired", 1
-        RestartSystem ': bRebootRequired = False
+        RestartSystem "", bSilentReboot, bServerReboot
     End If
     
     'CloseProgressbar 'leave progressBar visible to ensure the user saw completion of cure
     
-    If Not inIDE Then MessageBeep MB_ICONINFORMATION
+    If (Not inIDE) And (Not g_bNoGUI) Then MessageBeep MB_ICONINFORMATION
     
-    LockInterface bAllowInfoButtons:=True, bDoUnlock:=True
+    If Not g_bNoGUI Then
+        LockInterface bAllowInfoButtons:=True, bDoUnlock:=True
+    End If
     
     cmdFix.Enabled = False
     cmdFix.FontBold = False
@@ -4083,6 +5026,8 @@ Private Sub cmdScan_Click()
         isRanHJT_Scan = True
     End If
     cmdScan.Enabled = False
+    cmdN00bLog.Enabled = False
+    cmdN00bScan.Enabled = False
     cmdFix.Enabled = False
     cmdSaveDef.Enabled = False
     
@@ -4136,13 +5081,15 @@ Private Sub cmdScan_Click()
             End If
         End If
         
-        'we are on the results window frame?
-        If lstResults.Visible Then
+        'we are on the results window frame? - why did I check it ???
+        'If lstResults.Visible Then
             cmdScan.Enabled = True
+            cmdN00bLog.Enabled = True
+            cmdN00bScan.Enabled = True
             cmdFix.Enabled = True
             cmdAnalyze.Enabled = True
             cmdSaveDef.Enabled = True
-        End If
+        'End If
         
         If Not bAutoLog Then
             If Not IsFormForeground(frmSearch) Then
@@ -4190,6 +5137,8 @@ Private Sub cmdScan_Click()
         UpdateProgressBar "Finish"
         
         cmdScan.Enabled = True
+        cmdN00bLog.Enabled = True
+        cmdN00bScan.Enabled = True
         cmdFix.Enabled = True
     End If
     
@@ -4224,6 +5173,8 @@ ErrorHandler:
     ErrorMsg Err, "cmdScan_Click", "(" & cmdScan.Caption & ")"
     If bAutoLogSilent Then LockInterface bAllowInfoButtons:=True, bDoUnlock:=True
     cmdScan.Enabled = True
+    cmdN00bLog.Enabled = True
+    cmdN00bScan.Enabled = True
     cmdFix.Enabled = True
     isRanHJT_Scan = False
     If inIDE Then Stop: Resume Next
@@ -4370,11 +5321,6 @@ Private Sub Form_Resize()
     fraConfigTabs(1).Width = Me.ScaleWidth - 480
     fraConfigTabs(2).Width = Me.ScaleWidth - 480
     fraConfigTabs(3).Width = Me.ScaleWidth - 480
-    '(main)
-    txtDefSearchAss.Width = Me.ScaleWidth - 2640
-    txtDefSearchCust.Width = Me.ScaleWidth - 2640
-    txtDefSearchPage.Width = Me.ScaleWidth - 2640
-    txtDefStartPage.Width = Me.ScaleWidth - 2640
     '(ignorelist)
     lstIgnore.Width = Me.ScaleWidth - 1800
     cmdConfigIgnoreDelSel.Left = Me.ScaleWidth - 1575
@@ -4473,11 +5419,27 @@ Private Sub LoadSettings()
     
     chkIgnoreMicrosoft.Value = CInt(RegReadHJT("HideMicrosoft", "1", bUseOldKey))
     chkIgnoreAll.Value = CInt(RegReadHJT("IgnoreAllWhiteList", "0", bUseOldKey))
-    chkDoMD5.Value = CInt(RegReadHJT("CalcMD5", "0", bUseOldKey))
+    
+    Dim sHashType As String
+    chkDoCheckSum.Value = CInt(RegReadHJT("CalcMD5", "0", bUseOldKey)) ' Calc CheckSum ?
+    sHashType = RegReadHJT("HashType", "", bUseOldKey)
+    If sHashType = "" Then
+        sHashType = "Newest"
+        RegSaveHJT "HashType", sHashType
+    End If
+    Select Case sHashType
+    Case "Newest"
+        optSha1.Value = True
+    Case "SHA1"
+        optSha1.Value = True
+    Case "MD5"
+        optMd5.Value = True
+    End Select
+    g_bUseMD5 = optMd5.Value
     
     bHideMicrosoft = chkIgnoreMicrosoft.Value
     bIgnoreAllWhitelists = chkIgnoreAll.Value
-    bMD5 = chkDoMD5.Value
+    g_bCheckSum = chkDoCheckSum.Value
     
     ' Fix & Backup
     
@@ -4501,15 +5463,18 @@ Private Sub LoadSettings()
     
     g_FontName = RegReadHJT("FontName", "")
     g_FontSize = RegReadHJT("FontSize", "Auto")
-
+    g_bFontBold = CInt(RegReadHJT("FontBold", "1"))
+    
     If Len(g_FontName) = 0 Then
         If FontExist("MS Sans Serif") Then
             g_FontName = "MS Sans Serif"
-            g_FontSize = "10"
+            g_FontSize = "9"
         Else
             g_FontName = "Automatic"
         End If
+        g_bFontBold = True
     End If
+    Me.chkFontBold.Value = Abs(g_bFontBold)
     
     chkFontWholeInterface.Value = CInt(RegReadHJT("FontOnInterface", "0"))
     
@@ -4566,9 +5531,7 @@ Private Sub LoadSettings()
     LastVerLaunched = RegReadHJT("Version", "", bUseOldKey)
     If ConvertVersionToNumber(LastVerLaunched) < ConvertVersionToNumber("2.6.1.21") Then isEncodedVer = True
     
-    Dim CryptVer As Long, iIgnoreNum As Long, i As Long
-    
-    CryptVer = Val(RegReadHJT("CryptVer", "1"))
+    Dim iIgnoreNum As Long, i As Long
     
     If CryptVer < 2 Then
         RegSaveHJT "CryptVer", 2
@@ -4594,67 +5557,63 @@ Private Sub LoadSettings()
     sData = RegReadHJT("DefStartPage", "", bUseOldKey)
     'StrBeginWith(sData, "http") - необходим дл€ обратной совместимости со старыми верси€ми HJT, чтобы не было конфликта криптографического модул€
     If sData = "" Or StrBeginWith(sData, "http") Or isEncodedVer Then
-        g_DEFSTARTPAGE = "http://www.msn.com/"
+        g_DEFSTARTPAGE = NormalizeInetProtocol("https://www.msn.com")
     Else
         If CryptVer = 1 Then
             g_DEFSTARTPAGE = CryptV1(sData, doCrypt:=False)
-        ElseIf CryptVer = 2 Then
+        ElseIf CryptVer >= 2 Then
             g_DEFSTARTPAGE = DeCrypt(Decode64(sData))
         Else
-            g_DEFSTARTPAGE = "http://www.msn.com/"
+            g_DEFSTARTPAGE = NormalizeInetProtocol("https://www.msn.com")
         End If
     End If
-    txtDefStartPage.Text = g_DEFSTARTPAGE
 
     sData = RegReadHJT("DefSearchPage", "", bUseOldKey)
     If sData = "" Or StrBeginWith(sData, "http") Or isEncodedVer Then
-        g_DEFSEARCHPAGE = "http://www.microsoft.com/isapi/redir.dll?prd=ie&ar=iesearch"
+        g_DEFSEARCHPAGE = NormalizeInetProtocol("https://www.msn.com/")
     Else
         If CryptVer = 1 Then
             g_DEFSEARCHPAGE = CryptV1(sData, doCrypt:=False)
-        ElseIf CryptVer = 2 Then
+        ElseIf CryptVer >= 2 Then
             g_DEFSEARCHPAGE = DeCrypt(Decode64(sData))
         Else
-            g_DEFSEARCHPAGE = "http://www.microsoft.com/isapi/redir.dll?prd=ie&ar=iesearch"
+            g_DEFSEARCHPAGE = NormalizeInetProtocol("https://www.msn.com/")
         End If
     End If
-    txtDefSearchPage.Text = g_DEFSEARCHPAGE
     
     sData = RegReadHJT("DefSearchAss", "", bUseOldKey)
     If sData = "" Or StrBeginWith(sData, "http") Or isEncodedVer Then
-        g_DEFSEARCHASS = "http://ie.search.msn.com/{SUB_RFC1766}/srchasst/srchasst.htm"
+        g_DEFSEARCHASS = ""
     Else
         If CryptVer = 1 Then
             g_DEFSEARCHASS = CryptV1(sData, doCrypt:=False)
-        ElseIf CryptVer = 2 Then
+        ElseIf CryptVer >= 2 Then
             g_DEFSEARCHASS = DeCrypt(Decode64(sData))
         Else
-            g_DEFSEARCHASS = "http://ie.search.msn.com/{SUB_RFC1766}/srchasst/srchasst.htm"
+            g_DEFSEARCHASS = ""
         End If
     End If
-    txtDefSearchAss.Text = g_DEFSEARCHASS
     
     sData = RegReadHJT("DefSearchCust", "", bUseOldKey)
     If sData = "" Or StrBeginWith(sData, "http") Or isEncodedVer Then
-        g_DEFSEARCHCUST = "http://ie.search.msn.com/{SUB_RFC1766}/srchasst/srchcust.htm"
+        g_DEFSEARCHCUST = ""
     Else
         If CryptVer = 1 Then
             g_DEFSEARCHCUST = CryptV1(sData, doCrypt:=False)
-        ElseIf CryptVer = 2 Then
+        ElseIf CryptVer >= 2 Then
             g_DEFSEARCHCUST = DeCrypt(Decode64(sData))
         Else
-            g_DEFSEARCHCUST = "http://ie.search.msn.com/{SUB_RFC1766}/srchasst/srchcust.htm"
+            g_DEFSEARCHCUST = ""
         End If
     End If
-    txtDefSearchCust.Text = g_DEFSEARCHCUST
     
     UpdateIE_RegVals
     
     For i = 0 To UBound(sFileVals)
-        If sFileVals(i) = vbNullString Then Exit For
+        If Len(sFileVals(i)) = 0 Then Exit For
         'sFileVals(i) = replace$(sFileVals(i), "$WINDIR", sWinDir)
         sFileVals(i) = EnvironW(sFileVals(i))
-    Next i
+    Next
     
     ' move registry settings from old key to new
     If bUseOldKey Then
@@ -4665,6 +5624,29 @@ Private Sub LoadSettings()
     End If
     
     IsOnIgnoreList "", UpdateList:=True
+    
+    If CryptVer = 2 Then
+        'need to reEncode
+        iIgnoreNum = Val(RegReadHJT("IgnoreNum", "0"))
+        If iIgnoreNum > 0 Then
+            ReDim aIgnoreList(iIgnoreNum) As String
+            For i = 1 To iIgnoreNum
+                aIgnoreList(i) = DeCrypt(RegReadHJT("Ignore" & i, vbNullString))
+            Next
+        End If
+        
+        RegSaveHJT "CryptVer", 3: CryptVer = 3
+        cryptInit
+        
+        If iIgnoreNum > 0 Then
+            For i = 1 To iIgnoreNum
+                RegSaveHJT "Ignore" & CStr(i), Crypt(aIgnoreList(i))
+            Next i
+        End If
+        
+        SaveSettings
+        LoadSettings
+    End If
     
     AppendErrorLogCustom "frmMain.LoadSettings - End"
     Exit Sub
@@ -4754,7 +5736,7 @@ Private Sub cboN00bLanguage_Click()
     
     sFile = cboN00bLanguage.List(cboN00bLanguage.ListIndex)
     
-    If InStr(1, Command$(), "/default", 1) > 0 Then sFile = "English"
+    If HasCommandLineKey("default") Then sFile = "English"
     
     If Len(sFile) = 0 Then Exit Sub
     If sFile = "English" Then
@@ -4883,7 +5865,7 @@ Private Sub mnuToolsShortcutsFixer_Click()      'Tools -> Shortcuts -> ClearLNK
 End Sub
 
 Private Sub mnuHelpManualEnglish_Click()
-    Dim szQSUrl$: szQSUrl = "http://dragokas.com/tools/help/hjt_tutorial.html"
+    Dim szQSUrl$: szQSUrl = "https://dragokas.com/tools/help/hjt_tutorial.html"
     ShellExecute Me.hwnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
 End Sub
 Private Sub mnuHelpManualRussian_Click()
@@ -4963,7 +5945,7 @@ Sub SaveSettings()
     bSkipErrorMsg = IIf(chkSkipErrorMsg.Value = 1, True, False)
     bMinToTray = IIf(chkConfigMinimizeToTray.Value = 1, True, False)
     bLogEnvVars = (chkAdvLogEnvVars.Value = 1)
-    bMD5 = (chkDoMD5.Value = 1)
+    g_bCheckSum = (chkDoCheckSum.Value = 1)
     bCheckForUpdates = IIf(chkCheckUpdatesOnStart.Value = 1, True, False)
     
     RegSaveHJT "AutoSelect", CStr(Abs(CInt(bAutoSelect)))
@@ -4975,12 +5957,13 @@ Sub SaveSettings()
     RegSaveHJT "SkipIntroFrame", CStr(chkSkipIntroFrameSettings.Value)
     RegSaveHJT "SkipErrorMsg", CStr(Abs(CInt(bSkipErrorMsg)))
     RegSaveHJT "MinToTray", CStr(Abs(CInt(bMinToTray)))
-    RegSaveHJT "DefStartPage", Encode64(Crypt(txtDefStartPage.Text))
-    RegSaveHJT "DefSearchPage", Encode64(Crypt(txtDefSearchPage.Text))
-    RegSaveHJT "DefSearchAss", Encode64(Crypt(txtDefSearchAss.Text))
-    RegSaveHJT "DefSearchCust", Encode64(Crypt(txtDefSearchCust.Text))
+    RegSaveHJT "DefStartPage", Encode64(Crypt(g_DEFSTARTPAGE))
+    RegSaveHJT "DefSearchPage", Encode64(Crypt(g_DEFSEARCHPAGE))
+    RegSaveHJT "DefSearchAss", Encode64(Crypt(g_DEFSEARCHASS))
+    RegSaveHJT "DefSearchCust", Encode64(Crypt(g_DEFSEARCHCUST))
     RegSaveHJT "LogEnvVars", Abs(CLng(bLogEnvVars))
-    RegSaveHJT "CalcMD5", Abs(CLng(bMD5))
+    RegSaveHJT "CalcMD5", Abs(CLng(g_bCheckSum)) 'CalcMD5 - for backward compatibility, actual meaning is "Calc CheckSum"
+    RegSaveHJT "HashType", IIf(g_bUseMD5, "MD5", "Newest")
     RegSaveHJT "CheckForUpdates", CStr(Abs(CInt(bCheckForUpdates)))
     RegSaveHJT "UpdateToTest", CStr(Abs(CInt(bUpdateToTest)))
     RegSaveHJT "UpdateSilently", CStr(Abs(CInt(bUpdateSilently)))
@@ -5006,8 +5989,6 @@ Private Sub lstResults_MouseUp(Button As Integer, Shift As Integer, X As Single,
     
     Dim result As SCAN_RESULT
     Dim sItem As String
-    Dim sPrefix As String
-    Dim pos As Long
     Dim i As Long, j As Long
     Dim RegItems As Long
     Dim FileItems As Long
@@ -5036,16 +6017,28 @@ Private Sub lstResults_MouseUp(Button As Integer, Shift As Integer, X As Single,
         If lstResults.ListIndex = -1 Then   'item not selected ?
             mnuResultInfo.Enabled = False
             mnuResultSearch.Enabled = False
+            On Error Resume Next
             mnuResultDelim1.Enabled = False
+            On Error GoTo 0
         Else
             mnuResultInfo.Enabled = True
             mnuResultSearch.Enabled = True
-            mnuResultDelim1.Enabled = True
+            On Error Resume Next
+            mnuResultDelim1.Enabled = True ' wtf this one is rarely returns "'Enabled' property can't be set on this control"
+            On Error GoTo 0
         End If
         If lstResults.ListCount = 0 Then    'no items
             mnuResultAddALLToIgnore.Enabled = False
         Else
             mnuResultAddALLToIgnore.Enabled = True
+        End If
+        mnuSaveReport.Enabled = True
+        mnuResultReScan.Enabled = True
+        
+        If isRanHJT_Scan Then
+            mnuResultFix.Enabled = False
+            mnuSaveReport.Enabled = False
+            mnuResultReScan.Enabled = False
         End If
         
         Erase JumpFileCache
@@ -5057,11 +6050,41 @@ Private Sub lstResults_MouseUp(Button As Integer, Shift As Integer, X As Single,
         sItem = GetSelected_OrCheckedItem()
         
         If sItem <> "" Then
-            pos = InStr(sItem, "-")
-            If pos <> 0 Then
-                sPrefix = Trim$(Left$(sItem, pos - 1))
-            End If
+        
             If GetScanResults(sItem, result) Then
+                
+                If result.Section = "O22" Or result.Section = "O23" Then 'services & tasks
+                    mnuResultDisable.Visible = True
+                    
+                    If result.State = ITEM_STATE_ENABLED Then
+                        mnuResultDisable.Caption = Translate(1168) ' "Disable"
+                    Else
+                        mnuResultDisable.Caption = Translate(1169) ' "Enable"
+                    End If
+                    
+                    If result.Section = "O22" Then
+                    
+                        If StrBeginWith(sItem, "O22 - Task (.job)") Then
+                        
+                            mnuResultDisable.Enabled = False
+                        Else
+                            mnuResultDisable.Enabled = True
+                        End If
+                        
+                    ElseIf result.Section = "O23" Then
+                        
+                        If StrBeginWith(sItem, "O23 - Service") Then
+                        
+                            mnuResultDisable.Enabled = True
+                        Else
+                            mnuResultDisable.Enabled = False
+                        End If
+                    End If
+                    
+                Else
+                    mnuResultDisable.Visible = False
+                End If
+                
                 If AryPtr(result.File) Or AryPtr(result.Reg) Or AryPtr(result.Jump) Then
                     mnuResultJump.Enabled = True
                     
@@ -5106,6 +6129,8 @@ Private Sub lstResults_MouseUp(Button As Integer, Shift As Integer, X As Single,
                     
                 End If
             End If
+        Else
+            mnuResultDisable.Visible = False
         End If
         PopupMenu mnuResultList
     End If
@@ -5281,6 +6306,54 @@ Private Sub mnuResultAddALLToIgnore_Click()  'Add to ignore list
     End If
 End Sub
 
+Private Sub mnuResultDisable_Click() 'Disable (Tasks & Services)
+    
+    Dim result As SCAN_RESULT
+    Dim sItem As String
+    Dim idx As Long
+    
+    sItem = GetSelected_OrCheckedItem()
+    
+    If sItem <> "" Then
+        If GetScanResults(sItem, result, idx) Then
+            
+            If result.Section = "O22" Then
+                
+                If result.State = ITEM_STATE_ENABLED Then
+                
+                    DisableTask result.Name
+                    Scan(idx).State = ITEM_STATE_DISABLED
+                Else
+                    EnableTask result.Name
+                    Scan(idx).State = ITEM_STATE_ENABLED
+                End If
+            
+            ElseIf result.Section = "O23" Then
+            
+                If result.State = ITEM_STATE_ENABLED Then
+            
+                    SetServiceStartMode result.Name, SERVICE_MODE_DISABLED
+                    StopService result.Name
+                    Scan(idx).State = ITEM_STATE_DISABLED
+                Else
+                    SetServiceStartMode result.Name, SERVICE_MODE_AUTOMATIC
+                    StartService result.Name
+                    Scan(idx).State = ITEM_STATE_ENABLED
+                End If
+            End If
+            
+            If result.State = ITEM_STATE_ENABLED Then
+            
+                MsgBoxW Replace$(Translate(353), "[]", result.Name), vbInformation
+            Else
+                MsgBoxW Replace$(Translate(354), "[]", result.Name), vbInformation
+            End If
+            
+        End If
+    End If
+    
+End Sub
+
 Private Sub mnuResultSearch_Click()       'Search on Google
     Dim sItem$, sURL$, pos&
     sItem = lstResults.List(lstResults.ListIndex)
@@ -5294,7 +6367,8 @@ End Sub
 Private Sub mnuResultReScan_Click()       'ReScan
     cmdScan.Caption = Translate(11)
     cmdScan.Tag = "1"
-    cmdScan_Click
+    'cmdScan_Click
+    tmrRunScan.Enabled = True
 End Sub
 
 Private Sub mnuSaveReport_Click()         'Save report...
@@ -5313,6 +6387,8 @@ Private Sub chkHelp_Click(Index As Integer)
     Dim sText As String
     Dim sSeparator$
     Dim aSect() As Variant
+    
+    TextBox_SetMargin txtHelp, 20, 20
     
     frmMain.pictLogo.Visible = False
     lblInfo(0).Visible = False
@@ -5391,8 +6467,10 @@ Private Sub chkHelp_Click(Index As Integer)
                 Replace$(Translate(j), "\\p", "") & vbCrLf
         Next
         
-        txtHelp.Text = sText
-    
+        TextBox_SetUnlimitSize txtHelp, Len(sText)
+        'txtHelp.Text = sText
+        SendMessage txtHelp.hwnd, WM_SETTEXT, 0&, ByVal StrPtr(sText)
+        
     Case 1: 'Keys
         g_CurFrame = FRAME_ALIAS_HELP_KEYS
         txtHelp.Text = Translate(32)
@@ -5401,14 +6479,36 @@ Private Sub chkHelp_Click(Index As Integer)
         g_CurFrame = FRAME_ALIAS_HELP_PURPOSE
         txtHelp.Text = Translate(33) & TranslateNative(34)
     
-    Case 3: 'History
+    Case 3: 'History (Version history)
         g_CurFrame = FRAME_ALIAS_HELP_HISTORY
-        ' Version history:
-        txtHelp.Text = g_VersionHistory
+        TextBox_SetUnlimitSize txtHelp, Len(g_VersionHistory)
+        'txtHelp.Text = g_VersionHistory 'VB6's .Text property doesn't support over limit!
+        SendMessage txtHelp.hwnd, WM_SETTEXT, 0&, ByVal StrPtr(g_VersionHistory)
     End Select
     
     bSwitchingTabs = False
     LastIdx = Index
+End Sub
+
+Private Sub TextBox_SetUnlimitSize(txt As TextBox, Optional iMaxSize As Long)
+    
+    Dim iSize As Long
+    
+    If iMaxSize <> 0 Then iSize = iMaxSize + 2
+    
+    SendMessage txt.hwnd, EM_LIMITTEXT, iSize, ByVal 0&
+    SendMessage txt.hwnd, &H400 + 21, iSize, ByVal 0&
+End Sub
+
+Private Sub TextBox_SetMargin(txt As TextBox, left_margin As Long, right_margin As Long)
+    
+    SendMessage txt.hwnd, EM_SETMARGINS, EC_LEFTMARGIN Or EC_RIGHTMARGIN, ByVal (right_margin * &H10000 + left_margin)
+    
+    ' Reset the text to make the right margin work
+    Dim s As String
+    s = txt.Text
+    txt.Text = ""
+    txt.Text = s
 End Sub
 
 Function FindLine(sPartialText As String, sFullText As String) As String
@@ -5499,9 +6599,11 @@ Private Sub chkIgnoreAll_Click()
     RegSaveHJT "IgnoreAllWhiteList", Abs(CLng(bIgnoreAllWhitelists))
 End Sub
 
-Private Sub chkDoMD5_Click()
-    bMD5 = (chkDoMD5.Value = 1)
-    RegSaveHJT "CalcMD5", Abs(CLng(bMD5))
+Private Sub chkDoCheckSum_Click()
+    g_bCheckSum = (chkDoCheckSum.Value = 1)
+    RegSaveHJT "CalcMD5", Abs(CLng(g_bCheckSum))
+    optMd5.Enabled = g_bCheckSum
+    optSha1.Enabled = g_bCheckSum
 End Sub
 
 Private Sub chkConfigStartupScan_Click()
@@ -5536,7 +6638,9 @@ End Sub
 '======= UPDATES and PROXY controls
 
 Private Sub cmdCheckUpdate_Click() 'Misc Tools -> Check for update online
+    cmdCheckUpdate.Enabled = False
     CheckForUpdate False, bUpdateSilently, bUpdateToTest
+    cmdCheckUpdate.Enabled = True
     If g_NeedTerminate Then Unload Me
 End Sub
 
@@ -5605,6 +6709,10 @@ Private Sub cmbFontSize_Click()
     SetFontByUserSettings
 End Sub
 
+Private Sub chkFontBold_Click()
+    SetFontByUserSettings
+End Sub
+
 Private Sub SetFontByUserSettings()
     On Error GoTo ErrorHandler:
     
@@ -5622,14 +6730,16 @@ Private Sub SetFontByUserSettings()
         g_FontSize = cmbFontSize.List(cmbFontSize.ListIndex)
     End If
     If g_FontSize = "0" Then g_FontSize = "8"
+    g_bFontBold = (chkFontBold.Value = vbChecked)
     
     For Each frm In Forms
-        SetAllFontCharset frm, g_FontName, g_FontSize
+        SetAllFontCharset frm, g_FontName, g_FontSize, g_bFontBold
         'SetMenuFont Frm.hwnd, g_FontName, g_FontSize
     Next
     
     RegSaveHJT "FontName", g_FontName
     RegSaveHJT "FontSize", g_FontSize
+    RegSaveHJT "FontBold", CInt(g_bFontBold)
     
     Exit Sub
 ErrorHandler:
@@ -5643,3 +6753,8 @@ Private Sub chkFontWholeInterface_Click()
     g_FontOnInterface = chkFontWholeInterface.Value
     SetFontByUserSettings
 End Sub
+
+Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
+    ProcessHotkey KeyCode, Me
+End Sub
+

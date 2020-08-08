@@ -367,15 +367,17 @@ End Type
 'Public Declare Function CreateProcessWithTokenW Lib "Advapi32.dll" (ByVal hToken As Long, ByVal dwLogonFlags As Long, ByVal lpApplicationName As Long, ByVal lpCommandLine As Long, ByVal dwCreationFlags As Long, ByVal lpEnvironment As Long, ByVal lpCurrentDirectory As Long, lpStartupInfo As STARTUPINFO, lpProcessInfo As PROCESS_INFORMATION) As Long
 'Public Declare Function OpenThreadToken Lib "Advapi32.dll" (ByVal ThreadHandle As Long, ByVal DesiredAccess As Long, ByVal OpenAsSelf As Long, TokenHandle As Long) As Long
 'Public Declare Function DuplicateTokenEx  Lib "Advapi32.dll" (byval hExistingToken as Long, byval dwDesiredAccess as Long, lpTokenAttributes as SECURITY_ATTRIBUTES , byval ImpersonationLevel as SECURITY_IMPERSONATION_LEVEL
+Private Declare Function FileTimeToSystemTime Lib "kernel32.dll" (ByVal lpFileTime As Long, lpSystemTime As SYSTEMTIME) As Long
+Private Declare Function SystemTimeToTzSpecificLocalTime Lib "kernel32.dll" (ByVal lpTimeZone As Any, lpUniversalTime As SYSTEMTIME, lpLocalTime As SYSTEMTIME) As Long
 
-Private Declare Function NtWow64QueryInformationProcess64 Lib "NTDLL.DLL" ( _
+Private Declare Function NtWow64QueryInformationProcess64 Lib "ntdll.dll" ( _
     ByVal ProcessHandle As Long, _
     ByVal ProcessInformationClass As PROCESS_INFORMATION_CLASS, _
     ByVal ProcessInformation As Long, _
     ByVal ProcessInformationLength As Long, _
     ByVal ReturnLength As Long) As Long
 
-Private Declare Function NtWow64ReadVirtualMemory64 Lib "NTDLL.DLL" ( _
+Private Declare Function NtWow64ReadVirtualMemory64 Lib "ntdll.dll" ( _
     ByVal ProcessHandle As Long, _
     ByVal BaseAddress As Currency, _
     ByVal Buffer As Long, _
@@ -435,35 +437,60 @@ Public Sub AcquirePrivileges()
 End Sub
 
 Public Function KillProcess(lPID&) As Boolean
-    Dim hProcess&
+    Dim hProcess&, lCriticalFlag&
     If lPID = 0 Then Exit Function
+    
+    Dim sTaskKill As String
+    If OSver.Bitness = "x64" And FolderExists(sWinDir & "\sysnative") Then
+        sTaskKill = EnvironW("%SystemRoot%") & "\Sysnative\taskkill.exe"
+    Else
+        sTaskKill = EnvironW("%SystemRoot%") & "\System32\taskkill.exe"
+    End If
+    
     hProcess = OpenProcess(PROCESS_TERMINATE, 0, lPID)
-    If hProcess = 0 Then
+    If hProcess <> 0 Then
+        lCriticalFlag = 0
+        If GetProcessCriticalFlag(lPID, lCriticalFlag) Then
+            If lCriticalFlag <> 0 Then
+                Call SetProcessCriticalFlag(lPID, False)
+            End If
+            Call GetProcessCriticalFlag(lPID, lCriticalFlag)
+        End If
+        
+        If lCriticalFlag = 0 Then
+            If TerminateProcess(hProcess, 0) = 0 Then
+                If FileExists(sTaskKill) Then
+                    Proc.ProcessRun sTaskKill, "/F /PID " & lPID, , 0
+                    Proc.WaitForTerminate , , , 10000
+                End If
+            End If
+        End If
+        CloseHandle hProcess
+    Else
+        If FileExists(sTaskKill) Then
+            Proc.ProcessRun sTaskKill, "/F /PID " & lPID, , 0
+            Proc.WaitForTerminate , , , 10000
+        End If
+    End If
+    
+    'SleepNoLock 500
+    If Proc.IsRunned(, lPID) Then
         If OSver.MajorMinor >= 6 Then
             'The selected process could not be killed. It may have already closed, or it may be protected by Windows.
             'This process might be a service, which you can stop from the Services applet in Control Panel -> Admin Tools.
             '(To load this window, click 'Win + R' and enter 'services.msc')
-            MsgBoxW Translate(1654), vbCritical
+            If Not g_bNoGUI Then
+                MsgBoxW Translate(1654), vbCritical
+            End If
         Else
             'The selected process could not be killed." & _
                " It may have already closed, or it may be protected by Windows.
-            MsgBoxW Translate(1652), vbCritical
-        End If
-    Else
-        If TerminateProcess(hProcess, 0) = 0 Then
-            'The selected process could not be killed." & _
-                   " It may be protected by Windows.
-            MsgBoxW Translate(1653), vbCritical
-        Else
-            'get confirmation
-            SleepNoLock 500
-            If Not Proc.IsRunned(, lPID) Then
-                KillProcess = True
-            Else
-                MsgBoxW Translate(1653), vbCritical
+            If Not g_bNoGUI Then
+                MsgBoxW Translate(1652), vbCritical
             End If
         End If
-        CloseHandle hProcess
+    Else
+        KillProcess = True
     End If
 End Function
 
@@ -474,6 +501,7 @@ Public Function PauseProcess(lPID As Long) As Boolean
     
     If Not bIsWinNT And Not bIsWinME Then Exit Function
     If lPID = 0 Or lPID = GetCurrentProcessId Then Exit Function
+    If lPID = MyParentProc.pid Then Exit Function
     
     If IsProcedureAvail("NtSuspendProcess", "ntdll.dll") Then
         hProc = OpenProcess(PROCESS_SUSPEND_RESUME, 0, lPID)
@@ -560,6 +588,8 @@ Public Function KillProcessByFile(sPath$, Optional bForceMicrosoft As Boolean) A
     
     If IsSystemCriticalProcessPath(sPath) Then Exit Function
     
+    If StrComp(sPath, MyParentProc.Path, 1) = 0 And Not StrEndWith(sPath, "explorer.exe") Then Exit Function
+    
     If Not bIsWinNT Then
         KillProcessByFile = KillProcess9xByFile(sPath)
         Exit Function
@@ -606,6 +636,7 @@ Public Function KillProcessByFile(sPath$, Optional bForceMicrosoft As Boolean) A
                     If Not bKilled Then
                         If FileExists(sTaskKill) Then
                             Proc.ProcessRun sTaskKill, "/F /PID " & Process(i).pid, , 0
+                            Proc.WaitForTerminate , , , 10000
                         End If
                     End If
                 End If
@@ -615,7 +646,7 @@ Public Function KillProcessByFile(sPath$, Optional bForceMicrosoft As Boolean) A
     
     'get killing confirmation
     If AryPtr(aPID) Then
-        SleepNoLock 500
+        'SleepNoLock 500
         For i = 0 To UBound(aPID)
             If Proc.IsRunned(, aPID(i)) Then
                 KillProcessByFile = False
@@ -628,6 +659,12 @@ End Function
 
 Public Function PauseProcessByFile(sPath$) As Boolean
     Dim i&
+    
+    If StrComp(sPath, MyParentProc.Path, 1) = 0 Then
+        PauseProcessByFile = True
+        Exit Function
+    End If
+    
     'Note: this sub is silent - it displays no errors !
     If sPath = vbNullString Then Exit Function
     If Not bIsWinNT Then
@@ -854,6 +891,10 @@ Public Function GetProcesses_Zw(ProcList() As MY_PROC_ENTRY) As Long    'Return 
     Dim Process     As SYSTEM_PROCESS_INFORMATION
     Dim ProcName    As String
     Dim ProcPath    As String
+    Dim sTime       As SYSTEMTIME
+    Dim TimeZoneInfo(171)   As Byte
+    
+    GetTimeZoneInformation VarPtr(TimeZoneInfo(0))
     
     ReDim ProcList(200)
     
@@ -900,6 +941,9 @@ Public Function GetProcesses_Zw(ProcList() As MY_PROC_ENTRY) As Long    'Return 
                         .Priority = Process.BasePriority
                         .Threads = Process.NumberOfThreads
                         .SessionID = Process.SessionID
+                        FileTimeToSystemTime VarPtr(Process.CreateTime), sTime
+                        SystemTimeToTzSpecificLocalTime VarPtr(TimeZoneInfo(0)), sTime, sTime
+                        SystemTimeToVariantTime sTime, .CreationTime
                     End With
                     
                     Offset = Offset + .NextEntryOffset
@@ -1810,3 +1854,87 @@ Public Sub KillOtherHJTInstances(Optional sAdditionalDir As String)
     Next
 End Sub
 
+Public Function IsMicrosoftHostFile(sPath As String) As Boolean
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "IsMicrosoftHostFile - Begin"
+    
+    Dim sName As String
+    Dim i As Long
+    sName = GetFileName(sPath, True)
+    
+    Dim aHost(9) As String
+    aHost(0) = "cmd.exe"
+    aHost(1) = "rundll32.exe"
+    aHost(2) = "wmic.exe"
+    aHost(3) = "cscript.exe"
+    aHost(4) = "wscript.exe"
+    aHost(5) = "powershell.exe"
+    aHost(6) = "sc.exe"
+    aHost(7) = "mshta.exe"
+    aHost(8) = "pcalua.exe"
+    aHost(9) = "msiexec.exe"
+    
+    For i = 0 To UBound(aHost)
+        If StrComp(sName, aHost(i), 1) = 0 Then
+            IsMicrosoftHostFile = True
+            Exit Function
+        End If
+    Next
+    
+    AppendErrorLogCustom "IsMicrosoftHostFile - End"
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "IsMicrosoftHostFile"
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Sub KillMicrosoftHostProcesses()
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "FreezeCustomProcesses - Begin"
+    
+    Dim aProcess() As MY_PROC_ENTRY
+    Dim i&, sProc$
+    If GetProcesses(aProcess) Then
+        For i = 0 To UBound(aProcess)
+            With aProcess(i)
+                If Not IsDefaultSystemProcess(.pid, .Name, .Path) Then
+                    If IsMicrosoftHostFile(.Path) Then
+                        KillProcess .pid
+                    End If
+                End If
+            End With
+        Next
+    End If
+    
+    AppendErrorLogCustom "FreezeCustomProcesses - End"
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "FreezeCustomProcesses"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Public Sub FreezeCustomProcesses()
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "FreezeCustomProcesses - Begin"
+    
+    Dim aProcess() As MY_PROC_ENTRY
+    Dim i&, sProc$
+    If GetProcesses(aProcess) Then
+        For i = 0 To UBound(aProcess)
+            With aProcess(i)
+                If Not IsDefaultSystemProcess(.pid, .Name, .Path) Then
+                    If Not IsMicrosoftFile(.Path) Then
+                        PauseProcess .pid
+                    ElseIf IsMicrosoftHostFile(.Path) Then
+                        PauseProcess .pid
+                    End If
+                End If
+            End With
+        Next
+    End If
+    AppendErrorLogCustom "FreezeCustomProcesses - End"
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "FreezeCustomProcesses"
+    If inIDE Then Stop: Resume Next
+End Sub

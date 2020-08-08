@@ -523,6 +523,7 @@ Resend:         '
 
                             'InternetSetCookie "http://" + CheckUrl(sURL), "cookie:", ReturnCookies'
                             For i = 0 To UBound(buff) - 1
+                                'InternetSetCookie IIf(bUseSecure, "https://", "http://") + CheckUrl(sURL), Split(buff(i), "=")(0), Split(buff(i), "=")(1) '& ";expires=Sun,22-Feb-2099 00:00:00 GMT;path=/; "
                                 InternetSetCookie "http://" + CheckUrl(sURL), Split(buff(i), "=")(0), Split(buff(i), "=")(1) '& ";expires=Sun,22-Feb-2099 00:00:00 GMT;path=/; "
                             Next
                         End If
@@ -622,6 +623,7 @@ Private Function CheckUrl(ByVal txtURL As String) As String
         txtURL = Mid$(txtURL, 1, Len(txtURL) - 1)
     End If
     txtURL = Replace(txtURL, "http://", "")
+    txtURL = Replace(txtURL, "https://", "")
 
     If Len(txtURL) = 0 Then txtURL = "www.microsoft.com"
     Dim posSlash As Long
@@ -645,7 +647,8 @@ Private Function GetUrlObject(ByVal txtURL As String) As String
         txtURL = Mid$(txtURL, 1, Len(txtURL) - 1)
     End If
     txtURL = Replace(txtURL, "http://", "")
-
+    txtURL = Replace(txtURL, "https://", "")
+    
     If InStr(txtURL, "/") <> 0 Then
         GetUrlObject = Right(txtURL, Len(txtURL) - InStr(txtURL, "/") + 1)
     Else

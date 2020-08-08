@@ -1,21 +1,21 @@
 VERSION 5.00
 Begin VB.Form frmSysTray 
    Caption         =   "Form1"
-   ClientHeight    =   3015
-   ClientLeft      =   225
-   ClientTop       =   855
+   ClientHeight    =   3024
+   ClientLeft      =   192
+   ClientTop       =   816
    ClientWidth     =   4560
    BeginProperty Font 
       Name            =   "Tahoma"
-      Size            =   8.25
-      Charset         =   1
+      Size            =   8.4
+      Charset         =   204
       Weight          =   400
       Underline       =   0   'False
       Italic          =   0   'False
       Strikethrough   =   0   'False
    EndProperty
    LinkTopic       =   "Form1"
-   ScaleHeight     =   3015
+   ScaleHeight     =   3024
    ScaleWidth      =   4560
    ShowInTaskbar   =   0   'False
    StartUpPosition =   3  'Windows Default
@@ -110,7 +110,7 @@ Public Property Let TrayIcon(Value As Variant)
 End Property
 
 Private Sub Form_Load()
-    SetAllFontCharset Me, g_FontName, g_FontSize
+    SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold
     ReloadLanguage True
     Me.Visible = False
     Tooltip = "HiJackThis v. " & AppVerString

@@ -59,7 +59,8 @@
 1005=Unable to connect to the Internet.
 1006=Done.
 1007=Could not unzip file to Desktop! Please unzip it manually.
-1008=The value '[*]' could not be written to the settings file '[**]'. Please verify that write access is enabled for that file.
+1008=The value '[*]' could not be written to the settings file '[**]'. Please verify that write access is allowed for that file.
+1009=The parameter '[*]' could not be removed from the settings file '[**]'. Please verify that write access is allowed for that file.
 1010=Scanning is not finished! Do you still want to forcibly close the program?
 1011=Warning: Ignore list contains [] items.
 1012=Warning: General scanning was not performed.
@@ -91,8 +92,8 @@
 1041=Do not include in log files and registry related to Microsoft
 1042=Ignore ALL Whitelists
 1043=Include in log any entries regardless whitelist
-1044=Calculate MD5
-1045=Calculate checksum of files (MD5) if possible
+1044=Calculate Checksum
+1045=Calculate checksum of files if possible
 1050=Scan area
 1051=Scan options
 1052=Fix && Backup
@@ -138,6 +139,8 @@
 1165=Add ALL to ignore list
 1166=Jump to Registry / File
 1167=Save Report...
+1168=Disable
+1169=Enable
 ;
 ; =============== System Tray ================
 ;
@@ -259,26 +262,33 @@
        /sysTray	- run program minimized in notification area (system tray).
        /saveLog "c:\Path" - save log in specified folder (or /saveLog "c:\Path\Name.log" - to change also a log name).
        /default		- load default settings (they will not be saved).
-       /area+Process - include list of running processes in report (enter /area-Process to exclude).
-       /area+Modules - include list of modules loaded by processes (enter /area-Modules to exclude).
+       /area+Process 	- include list of running processes in report (enter /area-Process to exclude).
+       /area+Modules 	- include list of modules loaded by processes (enter /area-Modules to exclude).
        /area+Environment - include environment variables and special folders in report (enter /area-Environment to exclude).
-       /area+Additional - execute "Additional scan" (enter /area-Additional to exclude).
+       /area+Additional 	- execute "Additional scan" (enter /area-Additional to exclude).
        /skipIgnoreList	- do not load ignore list.
        /ihatewhitelists 	- ignore all internal whitelists.
-       /md5		- calculate md5 hash of files.
+       /md5		- calculate MD5 hash of files.
+       /sha1		- calculate SHA1 hash of files.
        /timeout:sec	- number of seconds allowed for HiJackThis to be run in /silentautolog mode (180 by default; 0 - to disable).
-       /autostart   	- set Windows to automatically run a HiJackThis scan after system boot up (use with /install key).
        /install     	- install HiJackThis to 'Program Files' folder and create shortcuts.
+       /instDir:"PATH" 	- alternate installation path for HJT (by default: "%ProgramFiles(x86)%\HiJackThis Fork").
+       /noShortcuts 	- disable creation of shortcuts during HJT installation via /install
+       /autostart   	- set Windows to automatically run a HiJackThis scan after system boot up (use with /install key).
+       /install /autostart d:X - install HJT in task scheduler to autorun with X sec. delay.
+       /! 		- stop command line keys parsing. Everything found after this key considers as keys for HJT autorun (instead of default /startupscan).
        /uninstall	- remove all HiJackThis Registry entries and backups, then quit.
-       /silentuninstall - /uninstall analogue, except it disables confirmation requests.
+       /silentuninstall 	- /uninstall analogue, except it disables confirmation requests.
        /deleteonreboot "c:\file.sys" - delete the specified file after system rebooting using PendingFileRenameOperations mechanism.
+       /noBackup 	- disable backup creation during the fix.
        /LangEN		- force use English language for user interface.
        /LangFR		- force use French language for user interface.
-       /LangRU		- force use Russian language for user interface.
-       /LangUA		- force use Ukrainian language for user interface.
+       /LangRU	- force use Russian language for user interface.
+       /LangUA	- force use Ukrainian language for user interface.
        /debug		- tracing mode. Function names will be appended to main log and HiJackThis_debug.log file. You can also rename the file to HiJackThis_debug.exe.
        /debugtofile	- trace info will be saved to HiJackThis_debug.log file only.
      
+	 
      
      2. StartupList
      ----------------
@@ -292,7 +302,7 @@
        /noshowclsids	- Hide class IDs
        /noshowprivate	- Hide usernames and computer name
        /noshowusers	- Hide entries from other users
-       /noshowhardware	- Hide entries from other hardware configurations
+       /noshowhardware - Hide entries from other hardware configurations
        /showlargehosts	- Show hosts file even when more than 1000 lines are in it
        /showlargezones	- Show Zones even when more than 1000 domains are in them
        /autosave	- Run hidden, automatically save a report and quit
@@ -317,6 +327,7 @@
      -------------
      
           HiJackThis Fork scans your computer for settings changed by adware, spyware, malware and other unwanted programs.
+          
           HiJackThis Fork results are not based on blacklists, specific programs or URLs. Instead, they are based on common methods and techniques used by hijackers.
           Therefore, FALSE POSITIVES ARE LIKELY. If you are ever unsure, you should consult with a knowledgeable expert BEFORE deleting anything.
      
@@ -350,9 +361,10 @@
      
      Consulting:
      
-     - regist -= VIRUSNET association =- valuable tips and ideas, user's manual, database updates, closed and beta-testing
+     - regist -= VIRUSNET association =- valuable tips and ideas, new user's manual, database updates, closed and beta-testing
      - Sandor -= VIRUSNET association =- beta-testing, PC treatment on GitHub and forums of association
-     - SafeZone.cc team - promotion and support, PC treatment on forums of association
+     - akok -= VIRUSNET association =- product promotion, providing a platform for tests and discussion, help with resolving conflicts with antiviruses
+     - SafeZone.cc team - promotion and support, feedback and bug reports, PC treatment on forums of association
      
      Coordination:
 
@@ -393,6 +405,7 @@
 0034=
      BTC: 17hkU3eKPngHrG3P9uqXwMLE3ztmtfGDZ4
      Ethereum: 0xc6B421AeeC879F6603f86117a792e0bb1c67C7A5
+     Patreon: https://www.patreon.com/dragokas
 
 0035=Sections
 0036=Keys
@@ -611,7 +624,7 @@
 0190=ADS Spy v[] fork - written by Merijn
 0191=Quick scan (Windows base folder only)
 0192=Ignore safe system info data streams
-0193=Calculate MD5 checksum of stream contents
+0193=Calculate checksum of stream contents
 0194=Select a folder to scan:
 0195=The folder you have selected is not on a NTFS / ReFS drive.
 0197=Listing drives...
@@ -854,6 +867,8 @@
      Please save your work, then press 'YES' if you agree to reboot now.
 0351=Please wait until Microsoft disk cleanup manager finishes its work, then press OK.
 0352=The server needs to be rebooted to complete required operations. Please reboot it manually.
+0353=Item '[]' has been disabled!
+0354=Item '[]' has been enabled!
 ;
 ; ============ Help on selected item (Sections) ================
 ;
@@ -1724,4 +1739,4 @@
 ; Empty
 ;
 ; (2350 - ...)
-;    
+;       

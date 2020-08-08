@@ -17,7 +17,7 @@ Option Explicit
 
 'https://docs.microsoft.com/en-us/windows/desktop/taskschd/task-scheduler-objects
 
-'Suspected in high CPU loading and other problrms:
+'Suspected in high CPU loading and other problems:
 '
 '\Microsoft\Windows\TabletPC\InputPersonalization - C:\Program Files\Common Files\Microsoft Shared\Ink\InputPersonalization.exe (Microsoft)
 '\Microsoft\Windows Live\SOXE\Extractor Definitions Update Task - {3519154C-227E-47F3-9CC9-12C3F05817F1} - C:\Program Files\Windows Live\SOXE\wlsoxe.dll (Microsoft)
@@ -689,9 +689,9 @@ End Function
 '                Stady = 19.5
 '                AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
 '
-'                If bMD5 Then
+'                If g_bCheckSum Then
 '                    If FileExists(RunObj) Then
-'                        sHit = sHit & GetFileMD5(RunObj)
+'                        sHit = sHit & GetFileCheckSum(RunObj)
 '                    End If
 '                End If
 '
@@ -828,6 +828,10 @@ Public Function isInTasksWhiteList(sPathName As String, sTargetFile As String, s
             End If
         ElseIf sPathName Like "{root}\OneDrive Standalone Update Task-S-1-5-21-*" Then
             If StrComp(sTargetFile, LocalAppData & "\Microsoft\OneDrive\OneDriveStandaloneUpdater.exe", 1) = 0 And sArguments = "" Then
+                isInTasksWhiteList = True
+            End If
+        ElseIf sPathName Like "\Microsoft\VisualStudio\Updates\UpdateConfiguration_S*" Then
+            If StrComp(sTargetFile, PF_32 & "\Microsoft Visual Studio\Installer\resources\app\ServiceHub\Services\Microsoft.VisualStudio.Setup.Service\VSIXConfigurationUpdater.exe", 1) = 0 And sArguments = "" Then
                 isInTasksWhiteList = True
             End If
         End If
@@ -1062,6 +1066,85 @@ End Function
 'End Function
 
 
+Public Function DisableTask(TaskFullPath As String) As Boolean
+    
+    SetTaskState TaskFullPath, False
+End Function
+
+Public Function EnableTask(TaskFullPath As String) As Boolean
+    
+    SetTaskState TaskFullPath, True
+End Function
+
+Function SetTaskState(TaskFullPath As String, bEnable As Boolean)
+    
+    On Error GoTo ErrorHandler
+    Dim TaskPath As String
+    Dim TaskName As String
+    Dim pos As Long
+    
+    'Compatibility: Vista+
+    
+    pos = InStrRev(TaskFullPath, "\")
+    If pos <> 0 Then
+        TaskPath = Left$(TaskFullPath, pos)
+        If Len(TaskPath) > 1 Then TaskPath = Left$(TaskPath, Len(TaskPath) - 1) 'trim last backslash
+        TaskName = Mid$(TaskFullPath, pos + 1)
+    Else
+        Exit Function
+    End If
+    
+    On Error Resume Next
+    ' Create the TaskService object.
+    Dim Service As Object
+    Set Service = CreateObject("Schedule.Service")
+    If Err.Number <> 0 Then Exit Function
+
+    Service.Connect
+    If Err.Number <> 0 Then Exit Function
+
+    ' Get the root task folder that contains the tasks.
+    Dim rootFolder As ITaskFolder
+    Set rootFolder = Service.GetFolder(TaskPath)
+    If Err.Number <> 0 Then Exit Function
+
+    Dim registeredTask  As IRegisteredTask
+    Set registeredTask = rootFolder.GetTask(TaskName)
+    If Err.Number <> 0 Then Exit Function
+    
+    If bEnable Then
+        If Not registeredTask.Enabled Then
+            Err.Clear
+            registeredTask.Enabled = True
+            If Err.Number = 0 Then SetTaskState = True
+        Else
+            SetTaskState = True
+        End If
+        
+        Dim NewTask As IRegisteredTask
+        Set NewTask = registeredTask.Run(Null)
+    Else
+        If registeredTask.Enabled Then
+            Err.Clear
+            registeredTask.Enabled = False
+            If Err.Number = 0 Then SetTaskState = True
+        Else
+            SetTaskState = True
+        End If
+        
+        registeredTask.Stop 0&
+    End If
+    
+    Set registeredTask = Nothing
+    Set rootFolder = Nothing
+    Set Service = Nothing
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "SetTaskState. Enable? " & bEnable
+    If inIDE Then Stop: Resume Next
+End Function
+
+
 ' ####################################################################
 ' ####################################################################
 
@@ -1100,12 +1183,13 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
     Dim sRunFilename    As String
     Dim bActivation     As Boolean
     Dim bUpdate         As Boolean
+    Dim sDllFile        As String
     
     '// TODO: Add record: "O22 - Task: 'Task scheduler' service is disabled!"
     
-    If GetServiceRunState("Schedule") <> SERVICE_RUNNING Then
+    'If GetServiceRunState("Schedule") <> SERVICE_RUNNING Then
         'Err.Raise 33333, , "Task scheduler service is not running!"
-    End If
+    'End If
     
 '    Set odFileTasks = New clsTrickHashTable
 '    Set odRegTasks = New clsTrickHashTable
@@ -1250,7 +1334,7 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
                 bUpdate = False
                 
                 sRunFilename = GetFileName(te(j).RunObj, True)
-                
+
                 If InStr(1, DirParent, "Customer Experience", 1) <> 0 Then
                     bTelemetry = True
                 ElseIf InStr(1, DirParent, "Application Experience", 1) <> 0 Then
@@ -1271,95 +1355,178 @@ Public Sub EnumTasks2(Optional MakeCSV As Boolean)
                     bTelemetry = True
                 End If
                 
-                If InStr(1, DirParent, "Activation", 1) <> 0 Then
-                    'If SignResult.isMicrosoftSign Then
-                    If bIsMicrosoftFile Then
+                If bIsMicrosoftFile Then
+                
+                    If InStr(1, DirParent, "Activation", 1) <> 0 Then
+    
                         '\Microsoft\Windows\Windows Activation Technologies\ValidationTask - C:\Windows\system32\Wat\WatAdminSvc.exe /run (Microsoft)
                         bActivation = True
-                    ElseIf StrComp(sRunFilename, "schtasks.exe", 1) = 0 Then
-                        'C:\Windows\system32\schtasks.exe /run /I /TN "\Microsoft\Windows\Windows Activation Technologies\ValidationTask"
-                        bActivation = True
-                    End If
-                End If
-                If InStr(1, DirParent, "gwx", 1) <> 0 Then '(Get Windows 10)
-                    '\Microsoft\Windows\Setup\gwx\refreshgwxconfig - C:\Windows\system32\GWX\GWXConfigManager.exe /RefreshConfig (Microsoft)
-                    '\Microsoft\Windows\Setup\gwx\refreshgwxcontent - C:\Windows\system32\GWX\GWXConfigManager.exe /RefreshContent (Microsoft)
-                    '\Microsoft\Windows\Setup\gwx\runappraiser - C:\Windows\system32\GWX\GWXConfigManager.exe /RunAppraiser (Microsoft)
-                    'If SignResult.isMicrosoftSign Then bUpdate = True
-                    If bIsMicrosoftFile Then bUpdate = True
-                End If
-                
-                'skip signature mark for host processes
-                'If SignResult.isMicrosoftSign Then
-                If bIsMicrosoftFile Then
-                    If inArraySerialized(sRunFilename, "rundll32.exe|schtasks.exe|sc.exe|cmd.exe|wscript.exe|" & _
-                      "mshta.exe|pcalua.exe|powershell.exe|svchost.exe|msiexec.exe", "|", , , vbTextCompare) Then
-                        'SignResult.isMicrosoftSign = False
-                        bIsMicrosoftFile = False
-                    End If
-                      
-                    'If SignResult.isMicrosoftSign And Len(te(j).RunArgs) <> 0 Then
-                    If bIsMicrosoftFile And Len(te(j).RunArgs) <> 0 Then
-                        If InStr(1, te(j).RunArgs, "http:", 1) <> 0 Then
-                            'SignResult.isMicrosoftSign = False
-                            bIsMicrosoftFile = False
-                        ElseIf InStr(1, te(j).RunArgs, "ftp:", 1) <> 0 Then
-                            'SignResult.isMicrosoftSign = False
-                            bIsMicrosoftFile = False
-                        ElseIf InStr(1, EnvironW(te(j).RunArgs), "http:", 1) <> 0 Then
-                            'SignResult.isMicrosoftSign = False
-                            bIsMicrosoftFile = False
-                        ElseIf InStr(1, EnvironW(te(j).RunArgs), "ftp:", 1) <> 0 Then
-                            'SignResult.isMicrosoftSign = False
-                            bIsMicrosoftFile = False
+                        
+                        'ElseIf StrComp(sRunFilename, "schtasks.exe", 1) = 0 Then
+                        '    'C:\Windows\system32\schtasks.exe /run /I /TN "\Microsoft\Windows\Windows Activation Technologies\ValidationTask"
+                        '    bActivation = True
+                        
+                    ElseIf InStr(1, DirParent, "gwx", 1) <> 0 Then '(Get Windows 10)
+                        '\Microsoft\Windows\Setup\gwx\refreshgwxconfig - C:\Windows\system32\GWX\GWXConfigManager.exe /RefreshConfig (Microsoft)
+                        '\Microsoft\Windows\Setup\gwx\refreshgwxcontent - C:\Windows\system32\GWX\GWXConfigManager.exe /RefreshContent (Microsoft)
+                        '\Microsoft\Windows\Setup\gwx\runappraiser - C:\Windows\system32\GWX\GWXConfigManager.exe /RunAppraiser (Microsoft)
+                        'If SignResult.isMicrosoftSign Then bUpdate = True
+                        bUpdate = True
+                        
+                    ElseIf StrComp(DirParent, "\Microsoft\Windows\Setup", 1) = 0 Then
+                        If StrComp(sRunFilename, "EOSNotify.exe", 1) = 0 Then
+                            bUpdate = True
+                            'native OS feature to disable EOS notification
+                            If 1 = Reg.GetDword(0, "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\EOSNotify", "DiscontinueEOS") Then
+                                isSafe = True
+                            ElseIf OSver.MajorMinor <= 6.1 Then '(Windows 7 End of Support)
+                                'always report
+                            ElseIf OSver.MajorMinor <= 6.3 Then '(Windows 8 / 8.1 End of Support)
+                                If OSver.IsEmbedded Then
+                                    If Now() < #11/7/2023# Then 'November 7, 2023 - Win 8.1 Embedded
+                                        isSafe = True
+                                    End If
+                                Else
+                                    If Now() < #1/10/2023# Then 'January 10, 2023 - Win 8.1
+                                        isSafe = True
+                                    End If
+                                End If
+                            End If
                         End If
+                    ElseIf StrComp(DirParent, "\Microsoft\Windows\End Of Support", 1) = 0 Then
+                        If StrComp(sRunFilename, "sipnotify.exe", 1) = 0 Then
+                            bUpdate = True
+                            'native OS feature to disable EOS notification
+                            If 1 = Reg.GetDword(0, "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\SipNotify", "DontRemindMe") Then
+                                isSafe = True
+                            ElseIf OSver.MajorMinor <= 6.1 Then '(Windows 7 End of Support)
+                                'always report
+                            ElseIf OSver.MajorMinor <= 6.3 Then '(Windows 8 / 8.1 End of Support)
+                                If OSver.IsEmbedded Then
+                                    If Now() < #11/7/2023# Then 'November 7, 2023 - Win 8.1 Embedded
+                                        isSafe = True
+                                    End If
+                                Else
+                                    If Now() < #1/10/2023# Then 'January 10, 2023 - Win 8.1
+                                        isSafe = True
+                                    End If
+                                End If
+                            End If
+                        End If
+                    ElseIf StrComp(sRunFilename, "MusNotification.exe", 1) = 0 Then
+                        '"Updates are available" window
+                        'https://superuser.com/questions/972038/how-to-get-rid-of-updates-are-available-message-in-windows-10
+                        bUpdate = True
+                    ElseIf StrComp(sRunFilename, "UpdateAssistant.exe", 1) = 0 Then
+                        bUpdate = True
                     End If
+                
                 End If
                 
-                sHit = "O22 - Task: " & IIf(te(j).Enabled, "", "(disabled) ") & _
-                  IIf(bTelemetry, "(telemetry) ", "") & _
-                  IIf(bActivation, "(activation) ", "") & _
-                  IIf(bUpdate, "(update) ", "") & _
-                  IIf(DirParent = "{root}", TaskName, DirParent & "\" & TaskName)
-                
-                'sHit = sHit & " - " & te(j).RunObj & _
-                  IIf(Len(te(j).RunArgs) <> 0, " " & te(j).RunArgs, "") & _
-                  IIf(te(j).FileMissing And Not bNoFile, " (file missing)", "") & _
-                  IIf(SignResult.isMicrosoftSign, " (Microsoft)", "")
-                
-                sHit = sHit & " - " & te(j).RunObj & _
-                  IIf(Len(te(j).RunArgs) <> 0, " " & te(j).RunArgs, "") & _
-                  IIf(te(j).FileMissing And Not bNoFile, " (file missing)", "") & _
-                  IIf(bIsMicrosoftFile, " (Microsoft)", "")
-                
-                If Not IsOnIgnoreList(sHit) Then
-              
-                    If bMD5 Then
-                        If FileExists(te(j).RunObj) Then
-                            sHit = sHit & GetFileMD5(te(j).RunObj)
+                If Not isSafe Then
+                    
+                    If StrBeginWith(DirFull, "\MicrosoftEdgeUpdateTaskMachine") Then
+                        If StrComp(te(j).RunObj, PF_32 & "\Microsoft\EdgeUpdate\MicrosoftEdgeUpdate.exe", 1) = 0 Then
+                            If IsMicrosoftFile(te(j).RunObj) Then
+                                isSafe = True
+                                bIsMicrosoftFile = True
+                            End If
+                        End If
+                    ElseIf StrComp(DirFull, "\Microsoft\Windows\Windows Defender\Windows Defender Scheduled Scan", 1) = 0 Then
+                        If StrComp(sRunFilename, "MpCmdRun.exe", 1) = 0 Then
+                            If IsMicrosoftFile(te(j).RunObj) Then
+                                isSafe = True
+                                bIsMicrosoftFile = True
+                            End If
                         End If
                     End If
                     
-                    With result
-                        .Section = "O22"
-                        .HitLineW = sHit
-                        AddFileToFix .File, REMOVE_FILE, aFiles(i)
-                        AddFileToFix .File, REMOVE_FILE, te(j).RunObj
-                        
-                        te(j).RegID = Reg.GetString(HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree" & DirFull, "Id")
-                        If te(j).RegID <> "" Then
-                            AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Boot\" & te(j).RegID
-                            AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Logon\" & te(j).RegID
-                            AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Plain\" & te(j).RegID
-                            AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\" & te(j).RegID
+                End If
+                
+                'If InStr(1, DirParent, "Setup", 1) <> 0 Then
+                '    Debug.Print "Folder = " & DirParent
+                '    Debug.Print "File = " & sRunFilename
+                'End If
+                
+                If (Not isSafe) Or (Not bHideMicrosoft) Then
+                  'skip signature mark for host processes
+                  If bIsMicrosoftFile Then
+                      If inArraySerialized(sRunFilename, "schtasks.exe|sc.exe|cmd.exe|wscript.exe|" & _
+                        "mshta.exe|pcalua.exe|powershell.exe|svchost.exe|msiexec.exe", "|", , , vbTextCompare) Then
+                          bIsMicrosoftFile = False
+                      End If
+                      
+                      If bIsMicrosoftFile Then
+                        If StrComp(sRunFilename, "rundll32.exe", 1) = 0 Then
+                            
+                            sDllFile = GetRundllFile(te(j).RunArgs)
+                            
+                            If Len(sDllFile) = 0 Then te(j).FileMissing = True
+                            
+                            bIsMicrosoftFile = IsMicrosoftFile(sDllFile)
                         End If
-                        AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree" & DirFull
-                        
-                        AddProcessToFix .Process, KILL_PROCESS, aFiles(i)
-                        
-                        .CureType = FILE_BASED Or REGISTRY_BASED Or PROCESS_BASED
-                    End With
-                    AddToScanResults result
+                      End If
+                      
+                      'If SignResult.isMicrosoftSign And Len(te(j).RunArgs) <> 0 Then
+                      If bIsMicrosoftFile And Len(te(j).RunArgs) <> 0 Then
+                          If InStr(1, te(j).RunArgs, "http", 1) <> 0 Then
+                              'SignResult.isMicrosoftSign = False
+                              bIsMicrosoftFile = False
+                          ElseIf InStr(1, te(j).RunArgs, "ftp", 1) <> 0 Then
+                              'SignResult.isMicrosoftSign = False
+                              bIsMicrosoftFile = False
+                          ElseIf InStr(1, EnvironW(te(j).RunArgs), "http", 1) <> 0 Then
+                              'SignResult.isMicrosoftSign = False
+                              bIsMicrosoftFile = False
+                          ElseIf InStr(1, EnvironW(te(j).RunArgs), "ftp", 1) <> 0 Then
+                              'SignResult.isMicrosoftSign = False
+                              bIsMicrosoftFile = False
+                          End If
+                      End If
+                  End If
+                  
+                  sHit = "O22 - Task: " & IIf(te(j).Enabled, "", "(disabled) ") & _
+                    IIf(bTelemetry, "(telemetry) ", "") & _
+                    IIf(bActivation, "(activation) ", "") & _
+                    IIf(bUpdate, "(update) ", "") & _
+                    IIf(DirParent = "{root}", TaskName, DirParent & "\" & TaskName)
+                  
+                  sHit = sHit & " - " & te(j).RunObj & _
+                    IIf(Len(te(j).RunArgs) <> 0, " " & te(j).RunArgs, "") & _
+                    IIf(te(j).FileMissing And Not bNoFile, " (file missing)", "") & _
+                    IIf(bIsMicrosoftFile, " (Microsoft)", "")
+                  
+                  If Not IsOnIgnoreList(sHit) Then
+                
+                      If g_bCheckSum Then
+                          If FileExists(te(j).RunObj) Then
+                              sHit = sHit & GetFileCheckSum(te(j).RunObj)
+                          End If
+                      End If
+                      
+                      With result
+                          .Section = "O22"
+                          .HitLineW = sHit
+                          .Name = DirFull 'used in "Disable" stuff
+                          .State = IIf(te(j).Enabled, ITEM_STATE_ENABLED, ITEM_STATE_DISABLED)
+                          
+                          AddFileToFix .File, REMOVE_FILE, aFiles(i)
+                          AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, te(j).RunObj
+                          te(j).RegID = Reg.GetString(HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree" & DirFull, "Id")
+                          If te(j).RegID <> "" Then
+                              AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Boot\" & te(j).RegID
+                              AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Logon\" & te(j).RegID
+                              AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Plain\" & te(j).RegID
+                              AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\" & te(j).RegID
+                          End If
+                          AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree" & DirFull
+                          
+                          AddProcessToFix .Process, FREEZE_OR_KILL_PROCESS, aFiles(i)
+                          
+                          .CureType = FILE_BASED Or REGISTRY_BASED Or PROCESS_BASED
+                      End With
+                      AddToScanResults result
+                  End If
                 End If
             End If
             
@@ -1455,6 +1622,25 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
+Public Function GetRundllFile(ByVal sArg As String) As String
+
+    Dim pos&
+    
+    If Left$(sArg, 1) = "/" Then 'begin with switch?
+    
+        pos = InStr(sArg, " ")
+        If pos = 0 Then Exit Function
+        
+        sArg = Mid$(sArg, pos + 1)
+    End If
+    
+    pos = InStr(sArg, ",") ' skip the verb
+    If pos <> 0 Then sArg = Left$(sArg, pos - 1)
+    
+    GetRundllFile = FindOnPath(sArg)
+
+End Function
+
 Private Function AnalyzeTask(sFilename As String, te() As TASK_ENTRY) As Long
     'additional info:
     'https://github.com/libyal/winreg-kb/blob/master/documentation/Task%20Scheduler%20Keys.asciidoc
@@ -1472,7 +1658,7 @@ Private Function AnalyzeTask(sFilename As String, te() As TASK_ENTRY) As Long
     
     ReDim te(0)
     
-    sFileData = ReadFileContents(sFilename, False)
+    sFileData = ReadFileContents(sFilename, FileGetTypeBOM(sFilename) = 1200)
     
     If Len(sFileData) = 0 Then Exit Function
     
@@ -1492,18 +1678,22 @@ Private Function AnalyzeTask(sFilename As String, te() As TASK_ENTRY) As Long
                     te(j).RunArgs = EnvironW(te(j).RunArgs)
                     te(j).WorkDir = EnvironW(te(j).WorkDir)
                     
-                    If Mid$(te(j).RunObjExpanded, 2, 1) <> ":" Then
-                        If te(j).WorkDir <> "" Then
-                            sTmp = BuildPath(te(j).WorkDir, te(j).RunObjExpanded)
-                            If FileExists(sTmp) Then te(j).RunObjExpanded = sTmp 'if only file exists in this work. folder
+                    If Len(te(j).RunObjExpanded) = 0 Then
+                        te(j).FileMissing = True
+                    Else
+                        If Mid$(te(j).RunObjExpanded, 2, 1) <> ":" Then
+                            If te(j).WorkDir <> "" Then
+                                sTmp = BuildPath(te(j).WorkDir, te(j).RunObjExpanded)
+                                If FileExists(sTmp) Then te(j).RunObjExpanded = sTmp 'if only file exists in this work. folder
+                            End If
                         End If
-                    End If
+                        
+                        te(j).RunObjExpanded = FindOnPath(te(j).RunObjExpanded, True) 'otherwise, search on %PATH%
+                        te(j).FileMissing = Not FileExists(te(j).RunObjExpanded)
                     
-                    te(j).RunObjExpanded = FindOnPath(te(j).RunObjExpanded, True) 'otherwise, search on %PATH%
-                    te(j).FileMissing = Not FileExists(te(j).RunObjExpanded)
-                    
-                    If te(j).FileMissing And sTmp <> "" Then 'not exists at all? -> use initial Work.Dir + File, if present one
-                        te(j).RunObjExpanded = sTmp
+                        If te(j).FileMissing And sTmp <> "" Then 'not exists at all? -> use initial Work.Dir + File, if present one
+                            te(j).RunObjExpanded = sTmp
+                        End If
                     End If
                     
                     te(j).ActionType = TASK_ACTION_EXEC
@@ -1667,15 +1857,17 @@ Public Sub EnumJobs()
                 sJobName & " - " & _
                 Job.prop.AppName.Data & IIf(Job.prop.Parameters.Length > 1, " " & Job.prop.Parameters.Data, "")
 
-            If bMD5 Then sHit = sHit & GetFileMD5(Job.prop.AppName.Data)
+            If g_bCheckSum Then sHit = sHit & GetFileCheckSum(Job.prop.AppName.Data)
 
             If Not IsOnIgnoreList(sHit) Then
             
                 With result
                     .Section = "O22"
                     .HitLineW = sHit
+                    .State = IIf(bEnabled, ITEM_STATE_ENABLED, ITEM_STATE_DISABLED)
+                    .Name = aFiles(i)
                     AddFileToFix .File, REMOVE_FILE, aFiles(i)
-                    AddFileToFix .File, REMOVE_FILE, Job.prop.AppName.Data
+                    AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, Job.prop.AppName.Data
                     AddRegToFix .Reg, REMOVE_VALUE, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\CompatibilityAdapter\Signatures", sJobName
                     AddRegToFix .Reg, REMOVE_VALUE, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\CompatibilityAdapter\Signatures", sJobName & ".fp"
                     .CureType = FILE_BASED Or REGISTRY_BASED

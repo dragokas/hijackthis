@@ -2,15 +2,15 @@ VERSION 5.00
 Begin VB.Form frmEULA 
    BorderStyle     =   4  'Fixed ToolWindow
    ClientHeight    =   7200
-   ClientLeft      =   4785
-   ClientTop       =   4830
-   ClientWidth     =   6750
+   ClientLeft      =   4788
+   ClientTop       =   4836
+   ClientWidth     =   6744
    Icon            =   "frmEULA.frx":0000
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
    ScaleHeight     =   7200
-   ScaleWidth      =   6750
+   ScaleWidth      =   6744
    StartUpPosition =   2  'CenterScreen
    Begin VB.TextBox txtEULA 
       Height          =   4695
@@ -25,7 +25,7 @@ Begin VB.Form frmEULA
       Caption         =   "I Do Not Accept"
       BeginProperty Font 
          Name            =   "Tahoma"
-         Size            =   8.25
+         Size            =   8.4
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -42,7 +42,7 @@ Begin VB.Form frmEULA
       Caption         =   "I Accept"
       BeginProperty Font 
          Name            =   "Tahoma"
-         Size            =   8.25
+         Size            =   8.4
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -61,7 +61,7 @@ Begin VB.Form frmEULA
       Caption         =   $"frmEULA.frx":4B2A
       BeginProperty Font 
          Name            =   "Tahoma"
-         Size            =   8.25
+         Size            =   8.4
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -125,6 +125,10 @@ Private ControlsEvent As clsEvents
 Private Sub Form_Initialize()
     On Error GoTo ErrorHandler:
     
+    Dim argc As Long
+    g_sCommandLine = Command$()
+    ParseCommandLine g_sCommandLine, argc, g_sCommandLineArg()
+
     Dim ICC         As tagINITCOMMONCONTROLSEX
     Dim lr          As Long
     Dim hModShell   As Long
@@ -138,14 +142,14 @@ Private Sub Form_Initialize()
     ' Code launched from IDE ?
     Debug.Assert CheckIDE(inIDE)
     
-    If InStr(1, Command$(), "/release", 1) <> 0 Then Exit Sub
+    If HasCommandLineKey("release") Then Exit Sub '/release
     
     Call AcquirePrivileges
     
     Set OSver = New clsOSInfo
     
     ' boost priority
-    If InStr(1, Command$(), "StartupScan", 1) > 0 Then '/StartupScan
+    If HasCommandLineKey("StartupScan") Then '/StartupScan
         bStartupScan = True
         Call SetPriorityProcess(GetCurrentProcess(), BELOW_NORMAL_PRIORITY_CLASS)
         Call SetProcessIOPriority(GetCurrentProcessId(), 1) 'Low
@@ -179,9 +183,9 @@ Private Sub Form_Initialize()
     
     Perf.MAX_TimeOut = MAX_TIMEOUT_DEFAULT
     '/timeout
-    pos = InStr(1, Command$(), "timeout", 1)
+    pos = InStr(1, g_sCommandLine, "timeout", 1)
     If pos <> 0 Then
-        sTime = Mid$(Command$(), pos + Len("timeout") + 1)
+        sTime = Mid$(g_sCommandLine, pos + Len("timeout") + 1)
         pos = InStr(sTime, " ")
         If pos <> 0 Then
             sTime = Left$(sTime, pos - 1)
@@ -206,12 +210,9 @@ Private Sub Form_Initialize()
     #End If
     
     '/autolog
-    If InStr(1, Command$(), "/autolog", 1) > 0 _
-      Or InStr(1, Command$(), "-autolog", 1) > 0 Then
-        bAutoLog = True
-    End If
+    If HasCommandLineKey("autolog") Then bAutoLog = True
     '/silentautolog
-    If InStr(1, Command$(), "silentautolog", 1) > 0 Then bAutoLog = True: bAutoLogSilent = True
+    If HasCommandLineKey("silentautolog") Then bAutoLog = True: bAutoLogSilent = True
     
     If bAutoLog Then Perf.StartTime = GetTickCount()
     
@@ -219,16 +220,13 @@ Private Sub Form_Initialize()
     Set ErrLogCustomText = New clsStringBuilder 'tracing
     
     '/debug
-    If InStr(1, Command$(), "/debug ", 1) <> 0 Or _
-        StrEndWith(Command$(), "/debug") Or _
-        InStr(1, Command$(), "-debug ", 1) <> 0 Or _
-        StrEndWith(Command$(), "-debug") Or _
+    If HasCommandLineKey("debug") Or _
         InStr(1, AppExeName(), "_debug", 1) <> 0 Or _
         InStr(1, AppExeName(), "_dbg", 1) <> 0 Then
         bDebugMode = True
     End If
     
-    If InStr(Command(), "/days:") <> 0 Then
+    If HasCommandLineKey("days:") <> 0 Then '/days:
         ABR_RunBackup
         End 'do crash ^_^
     End If
@@ -240,15 +238,14 @@ Private Sub Form_Initialize()
     Set oDictFileExist = New clsTrickHashTable  'file exists cache
     oDictFileExist.CompareMode = 1
     
-    '/nogui
-    If InStr(1, Command$(), "nogui", 1) <> 0 _
-      Or InStr(1, Command$(), "StartupScan", 1) <> 0 _
-      Or InStr(1, Command$(), "/install", 1) <> 0 _
-      Or InStr(1, Command$(), "-install", 1) <> 0 Then
+    '/nogui /StartupScan /install
+    If HasCommandLineKey("nogui") _
+      Or HasCommandLineKey("StartupScan") _
+      Or HasCommandLineKey("install") Then
         gNoGUI = True
     End If
     
-    sCmdLine = Replace$(Command$(), ":", "+")
+    sCmdLine = Replace$(g_sCommandLine, ":", "+")
     
     '/Tool:xxx
     If Len(sCmdLine) <> 0 Then
@@ -261,6 +258,11 @@ Private Sub Form_Initialize()
         If InStr(1, sCmdLine, "tool+ProcMan", 1) <> 0 Then bRunToolProcMan = True: gNoGUI = True
         If InStr(1, sCmdLine, "tool+CheckLNK", 1) <> 0 Then bRunToolCBL = True: gNoGUI = True
         If InStr(1, sCmdLine, "tool+ClearLNK", 1) <> 0 Then bRunToolClearLNK = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+Autoruns", 1) <> 0 Then bRunToolAutoruns = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+Executed", 1) <> 0 Then bRunToolExecuted = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+LastActivity", 1) <> 0 Then bRunToolLastActivity = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+ServiWin", 1) <> 0 Then bRunToolServiWin = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+TaskScheduler", 1) <> 0 Then bRunToolTaskScheduler = True: gNoGUI = True
     End If
     
     ExeName = GetFileName(AppPath(True))
@@ -323,7 +325,7 @@ Private Sub Form_Initialize()
     End If
     
     '/DebugToFile
-    If InStr(1, Command$(), "DebugToFile", 1) <> 0 Then
+    If HasCommandLineKey("DebugToFile") Then
         bDebugToFile = True
     End If
     If bDebugMode Then
@@ -332,7 +334,7 @@ Private Sub Form_Initialize()
 
     Exit Sub
 ErrorHandler:
-    If InStr(1, Command$(), "silentautolog", 1) = 0 Then
+    If InStr(1, g_sCommandLine, "silentautolog", 1) = 0 Then
         MsgBoxW "Error in frmEULA.Form_Initialize. Err. number = " & Err.Number & " - " & Err.Description & ". LastDllErr = " & Err.LastDllError
     End If
     If inIDE Then Stop
@@ -344,7 +346,7 @@ Private Sub Form_Load()
 
     AppendErrorLogCustom "frmEULA.Form_Load - Begin"
 
-    If InStr(1, Command$(), "/release", 1) <> 0 Then
+    If HasCommandLineKey("release") Then '/release
         'Если мы - клон, ожидать завершения PID, переданного через аргументы командной строки, после чего удалить файлы
         WatchForProcess
         Unload Me
@@ -359,14 +361,14 @@ Private Sub Form_Load()
     
     'header of tracing log
     AppendErrorLogCustom vbCrLf & vbCrLf & "Logfile ( tracing ) of HiJackThis Fork v." & AppVerString & vbCrLf & vbCrLf & _
-        "Command line: " & AppPath(True) & " " & Command() & vbCrLf & vbCrLf & MakeLogHeader()
+        "Command line: " & AppPath(True) & " " & g_sCommandLine & vbCrLf & vbCrLf & MakeLogHeader()
     
     'Me.Caption = Me.Caption & AppVerString
 
-    bForceRU = InStr(1, AppExeName(), "_RU", 1) Or InStr(1, Command$(), "langRU", 1) '/langRU
-    bForceEN = InStr(1, AppExeName(), "_EN", 1) Or InStr(1, Command$(), "langEN", 1) '/langEN
-    bForceUA = InStr(1, AppExeName(), "_UA", 1) Or InStr(1, Command$(), "langUA", 1) '/langUA
-    bForceFR = InStr(1, AppExeName(), "_FR", 1) Or InStr(1, Command$(), "langFR", 1) '/langUA
+    bForceRU = InStr(1, AppExeName(), "_RU", 1) Or HasCommandLineKey("langRU")  '/langRU
+    bForceEN = InStr(1, AppExeName(), "_EN", 1) Or HasCommandLineKey("langEN")  '/langEN
+    bForceUA = InStr(1, AppExeName(), "_UA", 1) Or HasCommandLineKey("langUA")  '/langUA
+    bForceFR = InStr(1, AppExeName(), "_FR", 1) Or HasCommandLineKey("langFR")  '/langUA
 
     bIsWOW64 = IsWow64()
 
@@ -374,10 +376,9 @@ Private Sub Form_Load()
         DoCrash
     #End If
 
-    '/accepteula
-    If InStr(1, Command$, "accepteula", 1) <> 0 Or _
-        InStr(1, Command$, "/uninstall", 1) <> 0 Or _
-        InStr(1, Command$, "-uninstall", 1) <> 0 Or _
+    '/accepteula /uninstall
+    If HasCommandLineKey("accepteula") Or _
+        HasCommandLineKey("uninstall") Or _
         Reg.KeyExists(HKEY_LOCAL_MACHINE, "Software\TrendMicro\HiJackThisFork") Then
             EULA_Agree
             Me.Hide
@@ -431,7 +432,7 @@ Sub WatchForProcess()   'waiting for process completion to release unpacked reso
     sPathComCtl1 = BuildPath(AppPath(), "MSComCtl.ocx")
     sPathComCtl2 = BuildPath(AppPath(), "MSComCtl.oca")
     
-    ProcessID = Val(Mid$(Command$(), InStr(1, Command$(), "/release:", 1) + Len("/release:")))
+    ProcessID = Val(Mid$(g_sCommandLine, InStr(1, g_sCommandLine, "/release:", 1) + Len("/release:")))
     
     If ProcessID <> 0 Then
         
