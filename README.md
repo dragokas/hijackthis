@@ -65,7 +65,7 @@ You must exercise caution when using this tool. Avoid making changes to your com
 
 If you are not already an expert, we recommend submitting your case to an online help forum. Here are some suggestions:
 - English: [Our GitHub](https://github.com/dragokas/hijackthis/wiki/How-to-make-a-request-for-help-in-the-PC-cure-section%3F) ; [GeeksToGo](http://www.geekstogo.com/forum/topic/2852-malware-and-spyware-cleaning-guide/) ;  [BleepingComputer](https://www.bleepingcomputer.com/forums/t/34773/preparation-guide-for-use-before-using-malware-removal-tools-and-requesting-help/)
-- Russian: [SafeZone](http://safezone.cc/pravila/) ; [CyberForum](http://www.cyberforum.ru/viruses/thread49792.html) ; [OSZone](http://forum.oszone.net/thread-98169.html) ; [SoftBoard](https://softboard.ru/topic/51343-правила-подраздела/) ; [THG](http://www.thg.ru/forum/showthread.php?t=92236) ; [VirusInfo](https://virusinfo.info/showthread.php?t=1235) ; [KasperskyClub](https://forum.kasperskyclub.ru/index.php?showtopic=43640)
+- Russian: [SafeZone](http://safezone.cc/pravila/) ; [CyberForum](http://www.cyberforum.ru/viruses/thread49792.html) ; [OSZone](http://forum.oszone.net/thread-98169.html) ; [SoftBoard](https://softboard.ru/topic/51343-правила-подраздела/) ; [THG](http://www.thg.ru/forum/showthread.php?t=92236) ; [VirusInfo](https://virusinfo.info/showthread.php?t=1235) ; [KasperskyClub](https://forum.kasperskyclub.ru/index.php?showtopic=43640) ; [Dr.Web](https://forum.drweb.com/index.php?showtopic=313238)
 
 > Note: currently, only Russian-speaking anti-malware supporting team (e.g., [VIRUSNET association](https://github.com/VIRUSNET-Association)) can provide direct analysis of HiJackThis logs in [our github 'Issues' section](https://github.com/dragokas/hijackthis/wiki/How-to-make-a-request-for-help-in-the-PC-cure-section%3F). Please feel free to ask help there.
 
@@ -99,7 +99,12 @@ Operating System
 HiJackThis Fork by Alex Dragokas is a continuation of Trend Micro HiJackThis development, based on [v.2.0.6](https://sourceforge.net/p/hjt/code/HEAD/tree/beta/2.0.6/) and 100% rewritten at the moment. It was initially supported by Trend Micro, but they have since refused support and closed the GitHub repository.
 HiJackThis Fork is distributed under the [GPLv2 license](https://github.com/dragokas/hijackthis/blob/devel/LICENSE.md). It also includes several tools and plugins available as freeware.
 
-[![](https://dragokas.com/tools/img/hjt/softpedia-reward.png)](https://www.softpedia.com/get/Security/Security-Related/HiJackThis-Fork.shtml) [![](https://dragokas.com/tools/img/hjt/mg_certified.gif)](https://www.majorgeeks.com/files/details/hijackthis_fork.html) [![](https://dragokas.com/tools/img/hjt/chocolatey_badge.png)](https://chocolatey.org/packages/hijackthis)
+## Reviews & Mirrors
+
+[![](https://dragokas.com/tools/img/hjt/softpedia-reward.png)](https://www.softpedia.com/get/Security/Security-Related/HiJackThis-Fork.shtml) [![](https://dragokas.com/tools/img/hjt/mg_certified.gif)](https://www.majorgeeks.com/files/details/hijackthis_fork.html) [![](https://dragokas.com/tools/img/hjt/comss_one.png)](https://www.comss.ru/page.php?id=6749)
+[![](https://dragokas.com/tools/img/hjt/chocolatey_badge2.png)](https://chocolatey.org/packages/hijackthis)
+
+**Note:** These mirrors belong to other companies. They are non-official.
 
 ## Donate
 

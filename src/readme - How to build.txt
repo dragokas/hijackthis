@@ -23,7 +23,12 @@ You can find it at: http://www.7-zip.org/download.html
 Do this step if you want automatically sign EXE after building.
 Edit file "_2_Make_UPX_Sign.cmd" and specify path to your signing bat-file at line: set SignScript_1=
 
-7. Run makefile.
+7. Run "_0_Open Project Elevated  - !!! - .cmd"
+Press Y and ENTER.
+This will open the project and update internal version number of libraries.
+Close and save the project by request.
+
+8. Run makefile.
 Press - (dash) and ENTER.
 
 You'll get:

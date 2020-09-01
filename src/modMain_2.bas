@@ -1205,10 +1205,6 @@ Public Sub CheckO26ToolsHiJack()
         sDefragPath = "%SystemRoot%\system32\dfrg.msc %c:"
     End If
     
-    sBackupPath = vbNullString
-    sCleanupPath = "%SystemRoot%\System32\cleanmgr.exe /D %c"
-    sDefragPath = "%systemroot%\system32\dfrgui.exe"
-    
     Dim sData As String, sArgs As String, sKey As String
     
     Set dSafe = New clsTrickHashTable
