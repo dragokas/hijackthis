@@ -819,6 +819,7 @@
 1906=[OK]
 1907=(recursively)
 1908=[Fail]
+1909=Open in Regedit
 ;
 ; ============ Delete on reboot & unlock file staff ========
 ;
@@ -1739,4 +1740,4 @@
 ; Empty
 ;
 ; (2350 - ...)
-;       
+;         

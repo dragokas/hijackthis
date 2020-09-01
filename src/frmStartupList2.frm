@@ -1916,16 +1916,21 @@ Private Sub Form_Load()
     End If
     
     If Not bAutoSave And Not Me.WindowState = vbMinimized Then
-        'center and size window
-        If Screen.Width < 1024 * 15 Then
-            Me.Width = Screen.Width * 0.6
-            Me.Height = Screen.Height * 0.8
-        Else
-            Me.Width = 600 * 15
-            Me.Height = 600 * 15
+    
+        If Not LoadWindowPos(Me, SETTINGS_SECTION_STARTUPLIST) Then
+    
+            'center and size window
+            If Screen.Width < 1024 * 15 Then
+                Me.Width = Screen.Width * 0.6
+                Me.Height = Screen.Height * 0.8
+            Else
+                Me.Width = 600 * 15
+                Me.Height = 600 * 15
+            End If
+            Me.Left = (Screen.Width - Me.Width) \ 2
+            Me.Top = (Screen.Height - Me.Height) \ 2
         End If
-        Me.Left = (Screen.Width - Me.Width) / 2
-        Me.Top = (Screen.Height - Me.Height) / 2
+        
     End If
     
     If bShowUsers Or bShowPrivacy Then GetUsernames
@@ -2008,7 +2013,7 @@ Private Sub GetAllEnums()
     If bShowPrivacy Then
         '[*user*] on [*computer*]
         tvwMain.Nodes.Add , tvwFirst, "System", _
-            Replace$(Replace$(Translate(926), "[*user*]", "'" & GetUser & "'"), "[*computer*]", "'" & GetComputer & "'") & ", " & GetWindowsVersion, _
+            Replace$(Replace$(Translate(926), "[*user*]", "'" & OSver.UserName & "'"), "[*computer*]", "'" & OSver.ComputerName & "'") & ", " & GetWindowsVersion, _
             "system", "system"
     Else
         tvwMain.Nodes.Add , tvwFirst, "System", GetWindowsVersion, "system", "system"
@@ -2024,7 +2029,7 @@ Private Sub GetAllEnums()
         tvwMain.Nodes("Users").Expanded = True
         For i = 0 To UBound(sUsernames)
             sName = MapSIDToUsername(sUsernames(i))
-            If sName <> GetUser And sName <> vbNullString Then
+            If sName <> OSver.UserName And sName <> vbNullString Then
                 If bShowPrivacy Then
                     tvwMain.Nodes.Add "Users", tvwChild, "Users" & sUsernames(i), sName, "user"
                 Else
@@ -3419,7 +3424,7 @@ Private Function GetStartupListReport$()
             "Started from: " & AppPath(True) & vbCrLf & _
             "Detected: " & GetWindowsVersion & vbCrLf
     If bShowPrivacy Then
-        sLog = sLog & "Logged on as '" & GetUser & "' to '" & GetComputer & "'" & vbCrLf
+        sLog = sLog & "Logged on as '" & OSver.UserName & "' to '" & OSver.ComputerName & "'" & vbCrLf
     End If
     
     If Not bShowEmpty And bShowCLSIDs And Not bShowCmts And _
@@ -3677,7 +3682,7 @@ Private Sub EnumAutoStartFolders()
 
     For k = 0 To UBound(sUsernames)
         sUsername = MapSIDToUsername(sUsernames(k))
-        If sUsername <> GetUser() And sUsername <> vbNullString Then
+        If sUsername <> OSver.UserName And sUsername <> vbNullString Then
             tvwMain.Nodes.Add "Users" & sUsernames(k), tvwChild, sUsernames(k) & "AutoStartFolders", SEC_AUTOSTARTFOLDERS, "folder"
             sFolders(0) = "Startup|" & Reg.GetString(HKEY_USERS, sUsernames(k) & "\Software\Microsoft\Windows\CurrentVersion\explorer\Shell Folders", "Startup")
             sFolders(1) = "AltStartup|" & Reg.GetString(HKEY_USERS, sUsernames(k) & "\Software\Microsoft\Windows\CurrentVersion\explorer\Shell Folders", "AltStartup")
@@ -3787,7 +3792,7 @@ Private Sub EnumRunRegKeys()
     Dim sUsername$, k&
     For k = 0 To UBound(sUsernames)
         sUsername = MapSIDToUsername(sUsernames(k))
-        If sUsername <> GetUser() And sUsername <> vbNullString Then
+        If sUsername <> OSver.UserName And sUsername <> vbNullString Then
             tvwMain.Nodes.Add "Users" & sUsernames(k), tvwChild, sUsernames(k) & "RunRegkeys", SEC_REGRUNKEYS, "registry"
         
             For i = 0 To UBound(sKeys)
@@ -3904,7 +3909,7 @@ Private Sub EnumRunExRegKeys()
     Dim sUsername$, L&
     For L = 0 To UBound(sUsernames)
         sUsername = MapSIDToUsername(sUsernames(L))
-        If sUsername <> GetUser() And sUsername <> vbNullString Then
+        If sUsername <> OSver.UserName And sUsername <> vbNullString Then
             tvwMain.Nodes.Add "Users" & sUsernames(L), tvwChild, sUsernames(L) & "RunExRegkeys", SEC_REGRUNEXKEYS, "registry"
             
             For i = 0 To UBound(sKeys)
@@ -3987,7 +3992,7 @@ End Sub
 '    Dim sUsername$, l&
 '    For l = 0 To UBound(sUsernames)
 '        sUsername = MapSIDToUsername(sUsernames(l))
-'        If sUsername <> GetUser() And sUsername <> vbNullString Then
+'        If sUsername <> OSver.UserName And sUsername <> vbNullString Then
 '            tvwMain.Nodes.Add "Users" & sUsernames(l), tvwChild, sUsernames(l) & "Policy", "Policies autoruns", "registry", "registry"
 '
 '            For i = 0 To UBound(sPolicies)
@@ -4365,7 +4370,7 @@ Private Sub EnumIniMappingKeys()
     Dim sUsername$, L&
     For L = 0 To UBound(sUsernames)
         sUsername = MapSIDToUsername(sUsernames(L))
-        If sUsername <> GetUser() And sUsername <> vbNullString Then
+        If sUsername <> OSver.UserName And sUsername <> vbNullString Then
             tvwMain.Nodes.Add "Users" & sUsernames(L), tvwChild, sUsernames(L) & "IniMapping", SEC_INIMAPPING, "ini"
 
             For i = 0 To UBound(sIniMapping)
@@ -4500,7 +4505,7 @@ Private Sub EnumShellCommands()
     Dim sUsername$, L&
     For L = 0 To UBound(sUsernames)
         sUsername = MapSIDToUsername(sUsernames(L))
-        If sUsername <> GetUser() And sUsername <> vbNullString Then
+        If sUsername <> OSver.UserName And sUsername <> vbNullString Then
             tvwMain.Nodes.Add "Users" & sUsernames(L), tvwChild, sUsernames(L) & "ShellCommandsUser", SEC_SHELLCOMMANDS, "run"
         
             For i = 0 To UBound(sTypes)
@@ -4558,7 +4563,7 @@ Private Sub Enum3rdPartyAutostarts()
     If bShowUsers Then
         For L = 0 To UBound(sUsernames)
             sUsername = MapSIDToUsername(sUsernames(L))
-            If sUsername <> GetUser() And sUsername <> vbNullString Then
+            If sUsername <> OSver.UserName And sUsername <> vbNullString Then
                 tvwMain.Nodes.Add "Users" & sUsernames(L), tvwChild, sUsernames(L) & "3rdPartyApps", SEC_3RDPARTY, "help"
             End If
         Next L
@@ -4578,7 +4583,7 @@ Private Sub Enum3rdPartyAutostarts()
     If bShowUsers Then
         For L = 0 To UBound(sUsernames)
             sUsername = MapSIDToUsername(sUsernames(L))
-            If sUsername <> GetUser() And sUsername <> vbNullString Then
+            If sUsername <> OSver.UserName And sUsername <> vbNullString Then
                 If tvwMain.Nodes(sUsernames(L) & "3rdPartyApps").Children = 0 And Not bShowEmpty Then
                     tvwMain.Nodes.Remove sUsernames(L) & "3rdPartyApps"
                 End If
@@ -4630,7 +4635,7 @@ Private Sub EnumICQAgentAutostarts()
     Dim sUsername$, L&
     For L = 0 To UBound(sUsernames)
         sUsername = MapSIDToUsername(sUsernames(L))
-        If sUsername <> GetUser() And sUsername <> vbNullString Then
+        If sUsername <> OSver.UserName And sUsername <> vbNullString Then
             sKeys = Split(Reg.EnumSubKeys(HKEY_USERS, sUsernames(L) & "\" & sICQ), "|")
                 
             tvwMain.Nodes.Add sUsernames(L) & "3rdPartyApps", tvwChild, sUsernames(L) & "ICQ", "ICQ", "exe", "exe"
@@ -5591,7 +5596,7 @@ Private Sub EnumSSODL()
     Dim sUsername$, L&
     For L = 0 To UBound(sUsernames)
         sUsername = MapSIDToUsername(sUsernames(L))
-        If sUsername <> GetUser() And sUsername <> vbNullString Then
+        If sUsername <> OSver.UserName And sUsername <> vbNullString Then
             tvwMain.Nodes.Add "Users" & sUsernames(L), tvwChild, sUsernames(L) & "ShellServiceObjectDelayLoadUser", SEC_SSODL, "registry"
             tvwMain.Nodes(sUsernames(L) & "ShellServiceObjectDelayLoadUser").Tag = "HKEY_USERS\" & sUsernames(L) & "\" & sSSODL
     
@@ -5913,7 +5918,7 @@ Private Sub EnumCmdProcessorAutorun()
     Dim sUsername$, L&
     For L = 0 To UBound(sUsernames)
         sUsername = MapSIDToUsername(sUsernames(L))
-        If sUsername <> GetUser() And sUsername <> vbNullString Then
+        If sUsername <> OSver.UserName And sUsername <> vbNullString Then
             tvwMain.Nodes.Add "Users" & sUsernames(L), tvwChild, sUsernames(L) & "CmdProcAutorun", SEC_CMDPROC, "cmd"
     
             sCmd = Reg.GetString(HKEY_USERS, sUsernames(L) & "\" & sCmdKey, "AutoRun")
@@ -6197,7 +6202,7 @@ Private Sub EnumShellExtensions()
     Dim sUsername$, L&
     For L = 0 To UBound(sUsernames)
         sUsername = MapSIDToUsername(sUsernames(L))
-        If sUsername <> GetUser() And sUsername <> vbNullString Then
+        If sUsername <> OSver.UserName And sUsername <> vbNullString Then
             tvwMain.Nodes.Add "Users" & sUsernames(L), tvwChild, sUsernames(L) & "ShellExtsUser", SEC_SHELLEXT, "explorer"
     
             sKeys = Split(Reg.EnumSubKeys(HKEY_USERS, sUsernames(L) & "\" & sKey), "|")
@@ -6295,7 +6300,7 @@ Private Sub EnumURLSearchHooks()
     Dim sUsername$, L&
     For L = 0 To UBound(sUsernames)
         sUsername = MapSIDToUsername(sUsernames(L))
-        If sUsername <> GetUser() And sUsername <> vbNullString Then
+        If sUsername <> OSver.UserName And sUsername <> vbNullString Then
             tvwMain.Nodes.Add "Users" & sUsernames(L), tvwChild, sUsernames(L) & "URLSearchHooksUser", SEC_URLSEARCHHOOKS, "msie"
             
             sVals = Split(RegEnumValues(HKEY_USERS, sUsernames(L) & "\" & sKey), "|")
@@ -6500,7 +6505,7 @@ Private Sub EnumNTScripts()
     Dim sUsername$, L&
     For L = 0 To UBound(sUsernames)
         sUsername = MapSIDToUsername(sUsernames(L))
-        If sUsername <> GetUser() And sUsername <> vbNullString Then
+        If sUsername <> OSver.UserName And sUsername <> vbNullString Then
             tvwMain.Nodes.Add "Users" & sUsernames(L), tvwChild, sUsernames(L) & "ScriptPolicies", SEC_SCRIPTPOLICIES, "ini", "ini"
             
             sLogon = BuildPath(Reg.GetString(HKEY_CURRENT_USER, sScripts, "Logon"), "scripts.ini")
@@ -6557,7 +6562,7 @@ Private Sub EnumDisabled()
     If bShowUsers Then
         For L = 0 To UBound(sUsernames)
             sUsername = MapSIDToUsername(sUsernames(L))
-            If sUsername <> GetUser() And sUsername <> vbNullString Then
+            If sUsername <> OSver.UserName And sUsername <> vbNullString Then
                 tvwMain.Nodes.Add "Users" & sUsernames(L), tvwChild, sUsernames(L) & "DisabledEnums", "Protection & disabled items", "bad"
             End If
         Next L
@@ -6621,7 +6626,7 @@ Private Sub EnumDisabled()
     If bShowUsers Then
         For L = 0 To UBound(sUsernames)
             sUsername = MapSIDToUsername(sUsernames(L))
-            If sUsername <> GetUser() Then
+            If sUsername <> OSver.UserName Then
                 If tvwMain.Nodes(sUsernames(L) & "DisabledEnums").Children = 0 And Not bShowEmpty Then
                     tvwMain.Nodes.Remove sUsernames(L) & "DisabledEnums"
                 End If
@@ -6702,7 +6707,7 @@ Private Sub EnumDisabledMsconfig9x()
     Dim sUsername$, L&
     For L = 0 To UBound(sUsernames)
         sUsername = MapSIDToUsername(sUsernames(L))
-        If sUsername <> GetUser() And sUsername <> vbNullString Then
+        If sUsername <> OSver.UserName And sUsername <> vbNullString Then
             tvwMain.Nodes.Add sUsernames(L) & "DisabledEnums", tvwChild, sUsernames(L) & "msconfig9x", SEC_MSCONFIG9X, "registry"
             
             For i = 0 To UBound(sKeys)
@@ -6969,7 +6974,7 @@ Private Sub EnumIEToolbars()
     Dim sUsername$, L&
     For L = 0 To UBound(sUsernames)
         sUsername = MapSIDToUsername(sUsernames(L))
-        If sUsername <> GetUser() And sUsername <> vbNullString Then
+        If sUsername <> OSver.UserName And sUsername <> vbNullString Then
             tvwMain.Nodes.Add "Users" & sUsernames(L), tvwChild, sUsernames(L) & "IEToolbars", SEC_IETOOLBARS, "msie"
             tvwMain.Nodes.Add sUsernames(L) & "IEToolbars", tvwChild, sUsernames(L) & "IEToolbarsUserShell", "ShellBrowser", "registry"
             tvwMain.Nodes(sUsernames(L) & "IEToolbarsUserShell").Tag = "HKEY_USERS\" & sUsernames(L) & "\" & sKey & "\ShellBrowser"
@@ -7191,7 +7196,7 @@ Private Sub EnumIEMenuExt()
     Dim sUsername$, L&
     For L = 0 To UBound(sUsernames)
         sUsername = MapSIDToUsername(sUsernames(L))
-        If sUsername <> GetUser() And sUsername <> vbNullString Then
+        If sUsername <> OSver.UserName And sUsername <> vbNullString Then
             tvwMain.Nodes.Add "Users" & sUsernames(L), tvwChild, sUsernames(L) & "IEMenuExt", SEC_IEMENUEXT, "msie"
             tvwMain.Nodes(sUsernames(L) & "IEMenuExt").Tag = "HKEY_USERS\" & sUsernames(L) & "\" & sKey
             
@@ -7233,7 +7238,7 @@ Private Sub EnumHijack()
     If bShowUsers Then
         For L = 0 To UBound(sUsernames)
             sUsername = MapSIDToUsername(sUsernames(L))
-            If sUsername <> GetUser() And sUsername <> vbNullString Then
+            If sUsername <> OSver.UserName And sUsername <> vbNullString Then
                 tvwMain.Nodes.Add "Users" & sUsernames(L), tvwChild, sUsernames(L) & "Hijack", "Hijack points", "attn"
             End If
         Next L
@@ -7286,7 +7291,7 @@ Private Sub EnumHijack()
     If bShowUsers Then
         For L = 0 To UBound(sUsernames)
             sUsername = MapSIDToUsername(sUsernames(L))
-            If sUsername <> GetUser() And sUsername <> vbNullString Then
+            If sUsername <> OSver.UserName And sUsername <> vbNullString Then
                 If tvwMain.Nodes(sUsernames(L) & "Hijack").Children = 0 And Not bShowEmpty Then
                     tvwMain.Nodes.Remove sUsernames(L) & "Hijack"
                 End If
@@ -7554,7 +7559,7 @@ Private Sub EnumIEURLs()
     Dim sUsername$, L&
     For L = 0 To UBound(sUsernames)
         sUsername = MapSIDToUsername(sUsernames(L))
-        If sUsername <> GetUser() And sUsername <> vbNullString Then
+        If sUsername <> OSver.UserName And sUsername <> vbNullString Then
             tvwMain.Nodes.Add sUsernames(L) & "Hijack", tvwChild, sUsernames(L) & "IEURLsUser", SEC_IEURLS, "msie"
             
             For i = 0 To UBound(sKeys)
@@ -7657,7 +7662,7 @@ End Sub
 '    Dim sUsername$, l&
 '    For l = 0 To UBound(sUsernames)
 '        sUsername = MapSIDToUsername(sUsernames(l))
-'        If sUsername <> GetUser() And sUsername <> vbNullString Then
+'        If sUsername <> OSver.UserName And sUsername <> vbNullString Then
 '            tvwMain.Nodes.Add sUsernames(l) & "Hijack", tvwChild, sUsernames(l) & "PolicyRestrictionsUser", "Policy restrictions", "msie"
 '
 '            For i = 0 To UBound(sKeys)
@@ -7954,7 +7959,7 @@ Private Sub EnumXPSecurity()
     Dim sUsername$, L&
     For L = 0 To UBound(sUsernames)
         sUsername = MapSIDToUsername(sUsernames(L))
-        If sUsername <> GetUser() And sUsername <> vbNullString Then
+        If sUsername <> OSver.UserName And sUsername <> vbNullString Then
             tvwMain.Nodes.Add sUsernames(L) & "DisabledEnums", tvwChild, sUsernames(L) & "XPSecurity", SEC_XPSECURITY, "internet"
             
             tvwMain.Nodes.Add sUsernames(L) & "XPSecurity", tvwChild, sUsernames(L) & "XPSecurityCenter", "Security Center", "xpsec"
@@ -8301,7 +8306,7 @@ Private Sub EnumDesktopComponents()
     Dim sUsername$, L&
     For L = 0 To UBound(sUsernames)
         sUsername = MapSIDToUsername(sUsernames(L))
-        If sUsername <> GetUser() And sUsername <> vbNullString Then
+        If sUsername <> OSver.UserName And sUsername <> vbNullString Then
             tvwMain.Nodes.Add "Users" & sUsernames(L), tvwChild, sUsernames(L) & "DesktopComponents", SEC_DESKTOPCOMPONENTS, "msie"
             tvwMain.Nodes(sUsernames(L) & "DesktopComponents").Tag = "HKEY_USERS\" & sUsernames(L) & "\" & sDC
             
@@ -8411,7 +8416,7 @@ Private Sub EnumMountPoints()
     Dim sUsername$, L&
     For L = 0 To UBound(sUsernames)
         sUsername = MapSIDToUsername(sUsernames(L))
-        If sUsername <> GetUser() And sUsername <> vbNullString Then
+        If sUsername <> OSver.UserName And sUsername <> vbNullString Then
             tvwMain.Nodes.Add "Users" & sUsernames(L), tvwChild, sUsernames(L) & "MountPoints", SEC_MOUNTPOINTS, "drive"
             tvwMain.Nodes(sUsernames(L) & "MountPoints").Tag = "HKEY_USERS\" & sUsernames(L) & "\" & sMPKey2
             
@@ -9008,5 +9013,6 @@ Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
     bSL_Abort = True
     bSL_Terminate = True
     'if launched from /tool:StartupList cmdline
+    SaveWindowPos Me, SETTINGS_SECTION_STARTUPLIST
     If g_bStartupListTerminateOnExit Then Unload frmMain
 End Sub

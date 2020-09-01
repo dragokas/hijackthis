@@ -934,6 +934,8 @@ Public Function ABR_CreateBackup(bForceIgnoreDays As Boolean) As Boolean
     
     Const sMarker As String = "Backup created via 'HiJackThis Fork' using 'Autobackup registry (ABR)' by D.Kuznetsov"
     
+    If Not OSver.IsElevated Then Exit Function
+    
     Dim sBackup_Folder As String
     Dim aDate_Folder() As String
     Dim dBackup As Date

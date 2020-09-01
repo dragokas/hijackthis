@@ -10,7 +10,14 @@ Begin VB.Form frmUnlockRegKey
    LinkTopic       =   "Form1"
    ScaleHeight     =   3240
    ScaleWidth      =   8448
-   StartUpPosition =   2  'CenterScreen
+   Begin VB.CommandButton cmdJump 
+      Caption         =   "Open in Regedit"
+      Height          =   450
+      Left            =   6480
+      TabIndex        =   5
+      Top             =   60
+      Width           =   1572
+   End
    Begin VB.CommandButton cmdExit 
       Cancel          =   -1  'True
       Caption         =   "Close"
@@ -47,11 +54,11 @@ Begin VB.Form frmUnlockRegKey
    End
    Begin VB.Label lblWhatToDo 
       Caption         =   "Enter Registry Key(s) to unlock and reset access:"
-      Height          =   255
+      Height          =   252
       Left            =   240
       TabIndex        =   0
       Top             =   240
-      Width           =   8055
+      Width           =   6132
    End
 End
 Attribute VB_Name = "frmUnlockRegKey"
@@ -152,6 +159,24 @@ Private Sub cmdExit_Click()
     Me.Hide
 End Sub
 
+Private Sub cmdJump_Click()
+    Dim sKeys As String
+    Dim aKeys() As String
+    
+    sKeys = txtKeys.Text
+    
+    If sKeys = "" Then
+        'You should enter at least one key!
+        MsgBoxW Translate(1905), vbExclamation
+        Exit Sub
+    End If
+    
+    sKeys = Replace$(sKeys, vbCr, "")
+    aKeys = Split(sKeys, vbLf)
+    
+    Reg.Jump 0, aKeys(0)
+End Sub
+
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
     If KeyCode = 27 Then Me.Hide
     ProcessHotkey KeyCode, Me
@@ -160,11 +185,13 @@ End Sub
 Private Sub Form_Load()
     SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold
     ReloadLanguage True
-    CenterForm Me
-    'Me.Icon = frmMain.Icon
+    LoadWindowPos Me, SETTINGS_SECTION_REGUNLOCKER
 End Sub
 
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
+    
+    SaveWindowPos Me, SETTINGS_SECTION_REGUNLOCKER
+
     If UnloadMode = 0 Then 'initiated by user (clicking 'X')
         Cancel = True
         Me.Hide
@@ -181,7 +208,7 @@ Private Sub Form_Resize()
     txtKeys.Height = Me.Height - 2010
     chkRecur.Top = Me.Height - 1300
     cmdGo.Top = Me.Height - 1300
-    cmdExit.Top = Me.Height - 1300
+    CmdExit.Top = Me.Height - 1300
 End Sub
 
 Private Sub Text1_KeyDown(KeyCode As Integer, Shift As Integer)

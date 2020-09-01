@@ -744,8 +744,9 @@ Private Sub GetHKU_Sids()
     
     Dim i&, k&, sUsername$, aTmpSID() As String
     Dim bVirtual As Boolean
+    Dim bAccessible As Boolean
     
-    cell.ls_CurUser = GetUser()
+    cell.ls_CurUser = OSver.UserName
     k = -1
     
     aTmpSID = SplitSafe(Reg.EnumSubKeys(HKEY_USERS, vbNullString), "|")
@@ -772,12 +773,26 @@ Private Sub GetHKU_Sids()
                 cell.ls_SID_NetShowServices = aTmpSID(i)
             Else
                 If StrComp(sUsername, cell.ls_CurUser, 1) <> 0 Then
-                    k = k + 1
-                    ReDim Preserve cell.la_User(k)
-                    cell.la_User(k).SID = aTmpSID(i)
-                    cell.la_User(k).Name = sUsername
-                    cell.la_User(k).Virtual = bVirtual
-                    cell.lb_User_dimmed = True
+                    
+                    bAccessible = True
+                    
+                    If Not OSver.IsElevated Then
+                        Dim hKey As Long
+                        If ERROR_SUCCESS = RegOpenKeyEx(HKEY_USERS, StrPtr(aTmpSID(i)), 0&, KEY_QUERY_VALUE Or KEY_ENUMERATE_SUB_KEYS, hKey) Then
+                            RegCloseKey hKey
+                        Else
+                            bAccessible = False
+                        End If
+                    End If
+                    
+                    If bAccessible Then
+                        k = k + 1
+                        ReDim Preserve cell.la_User(k)
+                        cell.la_User(k).SID = aTmpSID(i)
+                        cell.la_User(k).Name = sUsername
+                        cell.la_User(k).Virtual = bVirtual
+                        cell.lb_User_dimmed = True
+                    End If
                 Else
                     'current user
                     cell.ls_CurSID = aTmpSID(i)

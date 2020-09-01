@@ -139,9 +139,10 @@ Public Enum ENUM_REG_VALUE_TYPE_RESTORE
     REG_RESTORE_DWORD = 4&
     'REG_RESTORE_LINK = 6&
     REG_RESTORE_MULTI_SZ = 7&
+    REG_RESTORE_QWORD = 8&
 End Enum
 #If False Then
-    Dim REG_RESTORE_SAME, REG_RESTORE_SZ, REG_RESTORE_EXPAND_SZ, REG_RESTORE_DWORD, REG_RESTORE_MULTI_SZ
+    Dim REG_RESTORE_SAME, REG_RESTORE_SZ, REG_RESTORE_EXPAND_SZ, REG_RESTORE_DWORD, REG_RESTORE_MULTI_SZ, REG_RESTORE_QWORD
 #End If
 
 Public Enum ENUM_CURE_BASED
@@ -3812,7 +3813,7 @@ Sub GetUserNamesAndSids(aSID() As String, aUser() As String)
 
     Dim CurUserName$, i&, k&, sUsername$, aTmpSID() As String, aTmpUser() As String
 
-    CurUserName = GetUser()
+    CurUserName = OSver.UserName
     
     aTmpSID = SplitSafe(Reg.EnumSubKeys(HKEY_USERS, vbNullString), "|")
     ReDim aTmpUser(UBound(aTmpSID))
@@ -5126,7 +5127,7 @@ Public Sub FillUsers()
     gUsers(UBound(gHives) - 1) = "All users"
     
     gHives(UBound(gHives)) = "HKCU"
-    gUsers(UBound(gHives)) = GetUser()
+    gUsers(UBound(gHives)) = OSver.UserName
     
     AppendErrorLogCustom "FillUsers - End"
     Exit Sub
@@ -10348,7 +10349,7 @@ ErrorHandler:
 End Sub
     
 
-Private Function IsWinServiceFileName(sFilePath As String, Optional sArgument As String) As Boolean
+Public Function IsWinServiceFileName(sFilePath As String, Optional sArgument As String) As Boolean
     
     On Error GoTo ErrorHandler:
     
@@ -10716,7 +10717,9 @@ Private Function IsWinServiceFileName(sFilePath As String, Optional sArgument As
                     Case "<PF64>"
                         .Add Replace$(vKey, prefix, PF_64), 0&
                     Case "<PF32>"
-                        .Add Replace$(vKey, prefix, PF_32), 0&
+                        If OSver.IsWin64 Then
+                            .Add Replace$(vKey, prefix, PF_32), 0&
+                        End If
                 End Select
             Next
         End With
@@ -11140,7 +11143,7 @@ Public Function ClipboardSetText(sText As String) As Boolean
                     SetClipboardData CF_LOCALE, hMem
                 End If
             End If
-            hMem = GlobalAlloc(GMEM_MOVEABLE, LenB(sText))
+            hMem = GlobalAlloc(GMEM_MOVEABLE, LenB(sText) + 2)
             If hMem <> 0 Then
                 ptr = GlobalLock(hMem)
                 If ptr <> 0 Then
@@ -11816,117 +11819,6 @@ Public Function DomainHasDoubleTLD(sDomain$) As Boolean
     Next i
 End Function
 
-Public Function GetUser() As String
-    'AppendErrorLogCustom "GetUser - Begin"
-    Dim sUsername$
-    sUsername = String$(MAX_PATH, vbNullChar)
-    If 0 <> GetUserName(StrPtr(sUsername), MAX_PATH) Then
-        sUsername = Left$(sUsername, lstrlen(StrPtr(sUsername)))
-    End If
-    GetUser = sUsername 'UCase$(sUserName)
-    'AppendErrorLogCustom "GetUser - End"
-End Function
-
-Public Function GetComputer() As String
-    'AppendErrorLogCustom "GetComputer - Begin"
-    Dim sComputerName$
-    sComputerName = String$(MAX_PATH, vbNullChar)
-    If 0 <> GetComputerName(StrPtr(sComputerName), MAX_PATH) Then
-        sComputerName = Left$(sComputerName, lstrlen(StrPtr(sComputerName)))
-    End If
-    GetComputer = sComputerName 'UCase$(sComputerName)
-    'AppendErrorLogCustom "GetComputer - End"
-End Function
-
-Public Function GetUserType$()
-    'based on OpenProcessToken API example from API-Guide
-    On Error GoTo ErrorHandler:
-    AppendErrorLogCustom "GetUserType - Begin"
-    
-    Dim hProcessToken&
-    Dim BufferSize&
-    Dim psidAdmin&, psidPower&, psidUser&, psidGuest&
-    Dim lResult&
-    Dim i&
-    Dim tpTokens As TOKEN_GROUPS
-    Dim tpSidAuth As SID_IDENTIFIER_AUTHORITY
-    
-    If Not bIsWinNT Then
-        GetUserType = "Administrator"
-        Exit Function
-    End If
-    
-    GetUserType = "unknown"
-    tpSidAuth.Value(5) = SECURITY_NT_AUTHORITY
-    
-    ' Obtain current process token
-    If Not OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, True, hProcessToken) Then
-        Call OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, hProcessToken)
-    End If
-    If hProcessToken Then
-
-        ' Determine the buffer size required
-        Call GetTokenInformation(hProcessToken, ByVal TokenGroups, 0, 0, BufferSize) ' Determine required buffer size
-        If BufferSize Then
-            ReDim InfoBuffer((BufferSize \ 4) - 1) As Long
-            
-            ' Retrieve your token information
-            If GetTokenInformation(hProcessToken, ByVal TokenGroups, InfoBuffer(0), BufferSize, BufferSize) <> 1 Then
-                CloseHandle hProcessToken
-                Exit Function
-            End If
-            
-            ' Move it from memory into the token structure
-            Call CopyMemory(tpTokens, InfoBuffer(0), Len(tpTokens))
-            
-            ' Retreive the builtin sid pointers
-            lResult = AllocateAndInitializeSid(tpSidAuth, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, psidAdmin)
-            lResult = AllocateAndInitializeSid(tpSidAuth, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_POWER_USERS, 0, 0, 0, 0, 0, 0, psidPower)
-            lResult = AllocateAndInitializeSid(tpSidAuth, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_USERS, 0, 0, 0, 0, 0, 0, psidUser)
-            lResult = AllocateAndInitializeSid(tpSidAuth, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_GUESTS, 0, 0, 0, 0, 0, 0, psidGuest)
-            
-            If IsValidSid(psidAdmin) And IsValidSid(psidPower) And _
-               IsValidSid(psidUser) And IsValidSid(psidGuest) Then
-                For i = 0 To tpTokens.GroupCount
-                
-                    ' Run through your token sid pointers
-                    If IsValidSid(tpTokens.Groups(i).SID) Then
-                    
-                        ' Test for a match between the admin sid equalling your sid's
-                        If EqualSid(tpTokens.Groups(i).SID, psidAdmin) Then
-                            GetUserType = "Administrator"
-                            Exit For
-                        End If
-                        If EqualSid(tpTokens.Groups(i).SID, psidPower) Then
-                            GetUserType = "Power User"
-                            Exit For
-                        End If
-                        If EqualSid(tpTokens.Groups(i).SID, psidUser) Then
-                            GetUserType = "Limited User"
-                            Exit For
-                        End If
-                        If EqualSid(tpTokens.Groups(i).SID, psidGuest) Then
-                            GetUserType = "Guest"
-                            Exit For
-                        End If
-                    End If
-                Next
-            End If
-            If psidAdmin Then FreeSid psidAdmin
-            If psidPower Then FreeSid psidPower
-            If psidUser Then FreeSid psidUser
-            If psidGuest Then FreeSid psidGuest
-        End If
-        CloseHandle hProcessToken
-    End If
-    
-    AppendErrorLogCustom "GetUserType - End"
-    Exit Function
-ErrorHandler:
-    ErrorMsg Err, "GetUserType"
-    If inIDE Then Stop: Resume Next
-End Function
-
 Public Function MapSIDToUsername(sSID As String) As String
     
     On Error GoTo ErrorHandler:
@@ -12269,7 +12161,7 @@ Public Sub InitVariables()
         End If
     End If
     
-    envCurUser = GetUser()
+    envCurUser = OSver.UserName
     'envCurUser = EnvironW("%UserName%")
     
     ProgramData = EnvironW("%ProgramData%")
@@ -12731,6 +12623,65 @@ Public Sub CenterForm(myForm As Form) ' Центрирование формы на экране с учетом с
     Left = Screen.TwipsPerPixelX * GetSystemMetrics(SM_CXFULLSCREEN) / 2 - myForm.Width / 2
     Top = Screen.TwipsPerPixelY * GetSystemMetrics(SM_CYFULLSCREEN) / 2 - myForm.Height / 2
     myForm.Move Left, Top
+End Sub
+
+Public Function LoadWindowPos(frm As Form, IdSection As SETTINGS_SECTION) As Boolean
+    
+    If frm.WindowState = vbMinimized Or frm.WindowState = vbMaximized Then Exit Function
+    
+    LoadWindowPos = True
+    
+    If IdSection <> SETTINGS_SECTION_MAIN Then
+    
+        Dim iHeight As Long, iWidth As Long
+        iHeight = CLng(RegReadHJT("WinHeight", "-1", , IdSection))
+        iWidth = CLng(RegReadHJT("WinWidth", "-1", , IdSection))
+        
+        If iHeight = -1 Or iWidth = -1 Then LoadWindowPos = False
+        
+        If iHeight > 0 And iWidth > 0 Then
+            If iHeight > Screen.Height Then iHeight = Screen.Height
+            If iWidth > Screen.Width Then iWidth = Screen.Width
+            
+            If iHeight < 500 Then iHeight = 500
+            If iWidth < 1000 Then iWidth = 1000
+            
+            frm.Height = iHeight
+            frm.Width = iWidth
+        End If
+    End If
+    
+    Dim iTop As Long, iLeft As Long
+    iTop = CLng(RegReadHJT("WinTop", "-1", , IdSection))
+    iLeft = CLng(RegReadHJT("WinLeft", "-1", , IdSection))
+    
+    If iTop = -1 Or iLeft = -1 Then
+    
+        LoadWindowPos = False
+        CenterForm frm
+    Else
+        If iTop > (Screen.Height - 2500) Then iTop = Screen.Height - 2500
+        If iLeft > (Screen.Width - 5000) Then iLeft = Screen.Width - 5000
+        If iTop < 0 Then iTop = 0
+        If iLeft < 0 Then iLeft = 0
+        
+        frm.Top = iTop
+        frm.Left = iLeft
+    End If
+    
+    If CLng(RegReadHJT("WinState", "0", , IdSection)) = vbMaximized Then frm.WindowState = vbMaximized
+End Function
+
+Public Sub SaveWindowPos(frm As Form, IdSection As SETTINGS_SECTION)
+
+    If frm.WindowState <> vbMinimized And frm.WindowState <> vbMaximized Then
+        RegSaveHJT "WinTop", CStr(frm.Top), IdSection
+        RegSaveHJT "WinLeft", CStr(frm.Left), IdSection
+        RegSaveHJT "WinHeight", CStr(frm.Height), IdSection
+        RegSaveHJT "WinWidth", CStr(frm.Width), IdSection
+    End If
+    RegSaveHJT "WinState", CStr(frm.WindowState), IdSection
+    
 End Sub
 
 Public Function ConvertVersionToNumber(sVersion As String) As Long  '"1.1.1.1" -> 1 number
@@ -14287,7 +14238,7 @@ Public Function MakeLogHeader() As String
         sText = sText & "Elevated:  " & IIf(OSver.IsElevated, "Yes", "No") & vbCrLf  '& vbTab & "IL: " & OSver.GetIntegrityLevel & vbCrLf
     End If
     
-    sText = sText & "Ran by:    " & GetUser() & vbTab & "(group: " & OSver.UserType & ") on " & GetComputer() & _
+    sText = sText & "Ran by:    " & OSver.UserName & vbTab & "(group: " & OSver.UserType & ") on " & OSver.ComputerName & _
         ", " & IIf(bDebugMode, "(SID: " & OSver.SID_CurrentProcess & ") ", "") & "FirstRun: " & IIf(bFirstRebootScan, "yes", "no") & _
         IIf(OSver.IsLocalSystemContext, " <=== Attention! ('Local System' account)", "") & vbCrLf & vbCrLf
         
@@ -15058,6 +15009,9 @@ Public Sub FixRegistryHandler(result As SCAN_RESULT)
                         Case REG_RESTORE_DWORD
                             Reg.SetDwordVal .Hive, .Key, .Param, CLng(.DefaultData), .Redirected
                         
+                        Case REG_RESTORE_QWORD
+                            Reg.SetQwordVal .Hive, .Key, .Param, CLng(.DefaultData), .Redirected
+                        
                         'Case REG_RESTORE_LINK
                         
                         Case REG_RESTORE_MULTI_SZ
@@ -15270,11 +15224,11 @@ Public Function MapRegValueTypeToRegRestoreType(ordType As REG_VALUE_TYPE, Optio
     Case REG_ResourceRequirementsList
         bRequiredDefault = True
         
-    Case REG_QWORD        '// TODO
-        bRequiredDefault = True
+    Case REG_QWORD
+        rType = REG_RESTORE_QWORD
         
     Case REG_QWORD_LITTLE_ENDIAN
-        bRequiredDefault = True '// TODO
+        rType = REG_RESTORE_QWORD
     
     Case Else
         bRequiredDefault = True

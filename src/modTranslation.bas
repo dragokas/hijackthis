@@ -924,6 +924,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                                     Case "1902": .chkRecur.Caption = Translation
                                     Case "1903": .cmdGo.Caption = Translation
                                     Case "1904": .cmdExit.Caption = Translation
+                                    Case "1909": .cmdJump.Caption = Translation
                                 End Select
                             End With
                         End If

@@ -11,7 +11,7 @@ Attribute VB_Name = "modMain_2"
 '
 
 'O25 - Windows Management Instrumentation (WMI) event consumers
-'O26 - Image File Execution Options (IFEO)
+'O26 - Image File Execution Options (IFEO) and System Tools hijack
 
 Option Explicit
 
@@ -791,8 +791,15 @@ End Function
 Public Sub CheckO26Item()
     'O26 - Image File Execution Options:
     
+    'Area:
+    'HKLM\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options
+    'HKLM\Software\Microsoft\Windows\CurrentVersion\PackagedAppXDebug
+    '
+    
+    'Articles:
     'https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/gflags-overview
     'http://www.alex-ionescu.com/Estoteric%20Hooks.pdf
+    '
     
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "CheckO26Item - Begin"
@@ -1030,10 +1037,238 @@ Public Sub CheckO26Item()
         Next
     End If
     
+    CheckO26ToolsHiJack
+    
     AppendErrorLogCustom "CheckO26Item - End"
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "modMain2_CheckO26Item"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Public Sub CheckO26ToolsHiJack()
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "CheckO26ToolsHiJack - Begin"
+    
+    'Area:
+    'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Accessibility\ATs
+    'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer
+    '
+    
+    'Articles:
+    'https://malware.news/t/too-accessible-how-crowdstrike-falcon-detects-and-prevents-windows-logon-bypasses/18539
+    '
+    
+    Dim sFile$, sHit$, result As SCAN_RESULT
+    Dim aKey$(), sRestore$
+    Dim i As Long, j As Long, bSafe As Boolean, bUseSFC As Boolean
+    
+    Dim dSafe As clsTrickHashTable
+    Set dSafe = New clsTrickHashTable
+    dSafe.CompareMode = 1
+    
+    'LogonScreen Hijack
+    
+    dSafe.Add "magnifierpane", "%SystemRoot%\System32\Magnify.exe"
+    dSafe.Add "Narrator", "%SystemRoot%\System32\Narrator.exe"
+    dSafe.Add "osk", "%SystemRoot%\System32\osk.exe"
+    dSafe.Add "Oracle_JavaAccessBridge", "*" 'any
+    dSafe.Add "animations", "13"
+    dSafe.Add "audiodescription", "12"
+    dSafe.Add "caretbrowsing", "21"
+    dSafe.Add "caretwidth", "8"
+    dSafe.Add "colorfiltering", "22"
+    dSafe.Add "cursorscheme", ""
+    dSafe.Add "filterkeys", "0"
+    dSafe.Add "focusborderheight", "6"
+    dSafe.Add "focusborderwidth", "7"
+    dSafe.Add "highcontrast", "1"
+    dSafe.Add "keyboardcues", "9"
+    dSafe.Add "keyboardpref", "10"
+    dSafe.Add "messageduration", "17"
+    dSafe.Add "minimumhitradius", "18"
+    dSafe.Add "mousekeys", "2"
+    dSafe.Add "overlappedcontent", "11"
+    dSafe.Add "showsounds", "19"
+    dSafe.Add "soundsentry", "3"
+    dSafe.Add "stickykeys", "4"
+    dSafe.Add "togglekeys", "5"
+    dSafe.Add "windowarranging", "20"
+    dSafe.Add "windowtracking", "14"
+    dSafe.Add "windowtrackingtimeout", "16"
+    dSafe.Add "windowtrackingzorder", "15"
+    
+    'HKCU is not affected
+    'Other subkeys (with numeric StartExe) is affected!
+    
+    For i = 1 To Reg.EnumSubKeysToArray(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Accessibility\ATs", aKey())
+        
+        bSafe = False
+        bUseSFC = False
+        sRestore = vbNullString
+        
+        sFile = Reg.GetString(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Accessibility\ATs\" & aKey(i), "StartExe")
+        
+        If dSafe.Exists(aKey(i)) Then
+        
+            sRestore = dSafe(aKey(i))
+            
+            If sRestore = "*" Then
+            
+                bSafe = True
+                sRestore = ""
+                
+            ElseIf StrComp(sFile, EnvironW(sRestore), 1) = 0 Then
+                
+                If IsNumeric(sFile) Or Len(sFile) = 0 Then
+                
+                    bSafe = True
+                
+                Else
+                    bUseSFC = True
+                    
+                    If IsMicrosoftFile(sFile) Then
+                        bSafe = True
+                    End If
+                End If
+            End If
+        Else
+            'not in database
+            
+            If IsNumeric(sFile) Then
+                
+                bSafe = True
+            
+            Else
+                bUseSFC = True
+                
+                If IsMicrosoftFile(sFile) Then
+            
+                    bSafe = True
+                End If
+            End If
+        End If
+        
+        If Not bSafe Then
+
+            sFile = FormatFileMissing(sFile)
+            
+            sHit = "O26 - Tools: " & "HKLM\" & "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Accessibility\ATs\" & aKey(i) & _
+                " [StartExe] = " & sFile
+            
+            If Not IsOnIgnoreList(sHit) Then
+                
+                If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
+                
+                With result
+                    .Section = "O26"
+                    .HitLineW = sHit
+                    AddRegToFix .Reg, RESTORE_VALUE, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Accessibility\ATs\" & aKey(i), _
+                        "StartExe", sRestore, , IIf(IsNumeric(sRestore), REG_RESTORE_SZ, REG_RESTORE_EXPAND_SZ)
+                    If bUseSFC Then
+                        AddFileToFix .File, RESTORE_FILE_SFC, EnvironW(sRestore)
+                    End If
+                    
+                    .CureType = REGISTRY_BASED
+                End With
+                AddToScanResults result
+            End If
+        End If
+    Next
+    
+    Set dSafe = Nothing
+    
+    Dim sBackupPath As String
+    Dim sCleanupPath As String
+    Dim sDefragPath As String
+    Dim sRootFile As String
+    
+    If OSver.IsWindows10OrGreater Then
+        sBackupPath = vbNullString
+        sCleanupPath = "%SystemRoot%\System32\cleanmgr.exe /D %c"
+        sDefragPath = "%systemroot%\system32\dfrgui.exe"
+    ElseIf OSver.IsWindows8OrGreater Then
+        sBackupPath = vbNullString
+        sCleanupPath = "%SystemRoot%\System32\cleanmgr.exe /D %c"
+        sDefragPath = "%systemroot%\system32\dfrgui.exe"
+    ElseIf OSver.IsWindows7OrGreater Then
+        sBackupPath = "%SystemRoot%\system32\sdclt.exe"
+        sCleanupPath = "%SystemRoot%\System32\cleanmgr.exe /D %c"
+        sDefragPath = "%systemroot%\system32\dfrgui.exe"
+    ElseIf OSver.IsWindowsXPOrGreater Then
+        sBackupPath = "%SystemRoot%\system32\ntbackup.exe"
+        sCleanupPath = "%SystemRoot%\System32\cleanmgr.exe /D %c"
+        sDefragPath = "%SystemRoot%\system32\dfrg.msc %c:"
+    Else
+        sBackupPath = vbNullString
+        sCleanupPath = "%SystemRoot%\System32\cleanmgr.exe /D %c"
+        sDefragPath = "%SystemRoot%\system32\dfrg.msc %c:"
+    End If
+    
+    sBackupPath = vbNullString
+    sCleanupPath = "%SystemRoot%\System32\cleanmgr.exe /D %c"
+    sDefragPath = "%systemroot%\system32\dfrgui.exe"
+    
+    Dim sData As String, sArgs As String, sKey As String
+    
+    Set dSafe = New clsTrickHashTable
+    dSafe.CompareMode = 1
+    
+    dSafe.Add "BackupPath", sBackupPath
+    dSafe.Add "cleanuppath", sCleanupPath
+    dSafe.Add "DefragPath", sDefragPath
+    
+    For i = 0 To dSafe.Count - 1
+        
+        sKey = "SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\" & dSafe.Keys(i)
+        sData = Reg.GetString(HKLM, sKey, "")
+        
+        SplitIntoPathAndArgs sData, sFile, sArgs, bIsRegistryData:=True
+        sRootFile = sFile
+        sFile = FormatFileMissing(sFile, sArgs)
+        
+        bSafe = True
+        If StrComp(sData, EnvironW(dSafe.Items(i)), 1) <> 0 Then
+            bSafe = False
+        Else
+            If Len(sRootFile) <> 0 Then
+                If FileMissing(sFile) Then bSafe = False
+            End If
+            If StrEndWith(sRootFile, ".exe") Then
+                If Not IsMicrosoftFile(sRootFile) Then bSafe = False
+            End If
+        End If
+        
+        If Not bSafe Then
+            
+            sHit = "O26 - Tools: " & "HKLM\" & sKey & " (default) = " & ConcatFileArg(sFile, sArgs)
+            
+            If Not IsOnIgnoreList(sHit) Then
+            
+                If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
+                
+                With result
+                    .Section = "O26"
+                    .HitLineW = sHit
+                    AddRegToFix .Reg, RESTORE_VALUE, HKLM, sKey, "", dSafe.Items(i), , REG_RESTORE_EXPAND_SZ
+                    
+                    If FileMissing(sFile) And Len(sRootFile) <> 0 Then
+                        AddFileToFix .File, RESTORE_FILE_SFC, EnvironW(sRootFile)
+                    End If
+                    
+                    .CureType = REGISTRY_BASED
+                End With
+                AddToScanResults result
+            End If
+        End If
+    Next
+    
+    Set dSafe = Nothing
+    
+    AppendErrorLogCustom "CheckO26ToolsHiJack - End"
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "modMain2_CheckO26ToolsHiJack"
     If inIDE Then Stop: Resume Next
 End Sub
 

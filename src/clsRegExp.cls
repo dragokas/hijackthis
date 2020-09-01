@@ -57,7 +57,7 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Private Const PCRE_LIB_RESOURCE_ID = 301
-Private Const PCRE2_LIB_HASH = "76E72667E79615669079BCE9CF5B627B74C532F6"
+Private Const PCRE2_LIB_HASH = "7763DB5BED2BC09991DF39DAE604E6A49438C727"
 
 Implements IRegExp
 Implements IRegExpMatch

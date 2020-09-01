@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin VB.Form frmProcMan 
    Caption         =   "Process Manager"
-   ClientHeight    =   4140
+   ClientHeight    =   6672
    ClientLeft      =   60
    ClientTop       =   -240
    ClientWidth     =   8616
@@ -17,9 +17,8 @@ Begin VB.Form frmProcMan
    Icon            =   "frmProcMan.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   ScaleHeight     =   4140
+   ScaleHeight     =   6672
    ScaleWidth      =   8616
-   StartUpPosition =   2  'CenterScreen
    Begin VB.Frame fraProcessManager 
       Caption         =   "Itty Bitty Process Manager v."
       BeginProperty Font 
@@ -514,7 +513,8 @@ End Sub
 Private Sub Form_Load()
     SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold
     ReloadLanguage True
-    Me.Height = 7215
+    LoadWindowPos Me, SETTINGS_SECTION_PROCMAN
+    
     'Process Manager
     Me.Caption = Translate(170)
     cmdProcManRefresh_Click
@@ -532,6 +532,9 @@ Private Sub Form_MouseDown(Button As Integer, Shift As Integer, X As Single, Y A
 End Sub
 
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
+
+    SaveWindowPos Me, SETTINGS_SECTION_PROCMAN
+
     If UnloadMode = 0 Then 'initiated by user (clicking 'X')
         Cancel = True
         Me.Hide

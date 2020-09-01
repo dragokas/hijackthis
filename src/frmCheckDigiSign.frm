@@ -19,7 +19,6 @@ Begin VB.Form frmCheckDigiSign
    LinkTopic       =   "Form1"
    ScaleHeight     =   4680
    ScaleWidth      =   9252
-   StartUpPosition =   3  'Windows Default
    Begin VB.CommandButton cmdSelectFile 
       Caption         =   "Add file(s) ..."
       Height          =   375
@@ -331,7 +330,7 @@ Private Sub cmdGo_Click()
     End If
     
     'Abort
-    CmdExit.Caption = Translate(1861)
+    cmdExit.Caption = Translate(1861)
     
     Dim bWHQL As Boolean
     Dim bWPF As Boolean
@@ -555,7 +554,7 @@ Private Sub cmdGo_Click()
     isRan = False
     cmdGo.Enabled = True
     txtPaths.Enabled = True
-    CmdExit.Caption = Translate(1858)
+    cmdExit.Caption = Translate(1858)
     
     If OpenW(ReportPath, FOR_OVERWRITE_CREATE, hFile, g_FileBackupFlag) Then
         PutW hFile, 1&, VarPtr(bData(0)), UBound(bData) + 1, doAppend:=True
@@ -597,7 +596,7 @@ Private Sub cmdExit_Click()
     If isRan Then
         isRan = False
         ToggleWow64FSRedirection True
-        CmdExit.Caption = Translate(1858)
+        cmdExit.Caption = Translate(1858)
     Else
         Me.Hide
         'Unload Me
@@ -624,8 +623,8 @@ Private Sub Form_Load()
     Dim OptB As OptionButton
     Dim Ctl As Control
     
-    'Me.Icon = frmMain.Icon
-    CenterForm Me
+    LoadWindowPos Me, SETTINGS_SECTION_SIGNCHECKER
+    
     SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold
     Call ReloadLanguage(True)
     
@@ -642,6 +641,9 @@ Private Sub Form_Load()
 End Sub
 
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
+
+    SaveWindowPos Me, SETTINGS_SECTION_SIGNCHECKER
+    
     If UnloadMode = 0 Then 'initiated by user (clicking 'X')
         If isRan Then
             isRan = False
@@ -671,7 +673,7 @@ Private Sub Form_Resize()
     TopLevel2 = TopLevel1 - 1440
     
     cmdGo.Top = TopLevel1
-    CmdExit.Top = TopLevel1
+    cmdExit.Top = TopLevel1
     
     shpBack.Top = TopLevel1 + 120
     shpFore.Top = TopLevel1 + 120

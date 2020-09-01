@@ -50,7 +50,7 @@ set AppName=
 set NoUPX=true
 
 :: List of file extensions and additional folders in project's directory to include in zip-backup
-set arcList=*.vbp *.vbw *.rc *.res *.exe *.frm *.frx *.lvw *.cmd *.csi *.csv *.txt *.log *.PDM *.SCC *.lng *.pdb *.tlb *.ocx *.dll *.md *.gitignore *.bak *.odl *.idl
+set arcList=*.vbp *.vbw *.rc *.res *.exe *.frm *.frx *.lvw *.cmd *.csi *.csv *.txt *.log *.PDM *.SCC *.lng *.pdb *.tlb *.ocx *.dll *.md *.gitignore *.bak *.odl *.idl Tools Ico
 
 :: Folder for backup of archive
 set ArcFolder=Archive

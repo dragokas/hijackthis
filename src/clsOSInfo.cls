@@ -237,6 +237,8 @@ Dim IsSafeBoot_             As Boolean
 Dim IsElevated_             As Boolean
 Dim IntegrityLevel_         As String
 Dim UserType_               As String
+Dim UserName_               As String
+Dim ComputerName_               As String
 Dim IsWindowsXPOrGreater_   As Boolean
 Dim IsWindowsVistaOrGreater_ As Boolean
 Dim IsWindows7OrGreater_    As Boolean
@@ -269,6 +271,7 @@ Dim IsWin64_                As Boolean
 Dim SecureBoot_             As Boolean
 Dim PlatformID_             As Long
 Dim IsLocalSystemContext_   As Boolean
+Dim IsAdmin_                As Boolean
 Dim IsSystemCaseSensitive_  As Boolean
 Dim IsEmbedded_             As Boolean
 
@@ -568,7 +571,10 @@ Private Sub Class_Initialize()
     IntegrityLevel_ = GetIntegrityLevel()
     
     UserType_ = GetUserType()
-
+    UserName_ = GetUserName_()
+    ComputerName_ = GetComputerName_()
+    IsAdmin_ = (UserType_ = "Administrator")
+    
     GetCodePageInfo
     
     ' wSuiteMask
@@ -658,7 +664,7 @@ ErrorHandler:
     Resume Next
 End Sub
 
-Sub GetCodePageInfo()
+Private Sub GetCodePageInfo()
     On Error GoTo ErrorHandler
 
     AppendErrorLogCustom "GetCodePageInfo - Begin"
@@ -681,7 +687,7 @@ ErrorHandler:
     ErrorMsg Err, "clsOSver.GetCodePageInfo"
 End Sub
 
-Function GetLangNameFullByCultureCode(lcid As Long) As String
+Private Function GetLangNameFullByCultureCode(lcid As Long) As String
     Dim buf As String
     Dim lr  As Long
     buf = String$(1000, vbNullChar)
@@ -691,7 +697,7 @@ Function GetLangNameFullByCultureCode(lcid As Long) As String
     End If
 End Function
 
-Function RegRead_REG_SZ(strKey As String, strParam As String) As String
+Private Function RegRead_REG_SZ(strKey As String, strParam As String) As String
     On Error GoTo ErrorHandler
     
     Const KEY_QUERY_VALUE       As Long = &H1&
@@ -719,7 +725,7 @@ ErrorHandler:
     If hKey <> 0 Then RegCloseKey hKey
 End Function
 
-Function RegRead_REG_DWORD(strKey As String, strParam As String) As Long
+Private Function RegRead_REG_DWORD(strKey As String, strParam As String) As Long
     On Error GoTo ErrorHandler
     
     Const KEY_QUERY_VALUE       As Long = &H1&
@@ -746,7 +752,7 @@ ErrorHandler:
     If hKey <> 0 Then RegCloseKey hKey
 End Function
 
-Function IsProcessElevated(Optional hProcess As Long) As Boolean
+Public Function IsProcessElevated(Optional hProcess As Long) As Boolean
     On Error GoTo ErrorHandler
     
     AppendErrorLogCustom "IsProcessElevated - Begin"
@@ -776,7 +782,7 @@ ErrorHandler:
     If hToken Then CloseHandle hToken: hToken = 0
 End Function
 
-Public Function GetUserType(Optional hProcess As Long) As String
+Private Function GetUserType() As String
     On Error GoTo ErrorHandler
 
     AppendErrorLogCustom "GetUserType - Begin"
@@ -804,15 +810,13 @@ Public Function GetUserType(Optional hProcess As Long) As String
     GetUserType = "Unknown"
     tpSidAuth.Value(5) = SECURITY_NT_AUTHORITY
     
-    ' в идеале, сначала нужно проверять токен, полученный от потока
-    ' If Not OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, True, hProcessToken) Then
-    ' ограничимся токеном процесса, т.к. пока не планируем более 1 потока
-    
-    If hProcess = 0 Then hProcess = GetCurrentProcess()
-    If 0 = OpenProcessToken(hProcess, TOKEN_QUERY, hProcessToken) Then Exit Function
+    ' Obtain current process token
+    If Not OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, True, hProcessToken) Then
+        Call OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, hProcessToken)
+    End If
     
     If hProcessToken Then
-
+        
         ' Определяем требуемый размер буфера
         GetTokenInformation hProcessToken, ByVal TokenGroups, 0&, 0&, BufferSize
         
@@ -869,7 +873,7 @@ ErrorHandler:
     If psidGuest Then FreeSid psidGuest
 End Function
 
-Function GetCurrentProcessSID() As String
+Private Function GetCurrentProcessSID() As String
     On Error GoTo ErrorHandler
 
     AppendErrorLogCustom "GetCurrentProcessSID - Begin"
@@ -920,7 +924,7 @@ ErrorHandler:
     ErrorMsg Err, "clsOSver.GetCurrentProcessSID"
 End Function
 
-Function GetIntegrityLevel(Optional hProcess As Long) As String
+Private Function GetIntegrityLevel(Optional hProcess As Long) As String
     'https://msdn.microsoft.com/en-us/library/bb625963.aspx
     'https://msdn.microsoft.com/en-us/library/bb625966.aspx
     On Error GoTo ErrorHandler
@@ -1020,7 +1024,7 @@ End Function
 
 'https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-mde2/d92ead8f-faf3-47a8-a341-1921dc2c463b
 'https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getproductinfo
-Function GetProductName(ProductType As Long) As String
+Private Function GetProductName(ProductType As Long) As String
     On Error GoTo ErrorHandler
     
     Dim ProductName As String
@@ -1167,7 +1171,7 @@ ErrorHandler:
 End Function
 
 
-Function GetLangNameByCultureCode(CultureCode As Long) As String
+Private Function GetLangNameByCultureCode(CultureCode As Long) As String
     Dim Lang$
     Select Case CultureCode
         Case &H419&
@@ -1452,7 +1456,7 @@ Function GetLangNameByCultureCode(CultureCode As Long) As String
     GetLangNameByCultureCode = Lang
 End Function
 
-Function IsWow64() As Boolean   ' Разрядность ОС
+Public Function IsWow64() As Boolean   ' Разрядность ОС
     Dim hModule As Long, procAddr As Long, lIsWin64 As Long
     Static isInit As Boolean, result As Boolean
     
@@ -1482,6 +1486,24 @@ Private Function SecureBootState() As Boolean
         lState = RegRead_REG_DWORD("SYSTEM\CurrentControlSet\Control\SecureBoot\State", "UEFISecureBootEnabled")
         If lState = 1 Then SecureBootState = True
     End If
+End Function
+
+Private Function GetUserName_() As String
+    Dim sUsername$
+    sUsername = String$(MAX_PATH, vbNullChar)
+    If 0 <> GetUserName(StrPtr(sUsername), MAX_PATH) Then
+        sUsername = Left$(sUsername, lstrlen(StrPtr(sUsername)))
+    End If
+    GetUserName_ = sUsername
+End Function
+
+Private Function GetComputerName_() As String
+    Dim sComputerName$
+    sComputerName = String$(MAX_PATH, vbNullChar)
+    If 0 <> GetComputerName(StrPtr(sComputerName), MAX_PATH) Then
+        sComputerName = Left$(sComputerName, lstrlen(StrPtr(sComputerName)))
+    End If
+    GetComputerName_ = sComputerName
 End Function
 
 Public Property Get Bitness() As String
@@ -1538,6 +1560,14 @@ End Property
 
 Public Property Get UserType() As String
     UserType = UserType_
+End Property
+
+Public Property Get UserName() As String
+    UserName = UserName_
+End Property
+
+Public Property Get ComputerName() As String
+    ComputerName = ComputerName_
 End Property
 
 Public Property Get IsSafeBoot() As Boolean
@@ -1670,6 +1700,10 @@ End Property
 
 Public Property Get IsLocalSystemContext() As Boolean
     IsLocalSystemContext = IsLocalSystemContext_
+End Property
+
+Public Property Get IsAdmin() As Boolean
+    IsAdmin = IsAdmin_
 End Property
 
 Public Property Get IsSystemCaseSensitive() As Boolean

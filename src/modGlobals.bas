@@ -1,6 +1,10 @@
 Attribute VB_Name = "modGlobals"
 '[modGlobals.bas]
 
+'
+' All API-declarations and constants used globally by application
+'
+
 Option Explicit
 
 Public Const LAST_CHECK_OTHER_SECTION_NUMBER As Long = 26
@@ -17,7 +21,7 @@ Public Const MAX_MODULE_NAME32 As Long = 255&
 Public TaskBar As ITaskbarList3
 
 #If False Then 'for common var. names character case fixation
-    Public X, Y, Length, Index, sFilename, i, j, k, State, Frm, ret, VT, isInit, hwnd, pv, Reg, pid, File, msg
+    Public X, Y, Length, Index, sFilename, i, j, k, State, frm, ret, VT, isInit, hwnd, pv, Reg, pid, File, msg
 #End If
 
 Public Enum HE_HIVE
@@ -1181,6 +1185,7 @@ Public Declare Function LoadLibrary Lib "kernel32.dll" Alias "LoadLibraryW" (ByV
 'Public Declare Function GetProcAddress Lib "kernel32.dll" (ByVal hModule As Long, ByVal lpProcName As String) As Long
 Public Declare Function FreeLibrary Lib "kernel32.dll" (ByVal hLibModule As Long) As Long
 Public Declare Function GetForegroundWindow Lib "user32.dll" () As Long
+Public Declare Function AllowSetForegroundWindow Lib "user32.dll" (ByVal dwProcessId As Long) As Long
 Public Declare Function SendMessage Lib "user32.dll" Alias "SendMessageW" (ByVal hwnd As Long, ByVal wMsg As Long, ByVal wParam As Long, lParam As Any) As Long
 Public Declare Function MessageBox Lib "user32.dll" Alias "MessageBoxW" (ByVal hwnd As Long, ByVal lpText As Long, ByVal lpCaption As Long, ByVal uType As Long) As Long
 Public Declare Function FormatMessage Lib "kernel32.dll" Alias "FormatMessageW" (ByVal dwFlags As Long, lpSource As Long, ByVal dwMessageId As Long, ByVal dwLanguageId As Long, ByVal lpBuffer As Long, ByVal nSize As Long, ByVal Arguments As Long) As Long

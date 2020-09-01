@@ -206,7 +206,7 @@ Public Function CreateTask(TaskName As String, FullPath As String, Arguments As 
         If Not (pTask Is Nothing) Then
         
             Set pRegInfo = pTask.RegistrationInfo
-            pRegInfo.Author = GetCompName(ComputerNameNetBIOS) & "\" & GetUser() 'Username or %UserDomain%\%UserName%
+            pRegInfo.Author = GetCompName(ComputerNameNetBIOS) & "\" & OSver.UserName 'Username or %UserDomain%\%UserName%
             pRegInfo.Description = Description
             Set pRegInfo = Nothing
             
@@ -227,7 +227,7 @@ Public Function CreateTask(TaskName As String, FullPath As String, Arguments As 
             'https://docs.microsoft.com/en-us/windows/desktop/TaskSchd/logontrigger-delay
             pLogonTrigger.Delay = "PT" & CStr(DelaySec) & "S" 'S - mean sec. delay 'format is PnYnMnDTnHnMnS, where T - is date/time separator
             pLogonTrigger.Enabled = True
-            pLogonTrigger.UserId = GetCompName(ComputerNameNetBIOS) & "\" & GetUser()  'UserDomain\UserName, like "Alex-PC\Alex"
+            pLogonTrigger.UserId = GetCompName(ComputerNameNetBIOS) & "\" & OSver.UserName  'UserDomain\UserName, like "Alex-PC\Alex"
             Set pTrigger = Nothing
             Set pTriggerCollection = Nothing
             

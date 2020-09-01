@@ -1246,7 +1246,7 @@ CheckHKLMRanges:
     Dim sUsername$, L&
     For L = 0 To UBound(sUsernames)
         sUsername = MapSIDToUsername(sUsernames(L))
-        If sUsername <> GetUser() And sUsername <> vbNullString Then
+        If sUsername <> OSver.UserName And sUsername <> vbNullString Then
             'Loading... Trusted sites & Restricted sites
             Status Translate(923) & " (" & sUsername & ")"
             tvwMain.Nodes.Add sUsernames(L) & "DisabledEnums", tvwChild, sUsernames(L) & "Zones", SEC_ZONES, "internet"
@@ -1794,7 +1794,7 @@ Public Sub RegEnumPolicies(tvwMain As TreeView)
     For L = 0 To UBound(sUsernames)
         Stady = 28
         sUsername = MapSIDToUsername(sUsernames(L))
-        If sUsername <> GetUser() And sUsername <> vbNullString Then
+        If sUsername <> OSver.UserName And sUsername <> vbNullString Then
             Stady = 29
             tvwMain.Nodes.Add "Users" & sUsernames(L), tvwChild, sUsernames(L) & "PoliciesUser", SEC_POLICIES, "policy"
 

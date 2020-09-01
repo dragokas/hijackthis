@@ -818,6 +818,7 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 1906=[OK]
 1907=(récursivement)
 1908=[Echec]
+1909=Ouvrir dans le Regedit
 ;
 ; ============ Delete on reboot & unlock file staff ========
 ;
@@ -1739,4 +1740,4 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 ; Empty
 ;
 ; (2350 - ...)
-;                    
+;                       

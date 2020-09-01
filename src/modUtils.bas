@@ -1,6 +1,10 @@
 Attribute VB_Name = "modUtils"
 '[modUtils.bas]
 
+'
+' Various helper functions
+'
+
 Option Explicit
 
 Private Type BROWSER_INFO
@@ -16,6 +20,16 @@ Public Type MY_BROWSERS
     Chrome  As BROWSER_INFO
     Default As String
 End Type
+
+Public Enum SETTINGS_SECTION
+    SETTINGS_SECTION_MAIN = 0
+    SETTINGS_SECTION_ADSSPY
+    SETTINGS_SECTION_SIGNCHECKER
+    SETTINGS_SECTION_PROCMAN
+    SETTINGS_SECTION_STARTUPLIST
+    SETTINGS_SECTION_UNINSTMAN
+    SETTINGS_SECTION_REGUNLOCKER
+End Enum
 
 'Private Type RECT
 '    Left    As Long
@@ -1794,28 +1808,50 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Public Sub RegSaveHJT(sName$, sData$)
+Public Function RegSaveHJT(sName$, sData$, Optional IdSection As SETTINGS_SECTION) As Boolean
     On Error GoTo ErrorHandler:
+    
+    If Not OSver.IsElevated Then Exit Function
+    
+    Dim sSubSection As String
+    sSubSection = SectionNameById(IdSection)
+    
+    If Len(sSubSection) <> 0 Then sSubSection = "\" & sSubSection
+    
     If sName Like "Ignore#*" Or sName = "ProxyPass" Then
         Dim aData() As Byte
         aData = sData
-        Reg.SetBinaryVal HKEY_LOCAL_MACHINE, "Software\TrendMicro\HiJackThisFork", sName, aData
+        Reg.SetBinaryVal HKEY_LOCAL_MACHINE, "Software\TrendMicro\HiJackThisFork" & sSubSection, sName, aData
     Else
-        Reg.SetStringVal HKEY_LOCAL_MACHINE, "Software\TrendMicro\HiJackThisFork", sName, sData
+        Reg.SetStringVal HKEY_LOCAL_MACHINE, "Software\TrendMicro\HiJackThisFork" & sSubSection, sName, sData
     End If
-    Exit Sub
+    
+    RegSaveHJT = True
+    
+    Exit Function
 ErrorHandler:
-    ErrorMsg Err, "RegSaveHJT", sName & "," & sData
+    ErrorMsg Err, "RegSaveHJT", sName & "," & sData & " - Section: " & sSubSection
     If inIDE Then Stop: Resume Next
-End Sub
+End Function
 
-Public Function RegReadHJT(sName$, Optional sDefault$, Optional bUseOldKey As Boolean) As String
+Public Function RegReadHJT( _
+    sName$, _
+    Optional sDefault$, _
+    Optional bUseOldKey As Boolean, _
+    Optional IdSection As SETTINGS_SECTION) As String
+    
     On Error GoTo ErrorHandler:
+    
+    Dim sSubSection As String
+    sSubSection = SectionNameById(IdSection)
+    
+    If Len(sSubSection) <> 0 Then sSubSection = "\" & sSubSection
+    
     Dim sKeyHJT As String
     If bUseOldKey Then
         sKeyHJT = "Software\TrendMicro\HiJackThis"
     Else
-        sKeyHJT = "Software\TrendMicro\HiJackThisFork"
+        sKeyHJT = "Software\TrendMicro\HiJackThisFork" & sSubSection
     End If
     If sName Like "Ignore#*" Or sName = "ProxyPass" Then
         Dim aData() As Byte
@@ -1829,13 +1865,24 @@ Public Function RegReadHJT(sName$, Optional sDefault$, Optional bUseOldKey As Bo
     If Len(RegReadHJT) = 0 Then RegReadHJT = sDefault
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "RegReadHJT", sName & "," & sDefault
+    ErrorMsg Err, "RegReadHJT", sName & "," & sDefault & " - Section: " & sSubSection
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Sub RegDelHJT(sName$)
-    Reg.DelVal HKEY_LOCAL_MACHINE, "Software\TrendMicro\HiJackThisFork", sName
-End Sub
+Public Function RegDelHJT(sName$, Optional IdSection As SETTINGS_SECTION) As Boolean
+
+    If Not OSver.IsElevated Then Exit Function
+
+    Dim sSubSection As String
+    sSubSection = SectionNameById(IdSection)
+    
+    If Len(sSubSection) <> 0 Then sSubSection = "\" & sSubSection
+    
+    Reg.DelVal HKEY_LOCAL_MACHINE, "Software\TrendMicro\HiJackThisFork" & sSubSection, sName
+    
+    RegDelHJT = True
+    
+End Function
 
 Public Function GetFontHeight(Fnt As Font) As Long
     Dim FntPrev As Font
@@ -1945,8 +1992,6 @@ Public Function OpenFileDialog(Optional sTitle As String, Optional InitDir As St
     
     ofn.nMaxFile = MAX_PATH_W
     out = String$(MAX_PATH_W, vbNullChar)
-    
-    
     
     With ofn
         .hWndOwner = IIf(hwnd = 0, g_HwndMain, hwnd)
@@ -2520,4 +2565,22 @@ Public Function HasCommandLineKey(ByVal sKey As String) As Boolean
             End If
         Next
     End If
+End Function
+
+Public Function SectionNameById(IdSection As SETTINGS_SECTION) As String
+
+    Dim sName As String
+
+    Select Case IdSection
+    Case SETTINGS_SECTION_MAIN:         sName = vbNullString
+    Case SETTINGS_SECTION_ADSSPY:       sName = "Tools\ADSSpy"
+    Case SETTINGS_SECTION_SIGNCHECKER:  sName = "Tools\SignChecker"
+    Case SETTINGS_SECTION_PROCMAN:      sName = "Tools\ProcMan"
+    Case SETTINGS_SECTION_STARTUPLIST:  sName = "Tools\StartupList"
+    Case SETTINGS_SECTION_UNINSTMAN:    sName = "Tools\UninstMan"
+    Case SETTINGS_SECTION_REGUNLOCKER:  sName = "Tools\RegUnlocker"
+    End Select
+    
+    SectionNameById = sName
+    
 End Function

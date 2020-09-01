@@ -10,7 +10,6 @@ Begin VB.Form frmUninstMan
    LinkTopic       =   "Form1"
    ScaleHeight     =   6756
    ScaleWidth      =   11316
-   StartUpPosition =   3  'Windows Default
    Begin VB.Frame fraUninstMan 
       BeginProperty Font 
          Name            =   "Tahoma"
@@ -262,6 +261,10 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 '[frmUninstMan.frm]
 
+'
+' Uninstall Manager by Merijn Bellekom & Alex Dragokas
+'
+
 Option Explicit
 
 Private Type UnintallManagerData
@@ -286,11 +289,14 @@ Private Sub Form_Load()
     End If
     SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold
     ReloadLanguage True
-    CenterForm Me
+    LoadWindowPos Me, SETTINGS_SECTION_UNINSTMAN
     cmdRefresh_Click
 End Sub
 
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
+
+    SaveWindowPos Me, SETTINGS_SECTION_UNINSTMAN
+
     If UnloadMode = 0 Then 'initiated by user (clicking 'X')
         Cancel = True
         Me.Hide

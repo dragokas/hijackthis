@@ -19,7 +19,6 @@ Begin VB.Form frmADSspy
    LinkTopic       =   "Form1"
    ScaleHeight     =   6768
    ScaleWidth      =   8340
-   StartUpPosition =   2  'CenterScreen
    Begin VB.PictureBox picStatus 
       AutoRedraw      =   -1  'True
       Height          =   255
@@ -541,8 +540,7 @@ Private Sub Form_Load()
     Dim Btn As CommandButton
     Dim Ctl As Control
     
-    CenterForm Me
-    'Me.Icon = frmMain.Icon
+    LoadWindowPos Me, SETTINGS_SECTION_ADSSPY
     
     ' if Win XP -> disable all window styles from option buttons
     If OSver.MajorMinor >= 5.1 And OSver.MajorMinor <= 5.2 Then
@@ -562,6 +560,7 @@ End Sub
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
     bAbortScanNow = True
     DoEvents
+    SaveWindowPos Me, SETTINGS_SECTION_ADSSPY
     'Unload Me
     Me.Hide
     If UnloadMode = 0 Then

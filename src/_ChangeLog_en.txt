@@ -11,8 +11,21 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[2.9.0.27] (Nightly) - Sep 1, 2020
+ - [*New*] Added subsection O26 - Tools: 
+ * various tools run by user manually, that hijacked in some way, will live there.
+ - [*New*] Detection of Logon Screen Backdoor (Accessibility tools) is added to O26.
+ - [*New*] Detection of My Computer properties tools hijack (Defragger, Cleaner, Backup) is added to O26.
+ - [Fix] Fixed critical error in service whitelisting for x32 systems (thanks Sandor for report).
+ - [Fix] Registry Jumper didn't want to jump to parent key when target doesn't exist.
+ - Registry Key Unlocker: added the button "Open in Regedit".
+ - Size and position of every tool and main window as well are now preserved after exiting the program.
+ - [Limited user] Fixed crash when user updates HJT.
+ - [Limited user] Some HJT functions and tools are blocked for limited user. Run utility as admin!
+ - [Limited user] Generic improvement, preventing false positives in scan results caused by access deny.
+
 [2.9.0.26] - Aug 5, 2020
-- Added partial compatibility when running as a limited user.
+ - Added partial compatibility when running as a limited user.
 
 [2.9.0.25] - Aug 2, 2020
 Databases:
@@ -1454,4 +1467,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                                
+                                   

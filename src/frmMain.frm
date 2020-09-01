@@ -18,7 +18,6 @@ Begin VB.Form frmMain
    LinkTopic       =   "Form1"
    ScaleHeight     =   7380
    ScaleWidth      =   8772
-   StartUpPosition =   2  'CenterScreen
    Begin VB.Timer tmrRunScan 
       Enabled         =   0   'False
       Interval        =   25
@@ -2054,7 +2053,6 @@ Public Sub Test()
 
 End Sub
 
-
 ' Tips on functions:
 
 '1. Use AddWarning() to append text to the end of the log, before debugging info.
@@ -2065,6 +2063,34 @@ Private Sub Form_Load()
     g_HwndMain = Me.hwnd
     
     pvSetFormIcon Me
+    
+    If Not (OSver.IsAdmin Or OSver.IsLocalSystemContext) Then
+        cmdDelOnReboot.Enabled = False
+        mnuToolsDelFileOnReboot.Enabled = False
+    End If
+    
+    If Not OSver.IsElevated Then
+        mnuFileInstallHJT.Enabled = False
+        mnuToolsRegUnlockKey.Enabled = False
+        mnuToolsUnlockAndDelFile.Enabled = False
+        cmdHostsManDel.Enabled = False
+        cmdHostsManToggle.Enabled = False
+        mnuToolsDelServ.Enabled = False
+        mnuToolsShortcutsChecker.Enabled = False
+        mnuToolsShortcutsFixer.Enabled = False
+        cmdDeleteService.Enabled = False
+        cmdRegKeyUnlocker.Enabled = False
+        cmdLnkChecker.Enabled = False
+        cmdLnkCleaner.Enabled = False
+        cmdConfigIgnoreDelSel.Enabled = False
+        cmdConfigIgnoreDelAll.Enabled = False
+        chkSkipIntroFrame.Enabled = False
+        chkConfigStartupScan.Enabled = False
+        chkSkipIntroFrameSettings.Enabled = False
+        cmdConfigBackupCreateSRP.Enabled = False
+        chkShowSRP.Enabled = False
+        cmdConfigBackupCreateRegBackup.Enabled = False
+    End If
     
     If bInit Then
         If Not bAutoLogSilent Then
@@ -2115,7 +2141,7 @@ Private Sub tmrStart_Timer()
 End Sub
 
 Private Sub FormStart_Stady1()
-    
+
     On Error GoTo ErrorHandler:
     
     Dim Ctl   As Control
@@ -2411,7 +2437,8 @@ Private Sub FormStart_Stady1()
         
         bLockResize = False
         
-        CenterForm Me
+        LoadWindowPos Me, SETTINGS_SECTION_MAIN
+        
     End If
     
     If RegReadHJT("SkipIntroFrame", "0") = "0" Or (ConvertVersionToNumber(RegReadHJT("Version", "")) < ConvertVersionToNumber("2.7.0.11")) Then
@@ -2638,7 +2665,7 @@ Private Sub FormStart_Stady2()
         mnuToolsShortcutsFixer_Click
         Unload Me: Exit Sub
     End If
-    
+
     FormStart_Stady3
     
     If HasCommandLineKey("Area:None") Then
@@ -3560,7 +3587,7 @@ Private Sub CheckAutoLog()
         If Not bAutoLogSilent Then DoEvents
         Me.Refresh
         DoEvents
-
+        
         If (chkSkipIntroFrame.Value = 1) Then
             If cmdScan.Visible And cmdScan.Enabled Then
                 cmdScan.SetFocus
@@ -3747,10 +3774,8 @@ Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
     ToggleWow64FSRedirection True
     If Not g_UninstallState Then
         SaveSettings
-        If Me.WindowState <> vbMinimized And Me.WindowState <> vbMaximized Then
-            RegSaveHJT "WinHeight", CStr(Me.Height)
-            RegSaveHJT "WinWidth", CStr(Me.Width)
-        End If
+        SaveWindowPos Me, SETTINGS_SECTION_MAIN
+        
         RegSaveHJT "Version", AppVerString
     End If
     SubClassScroll False
@@ -5395,7 +5420,7 @@ Private Sub Form_Resize()
     End If
 End Sub
 
-Private Sub LoadSettings()
+Private Sub LoadSettings(Optional nRun As Long)
     On Error GoTo ErrorHandler
     
     AppendErrorLogCustom "frmMain.LoadSettings - Begin"
@@ -5479,8 +5504,6 @@ Private Sub LoadSettings()
     chkFontWholeInterface.Value = CInt(RegReadHJT("FontOnInterface", "0"))
     
     sCurLang = RegReadHJT("LanguageFile", "English")
-    WinHeight = CLng(RegReadHJT("WinHeight", "6600"))
-    WinWidth = CLng(RegReadHJT("WinWidth", "9000"))
     
     ' Updates
 
@@ -5537,7 +5560,7 @@ Private Sub LoadSettings()
         RegSaveHJT "CryptVer", 2
     End If
     
-    If CryptVer = 1 Then 'need to reEncode
+    If CryptVer = 1 And OSver.IsElevated Then 'need to reEncode
         
         iIgnoreNum = Val(RegReadHJT("IgnoreNum", "0", True))
         
@@ -5616,16 +5639,20 @@ Private Sub LoadSettings()
     Next
     
     ' move registry settings from old key to new
-    If bUseOldKey Then
+    If bUseOldKey And OSver.IsElevated Then
         SaveSettings
         RegSaveHJT "LanguageFile", sCurLang
+        
+        WinHeight = CLng(RegReadHJT("WinHeight", "6600"))
+        WinWidth = CLng(RegReadHJT("WinWidth", "9000"))
+        
         RegSaveHJT "WinHeight", CStr(WinHeight)
         RegSaveHJT "WinWidth", CStr(WinWidth)
     End If
     
     IsOnIgnoreList "", UpdateList:=True
     
-    If CryptVer = 2 Then
+    If CryptVer = 2 And OSver.IsElevated And nRun = 0 Then 'nRun - surely prevents infinite recurse call
         'need to reEncode
         iIgnoreNum = Val(RegReadHJT("IgnoreNum", "0"))
         If iIgnoreNum > 0 Then
@@ -5645,7 +5672,7 @@ Private Sub LoadSettings()
         End If
         
         SaveSettings
-        LoadSettings
+        LoadSettings nRun:=1
     End If
     
     AppendErrorLogCustom "frmMain.LoadSettings - End"
@@ -5799,7 +5826,7 @@ Private Sub mnuToolsADSSpy_Click()      'Tools -> ADS Spy
     cmdADSSpy_Click
 End Sub
 
-Private Sub mnuToolsDelFileOnReboot_Click()     'Tools -> Delete File -> Delete on reboot...
+Private Sub mnuToolsDelFileOnReboot_Click()     'Tools -> Delete File -> Delete a file on reboot...
     cmdDelOnReboot_Click
 End Sub
 

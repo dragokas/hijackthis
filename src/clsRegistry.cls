@@ -2269,8 +2269,8 @@ End Function
 
 Public Sub Jump(lHive As ENUM_REG_HIVE, ByVal sKey As String, Optional sValue As String, Optional bUseWow64 As Boolean)
     On Error GoTo ErrorHandler:
-
-    Dim i&, uSEI As SHELLEXECUTEINFO
+    
+    Dim i&, iProcId&, uSEI As SHELLEXECUTEINFO
     Dim hwndRegedit&, hwndTreeView&, hwndListView&
     Dim bVista As Boolean, sPrefix As String, sFullKey As String
     Dim bNoValue As Boolean, nMSec As Single
@@ -2278,7 +2278,10 @@ Public Sub Jump(lHive As ENUM_REG_HIVE, ByVal sKey As String, Optional sValue As
     Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
     
     'verify the key actually exists
-    If Not KeyExists(lHive, sKey, bUseWow64) Then Exit Sub
+    Do Until KeyExists(lHive, sKey, bUseWow64) Or Len(sKey) = 0
+        'move to parent key if target doesn't exist
+        sKey = GetParentDir(sKey)
+    Loop
     
     If sValue <> "" Then
         'value exists ?
@@ -2373,7 +2376,10 @@ Public Sub Jump(lHive As ENUM_REG_HIVE, ByVal sKey As String, Optional sValue As
         Exit Sub
     End If
     
+    GetWindowThreadProcessId hwndRegedit, iProcId
+    
     ShowWindow hwndRegedit, SW_RESTORE
+    If iProcId <> 0 Then AllowSetForegroundWindow iProcId
     SetForegroundWindow hwndRegedit
     
     If bVista Then

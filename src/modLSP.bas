@@ -395,7 +395,7 @@ Public Sub FixLSP()
         '       "Would you like to visit that site?"
         
         If vbYes = MsgBoxW(Translate(580), vbExclamation Or vbYesNo) Then
-            ShellExecute 0&, StrPtr("open"), StrPtr("https://www.foolishit.com/vb6-projects/winsockreset/"), 0&, 0&, 1
+            ShellExecute 0&, StrPtr("open"), StrPtr("https://www.d7xtech.com/vb6-projects/winsockreset/"), 0&, 0&, 1
         End If
         bSeenLSPWarning = True
     End If
