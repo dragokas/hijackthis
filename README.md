@@ -122,3 +122,5 @@ You may also find my other programs useful:
 - [Check Browsers' LNK](https://toolslib.net/downloads/viewdownload/80-check-browsers-lnk/) & [ClearLNK](https://toolslib.net/downloads/viewdownload/81-clearlnk/) to cure shortcuts
 - [Different tools](https://github.com/SafeZone-cc) at SafeZone repository.
 - [My articles, tutorials and research](http://www.cyberforum.ru/blogs/218284/blog3628.html) (on Russian)
+
+[SonarTest]
