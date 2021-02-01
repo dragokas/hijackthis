@@ -1127,52 +1127,6 @@ Function StrContainsBinary(s$) As Boolean
     Next
 End Function
 
-'Private Function GetFileCheckSum$(sFilename$, lFileSize&)
-'    On Error GoTo ErrorHandler:
-'
-'    If Not FileExists(sFilename) Then Exit Function
-'    If lFileSize = 0 Then
-'        'speed tweak :) 0-byte file always has the same MD5
-'        GetFileCheckSum = "D41D8CD98F00B204E9800998ECF8427E"
-'        Exit Function
-'    End If
-'
-'    Dim sFileContents$, ff%
-'
-'    ff = FreeFile()
-'    Open sFilename For Binary Access Read As #ff
-'        If Err Then Exit Function
-'        sFileContents = Input(lFileSize, #ff)
-'    Close #ff
-'
-'    Dim hCrypt&, hHash&, uMD5(255) As Byte, lMD5Len&, i%, sMD5$
-'    If CryptAcquireContext(hCrypt, vbNullString, MS_ENHANCED_PROV, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT) <> 0 Then
-'        If CryptCreateHash(hCrypt, ALG_TYPE_ANY Or ALG_CLASS_HASH Or ALG_SID_MD5, 0, 0, hHash) <> 0 Then
-'            If CryptHashData(hHash, sFileContents, Len(sFileContents), 0) <> 0 Then
-'                If CryptGetHashParam(hHash, HP_HASHSIZE, uMD5(0), UBound(uMD5) + 1, 0) <> 0 Then
-'                    lMD5Len = uMD5(0)
-'                    If CryptGetHashParam(hHash, HP_HASHVAL, uMD5(0), UBound(uMD5) + 1, 0) <> 0 Then
-'                        For i = 0 To lMD5Len - 1
-'                            sMD5 = sMD5 & Right$("0" & Hex$(uMD5(i)), 2)
-'                        Next i
-'                    End If
-'                End If
-'            End If
-'            CryptDestroyHash hHash
-'        End If
-'        CryptReleaseContext hCrypt, 0
-'    End If
-'
-'    If sMD5 <> vbNullString Then
-'        GetFileCheckSum = sMD5
-'    End If
-'
-'    Exit Function
-'ErrorHandler:
-'    ErrorMsg Err, "GetFileCheckSum"
-'    If inIDE Then Stop: Resume Next
-'End Function
-
 Private Function IsRunningInIDE() As Boolean
     IsRunningInIDE = (App.LogMode = 0)
 End Function

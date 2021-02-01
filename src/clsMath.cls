@@ -137,3 +137,10 @@ Public Function MBToInt64(numMB As Long) As Currency
     '/ 10000& * 1024 * 1024
     MBToInt64 = CCur(numMB * 104.8576)
 End Function
+
+Public Sub SwapNumbers(vNum1, vNum2)
+    Dim vTmp
+    vTmp = vNum1
+    vNum1 = vNum2
+    vNum2 = vTmp
+End Sub

@@ -73,7 +73,7 @@
 1023=Avertissement! L'intégrité de cette instance de HiJackThis est corrompue.
      Il se pourrait que le fichier ait été modifié ou infecté par un virus.
      Il est recommandé de retélécharger le programme à partir de la source officielle: https://github.com/dragokas/hijackthis
-     Si cette erreur se répète, vérifiez votre ordinateur à l'aide d'une disquette de démarrage ou d'un LiveCD, par exemple: https://support.kaspersky.com/viruses/rescuedisk
+     Si cette erreur se répète, vérifiez votre ordinateur à l'aide d'une disquette de démarrage ou d'un LiveCD, par exemple: https://support.kaspersky.ru/14226 ou https://free.drweb.ru/aid_admin
 1024=Télécharger le programme via Internet?
 1025=Une erreur s'est produite lors du téléchargement!
 1026=Téléchargement terminé. Lancer le programme?
@@ -92,6 +92,7 @@
 1043=Inclure dans le rapport toutes les entrées indépendamment de la liste blanche
 1044=Calculer CS
 1045=Si possible, calculer la somme de contrôle des fichiers
+1046=Calcul de hash
 1050=Zone du scan
 1051=Options du scan
 1052=Correction && Sauvegarde
@@ -129,7 +130,7 @@ et enregistrer un rapport
 ;
 ; ================ Context menu ==============
 ;
-; (1160-1179)
+; (1160-1179, 2350 - 2399)
 ;
 1160=Corriger
 1161=Ajouter à la liste 'Ignorer'
@@ -141,6 +142,22 @@ et enregistrer un rapport
 1167=Enregistrer le rapport...
 1168=Désactiver
 1169=Activer
+1170=Copier
+1171=Ligne entière
+1172=Clé d'enregistrement
+1173=Paramètre de registre
+1174=Chemin du fichier
+1175=Nom de fichier
+1176=Fichier (comme objet)
+1177=Valeur
+1178=Recherche par hash / URL
+1179=Télécharger avec 'Autoruns'
+2350=Je dois télécharger SysInternals Autoruns pour:
+     []
+
+     Me permettez-vous?
+2351=Cliquez ici pour obtenir les résultats VT
+2352=Téléchargement du fichier ...
 ;
 ; =============== System Tray ================
 ;
@@ -270,6 +287,7 @@ et enregistrer un rapport
        /ihatewhitelists 	- ignore toutes les listes blanches internes.
        /md5 		- calcule le hash MD5 des fichiers.
        /sha1 		- calcule le hash SHA1 des fichiers.
+       /sha256 		- calcule le hash SHA256 des fichiers.
        /timeout:sec 	- total de secondes autorisées pour l'exécution de HiJackThis en mode silencieux (180 par défaut; 0 - pour désactiver).
        /install 		- installe HiJackThis dans le dossier 'Program Files' et crée des raccourcis.
        /instDir:"PATH" 	- chemin d'installation alternatif pour HJT (by default: "%ProgramFiles(x86)%\HiJackThis Fork").
@@ -285,6 +303,7 @@ et enregistrer un rapport
        /LangFR 	- force la langue française pour l'interface utilisateur.
        /LangRU 	- force la langue russe pour l'interface utilisateur.
        /LangUA 	- force la langue ukrainienne pour l'interface utilisateur.
+       /skipErrors	- n'affiche pas les messages d'erreur et empêche les avertissements et les erreurs d'écrire dans le fichier journal.
        /debug 		- mode de traçage. Les noms de fonction seront ajoutés au rapport principal et au fichier HiJackThis_debug.log. Vous pouvez également renommer le fichier HiJackThis_debug.exe.
        /debugtofile 	- les informations de traces seront enregistrées dans le fichier HiJackThis_debug.log uniquement.
      
@@ -319,7 +338,7 @@ et enregistrer un rapport
      HiJackThis.exe /autolog /ihatewhitelists
      
      Lancer le fichier run.bat.
-     Vous pouvez également créer un raccourci (.lnk) vers HiJackThis.exe, ouvrir la fenêtre des propriétés du raccourci et y ajouter la(les) clé(s) à la fin de la ligne dans la zone 'Cible'.     
+     Vous pouvez également créer un raccourci (.lnk) vers HiJackThis.exe, ouvrir la fenêtre des propriétés du raccourci et y ajouter la(les) clé à la fin de la ligne dans la zone 'Cible'.     
 
 0033=
      Description
@@ -437,11 +456,7 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
      Si vous activez cette option, vous pouvez désactiver des programmes ou des pilotes dont vous avez besoin. Cependant, il est très peu probable que vous endommagiez votre système après la réparation. Vous ne devriez donc activer cette option que si vous savez ce que vous faites !
 0058=Ne pas afficher les messages d'erreur
 0059=Minimiser le programme dans la zone de notification en cliquant sur le bouton_ 
-0060=Les URL ci-dessous seront utilisées pour réparer les pages Internet Explorer piratées/non désirées:
-0061=Page de démarrage par défaut:
-0062=Page de recherche par défaut:
 0063=Assistant de recherche par défaut:
-0064=Personnaliser la recherche par défaut:
 0065=Désolé ! Non encore implémentée.
 0066=Ceci installera HiJackThis dans le dossier 'Program Files' et configurera Windows pour qu'il lance automatiquement un scan après le démarrage du système.
  
@@ -1717,7 +1732,7 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 2102=Sauter les zones pour tous les utilisateurs, puisqu'il y a plus de 1000 domaines. ([] pour être exact)
 2103=Sauter les zones pour l'utilisateur [*], puisqu'il y a plus de 1000 domaines. ([**] pour être exact)
 ;
-; Search form
+; ========= Search form =========
 ;
 ; (2300 - 2349)
 ;
@@ -1736,8 +1751,12 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 2312=Erreur de syntaxe.
 2313=Direction
 2314=Paramètres
+2315=Affichage
+2316=Mode de filtration
+2317=Cela n'affichera que les éléments trouvés dans la liste
+2318=Marquer instantanément les éléments trouvés
 ;
-; Empty
+; ========= Empty ========
 ;
-; (2350 - ...)
-;                       
+; (2400 - ...)
+;                                 

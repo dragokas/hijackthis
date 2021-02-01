@@ -1933,7 +1933,7 @@ Private Sub Form_Load()
         
     End If
     
-    If bShowUsers Or bShowPrivacy Then GetUsernames
+    If bShowUsers Or bShowPrivacy Then GetUserNames
     If bShowHardware Then GetHardwareCfgs
     
     LoadSectionNames
@@ -3592,7 +3592,7 @@ Private Sub EnumProcesses()
         lPID = CLng(Left$(sProcessList(i), InStr(sProcessList(i), "=") - 1))
         tvwMain.Nodes.Add "RunningProcesses", tvwChild, "RunningProcesses" & i, GetLongFilename(sProc), "exe", "exe"
         tvwMain.Nodes("RunningProcesses" & i).Tag = GetLongFilename(sProc)
-        sModuleList = Split(GetLoadedModules(lPID, sProc), "|")
+        sModuleList = Split(GetLoadedModules(lPID), "|")
         For j = 0 To UBound(sModuleList)
             tvwMain.Nodes.Add "RunningProcesses" & i, tvwChild, "RunningProcesses" & i & "." & j, GetLongFilename(sModuleList(j)), "dll"
             tvwMain.Nodes("RunningProcesses" & i & "." & j).Tag = GetLongFilename(sModuleList(j))

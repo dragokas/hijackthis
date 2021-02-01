@@ -5,10 +5,14 @@ Option Explicit
 
 '
 ' Authenticode digital signature verifier / Driver's WHQL signature verifier
-' revision 2.16
+' revision 2.17
 '
 ' Copyrights: (ñ) Polshyn Stanislav Viktorovich aka Alex Dragokas
 '
+
+' 20.01.2021
+' Added extended key usage extraction
+' Included code for certificate storage enum
 
 ' 01.08.2020
 ' Appended new errors description
@@ -384,6 +388,11 @@ Private Type CRYPTCATMEMBER
     sEncodedMemberInfo      As CRYPTOAPI_BLOB
 End Type
 
+Private Type CERT_ENHKEY_USAGE
+    cUsageIdentifier As Long
+    rgpszUsageIdentifier As Long ' ptr -> array of ptrs of OID enquoted string (ANSI)
+End Type
+
 Private Declare Function CryptCATAdminAcquireContext Lib "Wintrust.dll" (hCatAdmin As Long, ByVal pgSubsystem As Long, ByVal dwFlags As Long) As Long
 Private Declare Function CryptCATAdminAcquireContext2 Lib "Wintrust.dll" (hCatAdmin As Long, ByVal pgSubsystem As Long, ByVal pwszHashAlgorithm As Long, ByVal pStrongHashPolicy As Long, ByVal dwFlags As Long) As Long
 Private Declare Function CryptCATAdminReleaseContext Lib "Wintrust.dll" (ByVal hCatAdmin As Long, ByVal dwFlags As Long) As Long
@@ -403,8 +412,13 @@ Private Declare Function CertDuplicateCertificateContext Lib "Crypt32.dll" (ByVa
 Public Declare Function CertFreeCertificateContext Lib "Crypt32.dll" (ByVal pCertContext As Long) As Long
 Private Declare Function CertNameToStr Lib "Crypt32.dll" Alias "CertNameToStrW" (ByVal dwCertEncodingType As Long, ByVal pName As Long, ByVal dwStrType As Long, ByVal psz As Long, ByVal csz As Long) As Long
 Private Declare Function CertGetCertificateContextProperty Lib "Crypt32.dll" (ByVal pCertContext As Long, ByVal dwPropId As Long, pvData As Any, pcbData As Long) As Long
+Private Declare Function CertGetEnhancedKeyUsage Lib "Crypt32.dll" (ByVal pCertContext As Long, ByVal dwFlags As Long, ByVal pUsage As Long, pcbUsage As Long) As Long
+Private Declare Function CertGetIntendedKeyUsage Lib "Crypt32.dll" (ByVal dwCertEncodingType As Long, ByVal pCertInfo As Long, pUsage As Long, ByVal cbKeyUsage As Long) As Long
 Private Declare Function CertGetNameString Lib "Crypt32.dll" Alias "CertGetNameStringW" (ByVal pCertContext As Long, ByVal dwType As Long, ByVal dwFlags As Long, pvTypePara As Any, ByVal pszNameString As Long, ByVal cchNameString As Long) As Long
 Public Declare Function CertCreateCertificateContext Lib "Crypt32.dll" (ByVal dwCertEncodingType As Long, ByVal pbCertEncoded As Long, ByVal cbCertEncoded As Long) As Long
+Public Declare Function CertOpenSystemStore Lib "Crypt32.dll" Alias "CertOpenSystemStoreW" (ByVal hProv As Long, ByVal szSubsystemProtocol As Long) As Long
+Public Declare Function CertCloseStore Lib "Crypt32.dll" (ByVal hCertStore As Long, ByVal dwFlags As Long) As Long
+Public Declare Function CertEnumCertificatesInStore Lib "Crypt32.dll" (ByVal hCertStore As Long, ByVal pPrevCertContext As Long) As Long
 
 Private Declare Function GetVersionEx Lib "kernel32.dll" Alias "GetVersionExW" (lpVersionInformation As Any) As Long
 'Private Declare Function FormatMessage Lib "kernel32.dll" Alias "FormatMessageW" (ByVal dwFlags As Long, ByVal lpSource As Long, ByVal dwMessageId As Long, ByVal dwLanguageId As Long, ByVal lpBuffer As Long, ByVal nSize As Long, Arguments As Any) As Long
@@ -449,6 +463,7 @@ Public Const X509_ASN_ENCODING             As Long = 1&
 Public Const PKCS_7_ASN_ENCODING           As Long = &H10000
 Private Const CERT_X500_NAME_STR            As Long = 3&
 
+Private Const CERT_ENHKEY_USAGE_PROP_ID     As Long = 9&
 Private Const CERT_HASH_PROP_ID             As Long = 3&
 Private Const CERT_SIGNATURE_HASH_PROP_ID   As Long = 15&
 Private Const CERT_SUBJECT_PUBLIC_KEY_MD5_HASH_PROP_ID As Long = 25&
@@ -456,6 +471,7 @@ Private Const CERT_SUBJECT_PUBLIC_KEY_MD5_HASH_PROP_ID As Long = 25&
 Private Const CERT_NAME_ISSUER_FLAG         As Long = 1&
 Private Const CERT_NAME_EMAIL_TYPE          As Long = 1& ' alternate Subject name (rfc822)
 Private Const CERT_NAME_SIMPLE_DISPLAY_TYPE As Long = 4&
+Private Const CERT_NAME_FRIENDLY_DISPLAY_TYPE As Long = 5
 Private Const CERT_NAME_STR_ENABLE_PUNYCODE_FLAG As Long = &H200000 ' Punycode IA5String -> Unicode
 
 Private Const WTD_UI_NONE                   As Long = 2&
@@ -495,6 +511,7 @@ Private Const CRYPT_E_SECURITY_SETTINGS     As Long = &H80092026
 Private Const CERT_E_UNTRUSTEDROOT          As Long = &H800B0109
 Private Const CERT_E_PURPOSE                As Long = &H800B0106
 Private Const CRYPT_E_BAD_MSG               As Long = &H8009200D
+Private Const CRYPT_E_NOT_FOUND             As Long = &H80092004
 Private Const CERT_E_CRITICAL               As Long = &H800B0105
 Private Const CERT_E_INVALID_NAME           As Long = &H800B0114
 Private Const CERT_E_INVALID_POLICY         As Long = &H800B0113
@@ -526,6 +543,18 @@ Private Const DIGSIG_E_CRYPTO               As Long = &H800B0008
 Private Const szOID_CERT_STRONG_SIGN_OS_1   As String = "1.3.6.1.4.1.311.72.1.1"
 Private Const szOID_CERT_STRONG_KEY_OS_1    As String = "1.3.6.1.4.1.311.72.2.1"
 Private Const szOID_RFC5652_TIMESTAMP       As String = "1.2.840.113549.1.9.5"
+' OID Enhanced Key Usage
+Public Const XCN_OID_PKIX_KP_CODE_SIGNING   As String = "1.3.6.1.5.5.7.3.3"
+' Key Usage
+Public Const CERT_DIGITAL_SIGNATURE_KEY_USAGE    As Long = &H80&
+Public Const CERT_NON_REPUDIATION_KEY_USAGE      As Long = &H40&
+Public Const CERT_KEY_ENCIPHERMENT_KEY_USAGE     As Long = &H20&
+Public Const CERT_DATA_ENCIPHERMENT_KEY_USAGE    As Long = &H10&
+Public Const CERT_KEY_AGREEMENT_KEY_USAGE        As Long = 8&
+Public Const CERT_KEY_CERT_SIGN_KEY_USAGE        As Long = 4&
+Public Const CERT_OFFLINE_CRL_SIGN_KEY_USAGE     As Long = 2&
+Public Const CERT_CRL_SIGN_KEY_USAGE             As Long = 2&
+Public Const CERT_ENCIPHER_ONLY_KEY_USAGE        As Long = 1&
 ' Crypt Algorithms
 Private Const BCRYPT_SHA1_ALGORITHM         As String = "SHA1"      '160-bit
 Private Const BCRYPT_SHA256_ALGORITHM       As String = "SHA256"    '256-bit
@@ -875,14 +904,14 @@ Public Function SignVerify( _
     End If
     
     If Flags And SV_PreferInternalSign Then
-        sExtension = modFile.GetExtensionName(sFilePath)
-        If StrInParamArray(sExtension, ".exe", ".sys", ".dll", ".ocx") Then
+        'sExtension = modFile.GetExtensionName(sFilePath)
+        'If StrInParamArray(sExtension, ".exe", ".sys", ".dll", ".ocx") Then
             If IsInternalSignPresent(hFile) Then
                 SignResult.IsEmbedded = True
                 If Flags And SV_SelfTest Then Dbg "SkipCatCheck"
                 GoTo SkipCatCheck
             End If
-        End If
+        'End If
     End If
     
     If Flags And SV_DisableCatalogVerify Then
@@ -2203,7 +2232,138 @@ Public Function ExtractPropertyFromCertificateByID(pCertContext As Long, ID As L
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "ExtractPropertyFromCertificate"
+    ErrorMsg Err, "ExtractPropertyFromCertificateByID"
+    If inIDE Then Stop: Resume Next
+End Function
+
+' Note: prefer ExtractStringFromCertificate() over this function
+'
+Public Function ExtractPropertyStrFromCertificateByID(pCertContext As Long, ID As Long) As String
+    On Error GoTo ErrorHandler
+    
+    Dim bufSize As Long
+    Dim buf     As String
+    Dim i       As Long
+    Dim hash    As String
+
+    CertGetCertificateContextProperty pCertContext, ID, 0&, bufSize
+    If bufSize Then
+        buf = String$(bufSize \ 2 + 1, 0)
+        If CertGetCertificateContextProperty(pCertContext, ID, ByVal StrPtr(buf), bufSize) Then
+            ExtractPropertyStrFromCertificateByID = buf
+        End If
+    End If
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "ExtractPropertyStrFromCertificateByID"
+    If inIDE Then Stop: Resume Next
+End Function
+
+' @return:
+' 0 - if no valid uses
+' -1 - if any uses
+' N - the number of elements in aUsageOID array
+'
+Public Function GetCertificateEnhancedUsage(pCertContext As Long, aUsageOID() As String) As Long
+    On Error GoTo ErrorHandler
+    
+    Dim bufSize As Long
+    Dim buf()   As Byte
+    Dim i       As Long
+    Dim ptr     As Long
+    Dim ceu     As CERT_ENHKEY_USAGE
+
+    CertGetEnhancedKeyUsage pCertContext, 0&, 0&, bufSize
+    If bufSize Then
+        ReDim buf(bufSize - 1)
+        If CertGetEnhancedKeyUsage(pCertContext, 0&, VarPtr(buf(0)), bufSize) And bufSize >= LenB(ceu) Then
+
+            GetMem8 buf(0), ceu
+            
+            If ceu.cUsageIdentifier = 0 Then
+                If Err.LastDllError = CRYPT_E_NOT_FOUND Then
+                    ' Valid for all uses
+                    GetCertificateEnhancedUsage = -1
+                ElseIf Err.LastDllError = 0 Then
+                    ' No valid uses
+                    GetCertificateEnhancedUsage = 0
+                Else
+                    ' Unknown error
+                    GetCertificateEnhancedUsage = 0
+                End If
+            Else
+                GetCertificateEnhancedUsage = ceu.cUsageIdentifier
+                ReDim aUsageOID(ceu.cUsageIdentifier - 1)
+                
+                ptr = Deref(ceu.rgpszUsageIdentifier)
+
+                For i = 0 To ceu.cUsageIdentifier - 1
+                    
+                    aUsageOID(i) = StringFromPtrA(ptr + 4 * i)
+                Next
+            End If
+        End If
+    End If
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetCertificateEnhancedUsage"
+    If inIDE Then Stop: Resume Next
+End Function
+
+' For a full list of Key Usage OIDs see:
+' https://docs.microsoft.com/en-us/windows/win32/api/certenroll/nn-certenroll-ix509extensionenhancedkeyusage
+'
+Public Function HasCertificateEnhancedUsage(pCertContext As Long, sUsageOID As String) As Boolean
+    On Error GoTo ErrorHandler
+    
+    Dim aUsageOID() As String
+    Dim cntUsage As Long
+    Dim i As Long
+    
+    cntUsage = GetCertificateEnhancedUsage(pCertContext, aUsageOID)
+    
+    Select Case cntUsage
+    Case 0: HasCertificateEnhancedUsage = False
+    Case -1: HasCertificateEnhancedUsage = True
+    Case Else
+        For i = 0 To cntUsage - 1
+            If aUsageOID(i) = sUsageOID Then
+                HasCertificateEnhancedUsage = True
+                Exit For
+            End If
+        Next
+    End Select
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "HasCertificateEnhancedUsage"
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function IsCodeSignCertificate(pCertContext As Long) As Boolean
+    On Error GoTo ErrorHandler
+
+    Dim CertInfo As CERT_INFO
+    Dim KeyUsage As Long
+    
+    If GetCertInfoFromCertificate(pCertContext, CertInfo) Then
+    
+        If CertGetIntendedKeyUsage(X509_ASN_ENCODING Or PKCS_7_ASN_ENCODING, VarPtr(CertInfo), KeyUsage, 4&) Then
+        
+            If KeyUsage And CERT_DIGITAL_SIGNATURE_KEY_USAGE Then IsCodeSignCertificate = True
+        End If
+    End If
+    
+    If Not IsCodeSignCertificate Then
+    
+        If HasCertificateEnhancedUsage(pCertContext, XCN_OID_PKIX_KP_CODE_SIGNING) Then IsCodeSignCertificate = True
+    End If
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "IsCodeSignCertificate"
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -2340,6 +2500,84 @@ Public Function IsMicrosoftCertHash(hash As String) As Boolean
     Next
 End Function
 
+Public Sub FindNewMicrosoftCodeSignCert()
+    On Error GoTo ErrorHandler:
+    
+    Dim CertInfo As CERT_INFO
+    Dim StoreName As String
+    Dim hStore As Long
+    Dim pCertContext As Long
+    Dim FriendlyName As String
+    Dim HashCert As String
+    Dim IssuedTo As String
+    Dim sData As String
+    
+    StoreName = "Root"
+    
+    hStore = CertOpenSystemStore(0, StrPtr(StoreName))
+    
+    If 0 <> hStore Then
+        Do
+            pCertContext = CertEnumCertificatesInStore(hStore, pCertContext)
+            
+            If 0 <> pCertContext Then
+                
+                FriendlyName = ExtractStringFromCertificate(pCertContext, CERT_NAME_FRIENDLY_DISPLAY_TYPE)
+                
+                If InStr(1, FriendlyName, "Microsoft", 1) <> 0 Then
+
+                    HashCert = ExtractPropertyFromCertificateByID(pCertContext, CERT_HASH_PROP_ID)
+                    
+                    If Not IsMicrosoftCertHash(HashCert) Then
+                        
+                        If IsCodeSignCertificate(pCertContext) Then
+                        
+                            IssuedTo = vbNullString
+                            
+                            If GetCertInfoFromCertificate(pCertContext, CertInfo) Then
+                                IssuedTo = GetSignerNameFromBLOB(CertInfo.Subject)
+                            End If
+                            
+                            'Debug.Print "Friendly             -> " & FriendlyName
+                            'Debug.Print "IssuedTo             -> " & IssuedTo
+                            'Debug.Print "Hash -> Cert         -> " & HashCert
+                            'Debug.Print "In database?         -> " & IIf(IsMicrosoftCertHash(HashCert), "Yes", "No")
+                            'Debug.Print "Code Sign?           -> " & IIf(IsCodeSignCertificate(pCertContext), "Yes", "No")
+                            
+                            If IssuedTo <> "localhost" _
+                                And FriendlyName <> "Microsoft Exchange" _
+                                And FriendlyName <> "Symantec Enterprise Mobile Root for Microsoft" Then
+                                
+                                sData = vbNullString
+                                
+                                If Reg.ValueExists(HKLM, "SOFTWARE\Microsoft\SystemCertificates\ROOT\Certificates\" & HashCert, "Blob") Then
+                                    'Debug.Print "Location             -> HKLM"
+                                    sData = Reg.ExportKeyToVariable(HKLM, "SOFTWARE\Microsoft\SystemCertificates\ROOT\Certificates\" & HashCert, False, True, True)
+                                End If
+                                If Reg.ValueExists(HKCU, "SOFTWARE\Microsoft\SystemCertificates\ROOT\Certificates\" & HashCert, "Blob") Then
+                                    'Debug.Print "Location             -> HKCU"
+                                    sData = Reg.ExportKeyToVariable(HKCU, "SOFTWARE\Microsoft\SystemCertificates\ROOT\Certificates\" & HashCert, False, True, True)
+                                End If
+                                If Len(sData) <> 0 Then
+                                    AddWarning "New Root certificate is detected! Report to developer, please:" & vbCrLf & Replace(sData, vbCrLf, "\n")
+                                End If
+                            End If
+                        End If
+                    End If
+                End If
+            End If
+            
+        Loop While pCertContext <> 0
+        
+        CertCloseStore hStore, 0&
+    End If
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "FindNewMicrosoftCodeSignCert"
+    If inIDE Then Stop: Resume Next
+End Sub
+
 Public Function IsMicrosoftFile( _
     sFile As String, _
     Optional bAllowDamagedSubsystem As Boolean = True, _
@@ -2348,12 +2586,18 @@ Public Function IsMicrosoftFile( _
     On Error GoTo ErrorHandler:
     Dim SignResult As SignResult_TYPE
     
+    If FileMissing(sFile) Then Exit Function
+    
     If isEDS_Work() Then
         
         SignVerify sFile, SV_LightCheck Or SV_PreferInternalSign, SignResult
         
-        If SignResult.isLegit Then
-            IsMicrosoftFile = SignResult.isMicrosoftSign
+        If SignResult.isMicrosoftSign Then
+            If SignResult.ReturnCode = CERT_E_EXPIRED Then
+                IsMicrosoftFile = True
+            Else
+                IsMicrosoftFile = SignResult.isLegit
+            End If
         End If
     Else
         If bAllowDamagedSubsystem Then
@@ -2524,7 +2768,7 @@ Public Function IsInternalSignPresent(Optional hFile As Long, Optional sFilePath
                 DataDir_offset = PE_offset + &H88&
             Case Else
                 'ErrorMsg Err, "IsSignPresent", "Unknown architecture, not PE EXE or damaged image.", "File:", sFilePath
-                Debug.Print "Unknown architecture, not PE EXE or damaged image."
+                'Debug.Print sFilePath & ": Unknown architecture, not PE EXE or damaged image."
         End Select
         If 0 <> DataDir_offset Then
             DirSecur_offset = DataDir_offset + &H20&

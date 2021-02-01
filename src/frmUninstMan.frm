@@ -458,15 +458,7 @@ Private Sub cmdUninstall_Click()
                 MsgBox Replace$(Translate(1713), "[]", .User), vbExclamation
                 Exit Sub
             Else
-                sApplication = FindOnPath(.UninstString)
-                
-                If FileExists(sApplication) Then
-                    sArguments = ExtractArguments(.UninstString)
-            
-                    Proc.ProcessRunUnelevated2 PathX64(sApplication), sArguments
-                    
-                    'ShellExecute 0&, 0&, StrPtr(sApplication), StrPtr(sArguments), 0&, 1&
-                End If
+                ProcessRunAsX64 .UninstString
             End If
         End If
     End With
@@ -475,6 +467,25 @@ Private Sub cmdUninstall_Click()
 ErrorHandler:
     ErrorMsg Err, "frmMain.cmdUninstManUninstall_Click"
     If inIDE Then Stop: Resume Next
+End Sub
+
+Sub ProcessRunAsX64(sCMDLine As String)
+    
+    Dim sFileX64 As String
+    Dim sFile As String
+    Dim sApp As String
+    Dim sArgs As String
+    
+    SplitIntoPathAndArgs sCMDLine, sApp, sArgs, bIsRegistryData:=True
+    
+    sFile = FindOnPath(sApp)
+    sFileX64 = PathX64(sFile)
+    
+    If sFile <> sFileX64 Then
+        Proc.ProcessRun "", """" & sFileX64 & """" & " " & sArgs
+    Else
+        Proc.ProcessRun "", sCMDLine
+    End If
 End Sub
 
 Private Sub cmdNameEdit_Click()
@@ -746,8 +757,6 @@ Private Sub cmdRefresh_Click()
     If lstUninstMan.Visible And lstUninstMan.Enabled Then
         lstUninstMan.SetFocus
     End If
-    
-    'Set HE = Nothing
     
     Exit Sub
 ErrorHandler:

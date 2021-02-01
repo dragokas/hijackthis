@@ -3,7 +3,7 @@ Begin VB.Form frmSearch
    AutoRedraw      =   -1  'True
    BorderStyle     =   4  'Fixed ToolWindow
    Caption         =   "Find"
-   ClientHeight    =   2316
+   ClientHeight    =   3144
    ClientLeft      =   48
    ClientTop       =   312
    ClientWidth     =   5568
@@ -12,11 +12,36 @@ Begin VB.Form frmSearch
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   2316
+   ScaleHeight     =   3144
    ScaleWidth      =   5568
    ShowInTaskbar   =   0   'False
    StartUpPosition =   3  'Windows Default
    Visible         =   0   'False
+   Begin VB.Frame frDisplay 
+      Caption         =   "Display"
+      Height          =   852
+      Left            =   120
+      TabIndex        =   15
+      Top             =   2280
+      Width           =   5412
+      Begin VB.CheckBox chkMarkInstant 
+         Caption         =   "Instantly mark items found"
+         Enabled         =   0   'False
+         Height          =   492
+         Left            =   2400
+         TabIndex        =   17
+         Top             =   240
+         Width           =   2892
+      End
+      Begin VB.CheckBox chkFiltration 
+         Caption         =   "Filtration mode"
+         Height          =   192
+         Left            =   240
+         TabIndex        =   16
+         Top             =   360
+         Width           =   2052
+      End
+   End
    Begin VB.CommandButton CmdFind 
       Caption         =   "Find Next"
       Default         =   -1  'True
@@ -167,6 +192,16 @@ Private Enum FIND_DIRECTION
     DIR_END
 End Enum
 
+Private Enum WINDOW_MODE
+    WINDOW_MODE_MINI = 0
+    WINDOW_MODE_DEFAULT
+    WINDOW_MODE_MAXI
+End Enum
+
+Private Const HEIGHT_MINI As Long = 396
+Private Const HEIGHT_DEFAULT As Long = 2316
+Private Const HEIGHT_MAXI As Long = 3144
+
 Private m_bEscSeq           As Boolean
 Private m_bRegExp           As Boolean
 Private m_iCompareMethod    As VbCompareMethod
@@ -184,10 +219,66 @@ Private m_oRegexpItems      As Object
 Private m_frmOwner          As Form
 
 Private F_DIR As FIND_DIRECTION
+Private m_WndMode As WINDOW_MODE
+
+Private Sub chkFiltration_Click()
+    chkMarkInstant.Enabled = CBool(chkFiltration.Value)
+End Sub
 
 Private Sub CmdMore_Click()
-    Me.Height = IIf(Me.Height <> 735, 735, 2670)
+    
+    If m_WndMode = WINDOW_MODE_MINI Then
+        
+        If GetActiveFormName() = "frmMain" And g_CurFrame = FRAME_ALIAS_SCAN Then
+            m_WndMode = WINDOW_MODE_MAXI
+        Else
+            m_WndMode = WINDOW_MODE_DEFAULT
+        End If
+    Else
+        m_WndMode = WINDOW_MODE_MINI
+    End If
+    
+    SetWindowHeight
+    
     cmbSearch.SetFocus
+End Sub
+
+Private Sub Form_Activate()
+    
+    If m_WndMode = WINDOW_MODE_DEFAULT Or m_WndMode = WINDOW_MODE_MAXI Then
+
+        If GetActiveFormName() = "frmMain" And g_CurFrame = FRAME_ALIAS_SCAN Then
+            m_WndMode = WINDOW_MODE_MAXI
+        Else
+            m_WndMode = WINDOW_MODE_DEFAULT
+        End If
+
+        SetWindowHeight
+
+    End If
+    
+End Sub
+
+Private Sub SetWindowHeight()
+
+    Dim iHeight As Long
+
+    Select Case m_WndMode
+    
+        Case WINDOW_MODE_MINI:
+            iHeight = HEIGHT_MINI
+            
+        Case WINDOW_MODE_DEFAULT:
+            iHeight = HEIGHT_DEFAULT
+            
+        Case WINDOW_MODE_MAXI:
+            'iHeight = HEIGHT_MAXI
+            iHeight = HEIGHT_DEFAULT
+            
+    End Select
+    
+    Me.Height = iHeight + (Me.Height - Me.ScaleHeight)
+    
 End Sub
 
 Private Sub Form_Initialize()
@@ -199,7 +290,7 @@ Private Sub Form_Load()
     Dim Ctl As Control
     
     'CenterForm Me
-    Me.Height = 735
+    SetWindowHeight
     SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold
     Call ReloadLanguage(True)
     
@@ -596,7 +687,7 @@ Private Function SearchIt(iDirection As Long, sLine As String, sSearch As String
         If m_bRegExp Or m_bWholeWord Then
             iPos = 0
             For j = oMatches.Count - 1 To 0 Step -1
-                Set oMatch = oMatches.Item(j)
+                Set oMatch = oMatches.item(j)
                 If m_iCurIndex = -1 Or oMatch.FirstIndex + 1 <= m_iCurIndex Then
                     iPos = oMatch.FirstIndex + 1
                     iLength = oMatch.Length
@@ -787,28 +878,38 @@ Private Sub optDirEnd_Click()
     ResetCursor
 End Sub
 
-Function SearchAllowed(Optional frmExplicit As Form, Optional out_Control As Control) As Boolean 'check search window caller
-    Dim bCanSearch As Boolean
+Function GetActiveFormName(Optional frmExplicit As Form) As String
+
     Dim hActiveWnd As Long
     Dim sActiveFrm As String
-    Dim frm As Form
-    
+    Dim Frm As Form
+
     If Not (frmExplicit Is Nothing) Then
         sActiveFrm = frmExplicit.Name
     Else
         hActiveWnd = GetForegroundWindow()
         
-        For Each frm In Forms
-            If frm.hwnd = hActiveWnd Then sActiveFrm = frm.Name: Exit For
+        For Each Frm In Forms
+            If Frm.hwnd = hActiveWnd Then sActiveFrm = Frm.Name: Exit For
         Next
         
         If sActiveFrm = "frmSearch" Then ' if search windows is already on top, get owner
             hActiveWnd = GetWindow(hActiveWnd, GW_OWNER)
-            For Each frm In Forms
-                If frm.hwnd = hActiveWnd Then sActiveFrm = frm.Name: Exit For
+            For Each Frm In Forms
+                If Frm.hwnd = hActiveWnd Then sActiveFrm = Frm.Name: Exit For
             Next
         End If
     End If
+    
+    GetActiveFormName = sActiveFrm
+    
+End Function
+
+Function SearchAllowed(Optional frmExplicit As Form, Optional out_Control As Control) As Boolean 'check search window caller
+    Dim bCanSearch As Boolean
+    Dim sActiveFrm As String
+    
+    sActiveFrm = GetActiveFormName(frmExplicit)
     
     Select Case sActiveFrm
     Case "frmMain"

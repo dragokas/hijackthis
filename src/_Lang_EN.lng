@@ -75,7 +75,7 @@
 1023=Warning! The integrity of this HiJackThis instance is corrupted.
      Perhaps the file has been patched or infected by a virus.
      It is recommended to download the program again from official source: https://github.com/dragokas/hijackthis
-     If this error repeats, check your PC using a boot disk or LiveCD, e.g.: https://support.kaspersky.com/viruses/rescuedisk
+     If this error repeats, check your PC using a boot disk or LiveCD, e.g.: https://support.kaspersky.ru/14226 or https://free.drweb.ru/aid_admin
 1024=Download the program via Internet?
 1025=Error occurred while downloading!
 1026=Downloading complete. Run the program?
@@ -94,6 +94,7 @@
 1043=Include in log any entries regardless whitelist
 1044=Calculate Checksum
 1045=Calculate checksum of files if possible
+1046=Hash calculation
 1050=Scan area
 1051=Scan options
 1052=Fix && Backup
@@ -129,7 +130,7 @@
 ;
 ; ================ Context menu ==============
 ;
-; (1160-1179)
+; (1160-1179, 2350 - 2399)
 ;
 1160=Fix checked
 1161=Add to ignore list
@@ -141,6 +142,22 @@
 1167=Save Report...
 1168=Disable
 1169=Enable
+1170=Copy
+1171=Whole Line
+1172=Registry Key
+1173=Registry Parameter
+1174=File Path
+1175=File Name
+1176=File (as Object)
+1177=Value
+1178=Search by Hash / URL
+1179=Submit with 'Autoruns'
+2350=I need to download SysInternals Autoruns to:
+     []
+
+     Do you allow me?
+2351=Click here to get VT results
+2352=Uploading the file ...
 ;
 ; =============== System Tray ================
 ;
@@ -270,6 +287,7 @@
        /ihatewhitelists 	- ignore all internal whitelists.
        /md5		- calculate MD5 hash of files.
        /sha1		- calculate SHA1 hash of files.
+       /sha256		- calculate SHA256 hash of files.
        /timeout:sec	- number of seconds allowed for HiJackThis to be run in /silentautolog mode (180 by default; 0 - to disable).
        /install     	- install HiJackThis to 'Program Files' folder and create shortcuts.
        /instDir:"PATH" 	- alternate installation path for HJT (by default: "%ProgramFiles(x86)%\HiJackThis Fork").
@@ -285,6 +303,7 @@
        /LangFR		- force use French language for user interface.
        /LangRU	- force use Russian language for user interface.
        /LangUA	- force use Ukrainian language for user interface.
+       /skipErrors	- do not show error messages and prevent warnings and errors from writing to log file.
        /debug		- tracing mode. Function names will be appended to main log and HiJackThis_debug.log file. You can also rename the file to HiJackThis_debug.exe.
        /debugtofile	- trace info will be saved to HiJackThis_debug.log file only.
      
@@ -320,7 +339,7 @@
      HiJackThis.exe /autolog /ihatewhitelists
      
      Launch file run.bat.
-     Alternatively, you can create a shortcut (.lnk) to HiJackThis.exe, open shortcut properties window and append key(s) to the end of line in the box 'Target'.
+     Alternatively, you can create a shortcut (.lnk) to HiJackThis.exe, open shortcut properties window and append key to the end of line in the box 'Target'.
      
 0033=
      Description
@@ -342,12 +361,12 @@
        - Locked files removing tool
        - Registry Key Unlocker
        - Batch Digital Signatures Checker
-       - Check Browsers' LNK & ClearLNK (as downloadable component)
+       - Check Browsers' LNK & ClearLNK (as downloadable components)
 
      System Compatibility
      -------------------------
      
-      * Microsoft™ Windows™ 10 / 8.1 / 8 / 7 / Vista / XP / 2000, include Server editions, both 32 and 64-bit.
+      * Microsoft™ Windows™ 10 / 8.1 / 8 / 7 / Vista / XP / 2000, including Server editions, both 32 and 64-bit.
 
 
      Authors and copyrights
@@ -438,11 +457,7 @@
      If you enable this option, you might disable programs or drivers you need. However, it is highly unlikely you will break your system beyond repair. So you should only enable this option if you know what you're doing!
 0058=Do not show error messages
 0059=Minimize program to system tray by clicking _ button
-0060=Below URLs will be used when fixing hijacked/unwanted Internet Explorer pages:
-0061=Default Start Page:
-0062=Default Search Page:
 0063=Default Search Assistant:
-0064=Default Search Customize:
 0065=Sorry! Not implemented yet.
 0066=This will install HiJackThis to 'Program Files' folder and set Windows to automatically run a scan after system startup.
 
@@ -1717,7 +1732,7 @@
 2102=Skipping Zones for all users, since there are over 1000 domains in them. ([] to be exact)
 2103=Skipping Zones for user [*], since there are over 1000 domains in them. ([**] to be exact)
 ;
-; Search form
+; ========= Search form =========
 ;
 ; (2300 - 2349)
 ;
@@ -1736,8 +1751,12 @@
 2312=Syntax error.
 2313=Direction
 2314=Settings
+2315=Display
+2316=Filtration mode
+2317=This will display only found items in the list
+2318=Instantly mark items found
 ;
-; Empty
+; ========= Empty ========
 ;
-; (2350 - ...)
-;         
+; (2400 - ...)
+;               

@@ -47,7 +47,6 @@ Err_Trap:
     If inIDE Then Stop: Resume Next
 End Function
 
-' This routine only accepts ANSI Characters (Hope you speak english)
 Public Function LoadData(Data As Variant) As Boolean
     On Error GoTo Err_Trap
     
@@ -79,6 +78,7 @@ Public Function LoadData(Data As Variant) As Boolean
     
     End Select
     
+    Class_Initialize
     Call m_RootElement.Parse(bData())
     
     LoadData = True

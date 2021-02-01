@@ -110,11 +110,15 @@ Public Sub CheckO25Item()
     ReDim aNameSpaces(0)
     
     'connecting to namespace 'root\subscription' for future use
+    On Error Resume Next
     Stady = 0
     Set objTimerNamespace = CreateObject("winmgmts:{impersonationLevel=Impersonate, (Security, Backup)}!\\.\root\subscription")
-    
-    Stady = 1
-    Set objTimerNamespace = GetObject("winmgmts:{impersonationLevel=Impersonate, (Security, Backup)}!\\.\root\subscription")
+    If Err.Number <> 0 Then
+        On Error GoTo ErrorHandler:
+        Stady = 1
+        Set objTimerNamespace = GetObject("winmgmts:{impersonationLevel=Impersonate, (Security, Backup)}!\\.\root\subscription")
+    End If
+    On Error GoTo ErrorHandler:
     
     'get all namespaces for current machine
     
@@ -499,7 +503,7 @@ Private Sub ShutdownScriptEngine()
     
     Dim vProc As Variant
     
-    For Each vProc In Array("wscript.exe", "cscript.exe", "mshta.exe", "powershell.exe")
+    For Each vProc In Array("cmd.exe", "wscript.exe", "cscript.exe", "mshta.exe", "powershell.exe")
         If ProcessExist(vProc, True) Then
             Proc.ProcessClose ProcessName:=CStr(vProc), Async:=False, TimeOutMs:=1000, SendCloseMsg:=True
         End If
@@ -511,7 +515,7 @@ Public Sub FixO25Item(sItem$, result As SCAN_RESULT)
 End Sub
     
 'cure WMI infection
-Public Sub RemoveSubscriptionWMI(result As SCAN_RESULT)
+Public Sub RemoveSubscriptionWMI(O25 As O25_ENTRY)
     
     On Error GoTo ErrorHandler
     
@@ -520,7 +524,7 @@ Public Sub RemoveSubscriptionWMI(result As SCAN_RESULT)
     
     ShutdownScriptEngine
     
-    With result.O25
+    With O25
     
         On Error Resume Next
         'filter
@@ -589,7 +593,7 @@ Public Sub RemoveSubscriptionWMI(result As SCAN_RESULT)
     
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "RemoveSubscriptionWMI", result.HitLineW
+    ErrorMsg Err, "RemoveSubscriptionWMI", O25.Consumer.Name
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -1203,6 +1207,12 @@ Public Sub CheckO26ToolsHiJack()
         sBackupPath = vbNullString
         sCleanupPath = "%SystemRoot%\System32\cleanmgr.exe /D %c"
         sDefragPath = "%SystemRoot%\system32\dfrg.msc %c:"
+    End If
+    
+    If OSver.IsServer Then
+        If OSver.MajorMinor >= 6.1 Then
+            sBackupPath = sWinSysDir & "\wbadmin.msc"
+        End If
     End If
     
     Dim sData As String, sArgs As String, sKey As String

@@ -160,7 +160,6 @@ End Enum
 'Public Const WM_UAHDESTROYWINDOW As Long = &H90&
 '
 'Public Declare Function SHParseDisplayName Lib "Shell32" (ByVal pszName As Long, ByVal IBindCtx As Long, ByRef ppidl As Long, sfgaoIn As Long, sfgaoOut As Long) As Long
-'Public Declare Function ILFree Lib "Shell32" (ByVal pidlFree As Long) As Long
 'Public Declare Function NtQueryObject Lib "ntdll.dll" (ByVal Handle As Long, ByVal ObjectInformationClass As OBJECT_INFORMATION_CLASS, ObjectInformation As Any, ByVal ObjectInformationLength As Long, ReturnLength As Long) As Long
 '
 'Public Const ZipFldrCLSID      As String = "{E88DCCE0-B7B3-11d1-A9F0-00AA0060FA31}"
@@ -410,6 +409,8 @@ End Sub
 Public Function GetEdgeVersion() As String
     AppendErrorLogCustom "GetEdgeVersion - Begin"
     Dim EdgePath$
+    '// TODO
+    'maybe - HKCR\ActivatableClasses\Package\Microsoft.MicrosoftEdge_44.19041.423.0_neutral__8wekyb3d8bbwe ?
     EdgePath = sWinDir & "\SystemApps\Microsoft.MicrosoftEdge_8wekyb3d8bbwe\MicrosoftEdge.exe"
     If FileExists(EdgePath) Then GetEdgeVersion = GetFilePropVersion(EdgePath)
     AppendErrorLogCustom "GetEdgeVersion - End"
@@ -859,7 +860,9 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-
+' argv(0) - this applications' exe
+' argv(1 - ... argc) - tokens from the incoming "Line"
+'
 Public Function ParseCommandLine(Line As String, argc As Long, argv() As String) As Boolean
   On Error GoTo ErrorHandler
   Dim Lex$(), nL&, nA&, Unit$, St$
@@ -894,6 +897,24 @@ Public Function ParseCommandLine(Line As String, argc As Long, argv() As String)
 ErrorHandler:
   ErrorMsg Err, "Parser.ParseCommandLine", "CmdLine:", Line
   If inIDE Then Stop: Resume Next
+End Function
+
+Function ExtractFilesFromCommandLine(sCMDLine As String) As String()
+    Dim argc As Long
+    Dim argv() As String
+    Dim i As Long
+    Dim n As Long
+    Dim aPath() As String
+    
+    If ParseCommandLine(sCMDLine, argc, argv) Then
+        For i = 1 To argc
+            argv(i) = PathNormalize(argv(i))
+            If FileExists(argv(i)) Then
+                ArrayAddStr aPath, argv(i)
+            End If
+        Next
+    End If
+    ExtractFilesFromCommandLine = aPath
 End Function
 
 'Delete File with unlock access rights on failure. Return non 0 on success.
@@ -1651,7 +1672,7 @@ Function UnpackZIP(Archive As String, DestFolder As String) As Boolean
     Set pf = shExt
     SHParseDisplayName StrPtr(Archive), 0&, pidl, 0&, 0&
     pf.Initialize pidl
-    ILFree pidl
+    CoTaskMemFree pidl
  
     Dim srg     As IStorage
     Dim stm     As IStream
@@ -1664,8 +1685,6 @@ Function UnpackZIP(Archive As String, DestFolder As String) As Boolean
     
     Set srg = pf
     Set enm = srg.EnumElements
-    
-    ReDim buf(&HFFFF&)
     
     enm.Reset
     bWrote = True
@@ -1682,6 +1701,8 @@ Function UnpackZIP(Archive As String, DestFolder As String) As Boolean
             OpenW BuildPath(DestFolder, nam), FOR_OVERWRITE_CREATE, hFile
             
             Set stm = srg.OpenStream(nam, 0&, STGM_READ, 0&)
+            
+            ReDim buf(&HFFFF&)
             
             Do
                 cb = stm.Read(buf(0), UBound(buf) + 1)
@@ -1721,7 +1742,7 @@ Function UnpackZIPtoArray(Archive As String, out_Buf() As Byte) As Boolean
     Set pf = shExt
     SHParseDisplayName StrPtr(Archive), 0&, pidl, 0&, 0&
     pf.Initialize pidl
-    ILFree pidl
+    CoTaskMemFree pidl
  
     Dim srg     As IStorage
     Dim stm     As IStream
@@ -2437,25 +2458,25 @@ Public Function BStrFromLPWStr(lpWStr As Long, Optional ByVal CleanupLPWStr As B
     If CleanupLPWStr Then CoTaskMemFree lpWStr
 End Function
 
-Public Sub ProcessHotkey(KeyCode As Integer, frm As Form)
+Public Sub ProcessHotkey(KeyCode As Integer, Frm As Form)
     If KeyCode = Asc("F") Then                    'Ctrl + F
         If Not (cMath Is Nothing) Then
-            If cMath.HIWORD(GetKeyState(VK_CONTROL)) Then LoadSearchEngine frm
+            If cMath.HIWORD(GetKeyState(VK_CONTROL)) Then LoadSearchEngine Frm
         End If
     End If
     If KeyCode = Asc("A") Then                    'Ctrl + F
         If Not (cMath Is Nothing) Then
-            If cMath.HIWORD(GetKeyState(VK_CONTROL)) Then ControlSelectAll frm
+            If cMath.HIWORD(GetKeyState(VK_CONTROL)) Then ControlSelectAll Frm
         End If
     End If
 End Sub
 
-Public Sub LoadSearchEngine(frm As Form)
+Public Sub LoadSearchEngine(Frm As Form)
     If IsFormInit(frmSearch) Then
-        frmSearch.Display frm
+        frmSearch.Display Frm
     Else
         Load frmSearch
-        frmSearch.Display frm
+        frmSearch.Display Frm
     End If
 End Sub
 
@@ -2584,3 +2605,353 @@ Public Function SectionNameById(IdSection As SETTINGS_SECTION) As String
     SectionNameById = sName
     
 End Function
+
+Public Sub ArrayAdd(arr(), Value)
+
+    If 0 = AryPtr(arr) Then
+        ReDim arr(0)
+    Else
+        ReDim Preserve arr(UBound(arr) + 1)
+    End If
+    
+    arr(UBound(arr)) = Value
+End Sub
+
+Public Sub ArrayAddStr(arr() As String, Value As String)
+
+    If 0 = AryPtr(arr) Then
+        ReDim arr(0)
+    Else
+        ReDim Preserve arr(UBound(arr) + 1)
+    End If
+    
+    arr(UBound(arr)) = Value
+End Sub
+
+Public Sub ArrayAddLong(arr() As Long, Value As Long)
+
+    If 0 = AryPtr(arr) Then
+        ReDim arr(0)
+    Else
+        ReDim Preserve arr(UBound(arr) + 1)
+    End If
+    
+    arr(UBound(arr)) = Value
+End Sub
+
+' Explain:
+'
+' gSIDs - S-x-x-x list. Includes all active SIDs, excluding current user's SID (read from HKU)
+'
+' gSID_All - S-x-x-x list. Includes all active and non-active SIDs with current user as well (read from SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList)
+'
+' gHives - HKU\S-x-x-x list + HKLM + HKCU
+'
+' aUserOfHive - user name corresponding to gHives (by index)
+'
+' gHivesUser - HKU\S-x-x-x of other users only (no Service) + HKCU
+'
+' g_LocalUserNames - all user names (read with NetUserEnum API)
+'
+' g_LocalGroupNames - all group names (read with NetLocalGroupEnum API)
+
+Public Sub FillUsers()
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "FillUsers - Begin"
+    
+    Dim i&
+    
+    Erase gSID_All
+    Erase gSIDs
+    Erase gUserOfHive
+    Erase gHives
+    Erase gHivesUser
+    
+    GetHives gHivesUser, addService:=False, addHKLM:=False, addHKCU:=True
+    
+    GetUserNamesAndSids gSIDs(), gUserOfHive()
+    
+    Call Reg.EnumSubKeysToArray(HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList", gSID_All)
+    
+    ReDim gHives(UBound(gSIDs) + 2)  '+ HKLM, HKCU
+    ReDim Preserve gUserOfHive(UBound(gHives))
+    
+    'Convert SID -> to hive
+    For i = 0 To UBound(gSIDs)
+        gHives(i) = "HKU\" & gSIDs(i)
+    Next
+    'Add HKLM, HKCU
+    gHives(UBound(gHives) - 1) = "HKLM"
+    gUserOfHive(UBound(gHives) - 1) = "All users"
+    
+    gHives(UBound(gHives)) = "HKCU"
+    gUserOfHive(UBound(gHives)) = OSver.UserName
+    
+    AppendErrorLogCustom "FillUsers - End"
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "FillUsers"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Public Sub GetHives(aHives() As String, _
+    Optional addService As Boolean = False, _
+    Optional addHKLM As Boolean = True, _
+    Optional addHKCU As Boolean = True)
+
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "GetHives - Begin"
+    
+    Dim i&, j&, aSID() As String, aUser() As String
+    
+    GetUserNamesAndSids aSID(), aUser()
+    
+    ReDim aHives(UBound(aSID))
+    
+    'Convert SID -> to hive
+    For i = 0 To UBound(aSID)
+        If Not addService Then
+            If aSID(i) = "S-1-5-18" Then GoTo Continue
+            If aSID(i) = "S-1-5-19" Then GoTo Continue
+            If aSID(i) = "S-1-5-20" Then GoTo Continue
+        End If
+        If aSID(i) = ".DEFAULT" Then GoTo Continue
+        aHives(j) = "HKU\" & aSID(i)
+        j = j + 1
+Continue:
+    Next
+    
+    j = j - 1
+    If j >= 0 Then ReDim Preserve aHives(j)
+    
+    If addHKCU Then
+        j = j + 1
+        ReDim Preserve aHives(j)
+        aHives(j) = "HKCU"
+    End If
+    If addHKLM Then
+        j = j + 1
+        ReDim Preserve aHives(j)
+        aHives(j) = "HKLM"
+    End If
+    
+    AppendErrorLogCustom "GetHives - End"
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "GetHives"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Public Function GetLocalGroupNames() As String()
+    
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "GetLocalGroupNames - Begin"
+    
+    Dim nStatus As Long
+    Dim dwLevel As Long
+    Dim groupinfo As LOCALGROUP_INFO_0
+    Dim dwEntriesRead As Long
+    Dim dwTotalEntries As Long
+    Dim dwResumeHandle As Long
+    Dim pBuf As Long, pTmpBuf As Long
+    Dim i As Long
+    
+    dwLevel = 0 'for LOCALGROUP_INFO_0
+    
+    Do
+        nStatus = NetLocalGroupEnum(0&, dwLevel, pBuf, MAX_PREFERRED_LENGTH, dwEntriesRead, dwTotalEntries, dwResumeHandle)
+        
+        If nStatus = NERR_Success Or nStatus = ERROR_MORE_DATA Then
+            If pBuf <> 0 Then
+                pTmpBuf = pBuf
+                For i = 0 To dwEntriesRead - 1
+                    'memcpy userinfo, ByVal pTmpBuf, LenB(userinfo)
+                    GetMem4 ByVal pTmpBuf, groupinfo
+                    ArrayAddStr GetLocalGroupNames, StringFromPtrW(groupinfo.lgrpi0_name)
+                    pTmpBuf = pTmpBuf + LenB(groupinfo)
+                Next
+            End If
+        End If
+        
+        If pBuf Then
+            NetApiBufferFree pBuf
+        End If
+    Loop While nStatus = ERROR_MORE_DATA
+    
+    AppendErrorLogCustom "GetLocalGroupNames - End"
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetLocalGroupNames"
+    If inIDE Then Stop: Resume Next
+End Function
+
+
+Public Function GetLocalUserNames() As String()
+    
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "GetLocalUserNames - Begin"
+    
+    Dim nStatus As Long
+    Dim dwLevel As Long
+    Dim userinfo As USER_INFO_0
+    Dim dwEntriesRead As Long
+    Dim dwTotalEntries As Long
+    Dim dwResumeHandle As Long
+    Dim pBuf As Long, pTmpBuf As Long
+    Dim i As Long
+    
+    dwLevel = 0 'for USER_INFO_0
+    
+    Do
+        nStatus = NetUserEnum(0&, dwLevel, FILTER_NORMAL_ACCOUNT, pBuf, MAX_PREFERRED_LENGTH, dwEntriesRead, dwTotalEntries, dwResumeHandle)
+        
+        If nStatus = NERR_Success Or nStatus = ERROR_MORE_DATA Then
+            If pBuf <> 0 Then
+                pTmpBuf = pBuf
+                For i = 0 To dwEntriesRead - 1
+                    'memcpy userinfo, ByVal pTmpBuf, LenB(userinfo)
+                    GetMem4 ByVal pTmpBuf, userinfo
+                    ArrayAddStr GetLocalUserNames, StringFromPtrW(userinfo.usri0_name)
+                    pTmpBuf = pTmpBuf + LenB(userinfo)
+                Next
+            End If
+        End If
+        
+        If pBuf Then
+            NetApiBufferFree pBuf
+        End If
+    Loop While nStatus = ERROR_MORE_DATA
+
+    AppendErrorLogCustom "GetLocalUserNames - End"
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetLocalUserNames"
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function IsValidSidEx(sSid As String) As Boolean
+    Dim bufSid() As Byte
+    bufSid = CreateBufferedSID(sSid)
+    IsValidSidEx = IsValidSid(VarPtr(bufSid(0)))
+End Function
+
+Public Function IsValidUserName(sUsername As String) As Boolean
+    If Len(sUsername) = 0 Then Exit Function
+    IsValidUserName = inArray(sUsername, g_LocalUserNames, , , vbTextCompare)
+End Function
+
+Public Function IsValidGroupName(sGroupname As String) As Boolean
+    If Len(sGroupname) = 0 Then Exit Function
+    IsValidGroupName = inArray(sGroupname, g_LocalGroupNames, , , vbTextCompare)
+End Function
+
+Public Function IsValidBuildInUserName(sUsername As String) As Boolean
+    
+    Static names() As String
+    Static bInit As Boolean
+    
+    If Not bInit Then
+        bInit = True
+        ArrayAddStr names, "System" ' OS uses localized name, however, Tasks xml is not
+        ArrayAddStr names, "LocalSystem"
+        ArrayAddStr names, MapSIDToUsername("S-1-5-18")
+        ArrayAddStr names, MapSIDToUsername("S-1-5-19")
+        ArrayAddStr names, MapSIDToUsername("S-1-5-20")
+    End If
+    
+    ' TODO: append with everything in Well-Known SIDs:
+    ' https://docs.microsoft.com/en-US/troubleshoot/windows-server/identity/security-identifiers-in-windows
+    '
+    ' There are also group-prefixes:
+    '
+    ' NT AUTHORITY\SYSTEM
+    ' BUILTIN\Administrators
+    ' etc.
+    
+    IsValidBuildInUserName = inArray(sUsername, names, , , vbTextCompare)
+    
+End Function
+
+' Cases:
+'
+' S-x-x-x... (SID)
+' UserName
+' ComputerName\UserName
+'
+Public Function IsValidTaskUserId(ByVal sUserId As String) As Boolean
+    Dim pos As Long
+    If Len(sUserId) = 0 Then Exit Function
+    If StrBeginWith(sUserId, "S-") Then 'as SID ?
+        If IsValidSidEx(sUserId) Then
+            IsValidTaskUserId = True
+            Exit Function
+        End If
+    End If
+    pos = InStr(sUserId, "\")
+    If pos <> 0 Then 'prepended by Computername?
+        Dim sComputer As String
+        sComputer = Left$(sUserId, pos - 1)
+        If StrComp(sComputer, OSver.ComputerName, 1) <> 0 Then
+            'we do not check network PCs for validity
+            IsValidTaskUserId = True
+            Exit Function
+        End If
+        sUserId = Mid$(sUserId, pos + 1)
+    End If
+    If Len(sUserId) = 0 Then Exit Function
+    If inArray(sUserId, g_LocalUserNames, , , vbTextCompare) Then
+        IsValidTaskUserId = True
+        Exit Function
+    End If
+    If IsValidBuildInUserName(sUserId) Then IsValidTaskUserId = True
+End Function
+
+' Cases:
+'
+' S-x-x-x... (SID)
+' GroupName
+' ComputerName\GroupName
+'
+Public Function IsValidTaskGroupId(ByVal sGroupId As String) As Boolean
+    Dim pos As Long
+    If Len(sGroupId) = 0 Then Exit Function
+    If StrBeginWith(sGroupId, "S-") Then 'as SID ?
+        If IsValidSidEx(sGroupId) Then
+            IsValidTaskGroupId = True
+            Exit Function
+        End If
+    End If
+    pos = InStr(sGroupId, "\")
+    If pos <> 0 Then 'prepended by Computername?
+        Dim sComputer As String
+        sComputer = Left$(sGroupId, pos - 1)
+        If StrComp(sComputer, OSver.ComputerName, 1) <> 0 Then
+            'we do not check network PCs for validity
+            IsValidTaskGroupId = True
+            Exit Function
+        End If
+        
+        sGroupId = Mid$(sComputer, pos + 1)
+    End If
+    If Len(sGroupId) = 0 Then Exit Function
+    IsValidTaskGroupId = inArray(sGroupId, g_LocalGroupNames, , , vbTextCompare)
+End Function
+
+Public Function Deref(ptr As Long) As Long
+    If ptr <> 0 Then GetMem4 ByVal ptr, Deref
+End Function
+
+Public Function DerefWord(ptr As Long) As Integer
+    If ptr <> 0 Then GetMem2 ByVal ptr, DerefWord
+End Function
+
+Public Sub ComboSetValue(cmb As ComboBox, sValue As String)
+    Dim i As Long
+    For i = 0 To cmb.ListCount - 1
+        If cmb.List(i) = sValue Then
+            cmb.ListIndex = i
+            Exit Sub
+        End If
+    Next
+    ErrorMsg Err, "Cannot set value: " & sValue & " - for ComboBox: " & cmb.Name
+End Sub

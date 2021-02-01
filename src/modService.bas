@@ -8,6 +8,7 @@ Attribute VB_Name = "modService"
 Option Explicit
 
 Public Enum SERVICE_START_MODE
+    SERVICE_MODE_NOT_FOUND = -1
     SERVICE_MODE_BOOT = 0
     SERVICE_MODE_SYSTEM = 1
     SERVICE_MODE_AUTOMATIC = 2
@@ -145,6 +146,21 @@ Public Function IsServiceWow64(sServiceName As String, Optional sCustomKey As St
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "IsServiceWow64", sServiceName
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function GetServiceStartMode(sServiceName As String) As SERVICE_START_MODE
+    On Error GoTo ErrorHandler:
+
+    If IsServiceExists(sServiceName) Then
+        GetServiceStartMode = Reg.GetDword(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\" & sServiceName, "Start")
+    Else
+        GetServiceStartMode = SERVICE_MODE_NOT_FOUND
+    End If
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetServiceStartMode", sServiceName
     If inIDE Then Stop: Resume Next
 End Function
 

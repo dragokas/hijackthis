@@ -25,7 +25,7 @@ End Enum
 'Private Declare Function GetSystemDefaultLCID Lib "kernel32.dll" () As Long
 'Private Declare Function GetUserDefaultLCID Lib "kernel32.dll" () As Long
 'Private Declare Function GetLocaleInfo Lib "kernel32.dll" Alias "GetLocaleInfoW" (ByVal lcid As Long, ByVal LCTYPE As Long, ByVal lpLCData As Long, ByVal cchData As Long) As Long
-Private Declare Function MultiByteToWideChar Lib "kernel32.dll" (ByVal CodePage As Long, ByVal dwFlags As Long, ByVal lpMultiByteStr As String, ByVal cchMultiByte As Long, ByVal lpWideCharStr As Long, ByVal cchWideChar As Long) As Long
+'Private Declare Function MultiByteToWideChar Lib "Kernel32.dll" (ByVal CodePage As Long, ByVal dwFlags As Long, ByVal lpMultiByteStr As String, ByVal cchMultiByte As Long, ByVal lpWideCharStr As Long, ByVal cchWideChar As Long) As Long
 
 Private Const LOCALE_SENGLANGUAGE = &H1001&
 
@@ -478,6 +478,16 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     Case "1165": .mnuResultAddALLToIgnore.Caption = Translation
                     Case "1166": .mnuResultJump.Caption = Translation
                     Case "1167": .mnuSaveReport.Caption = Translation
+                    Case "1170": .mnuResultCopy.Caption = Translation
+                    Case "1171": .mnuResultCopyLine.Caption = Translation
+                    Case "1172": .mnuResultCopyRegKey.Caption = Translation
+                    Case "1173": .mnuResultCopyRegParam.Caption = Translation
+                    Case "1174": .mnuResultCopyFilePath.Caption = Translation
+                    Case "1175": .mnuResultCopyFileName.Caption = Translation
+                    Case "1176": .mnuResultCopyFileObject.Caption = Translation
+                    Case "1177": .mnuResultCopyValue.Caption = Translation
+                    Case "1178": .mnuResultVTHash.Caption = Translation
+                    Case "1179": .mnuResultVTSubmit.Caption = Translation
                     
                     '; =========== Misc Tools (tab) ===========
                     Case "0044": .chkConfigTabs(3).Caption = Translation
@@ -543,7 +553,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     '; ============= Backup ===============
                     
                     Case "0043": .chkConfigTabs(2).Caption = Translation
-                    Case "0080": .lblConfigInfo(6).Caption = Translation
+                    Case "0080": .lblBackupTip.Caption = Translation
                     Case "0081": .cmdConfigBackupRestore.Caption = Translation
                     Case "0082": .cmdConfigBackupDelete.Caption = Translation
                     Case "0083": .cmdConfigBackupDeleteAll.Caption = Translation
@@ -554,7 +564,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     '; ============= IgnoreList ============
                     
                     Case "0042": .chkConfigTabs(1).Caption = Translation
-                    Case "0070": .lblConfigInfo(5).Caption = Translation
+                    Case "0070": .lblIgnoreTip.Caption = Translation
                     Case "0071": .cmdConfigIgnoreDelSel.Caption = Translation
                     Case "0072": .cmdConfigIgnoreDelAll.Caption = Translation
                     
@@ -578,24 +588,18 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     Case "0058": .chkSkipErrorMsg.Caption = Translation
                     Case "0059": .chkConfigMinimizeToTray.Caption = Translation
                     
-                    Case "0060": .lblConfigInfo(3).Caption = Translation
-                    Case "0061": .lblConfigInfo(0).Caption = Translation
-                    Case "0062": .lblConfigInfo(1).Caption = Translation
-                    Case "0063": .lblConfigInfo(2).Caption = Translation
-                    Case "0064": .lblConfigInfo(4).Caption = Translation
-                    
                     Case "1400": .chkConfigStartupScan.Caption = Translation
                     Case "1401": .chkConfigStartupScan.ToolTipText = Translation
                     
                     '; ================ Hosts manager ==================
                     
                     Case "0270": .fraHostsMan.Caption = Translation
-                    Case "0271": .lblConfigInfo(14).Caption = Translation
+                    Case "0271": .lblHostsTip1.Caption = Translation
                     Case "0272": .cmdHostsManDel.Caption = Translation
                     Case "0273": .cmdHostsManToggle.Caption = Translation
                     Case "0274": .cmdHostsManOpen.Caption = Translation
                     Case "0275": .cmdHostsManBack.Caption = Translation
-                    Case "0276": .lblConfigInfo(15).Caption = Translation
+                    Case "0276": .lblHostsTip2.Caption = Translation
                     
                     '; === Other ===
                     'Case "9999": SetCharSet CInt(Translation)
@@ -625,6 +629,10 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                                     Case "2310": .CmdFind.Caption = Translation
                                     Case "2313": .frDir.Caption = Translation
                                     Case "2314": .CmdMore.ToolTipText = Translation
+                                    Case "2315": .frDisplay.Caption = Translation
+                                    Case "2316": .chkFiltration.Caption = Translation
+                                    Case "2317": .chkFiltration.ToolTipText = Translation
+                                    Case "2318": .chkMarkInstant.Caption = Translation
                                 End Select
                             End With
                         End If
@@ -953,18 +961,18 @@ ErrorHandler:
     End If
 End Sub
 
-Public Function IsFormForeground(frm As Form) As Boolean
+Public Function IsFormForeground(Frm As Form) As Boolean
     Dim hActiveWnd As Long
-    If IsFormInit(frm) Then
+    If IsFormInit(Frm) Then
         hActiveWnd = GetForegroundWindow()
-        If hActiveWnd = frm.hwnd Then IsFormForeground = True
+        If hActiveWnd = Frm.hwnd Then IsFormForeground = True
     End If
 End Function
 
-Public Function IsFormInit(frm As Form) As Boolean
+Public Function IsFormInit(Frm As Form) As Boolean
     Dim cForm As Form
     For Each cForm In Forms
-        If cForm Is frm Then
+        If cForm Is Frm Then
             IsFormInit = True
             Exit For
         End If

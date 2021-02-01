@@ -21,7 +21,7 @@ Public Const MAX_MODULE_NAME32 As Long = 255&
 Public TaskBar As ITaskbarList3
 
 #If False Then 'for common var. names character case fixation
-    Public X, Y, Length, Index, sFilename, i, j, k, State, frm, ret, VT, isInit, hwnd, pv, Reg, pid, File, msg
+    Public X, Y, Length, Index, sFilename, i, j, k, State, Frm, ret, VT, isInit, hwnd, pv, Reg, pid, File, msg
 #End If
 
 Public Enum HE_HIVE
@@ -149,6 +149,12 @@ Public Type tagINITCOMMONCONTROLSEX
     dwICC   As Long
 End Type
 
+Public Enum HASH_TYPE
+    HASH_TYPE_MD5 = 1
+    HASH_TYPE_SHA1
+    HASH_TYPE_SHA256
+End Enum
+
 Public Declare Sub InitCommonControls Lib "comctl32.dll" ()
 Public Declare Function InitCommonControlsEx Lib "comctl32.dll" (lpInitCtrls As tagINITCOMMONCONTROLSEX) As Long
 Public Declare Function SetCurrentProcessExplicitAppUserModelID Lib "shell32.dll" (ByVal pAppID As Long) As Long
@@ -167,8 +173,7 @@ Public Declare Function MessageBeep Lib "user32.dll" (ByVal uType As Long) As Lo
 'Public Declare Sub CloseHandle Lib "kernel32.dll" (ByVal Handle As Long)
 'Public Declare Function GetCurrentProcessId Lib "kernel32.dll" () As Long
 Public Declare Function ILCreateFromPath Lib "shell32.dll" Alias "ILCreateFromPathW" (ByVal pszPath As Long) As Long
-Public Declare Function SHOpenFolderAndSelectItems Lib "shell32.dll" (ByVal pidlFolder As Long, ByVal cidl As Long, ByVal apidl As Long, ByVal dwFlags As Long) As Long
-Public Declare Sub ILFree Lib "shell32.dll" (ByVal pidl As Long)
+Public Declare Function SHOpenFolderAndSelectItems Lib "shell32.dll" (ByVal pidlFolder As Long, ByVal cidl As Long, ByVal aPidl As Long, ByVal dwFlags As Long) As Long
 'Public Declare Function FreeLibrary Lib "kernel32.dll" (ByVal p_Hmodule As Long) As Long
 Public Declare Function SetCurrentDirectory Lib "kernel32.dll" Alias "SetCurrentDirectoryW" (ByVal lpPathName As Long) As Long
 
@@ -231,7 +236,11 @@ Public bLogModules      As Boolean
 Public bSkipErrorMsg    As Boolean
 Public bMinToTray       As Boolean
 Public bStartupListSilent As Boolean
-Public bScanExecuted    As Boolean
+Public g_bScanInProgress      As Boolean
+Public g_bGeneralScanned      As Boolean
+Public g_bCalcHashInProgress  As Boolean
+Public g_bVTScanInProgress    As Boolean
+Public g_bVTScanned           As Boolean
 Public bCryptDisable    As Boolean
 Public bPolymorph       As Boolean
 Public bCheckForUpdates As Boolean
@@ -329,7 +338,8 @@ Public ProfilesDir      As String
 Public TempCU           As String
 Public envCurUser       As String
 Public ProgramData      As String
-Public colProfiles      As Collection
+Public colProfiles      As Collection ' profile's path
+Public colProfilesUser  As Collection ' profile's user name
 Public sWinVersion      As String
 
 Public bRebootRequired              As Boolean
@@ -367,7 +377,8 @@ Public bShownBHOWarning     As Boolean
 Public bShownToolbarWarning As Boolean
 
 Public g_bCheckSum          As Boolean
-Public g_bUseMD5            As Boolean
+'Public g_bUseMD5            As Boolean
+Public g_eUseHashType       As HASH_TYPE
 Public bIgnoreAllWhitelists As Boolean
 Public bHideMicrosoft       As Boolean
 Public bAutoLog             As Boolean
@@ -399,7 +410,12 @@ Public g_hDebugLog  As Long
 Public g_hLog       As Long
 Public g_LogLocked  As Boolean
 
-Public gSIDs() As String, gSID_All() As String, gUsers() As String, gHives() As String
+Public Const SID_TEMPLATE As String = "S-{Template}"
+
+' See FillUsers() for explain
+Public gSIDs() As String, gSID_All() As String, gUserOfHive() As String, gHives() As String, gHivesUser() As String
+Public g_LocalGroupNames() As String
+Public g_LocalUserNames() As String
 
 Public tim() As clsTimer
 
@@ -830,6 +846,7 @@ Public Declare Function FindFirstFile Lib "kernel32.dll" Alias "FindFirstFileW" 
 Public Declare Function FindNextFile Lib "kernel32.dll" Alias "FindNextFileW" (ByVal hFindFile As Long, lpFindFileData As WIN32_FIND_DATA) As Long
 Public Declare Function FindClose Lib "kernel32.dll" (ByVal hFindFile As Long) As Long
 Public Declare Function CreateFile Lib "kernel32.dll" Alias "CreateFileW" (ByVal lpFileName As Long, ByVal dwDesiredAccess As Long, ByVal dwShareMode As Long, ByVal lpSecurityAttributes As Long, ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, ByVal hTemplateFile As Long) As Long
+Public Declare Function SetEndOfFile Lib "kernel32.dll" (ByVal hFile As Long) As Long
 Public Declare Function CreateFileTransacted Lib "kernel32.dll" Alias "CreateFileTransactedW" (ByVal lpFileName As Long, ByVal dwDesiredAccess As Long, ByVal dwShareMode As Long, lpSecurityAttributes As Any, ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, ByVal hTemplateFile As Long, ByVal hTransaction As Long, ByVal pusMiniVersion As Long, ByVal pExtendedParameter As Long) As Long
 Public Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
 Public Declare Function SHFileExists Lib "shell32.dll" Alias "#45" (ByVal szPath As String) As Long
@@ -931,6 +948,12 @@ Public Declare Function CryptHashData_Str Lib "Advapi32.dll" Alias "CryptHashDat
 Public Declare Function CryptReleaseContext Lib "Advapi32.dll" (ByVal hProv As Long, ByVal dwFlags As Long) As Long
 Public Declare Function CryptGetProvParam Lib "Advapi32.dll" (ByVal hProv As Long, ByVal dwParam As Long, ByVal pbData As Long, pdwDataLen As Long, ByVal dwFlags As Long) As Long
 
+Public Const CALG_MD5 As Long = &H8003&
+Public Const CALG_SHA1 As Long = &H8004&
+Public Const CALG_SHA_256 As Long = &H800C&
+Public Const CALG_SHA_384 As Long = &H800D&
+Public Const CALG_SHA_512 As Long = &H800E&
+
 Public Const ALG_TYPE_ANY As Long = 0
 Public Const ALG_SID_MD5 As Long = 3
 Public Const ALG_SID_SHA1 As Long = 4
@@ -942,7 +965,11 @@ Public Const HP_HASHSIZE As Long = 4
 Public Const CRYPT_VERIFYCONTEXT = &HF0000000
 
 Public Const PROV_RSA_FULL As Long = 1
+Public Const PROV_RSA_AES As Long = 24
+
 Public Const MS_ENHANCED_PROV As String = "Microsoft Enhanced Cryptographic Provider v1.0"
+Public Const MS_ENH_RSA_AES_PROV As String = "Microsoft Enhanced RSA and AES Cryptographic Provider"
+
 
 'modInternet
 
@@ -1121,7 +1148,6 @@ Public Declare Function WSCGetProviderPath Lib "ws2_32.dll" (ByVal lpProviderId 
 Public Declare Function StringFromGUID2 Lib "ole32.dll" (rguid As UUID, ByVal lpsz As Long, ByVal cchMax As Long) As Long
 
 Public Const SOCKET_ERROR As Long = -1
-Public Const REG_OPTION_NON_VOLATILE As Long = 0
 
 'modMain
 
@@ -1157,15 +1183,28 @@ Public Type TOKEN_GROUPS
     Groups(20) As SID_AND_ATTRIBUTES
 End Type
 
+Public Type USER_INFO_0
+    usri0_name As Long
+End Type
+
+Public Type LOCALGROUP_INFO_0
+    lgrpi0_name As Long
+End Type
+
 Public Declare Function GetSaveFileName Lib "comdlg32.dll" Alias "GetSaveFileNameW" (pOpenfilename As OPENFILENAME) As Long
 Public Declare Function GetUserName Lib "Advapi32.dll" Alias "GetUserNameW" (ByVal lpBuffer As Long, nSize As Long) As Long
 Public Declare Function GetComputerName Lib "kernel32.dll" Alias "GetComputerNameW" (ByVal lpBuffer As Long, nSize As Long) As Long
+Public Declare Function NetUserEnum Lib "Netapi32.dll" (ByVal servername As Long, ByVal level As Long, ByVal Filter As Long, bufptr As Long, ByVal prefmaxlen As Long, entriesread As Long, totalentries As Long, resume_handle As Long) As Long
+Public Declare Function NetLocalGroupEnum Lib "Netapi32.dll" (ByVal servername As Long, ByVal level As Long, bufptr As Long, ByVal prefmaxlen As Long, entriesread As Long, totalentries As Long, resume_handle As Long) As Long
+Public Declare Function NetApiBufferFree Lib "Netapi32.dll" (ByVal Buffer As Long) As Long
 Public Declare Function GetDateFormat Lib "kernel32.dll" Alias "GetDateFormatW" (ByVal Locale As Long, ByVal dwFlags As Long, lpDate As SYSTEMTIME, ByVal lpFormat As Long, ByVal lpDateStr As Long, ByVal cchDate As Long) As Long
 Public Declare Function QueryPerformanceFrequency Lib "kernel32.dll" (lpFrequency As Any) As Long
 Public Declare Function QueryPerformanceCounter Lib "kernel32.dll" (lpPerformanceCount As Any) As Long
 Public Declare Function lstrlenA Lib "kernel32.dll" (ByVal lpString As Long) As Long
 Public Declare Sub Sleep Lib "kernel32.dll" (ByVal dwMilliseconds As Long)
 Public Declare Function GetUserDefaultLCID Lib "kernel32.dll" () As Long
+Public Declare Function GetThreadLocale Lib "kernel32.dll" () As Long
+Public Declare Function SetThreadLocale Lib "kernel32.dll" (ByVal Locale As Long) As Long
 Public Declare Function inet_addr Lib "wsock32.dll" (ByVal CP As String) As Long
 Public Declare Function DeleteFileW Lib "kernel32.dll" (ByVal lpFileName As Long) As Long
 Public Declare Function GetSystemMetrics Lib "user32.dll" (ByVal nIndex As Long) As Long
@@ -1196,6 +1235,8 @@ Public Declare Function OpenClipboard Lib "user32.dll" (ByVal hwnd As Long) As L
 Public Declare Function SetClipboardData Lib "user32.dll" (ByVal wFormat As Long, ByVal hMem As Long) As Long
 Public Declare Function EmptyClipboard Lib "user32.dll" () As Long
 Public Declare Function CloseClipboard Lib "user32.dll" () As Long
+Public Declare Function OleSetClipboard Lib "ole32.dll" (ByVal pDataObj As IDataObject) As Long
+Public Declare Function OleFlushClipboard Lib "ole32.dll" () As Long
 Public Declare Function GlobalAlloc Lib "kernel32.dll" (ByVal wFlags As Long, ByVal dwBytes As Long) As Long
 Public Declare Function GlobalFree Lib "kernel32.dll" (ByVal hMem As Long) As Long
 Public Declare Function GlobalLock Lib "kernel32.dll" (ByVal hMem As Long) As Long
@@ -1203,10 +1244,13 @@ Public Declare Function GlobalUnlock Lib "kernel32.dll" (ByVal hMem As Long) As 
 Public Declare Function GlobalSize Lib "kernel32.dll" (ByVal hMem As Long) As Long
 Public Declare Function GetMem4 Lib "msvbvm60.dll" (Src As Any, Dst As Any) As Long
 Public Declare Function GetMem2 Lib "msvbvm60.dll" (Src As Any, Dst As Any) As Long
+Public Declare Function PutMem4 Lib "msvbvm60.dll" (ByVal Addr As Long, ByVal NewVal As Long) As Long
 Public Declare Function LookupAccountSid Lib "Advapi32.dll" Alias "LookupAccountSidW" (ByVal lpSystemName As Long, ByVal lpSid As Long, ByVal lpName As Long, cchName As Long, ByVal lpReferencedDomainName As Long, cchReferencedDomainName As Long, eUse As Long) As Long
 Public Declare Function ConvertStringSidToSid Lib "Advapi32.dll" Alias "ConvertStringSidToSidW" (ByVal StringSid As Long, pSid As Long) As Long
 Public Declare Function IsBadReadPtr Lib "kernel32.dll" (ByVal lp As Long, ByVal ucb As Long) As Long
 Public Declare Function GetVolumeInformation Lib "kernel32.dll" Alias "GetVolumeInformationA" (ByVal lpRootPathName As String, ByVal lpVolumeNameBuffer As String, ByVal nVolumeNameSize As Long, lpVolumeSerialNumber As Long, lpMaximumComponentLength As Long, lpFileSystemFlags As Long, ByVal lpFileSystemNameBuffer As String, ByVal nFileSystemNameSize As Long) As Long
+Public Declare Function CompareStringW Lib "kernel32" (ByVal Locale As Long, ByVal dwCmpFlags As Long, ByVal lpString1 As Long, ByVal cchCount1 As Long, ByVal lpString2 As Long, ByVal cchCount2 As Long) As Long
+Public Declare Function VarBstrCmp Lib "oleaut32" (ByVal bstrLeft As Long, ByVal bstrRight As Long, ByVal lcid As Long, ByVal dwFlags As Long) As Long
 
 Public Const CREATE_NEW                As Long = 1&
 
@@ -1217,6 +1261,14 @@ Public Const SPIF_UPDATEINIFILE    As Long = &H1&
 Public Const CF_UNICODETEXT    As Long = 13&
 Public Const GMEM_MOVEABLE     As Long = &H2&
 Public Const CF_LOCALE         As Long = 16
+Public Const LOCALE_USER_DEFAULT           As Long = &H400
+Public Const NORM_IGNORECASE               As Long = 1
+Public Const CSTR_LESS_THAN                As Long = 1
+Public Const CSTR_EQUAL                    As Long = 2
+Public Const CSTR_GREATER_THAN             As Long = 3
+Public Const VARCMP_LT                     As Long = 0
+Public Const VARCMP_EQ                     As Long = 1
+Public Const VARCMP_GT                     As Long = 2
 
 Public Const SECURITY_NT_AUTHORITY         As Long = &H5&
 Public Const TOKEN_QUERY                   As Long = &H8&
@@ -1230,6 +1282,9 @@ Public Const DOMAIN_ALIAS_RID_ACCOUNT_OPS  As Long = 548&
 Public Const DOMAIN_ALIAS_RID_SYSTEM_OPS   As Long = 549&
 Public Const DOMAIN_ALIAS_RID_PRINT_OPS    As Long = 550&
 Public Const DOMAIN_ALIAS_RID_BACKUP_OPS   As Long = 551&
+Public Const FILTER_NORMAL_ACCOUNT         As Long = 2&
+Public Const MAX_PREFERRED_LENGTH          As Long = -1&
+Public Const NERR_Success                  As Long = 0&
 
 Public Const ERROR_NONE_MAPPED As Long = 1332&
 
@@ -1470,7 +1525,6 @@ Public Declare Function RegEnumKeyEx Lib "Advapi32.dll" Alias "RegEnumKeyExW" (B
 
 Public Const MAX_KEYNAME            As Long = 255&
 
-Public Const REG_OPTION_BACKUP_RESTORE As Long = 4&
 Public Const GENERIC_ALL            As Long = &H10000000
 Public Const WRITE_DAC              As Long = &H40000
 Public Const WRITE_OWNER            As Long = &H80000
@@ -1896,7 +1950,36 @@ Public Declare Function SystemTimeToVariantTime Lib "oleaut32.dll" (lpSystemTime
 Public Declare Function GetMem8 Lib "msvbvm60.dll" (Src As Any, Dst As Any) As Long
 Public Declare Function DispCallFunc Lib "oleaut32.dll" (ByVal ppv As Long, ByVal oVft As Long, ByVal cc As Long, ByVal rtTYP As VbVarType, ByVal paCNT As Long, paTypes As Any, paValues As Any, ByRef fuReturn As Variant) As Long
 
+Public Enum KEY_CTRL_FL_W7_01
+    KEY_CTRL_FL_W7_01__IS_VOLATILE = 1
+    KEY_CTRL_FL_W7_01__SYM_LINK = 2
+End Enum
+
+Public Enum KEY_CTRL_FL_W7_02
+    RegKeyClearFlags = 0
+    RegKeyDontVirtualize = 2
+    RegKeyDontSilentFail = 4
+    RegKeyRecurseFlag = 8
+End Enum
+
+'http://mygreenpaste.blogspot.com/2008/07/in-vista-how-does-flags-switch-of.html
+'https://github.com/rbmm/NtRegView/blob/master/registry.cpp
+Public Type KEY_FLAGS_INFORMATION
+    Unknown As Long
+    ControlFlags1 As KEY_CTRL_FL_W7_01
+    ControlFlags2 As KEY_CTRL_FL_W7_02
+End Type
+
+Public Const REG_OPTION_NON_VOLATILE As Long = 0
+Public Const REG_OPTION_VOLATILE As Long = 1
+Public Const REG_OPTION_CREATE_LINK As Long = 2
+Public Const REG_OPTION_BACKUP_RESTORE As Long = 4&
+Public Const ERROR_CHILD_MUST_BE_VOLATILE = 1021&
+
+Public Const CC_CDECL As Long = 1
+Public Const CC_PASCAL As Long = 2
 Public Const CC_STDCALL As Long = 4
+Public Const CC_SYSCALL As Long = 6
 
 Public Const KEY_CREATE_SUB_KEY     As Long = &H4
 Public Const KEY_SET_VALUE          As Long = &H2
@@ -1949,6 +2032,7 @@ Public Declare Function GetModuleFileName Lib "kernel32.dll" Alias "GetModuleFil
 
 Public Declare Function MultiByteToWideChar Lib "kernel32.dll" (ByVal CodePage As Long, ByVal dwFlags As Long, ByVal lpMultiByteStr As String, ByVal cchMultiByte As Long, ByVal lpWideCharStr As Long, ByVal cchWideChar As Long) As Long
 Public Const LOCALE_SENGLANGUAGE = &H1001&
+Public Const LOCALE_US As Long = 1033&
 
 'modUtils
 
@@ -2058,7 +2142,6 @@ Public Declare Function DefSubclassProc Lib "comctl32.dll" Alias "#413" (ByVal h
 Public Declare Function SetWindowSubclass Lib "comctl32.dll" Alias "#410" (ByVal hwnd As Long, ByVal pfnSubclass As Long, ByVal uIdSubclass As Long, Optional ByVal dwRefData As Long) As Long
 Public Declare Function RemoveWindowSubclass Lib "comctl32.dll" Alias "#412" (ByVal hwnd As Long, ByVal pfnSubclass As Long, ByVal uIdSubclass As Long) As Long
 Public Declare Function SHParseDisplayName Lib "shell32" (ByVal pszName As Long, ByVal IBindCtx As Long, ByRef ppidl As Long, sfgaoIn As Long, sfgaoOut As Long) As Long
-'Public Declare Function ILFree Lib "Shell32" (ByVal pidlFree As Long) As Long
 Public Declare Function NtQueryObject Lib "ntdll.dll" (ByVal Handle As Long, ByVal ObjectInformationClass As OBJECT_INFORMATION_CLASS, ObjectInformation As Any, ByVal ObjectInformationLength As Long, ReturnLength As Long) As Long
 Public Declare Function GetKeyState Lib "user32.dll" (ByVal nVirtKey As Long) As Integer
 Public Declare Function RegisterHotKey Lib "user32.dll" (ByVal hwnd As Long, ByVal ID As Long, ByVal fsModifiers As Long, ByVal vk As Long) As Long
@@ -2067,6 +2150,7 @@ Public Declare Function SetWindowsHookEx Lib "user32.dll" Alias "SetWindowsHookE
 Public Declare Function CallNextHookEx Lib "user32.dll" (ByVal hhk As Long, ByVal nCode As Long, ByVal wParam As Long, lParam As msg) As Long
 Public Declare Function UnhookWindowsHookEx Lib "user32.dll" (ByVal hhk As Long) As Long
 Public Declare Function GetClientRect Lib "user32.dll" (ByVal hwnd As Long, lpRect As RECT) As Long
+Public Declare Function GetAsyncKeyState Lib "user32.dll" (ByVal vKey As Long) As Integer
 
 Public Const GWL_STYLE As Long = -16&
 
@@ -2090,6 +2174,9 @@ Public Const SHCNE_ATTRIBUTES   As Long = &H800&
 Public Const ERROR_FILE_NOT_FOUND      As Long = 2&
 
 Public Const RGN_OR            As Long = 2
+
+Public Const VK_SHIFT           As Long = &H10&
+Public Const VK_APPS            As Long = &H5D&
 
 Public Const MOD_ALT            As Long = 1
 Public Const MOD_CONTROL        As Long = 2
@@ -2217,3 +2304,4 @@ Public Declare Function SHGetKnownFolderIDList Lib "shell32" (rfid As UUID, ByVa
 'Public Declare Function CLSIDFromString Lib "ole32" (ByVal lpszGuid As Long, pGuid As Any) As Long
 'Public Declare Sub CoTaskMemFree Lib "ole32.dll" (ByVal pv As Long)
 
+Public Const vbDarkRed As Long = &H80& 'burgundy

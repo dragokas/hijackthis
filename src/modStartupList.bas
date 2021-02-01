@@ -384,7 +384,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Sub GetUsernames()
+Public Sub GetUserNames()
     On Error GoTo ErrorHandler:
     ReDim sUsernames(0)
     Dim sKeys$(), i%
@@ -1472,7 +1472,7 @@ Public Sub RegEnumDriverFilters(tvwMain As TreeView)
     tvwMain.Nodes.Add "DriverFilters", tvwChild, "DriverFiltersDevice", "Device filters", "dll"
     tvwMain.Nodes("DriverFiltersDevice").Tag = "HKEY_LOCAL_MACHINE\" & sDeviceKey
     tvwMain.Nodes("DriverFiltersDevice").Sorted = True
-    Dim sSections$(), sDevices$(), sSubkeys$(), k&, M&
+    Dim sSections$(), sDevices$(), sSubkeys$(), k&, m&
     'this fucking sucks
     sSections = Split(Reg.EnumSubKeys(HKEY_LOCAL_MACHINE, sDeviceKey), "|")
     For i = 0 To UBound(sSections)
@@ -1489,33 +1489,33 @@ Public Sub RegEnumDriverFilters(tvwMain As TreeView)
                 End If
                 If UBound(sUFilters) > 0 Then
                     tvwMain.Nodes.Add "DriverFiltersDevice" & i & "." & j & "." & k, tvwChild, "DriverFiltersDevice" & i & "." & j & "." & k & "Upper", "Upper filters", "dll"
-                    For M = 0 To UBound(sUFilters)
-                        If Trim$(sUFilters(M)) <> vbNullString Then
-                            sName = sUFilters(M) & ".sys"
+                    For m = 0 To UBound(sUFilters)
+                        If Trim$(sUFilters(m)) <> vbNullString Then
+                            sName = sUFilters(m) & ".sys"
                             If FileExists(sSysDir & "\drivers\" & sName) Then
                                 sName = BuildPath(sSysDir & "\drivers\", sName)
                             Else
                                 sName = GuessFullpathFromAutorun(sName)
                             End If
-                            tvwMain.Nodes.Add "DriverFiltersDevice" & i & "." & j & "." & k & "Upper", tvwChild, "DriverFiltersDevice" & i & "." & j & "." & k & "Upper" & M, sUFilters(M) & ".sys", "dll"
-                            tvwMain.Nodes("DriverFiltersDevice" & i & "." & j & "." & k & "Upper" & M).Tag = sName
+                            tvwMain.Nodes.Add "DriverFiltersDevice" & i & "." & j & "." & k & "Upper", tvwChild, "DriverFiltersDevice" & i & "." & j & "." & k & "Upper" & m, sUFilters(m) & ".sys", "dll"
+                            tvwMain.Nodes("DriverFiltersDevice" & i & "." & j & "." & k & "Upper" & m).Tag = sName
                         End If
-                    Next M
+                    Next m
                 End If
                 If UBound(sLFilters) > 0 Then
                     tvwMain.Nodes.Add "DriverFiltersDevice" & i & "." & j & "." & k, tvwChild, "DriverFiltersDevice" & i & "." & j & "." & k & "Lower", "Lower filters", "dll"
-                    For M = 0 To UBound(sLFilters)
-                        If Trim$(sLFilters(M)) <> vbNullString Then
-                            sName = sLFilters(M) & ".sys"
+                    For m = 0 To UBound(sLFilters)
+                        If Trim$(sLFilters(m)) <> vbNullString Then
+                            sName = sLFilters(m) & ".sys"
                             If FileExists(sSysDir & "\drivers\" & sName) Then
                                 sName = BuildPath(sSysDir & "\drivers\", sName)
                             Else
                                 sName = GuessFullpathFromAutorun(sName)
                             End If
-                            tvwMain.Nodes.Add "DriverFiltersDevice" & i & "." & j & "." & k & "Lower", tvwChild, "DriverFiltersDevice" & i & "." & j & "." & k & "Lower" & M, sLFilters(M) & ".sys", "dll"
-                            tvwMain.Nodes("DriverFiltersDevice" & i & "." & j & "." & k & "Lower" & M).Tag = sName
+                            tvwMain.Nodes.Add "DriverFiltersDevice" & i & "." & j & "." & k & "Lower", tvwChild, "DriverFiltersDevice" & i & "." & j & "." & k & "Lower" & m, sLFilters(m) & ".sys", "dll"
+                            tvwMain.Nodes("DriverFiltersDevice" & i & "." & j & "." & k & "Lower" & m).Tag = sName
                         End If
-                    Next M
+                    Next m
                 End If
                 If bSL_Abort Then Exit Sub
             Next k
@@ -1621,33 +1621,33 @@ Public Sub RegEnumDriverFilters(tvwMain As TreeView)
                     End If
                     If UBound(sUFilters) > 0 Then
                         tvwMain.Nodes.Add sHardwareCfgs(L) & "DriverFiltersDevice" & i & "." & j & "." & k, tvwChild, sHardwareCfgs(L) & "DriverFiltersDevice" & i & "." & j & "." & k & "Upper", "Upper filters", "dll"
-                        For M = 0 To UBound(sUFilters)
-                            If Trim$(sUFilters(M)) <> vbNullString Then
-                                sName = sUFilters(M) & ".sys"
+                        For m = 0 To UBound(sUFilters)
+                            If Trim$(sUFilters(m)) <> vbNullString Then
+                                sName = sUFilters(m) & ".sys"
                                 If FileExists(sSysDir & "\drivers\" & sName) Then
                                     sName = BuildPath(sSysDir & "\drivers\", sName)
                                 Else
                                     sName = GuessFullpathFromAutorun(sName)
                                 End If
-                                tvwMain.Nodes.Add sHardwareCfgs(L) & "DriverFiltersDevice" & i & "." & j & "." & k & "Upper", tvwChild, sHardwareCfgs(L) & "DriverFiltersDevice" & i & "." & j & "." & k & "Upper" & M, sUFilters(M) & ".sys", "dll"
-                                tvwMain.Nodes(sHardwareCfgs(L) & "DriverFiltersDevice" & i & "." & j & "." & k & "Upper" & M).Tag = sName
+                                tvwMain.Nodes.Add sHardwareCfgs(L) & "DriverFiltersDevice" & i & "." & j & "." & k & "Upper", tvwChild, sHardwareCfgs(L) & "DriverFiltersDevice" & i & "." & j & "." & k & "Upper" & m, sUFilters(m) & ".sys", "dll"
+                                tvwMain.Nodes(sHardwareCfgs(L) & "DriverFiltersDevice" & i & "." & j & "." & k & "Upper" & m).Tag = sName
                             End If
-                        Next M
+                        Next m
                     End If
                     If UBound(sLFilters) > 0 Then
                         tvwMain.Nodes.Add sHardwareCfgs(L) & "DriverFiltersDevice" & i & "." & j & "." & k, tvwChild, sHardwareCfgs(L) & "DriverFiltersDevice" & i & "." & j & "." & k & "Lower", "Lower filters", "dll"
-                        For M = 0 To UBound(sLFilters)
-                            If Trim$(sLFilters(M)) <> vbNullString Then
-                                sName = sLFilters(M) & ".sys"
+                        For m = 0 To UBound(sLFilters)
+                            If Trim$(sLFilters(m)) <> vbNullString Then
+                                sName = sLFilters(m) & ".sys"
                                 If FileExists(sSysDir & "\drivers\" & sName) Then
                                     sName = BuildPath(sSysDir & "\drivers\", sName)
                                 Else
                                     sName = GuessFullpathFromAutorun(sName)
                                 End If
-                                tvwMain.Nodes.Add sHardwareCfgs(L) & "DriverFiltersDevice" & i & "." & j & "." & k & "Lower", tvwChild, sHardwareCfgs(L) & "DriverFiltersDevice" & i & "." & j & "." & k & "Lower" & M, sLFilters(M) & ".sys", "dll"
-                                tvwMain.Nodes(sHardwareCfgs(L) & "DriverFiltersDevice" & i & "." & j & "." & k & "Lower" & M).Tag = sName
+                                tvwMain.Nodes.Add sHardwareCfgs(L) & "DriverFiltersDevice" & i & "." & j & "." & k & "Lower", tvwChild, sHardwareCfgs(L) & "DriverFiltersDevice" & i & "." & j & "." & k & "Lower" & m, sLFilters(m) & ".sys", "dll"
+                                tvwMain.Nodes(sHardwareCfgs(L) & "DriverFiltersDevice" & i & "." & j & "." & k & "Lower" & m).Tag = sName
                             End If
-                        Next M
+                        Next m
                     End If
                     If bSL_Abort Then Exit Sub
                 Next k

@@ -159,6 +159,7 @@ Private Sub LoadFile()
         Loop Until i > UBound(aContents)
     End If
     mb_Loaded = True
+
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "clsIniFile_LoadFile", ms_IniFile

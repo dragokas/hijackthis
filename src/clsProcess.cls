@@ -161,11 +161,11 @@ Private PipeIn  As PIPE
 Private PipeOut As PIPE
 Private mIdent  As String
 
-Public Property Get PID() As Long
-    PID = pi.dwProcessId
+Public Property Get pid() As Long
+    pid = pi.dwProcessId
 End Property
 
-Public Property Let PID(lPID As Long)
+Public Property Let pid(lPID As Long)
     pi.dwProcessId = lPID
 End Property
 
@@ -215,7 +215,7 @@ Function IsRunned(Optional ByRef ProcessName As String, Optional ByRef ProcessID
     Dim pe      As PROCESSENTRY32
 
     If ProcessName = vbNullString And ProcessID = 0 Then
-        ProcessID = PID()
+        ProcessID = pid()
     End If
     
     If ProcessName = vbNullString And ProcessID = 0 Then Exit Function
@@ -280,6 +280,7 @@ Function WaitForTerminate( _
     Dim InitialTime As Single
     Dim DeadTime    As Single
     Dim bTimeOutON  As Boolean
+    Dim bNewHandle  As Boolean
     
     Static isInit As Boolean
     Static bIsWinVistaOrLater As Boolean
@@ -292,12 +293,14 @@ Function WaitForTerminate( _
     
     If ProcessID <> 0 Then
         hProc = OpenProcess(IIf(bIsWinVistaOrLater, PROCESS_QUERY_LIMITED_INFORMATION, PROCESS_QUERY_INFORMATION) Or SYNCHRONIZE, False, ProcessID)
+        bNewHandle = True
         
     ElseIf WindowHandle <> 0 Then
         ' получаем PID процесса
         dwThreadId = GetWindowThreadProcessId(ByVal WindowHandle, ProcessID)
         '::: Получаем хэндл процесса
         hProc = OpenProcess(IIf(bIsWinVistaOrLater, PROCESS_QUERY_LIMITED_INFORMATION, PROCESS_QUERY_INFORMATION) Or SYNCHRONIZE, False, ProcessID)
+        bNewHandle = True
     ElseIf ProcessHandle <> 0 Then
         hProc = ProcessHandle
     Else
@@ -334,11 +337,16 @@ Function WaitForTerminate( _
     End If
     '::: Закроем хендл при успешном завершении работы приложения, иначе он может пригодиться для принудительного завершения процесса
     If iExit = ERROR_SUCCESS Then
-        CloseHandle hThread
-        CloseHandle hProc
+        CloseHandle hThread: hThread = 0
+        CloseHandle hProc: hProc = 0
         If pi.hProcess = hProc Then pi.hProcess = 0
         If pi.hThread = hThread Then pi.hThread = 0
     End If
+    If bNewHandle Then
+        '::: Если открывали хендл самостоятельно в этой процедуре, не забываем закрыть его
+        If hProc <> 0 Then CloseHandle hProc
+    End If
+    
     WaitForTerminate = iExit
     
     AppendErrorLogCustom "WaitForTerminate - End"
@@ -348,12 +356,12 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Private Function GetPIDsByName(ProcessName As Variant) As Long()
+Private Function GetPIDsByName(ProcessName As String) As Long()
     On Error GoTo ErrorHandler:
     Dim pe               As PROCESSENTRY32
     Dim hSnap            As Long
-    Dim PID()            As Long
-    ReDim PID(0) As Long
+    Dim pid()            As Long
+    ReDim pid(0) As Long
     
     AppendErrorLogCustom "GetPIDsByName - Begin", "ProcessName: " & ProcessName
     
@@ -367,14 +375,14 @@ Private Function GetPIDsByName(ProcessName As Variant) As Long()
         Do
             If StrComp(StringFromPtrW(VarPtr(pe.szExeFile(0))), ProcessName, 1) = 0 Then
                 
-                ReDim Preserve PID(UBound(PID) + 1) As Long
-                PID(UBound(PID)) = pe.th32ProcessID
+                ReDim Preserve pid(UBound(pid) + 1) As Long
+                pid(UBound(pid)) = pe.th32ProcessID
             End If
         Loop While Process32Next(hSnap, pe)
     End If
     CloseHandle hSnap
     
-    GetPIDsByName = PID
+    GetPIDsByName = pid
     
     AppendErrorLogCustom "GetPIDsByName - End"
     Exit Function
@@ -401,35 +409,35 @@ Public Function ProcessClose( _
     Dim hThread          As Long
     Dim hProc            As Long
     Dim dwThreadId       As Long
-    Dim PID()            As Long
+    Dim pid()            As Long
     Dim i                As Long
     Dim ProcNameCur      As String
 
     If Len(ProcessName) <> 0 Then
 
-        PID() = GetPIDsByName(ProcessName)
+        pid() = GetPIDsByName(ProcessName)
         
-        If IsArrDimmed(PID) Then
-            For i = 1 To UBound(PID)
-                ProcessClose , , True, 0, PID(i), SendCloseMsg 'Async mode
+        If IsArrDimmed(pid) Then
+            For i = 1 To UBound(pid)
+                ProcessClose , , True, 0, pid(i), SendCloseMsg 'Async mode
             Next
         End If
         
         If Not Async Then
             If TimeOutMs = INFINITE Then
-                For i = 1 To UBound(PID)
+                For i = 1 To UBound(pid)
                     ProcNameCur = ""
-                    Call IsRunned(ProcNameCur, PID(i)) 'get name by PID
+                    Call IsRunned(ProcNameCur, pid(i)) 'get name by PID
                     If StrComp(ProcNameCur, ProcessName, vbTextCompare) = 0 Then 'not changed ?
-                        Call WaitForTerminate(, , False, INFINITE, PID(i))
+                        Call WaitForTerminate(, , False, INFINITE, pid(i))
                     End If
                 Next
             Else
-                For i = 1 To UBound(PID)
-                    ProcNameCur = ""
-                    Call IsRunned(ProcNameCur, PID(i)) 'get name by PID
+                For i = 1 To UBound(pid)
+                    ProcNameCur = vbNullString
+                    Call IsRunned(ProcNameCur, pid(i)) 'get name by PID
                     If StrComp(ProcNameCur, ProcessName, vbTextCompare) = 0 Then 'not changed ?
-                        ProcessID = PID(i)
+                        ProcessID = pid(i)
                         Exit For ' get only 1 process
                     End If
                 Next
@@ -526,19 +534,25 @@ Public Function ProcessRun( _
     Dim argc        As Long
     Dim argv()      As String
     
-    CMDLine = """" & FileName & """"                    ' Имя файла в кавычки
+    If Len(FileName) <> 0 Then
     
-    If CommandLine <> vbNullString Then                 ' Если есть аргументы, их тоже добавляем в кавычках
-    
-        ParseCommandLine CommandLine, argc, argv        ' Разбиваем аргументы командной строки на составляющие
-        For n = 1 To argc
-            CMDLine = CMDLine & " """ & argv(n) & """"
-        Next
-    End If
-    
-    'если командная строка подготовлена для cmd.exe, не трогаем аргументы
-    If StrComp(FileName, Environ("ComSpec"), 1) = 0 Or StrComp(FileName, "schtasks.exe", 1) = 0 Then
-        CMDLine = """" & FileName & """" & " " & CommandLine
+        CMDLine = """" & FileName & """"                    ' Имя файла в кавычки
+        
+        If Len(CommandLine) <> 0 Then                       ' Если есть аргументы, их тоже добавляем в кавычках
+        
+            ParseCommandLine CommandLine, argc, argv        ' Разбиваем аргументы командной строки на составляющие
+            
+            For n = 1 To argc
+                CMDLine = CMDLine & " " & argv(n)
+            Next
+        End If
+        
+        'если командная строка подготовлена для cmd.exe, не трогаем аргументы
+        If StrComp(FileName, Environ("ComSpec"), 1) = 0 Or StrComp(FileName, "schtasks.exe", 1) = 0 Then
+            CMDLine = """" & FileName & """" & " " & CommandLine
+        End If
+    Else
+        CMDLine = CommandLine
     End If
     
     si.cb = Len(si)

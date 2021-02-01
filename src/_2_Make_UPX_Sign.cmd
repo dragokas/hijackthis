@@ -68,7 +68,7 @@ set Manifest=
 
 :: Location of script(s) for adding digital signature
 set SignScript_1=h:\_AVZ\Наши разработки\_Dragokas\DigiSign\SignME.cmd
-set SignScript_2=c:\DigiSign\SignME_self.cmd
+set SignScript_2=c:\DigiSign\SignME.cmd
 
 :: Version Patcher EXE (support for 'build' field of PE EXE version)
 set VerPatcher=Tools\VersionPatcher\VersionPatcher.exe
@@ -383,7 +383,7 @@ if %errorlevel% neq 0 (pause & exit /B)
 
 :skipBackup
 
-copy /y MSCOMCTL.OCX.bak MSCOMCTL.OCX
+::copy /y MSCOMCTL.OCX.bak MSCOMCTL.OCX
 copy /y HiJackThis.zip HiJackThis_test.zip
 del /f /a /q *.tmp 2>NUL
 

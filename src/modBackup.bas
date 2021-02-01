@@ -34,6 +34,10 @@ Public Enum ENUM_FILE_RESTORE_VERBS 'values should coerce with ENUM_RESTORE_VERB
     BACKUP_FILE_REGISTER = 32
 End Enum
 
+Public Enum ENUM_CUSTOM_RESTORE_VERBS 'values should coerce with ENUM_RESTORE_VERBS !
+    BACKUP_BITS_JOB = 512
+End Enum
+
 Private Enum ENUM_RESTORE_VERBS 'WARNING: re-enumeration of values is forbidden !!!
     VERB_FILE_COPY = 1
     VERB_GENERAL_RESTORE = 2 'for ABR
@@ -44,6 +48,7 @@ Private Enum ENUM_RESTORE_VERBS 'WARNING: re-enumeration of values is forbidden 
     VERB_SERVICE_STATE = 64
     VERB_WMI_CONSUMER = 128
     VERB_RESTART_SYSTEM = 256
+    VERB_BITS_JOB = 512
 End Enum
 
 Private Enum ENUM_RESTORE_OBJECT_TYPES 'WARNING: re-enumeration of values is forbidden !!!
@@ -55,6 +60,7 @@ Private Enum ENUM_RESTORE_OBJECT_TYPES 'WARNING: re-enumeration of values is for
     OBJ_WMI_CONSUMER = 32
     OBJ_OS = 64
     OBJ_REG_METADATA = 128
+    OBJ_FIX_CUSTOM = 256
 End Enum
 
 Private Type BACKUP_COMMAND
@@ -195,14 +201,6 @@ Public Sub BackupFlush()
     If Not cBackupIni Is Nothing Then
         cBackupIni.Flush
     End If
-'    With tBackupList
-'        Set .cLastCMD = Nothing
-'        Set .cLastCMD = New clsIniFile
-'        .LastBackupID = 0
-'        .LastFixID = 0
-'        .Total = 0
-'        .LastHitW = ""
-'    End With
 End Sub
 
 '// number of fixes +1
@@ -220,14 +218,6 @@ Public Sub IncreaseFixID()
     End If
     cBackupIni.WriteParam "main", "LastFixID", tBackupList.LastFixID
 End Sub
-
-'Public Sub MakeBackupEx(result As SCAN_RESULT)
-'    If Not bMakeBackup Then Exit Sub
-'    IncreaseFixID
-'    MakeBackup result
-'    BackupFlush
-'    g_bBackupMade = True
-'End Sub
 
 Public Function MakeBackup(result As SCAN_RESULT) As Boolean
     On Error GoTo ErrorHandler:
@@ -398,6 +388,9 @@ Public Function MakeBackup(result As SCAN_RESULT) As Boolean
                         If (.ActionType And CUSTOM_ACTION_O25) Then
                             UpdateBackupEntry result
                             BackupAddCommand CUSTOM_BASED, VERB_WMI_CONSUMER, OBJ_WMI_CONSUMER, PackO25_Entry(result.O25)
+                        End If
+                        If (.ActionType And CUSTOM_ACTION_BITS) Then
+                            BackupCustom result, result.Custom(i), BACKUP_BITS_JOB
                         End If
                     End With
                 Next
@@ -723,6 +716,39 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
+Private Function BackupAllocCustom(FixCustom As FIX_CUSTOM) As Long
+    On Error GoTo ErrorHandler
+    'returns CustomID
+    
+    Dim lCustomID As Long
+    Dim numEntries As Long
+    
+    With FixCustom
+    
+        numEntries = tBackupList.cLastCMD.ReadParam("custom", "Total", 0)
+        numEntries = numEntries + 1
+        
+        lCustomID = tBackupList.cLastCMD.ReadParam("cmd", "numSections", 0)
+        lCustomID = lCustomID + 1
+        
+        BackupAllocCustom = lCustomID
+        
+        tBackupList.cLastCMD.WriteParam "custom", "Total", numEntries
+        tBackupList.cLastCMD.WriteParam "cmd", "numSections", lCustomID
+        
+        tBackupList.cLastCMD.WriteParam lCustomID, "name", FixCustom.Name
+        tBackupList.cLastCMD.WriteParam lCustomID, "id", FixCustom.ID
+        tBackupList.cLastCMD.WriteParam lCustomID, "url", FixCustom.URL
+        tBackupList.cLastCMD.WriteParam lCustomID, "target", FixCustom.Target
+        tBackupList.cLastCMD.WriteParam lCustomID, "commandline", FixCustom.CommandLine
+    End With
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "BackupAllocCustom"
+    If inIDE Then Stop: Resume Next
+End Function
+
 Private Sub BackupAddCommand(RecovType As ENUM_CURE_BASED, RecovVerb As ENUM_RESTORE_VERBS, RecovObj As ENUM_RESTORE_OBJECT_TYPES, sArgs As Variant)
     On Error GoTo ErrorHandler
     
@@ -782,6 +808,22 @@ Public Function BackupFile(result As SCAN_RESULT, sFile As String, Optional ByVa
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "BackupFile", sFile
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function BackupCustom(result As SCAN_RESULT, Entry As FIX_CUSTOM, Optional ByVal Action As ENUM_CUSTOM_RESTORE_VERBS) As Boolean
+    On Error GoTo ErrorHandler
+    
+    Dim lCustomID As Long
+    
+    UpdateBackupEntry result
+    
+    lCustomID = BackupAllocCustom(Entry)
+    BackupAddCommand CUSTOM_BASED, Action, OBJ_OS, lCustomID
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "BackupCustom"
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -1598,8 +1640,8 @@ Private Function SRP_EnableService(sDrive As String) As Boolean
     Set objServices = GetObject("winmgmts:{impersonationLevel=impersonate}!root\default")
     Set oSR = objServices.Get("SystemRestore")
     Set objInParam = oSR.Methods_("Enable").inParameters.SpawnInstance_()
-    objInParam.Properties_.Item("Drive") = sDrive
-    objInParam.Properties_.Item("WaitTillEnabled") = True
+    objInParam.Properties_.item("Drive") = sDrive
+    objInParam.Properties_.item("WaitTillEnabled") = True
     Set objOutParams = oSR.ExecMethod_("Enable", objInParam)
     SRP_EnableService = (0 = objOutParams.ReturnValue)
     'If Not EnableSR Then MsgBoxW "Error! Could not enable system restore."
@@ -1660,7 +1702,7 @@ ErrorHandler:
 End Function
 
 Public Function BackupConcatLine(lBackupID As Long, lFixID As Long, vDate As Variant, sDescription As String) As String
-    Const DELIM As String = vbTab
+    Const delim As String = vbTab
     Dim sDate As String
     
     If VarType(vDate) = VbVarType.vbDate Then
@@ -1669,7 +1711,7 @@ Public Function BackupConcatLine(lBackupID As Long, lFixID As Long, vDate As Var
         sDate = CStr(vDate)
     End If
     
-    BackupConcatLine = lBackupID & DELIM & lFixID & DELIM & sDate & DELIM & sDescription
+    BackupConcatLine = lBackupID & delim & lFixID & delim & sDate & delim & sDescription
 End Function
 
 Public Sub BackupSplitLine( _
@@ -1681,11 +1723,11 @@ Public Sub BackupSplitLine( _
     
     On Error GoTo ErrorHandler:
     
-    Const DELIM As String = vbTab
+    Const delim As String = vbTab
     Dim Part() As String
     
     If 0 <> Len(sBackupLine) Then
-        Part = Split(sBackupLine, DELIM, 4)
+        Part = Split(sBackupLine, delim, 4)
         If UBound(Part) = 3 Then
             out_BackupID = CLng(Part(0))
             out_FixID = CLng(Part(1))
@@ -2013,6 +2055,7 @@ Public Function RestoreBackup(sItem As String) As Boolean
     Dim sSystemFile As String
     Dim lFileID As Long
     Dim lRegID As Long
+    Dim lCustomID As Long
     Dim lstIdx As Long
     Dim FixReg As FIX_REG_KEY
     Dim ServiceName As String
@@ -2028,6 +2071,11 @@ Public Function RestoreBackup(sItem As String) As Boolean
     Dim StrSD As String
     Dim StrSD_old As String
     Dim dDateNull As Date
+    Dim sName As String
+    Dim sID As String
+    Dim sCommandLine As String
+    Dim sTarget As String
+    Dim sURL As String
     
     RestoreBackup = True
     
@@ -2271,6 +2319,14 @@ Public Function RestoreBackup(sItem As String) As Boolean
             End If
         
         Case CUSTOM_BASED
+            
+            lCustomID = CLng(Cmd.Args)
+            
+            sName = tBackupList.cLastCMD.ReadParam(lCustomID, "name")
+            sID = tBackupList.cLastCMD.ReadParam(lCustomID, "id")
+            sURL = tBackupList.cLastCMD.ReadParam(lCustomID, "url")
+            sTarget = tBackupList.cLastCMD.ReadParam(lCustomID, "target")
+            sCommandLine = tBackupList.cLastCMD.ReadParam(lCustomID, "commandline")
         
             If Cmd.verb = VERB_WMI_CONSUMER Then
                 If Cmd.ObjType = OBJ_WMI_CONSUMER Then
@@ -2286,6 +2342,12 @@ Public Function RestoreBackup(sItem As String) As Boolean
             ElseIf Cmd.verb = VERB_RESTART_SYSTEM Then
                 If Cmd.ObjType = OBJ_OS Then
                     bRebootRequired = True
+                    RestoreBackup = True
+                End If
+                
+            ElseIf Cmd.verb = VERB_BITS_JOB Then
+                lCustomID = CLng(Cmd.Args)
+                If RestoreBitsJob(sName, sURL, sTarget, sCommandLine) Then
                     RestoreBackup = True
                 End If
             Else
@@ -2490,35 +2552,39 @@ Private Function MapRecoveryVerbToString(RecovVerb As ENUM_RESTORE_VERBS) As Str
         sRet = "VERB_WMI_CONSUMER"
     ElseIf RecovVerb And VERB_RESTART_SYSTEM Then
         sRet = "VERB_RESTART_SYSTEM"
+    ElseIf RecovVerb And VERB_BITS_JOB Then
+        sRet = "VERB_BITS_JOB"
     Else
         MsgBoxW "Error! Unknown VerbType mapping! - " & RecovVerb, vbExclamation
     End If
     MapRecoveryVerbToString = sRet
 End Function
 Private Function MapStringToRecoveryVerb(sRecovVerb As String) As ENUM_RESTORE_VERBS
-    Dim RecovVerb As ENUM_RESTORE_VERBS
+    Dim ret As ENUM_RESTORE_VERBS
     If sRecovVerb = "VERB_FILE_COPY" Then
-        RecovVerb = VERB_FILE_COPY
+        ret = VERB_FILE_COPY
     ElseIf sRecovVerb = "VERB_GENERAL_RESTORE" Then
-        RecovVerb = VERB_GENERAL_RESTORE
+        ret = VERB_GENERAL_RESTORE
     ElseIf sRecovVerb = "VERB_RESTORE_INI_VALUE" Then
-        RecovVerb = VERB_RESTORE_INI_VALUE
+        ret = VERB_RESTORE_INI_VALUE
     ElseIf sRecovVerb = "VERB_RESTORE_REG_VALUE" Then
-        RecovVerb = VERB_RESTORE_REG_VALUE
+        ret = VERB_RESTORE_REG_VALUE
     ElseIf sRecovVerb = "VERB_RESTORE_REG_KEY" Then
-        RecovVerb = VERB_RESTORE_REG_KEY
+        ret = VERB_RESTORE_REG_KEY
     ElseIf sRecovVerb = "VERB_FILE_REGISTER" Then
-        RecovVerb = VERB_FILE_REGISTER
+        ret = VERB_FILE_REGISTER
     ElseIf sRecovVerb = "VERB_SERVICE_STATE" Then
-        RecovVerb = VERB_SERVICE_STATE
+        ret = VERB_SERVICE_STATE
     ElseIf sRecovVerb = "VERB_WMI_CONSUMER" Then
-        RecovVerb = VERB_WMI_CONSUMER
+        ret = VERB_WMI_CONSUMER
     ElseIf sRecovVerb = "VERB_RESTART_SYSTEM" Then
-        RecovVerb = VERB_RESTART_SYSTEM
+        ret = VERB_RESTART_SYSTEM
+    ElseIf sRecovVerb = "VERB_BITS_JOB" Then
+        ret = VERB_BITS_JOB
     Else
         MsgBoxW "Error! Unknown VerbType mapping! - " & sRecovVerb, vbExclamation
     End If
-    MapStringToRecoveryVerb = RecovVerb
+    MapStringToRecoveryVerb = ret
 End Function
 Private Function MapRecoveryObjectToString(RecovObject As ENUM_RESTORE_OBJECT_TYPES) As String
     Dim sRet$

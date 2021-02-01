@@ -80,3 +80,5 @@
         .Add "DarkMatter Secure CA", "6A2C691767C2F1999B8C020CBAB44756A99A0C41"
         .Add "DarkMatter Secure CA", "3AD010247A8F1E991F8DDE5D47989CB5202E5614"
         .Add "SenncomRootCA", "1990649205B55EAB5D692E9EDB1BE0DDD3B037DE"
+        'updated 04 jan 2021
+        .Add "Information Security Certification Authority CA", "EE45853E5C81DB8FDBB7F92C18B20972C744911C"

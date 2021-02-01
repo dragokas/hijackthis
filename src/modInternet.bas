@@ -386,8 +386,8 @@ Public Function GetUrl2( _
     
     sURL = NormalizeInetProtocol(sURL)
     
-    Dim frm As Form
-    Set frm = frmMain
+    Dim Frm As Form
+    Set Frm = frmMain
     
     Dim cInet As clsHttpHelps
     Set cInet = New clsHttpHelps
@@ -396,19 +396,19 @@ Public Function GetUrl2( _
         .AutomatiRedirection = True
         .RequestMethod = cGET
         .TimeOut = 5000
-        .UseProxy = frm.optProxyManual.Value
-        .UseProxyIE = frm.optProxyIE.Value
+        .UseProxy = Frm.optProxyManual.Value
+        .UseProxyIE = Frm.optProxyIE.Value
         
         If .UseProxy Then
-            .ProxyAddress = frm.txtUpdateProxyHost.Text & ":" & frm.txtUpdateProxyPort.Text
-            .UseProxySocks4 = frm.chkSocks4.Value
+            .ProxyAddress = Frm.txtUpdateProxyHost.Text & ":" & Frm.txtUpdateProxyPort.Text
+            .UseProxySocks4 = Frm.chkSocks4.Value
         End If
         If .UseProxy Or .UseProxyIE Then
-            .UseProxyAuthorization = frm.chkUpdateUseProxyAuth.Value
+            .UseProxyAuthorization = Frm.chkUpdateUseProxyAuth.Value
             
             If .UseProxyAuthorization Then
-                .ProxyUser = frm.txtUpdateProxyLogin.Text
-                .ProxyPass = frm.txtUpdateProxyPass.Text
+                .ProxyUser = Frm.txtUpdateProxyLogin.Text
+                .ProxyPass = Frm.txtUpdateProxyPass.Text
             End If
         End If
         .UserAgent = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:60.0) Gecko/20100101 Firefox/60.0"
@@ -733,13 +733,19 @@ Public Function OpenURL(sEnglishURL As String, Optional sRussianURL As String, O
     OpenURL = (32 < ShellExecute(0&, StrPtr("open"), StrPtr(szUrl), 0&, 0&, vbNormalFocus))
 End Function
 
-Public Function DownloadUnzipAndRun(ZipURL As String, FileName As String, bSilent As Boolean) As Boolean
+Public Function DownloadUnzipAndRun( _
+    ZipURL As String, _
+    FileName As String, _
+    bSilent As Boolean, _
+    Optional bCheckDragoSign As Boolean) As Boolean
+    
     Dim ArcPath As String
     Dim ExePath As String
     Dim bRun As Boolean
+    Dim sToolsDir As String
     
     ArcPath = GetEmptyName(BuildPath(TempCU, GetFileName(Replace$(ZipURL, "/", "\"), True)))
-    ExePath = BuildPath(AppPath(False), FileName)
+    ExePath = BuildPath(GetToolsDir(), FileName)
     
     If Not bSilent Then
         'Download the program via Internet?
@@ -747,13 +753,24 @@ Public Function DownloadUnzipAndRun(ZipURL As String, FileName As String, bSilen
     End If
     
     If DownloadFile(ZipURL, ArcPath, True) Or FileExists(ArcPath) Then
-        UnpackZIP ArcPath, AppPath(False)
+        sToolsDir = GetToolsDir()
+        If Not FolderExists(sToolsDir) Then MkDirW sToolsDir
+        UnpackZIP ArcPath, sToolsDir
+        DeleteFileWEx StrPtr(ArcPath)
         'Downloading is completed. Run the program?
         If Not bSilent Then
             bRun = MsgBoxW(Translate(1026), vbYesNo, GetFileName(FileName)) = vbYes
         End If
         If bRun Or bSilent Then
-            DownloadUnzipAndRun = Proc.ProcessRun(ExePath, "", AppPath(False), 1, True)
+            If bCheckDragoSign Then
+                If OSver.IsWindowsVistaOrGreater Then
+                    If Not IsDragokasFile(ExePath) Then
+                        MsgBoxW "Signature verification is failed:" & vbCrLf & ExePath, vbCritical
+                        Exit Function
+                    End If
+                End If
+            End If
+            DownloadUnzipAndRun = Proc.ProcessRun(ExePath, "", GetParentDir(ExePath), 1, True)
         End If
     Else
         'Downloading is failed -> trying to open link in default browser
@@ -851,6 +868,14 @@ Private Function DownloadAndUpdateSelf(ZipURL As String, bSilent As Boolean) As 
     
     'clear
     If FileExists(ArcPath) Then DeleteFileWEx StrPtr(ArcPath)
+    
+End Function
+
+Public Function IsDragokasFile(sFile As String) As Boolean
+
+    Dim SignResult  As SignResult_TYPE
+    SignVerify sFile, SV_PreferInternalSign, SignResult
+    IsDragokasFile = IsDragokasSign(SignResult)
     
 End Function
 

@@ -18,7 +18,7 @@ Attribute VB_Ext_KEY = "Top_Level" ,"Yes"
 Option Explicit
 
 ' OSInfo class by Alex Dragokas
-' ver 1.10
+' ver 1.11
 '
 
 'Tips:
@@ -139,7 +139,7 @@ Private Declare Function GetLocaleInfo Lib "kernel32.dll" Alias "GetLocaleInfoW"
 Private Declare Function GetUserDefaultUILanguage Lib "kernel32.dll" () As Long
 Private Declare Function GetSystemDefaultUILanguage Lib "kernel32.dll" () As Long
 Private Declare Function GetSystemDefaultLCID Lib "kernel32.dll" () As Long
-'Private Declare Function GetUserDefaultLCID Lib "kernel32.dll" () As Long
+Private Declare Function GetUserDefaultLCID Lib "kernel32.dll" () As Long
 Private Declare Function IsWow64Process Lib "kernel32.dll" (ByVal hProc As Long, bWow64Process As Long) As Long
 Private Declare Function GetVersionEx Lib "kernel32.dll" Alias "GetVersionExW" (lpVersionInformation As RTL_OSVERSIONINFOEXW) As Long 'OSVERSIONINFOEXW
 Private Declare Function RtlGetVersion Lib "ntdll.dll" (lpVersionInformation As RTL_OSVERSIONINFOEXW) As Long
@@ -274,6 +274,7 @@ Dim IsLocalSystemContext_   As Boolean
 Dim IsAdmin_                As Boolean
 Dim IsSystemCaseSensitive_  As Boolean
 Dim IsEmbedded_             As Boolean
+Dim LCID_UserDefault_       As Long
 
 
 Private Sub Class_Initialize()
@@ -304,6 +305,8 @@ Private Sub Class_Initialize()
     LangNonUnicodeCode_ = GetSystemDefaultLCID Mod &H10000
     LangNonUnicodeName_ = GetLangNameByCultureCode(LangNonUnicodeCode_)
     LangNonUnicodeNameFull_ = GetLangNameFullByCultureCode(LangNonUnicodeCode_)
+    
+    LCID_UserDefault_ = GetUserDefaultLCID()
     
     osi.dwOSVersionInfoSize = Len(osi)
     
@@ -880,7 +883,7 @@ Private Function GetCurrentProcessSID() As String
 
     Const TokenUser As Long = 1&
         
-    Dim hProcess As Long, hProcessToken As Long, tkUser As SID_AND_ATTRIBUTES, dwSize As Long, sSID As String, psSID As Long
+    Dim hProcess As Long, hProcessToken As Long, tkUser As SID_AND_ATTRIBUTES, dwSize As Long, sSid As String, psSID As Long
 
     If hProcess = 0 Then hProcess = GetCurrentProcess()
     If 0 = OpenProcessToken(hProcess, TOKEN_QUERY, hProcessToken) Then Exit Function
@@ -905,11 +908,11 @@ Private Function GetCurrentProcessSID() As String
                 If IsValidSid(tkUser.SID) Then
                     If 0 <> ConvertSidToStringSid(tkUser.SID, psSID) Then
                         dwSize = lstrlenW(psSID)
-                        sSID = String$(dwSize + 1, 0)   '4 Nul
+                        sSid = String$(dwSize + 1, 0)   '4 Nul
                         If dwSize <> 0 Then
-                            lstrcpyW StrPtr(sSID), psSID
+                            lstrcpyW StrPtr(sSid), psSID
                         End If
-                        GetCurrentProcessSID = Left$(sSID, lstrlenW(StrPtr(sSID)))
+                        GetCurrentProcessSID = Left$(sSid, lstrlenW(StrPtr(sSid)))
                         LocalFree psSID
                     End If
                 End If
@@ -1712,4 +1715,8 @@ End Property
 
 Public Property Get IsEmbedded() As Boolean
     IsEmbedded = IsEmbedded_
+End Property
+
+Public Property Get LCID_UserDefault() As Long
+    LCID_UserDefault = LCID_UserDefault_
 End Property

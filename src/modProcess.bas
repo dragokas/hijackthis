@@ -473,7 +473,6 @@ Public Function KillProcess(lPID&) As Boolean
         End If
     End If
     
-    'SleepNoLock 500
     If Proc.IsRunned(, lPID) Then
         If OSver.MajorMinor >= 6 Then
             'The selected process could not be killed. It may have already closed, or it may be protected by Windows.
@@ -646,7 +645,6 @@ Public Function KillProcessByFile(sPath$, Optional bForceMicrosoft As Boolean) A
     
     'get killing confirmation
     If AryPtr(aPID) Then
-        'SleepNoLock 500
         For i = 0 To UBound(aPID)
             If Proc.IsRunned(, aPID(i)) Then
                 KillProcessByFile = False
@@ -827,7 +825,7 @@ Public Function GetThreads_Zw(ProcessID As Long, ThreadList() As SYSTEM_THREAD) 
     Dim cnt         As Long
     Dim ret         As Long
     Dim buf()       As Byte
-    Dim Offset      As Long
+    Dim offset      As Long
     Dim Process     As SYSTEM_PROCESS_INFORMATION
     Dim i           As Long
     
@@ -844,21 +842,21 @@ Public Function GetThreads_Zw(ProcessID As Long, ThreadList() As SYSTEM_THREAD) 
             With Process
             
                 Do
-                    memcpy Process, buf(Offset), SPI_SIZE
+                    memcpy Process, buf(offset), SPI_SIZE
                     
                     If .ProcessID = ProcessID Then
 
                         ReDim ThreadList(0 To .NumberOfThreads - 1)
                     
                         For i = 0 To .NumberOfThreads - 1
-                            memcpy ThreadList(i), buf(Offset + SPI_SIZE + i * THREAD_SIZE), THREAD_SIZE
+                            memcpy ThreadList(i), buf(offset + SPI_SIZE + i * THREAD_SIZE), THREAD_SIZE
                         Next
                         
                         cnt = .NumberOfThreads
                         Exit Do
                     End If
                     
-                    Offset = Offset + .NextEntryOffset
+                    offset = offset + .NextEntryOffset
                     
                 Loop While .NextEntryOffset
                 
@@ -887,7 +885,7 @@ Public Function GetProcesses_Zw(ProcList() As MY_PROC_ENTRY) As Long    'Return 
     Dim cnt         As Long
     Dim ret         As Long
     Dim buf()       As Byte
-    Dim Offset      As Long
+    Dim offset      As Long
     Dim Process     As SYSTEM_PROCESS_INFORMATION
     Dim ProcName    As String
     Dim ProcPath    As String
@@ -909,7 +907,7 @@ Public Function GetProcesses_Zw(ProcList() As MY_PROC_ENTRY) As Long    'Return 
             With Process
             
                 Do
-                    memcpy Process, buf(Offset), SPI_SIZE
+                    memcpy Process, buf(offset), SPI_SIZE
                     
                     'ReDim .Threads(0 To .NumberOfThreads - 1)
                     
@@ -946,7 +944,7 @@ Public Function GetProcesses_Zw(ProcList() As MY_PROC_ENTRY) As Long    'Return 
                         SystemTimeToVariantTime sTime, .CreationTime
                     End With
                     
-                    Offset = Offset + .NextEntryOffset
+                    offset = offset + .NextEntryOffset
                     cnt = cnt + 1
                     
                 Loop While .NextEntryOffset
@@ -1015,7 +1013,7 @@ Function GetFilePathByPID(pid As Long) As String
             ProcPath = Left$(ProcPath, cnt)
             ProcPath = PathNormalize(ProcPath)
         Else
-            ProcPath = ""
+            ProcPath = vbNullString
         End If
         
         If ERROR_PARTIAL_COPY = Err.LastDllError Or cnt = 0 Then     'because GetModuleFileNameEx cannot access to that information for 64-bit processes on WOW64
@@ -1157,17 +1155,6 @@ Public Function ProcessExist(NameOrPath As Variant, bGetNewListOfProcesses As Bo
     End If
 End Function
 
-'Public Sub RefreshDLLListNT(lPID&, objList As ListBox)
-'    Dim arList() As String, i&
-'    objList.Clear
-'    GetDLLList lPID, arList()
-'    If AryItems(arList) Then
-'        For i = 0 To UBound(arList)
-'            objList.AddItem arList(i)
-'        Next
-'    End If
-'End Sub
-
 
 
 ' ---------------------------------------------------------------------------------------------------
@@ -1191,9 +1178,8 @@ Public Function GetRunningProcesses$()
 End Function
 
 'For StartupList2
-Public Function GetLoadedModules(lPID As Long, sProcess As String) As String
-    '//TODO: sProcess
-    
+Public Function GetLoadedModules(lPID As Long) As String
+
     Dim DLLList() As String
     
     DLLList = EnumModules64(lPID)
@@ -1325,7 +1311,7 @@ Public Function IsSystemCriticalProcessPath(sPath As String) As Boolean
         dPath.Add sWinSysDir & "\lsass.exe", 0
         dPath.Add sWinSysDir & "\msdtc.exe", 0 'database / file / message queue transactions
     End If
-    
+
     IsSystemCriticalProcessPath = dPath.Exists(sPath)
 End Function
 
@@ -1784,6 +1770,7 @@ Public Function IsMinimalProcess(pid As Long, sName As String, sPath As String) 
         Case "Memory Compression"
         Case "MemCompression"
         Case "Secure System"
+        'Case "vmmem" 'skip it, because it is useful: https://devblogs.microsoft.com/oldnewthing/20180717-00/?p=99265
         Case Else: bComply = False
         End Select
         
@@ -1797,7 +1784,6 @@ Public Function GetProcessCriticalFlag(lPID&, l_OutFlag As Long) As Boolean
     Dim hProc&, Flag&, lret&
     If lPID = 0 Or lPID = 4 Then Exit Function
     
-    'hProc = OpenProcess(IIf(OSver.IsWindowsVistaOrGreater, PROCESS_QUERY_LIMITED_INFORMATION, PROCESS_QUERY_INFORMATION), 0, lPid)
     hProc = OpenProcess(PROCESS_QUERY_INFORMATION, 0, lPID)
     If hProc <> 0 Then
         lret = NtQueryInformationProcess(hProc, ProcessBreakOnTermination, VarPtr(Flag), 4&, 0&)
@@ -1854,43 +1840,53 @@ Public Sub KillOtherHJTInstances(Optional sAdditionalDir As String)
     Next
 End Sub
 
-Public Function IsMicrosoftHostFile(sPath As String) As Boolean
+Public Sub LoadLoLBinList()
+    
+    Set oDict.dLoLBin = New clsTrickHashTable
+    oDict.dLoLBin.CompareMode = vbTextCompare
+    
+    oDict.dLoLBin.Add "cmd.exe", 0&
+    oDict.dLoLBin.Add "rundll32.exe", 0&
+    oDict.dLoLBin.Add "wmic.exe", 0&
+    oDict.dLoLBin.Add "cscript.exe", 0&
+    oDict.dLoLBin.Add "wscript.exe", 0&
+    oDict.dLoLBin.Add "powershell.exe", 0&
+    oDict.dLoLBin.Add "sc.exe", 0&
+    oDict.dLoLBin.Add "schtasks.exe", 0&
+    oDict.dLoLBin.Add "svchost.exe", 0&
+    oDict.dLoLBin.Add "mshta.exe", 0&
+    oDict.dLoLBin.Add "pcalua.exe", 0&
+    oDict.dLoLBin.Add "msiexec.exe", 0&
+    oDict.dLoLBin.Add "MpCmdRun.exe", 0&
+    oDict.dLoLBin.Add "certutil.exe", 0&
+    oDict.dLoLBin.Add "bitsadmin.exe", 0&
+    oDict.dLoLBin.Add "wuauclt.exe", 0&
+    
+End Sub
+
+Public Function IsLoLBin(sPath As String, Optional ExcludeCriticalProc As Boolean = False) As Boolean
     On Error GoTo ErrorHandler:
-    AppendErrorLogCustom "IsMicrosoftHostFile - Begin"
+    AppendErrorLogCustom "IsLOLBIN - Begin"
+    
+    '// TODO: Add checking by sig
     
     Dim sName As String
-    Dim i As Long
     sName = GetFileName(sPath, True)
     
-    Dim aHost(9) As String
-    aHost(0) = "cmd.exe"
-    aHost(1) = "rundll32.exe"
-    aHost(2) = "wmic.exe"
-    aHost(3) = "cscript.exe"
-    aHost(4) = "wscript.exe"
-    aHost(5) = "powershell.exe"
-    aHost(6) = "sc.exe"
-    aHost(7) = "mshta.exe"
-    aHost(8) = "pcalua.exe"
-    aHost(9) = "msiexec.exe"
+    IsLoLBin = oDict.dLoLBin.Exists(sName)
     
-    For i = 0 To UBound(aHost)
-        If StrComp(sName, aHost(i), 1) = 0 Then
-            IsMicrosoftHostFile = True
-            Exit Function
-        End If
-    Next
+    If StrComp(sName, "svchost.exe", 1) = 0 Then IsLoLBin = False
     
-    AppendErrorLogCustom "IsMicrosoftHostFile - End"
+    AppendErrorLogCustom "IsLOLBIN - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "IsMicrosoftHostFile"
+    ErrorMsg Err, "IsLOLBIN"
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Sub KillMicrosoftHostProcesses()
+Public Sub Kill_LOLBIN()
     On Error GoTo ErrorHandler:
-    AppendErrorLogCustom "FreezeCustomProcesses - Begin"
+    AppendErrorLogCustom "Kill_LOLBIN - Begin"
     
     Dim aProcess() As MY_PROC_ENTRY
     Dim i&, sProc$
@@ -1898,7 +1894,7 @@ Public Sub KillMicrosoftHostProcesses()
         For i = 0 To UBound(aProcess)
             With aProcess(i)
                 If Not IsDefaultSystemProcess(.pid, .Name, .Path) Then
-                    If IsMicrosoftHostFile(.Path) Then
+                    If IsLoLBin(.Path, ExcludeCriticalProc:=True) Then
                         KillProcess .pid
                     End If
                 End If
@@ -1906,10 +1902,10 @@ Public Sub KillMicrosoftHostProcesses()
         Next
     End If
     
-    AppendErrorLogCustom "FreezeCustomProcesses - End"
+    AppendErrorLogCustom "Kill_LOLBIN - End"
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "FreezeCustomProcesses"
+    ErrorMsg Err, "Kill_LOLBIN"
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -1925,7 +1921,7 @@ Public Sub FreezeCustomProcesses()
                 If Not IsDefaultSystemProcess(.pid, .Name, .Path) Then
                     If Not IsMicrosoftFile(.Path) Then
                         PauseProcess .pid
-                    ElseIf IsMicrosoftHostFile(.Path) Then
+                    ElseIf IsLoLBin(.Path, ExcludeCriticalProc:=True) Then
                         PauseProcess .pid
                     End If
                 End If

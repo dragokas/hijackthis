@@ -8,7 +8,7 @@ Attribute VB_Name = "modFile"
 Option Explicit
 
 Const MAX_PATH As Long = 260&
-Const MAX_FILE_SIZE As Currency = 104857600@
+Const MAX_FILE_SIZE As Currency = 314572800@
 
 'Public Enum VbFileAttributeExtended
 '    vbAll = -1&
@@ -926,6 +926,29 @@ End Function
 '    End If
 'End Function
 
+Public Function FolderHasFile(Path As String) As Boolean
+    On Error GoTo ErrorHandler
+    
+    If Len(GetFirstFileName(Path)) <> 0 Then FolderHasFile = True
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "FolderHasFile", "Path:", Path
+    If inIDE Then Stop: Resume Next
+End Function
+
+
+Public Function FolderHasSubfolder(Path As String) As Boolean
+    On Error GoTo ErrorHandler
+    
+    If Len(GetFirstSubFolderName(Path)) <> 0 Then FolderHasSubfolder = True
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "FolderHasSubfolder", "Path:", Path
+    If inIDE Then Stop: Resume Next
+End Function
+
 'main function to list folders
 
 ' Возвращает массив путей.
@@ -1028,12 +1051,14 @@ End Sub
 
 'main function to list files
 '
+'ExtensionWithDot - multiple extensions (".txt;.doc") are supported
+'
 'ret - string array( 0 to MAX-1 ) or non-touched array if none.
-
-Public Function ListFiles(Path As String, Optional Extension As String = "", Optional Recursively As Boolean = False) As String()
+'
+Public Function ListFiles(Path As String, Optional ExtensionWithDot As String = "", Optional Recursively As Boolean = False) As String()
     On Error GoTo ErrorHandler
 
-    AppendErrorLogCustom "ListFiles - Begin", "Path: " & Path, "Ext-s: " & Extension, "Recur: " & Recursively
+    AppendErrorLogCustom "ListFiles - Begin", "Path: " & Path, "Ext-s: " & ExtensionWithDot, "Recur: " & Recursively
 
     Dim bRedirStateChanged As Boolean, bOldState As Boolean
     'прежде, чем использовать ListFiles_Ex, нужно инициализировать глобальные массивы.
@@ -1048,7 +1073,7 @@ Public Function ListFiles(Path As String, Optional Extension As String = "", Opt
     End If
     
     'вызов тушки
-    Call ListFiles_Ex(Path, Extension, Recursively)
+    Call ListFiles_Ex(Path, ExtensionWithDot, Recursively)
     If Total_Files > 0 Then
         Total_Files = Total_Files - 1
         ReDim Preserve arrPathFiles(Total_Files)      '0 to Max -1
@@ -1060,7 +1085,7 @@ Public Function ListFiles(Path As String, Optional Extension As String = "", Opt
     AppendErrorLogCustom "ListFiles - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "modFile.ListFiles", "Path:", Path, "Ext-s:", Extension, "Recur:", Recursively
+    ErrorMsg Err, "modFile.ListFiles", "Path:", Path, "Ext-s:", ExtensionWithDot, "Recur:", Recursively
     If bRedirStateChanged Then Call ToggleWow64FSRedirection(bOldState)
     If inIDE Then Stop: Resume Next
 End Function
@@ -1069,6 +1094,7 @@ End Function
 Private Sub ListFiles_Ex(Path As String, Optional Extension As String = "", Optional Recursively As Boolean = False)
     'Example of Extension:
     '".txt" - txt files
+    '".txt;.doc" - multiple extensions are supported
     'empty line - all files (by default)
 
     On Error GoTo ErrorHandler
@@ -1107,7 +1133,7 @@ Private Sub ListFiles_Ex(Path As String, Optional Extension As String = "", Opti
             If fd.dwFileAttributes And vbDirectory Then
                 If PathName <> ch_Dot Then  '"."
                     If PathName <> ch_DotDot Then '".."
-                        SubPathName = Path & "\" & PathName
+                        SubPathName = BuildPath(Path, PathName)
                         If Recursively Then
                             Call ListFiles_Ex(SubPathName, Extension, Recursively)
                         End If
@@ -1115,7 +1141,7 @@ Private Sub ListFiles_Ex(Path As String, Optional Extension As String = "", Opti
                 End If
             Else
                 If inArray(GetExtensionName(PathName), SplitSafe(Extension, ";"), , , 1) Or Len(Extension) = 0 Then
-                    SubPathName = Path & "\" & PathName
+                    SubPathName = BuildPath(Path, PathName)
                     If UBound(arrPathFiles) < Total_Files Then ReDim Preserve arrPathFiles(UBound(arrPathFiles) + 100&) As String
                     arrPathFiles(Total_Files) = SubPathName
                     Total_Files = Total_Files + 1&
@@ -1456,14 +1482,15 @@ Public Function DirW( _
         bFoldersOnly = FoldersOnly 'cache
         
         Select Case Right$(PathMaskOrFolderWithSlash, 1&)
-        Case "", ":", "/"
-            PathMaskOrFolderWithSlash = PathMaskOrFolderWithSlash & "*.*"
+        Case vbNullString, ":", "/", "\"
+            PathMaskOrFolderWithSlash = PathMaskOrFolderWithSlash & "*"
         End Select
         
         hFind = FindFirstFile(StrPtr(PathMaskOrFolderWithSlash), fd)
         
         If hFind = INVALID_HANDLE_VALUE Then
-            If (Err.LastDllError) > 12& Then hFind = 0&: Err.Raise 52&
+            hFind = 0&
+            If (Err.LastDllError) > 12& Then Err.Raise 52&
             Exit Function
         End If
     End If
@@ -1486,6 +1513,7 @@ Public Function DirW( _
             lstrcpy StrPtr(DirW), lpSTR
             If fd.dwFileAttributes And vbDirectory Then
                 If DirW <> "." And DirW <> ".." Then Exit Do 'exclude self and relative paths aliases
+                DirW = vbNullString
             Else
                 Exit Do
             End If
@@ -1671,7 +1699,7 @@ End Function
 Public Function BuildPath(ParamArray Paths()) As String
     Dim i As Long
     For i = 0 To UBound(Paths)
-        BuildPath = BuildPath & IIf(Right$(BuildPath, 1) = "\", vbNullString, "\") & Paths(i)
+        BuildPath = BuildPath & IIf(Right$(BuildPath, 1) = "\" Or Left$(Paths(i), 1) = "\", vbNullString, "\") & Paths(i)
     Next
     BuildPath = Mid$(BuildPath, 2)
 End Function
@@ -1856,22 +1884,43 @@ ErrorHandler:
 End Function
 
 
-
-Public Function GetFirstSubFolder(sFolder$) As String
+Public Function GetFirstFileName(sFolder$) As String
     On Error GoTo ErrorHandler:
     Dim sBla$
     Dim Redirect As Boolean, bOldStatus As Boolean
     
     Redirect = ToggleWow64FSRedirection(False, sFolder, bOldStatus)
-    sBla = DirW$(sFolder & "\", vbAll, True)
+    sBla = DirW$(sFolder & ch_SlashAsterisk, vbFile, False)
+    
     If Len(sBla) <> 0 Then
-        GetFirstSubFolder = sBla
+        GetFirstFileName = sBla
     End If
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "modRegistry_GetFirstSubFolder", "sFolder=", sFolder
+    ErrorMsg Err, "GetFirstFileName", "Folder:", sFolder
+    If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
+    If inIDE Then Stop: Resume Next
+End Function
+
+
+Public Function GetFirstSubFolderName(sFolder$) As String
+    On Error GoTo ErrorHandler:
+    Dim sBla$
+    Dim Redirect As Boolean, bOldStatus As Boolean
+    
+    Redirect = ToggleWow64FSRedirection(False, sFolder, bOldStatus)
+    sBla = DirW$(sFolder & ch_SlashAsterisk, vbAll, True)
+    
+    If Len(sBla) <> 0 Then
+        GetFirstSubFolderName = sBla
+    End If
+    If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetFirstSubFolderName", "Folder:", sFolder
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     If inIDE Then Stop: Resume Next
 End Function
@@ -2413,12 +2462,17 @@ Public Function GetFileNameAndExt(ByVal Path As String) As String ' вернет тольк
     End If
 End Function
 
+'
+' Replaces c:\windows\System32 => c:\windows\SysNative
+'
 Public Function PathX64(sPath As String) As String
     If OSver.IsWin32 Then
         PathX64 = sPath
     Else
         If StrBeginWith(sPath, sWinSysDir) Then
             PathX64 = Replace$(sPath, sWinSysDir, sSysNativeDir, , 1, 1)
+            
+            If Not FileExists(PathX64) Then PathX64 = sPath
         Else
             PathX64 = sPath
         End If

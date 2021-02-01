@@ -11,7 +11,70 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
-[2.9.0.27] (Nightly) - Sep 1, 2020
+[2.10.0.1 beta] (Nightly) - Feb 01, 2021
+
+New detections are added:
+ - O4 - some new detections and improved fixes.
+ - O5 - Applet: to detect custom and hijacked control panel items.
+ - O7 - AppLocker:
+ 	* NOTE!!! Applocker is by default in whitelisting mode: everything that is not explicitly allowed, is blocked.
+ 	* If you remove "(allow)" rule, this particular application/folder will be blocked, until you'll remove all the rules.
+ 	* To remove all rules at once, it's better to fix the special line "O7 - AppLocker: fix all"
+ - O7 - KnownFolder: to detect and fix hijacked locations of "Known Folders".
+ - O7 - TroubleShooting: new environment variables are added.
+ - O22 - BITS Job: to detect foreign Windows Update Service jobs.
+ - O22 - Tasks: (damage) subsection is added to detect damaged and garbage tasks of such types:
+	* (user missing) - when user/group is removed;
+	* (no xml) - when xml file doesn't exist;
+	* (key missing) - when associated reg. key doesn't exist;
+	* (no key) - when no task keys are referred to;
+	* (empty) - when tasks folder or key contains an empty record;
+	* This doesn't include xml integrity/CRC check and "DynamicInfo / Triggers" validation.
+
+Interface:
+ - Added ability to mark multiple items for fixing with 'Shift + Click'.
+ - Added "Copy" multi-context menu in scan results window (thanks @TheTrick for helping with Clipboard).
+ - Added "VirusTotal" multi-context menu in scan results window with options to check file/URL by hash or to submit file with SysInternals Autoruns.
+
+Report:
+> General:
+ - Sorting is now going in correct alphabetical order + increased the speed.
+ - O4 - Startup subsections are renamed to improve the sorting.
+> /Area:Environment:
+ - Added registry report of "User Shell Folders" and "Shell Folders" in addition to CLSID-based report.
+ Why? Because Microsoft doesn't follow its own 'Best Practice' from MSDN. lol.
+> Modules "Check Browsers' LNK" & "ClearLNK":
+ - Suppressed "Allow to download..." request when silent mode is selected in "Update" settings.
+ - Added auto-update feature (whenever you run the tool) - not often than once per month.
+ - Introduced the strong verification for the file digital signature before execution.
+ - Tools are now will be downloaded in \Tools\Scan subfolder of HiJackThis dir or installation dir if one is performed.
+
+Other:
+ - O4 - Fixed reading the other users startup folder; added user name postfix in log.
+ - O25 - Fixed rare error in connecting to WMI.
+ - Updated and improved LoLBin list check mechanism.
+ - Improved registry functions.
+ - Corrected free buffer (ILFree => CoTaskMemFree).
+ - Explicitly allowed expired Microsoft certificates (without timestamp).
+ - Updated whitelists of O2, O22, O23.
+ - Added switch /skipErrors	- do not show error messages and prevent warnings and errors from writing to log file at all.
+ - Added switch /sha256 - calculate SHA256 hash of files.
+ - Fixed hash progressbar.
+
+Tools:
+> Digital Signature Checker:
+ - Improved speed, sorting, added columns - Certificate "Valid From", "Valid Until"; exchanged columns "File Name" / "File Path".
+> Uninstall Manager:
+ - Fixed "Uninstall application" button is not always worked.
+> Process Manager:
+ - "Save" button auto-refreshes process list.
+
+Special thanks to Sandor and regist for samples, testing and suggestions.
+
+[2.9.0.29] - Oct 23, 2020
+ - Security improvements
+
+[2.9.0.28] (Nightly) - Sep 1, 2020
  - [*New*] Added subsection O26 - Tools: 
  * various tools run by user manually, that hijacked in some way, will live there.
  - [*New*] Detection of Logon Screen Backdoor (Accessibility tools) is added to O26.
@@ -100,7 +163,7 @@ Other little edits of errors and interface.
 Microsoft certificates database is updated.
 
 [2.9.0.16] - Dec 12, 2018
-Fixed crash when parsing misformatted (encrypted) jobs due to error in stream reader.
+Fixed crash when parsing malformed (encrypted) jobs due to error in stream reader.
 French translation is updated.
 
 [2.9.0.11] - Nov 26, 2018
@@ -206,7 +269,7 @@ v Added option "Update in silent mode" - the program will automatically update a
 Interface:
 v Added ability to choose the font (for whole interface or for scan results list and input fields only).
 v Improved interface navigation during scanning.
-v The autoscrolling of the scan results list has been removed.
+v The auto-scrolling of the scan results list has been removed.
 v Horizontal scroll bar is added before scan is complete.
 
 Translation:
@@ -1467,4 +1530,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                                   
+                                                    

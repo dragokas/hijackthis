@@ -97,7 +97,7 @@ Begin VB.Form frmCheckDigiSign
          Height          =   285
          Left            =   3240
          TabIndex        =   6
-         Text            =   ".exe;.dll;.sys"
+         Text            =   "exe;dll;sys"
          Top             =   240
          Width           =   1695
       End
@@ -217,6 +217,8 @@ Private Sub cmdGo_Click()
     Dim sTmp            As String
     Dim cnt             As Long
     Dim hResult         As Long
+    Dim sExtensions     As String
+    Dim sb              As clsStringBuilder
     
     Static isInit       As Boolean
     Static oDictSFC     As Object
@@ -261,6 +263,17 @@ Private Sub cmdGo_Click()
     
     txtPaths.Enabled = False
     
+    'normalize extensions string (allowing * and . )
+    sExtensions = txtExtensions.Text
+    If Len(sExtensions) > 0 Then
+        sExtensions = Replace$(sExtensions, "*", "")
+        arrTmp = SplitSafe(sExtensions, ";")
+        For i = 0 To UBound(arrTmp)
+            If Left$(arrTmp(i), 1) <> "." Then arrTmp(i) = "." & arrTmp(i)
+        Next
+        sExtensions = Join(arrTmp, ";")
+    End If
+    
     For Each vPath In aPathes
         vPath = Trim$(vPath)
         If Left$(vPath, 1) = """" Then
@@ -283,7 +296,7 @@ Private Sub cmdGo_Click()
         If FileExists(CStr(vPath)) Then
             If Not oDictFiles.Exists(vPath) Then oDictFiles.Add vPath, 0
         ElseIf FolderExists(CStr(vPath)) Then
-            arrTmp = ListFiles(CStr(vPath), IIf(OptAllFiles.Value, "", txtExtensions.Text), bRecursively)
+            arrTmp = ListFiles(CStr(vPath), IIf(OptAllFiles.Value, "", sExtensions), bRecursively)
             CopyArrayToDictionary arrTmp, oDictFiles
             DoEvents
         Else
@@ -311,7 +324,7 @@ Private Sub cmdGo_Click()
     
     If bListSystemPath Then
         'default - .exe;.dll;.sys
-        arrTmp = ListFiles(sWinDir, IIf(OptAllFiles.Value, "", txtExtensions.Text), bRecursively)
+        arrTmp = ListFiles(sWinDir, IIf(OptAllFiles.Value, "", sExtensions), bRecursively)
         DoEvents
         CopyArrayToDictionary arrTmp, oDictFiles
     End If
@@ -340,6 +353,8 @@ Private Sub cmdGo_Click()
     Dim bData() As Byte
     Dim bPE_File As Boolean
     Dim AddFlags As Long
+    
+    Set sb = New clsStringBuilder
     
     If oDictFiles.Count > 100 Then
         AddFlags = SV_EnableHashPrecache
@@ -376,8 +391,6 @@ Private Sub cmdGo_Click()
     cmdGo.Enabled = False
     
     ErrReport = ""
-    
-    ReDim aLogLine(oDictFiles.Count - 1)
     
     i = 0
     For Each vKey In oDictFiles.Keys
@@ -463,7 +476,7 @@ Private Sub cmdGo_Click()
         
         With SignResult
             If Not bCSV Then
-                aLogLine(i) = _
+                sb.AppendLine _
                     IIf(bPE_File, "", "[not PE File] ") & _
                     IIf(bIsDriver, IIf(bWHQL, "[OK] ", ""), IIf(.isLegit, "[OK] ", "")) & _
                     IIf(.ShortMessage = "TRUST_E_NOSIGNATURE: Not signed", "[NoSign] ", IIf(.ShortMessage = "Legit signature.", "", "[" & .ShortMessage & "] ")) & _
@@ -473,27 +486,29 @@ Private Sub cmdGo_Click()
                     IIf(.isMicrosoftSign, " (Microsoft)", "") & _
                     IIf(bWPF, " (protected)", "")
             Else
-                aLogLine(i) = GetFileNameAndExt(sFile)   'File
-                aLogLine(i) = aLogLine(i) & ";" & sFile  'FullPath
-                aLogLine(i) = aLogLine(i) & ";" & IIf(.isLegit, "Legit.", "no") 'Legitimate?
-                aLogLine(i) = aLogLine(i) & ";" & IIf(bWHQL, "WHQL", "no")  'WQHL
-                aLogLine(i) = aLogLine(i) & ";" & IIf(.isMicrosoftSign, "Microsoft", "no")  'IsMicrosoft
-                aLogLine(i) = aLogLine(i) & ";" & IIf(bWPF, "protected", "no")  'WPF / SFC
-                aLogLine(i) = aLogLine(i) & ";" & IIf(bPE_File, "PE", "no") 'PE
-                aLogLine(i) = aLogLine(i) & ";" & .Issuer
-                aLogLine(i) = aLogLine(i) & ";" & .SubjectName
-                aLogLine(i) = aLogLine(i) & ";" & .SubjectEmail
-                aLogLine(i) = aLogLine(i) & ";" & IIf(.ReturnCode = TRUST_E_NOSIGNATURE, "", IIf(.isSignedByCert, "Certificate", "Internal")) 'Embedded Sign?
-                aLogLine(i) = aLogLine(i) & ";" & IIf(.IsEmbedded, "yes", "no")
-                aLogLine(i) = aLogLine(i) & ";" & .CatalogPath
-                aLogLine(i) = aLogLine(i) & ";" & .HashRootCert
-                aLogLine(i) = aLogLine(i) & ";" & .HashFileCode
-                aLogLine(i) = aLogLine(i) & ";" & .AlgorithmCertHash
-                aLogLine(i) = aLogLine(i) & ";" & .AlgorithmSignDigest
-                aLogLine(i) = aLogLine(i) & ";" & .ReturnCode
-                aLogLine(i) = aLogLine(i) & ";" & .ShortMessage
-                aLogLine(i) = aLogLine(i) & ";" & .FullMessage
-                aLogLine(i) = aLogLine(i) & ";" & IIf(.DateTimeStamp = #12:00:00 AM#, "", Format$(.DateTimeStamp, "yyyy\/MM\/dd HH:nn:ss"))
+                sb.Append sFile  'FullPath
+                sb.Append ";" & GetFileNameAndExt(sFile)   'File
+                sb.Append ";" & IIf(.isLegit, "Legit.", "no")  'Legitimate?
+                sb.Append ";" & IIf(bWHQL, "WHQL", "no")   'WQHL
+                sb.Append ";" & IIf(.isMicrosoftSign, "Microsoft", "no")   'IsMicrosoft
+                sb.Append ";" & IIf(bWPF, "protected", "no")   'WPF / SFC
+                sb.Append ";" & IIf(bPE_File, "PE", "no")  'PE
+                sb.Append ";" & .Issuer
+                sb.Append ";" & .SubjectName
+                sb.Append ";" & .SubjectEmail
+                sb.Append ";" & IIf(.ReturnCode = TRUST_E_NOSIGNATURE, "", IIf(.isSignedByCert, "Certificate", "Internal"))  'Embedded Sign?
+                sb.Append ";" & IIf(.IsEmbedded, "yes", "no")
+                sb.Append ";" & .CatalogPath
+                sb.Append ";" & .HashRootCert
+                sb.Append ";" & .HashFileCode
+                sb.Append ";" & .AlgorithmCertHash
+                sb.Append ";" & .AlgorithmSignDigest
+                sb.Append ";" & .ReturnCode
+                sb.Append ";" & .ShortMessage
+                sb.Append ";" & .FullMessage
+                sb.Append ";" & IIf(.DateTimeStamp = #12:00:00 AM#, "", Format$(.DateTimeStamp, "yyyy\/MM\/dd HH:nn:ss"))
+                sb.Append ";" & IIf(.DateCertBegin = #12:00:00 AM#, "", Format$(.DateCertBegin, "yyyy\/MM\/dd"))
+                sb.AppendLine ";" & IIf(.DateCertExpired = #12:00:00 AM#, "", Format$(.DateCertExpired, "yyyy\/MM\/dd"))
             End If
         End With
 
@@ -505,33 +520,37 @@ Private Sub cmdGo_Click()
     lblStatus.Caption = Translate(1868)
     DoEvents
     
+    aLogLine = Split(sb.ToString, vbCrLf)
+    sb.Clear
     QuickSort aLogLine, 0, UBound(aLogLine)
     sLogLine = Join(aLogLine, vbCrLf) & IIf(Len(ErrReport) <> 0, vbCrLf & vbCrLf & "There are some errors while verification:" & vbCrLf & ErrReport, "")
     
     If bCSV Then
-        sTmp = "File name"
-        sTmp = sTmp & ";" & "Full path"
-        sTmp = sTmp & ";" & "Legitimate?"
-        sTmp = sTmp & ";" & "WQHL"
-        sTmp = sTmp & ";" & "Microsoft signature?"
-        sTmp = sTmp & ";" & "WPF / SFC"
-        sTmp = sTmp & ";" & "is PE"
-        sTmp = sTmp & ";" & "Issuer"
-        sTmp = sTmp & ";" & "Signer name"
-        sTmp = sTmp & ";" & "Signer email"
-        sTmp = sTmp & ";" & "Signature location"
-        sTmp = sTmp & ";" & "Has internal signature?"
-        sTmp = sTmp & ";" & "Catalog path"
-        sTmp = sTmp & ";" & "Hash of root certificate"
-        sTmp = sTmp & ";" & "PE hash"
-        sTmp = sTmp & ";" & "Algorithm of certificate hash"
-        sTmp = sTmp & ";" & "Algorithm of signature digest"
-        sTmp = sTmp & ";" & "Result code"
-        sTmp = sTmp & ";" & "Result message (short)"
-        sTmp = sTmp & ";" & "Result message (full)"
-        sTmp = sTmp & ";" & "Time Stamp"
+        sb.Append "Full path"
+        sb.Append ";" & "File name"
+        sb.Append ";" & "Legitimate?"
+        sb.Append ";" & "WQHL"
+        sb.Append ";" & "Microsoft signature?"
+        sb.Append ";" & "WPF / SFC"
+        sb.Append ";" & "is PE"
+        sb.Append ";" & "Issuer"
+        sb.Append ";" & "Signer name"
+        sb.Append ";" & "Signer email"
+        sb.Append ";" & "Signature location"
+        sb.Append ";" & "Has internal signature?"
+        sb.Append ";" & "Catalog path"
+        sb.Append ";" & "Hash of root certificate"
+        sb.Append ";" & "PE hash"
+        sb.Append ";" & "Algorithm of certificate hash"
+        sb.Append ";" & "Algorithm of signature digest"
+        sb.Append ";" & "Result code"
+        sb.Append ";" & "Result message (short)"
+        sb.Append ";" & "Result message (full)"
+        sb.Append ";" & "Time Stamp"
+        sb.Append ";" & "Valid From"
+        sb.Append ";" & "Valid Until"
         
-        sLogLine = sTmp & vbCrLf & sLogLine
+        sLogLine = sb.ToString & vbCrLf & sLogLine
     Else
         sLogLine = ChrW$(-257) & "Logfile of Digital Signature Checker (HJT v." & AppVerString & ")" & vbCrLf & vbCrLf & _
             MakeLogHeader() & vbCrLf & _
@@ -705,5 +724,3 @@ Private Sub AddObjToList(Data As DataObject)
         Next
     End If
 End Sub
-
-

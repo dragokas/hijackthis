@@ -8,7 +8,7 @@ Option Explicit
 '' Base64 encoder/decoder by Comintern (vbforums.com) (Fork by Dragokas)
 ''
 
-Private Const MAX_HASH_FILE_SIZE As Currency = 209715200@ '200 MB. (maximum file size to calculate hash)
+Private Const MAX_HASH_FILE_SIZE As Currency = 314572800@ '300 MB. (maximum file size to calculate hash)
 
 Private Const poly As Long = &HEDB88320
 
@@ -26,19 +26,6 @@ Private Declare Function CryptReleaseContext Lib "Advapi32.dll" (ByVal hProv As 
 Private CRC_32_Tab(0 To 255)    As Long
 Private pTable(255)             As Long
 Private seq()                   As Byte
-
-Private Const ALG_TYPE_ANY As Long = 0
-Private Const ALG_SID_MD5 As Long = 3
-Private Const ALG_SID_SHA1 As Long = 4
-Private Const ALG_CLASS_HASH As Long = 32768
-
-Private Const HP_HASHVAL As Long = 2
-Private Const HP_HASHSIZE As Long = 4
-
-Private Const CRYPT_VERIFYCONTEXT = &HF0000000
-
-Private Const PROV_RSA_FULL As Long = 1
-Private Const MS_ENHANCED_PROV As String = "Microsoft Enhanced Cryptographic Provider v1.0"
 
 '<<-- For Base64 encoder/decoder
 
@@ -65,16 +52,28 @@ Private clPowers6(63) As Long
 Private clPowers12(63) As Long
 Private clPowers18(63) As Long
 
-Public Function GetFileCheckSum(sFilename$, Optional lFileSize&, Optional PlainCheckSum As Boolean) As String
+Public Function GetFileCheckSum( _
+    sFilename As String, _
+    Optional lFileSize As Long, _
+    Optional PlainCheckSum As Boolean, _
+    Optional UseProgressBar As Boolean = True) As String
     
-    If g_bUseMD5 Then
-        GetFileCheckSum = GetFileMD5(sFilename, lFileSize, PlainCheckSum)
-    Else
-        GetFileCheckSum = GetFileSHA1(sFilename, lFileSize, PlainCheckSum)
-    End If
+    Select Case g_eUseHashType
+    Case HASH_TYPE_MD5
+        GetFileCheckSum = GetFileMD5(sFilename, lFileSize, PlainCheckSum, UseProgressBar)
+    Case HASH_TYPE_SHA1
+        GetFileCheckSum = GetFileSHA1(sFilename, lFileSize, PlainCheckSum, UseProgressBar)
+    Case HASH_TYPE_SHA256
+        GetFileCheckSum = GetFileSHA256(sFilename, lFileSize, PlainCheckSum, UseProgressBar)
+    End Select
 End Function
 
-Public Function GetFileMD5(sFilename$, Optional lFileSize&, Optional PlainMD5 As Boolean) As String
+Public Function GetFileMD5( _
+    sFilename As String, _
+    Optional lFileSize As Long, _
+    Optional Plain As Boolean, _
+    Optional UseProgressBar As Boolean = False) As String
+    
     On Error GoTo ErrorHandler:
     
     AppendErrorLogCustom "GetFileMD5 - Begin", "File: " & sFilename
@@ -82,8 +81,7 @@ Public Function GetFileMD5(sFilename$, Optional lFileSize&, Optional PlainMD5 As
     Dim ff          As Long
     Dim hCrypt      As Long
     Dim hHash       As Long
-    Dim uMD5(255)   As Byte
-    Dim lMD5Len     As Long
+    Dim uMD5(15)    As Byte
     Dim i           As Long
     Dim sMD5        As String
     Dim aBuf()      As Byte
@@ -101,8 +99,8 @@ Public Function GetFileMD5(sFilename$, Optional lFileSize&, Optional PlainMD5 As
     
     If lFileSize = 0 Then lFileSize = LOFW(ff)
     If lFileSize = 0 Then
-        'speed tweak :) 0-byte file always has the same MD5
-        If PlainMD5 Then
+        'speed tweak :) 0-byte file always has the same hash sum
+        If Plain Then
             GetFileMD5 = "D41D8CD98F00B204E9800998ECF8427E"
         Else
             GetFileMD5 = " (size: 0 bytes, MD5: D41D8CD98F00B204E9800998ECF8427E)"
@@ -110,11 +108,13 @@ Public Function GetFileMD5(sFilename$, Optional lFileSize&, Optional PlainMD5 As
         GoTo Finalize
     End If
     If lFileSize > MAX_HASH_FILE_SIZE Then
-        If Not PlainMD5 Then
+        If Not Plain Then
             GetFileMD5 = " (size: " & lFileSize & " bytes)"
         End If
         GoTo Finalize
     End If
+    
+    If UseProgressBar Then SetHashProgressBar 50, Translate(1046) & ": " & GetFileNameAndExt(sFilename) & " ..." ' Hash calculation
     
     ReDim aBuf(lFileSize - 1)
     If ff <> 0 And ff <> -1 Then
@@ -123,26 +123,20 @@ Public Function GetFileMD5(sFilename$, Optional lFileSize&, Optional PlainMD5 As
     End If
     
     If Not bAutoLogSilent Then DoEvents
-
-    frmMain.lblMD5.Caption = "Calculating checksum of " & sFilename & "..."
-    
-    ToggleWow64FSRedirection True
     
     If CryptAcquireContext(hCrypt, 0&, StrPtr(MS_ENHANCED_PROV), PROV_RSA_FULL, CRYPT_VERIFYCONTEXT) <> 0 Then
-
-        'Debug.Print CryptGetProvParam(hCrypt, 5, VarPtr(lProvVer), 4, 0) ' lProvVer == 0x200 for 2.0
-
-        If CryptCreateHash(hCrypt, ALG_TYPE_ANY Or ALG_CLASS_HASH Or ALG_SID_MD5, 0, 0, hHash) <> 0 Then
+    
+        If CryptCreateHash(hCrypt, CALG_MD5, 0, 0, hHash) <> 0 Then
 
             If CryptHashData_Array(hHash, aBuf(0), lFileSize, 0) <> 0 Then
 
                 If CryptGetHashParam(hHash, HP_HASHSIZE, uMD5(0), UBound(uMD5) + 1, 0) <> 0 Then
 
-                    lMD5Len = uMD5(0)
                     If CryptGetHashParam(hHash, HP_HASHVAL, uMD5(0), UBound(uMD5) + 1, 0) <> 0 Then
 
-                        For i = 0 To lMD5Len - 1
-                            sMD5 = sMD5 & Right$("0" & Hex$(uMD5(i)), 2)
+                        sMD5 = String$(32, 0&)
+                        For i = 0 To 15
+                            Mid$(sMD5, i * 2 + 1) = Right$("0" & Hex$(uMD5(i)), 2)
                         Next i
                     End If
                 End If
@@ -150,19 +144,18 @@ Public Function GetFileMD5(sFilename$, Optional lFileSize&, Optional PlainMD5 As
             CryptDestroyHash hHash
         End If
         CryptReleaseContext hCrypt, 0&
-        
     Else
         ErrorMsg Err, "GetFileMD5", "File: ", sFilename$, "Handle: ", ff, "Size: ", lFileSize
     End If
     
     If Len(sMD5) <> 0 Then
-        If PlainMD5 Then
+        If Plain Then
             GetFileMD5 = UCase$(sMD5)
         Else
             GetFileMD5 = " (size: " & lFileSize & " bytes, MD5: " & sMD5 & ")"
         End If
     Else
-        If Not PlainMD5 Then
+        If Not Plain Then
             GetFileMD5 = " (size: " & lFileSize & " bytes)"
         End If
     End If
@@ -171,18 +164,25 @@ Public Function GetFileMD5(sFilename$, Optional lFileSize&, Optional PlainMD5 As
     
 Finalize:
     If Redirect Then Call ToggleWow64FSRedirection(OldRedir)
-    frmMain.lblMD5.Caption = ""
+    If UseProgressBar Then
+        frmMain.lblMD5.Caption = frmMain.lblMD5.Caption & " (" & Translate(1006) & ")" ' (Done.)
+        SetHashProgressBar 100
+    End If
     
     AppendErrorLogCustom "GetFileMD5 - End"
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "GetFileMD5", "File: ", sFilename$, "Handle: ", ff, "Size: ", lFileSize
     If Redirect Then Call ToggleWow64FSRedirection(OldRedir)
-    frmMain.lblMD5.Caption = ""
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function GetFileSHA1(sFilename$, Optional lFileSize&, Optional PlainSHA1 As Boolean) As String
+Public Function GetFileSHA1( _
+    sFilename As String, _
+    Optional lFileSize As Long, _
+    Optional Plain As Boolean, _
+    Optional UseProgressBar As Boolean = False) As String
+    
     On Error GoTo ErrorHandler:
     
     AppendErrorLogCustom "GetFileSHA1 - Begin", "File: " & sFilename
@@ -190,10 +190,120 @@ Public Function GetFileSHA1(sFilename$, Optional lFileSize&, Optional PlainSHA1 
     Dim ff          As Long
     Dim hCrypt      As Long
     Dim hHash       As Long
-    Dim uSHA1(255)  As Byte
+    Dim uSHA1(19)   As Byte
     Dim lSHA1Len    As Long
     Dim i           As Long
     Dim sSHA1       As String
+    Dim aBuf()      As Byte
+    Dim OldRedir    As Boolean
+    Dim Redirect    As Boolean
+    
+    If StrEndWith(sFilename, "(file missing)") Then Exit Function
+    If StrEndWith(sFilename, "(no file)") Then Exit Function
+    
+    Redirect = ToggleWow64FSRedirection(False, sFilename, OldRedir)
+    
+    If Not OpenW(sFilename, FOR_READ, ff, g_FileBackupFlag) Then GoTo Finalize
+    
+    If Redirect Then Call ToggleWow64FSRedirection(OldRedir)
+    
+    If lFileSize = 0 Then lFileSize = LOFW(ff)
+    If lFileSize = 0 Then
+        'speed tweak :) 0-byte file always has the same hash sum
+        If Plain Then
+            GetFileSHA1 = "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709"
+        Else
+            GetFileSHA1 = " (size: 0 bytes, SHA1: DA39A3EE5E6B4B0D3255BFEF95601890AFD80709)"
+        End If
+        GoTo Finalize
+    End If
+    If lFileSize > MAX_HASH_FILE_SIZE Then
+        If Not Plain Then
+            GetFileSHA1 = " (size: " & lFileSize & " bytes)"
+        End If
+        GoTo Finalize
+    End If
+    
+    If UseProgressBar Then SetHashProgressBar 50, Translate(1046) & ": " & GetFileNameAndExt(sFilename) & " ..." 'Hash calculation
+    
+    ReDim aBuf(lFileSize - 1)
+    If ff <> 0 And ff <> -1 Then
+      GetW ff, 1&, , VarPtr(aBuf(0)), CLng(lFileSize)
+      CloseW ff
+    End If
+    
+    If Not bAutoLogSilent Then DoEvents
+    
+    If CryptAcquireContext(hCrypt, 0&, StrPtr(MS_ENHANCED_PROV), PROV_RSA_FULL, CRYPT_VERIFYCONTEXT) <> 0 Then
+
+        If CryptCreateHash(hCrypt, CALG_SHA1, 0, 0, hHash) <> 0 Then
+
+            If CryptHashData_Array(hHash, aBuf(0), lFileSize, 0) <> 0 Then
+
+                If CryptGetHashParam(hHash, HP_HASHVAL, uSHA1(0), UBound(uSHA1) + 1, 0) <> 0 Then
+                    
+                    sSHA1 = String(40, 0&)
+                    For i = 0 To 19
+                        Mid$(sSHA1, i * 2 + 1) = Right$("0" & Hex$(uSHA1(i)), 2)
+                    Next i
+                End If
+            End If
+            CryptDestroyHash hHash
+        End If
+        CryptReleaseContext hCrypt, 0&
+    Else
+        ErrorMsg Err, "GetFileSHA1", "File: ", sFilename$, "Handle: ", ff, "Size: ", lFileSize
+    End If
+    
+    If Len(sSHA1) <> 0 Then
+        If Plain Then
+            GetFileSHA1 = UCase$(sSHA1)
+        Else
+            GetFileSHA1 = " (size: " & lFileSize & " bytes, SHA1: " & sSHA1 & ")"
+        End If
+    Else
+        If Not Plain Then
+            GetFileSHA1 = " (size: " & lFileSize & " bytes)"
+        End If
+    End If
+    
+    If Not bAutoLogSilent Then DoEvents
+    
+Finalize:
+    If Redirect Then Call ToggleWow64FSRedirection(OldRedir)
+    If UseProgressBar Then
+        frmMain.lblMD5.Caption = frmMain.lblMD5.Caption & " (" & Translate(1006) & ")" '(Done.)
+        SetHashProgressBar 100
+    End If
+    
+    AppendErrorLogCustom "GetFileSHA1 - End"
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetFileSHA1", "File: ", sFilename$, "Handle: ", ff, "Size: ", lFileSize
+    If Redirect Then Call ToggleWow64FSRedirection(OldRedir)
+    If inIDE Then Stop: Resume Next
+End Function
+
+
+Public Function GetFileSHA256( _
+    sFilename As String, _
+    Optional lFileSize As Long, _
+    Optional Plain As Boolean, _
+    Optional UseProgressBar As Boolean = False) As String
+    
+    On Error GoTo ErrorHandler:
+    
+    'temporarily disabled // TODO
+    If Not OSver.IsWindowsVistaOrGreater Then Exit Function
+    
+    AppendErrorLogCustom "GetFileSHA256 - Begin", "File: " & sFilename
+    
+    Dim ff          As Long
+    Dim hCrypt      As Long
+    Dim hHash       As Long
+    Dim uSHA2(31)   As Byte
+    Dim i           As Long
+    Dim sSHA2       As String
     Dim aBuf()      As Byte
     Dim OldRedir    As Boolean
     Dim Redirect    As Boolean
@@ -209,20 +319,22 @@ Public Function GetFileSHA1(sFilename$, Optional lFileSize&, Optional PlainSHA1 
     
     If lFileSize = 0 Then lFileSize = LOFW(ff)
     If lFileSize = 0 Then
-        'speed tweak :) 0-byte file always has the same MD5
-        If PlainSHA1 Then
-            GetFileSHA1 = "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709"
+        'speed tweak :) 0-byte file always has the same hash sum
+        If Plain Then
+            GetFileSHA256 = "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
         Else
-            GetFileSHA1 = " (size: 0 bytes, SHA1: DA39A3EE5E6B4B0D3255BFEF95601890AFD80709)"
+            GetFileSHA256 = " (size: 0 bytes, SHA256: E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855)"
         End If
         GoTo Finalize
     End If
     If lFileSize > MAX_HASH_FILE_SIZE Then
-        If Not PlainSHA1 Then
-            GetFileSHA1 = " (size: " & lFileSize & " bytes)"
+        If Not Plain Then
+            GetFileSHA256 = " (size: " & lFileSize & " bytes)"
         End If
         GoTo Finalize
     End If
+    
+    If UseProgressBar Then SetHashProgressBar 50, Translate(1046) & ": " & GetFileNameAndExt(sFilename) & " ..." 'Hash calculation
     
     ReDim aBuf(lFileSize - 1)
     If ff <> 0 And ff <> -1 Then
@@ -231,45 +343,37 @@ Public Function GetFileSHA1(sFilename$, Optional lFileSize&, Optional PlainSHA1 
     End If
     
     If Not bAutoLogSilent Then DoEvents
-
-    frmMain.lblMD5.Caption = "Calculating checksum of " & sFilename & "..."
     
-    ToggleWow64FSRedirection True
-    
-    If CryptAcquireContext(hCrypt, 0&, StrPtr(MS_ENHANCED_PROV), PROV_RSA_FULL, CRYPT_VERIFYCONTEXT) <> 0 Then
+    If CryptAcquireContext(hCrypt, 0&, StrPtr(MS_ENH_RSA_AES_PROV), PROV_RSA_AES, CRYPT_VERIFYCONTEXT) <> 0 Then
 
-        If CryptCreateHash(hCrypt, ALG_TYPE_ANY Or ALG_CLASS_HASH Or ALG_SID_SHA1, 0, 0, hHash) <> 0 Then
+        If CryptCreateHash(hCrypt, CALG_SHA_256, 0, 0, hHash) <> 0 Then
 
             If CryptHashData_Array(hHash, aBuf(0), lFileSize, 0) <> 0 Then
 
-                If CryptGetHashParam(hHash, HP_HASHSIZE, uSHA1(0), UBound(uSHA1) + 1, 0) <> 0 Then
-
-                    lSHA1Len = uSHA1(0)
-                    If CryptGetHashParam(hHash, HP_HASHVAL, uSHA1(0), UBound(uSHA1) + 1, 0) <> 0 Then
-
-                        For i = 0 To lSHA1Len - 1
-                            sSHA1 = sSHA1 & Right$("0" & Hex$(uSHA1(i)), 2)
-                        Next i
-                    End If
+                If CryptGetHashParam(hHash, HP_HASHVAL, uSHA2(0), UBound(uSHA2) + 1, 0) <> 0 Then
+                    
+                    sSHA2 = String$(64, 0&)
+                    For i = 0 To 31
+                        Mid$(sSHA2, i * 2 + 1) = Right$("0" & Hex$(uSHA2(i)), 2)
+                    Next i
                 End If
             End If
             CryptDestroyHash hHash
         End If
         CryptReleaseContext hCrypt, 0&
-        
     Else
-        ErrorMsg Err, "GetFileSHA1", "File: ", sFilename$, "Handle: ", ff, "Size: ", lFileSize
+        ErrorMsg Err, "GetFileSHA256", "File: ", sFilename, "Handle: ", ff, "Size: ", lFileSize
     End If
     
-    If Len(sSHA1) <> 0 Then
-        If PlainSHA1 Then
-            GetFileSHA1 = UCase$(sSHA1)
+    If Len(sSHA2) <> 0 Then
+        If Plain Then
+            GetFileSHA256 = UCase$(sSHA2)
         Else
-            GetFileSHA1 = " (size: " & lFileSize & " bytes, SHA1: " & sSHA1 & ")"
+            GetFileSHA256 = " (size: " & lFileSize & " bytes, SHA256: " & sSHA2 & ")"
         End If
     Else
-        If Not PlainSHA1 Then
-            GetFileSHA1 = " (size: " & lFileSize & " bytes)"
+        If Not Plain Then
+            GetFileSHA256 = " (size: " & lFileSize & " bytes)"
         End If
     End If
     
@@ -277,41 +381,49 @@ Public Function GetFileSHA1(sFilename$, Optional lFileSize&, Optional PlainSHA1 
     
 Finalize:
     If Redirect Then Call ToggleWow64FSRedirection(OldRedir)
-    frmMain.lblMD5.Caption = ""
+    If UseProgressBar Then
+        frmMain.lblMD5.Caption = frmMain.lblMD5.Caption & " (" & Translate(1006) & ")" '(Done.)
+        SetHashProgressBar 100
+    End If
     
-    AppendErrorLogCustom "GetFileSHA1 - End"
+    AppendErrorLogCustom "GetFileSHA256 - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "GetFileSHA1", "File: ", sFilename$, "Handle: ", ff, "Size: ", lFileSize
+    ErrorMsg Err, "GetFileSHA256", "File: ", sFilename$, "Handle: ", ff, "Size: ", lFileSize
     If Redirect Then Call ToggleWow64FSRedirection(OldRedir)
-    frmMain.lblMD5.Caption = ""
     If inIDE Then Stop: Resume Next
 End Function
 
-'Public Sub UpdateMD5Progress(i&, iMax&)
-'    With frmMain
-'        If i = -1 Then
-'            'hide md5 progress bar
-'            .shpMD5Background.Visible = False
-'            .shpMD5Progress.Width = 15
-'            .shpMD5Progress.Visible = False
-'            DoEvents
-'            Exit Sub
-'        ElseIf i = 0 Then
-'            'show + reset md5 progress bar
-'            .shpMD5Background.Visible = True
-'            .shpMD5Progress.Visible = True
-'            .shpMD5Progress.Width = 15
-'            DoEvents
-'            Exit Sub
-'        End If
-'
-'        .shpMD5Progress.Width = .shpMD5Background.Width * (CLng(i) / CLng(iMax))
-'
-'        DoEvents
-'    End With
-'End Sub
+Public Function CalcSha256(stri As String) As String
 
+    Dim hCrypt      As Long
+    Dim hHash       As Long
+    Dim aBuf()      As Byte
+    Dim uSHA2(31)   As Byte
+    Dim i           As Long
+    
+    aBuf = StrConv(stri, vbFromUnicode)
+    
+    If CryptAcquireContext(hCrypt, 0&, StrPtr(MS_ENH_RSA_AES_PROV), PROV_RSA_AES, CRYPT_VERIFYCONTEXT) <> 0 Then
+
+        If CryptCreateHash(hCrypt, CALG_SHA_256, 0, 0, hHash) <> 0 Then
+
+            If CryptHashData_Array(hHash, aBuf(0), UBound(aBuf) + 1, 0) <> 0 Then
+
+                If CryptGetHashParam(hHash, HP_HASHVAL, uSHA2(0), UBound(uSHA2) + 1, 0) <> 0 Then
+                    
+                    CalcSha256 = String$(64, 0&)
+                    For i = 0 To 31
+                        Mid$(CalcSha256, i * 2 + 1) = Right$("0" & Hex$(uSHA2(i)), 2)
+                    Next i
+                End If
+            End If
+            CryptDestroyHash hHash
+        End If
+        CryptReleaseContext hCrypt, 0&
+    End If
+    
+End Function
 
 ' Шифрование/дешифровка строки
 Public Function DeCrypt(sMsg$) As String
@@ -658,11 +770,11 @@ End Sub
 
 '::::::::::: Правый логический сдвиг длинного целого :::::::::::::
 
-Function Shr(n As Long, M As Long) As Long
+Function Shr(n As Long, m As Long) As Long
 
     Dim Q As Long
 
-         If (M > 31&) Then
+         If (m > 31&) Then
             
             Shr = 0
             
@@ -672,15 +784,15 @@ Function Shr(n As Long, M As Long) As Long
 
          If (n >= 0) Then
          
-            Shr = n \ (2& ^ M)
+            Shr = n \ (2& ^ m)
 
          Else
          
            Q = n And &H7FFFFFFF
            
-           Q = Q \ (2& ^ M)
+           Q = Q \ (2& ^ m)
            
-           Shr = Q Or (2& ^ (31& - M))
+           Shr = Q Or (2& ^ (31& - m))
  
          End If
 
@@ -688,20 +800,20 @@ End Function
 
 '::::::::::::::: Вычислить CRC-код строки ::::::::::::::::::::
 
-Public Function CalcCRC(Stri As String) As String '// Dragokas - добавил перевод в Hex
+Public Function CalcCRC(stri As String) As String '// Dragokas - добавил перевод в Hex
 
     Dim CRC As Long
     Dim i   As Long
-    Dim M   As Long
+    Dim m   As Long
     Dim n   As Long
 
     CRC = &HFFFFFFFF
 
-    For i = 1& To Len(Stri)
+    For i = 1& To Len(stri)
 
-        M = Asc(Mid$(Stri, i&, 1&))
+        m = Asc(Mid$(stri, i&, 1&))
 
-        n = (CRC Xor M&) And &HFF&
+        n = (CRC Xor m&) And &HFF&
 
         CRC = CRC_32_Tab(n&) Xor (Shr(CRC, 8&) And &HFFFFFF)
 
@@ -770,7 +882,6 @@ End Sub
 ' Восстанавливает CRC до указанной.
 ' Возвращает 4 байта, которые нужно дописать в конец строки
 
-'Public Function RecoverCRC(InitStri As String, newCRC As Long) As String
 Public Function RecoverCRC(ForwardCRC As Long, newCRC As Long) As String
     
     'Dim newCRC&, InitStri$, ForwardCRC&
@@ -833,16 +944,16 @@ Public Function RecoverCRC(ForwardCRC As Long, newCRC As Long) As String
     'Debug.Print "Корректирующие байты: " & hex$(Mul(r(3), 0, &H1000000, 0) Or Mul(r(2), 0, &H10000, 0) Or Mul(r(1), 0, &H100, 0) Or r(0))
 End Function
 
-Public Function CalcCRCLong(Stri As String) As Long
-    Dim CRC&, i&, M&, n&
+Public Function CalcCRCLong(stri As String) As Long
+    Dim CRC&, i&, m&, n&
 
     'If CRC_32_Tab(1) = 0 Then Make_CRC_32_Table
 
     CRC = -1
 
-    For i = 1& To Len(Stri)
-        M = Asc(Mid$(Stri, i, 1&))
-        n = (CRC Xor M) And &HFF&
+    For i = 1& To Len(stri)
+        m = Asc(Mid$(stri, i, 1&))
+        n = (CRC Xor m) And &HFF&
         CRC = (CRC_32_Tab(n) Xor (((CRC And &HFFFFFF00) \ &H100) And &HFFFFFF)) And -1  ' Tab ^ (crc >> 8)
     Next
 
@@ -850,32 +961,32 @@ Public Function CalcCRCLong(Stri As String) As Long
 End Function
 
 Public Function CalcArrayCRCLong(arr() As Byte, Optional prevValue As Long = -1) As Long
-    Dim CRC&, i&, M&, n&
+    Dim CRC&, i&, m&, n&
 
     'If CRC_32_Tab(1) = 0 Then Make_CRC_32_Table
 
     CRC = prevValue
 
     For i = 0& To UBound(arr)
-        M = arr(i)
-        n = (CRC Xor M) And &HFF&
+        m = arr(i)
+        n = (CRC Xor m) And &HFF&
         CRC = (CRC_32_Tab(n) Xor (((CRC And &HFFFFFF00) \ &H100) And &HFFFFFF)) And -1  ' Tab ^ (crc >> 8)
     Next
 
     CalcArrayCRCLong = -(CRC + 1&)
 End Function
 
-Public Function CalcCRCReverse(Stri As String, Optional nextValue As Long = -1) As Long
-    Dim CRC&, i&, M&, prevValueL&, prevValueH&, B3 As Byte
+Public Function CalcCRCReverse(stri As String, Optional nextValue As Long = -1) As Long
+    Dim CRC&, i&, m&, prevValueL&, prevValueH&, B3 As Byte
 
     'If CRC_32_Tab(1) = 0 Then Make_CRC_32_Table
 
     CRC = nextValue
 
-    For i = Len(Stri) To 1 Step -1
-        M = Asc(Mid$(Stri, i, 1&))
+    For i = Len(stri) To 1 Step -1
+        m = Asc(Mid$(stri, i, 1&))
         B3 = ((CRC And &HFF000000) \ &H1000000) And &HFF
-        prevValueL = (pTable(B3) Xor M) And &HFF
+        prevValueL = (pTable(B3) Xor m) And &HFF
         prevValueH = Mul(CRC Xor CRC_32_Tab(pTable(B3)), 0, &H100, 0)  ' << 8
         CRC = prevValueH Or prevValueL
     Next

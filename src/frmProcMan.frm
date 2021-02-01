@@ -296,6 +296,8 @@ Public Sub SaveProcessList(objProcess As ListBox, objDLL As ListBox, Optional bD
     sFilename = SaveFileDialog(Translate(166), AppPath(), "processlist.txt", Translate(167) & " (*.txt)|*.txt|" & Translate(168) & " (*.*)|*.*", Me.hwnd)
     If Len(sFilename) = 0 Then Exit Sub
     
+    cmdProcManRefresh_Click
+    
     Set sList = New clsStringBuilder
     
     'Header
