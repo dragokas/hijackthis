@@ -293,9 +293,6 @@ Public Function GetFileSHA256( _
     
     On Error GoTo ErrorHandler:
     
-    'temporarily disabled // TODO
-    If Not OSver.IsWindowsVistaOrGreater Then Exit Function
-    
     AppendErrorLogCustom "GetFileSHA256 - Begin", "File: " & sFilename
     
     Dim ff          As Long
@@ -344,7 +341,7 @@ Public Function GetFileSHA256( _
     
     If Not bAutoLogSilent Then DoEvents
     
-    If CryptAcquireContext(hCrypt, 0&, StrPtr(MS_ENH_RSA_AES_PROV), PROV_RSA_AES, CRYPT_VERIFYCONTEXT) <> 0 Then
+    If CryptAcquireContext(hCrypt, 0&, 0&, PROV_RSA_AES, CRYPT_VERIFYCONTEXT) <> 0 Then
 
         If CryptCreateHash(hCrypt, CALG_SHA_256, 0, 0, hHash) <> 0 Then
 
@@ -362,7 +359,7 @@ Public Function GetFileSHA256( _
         End If
         CryptReleaseContext hCrypt, 0&
     Else
-        ErrorMsg Err, "GetFileSHA256", "File: ", sFilename, "Handle: ", ff, "Size: ", lFileSize
+        ErrorMsg Err, "GetFileSHA256. CryptAcquireContext failed.", "File: ", sFilename, "Handle: ", ff, "Size: ", lFileSize
     End If
     
     If Len(sSHA2) <> 0 Then
@@ -394,17 +391,21 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function CalcSha256(stri As String) As String
+Public Function CalcSha256(Stri As String) As String
 
+    On Error GoTo ErrorHandler:
+    
+    If Not OSver.SupportSHA2() Then Exit Function
+    
     Dim hCrypt      As Long
     Dim hHash       As Long
     Dim aBuf()      As Byte
     Dim uSHA2(31)   As Byte
     Dim i           As Long
     
-    aBuf = StrConv(stri, vbFromUnicode)
+    aBuf = StrConv(Stri, vbFromUnicode)
     
-    If CryptAcquireContext(hCrypt, 0&, StrPtr(MS_ENH_RSA_AES_PROV), PROV_RSA_AES, CRYPT_VERIFYCONTEXT) <> 0 Then
+    If CryptAcquireContext(hCrypt, 0&, 0&, PROV_RSA_AES, CRYPT_VERIFYCONTEXT) <> 0 Then
 
         If CryptCreateHash(hCrypt, CALG_SHA_256, 0, 0, hHash) <> 0 Then
 
@@ -423,6 +424,10 @@ Public Function CalcSha256(stri As String) As String
         CryptReleaseContext hCrypt, 0&
     End If
     
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "CalcSha256"
+    If inIDE Then Stop: Resume Next
 End Function
 
 ' Шифрование/дешифровка строки
@@ -800,7 +805,7 @@ End Function
 
 '::::::::::::::: Вычислить CRC-код строки ::::::::::::::::::::
 
-Public Function CalcCRC(stri As String) As String '// Dragokas - добавил перевод в Hex
+Public Function CalcCRC(Stri As String) As String '// Dragokas - добавил перевод в Hex
 
     Dim CRC As Long
     Dim i   As Long
@@ -809,9 +814,9 @@ Public Function CalcCRC(stri As String) As String '// Dragokas - добавил перевод
 
     CRC = &HFFFFFFFF
 
-    For i = 1& To Len(stri)
+    For i = 1& To Len(Stri)
 
-        m = Asc(Mid$(stri, i&, 1&))
+        m = Asc(Mid$(Stri, i&, 1&))
 
         n = (CRC Xor m&) And &HFF&
 
@@ -944,15 +949,15 @@ Public Function RecoverCRC(ForwardCRC As Long, newCRC As Long) As String
     'Debug.Print "Корректирующие байты: " & hex$(Mul(r(3), 0, &H1000000, 0) Or Mul(r(2), 0, &H10000, 0) Or Mul(r(1), 0, &H100, 0) Or r(0))
 End Function
 
-Public Function CalcCRCLong(stri As String) As Long
+Public Function CalcCRCLong(Stri As String) As Long
     Dim CRC&, i&, m&, n&
 
     'If CRC_32_Tab(1) = 0 Then Make_CRC_32_Table
 
     CRC = -1
 
-    For i = 1& To Len(stri)
-        m = Asc(Mid$(stri, i, 1&))
+    For i = 1& To Len(Stri)
+        m = Asc(Mid$(Stri, i, 1&))
         n = (CRC Xor m) And &HFF&
         CRC = (CRC_32_Tab(n) Xor (((CRC And &HFFFFFF00) \ &H100) And &HFFFFFF)) And -1  ' Tab ^ (crc >> 8)
     Next
@@ -976,15 +981,15 @@ Public Function CalcArrayCRCLong(arr() As Byte, Optional prevValue As Long = -1)
     CalcArrayCRCLong = -(CRC + 1&)
 End Function
 
-Public Function CalcCRCReverse(stri As String, Optional nextValue As Long = -1) As Long
+Public Function CalcCRCReverse(Stri As String, Optional nextValue As Long = -1) As Long
     Dim CRC&, i&, m&, prevValueL&, prevValueH&, B3 As Byte
 
     'If CRC_32_Tab(1) = 0 Then Make_CRC_32_Table
 
     CRC = nextValue
 
-    For i = Len(stri) To 1 Step -1
-        m = Asc(Mid$(stri, i, 1&))
+    For i = Len(Stri) To 1 Step -1
+        m = Asc(Mid$(Stri, i, 1&))
         B3 = ((CRC And &HFF000000) \ &H1000000) And &HFF
         prevValueL = (pTable(B3) Xor m) And &HFF
         prevValueH = Mul(CRC Xor CRC_32_Tab(pTable(B3)), 0, &H100, 0)  ' << 8

@@ -11,6 +11,15 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[2.10.0.2 beta] (Nightly) - Feb 03, 2021
+ - VirusTotal: added compatibility with Windows XP SP3 (thanks to @wqweto for help).
+ - Fixed error in O21 scan (thanks to @Sandor-Helper for reporting).
+ - Fixed BSOD on AppLocker fix, caused by MS GPUpdate. Instead, reboot will be prompted.
+ - Fixed error in hashing the backup while fixing the items (thanks to regist for testing).
+ - Updated certificates (thanks to @akokSZ for reporting).
+ - Improved reset ACL, icacls.exe / takeown.exe are no more used.
+ - Fixed ability to restore the item even if backup system failed to retrieve the file hash.
+
 [2.10.0.1 beta] (Nightly) - Feb 01, 2021
 
 New detections are added:
@@ -33,7 +42,7 @@ New detections are added:
 
 Interface:
  - Added ability to mark multiple items for fixing with 'Shift + Click'.
- - Added "Copy" multi-context menu in scan results window (thanks @TheTrick for helping with Clipboard).
+ - Added "Copy" multi-context menu in scan results window (thanks @thetrik for helping with Clipboard).
  - Added "VirusTotal" multi-context menu in scan results window with options to check file/URL by hash or to submit file with SysInternals Autoruns.
 
 Report:

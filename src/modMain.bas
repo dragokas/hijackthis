@@ -505,6 +505,8 @@ Public Sub AddToScanResults(result As SCAN_RESULT, Optional ByVal DoNotAddToList
     Dim bFirstWarning As Boolean
     Dim bAddedToList As Boolean
     
+    On Error GoTo ErrorHandler:
+    
     Const SelLastAdded As Boolean = False
     
     'LockWindowUpdate frmMain.lstResults.hwnd
@@ -555,6 +557,11 @@ Public Sub AddToScanResults(result As SCAN_RESULT, Optional ByVal DoNotAddToList
     If Not DontClearResults Then
         EraseScanResults result
     End If
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "AddToScanResults", result.Section
+    If inIDE Then Stop: Resume Next
 End Sub
 
 Public Sub EraseScanResults(result As SCAN_RESULT)
@@ -738,11 +745,11 @@ Public Sub ConcatScanResults(Dst As SCAN_RESULT, Src As SCAN_RESULT)
     
 End Sub
 
-Public Function InArrayJumpFile(Jump() As JUMP_ENTRY, item As FIX_FILE) As Boolean
+Public Function InArrayJumpFile(Jump() As JUMP_ENTRY, Item As FIX_FILE) As Boolean
     Dim i As Long
     If AryPtr(Jump) Then
         For i = 0 To UBound(Jump)
-            If InArrayResultFile(Jump(i).File, item) Then
+            If InArrayResultFile(Jump(i).File, Item) Then
                 InArrayJumpFile = True
                 Exit For
             End If
@@ -750,11 +757,11 @@ Public Function InArrayJumpFile(Jump() As JUMP_ENTRY, item As FIX_FILE) As Boole
     End If
 End Function
 
-Public Function InArrayJumpRegistry(Jump() As JUMP_ENTRY, item As FIX_REG_KEY) As Boolean
+Public Function InArrayJumpRegistry(Jump() As JUMP_ENTRY, Item As FIX_REG_KEY) As Boolean
     Dim i As Long
     If AryPtr(Jump) Then
         For i = 0 To UBound(Jump)
-            If InArrayResultRegistry(Jump(i).Registry, item) Then
+            If InArrayResultRegistry(Jump(i).Registry, Item) Then
                 InArrayJumpRegistry = True
                 Exit For
             End If
@@ -762,14 +769,14 @@ Public Function InArrayJumpRegistry(Jump() As JUMP_ENTRY, item As FIX_REG_KEY) A
     End If
 End Function
 
-Public Function InArrayResultFile(FileArray() As FIX_FILE, item As FIX_FILE) As Boolean
+Public Function InArrayResultFile(FileArray() As FIX_FILE, Item As FIX_FILE) As Boolean
     Dim i As Long
     If AryPtr(FileArray) Then
         For i = 0 To UBound(FileArray)
             With FileArray(i)
-                If .ActionType = item.ActionType Then
-                    If .Path = item.Path Then
-                        If .GoodFile = item.GoodFile Then
+                If .ActionType = Item.ActionType Then
+                    If .Path = Item.Path Then
+                        If .GoodFile = Item.GoodFile Then
                             InArrayResultFile = True
                             Exit For
                         End If
@@ -780,20 +787,20 @@ Public Function InArrayResultFile(FileArray() As FIX_FILE, item As FIX_FILE) As 
     End If
 End Function
 
-Public Function InArrayResultRegistry(KeyArray() As FIX_REG_KEY, item As FIX_REG_KEY) As Boolean
+Public Function InArrayResultRegistry(KeyArray() As FIX_REG_KEY, Item As FIX_REG_KEY) As Boolean
     Dim i As Long
     If AryPtr(KeyArray) Then
         For i = 0 To UBound(KeyArray)
             With KeyArray(i)
-                If item.Param = .Param Then
-                    If item.Key = .Key Then
-                        If item.Hive = .Hive And item.ActionType = .ActionType Then
-                            If item.Redirected = .Redirected And item.ParamType = .ParamType Then
-                                If item.DefaultData = .DefaultData Then
-                                    If item.IniFile = .IniFile Then
-                                        If item.ReplaceDataWhat = .ReplaceDataWhat Then
-                                            If item.ReplaceDataInto = .ReplaceDataInto Then
-                                                If item.TrimDelimiter = .TrimDelimiter Then
+                If Item.Param = .Param Then
+                    If Item.Key = .Key Then
+                        If Item.Hive = .Hive And Item.ActionType = .ActionType Then
+                            If Item.Redirected = .Redirected And Item.ParamType = .ParamType Then
+                                If Item.DefaultData = .DefaultData Then
+                                    If Item.IniFile = .IniFile Then
+                                        If Item.ReplaceDataWhat = .ReplaceDataWhat Then
+                                            If Item.ReplaceDataInto = .ReplaceDataInto Then
+                                                If Item.TrimDelimiter = .TrimDelimiter Then
                                                     InArrayResultRegistry = True
                                                     Exit For
                                                 End If
@@ -810,13 +817,13 @@ Public Function InArrayResultRegistry(KeyArray() As FIX_REG_KEY, item As FIX_REG
     End If
 End Function
 
-Public Function InArrayResultProcess(ProcessArray() As FIX_PROCESS, item As FIX_PROCESS) As Boolean
+Public Function InArrayResultProcess(ProcessArray() As FIX_PROCESS, Item As FIX_PROCESS) As Boolean
     Dim i As Long
     If AryPtr(ProcessArray) Then
         For i = 0 To UBound(ProcessArray)
             With ProcessArray(i)
-                If item.ActionType = .ActionType Then
-                    If item.Path = .Path Then
+                If Item.ActionType = .ActionType Then
+                    If Item.Path = .Path Then
                         InArrayResultProcess = True
                         Exit For
                     End If
@@ -826,17 +833,17 @@ Public Function InArrayResultProcess(ProcessArray() As FIX_PROCESS, item As FIX_
     End If
 End Function
 
-Public Function InArrayResultService(ServiceArray() As FIX_SERVICE, item As FIX_SERVICE) As Boolean
+Public Function InArrayResultService(ServiceArray() As FIX_SERVICE, Item As FIX_SERVICE) As Boolean
     Dim i As Long
     If AryPtr(ServiceArray) Then
         For i = 0 To UBound(ServiceArray)
             With ServiceArray(i)
-                If item.ActionType = .ActionType Then
-                    If item.RunState = .RunState Then
-                        If item.ImagePath = .ImagePath Then
-                            If item.DllPath = .DllPath Then
-                                If item.ServiceDisplay = .ServiceDisplay Then
-                                    If item.ServiceName = .ServiceName Then
+                If Item.ActionType = .ActionType Then
+                    If Item.RunState = .RunState Then
+                        If Item.ImagePath = .ImagePath Then
+                            If Item.DllPath = .DllPath Then
+                                If Item.ServiceDisplay = .ServiceDisplay Then
+                                    If Item.ServiceName = .ServiceName Then
                                         InArrayResultService = True
                                         Exit For
                                     End If
@@ -850,16 +857,16 @@ Public Function InArrayResultService(ServiceArray() As FIX_SERVICE, item As FIX_
     End If
 End Function
 
-Public Function InArrayResultCustom(CustomArray() As FIX_CUSTOM, item As FIX_CUSTOM) As Boolean
+Public Function InArrayResultCustom(CustomArray() As FIX_CUSTOM, Item As FIX_CUSTOM) As Boolean
     Dim i As Long
     If AryPtr(CustomArray) Then
         For i = 0 To UBound(CustomArray)
             With CustomArray(i)
-                If item.ActionType = .ActionType Then
-                    If item.Name = .Name Then
-                        If item.ID = .ID Then
-                            If item.Target = .Target Then
-                                If item.CommandLine = .CommandLine Then
+                If Item.ActionType = .ActionType Then
+                    If Item.Name = .Name Then
+                        If Item.ID = .ID Then
+                            If Item.Target = .Target Then
+                                If Item.CommandLine = .CommandLine Then
                                     InArrayResultCustom = True
                                     Exit For
                                 End If
@@ -1007,7 +1014,7 @@ Private Sub ReLoadIE_RegVals()
     End With
     ReDim sRegVals(colRegIE.Count - 1)
     For i = 1 To colRegIE.Count
-        sRegVals(i - 1) = colRegIE.item(i)
+        sRegVals(i - 1) = colRegIE.Item(i)
     Next
     
     Exit Sub
@@ -1055,7 +1062,7 @@ Public Sub LoadStuff()
     End With
     ReDim sFileVals(colFileVals.Count - 1)
     For i = 1 To colFileVals.Count
-        sFileVals(i - 1) = colFileVals.item(i)
+        sFileVals(i - 1) = colFileVals.Item(i)
     Next
 
     '//TODO:
@@ -1120,11 +1127,11 @@ Public Sub LoadStuff()
     End With
     
     For i = 1 To cReg4vals.Count  ' append HKU hive
-        sHive = Left$(cReg4vals.item(i), 4)
+        sHive = Left$(cReg4vals.Item(i), 4)
         If sHive = "HKCU" Then
             For j = 0 To UBound(aHives)
                 If Left$(aHives(j), 3) = "HKU" Then
-                    cReg4vals.Add Replace$(cReg4vals.item(i), "HKCU", aHives(j), 1, 1)
+                    cReg4vals.Add Replace$(cReg4vals.Item(i), "HKCU", aHives(j), 1, 1)
                 End If
             Next
         End If
@@ -1185,7 +1192,7 @@ Public Sub LoadStuff()
     End With
     ReDim aSafeRegDomains(colSafeRegDomains.Count - 1)
     For i = 1 To colSafeRegDomains.Count
-        aSafeRegDomains(i - 1) = colSafeRegDomains.item(i)
+        aSafeRegDomains(i - 1) = colSafeRegDomains.Item(i)
     Next
     
     ' === LOAD LSP PROVIDERS SAFELIST ===
@@ -1366,7 +1373,7 @@ Public Sub LoadStuff()
     'BE AWARE: SHELL32.dll - sometimes this file is patched (e.g. seen in Simplix)
     ReDim aSafeSSODL(colSafeSSODL.Count - 1)
     For i = 1 To colSafeSSODL.Count
-        aSafeSSODL(i - 1) = colSafeSSODL.item(i)
+        aSafeSSODL(i - 1) = colSafeSSODL.Item(i)
     Next
     
     'LOAD SIOI SAFELIST (O21)
@@ -1393,7 +1400,7 @@ Public Sub LoadStuff()
     End With
     ReDim aSafeSIOI(colSafeSIOI.Count - 1)
     For i = 1 To colSafeSIOI.Count
-        aSafeSIOI(i - 1) = Replace(colSafeSIOI.item(i), "<SysRoot>", sWinDir, 1, -1, vbTextCompare)
+        aSafeSIOI(i - 1) = Replace(colSafeSIOI.Item(i), "<SysRoot>", sWinDir, 1, -1, vbTextCompare)
     Next
     
     'LOAD ShellExecuteHooks (SEH) SAFELIST (O21)
@@ -1406,7 +1413,7 @@ Public Sub LoadStuff()
     End With
     ReDim aSafeSEH(colSafeSEH.Count - 1)
     For i = 1 To colSafeSEH.Count
-        aSafeSEH(i - 1) = Replace(colSafeSEH.item(i), "<SysRoot>", sWinDir, 1, -1, vbTextCompare)
+        aSafeSEH(i - 1) = Replace(colSafeSEH.Item(i), "<SysRoot>", sWinDir, 1, -1, vbTextCompare)
     Next
     
     
@@ -1853,7 +1860,8 @@ Public Sub ResumeHashProgressbar()
 End Sub
 
 Public Sub SetHashProgressBar(lPercent As Long, Optional sText As String)
-
+    On Error GoTo ErrorHandler:
+    
     frmMain.shpMD5Progress.Width = (frmMain.ScaleWidth - 500) * (lPercent / 100)
     frmMain.shpMD5Progress.Tag = lPercent
     
@@ -1861,6 +1869,10 @@ Public Sub SetHashProgressBar(lPercent As Long, Optional sText As String)
         frmMain.lblMD5.Caption = sText
     End If
     
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "SetHashProgressBar", lPercent
+    If inIDE Then Stop: Resume Next
 End Sub
 
 Public Sub CloseHashProgressbar()
@@ -2415,7 +2427,7 @@ CheckDefaultScope:
                     'reset default scope to bing
                     
                     For k = 1 To cReg4vals.Count
-                        aData = Split(cReg4vals.item(k), ",", 3)
+                        aData = Split(cReg4vals.Item(k), ",", 3)
                         sHive = aData(0)
                         sParam = aData(1)
                         sDefData = SplitSafe(aData(2), "|")(0)
@@ -10295,10 +10307,10 @@ Public Sub CheckO21Item()
     
     HE.Init HE_HIVE_HKLM
     HE.AddKey sSSODL
-    
+
     Do While HE.MoveNext
         If RegOpenKeyExW(HE.Hive, StrPtr(HE.Key), 0, KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not HE.Redirected), hKey) = 0 Then
-        
+
             Do
                 lNameLen = MAX_VALUENAME
                 sValueName = String$(lNameLen, 0&)
@@ -10306,19 +10318,19 @@ Public Sub CheckO21Item()
                 sCLSID = String$(lDataLen, 0&)
                 
                 If RegEnumValueW(hKey, i, StrPtr(sValueName), lNameLen, 0&, REG_SZ, StrPtr(sCLSID), lDataLen) <> 0 Then Exit Do
-                
+
                 sValueName = Left$(sValueName, lNameLen)
                 sCLSID = TrimNull(sCLSID)
                 
                 Call GetFileByCLSID(sCLSID, sFile, , HE.Redirected, HE.SharedKey)
-                
+
                 sFile = FormatFileMissing(sFile)
                 
                 bSafe = False
                 If bHideMicrosoft And Not bIgnoreAllWhitelists Then
                     
                     bInList = inArray(sCLSID, aSafeSSODL, , , vbTextCompare)
-                    
+
                     If bInList Then
                         If IsMicrosoftFile(sFile) Then bSafe = True
                     End If
@@ -10326,7 +10338,7 @@ Public Sub CheckO21Item()
                         If WhiteListed(sFile, "GROOVEEX.DLL", True) Then bSafe = True
                     End If
                 End If
-                
+
                 If Not bSafe Then
                     Call GetTitleByCLSID(sCLSID, sName, HE.Redirected, HE.SharedKey)
                 
@@ -10334,7 +10346,7 @@ Public Sub CheckO21Item()
                     
                     sHit = IIf(bIsWin32, "O21", IIf(HE.Redirected, "O21-32", "O21")) & " - HKLM\..\ShellServiceObjectDelayLoad: " & _
                         IIf(sName <> sValueName, sName & " ", "") & "[" & sValueName & "] " & " = " & sCLSID & " - " & sFile
-                    
+
                     'some shit leftover by Microsoft ^)
                     If bHideMicrosoft And (sName = "WebCheck" And sCLSID = "{E6FB5E20-DE35-11CF-9C87-00AA005127ED}" And sFile = "(no file)") Then bSafe = True
                 
@@ -10356,27 +10368,28 @@ Public Sub CheckO21Item()
             RegCloseKey hKey
         End If
     Loop
-    
+
     'ShellIconOverlayIdentifiers
     Dim aSubKey() As String
     Dim sSIOI As String
+    Dim sPrevFile As String
     
     sSIOI = "SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\ShellIconOverlayIdentifiers"
     
     HE.Init HE_HIVE_HKLM
     HE.AddKey sSIOI
-    
+
     Do While HE.MoveNext
         
         If Reg.EnumSubKeysToArray(HE.Hive, HE.Key, aSubKey, HE.Redirected) > 0 Then
         
             For i = 1 To UBound(aSubKey)
-            
+
                 sName = aSubKey(i)
                 sCLSID = Reg.GetString(HE.Hive, HE.Key & "\" & aSubKey(i), vbNullString, HE.Redirected)
                 
                 Call GetFileByCLSID(sCLSID, sFile, , HE.Redirected, HE.SharedKey)
-                
+
                 sFile = FormatFileMissing(sFile)
                 
                 bSafe = False
@@ -10392,7 +10405,7 @@ Public Sub CheckO21Item()
                         If IsMicrosoftFile(sFile) Then bSafe = True
                     End If
                 End If
-                
+
                 If Not bSafe Then
                     Call GetTitleByCLSID(sCLSID, sName, HE.Redirected, HE.SharedKey)
                     
@@ -10404,16 +10417,16 @@ Public Sub CheckO21Item()
                         sHit = IIf(bIsWin32, "O21", IIf(HE.Redirected, "O21-32", "O21")) & " - HKLM\..\ShellIconOverlayIdentifiers\" & _
                             " - " & sFile
                     End If
-                    
+
                     If Not IsOnIgnoreList(sHit) And Not bSafe Then
                         If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
-                        
+
                         If result.CureType <> 0 Then
-                            If StrComp(sFile, result.File(0).Path, 1) <> 0 Then
+                            If StrComp(sFile, sPrevFile, 1) <> 0 Then
                                 AddToScanResults result
                             End If
                         End If
-                        
+
                         With result
                             .Section = "O21"
                             .HitLineW = sHit
@@ -10425,8 +10438,12 @@ Public Sub CheckO21Item()
                             
                             .CureType = REGISTRY_BASED Or FILE_BASED
                         End With
-                        If sFile = "(no file)" Then AddToScanResults result
                         
+                        If sFile = "(no file)" Then
+                            AddToScanResults result
+                        Else
+                            sPrevFile = sFile
+                        End If
                     End If
                 End If
             
@@ -10434,8 +10451,7 @@ Public Sub CheckO21Item()
         End If
     Loop
     If result.CureType <> 0 Then AddToScanResults result
-    
-    
+
     'ShellExecuteHooks
     'See: http://blog.zemana.com/2016/06/youndoocom-using-shellexecutehooks-to.html
     
@@ -10467,7 +10483,7 @@ Public Sub CheckO21Item()
                     If IsMicrosoftFile(sFile) Then bSafe = True
                 End If
             End If
-            
+
             If Not bSafe Then
                 Call GetTitleByCLSID(sCLSID, sName, HE.Redirected, HE.SharedKey)
                 
@@ -13548,16 +13564,16 @@ Public Function GetProfileDirBySID(sSid As String) As String
 
 End Function
 
-Public Function StrInParamArray(stri As String, ParamArray vEtalon()) As Boolean
+Public Function StrInParamArray(Stri As String, ParamArray vEtalon()) As Boolean
     Dim i As Long
     For i = 0 To UBound(vEtalon)
-        If StrComp(stri, vEtalon(i), 1) = 0 Then StrInParamArray = True: Exit For
+        If StrComp(Stri, vEtalon(i), 1) = 0 Then StrInParamArray = True: Exit For
     Next
 End Function
 
 ' ¬озвращает true, если искомое значение найдено в одном из элементов массива (lB, uB ограничивает просматриваемый диапазон индексов)
 Public Function inArray( _
-    stri As String, _
+    Stri As String, _
     MyArray() As String, _
     Optional lB As Long = -2147483647, _
     Optional uB As Long = 2147483647, _
@@ -13568,7 +13584,7 @@ Public Function inArray( _
     If uB = 2147483647 Then uB = UBound(MyArray)    'Thanks to  азанский :)
     Dim i As Long
     For i = lB To uB
-        If StrComp(stri, MyArray(i), CompareMethod) = 0 Then inArray = True: Exit For
+        If StrComp(Stri, MyArray(i), CompareMethod) = 0 Then inArray = True: Exit For
     Next
     Exit Function
 ErrorHandler:
@@ -13583,7 +13599,7 @@ End Function
 'this function returns true, if any of items in serialized array has exact match with 'Stri' variable
 'you can restrict search with LBound and UBound items only.
 Public Function inArraySerialized( _
-    stri As String, _
+    Stri As String, _
     SerializedArray As String, _
     Delimiter As String, _
     Optional lB As Long = -2147483647, _
@@ -13593,7 +13609,7 @@ Public Function inArraySerialized( _
     On Error GoTo ErrorHandler:
     Dim MyArray() As String
     If 0 = Len(SerializedArray) Then
-        If 0 = Len(stri) Then inArraySerialized = True
+        If 0 = Len(Stri) Then inArraySerialized = True
         Exit Function
     End If
     MyArray = Split(SerializedArray, Delimiter)
@@ -13602,7 +13618,7 @@ Public Function inArraySerialized( _
     
     Dim i As Long
     For i = lB To uB
-        If StrComp(stri, MyArray(i), CompareMethod) = 0 Then inArraySerialized = True: Exit For
+        If StrComp(Stri, MyArray(i), CompareMethod) = 0 Then inArraySerialized = True: Exit For
     Next
     Exit Function
 ErrorHandler:
@@ -13848,6 +13864,9 @@ ErrorHandler:
 End Function
 
 Public Sub UpdatePolicy(Optional noWait As Boolean)
+
+    If OSver.IsWindows8OrGreater Then Exit Sub
+
     Dim GPUpdatePath$
     If bIsWin64 And FolderExists(sWinDir & "\sysnative") And OSver.MajorMinor >= 6 Then
         GPUpdatePath = sWinDir & "\sysnative\gpupdate.exe"
@@ -14012,7 +14031,7 @@ End Function
 Public Function GetCollectionIndexByItem(sItem As String, Col As Collection, Optional CompareMode As VbCompareMethod = vbTextCompare) As Long
     Dim i As Long
     For i = 1 To Col.Count
-        If StrComp(Col.item(i), sItem, CompareMode) = 0 Then
+        If StrComp(Col.Item(i), sItem, CompareMode) = 0 Then
             GetCollectionIndexByItem = i
             Exit For
         End If
@@ -14022,7 +14041,7 @@ End Function
 Public Function GetCollectionKeyByItem(sItem As String, Col As Collection, Optional CompareMode As VbCompareMethod = vbTextCompare) As String
     Dim i As Long
     For i = 1 To Col.Count
-        If StrComp(Col.item(i), sItem, CompareMode) = 0 Then
+        If StrComp(Col.Item(i), sItem, CompareMode) = 0 Then
             GetCollectionKeyByItem = GetCollectionKeyByIndex(i, Col)
             Exit For
         End If
@@ -14043,7 +14062,7 @@ End Function
 Public Function GetCollectionItemByKey(Key As String, Col As Collection, Optional CompareMode As VbCompareMethod = vbTextCompare) As String
     Dim i As Long
     For i = 1 To Col.Count
-        If StrComp(GetCollectionKeyByIndex(i, Col), Key, CompareMode) = 0 Then GetCollectionItemByKey = Col.item(i)
+        If StrComp(GetCollectionKeyByIndex(i, Col), Key, CompareMode) = 0 Then GetCollectionItemByKey = Col.Item(i)
     Next
 End Function
 
@@ -14758,7 +14777,7 @@ Public Function CreateLogFile() As String
                 If Not isCollectionKeyExists(sProcessName, Col) Then
                     Col.Add 1&, sProcessName          ' item - count, key - name of process
                 Else
-                    cnt = Col.item(sProcessName)      ' replacing item of collection
+                    cnt = Col.Item(sProcessName)      ' replacing item of collection
                     Col.Remove (sProcessName)
                     Col.Add cnt + 1&, sProcessName    ' increase count of identical processes
                 End If

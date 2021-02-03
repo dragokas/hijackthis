@@ -1,6 +1,8 @@
 @echo off
 cd /d "%~dp0"
 
+call _4_Clear.cmd
+
 if exist "%cd%\_HJT_src.zip" (
   del /f /a "%cd%\_HJT_src.zip" || (echo Unable to delete old src archive! & pause>NUL & exit /b)
 )

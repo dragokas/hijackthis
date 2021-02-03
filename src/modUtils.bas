@@ -643,82 +643,17 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Sub TryUnlock(ByVal File As String)  'получения прав NTFS + смена владельца на локальную группу "Администраторы"
-    On Error GoTo ErrorHandler:
+' Owner - Administrators
+' Full access for - Local System, Administrators, Users
+' Inheritance from parent is disabled.
+'
+Function TryUnlock(ByVal File As String) As Boolean
     AppendErrorLogCustom "TryUnlock - Begin", "File: " & File
     
-    Dim TakeOwn As String
-    Dim Icacls As String
-    Dim DosName As String
-    Dim bIsFolder As Boolean
-    
-    DosName = GetDOSFilename(File)
-    If Len(DosName) <> 0 Then File = DosName
-    
-    If Not OSver.IsWindowsVistaOrGreater Then Exit Sub
-    
-    bIsFolder = FolderExists(File)
-    
-    If OSver.Bitness = "x64" And FolderExists(sWinDir & "\sysnative") Then
-        TakeOwn = EnvironW("%SystemRoot%") & "\Sysnative\takeown.exe"
-        Icacls = EnvironW("%SystemRoot%") & "\Sysnative\icacls.exe"
-    Else
-        TakeOwn = EnvironW("%SystemRoot%") & "\System32\takeown.exe"
-        Icacls = EnvironW("%SystemRoot%") & "\System32\icacls.exe"
-    End If
-    
-    If FileExists(TakeOwn) Then
-      If bIsFolder Then
-        Proc.ProcessRun TakeOwn, "/F " & """" & File & """" & " /r /d y", , 0
-        If ERROR_SUCCESS <> Proc.WaitForTerminate(, , , 30000) Then
-            Proc.ProcessClose , , True
-        End If
-      Else
-        Proc.ProcessRun TakeOwn, "/F " & """" & File & """", , 0
-        If ERROR_SUCCESS <> Proc.WaitForTerminate(, , , 5000) Then
-            Proc.ProcessClose , , True
-        End If
-      End If
-    End If
-    
-    If FileExists(Icacls) Then
-      If bIsFolder Then
-        If 0 <> Len(OSver.SID_CurrentProcess) Then
-            Proc.ProcessRun Icacls, """" & File & """" & " /grant:r *" & OSver.SID_CurrentProcess & ":F /T /C /L", , 0
-        Else
-            Proc.ProcessRun Icacls, """" & File & """" & " /grant:r """ & envCurUser & """:F /T /C /L", , 0
-        End If
-        If ERROR_SUCCESS <> Proc.WaitForTerminate(, , , 30000) Then
-            Proc.ProcessClose , , True
-        End If
-      Else
-        Proc.ProcessRun Icacls, """" & File & """" & " /grant:r *S-1-1-0:F /L", , 0
-        If ERROR_SUCCESS <> Proc.WaitForTerminate(, , , 5000) Then
-            Proc.ProcessClose , , True
-        End If
-        
-        Proc.ProcessRun Icacls, """" & File & """" & " /grant:r *S-1-5-32-544:F /L", , 0
-        If ERROR_SUCCESS <> Proc.WaitForTerminate(, , , 5000) Then
-            Proc.ProcessClose , , True
-        End If
-    
-        If 0 <> Len(OSver.SID_CurrentProcess) Then
-            Proc.ProcessRun Icacls, """" & File & """" & " /grant:r *" & OSver.SID_CurrentProcess & ":F /L", , 0
-        Else
-            Proc.ProcessRun Icacls, """" & File & """" & " /grant:r """ & envCurUser & """:F /L", , 0
-        End If
-        If ERROR_SUCCESS <> Proc.WaitForTerminate(, , , 5000) Then
-            Proc.ProcessClose , , True
-        End If
-      End If
-    End If
+    TryUnlock = SetFileStringSD(File, "O:BAG:BAD:PAI(A;;FA;;;SY)(A;;FA;;;BA)(A;;FA;;;BU)")
     
     AppendErrorLogCustom "TryUnlock - End"
-    Exit Sub
-ErrorHandler:
-    ErrorMsg Err, "TryUnlock", "File:", File
-    If inIDE Then Stop: Resume Next
-End Sub
+End Function
 
 Public Function AppPath(Optional bGetFullPath As Boolean) As String
     On Error GoTo ErrorHandler

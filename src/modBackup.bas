@@ -603,25 +603,33 @@ Private Function BackupAllocFile(sFilePath As String, out_FileID As Long, Option
         tBackupList.cLastCMD.WriteParam out_FileID, "name", GetFileName(BackupAllocFile, True)
         tBackupList.cLastCMD.WriteParam out_FileID, "orig", EnvironUnexpand(sFilePath)
         
+        tBackupList.cLastCMD.WriteParam out_FileID, "DateA", ConvertDateToUSFormat(GetFileDate(sFilePath, DATE_ACCESSED))
+        
+        SDDL = GetFileStringSD(sFilePath)
+        
+        TryUnlock sFilePath
+        
+        If Len(SDDL) = 0 Then
+            SDDL = GetFileStringSD(sFilePath)
+        End If
+        
+        If Len(SDDL) <> 0 Then
+            tBackupList.cLastCMD.WriteParam out_FileID, "SD", SDDL
+        End If
+        
         ToggleWow64FSRedirection False, sFilePath, bOldRedir
         tBackupList.cLastCMD.WriteParam out_FileID, "attrib", GetFileAttributes(StrPtr(sFilePath))
         ToggleWow64FSRedirection bOldRedir
 
         tBackupList.cLastCMD.WriteParam out_FileID, "DateC", ConvertDateToUSFormat(GetFileDate(sFilePath, DATE_CREATED))
         tBackupList.cLastCMD.WriteParam out_FileID, "DateM", ConvertDateToUSFormat(GetFileDate(sFilePath, DATE_MODIFIED))
-        tBackupList.cLastCMD.WriteParam out_FileID, "DateA", ConvertDateToUSFormat(GetFileDate(sFilePath, DATE_ACCESSED))
-
-        SDDL = GetFileStringSD(sFilePath)
-        If Len(SDDL) <> 0 Then
-            tBackupList.cLastCMD.WriteParam out_FileID, "SD", SDDL
-        End If
         
     ElseIf Action = BACKUP_FILE_REGISTER Then
     
         tBackupList.cLastCMD.WriteParam out_FileID, "name", EnvironUnexpand(sFilePath)
     End If
     
-    tBackupList.cLastCMD.WriteParam out_FileID, "hash", GetFileCheckSum(sFilePath, , True)
+    tBackupList.cLastCMD.WriteParam out_FileID, "hash", CalcFileCRC(sFilePath)
     
     Exit Function
 ErrorHandler:
@@ -1640,8 +1648,8 @@ Private Function SRP_EnableService(sDrive As String) As Boolean
     Set objServices = GetObject("winmgmts:{impersonationLevel=impersonate}!root\default")
     Set oSR = objServices.Get("SystemRestore")
     Set objInParam = oSR.Methods_("Enable").inParameters.SpawnInstance_()
-    objInParam.Properties_.item("Drive") = sDrive
-    objInParam.Properties_.item("WaitTillEnabled") = True
+    objInParam.Properties_.Item("Drive") = sDrive
+    objInParam.Properties_.Item("WaitTillEnabled") = True
     Set objOutParams = oSR.ExecMethod_("Enable", objInParam)
     SRP_EnableService = (0 = objOutParams.ReturnValue)
     'If Not EnableSR Then MsgBoxW "Error! Could not enable system restore."
@@ -2072,7 +2080,7 @@ Public Function RestoreBackup(sItem As String) As Boolean
     Dim StrSD_old As String
     Dim dDateNull As Date
     Dim sName As String
-    Dim sID As String
+    Dim SID As String
     Dim sCommandLine As String
     Dim sTarget As String
     Dim sURL As String
@@ -2323,7 +2331,7 @@ Public Function RestoreBackup(sItem As String) As Boolean
             lCustomID = CLng(Cmd.Args)
             
             sName = tBackupList.cLastCMD.ReadParam(lCustomID, "name")
-            sID = tBackupList.cLastCMD.ReadParam(lCustomID, "id")
+            SID = tBackupList.cLastCMD.ReadParam(lCustomID, "id")
             sURL = tBackupList.cLastCMD.ReadParam(lCustomID, "url")
             sTarget = tBackupList.cLastCMD.ReadParam(lCustomID, "target")
             sCommandLine = tBackupList.cLastCMD.ReadParam(lCustomID, "commandline")
@@ -2404,8 +2412,8 @@ Private Function BackupExtractFixRegKeyByRegID(lRegID As Long, RecovType As ENUM
         If tBackupList.cLastCMD.ExistParam(lRegID, "hash") Then
         
             sHash = tBackupList.cLastCMD.ReadParam(lRegID, "hash")
-        
-            If CalcCRC(CStr(.DefaultData)) <> sHash Then
+            
+            If (Len(sHash) <> 0) And CalcCRC(CStr(.DefaultData)) <> sHash Then
                 'MsgBoxW "Error! Registry entry to be restored from backup is corrupted. Cannot continue repairing.", vbCritical
                 MsgBoxW Translate(1573), vbCritical
             Else
@@ -2454,7 +2462,14 @@ Private Function BackupValidateFileHash(lBackupID As Long, lFileID As Long) As B
         End If
     End If
     sSavedHash = tBackupList.cLastCMD.ReadParam(lFileID, "hash")
-    sRealHash = GetFileCheckSum(sBackupFile, , True)
+    
+    Select Case Len(sSavedHash) 'backward compatibility
+    Case 8:  sRealHash = CalcFileCRC(sBackupFile)
+    Case 32: sRealHash = GetFileMD5(sBackupFile, , True)
+    Case 40: sRealHash = GetFileSHA1(sBackupFile, , True)
+    Case 64: sRealHash = GetFileSHA256(sBackupFile, , True)
+    End Select
+    
     If StrComp(sSavedHash, sRealHash, vbTextCompare) = 0 Then
         BackupValidateFileHash = True
     Else

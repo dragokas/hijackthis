@@ -1720,3 +1720,9 @@ End Property
 Public Property Get LCID_UserDefault() As Long
     LCID_UserDefault = LCID_UserDefault_
 End Property
+
+Public Property Get SupportSHA2() As Long
+    If MajorMinor_ > 5.1 Then SupportSHA2 = True: Exit Property
+    If MajorMinor_ < 5.1 Then SupportSHA2 = False: Exit Property
+    If SPver_ = 3 Then SupportSHA2 = True
+End Property
