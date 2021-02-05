@@ -18,7 +18,7 @@ Attribute VB_Ext_KEY = "Top_Level" ,"Yes"
 Option Explicit
 
 ' OSInfo class by Alex Dragokas
-' ver 1.11
+' ver 1.12
 '
 
 'Tips:
@@ -1617,6 +1617,14 @@ Public Property Get IsWindowsXPOrGreater() As Boolean
     IsWindowsXPOrGreater = IsWindowsXPOrGreater_
 End Property
 
+Public Property Get IsWindowsXP_SP3OrGreater() As Long
+    Select Case MajorMinor_
+    Case Is > 5.1: IsWindowsXP_SP3OrGreater = True
+    Case Is < 5.1: IsWindowsXP_SP3OrGreater = False
+    Case Else: If SPver_ = 3 Then IsWindowsXP_SP3OrGreater = True
+    End Select
+End Property
+
 Public Property Get IsWindowsVistaOrGreater() As Boolean
     IsWindowsVistaOrGreater = IsWindowsVistaOrGreater_
 End Property
@@ -1719,10 +1727,4 @@ End Property
 
 Public Property Get LCID_UserDefault() As Long
     LCID_UserDefault = LCID_UserDefault_
-End Property
-
-Public Property Get SupportSHA2() As Long
-    If MajorMinor_ > 5.1 Then SupportSHA2 = True: Exit Property
-    If MajorMinor_ < 5.1 Then SupportSHA2 = False: Exit Property
-    If SPver_ = 3 Then SupportSHA2 = True
 End Property

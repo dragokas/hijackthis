@@ -11,6 +11,13 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[2.10.0.3 beta] (Nightly) - Feb 05, 2021
+ - All HKU\.DEFAULT prefixes are replaced by "HKU\S-1-5-18".
+ - O4 - Run* - is now contains postfix with username for service Sids as well.
+ - O7 - Policy: fixed DisallowRun item state.
+ - Fixed unicode strings detection in US Locale.
+ - Fixed missing restore feature in ABR backup.
+ 
 [2.10.0.2 beta] (Nightly) - Feb 03, 2021
  - VirusTotal: added compatibility with Windows XP SP3 (thanks to @wqweto for help).
  - Fixed error in O21 scan (thanks to @Sandor-Helper for reporting).
@@ -1539,4 +1546,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                                                    
+                                                     

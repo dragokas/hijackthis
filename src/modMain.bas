@@ -4171,7 +4171,6 @@ Sub CheckO4_RegRuns()
     
     Do While HE.MoveNext
         
-        
         For i = 1 To Reg.EnumValuesToArray(HE.Hive, HE.Key, aValue(), HE.Redirected)
         
             isDisabledWin8 = False
@@ -4213,9 +4212,10 @@ Sub CheckO4_RegRuns()
                 
                 sHit = sAlias & "[" & aValue(i) & "] = "
                 
-                sUser = ""
-                If HE.IsSidUser Then
+                If HE.IsSidUser Or HE.IsSidService Then
                     sUser = " (User '" & HE.UserName & "')"
+                Else
+                    sUser = vbNullString
                 End If
                 
                 SplitIntoPathAndArgs sData, sFile, sArgs, bIsRegistryData:=True
@@ -7193,7 +7193,7 @@ Public Sub CheckPolicies()
     
     Do While HE.MoveNext
     
-        iEnabled = Reg.GetDword(HE.Hive, HE.Key, "DisallowRun", HE.Redirected)
+        iEnabled = Reg.GetDword(HE.Hive, "Software\Microsoft\Windows\CurrentVersion\Policies\Explorer", "DisallowRun", HE.Redirected)
         
         For i = 1 To Reg.EnumValuesToArray(HE.Hive, HE.Key, aValue(), HE.Redirected)
    

@@ -2083,7 +2083,7 @@ Private Sub Form_Load()
         
         cmbHashType.AddItem "MD5"
         cmbHashType.AddItem "SHA1"
-        If OSver.SupportSHA2() Then
+        If OS_SupportSHA2() Then
             cmbHashType.AddItem "SHA256"
         Else
             mnuResultVT.Visible = False
@@ -3394,7 +3394,7 @@ Function ParseVTResult(sLog As String, sFile As String, nDetects As Long, sURL A
         
         If Len(sContent) < 2 Then Exit Function
         
-        If AscW(Left$(sContent, 1)) = 1103 And (AscW(Mid$(sContent, 2, 1)) = 1102) Then '"ÿþ"
+        If HasBOM_UTF16(sContent) Then
             sContent = StrConv(Mid$(sContent, 3), vbFromUnicode)
         End If
         
@@ -3537,7 +3537,7 @@ Sub ParseFilesXML(dRunFiles As clsTrickHashTable, sLog As String)
         
         If Len(sContent) < 2 Then Exit Sub
         
-        If AscW(Left$(sContent, 1)) = 1103 And (AscW(Mid$(sContent, 2, 1)) = 1102) Then '"ÿþ"
+        If HasBOM_UTF16(sContent) Then
             sContent = StrConv(Mid$(sContent, 3), vbFromUnicode)
         End If
         
@@ -5407,7 +5407,15 @@ Private Sub LoadSettings(Optional nRun As Long)
         RegSaveHJT "HashType", sHashType
     End If
     Select Case sHashType
-    Case "Newest", "SHA256"
+    Case "Newest"
+        If OS_SupportSHA2 Then
+            ComboSetValue cmbHashType, "SHA256"
+            g_eUseHashType = HASH_TYPE_SHA256
+        Else
+            ComboSetValue cmbHashType, "SHA1"
+            g_eUseHashType = HASH_TYPE_SHA1
+        End If
+    Case "SHA256"
         ComboSetValue cmbHashType, "SHA256"
         g_eUseHashType = HASH_TYPE_SHA256
     Case "SHA1"

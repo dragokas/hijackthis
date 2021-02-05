@@ -1084,10 +1084,13 @@ Public Function ABR_CreateBackup(bForceIgnoreDays As Boolean) As Boolean
                 MsgBoxW Translate(1561), vbCritical
                 Exit Function
             End If
-            
+
             'note: in contrast to UVs, HJT creates identical restore.exe and restore_x64.exe files
             If OSver.IsWin64 Then
-                FileCopyW sBackup_Folder & "\restore_x64.exe", sBackup_Folder & "\restore.exe", True
+                Call UnpackResource(304, sBackup_Folder & "\restore_x64.exe")
+                Call UnpackResource(304, sBackup_Folder & "\restore.exe")
+            Else
+                Call UnpackResource(303, sBackup_Folder & "\restore.exe")
             End If
             
             ' add to HJT backup list
@@ -1897,7 +1900,13 @@ End Function
 'End Function
 
 Public Function HasBOM_UTF16(sText As String) As Boolean
-    HasBOM_UTF16 = (AscW(Left$(sText, 1)) = 1103 And (AscW(Mid$(sText, 2, 1)) = 1102))
+    Dim b1 As Long
+    Dim b2 As Long
+    b1 = AscW(Left$(sText, 1))
+    b2 = AscW(Mid$(sText, 2, 1))
+    '255, 254 - under US Locale
+    '1103, 1102 - other Locales
+    HasBOM_UTF16 = (b1 = 1103 And b2 = 1102) Or (b1 = 255 And b2 = 254)
 End Function
 
 Public Sub ListBackups()

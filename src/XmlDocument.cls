@@ -63,7 +63,7 @@ Public Function LoadData(Data As Variant) As Boolean
             
             If Len(Data) > 1 Then
                 'UTF16 ?
-                If AscW(Left$(Data, 1)) = 1103 And (AscW(Mid$(Data, 2, 1)) = 1102) Then '"ÿþ"
+                If HasBOM_UTF16(CStr(Data)) Then
                     Data = StrConv(Mid$(Data, 3), vbFromUnicode)
                 End If
             End If

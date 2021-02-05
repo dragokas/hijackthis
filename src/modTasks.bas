@@ -2386,6 +2386,7 @@ Public Sub EnumBITS_Stage2()
                             If Not bSafe Then If StrBeginWith(aURL(i), "http://download.windowsupdate.com/") Then bSafe = True
                             If Not bSafe Then If StrBeginWith(aURL(i), "http://au.download.windowsupdate.com/") Then bSafe = True
                             If Not bSafe Then If StrBeginWith(aURL(i), "http://bg.v4.emdl.ws.microsoft.com/") Then bSafe = True
+                            If Not bSafe Then If StrBeginWith(aURL(i), "https://api.browser.yandex.ru/") Then bSafe = True
                         End If
                         
                         If Not bSafe Then

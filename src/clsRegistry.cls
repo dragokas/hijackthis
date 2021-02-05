@@ -2025,7 +2025,7 @@ Public Function ExportKeyToVariable( _
                         
                         If GetW(hFile, 1, sData) Then
                             
-                            isUnicode = (AscW(Left$(sData, 1)) = 1103 And (AscW(Mid$(sData, 2, 1)) = 1102)) '"ÿþ"
+                            isUnicode = HasBOM_UTF16(sData)
                             
                             'adding 2 extra CrLf for future purposes - if we would like to concat. several export. variables
                             If isUnicode Then

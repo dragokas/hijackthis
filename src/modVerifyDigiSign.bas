@@ -2548,7 +2548,8 @@ Public Sub FindNewMicrosoftCodeSignCert()
                             
                             If IssuedTo <> "localhost" _
                                 And FriendlyName <> "Microsoft Exchange" _
-                                And FriendlyName <> "Symantec Enterprise Mobile Root for Microsoft" Then
+                                And FriendlyName <> "Symantec Enterprise Mobile Root for Microsoft" _
+                                And FriendlyName <> "Microsoft Certificate Trust List PCA" Then
                                 
                                 sData = vbNullString
                                 

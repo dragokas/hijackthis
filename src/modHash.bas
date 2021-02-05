@@ -395,7 +395,7 @@ Public Function CalcSha256(Stri As String) As String
 
     On Error GoTo ErrorHandler:
     
-    If Not OSver.SupportSHA2() Then Exit Function
+    If Not OS_SupportSHA2() Then Exit Function
     
     Dim hCrypt      As Long
     Dim hHash       As Long

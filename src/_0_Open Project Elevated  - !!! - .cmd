@@ -40,8 +40,9 @@ if defined TaskExist (
   if "%~1" neq "Admin" (
     call :GetPrivileges
   ) else (
-    call :BuildCustomProject "tools\RegTLib\Project1.vbp" "tools\RegTLib\RegTLib.exe"
+    if not exist "tools\RegTLib\REGTLIB.EXE" call :BuildCustomProject "tools\RegTLib\Project1.vbp" "tools\RegTLib\RegTLib.exe"
     if exist "tools\RegTLib\REGTLIB.EXE" (
+	  tools\RegTLib\REGTLIB.EXE "%~dp0oleexp.tlb" /admin
       tools\RegTLib\REGTLIB.EXE %SystemRoot%\System32\msdatsrc.tlb /admin
       if "%OSBitness%"=="x64" (
         tools\RegTLib\REGTLIB.EXE %SystemRoot%\SysWow64\msdatsrc.tlb /admin

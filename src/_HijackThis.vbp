@@ -1,6 +1,6 @@
 Type=Exe
 Reference=*\G{0000000B-0000-0000-0000-000000000AAB}#1.17#0#TrickVB6LauncherTypeLibrary.tlb#WinAPI functions for TrickVB6Launcher v1.23
-Reference=*\G{F9015E81-CAAC-45C0-94E8-42B7DA5D7557}#4.5#0#oleexp.tlb#OLEEXP - olelib With Modern Interfaces by fafalone, v4.5
+Reference=*\G{F9015E81-CAAC-45C0-94E8-42B7DA5D7558}#4.7#0#oleexp.tlb#OLEEXP - Modern Shell Interfaces for VB6, v4.7
 Reference=*\G{5C2F7560-4482-4686-9DD2-9BAF4C7B18E3}#2.4#0#oleexpimp.tlb#OLEEXP For Implements - olelib2 Expanded, v2.04
 Reference=*\G{275C23E0-3747-11D0-9FEA-00AA003F8646}#0.2#0#MLang.tlb#MultiLanguage Object Model
 Reference=*\G{2DF86ADB-D46C-4496-8F5D-32B46DDCF73E}#3.1#0#VB6.tlb#VBWERX Core Language Extensions
@@ -75,7 +75,7 @@ Description="Creates a report of non-standard parameters of registry and file sy
 CompatibleMode="0"
 MajorVer=2
 MinorVer=10
-RevisionVer=2
+RevisionVer=3
 AutoIncrementVer=0
 ServerSupportFiles=0
 VersionCompanyName="Stanislav Polshyn & Trend Micro Inc."

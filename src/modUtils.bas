@@ -2890,3 +2890,9 @@ Public Sub ComboSetValue(cmb As ComboBox, sValue As String)
     Next
     ErrorMsg Err, "Cannot set value: " & sValue & " - for ComboBox: " & cmb.Name
 End Sub
+
+Public Function OS_SupportSHA2() As Boolean
+
+    OS_SupportSHA2 = OSver.IsWindowsXP_SP3OrGreater
+
+End Function
