@@ -299,6 +299,7 @@ OSver;Dir\Name;RunObj;Args;Note
 10; \Microsoft\XblGameSave\XblGameSaveTaskLogon; %SystemRoot%\System32\XblGameSaveTask.exe; logon
 10; \OfficeSoftwareProtectionPlatform\SvcRestartTask; %SystemRoot%\system32\sc.exe; start osppsvc
 10; {root}\CreateExplorerShellUnelevatedTask; %SystemRoot%\explorer.exe; /NOUACCHECK
+10; {root}\MicrosoftEdgeUpdateBrowserReplacementTask; %ProgramFiles(x86)%\Microsoft\EdgeUpdate\MicrosoftEdgeUpdate.exe; /browserreplacement
 10; {root}\MicrosoftEdgeUpdateTaskMachineCore; %ProgramFiles(x86)%\Microsoft\EdgeUpdate\MicrosoftEdgeUpdate.exe; /c
 10; {root}\OneDrive Standalone Update Task v2; %LOCALAPPDATA%\Microsoft\OneDrive\OneDriveStandaloneUpdater.exe
 10; {root}\User_Feed_Synchronization-{87B814C1-CCB9-4FA2-8B36-7914DEC60311}; %SystemRoot%\system32\msfeedssync.exe; sync

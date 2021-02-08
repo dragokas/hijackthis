@@ -2165,7 +2165,7 @@ Public Function IniSetString( _
     
     If Not FolderExists(sDir) Then
         If Not MkDirW(sDir) Then
-            TryUnlock sDir
+            TryUnlock GetParentDir(sDir)
             If Not MkDirW(sDir) Then
                 If Not bAutoLogSilent Then
                     'Could not create folder '[]'. Please verify that write access is allowed to this location.
@@ -2492,7 +2492,7 @@ Public Function FileCopyW(FileSource As String, FileDestination As String, Optio
     sFolder = GetParentDir(FileDestination)
     
     If Not FolderExists(sFolder) Then
-        If Not MkDirW(sFolder) Then Exit Function
+        If Not MkDirW(sFolder) Then GoTo Finalize
     End If
     
     FileCopyW = CopyFile(StrPtr(FileSource), StrPtr(FileDestination), Not bOverwrite)
@@ -2505,6 +2505,8 @@ Public Function FileCopyW(FileSource As String, FileDestination As String, Optio
             End If
         End If
     End If
+    
+Finalize:
     ToggleWow64FSRedirection bOldRedir
     
     Exit Function
@@ -2685,11 +2687,16 @@ Public Sub SplitIntoPathAndArgs(ByVal InLine As String, Path As String, Optional
                 Exit Sub
             End If
             'Expanding paths like: C:\Program Files (x86)\Download Master\dmaster.exe -autorun
-            pos = InStrRev(InLine, ".exe", -1, 1)
-            If pos <> 0 Then
-                Path = Left$(InLine, pos + 3)
-                Args = LTrim(Mid$(InLine, pos + 4))
-                If Not FileExists(Path) Then bFail = True
+            If Not StrEndWith(InLine, ".exe") Then
+                pos = InStrRev(InLine, ".exe", -1, 1)
+                If pos <> 0 Then
+                    sTmp = Mid$(InLine, pos + 4, 1)
+                    If sTmp = " " Or sTmp = "/" Then
+                        Path = Left$(InLine, pos + 3)
+                        Args = LTrim(Mid$(InLine, pos + 4))
+                        If Not FileExists(Path) Then bFail = True
+                    End If
+                End If
             End If
         Else
             bFail = True
@@ -2715,9 +2722,11 @@ Public Sub SplitIntoPathAndArgs(ByVal InLine As String, Path As String, Optional
     End If
     
     'Anti-HJT-hijack :)
-    If InStr(1, Args, "(Microsoft)", 1) <> 0 Then
-        If Not IsMicrosoftFile(Path) Then
-            Args = Args & " <== not a Microsoft !!!"
+    If Len(Args) <> 0 Then
+        If InStr(1, Args, "(Microsoft)", 1) <> 0 Then
+            If Not IsMicrosoftFile(Path) Then
+                Args = Args & " <== not a Microsoft !!!"
+            End If
         End If
     End If
     
@@ -2771,7 +2780,8 @@ Public Function DeleteFolderForce(sFolder As String, Optional bForceDeleteMicros
         If (iAttr And 2048) Then iAttr = iAttr - 2048
         If iAttr And FILE_ATTRIBUTE_READONLY Then SetFileAttributes StrPtr(sFolder), iAttr And Not FILE_ATTRIBUTE_READONLY
         If Not DeleteFolder(sFolder) Then
-            TryUnlock sFolder
+            TryUnlock sFolder, True
+            SetFileAttributes StrPtr(sFolder), iAttr And Not FILE_ATTRIBUTE_READONLY
             If Not DeleteFolder(sFolder) Then
                 If Not MoveFolder(sFolder, sFolder & ".bak") Then
                     DeleteFolderForce = False

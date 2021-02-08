@@ -4820,7 +4820,7 @@ Private Sub EnumActiveXAutoruns()
         sStubPath = ExpandEnvironmentVars(Reg.GetString(HKEY_LOCAL_MACHINE, sAXKey & "\" & sKeys(i), "StubPath"))
         If sStubPath <> vbNullString Then
             sName = Reg.GetString(HKEY_LOCAL_MACHINE, sAXKey & "\" & sKeys(i), "ComponentID")
-            If sName = vbNullString Then sName = "(no name)"
+            If sName = vbNullString Then sName = STR_NO_NAME
             If InStr(sKeys(i), "{") > 0 Then
                 sKeys(i) = Mid$(sKeys(i), InStr(sKeys(i), "{"))
                 sKeys(i) = Mid$(sKeys(i), 1, InStr(sKeys(i), "}"))
@@ -4868,10 +4868,10 @@ Private Sub EnumDPFs()
             sName = Reg.GetString(HKEY_LOCAL_MACHINE, sKey & "\" & sKeys(i), vbNullString)
             If sName = vbNullString Then
                 sName = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sKeys(i), vbNullString)
-                If sName = vbNullString Then sName = "(no name)"
+                If sName = vbNullString Then sName = STR_NO_NAME
             End If
             sFile = ExpandEnvironmentVars(Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sKeys(i) & "\InprocServer32", vbNullString))
-            If sFile = vbNullString Then sFile = "(no file)"
+            If sFile = vbNullString Then sFile = STR_NO_FILE
             If Not bShowCLSIDs Then
                 tvwMain.Nodes.Add "DPFs", tvwChild, "DPFs" & i, sName & " - " & sFile & " - " & sCodebase, "reg"
             Else
@@ -5498,7 +5498,7 @@ Private Sub EnumBHOs()
         If sName = vbNullString Then
             sName = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sKeys(i), vbNullString)
         End If
-        If sName = vbNullString Then sName = "(no name)"
+        If sName = vbNullString Then sName = STR_NO_NAME
         sFile = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sKeys(i) & "\InprocServer32", vbNullString)
         sFile = GetLongFilename(sFile)
         If Not bShowCLSIDs Then
@@ -6007,7 +6007,7 @@ Private Sub EnumContextMenuHandlers()
             sName = sKeys(i)
             If sName = vbNullString Or InStr(sName, "{") = 1 Then
                 sName = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sKeys(i), vbNullString)
-                If sName = vbNullString Then sName = "(no name)"
+                If sName = vbNullString Then sName = STR_NO_NAME
             End If
             
             'retarded 'start menu pin' uses name and clsid wrong way around
@@ -6066,8 +6066,8 @@ Private Sub EnumColumnHandlers()
         'the name is blank, but try it anyway
         sName = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, vbNullString)
         sFile = ExpandEnvironmentVars(Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InprocServer32", vbNullString))
-        If sName = vbNullString Then sName = "(no name)"
-        If sFile = vbNullString Then sFile = "(no file)"
+        If sName = vbNullString Then sName = STR_NO_NAME
+        If sFile = vbNullString Then sFile = STR_NO_FILE
         
         If bShowCLSIDs Then
             tvwMain.Nodes.Add "ColumnHandlers", tvwChild, "ColumnHandlers" & i, sName & " - " & sCLSID & " - " & sFile, "dll"
@@ -6109,7 +6109,7 @@ Private Sub EnumShellExecuteHooks()
         sVals(i) = Mid$(sVals(i), 1, InStr(sVals(i), " = ") - 1)
         If sName = vbNullString Then
             sName = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sVals(i), vbNullString)
-            If sName = vbNullString Then sName = "(no name)"
+            If sName = vbNullString Then sName = STR_NO_NAME
         End If
         sFile = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sVals(i) & "\InprocServer32", vbNullString)
         sFile = GetLongFilename(sFile)
@@ -6251,7 +6251,7 @@ Private Sub EnumURLSearchHooks()
         sName = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, vbNullString)
         sFile = ExpandEnvironmentVars(Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InprocServer32", vbNullString))
         If sFile <> vbNullString Then
-            If sName = vbNullString Then sName = "(no name)"
+            If sName = vbNullString Then sName = STR_NO_NAME
             If Not bShowCLSIDs Then
                 tvwMain.Nodes.Add "URLSearchHooksSystem", tvwChild, "URLSearchHooksSystem" & i, sName & " - " & sFile, "reg"
             Else
@@ -6275,7 +6275,7 @@ Private Sub EnumURLSearchHooks()
         sName = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, vbNullString)
         sFile = ExpandEnvironmentVars(Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InprocServer32", vbNullString))
         If sFile <> vbNullString Then
-            If sName = vbNullString Then sName = "(no name)"
+            If sName = vbNullString Then sName = STR_NO_NAME
             If Not bShowCLSIDs Then
                 tvwMain.Nodes.Add "URLSearchHooksUser", tvwChild, "URLSearchHooksUser" & i, sName & " - " & sFile, "reg"
             Else
@@ -6311,7 +6311,7 @@ Private Sub EnumURLSearchHooks()
                 sName = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, vbNullString)
                 sFile = ExpandEnvironmentVars(Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InprocServer32", vbNullString))
                 If sFile <> vbNullString Then
-                    If sName = vbNullString Then sName = "(no name)"
+                    If sName = vbNullString Then sName = STR_NO_NAME
                     If Not bShowCLSIDs Then
                         tvwMain.Nodes.Add sUsernames(L) & "URLSearchHooksUser", tvwChild, sUsernames(L) & "URLSearchHooksUser" & i, sName & " - " & sFile, "reg"
                     Else
@@ -6887,10 +6887,10 @@ Private Sub EnumIEToolbars()
         sName = Mid$(sVals(i), InStr(sVals(i), " = ") + 3)
         If sName = vbNullString Then
             sName = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, vbNullString)
-            If sName = vbNullString Then sName = "(no name)"
+            If sName = vbNullString Then sName = STR_NO_NAME
         End If
         sFile = ExpandEnvironmentVars(Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InprocServer32", vbNullString))
-        If sFile = vbNullString Then sFile = "(no file)"
+        If sFile = vbNullString Then sFile = STR_NO_FILE
         If Not bShowCLSIDs Then
             tvwMain.Nodes.Add "IEToolbarsSystem", tvwChild, "IEToolbarsSystem" & i, sName & " - " & sFile, "dll"
         Else
@@ -6916,9 +6916,9 @@ Private Sub EnumIEToolbars()
         sCLSID = sVals(i)
         If sCLSID <> "ITBarLayout" Then
             sName = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, vbNullString)
-            If sName = vbNullString Then sName = "(no name)"
+            If sName = vbNullString Then sName = STR_NO_NAME
             sFile = ExpandEnvironmentVars(Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InprocServer32", vbNullString))
-            If sFile = vbNullString Then sFile = "(no file)"
+            If sFile = vbNullString Then sFile = STR_NO_FILE
             If Not bShowCLSIDs Then
                 tvwMain.Nodes.Add "IEToolbarsUserShell", tvwChild, "IEToolbarsUserShell" & i, sName & " - " & sFile, "dll"
             Else
@@ -6944,9 +6944,9 @@ Private Sub EnumIEToolbars()
         sCLSID = sVals(i)
         If InStr(sCLSID, "{") = 1 Then
             sName = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, vbNullString)
-            If sName = vbNullString Then sName = "(no name)"
+            If sName = vbNullString Then sName = STR_NO_NAME
             sFile = ExpandEnvironmentVars(Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InprocServer32", vbNullString))
-            If sFile = vbNullString Then sFile = "(no file)"
+            If sFile = vbNullString Then sFile = STR_NO_FILE
             If Not bShowCLSIDs Then
                 tvwMain.Nodes.Add "IEToolbarsUserWeb", tvwChild, "IEToolbarsUserWeb" & i, sName & " - " & sFile, "dll"
             Else
@@ -6986,9 +6986,9 @@ Private Sub EnumIEToolbars()
                 sCLSID = sVals(i)
                 If sCLSID <> "ITBarLayout" Then
                     sName = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, vbNullString)
-                    If sName = vbNullString Then sName = "(no name)"
+                    If sName = vbNullString Then sName = STR_NO_NAME
                     sFile = ExpandEnvironmentVars(Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InprocServer32", vbNullString))
-                    If sFile = vbNullString Then sFile = "(no file)"
+                    If sFile = vbNullString Then sFile = STR_NO_FILE
                     If Not bShowCLSIDs Then
                         tvwMain.Nodes.Add sUsernames(L) & "IEToolbarsUserShell", tvwChild, sUsernames(L) & "IEToolbarsUserShell" & i, sName & " - " & sFile, "dll"
                     Else
@@ -7014,9 +7014,9 @@ Private Sub EnumIEToolbars()
                 sCLSID = sVals(i)
                 If InStr(sCLSID, "{") = 1 Then
                     sName = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, vbNullString)
-                    If sName = vbNullString Then sName = "(no name)"
+                    If sName = vbNullString Then sName = STR_NO_NAME
                     sFile = ExpandEnvironmentVars(Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InprocServer32", vbNullString))
-                    If sFile = vbNullString Then sFile = "(no file)"
+                    If sFile = vbNullString Then sFile = STR_NO_FILE
                     If Not bShowCLSIDs Then
                         tvwMain.Nodes.Add sUsernames(L) & "IEToolbarsUserWeb", tvwChild, sUsernames(L) & "IEToolbarsUserWeb" & i, sName & " - " & sFile, "dll"
                     Else
@@ -7121,9 +7121,9 @@ Private Sub EnumIEExplBars()
     sKeys = Split(Reg.EnumSubKeys(HKEY_LOCAL_MACHINE, sKey), "|")
     For i = 0 To UBound(sKeys)
         sName = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sKeys(i), vbNullString)
-        If sName = vbNullString Then sName = "(no name)"
+        If sName = vbNullString Then sName = STR_NO_NAME
         sFile = ExpandEnvironmentVars(Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sKeys(i) & "\InprocServer32", vbNullString))
-        If sFile = vbNullString Then sFile = "(no file)"
+        If sFile = vbNullString Then sFile = STR_NO_FILE
         If Not bShowCLSIDs Then
             tvwMain.Nodes.Add "IEExplBars", tvwChild, "IEExplBars" & i, sName & " - " & sFile, "dll"
         Else
@@ -8168,8 +8168,8 @@ Private Sub EnumPrintMonitors()
     For i = 0 To UBound(sKeys)
         sName = sKeys(i)
         sFile = Reg.GetString(HKEY_LOCAL_MACHINE, sMonitors & "\" & sName, "Driver")
-        If sName = vbNullString Then sName = "(no name)"
-        If sFile = vbNullString Then sFile = "(no file)"
+        If sName = vbNullString Then sName = STR_NO_NAME
+        If sFile = vbNullString Then sFile = STR_NO_FILE
         tvwMain.Nodes.Add "PrintMonitors", tvwChild, "PrintMonitors" & i, sName & " - " & sFile, "dll"
         tvwMain.Nodes("PrintMonitors" & i).Tag = GuessFullpathFromAutorun(sFile)
         If bSL_Abort Then Exit Sub
@@ -8193,8 +8193,8 @@ Private Sub EnumPrintMonitors()
         For i = 0 To UBound(sKeys)
             sName = sKeys(i)
             sFile = Reg.GetString(HKEY_LOCAL_MACHINE, sMonitors & "\" & sName, "Driver")
-            If sName = vbNullString Then sName = "(no name)"
-            If sFile = vbNullString Then sFile = "(no file)"
+            If sName = vbNullString Then sName = STR_NO_NAME
+            If sFile = vbNullString Then sFile = STR_NO_FILE
             tvwMain.Nodes.Add sHardwareCfgs(L) & "PrintMonitors", tvwChild, sHardwareCfgs(L) & "PrintMonitors" & i, sName & " - " & sFile, "dll"
             tvwMain.Nodes(sHardwareCfgs(L) & "PrintMonitors" & i).Tag = GuessFullpathFromAutorun(sFile)
         Next i

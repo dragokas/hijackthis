@@ -1235,7 +1235,7 @@ Public Sub EnumTasksVista(Optional MakeCSV As Boolean)
                 Print #LogHandle, OSver.MajorMinor & ";" & ScreenChar(DirParent & "\" & TaskName) & ";" & _
                     ScreenChar(te(j).RunObj) & ";" & _
                     IIf(te(j).ActionType = TASK_ACTION_EXEC, ScreenChar(te(j).RunArgs), ScreenChar(te(j).RunObjCom)) & ";" & _
-                    IIf(te(j).FileMissing, "(file missing)", "") & ";"
+                    IIf(te(j).FileMissing, STR_FILE_MISSING, "") & ";"
             End If
             
             If Len(te(j).RunObjExpanded) <> 0 Then te(j).RunObj = te(j).RunObjExpanded
@@ -1283,7 +1283,7 @@ Public Sub EnumTasksVista(Optional MakeCSV As Boolean)
                 ElseIf te(j).ActionType = TASK_ACTION_COM_HANDLER And Len(te(j).RunObjCom) <> 0 Then
                 
                   'for some reason, part of CLSID records on Win10 is not registered
-                  If te(j).RunObjCom <> "(no file)" Then
+                  If te(j).RunObjCom <> STR_NO_FILE Then
                 
                     bIsMicrosoftFile = IsMicrosoftFile(te(j).RunObjCom)
                     
@@ -2254,11 +2254,11 @@ Sub EnumTasksXP() 'Win XP / Server 2003
     
         sCLSID = Left$(sCLSID, lCLSIDLen)
         sName = TrimNull(sName)
-        If sName = vbNullString Then sName = "(no name)"
+        If sName = vbNullString Then sName = STR_NO_NAME
         sFile = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InprocServer32", vbNullString, Wow6432Redir)
         sFile = UnQuote(EnvironW(sFile))
         If sFile = vbNullString Then
-            sFile = "(no file)"
+            sFile = STR_NO_FILE
         Else
             If Not FileExists(sFile) Then
                 sFile = sFile & " (file missing)"

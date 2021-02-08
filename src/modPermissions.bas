@@ -1336,7 +1336,7 @@ Public Function GetObjectSD(hObject As Long, reqInfoType As SECURITY_INFORMATION
     End If
 End Function
 
-Public Function SetFileStringSD(sFile As String, StrSD As String) As Boolean
+Public Function SetFileStringSD(sObject As String, StrSD As String, Optional bRecursive As Boolean) As Boolean
     
     Dim SD() As Byte
     Dim bOldRedir As Boolean
@@ -1345,9 +1345,9 @@ Public Function SetFileStringSD(sFile As String, StrSD As String) As Boolean
     SD = ConvertStringSDToSD(StrSD)
     
     If AryPtr(SD) Then
-        ToggleWow64FSRedirection False, sFile, bOldRedir
+        ToggleWow64FSRedirection False, sObject, bOldRedir
         
-        hFile = CreateFile(StrPtr(sFile), READ_CONTROL Or WRITE_OWNER Or WRITE_DAC Or ACCESS_SYSTEM_SECURITY, _
+        hFile = CreateFile(StrPtr(sObject), READ_CONTROL Or WRITE_OWNER Or WRITE_DAC Or ACCESS_SYSTEM_SECURITY, _
             FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, ByVal 0, OPEN_EXISTING, g_FileBackupFlag, 0)
         
         ToggleWow64FSRedirection bOldRedir
@@ -1355,6 +1355,17 @@ Public Function SetFileStringSD(sFile As String, StrSD As String) As Boolean
         If hFile <> INVALID_HANDLE_VALUE Then
             SetFileStringSD = SetSecurityDescriptor(hFile, SE_FILE_OBJECT, SD)
             CloseHandle hFile
+        End If
+        
+        If bRecursive Then
+            Dim aFolders() As String
+            Dim i As Long
+            
+            aFolders = ListSubfolders(sObject)
+            
+            For i = 0 To UBoundSafe(aFolders)
+                SetFileStringSD = SetFileStringSD And SetFileStringSD(aFolders(i), StrSD, True)
+            Next
         End If
     End If
 End Function

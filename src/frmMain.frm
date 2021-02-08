@@ -3024,7 +3024,7 @@ Private Sub FormStart_Stady3()
         Exit Sub
     End If
     
-    bSigSystemOK = isEDS_Work("")
+    bSigSystemOK = isEDS_Work()
     
     'sigcheck
     Dim dRunFiles As clsTrickHashTable

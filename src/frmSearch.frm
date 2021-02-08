@@ -3,7 +3,7 @@ Begin VB.Form frmSearch
    AutoRedraw      =   -1  'True
    BorderStyle     =   4  'Fixed ToolWindow
    Caption         =   "Find"
-   ClientHeight    =   3144
+   ClientHeight    =   3156
    ClientLeft      =   48
    ClientTop       =   312
    ClientWidth     =   5568
@@ -12,34 +12,87 @@ Begin VB.Form frmSearch
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   3144
+   ScaleHeight     =   3156
    ScaleWidth      =   5568
    ShowInTaskbar   =   0   'False
    StartUpPosition =   3  'Windows Default
    Visible         =   0   'False
+   Begin VB.Frame Frame1 
+      Height          =   1692
+      Left            =   120
+      TabIndex        =   17
+      Top             =   480
+      Width           =   2532
+      Begin VB.CheckBox chkEscSeq 
+         Caption         =   "Esc-sequences"
+         Height          =   255
+         Left            =   120
+         TabIndex        =   11
+         Top             =   1100
+         Width           =   2292
+      End
+      Begin VB.CheckBox chkRegExp 
+         Caption         =   "Regular expressions"
+         Height          =   255
+         Left            =   120
+         TabIndex        =   10
+         Top             =   790
+         Width           =   2292
+      End
+      Begin VB.CheckBox chkWholeWord 
+         Caption         =   "Whole word"
+         Height          =   255
+         Left            =   120
+         TabIndex        =   9
+         Top             =   480
+         Width           =   2292
+      End
+      Begin VB.CheckBox chkMatchCase 
+         Caption         =   "Match case"
+         Height          =   255
+         Left            =   120
+         TabIndex        =   3
+         Top             =   170
+         Width           =   2292
+      End
+      Begin VB.Label lblEscSeq 
+         Caption         =   "\[0020], \\,  \n,  \t"
+         Height          =   252
+         Left            =   360
+         TabIndex        =   18
+         Top             =   1320
+         Width           =   2052
+      End
+   End
    Begin VB.Frame frDisplay 
       Caption         =   "Display"
-      Height          =   852
+      Height          =   972
       Left            =   120
-      TabIndex        =   15
-      Top             =   2280
+      TabIndex        =   14
+      Top             =   2160
       Width           =   5412
       Begin VB.CheckBox chkMarkInstant 
          Caption         =   "Instantly mark items found"
          Enabled         =   0   'False
-         Height          =   492
-         Left            =   2400
-         TabIndex        =   17
-         Top             =   240
-         Width           =   2892
+         Height          =   252
+         Left            =   240
+         TabIndex        =   16
+         Top             =   600
+         Width           =   4572
       End
       Begin VB.CheckBox chkFiltration 
          Caption         =   "Filtration mode"
          Height          =   192
          Left            =   240
-         TabIndex        =   16
+         TabIndex        =   15
          Top             =   360
-         Width           =   2052
+         Width           =   2292
+      End
+      Begin VB.Image imgSave 
+         Height          =   372
+         Left            =   5040
+         Top             =   120
+         Width           =   372
       End
    End
    Begin VB.CommandButton CmdFind 
@@ -48,7 +101,7 @@ Begin VB.Form frmSearch
       Enabled         =   0   'False
       Height          =   375
       Left            =   3720
-      TabIndex        =   14
+      TabIndex        =   13
       Top             =   0
       Width           =   1335
    End
@@ -61,36 +114,12 @@ Begin VB.Form frmSearch
       Top             =   840
       Width           =   1455
    End
-   Begin VB.CheckBox chkEscSeq 
-      Caption         =   "Esc-sequences"
-      Height          =   255
-      Left            =   120
-      TabIndex        =   11
-      Top             =   1680
-      Width           =   2415
-   End
-   Begin VB.CheckBox chkRegExp 
-      Caption         =   "Regular expressions"
-      Height          =   255
-      Left            =   120
-      TabIndex        =   10
-      Top             =   1320
-      Width           =   2415
-   End
-   Begin VB.CheckBox chkWholeWord 
-      Caption         =   "Whole word"
-      Height          =   255
-      Left            =   120
-      TabIndex        =   9
-      Top             =   960
-      Width           =   2415
-   End
    Begin VB.Frame frDir 
       Caption         =   "Direction"
       Height          =   1695
       Left            =   2760
       TabIndex        =   4
-      Top             =   600
+      Top             =   480
       Width           =   2775
       Begin VB.OptionButton optDirEnd 
          Caption         =   "Ending"
@@ -126,14 +155,6 @@ Begin VB.Form frmSearch
          Width           =   1935
       End
    End
-   Begin VB.CheckBox chkMatchCase 
-      Caption         =   "Match case"
-      Height          =   255
-      Left            =   120
-      TabIndex        =   3
-      Top             =   600
-      Width           =   2415
-   End
    Begin VB.CommandButton CmdMore 
       Height          =   375
       Left            =   5160
@@ -150,14 +171,6 @@ Begin VB.Form frmSearch
       TabIndex        =   1
       Top             =   30
       Width           =   2775
-   End
-   Begin VB.Label lblEscSeq 
-      Caption         =   "\[0020], \\,  \n,  \t"
-      Height          =   255
-      Left            =   360
-      TabIndex        =   13
-      Top             =   1920
-      Width           =   2175
    End
    Begin VB.Label lblWhat 
       Caption         =   "What:"
@@ -192,6 +205,20 @@ Private Enum FIND_DIRECTION
     DIR_END
 End Enum
 
+Private Enum SEARCH_STEP
+    STEP_FORWARD = 1
+    STEP_BACKWARD = -1
+End Enum
+
+Private Enum SAVE_OPTIONS
+    SAVE_OPTION_MATCH_CASE = 1
+    SAVE_OPTION_WHOLE_WORD = 2
+    SAVE_OPTION_REGEXP = 4
+    SAVE_OPTION_ESC_SEQUENCE = 8
+    SAVE_OPTION_FILTRATION = 16
+    SAVE_OPTION_INSTANT_MARK = 32
+End Enum
+
 Private Enum WINDOW_MODE
     WINDOW_MODE_MINI = 0
     WINDOW_MODE_DEFAULT
@@ -208,7 +235,6 @@ Private m_iCompareMethod    As VbCompareMethod
 Private m_bWholeWord        As Boolean
 Private m_iPrevRow          As Long
 Private m_iCurIndex         As Long
-'Private m_iPrevIndex        As Long
 Private m_sLastFrame        As String
 Private m_sArr()            As String
 Private m_iArrPos()         As Long
@@ -217,25 +243,62 @@ Private m_bRegExpInit       As Boolean
 Private m_oRegexp           As IRegExp
 Private m_oRegexpItems      As Object
 Private m_frmOwner          As Form
+Private m_bFiltration       As Boolean
+Private m_bInstantMark      As Boolean
 
 Private F_DIR As FIND_DIRECTION
-Private m_WndMode As WINDOW_MODE
+Private WND_MODE As WINDOW_MODE
+Private SAVE_OPT As SAVE_OPTIONS
+
+Private Sub imgSave_Click()
+    imgSave.BorderStyle = 1
+    
+    SAVE_OPT = 0
+    If chkMatchCase.Value Then SAVE_OPT = SAVE_OPT Or SAVE_OPTION_MATCH_CASE
+    If chkWholeWord.Value Then SAVE_OPT = SAVE_OPT Or SAVE_OPTION_WHOLE_WORD
+    If chkRegExp.Value Then SAVE_OPT = SAVE_OPT Or SAVE_OPTION_REGEXP
+    If chkEscSeq.Value Then SAVE_OPT = SAVE_OPT Or SAVE_OPTION_ESC_SEQUENCE
+    If chkFiltration.Value Then SAVE_OPT = SAVE_OPT Or SAVE_OPTION_FILTRATION
+    If chkMarkInstant.Value Then SAVE_OPT = SAVE_OPT Or SAVE_OPTION_INSTANT_MARK
+    
+    RegSaveHJT "SearchOptions", CStr(SAVE_OPT)
+    
+    SleepNoLock 50
+    imgSave.BorderStyle = 0
+End Sub
 
 Private Sub chkFiltration_Click()
-    chkMarkInstant.Enabled = CBool(chkFiltration.Value)
+    
+    m_bFiltration = chkFiltration.Value
+    chkMarkInstant.Enabled = m_bFiltration
+    
+    If m_bFiltration Then
+        cmbSearch_Change
+    Else
+        ScanResults_ClearFilter
+    End If
 End Sub
+
+Private Sub chkMarkInstant_Click()
+    m_bInstantMark = chkMarkInstant.Value
+    cmbSearch_Change
+End Sub
+
+Private Function IsScanResultsFrame() As Boolean
+    If GetActiveFormName() = "frmMain" And g_CurFrame = FRAME_ALIAS_SCAN Then IsScanResultsFrame = True
+End Function
 
 Private Sub CmdMore_Click()
     
-    If m_WndMode = WINDOW_MODE_MINI Then
+    If WND_MODE = WINDOW_MODE_MINI Then
         
-        If GetActiveFormName() = "frmMain" And g_CurFrame = FRAME_ALIAS_SCAN Then
-            m_WndMode = WINDOW_MODE_MAXI
+        If IsScanResultsFrame() Then
+            WND_MODE = WINDOW_MODE_MAXI
         Else
-            m_WndMode = WINDOW_MODE_DEFAULT
+            WND_MODE = WINDOW_MODE_DEFAULT
         End If
     Else
-        m_WndMode = WINDOW_MODE_MINI
+        WND_MODE = WINDOW_MODE_MINI
     End If
     
     SetWindowHeight
@@ -245,12 +308,12 @@ End Sub
 
 Private Sub Form_Activate()
     
-    If m_WndMode = WINDOW_MODE_DEFAULT Or m_WndMode = WINDOW_MODE_MAXI Then
+    If WND_MODE = WINDOW_MODE_DEFAULT Or WND_MODE = WINDOW_MODE_MAXI Then
 
         If GetActiveFormName() = "frmMain" And g_CurFrame = FRAME_ALIAS_SCAN Then
-            m_WndMode = WINDOW_MODE_MAXI
+            WND_MODE = WINDOW_MODE_MAXI
         Else
-            m_WndMode = WINDOW_MODE_DEFAULT
+            WND_MODE = WINDOW_MODE_DEFAULT
         End If
 
         SetWindowHeight
@@ -263,7 +326,7 @@ Private Sub SetWindowHeight()
 
     Dim iHeight As Long
 
-    Select Case m_WndMode
+    Select Case WND_MODE
     
         Case WINDOW_MODE_MINI:
             iHeight = HEIGHT_MINI
@@ -272,8 +335,7 @@ Private Sub SetWindowHeight()
             iHeight = HEIGHT_DEFAULT
             
         Case WINDOW_MODE_MAXI:
-            'iHeight = HEIGHT_MAXI
-            iHeight = HEIGHT_DEFAULT
+            iHeight = HEIGHT_MAXI
             
     End Select
     
@@ -308,6 +370,17 @@ Private Sub Form_Load()
     m_iCompareMethod = vbTextCompare
     ResetCursor
     
+    SAVE_OPT = RegReadHJT("SearchOptions", "0")
+    
+    If SAVE_OPT And SAVE_OPTION_MATCH_CASE Then chkMatchCase.Value = 1
+    If SAVE_OPT And SAVE_OPTION_WHOLE_WORD Then chkWholeWord.Value = 1
+    If SAVE_OPT And SAVE_OPTION_REGEXP Then chkRegExp.Value = 1
+    If SAVE_OPT And SAVE_OPTION_ESC_SEQUENCE Then chkEscSeq.Value = 1
+    If SAVE_OPT And SAVE_OPTION_FILTRATION Then chkFiltration.Value = 1
+    If SAVE_OPT And SAVE_OPTION_INSTANT_MARK Then chkMarkInstant.Value = 1
+    
+    Me.imgSave = frmProcMan.imgProcManSave.Picture
+
     Me.Visible = False
 End Sub
 
@@ -348,6 +421,11 @@ Private Sub cmbSearch_Change()
         If Not CmdFind.Enabled Then CmdFind.Enabled = True
     Else
         CmdFind.Enabled = False
+    End If
+    If m_bFiltration Then
+        If IsScanResultsFrame() Then
+            ScanResults_UpdateFilter
+        End If
     End If
 End Sub
 
@@ -401,13 +479,135 @@ Private Sub CmdCancel_Click()
     If Not (m_frmOwner Is Nothing) Then m_frmOwner.SetFocus
 End Sub
 
+Private Function ScanResults_ClearFilter()
+    On Error GoTo ErrorHandler
+    
+    Dim i As Long
+    
+    Dim HitSorted() As String
+    ReDim Hit(UBound(Scan)) As String
+    
+    For i = 1 To UBound(Scan)
+        Hit(i) = Scan(i).HitLineW
+    Next
+    
+    SortSectionsOfResultList_Ex Hit, HitSorted
+    
+    frmMain.lstResults.Clear
+    
+    If UBound(Scan) <> 0 Then
+        For i = 0 To UBound(HitSorted)
+            frmMain.lstResults.AddItem HitSorted(i)
+        Next
+    End If
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "ScanResults_ClearFilter"
+    If inIDE Then Stop: Resume Next
+End Function
+
+Private Function ScanResults_UpdateFilter()
+    On Error GoTo ErrorHandler
+
+    Dim result() As Long
+    Dim i As Long
+    
+    If UBound(Scan) = 0 Then Exit Function
+    
+    If Len(cmbSearch.Text) = 0 Then
+        
+        ScanResults_ClearFilter
+    Else
+        result = ScanResults_GetFilterLines()
+        
+        frmMain.lstResults.Clear
+        
+        With frmMain.lstResults
+            For i = 0 To UBoundSafe(result)
+                .AddItem Scan(result(i)).HitLineW
+                If m_bInstantMark Then .Selected(.ListCount - 1) = True
+            Next
+        End With
+    End If
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "ScanResults_UpdateFilter"
+    If inIDE Then Stop: Resume Next
+End Function
+
+Private Function ScanResults_GetFilterLines() As Long()
+    On Error GoTo ErrorHandler
+    
+    Dim sSearch         As String
+    Dim i               As Long
+    
+    sSearch = cmbSearch.Text
+    
+    If m_bEscSeq Then sSearch = EscSeqToString(sSearch)
+    
+    If Not SetupRegexpMode(sSearch, True) Then Exit Function
+    
+    For i = 1 To UBound(Scan)
+    
+        If 0 <> SearchIt(STEP_FORWARD, Scan(i).HitLineW, sSearch) Then
+        
+            ArrayAddLong ScanResults_GetFilterLines, i
+        End If
+    Next
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "ScanResults_GetFilterLines"
+    If inIDE Then Stop: Resume Next
+End Function
+
+Private Sub AddSearchHistory(sSearch As String)
+
+    If Not ComboboxContains(cmbSearch, sSearch) Then 'add to top history
+        cmbSearch.AddItem sSearch, 0
+    End If
+
+End Sub
+
+Private Function SetupRegexpMode(sSearch As String, bSilent As Boolean) As Boolean
+    On Error GoTo ErrorHandler
+    
+    Static sLastRegexp As String
+    
+    'setting regexp / search mode
+    If m_bRegExp Then
+        If sLastRegexp <> sSearch Then
+            m_oRegexp.Pattern = sSearch
+            If Not CheckRegexpSyntax(bSilent) Then Exit Function
+            sLastRegexp = sSearch
+        End If
+        
+    ElseIf m_bWholeWord Then
+        If sLastRegexp <> sSearch Then
+            sSearch = "\b(" & RegexScreen(sSearch) & ")\b"
+            m_oRegexp.Pattern = sSearch
+            If Not CheckRegexpSyntax(bSilent) Then Exit Function
+            sLastRegexp = sSearch
+        End If
+    End If
+    
+    SetupRegexpMode = True
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "SetupRegexpMode"
+    If inIDE Then Stop: Resume Next
+End Function
+
 Private Sub CmdFind_Click()
     On Error GoTo ErrorHandler
     
     '// TODO: move search form position depending on position of item found (if it is under the form)
 
     Dim sSearch         As String
-    Dim iStep           As Long
+    Dim iStep           As SEARCH_STEP
     Dim iStartRow       As Long
     Dim iEndRow         As Long
     Dim i               As Long
@@ -418,8 +618,6 @@ Private Sub CmdFind_Click()
     Dim txb             As TextBox
     Dim Ctl             As Control
     
-    Static sLastRegexp As String
-    
     cmbSearch.SetFocus
     
     'check what window called the search
@@ -427,28 +625,11 @@ Private Sub CmdFind_Click()
         
         sSearch = cmbSearch.Text
         
-        If Not ComboboxContains(cmbSearch, sSearch) Then 'add to top history
-            cmbSearch.AddItem sSearch, 0
-        End If
+        AddSearchHistory sSearch
         
         If m_bEscSeq Then sSearch = EscSeqToString(sSearch)
         
-        'setting regexp / search mode
-        If m_bRegExp Then
-            If sLastRegexp <> sSearch Then
-                m_oRegexp.Pattern = sSearch
-                If Not CheckRegexpSyntax() Then Exit Sub
-                sLastRegexp = sSearch
-            End If
-            
-        ElseIf m_bWholeWord Then
-            If sLastRegexp <> sSearch Then
-                sSearch = "\b(" & RegexScreen(sSearch) & ")\b"
-                m_oRegexp.Pattern = sSearch
-                If Not CheckRegexpSyntax() Then Exit Sub
-                sLastRegexp = sSearch
-            End If
-        End If
+        If Not SetupRegexpMode(sSearch, False) Then Exit Sub
         
         If TypeOf Ctl Is ListBox Then
             Set lst = Ctl
@@ -462,7 +643,7 @@ Private Sub CmdFind_Click()
             
             'Setting search range
             If F_DIR = DIR_DOWN Or F_DIR = DIR_BEGIN Then
-                iStep = 1
+                iStep = STEP_FORWARD
                 iEndRow = lst.ListCount - 1
                 If F_DIR = DIR_BEGIN Then
                     iStartRow = m_iPrevRow
@@ -479,7 +660,7 @@ Private Sub CmdFind_Click()
             End If
             
             If F_DIR = DIR_UP Or F_DIR = DIR_END Then
-                iStep = -1
+                iStep = STEP_BACKWARD
                 iEndRow = 0
                 If F_DIR = DIR_END Then
                     iStartRow = m_iPrevRow
@@ -557,7 +738,7 @@ Private Sub CmdFind_Click()
             
             'Setting search range
             If F_DIR = DIR_DOWN Or F_DIR = DIR_BEGIN Then
-                iStep = 1
+                iStep = STEP_FORWARD
                 iEndRow = UBound(m_sArr)
                 If F_DIR = DIR_BEGIN Then
                     iStartRow = m_iPrevRow
@@ -576,7 +757,7 @@ Private Sub CmdFind_Click()
             End If
             
             If F_DIR = DIR_UP Or F_DIR = DIR_END Then
-                iStep = -1
+                iStep = STEP_BACKWARD
                 iEndRow = 0
                 If F_DIR = DIR_END Then
                     iStartRow = m_iPrevRow
@@ -625,7 +806,7 @@ Private Sub CmdFind_Click()
                     Exit Sub
                 End If
                 
-                m_iCurIndex = IIf(iStep = 1, 1, -1) 'reset cursor
+                m_iCurIndex = IIf(iStep = STEP_FORWARD, STEP_FORWARD, STEP_BACKWARD) 'reset cursor
             Next
         
 '        ElseIf TypeOf Ctl Is TreeView Then
@@ -636,7 +817,6 @@ Private Sub CmdFind_Click()
         End If
         
         MsgFinished
-        'm_iPrevIndex = -1
         
         If F_DIR = DIR_BEGIN Then
             optDirBegin_Click
@@ -652,7 +832,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Private Function SearchIt(iDirection As Long, sLine As String, sSearch As String, iLength As Long) As Long
+Private Function SearchIt(iDirection As SEARCH_STEP, sLine As String, sSearch As String, Optional ByRef out_iLength As Long) As Long
     
     On Error GoTo ErrorHandler
     
@@ -661,7 +841,7 @@ Private Function SearchIt(iDirection As Long, sLine As String, sSearch As String
     Dim iPos            As Long
     Dim j               As Long
     
-    iLength = 0
+    out_iLength = 0
     
     If m_bRegExp Or m_bWholeWord Then
         Set oMatches = m_oRegexp.Execute(sLine)
@@ -673,31 +853,31 @@ Private Function SearchIt(iDirection As Long, sLine As String, sSearch As String
             For Each oMatch In oMatches
                 If oMatch.FirstIndex + 1 >= m_iCurIndex Then
                     iPos = oMatch.FirstIndex + 1
-                    iLength = oMatch.Length
+                    out_iLength = oMatch.Length
                     Exit For
                 End If
             Next
         Else
             iPos = InStr(m_iCurIndex, sLine, sSearch, m_iCompareMethod)
             If iPos <> 0 Then
-                iLength = Len(sSearch)
+                out_iLength = Len(sSearch)
             End If
         End If
     Else
         If m_bRegExp Or m_bWholeWord Then
             iPos = 0
             For j = oMatches.Count - 1 To 0 Step -1
-                Set oMatch = oMatches.item(j)
+                Set oMatch = oMatches.Item(j)
                 If m_iCurIndex = -1 Or oMatch.FirstIndex + 1 <= m_iCurIndex Then
                     iPos = oMatch.FirstIndex + 1
-                    iLength = oMatch.Length
+                    out_iLength = oMatch.Length
                     Exit For
                 End If
             Next
         Else
             iPos = InStrRev(sLine, sSearch, m_iCurIndex, m_iCompareMethod)
             If iPos <> 0 Then
-                iLength = Len(sSearch)
+                out_iLength = Len(sSearch)
             End If
         End If
     End If
@@ -738,13 +918,13 @@ Private Function GetListSelectedItem(lst As ListBox)
     Next
 End Function
 
-Private Function CheckRegexpSyntax() As Boolean
+Private Function CheckRegexpSyntax(bSilent As Boolean) As Boolean
     On Error Resume Next
     Call m_oRegexp.Test("")
     If Err.Number = 0 Then
         CheckRegexpSyntax = True
     Else
-        MsgSyntaxError
+        If Not bSilent Then MsgSyntaxError
     End If
 End Function
 
@@ -865,7 +1045,6 @@ Private Sub ResetCursor()
         m_iPrevRow = -1
         m_iCurIndex = -1
     End If
-    'm_iPrevIndex = -1
 End Sub
 
 Private Sub optDirBegin_Click()

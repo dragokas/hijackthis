@@ -20,6 +20,13 @@ Public Const MAX_MODULE_NAME32 As Long = 255&
 
 Public TaskBar As ITaskbarList3
 
+Public Const STR_NO_FILE As String = "(no file)"
+Public Const STR_NO_NAME As String = "(no name)"
+Public Const STR_NO_CLSID As String = "(no CLSID)"
+Public Const STR_FILE_MISSING As String = "(file missing)"
+Public Const STR_FOLDER_MISSING As String = "(folder missing)"
+Public Const STR_NOT_SIGNED As String = "(not signed)"
+
 #If False Then 'for common var. names character case fixation
     Public X, Y, Length, Index, sFilename, i, j, k, State, Frm, ret, VT, isInit, hwnd, pv, Reg, pid, File, msg
 #End If

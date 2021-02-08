@@ -643,14 +643,29 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-' Owner - Administrators
-' Full access for - Local System, Administrators, Users
-' Inheritance from parent is disabled.
-'
-Function TryUnlock(ByVal File As String) As Boolean
-    AppendErrorLogCustom "TryUnlock - Begin", "File: " & File
+Function TryUnlock(ByVal FS_Object As String, Optional bRecursive As Boolean) As Boolean
+
+    AppendErrorLogCustom "TryUnlock - Begin", "File: " & FS_Object
     
-    TryUnlock = SetFileStringSD(File, "O:BAG:BAD:PAI(A;;FA;;;SY)(A;;FA;;;BA)(A;;FA;;;BU)")
+    ' DACL for LocalSystem, Administrators, Users, TrustedInstaller, All Packages (AppX)
+    ' Full Access
+    ' Container Inherited, Object Inherited, Propagated to Children
+    ' Disabled inheritance from parent
+    '
+    
+    Dim SDDL As String
+    
+    SDDL = "O:BAG:BAD:PAI" ' Owner - Administrators / Group - Administrators / Disabled inheritance from parent
+    SDDL = SDDL & "(A;OICIID;FA;;;SY)" ' LocalSystem
+    SDDL = SDDL & "(A;OICIID;FA;;;BA)" ' Administrators
+    SDDL = SDDL & "(A;OICIID;FA;;;BU)" ' Users
+    SDDL = SDDL & "(A;OICIID;FA;;;S-1-5-80-956008885-3418522649-1831038044-1853292631-2271478464)" ' TrustedInstaller
+    
+    If OSver.IsWindows8OrGreater Then
+        SDDL = SDDL & "(A;OICIID;FA;;;S-1-15-2-1)" 'AppX
+    End If
+    
+    TryUnlock = SetFileStringSD(FS_Object, SDDL, bRecursive)
     
     AppendErrorLogCustom "TryUnlock - End"
 End Function
@@ -877,7 +892,7 @@ Public Function DeleteFileWEx(lpSTR As Long, Optional ForceDeleteMicrosoft As Bo
     sExt = GetExtensionName(FileName)
     
     If Not ForceDeleteMicrosoft Then
-        If Not StrInParamArray(sExt, ".txt", ".log", ".tmp") Then
+        If Not StrInParamArray(sExt, ".txt", ".log", ".tmp", ".ini") Then
             If IsMicrosoftFile(FileName, True) Then
                 SFC_RestoreFile FileName
                 Exit Function
@@ -913,7 +928,7 @@ Public Function DeleteFileWEx(lpSTR As Long, Optional ForceDeleteMicrosoft As Bo
     
     If Err.LastDllError = ERROR_ACCESS_DENIED Then
         TryUnlock FileName
-        If iAttr And FILE_ATTRIBUTE_READONLY Then SetFileAttributes lpSTR, iAttr And Not FILE_ATTRIBUTE_READONLY
+        SetFileAttributes lpSTR, FILE_ATTRIBUTE_NORMAL
         lr = DeleteFileW(lpSTR)
     End If
     
@@ -1294,7 +1309,7 @@ Public Sub GetTitleByCLSID(ByVal sCLSID As String, out_sTitle As String, Optiona
     Dim i As Long
     
     If Len(sCLSID) = 0 Then
-        out_sTitle = "(no name)"
+        out_sTitle = STR_NO_NAME
         Exit Sub
     End If
     
@@ -1307,7 +1322,7 @@ Public Sub GetTitleByCLSID(ByVal sCLSID As String, out_sTitle As String, Optiona
         out_sTitle = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, vbNullString, Not bRedirected)
     End If
     If 0 = Len(out_sTitle) Then
-        out_sTitle = "(no name)"
+        out_sTitle = STR_NO_NAME
         
         For i = 1 To 2
             If i = 1 Then
@@ -1356,8 +1371,8 @@ Public Sub GetFileByCLSID(ByVal sCLSID As String, out_sFile As String, Optional 
     Dim i As Long
     
     If Len(sCLSID) = 0 Then
-        out_sTitle = "(no name)"
-        out_sFile = "(no file)"
+        out_sTitle = STR_NO_NAME
+        out_sFile = STR_NO_FILE
         Exit Sub
     End If
     
@@ -1370,7 +1385,7 @@ Public Sub GetFileByCLSID(ByVal sCLSID As String, out_sFile As String, Optional 
         If bShared And 0 = Len(out_sTitle) Then
             out_sTitle = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID, vbNullString, Not bRedirected)
         End If
-        If 0 = Len(out_sTitle) Then out_sTitle = "(no name)"
+        If 0 = Len(out_sTitle) Then out_sTitle = STR_NO_NAME
         
         If Left$(out_sTitle, 1) = "@" Then
             sBuf = GetStringFromBinary(, , out_sTitle)
@@ -1395,7 +1410,7 @@ Public Sub GetFileByCLSID(ByVal sCLSID As String, out_sFile As String, Optional 
                 If IsMissing(out_sTitle) Then
                     GetFileByAppID sAppID, out_sFile, , bRedirState, False
                 Else
-                    If out_sTitle <> "(no name)" Then
+                    If out_sTitle <> STR_NO_NAME Then
                         GetFileByAppID sAppID, out_sFile, , bRedirState, False
                     Else
                         GetFileByAppID sAppID, out_sFile, out_sTitle, bRedirState, False
@@ -1409,7 +1424,7 @@ Public Sub GetFileByCLSID(ByVal sCLSID As String, out_sFile As String, Optional 
     Next
     
     If 0 = Len(out_sFile) Then
-        out_sFile = "(no file)"
+        out_sFile = STR_NO_FILE
     Else
         out_sFile = UnQuote(EnvironW(out_sFile))
         
@@ -1442,7 +1457,7 @@ Public Sub GetTitleByAppID(sAppID As String, out_sTitle As String, Optional bRed
     If bShared And 0 = Len(out_sTitle) Then
         out_sTitle = Reg.GetString(HKEY_CLASSES_ROOT, "AppID\" & sAppID, vbNullString, Not bRedirected)
     End If
-    If 0 = Len(out_sTitle) Then out_sTitle = "(no name)"
+    If 0 = Len(out_sTitle) Then out_sTitle = STR_NO_NAME
     
     If Left$(out_sTitle, 1) = "@" Then
         sBuf = GetStringFromBinary(, , out_sTitle)
@@ -1468,7 +1483,7 @@ Public Sub GetFileByAppID(sAppID As String, out_sFile As String, Optional out_sT
         If bShared And 0 = Len(out_sTitle) Then
             out_sTitle = Reg.GetString(HKEY_CLASSES_ROOT, "AppID\" & sAppID, vbNullString, Not bRedirected)
         End If
-        If 0 = Len(out_sTitle) Then out_sTitle = "(no name)"
+        If 0 = Len(out_sTitle) Then out_sTitle = STR_NO_NAME
         
         If Left$(out_sTitle, 1) = "@" Then
             sBuf = GetStringFromBinary(, , out_sTitle)
@@ -1519,8 +1534,8 @@ Public Function FormatFileMissing(ByVal sFile As String, Optional sArgs As Strin
     sFile = UnQuote(EnvironW(sFile))
     
     If Len(sFile) = 0 Then
-        FormatFileMissing = "(no file)"
-    ElseIf sFile = "(no file)" Then
+        FormatFileMissing = STR_NO_FILE
+    ElseIf sFile = STR_NO_FILE Then
         FormatFileMissing = sFile
         Exit Function
     Else
@@ -1577,14 +1592,19 @@ End Function
 
 '// concat string File + Arg, considering that "(no file)" or "(file missing)" postfixes in 'Filename' should go the last in the resulting string
 Public Function ConcatFileArg(sFile As String, sArg As String) As String
-    If sFile = "(no file)" Then
-        ConcatFileArg = IIf(Len(sArg) <> 0, sArg & " ", "") & sFile
-    ElseIf StrEndWith(sFile, " (file missing)") Then
-        ConcatFileArg = Left$(sFile, Len(sFile) - Len(" (file missing)")) & " " & sArg & " (file missing)"
-    ElseIf StrEndWith(sFile, " (folder missing)") Then
-        ConcatFileArg = Left$(sFile, Len(sFile) - Len(" (folder missing)")) & " " & sArg & " (folder missing)"
+    If Right$(sFile, 1) = ")" Then
+        If StrEndWith(sFile, STR_FILE_MISSING) Then
+            ConcatFileArg = Left$(sFile, Len(sFile) - Len(STR_FILE_MISSING)) & sArg & IIf(Len(sArg) = 0, vbNullString, " ") & STR_FILE_MISSING
+            Exit Function
+        ElseIf StrEndWith(sFile, STR_FOLDER_MISSING) Then
+            ConcatFileArg = Left$(sFile, Len(sFile) - Len(STR_FOLDER_MISSING)) & sArg & IIf(Len(sArg) = 0, vbNullString, " ") & STR_FOLDER_MISSING
+            Exit Function
+        End If
+    End If
+    If Len(sArg) = 0 Then
+        ConcatFileArg = sFile
     Else
-        ConcatFileArg = sFile & IIf(Len(sArg) <> 0, " " & sArg, "")
+        ConcatFileArg = sFile & " " & sArg
     End If
 End Function
 

@@ -88,8 +88,8 @@ Public Function GetFileMD5( _
     Dim OldRedir    As Boolean
     Dim Redirect    As Boolean
     
-    If StrEndWith(sFilename, "(file missing)") Then Exit Function
-    If StrEndWith(sFilename, "(no file)") Then Exit Function
+    If StrEndWith(sFilename, STR_FILE_MISSING) Then Exit Function
+    If StrEndWith(sFilename, STR_NO_FILE) Then Exit Function
 
     Redirect = ToggleWow64FSRedirection(False, sFilename, OldRedir)
     
@@ -198,8 +198,8 @@ Public Function GetFileSHA1( _
     Dim OldRedir    As Boolean
     Dim Redirect    As Boolean
     
-    If StrEndWith(sFilename, "(file missing)") Then Exit Function
-    If StrEndWith(sFilename, "(no file)") Then Exit Function
+    If StrEndWith(sFilename, STR_FILE_MISSING) Then Exit Function
+    If StrEndWith(sFilename, STR_NO_FILE) Then Exit Function
     
     Redirect = ToggleWow64FSRedirection(False, sFilename, OldRedir)
     
@@ -305,8 +305,8 @@ Public Function GetFileSHA256( _
     Dim OldRedir    As Boolean
     Dim Redirect    As Boolean
     
-    If StrEndWith(sFilename, "(file missing)") Then Exit Function
-    If StrEndWith(sFilename, "(no file)") Then Exit Function
+    If StrEndWith(sFilename, STR_FILE_MISSING) Then Exit Function
+    If StrEndWith(sFilename, STR_NO_FILE) Then Exit Function
 
     Redirect = ToggleWow64FSRedirection(False, sFilename, OldRedir)
     

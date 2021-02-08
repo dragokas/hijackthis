@@ -18,7 +18,7 @@ Option Explicit
 ' Registry functions class by Alex Dragokas
 '
 
-'Revision 3.3 (05.08.2020)
+'Revision 3.4 (07.02.2021)
 
 'Private Const MAX_PATH       As Long = 260&
 'Private Const MAX_PATH_W     As Long = 32767&
@@ -534,11 +534,11 @@ ErrorHandler:
 End Function
 
 
-Public Function GetString(hHive As ENUM_REG_HIVE, sKey$, sValue$, Optional bUseWow64 As Boolean, Optional bDoNotExpand As Boolean) As String
+Public Function GetString(hHive As ENUM_REG_HIVE, sKey$, Optional sValue$, Optional bUseWow64 As Boolean, Optional bDoNotExpand As Boolean) As String
     GetString = GetData(hHive, sKey, sValue, bUseWow64, bDoNotExpand) '-> redirection to common function, just in case REG type is wrong
 End Function
 
-Public Function GetDword(hHive As ENUM_REG_HIVE, sKey$, sValue$, Optional bUseWow64 As Boolean) As Long
+Public Function GetDword(hHive As ENUM_REG_HIVE, sKey$, Optional sValue$, Optional bUseWow64 As Boolean) As Long
     On Error GoTo ErrorHandler:
 
     Dim tmp As Variant
@@ -551,7 +551,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function GetQword(hHive As ENUM_REG_HIVE, sKey$, sValue$, Optional bUseWow64 As Boolean) As Currency
+Public Function GetQword(hHive As ENUM_REG_HIVE, sKey$, Optional sValue$, Optional bUseWow64 As Boolean) As Currency
     On Error GoTo ErrorHandler:
     
     Dim tmp As Variant
@@ -564,11 +564,11 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function GetBinaryToString(hHive As ENUM_REG_HIVE, sKey$, sValue$, Optional bUseWow64 As Boolean) As String
+Public Function GetBinaryToString(hHive As ENUM_REG_HIVE, sKey$, Optional sValue$, Optional bUseWow64 As Boolean) As String
     GetBinaryToString = GetData(hHive, sKey, sValue, bUseWow64)   '-> redirection to common function, just in case REG type is wrong
 End Function
 
-Public Function GetBinary(hHive As ENUM_REG_HIVE, ByVal KeyName As String, ValueName As String, Optional bUseWow64 As Boolean) As Byte()
+Public Function GetBinary(hHive As ENUM_REG_HIVE, ByVal KeyName As String, Optional ValueName As String, Optional bUseWow64 As Boolean) As Byte()
     On Error GoTo ErrorHandler:
 
     Dim abData()     As Byte
@@ -607,7 +607,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function GetMultiSZ(hHive As ENUM_REG_HIVE, ByVal KeyName As String, ValueName As String, Optional bUseWow64 As Boolean) As String()
+Public Function GetMultiSZ(hHive As ENUM_REG_HIVE, ByVal KeyName As String, Optional ValueName As String, Optional bUseWow64 As Boolean) As String()
     On Error GoTo ErrorHandler:
 
     Dim cData        As Long
@@ -655,7 +655,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function GetValueType(hHive As ENUM_REG_HIVE, ByVal KeyName As String, ValueName As String, Optional bUseWow64 As Boolean) As REG_VALUE_TYPE
+Public Function GetValueType(hHive As ENUM_REG_HIVE, ByVal KeyName As String, Optional ValueName As String, Optional bUseWow64 As Boolean) As REG_VALUE_TYPE
     On Error GoTo ErrorHandler:
     
     Dim hKey         As Long
@@ -679,7 +679,7 @@ ErrorHandler:
 End Function
     
 
-Public Function GetData(hHive As ENUM_REG_HIVE, ByVal KeyName As String, ValueName As String, _
+Public Function GetData(hHive As ENUM_REG_HIVE, ByVal KeyName As String, Optional ValueName As String, _
     Optional bUseWow64 As Boolean, _
     Optional bDoNotExpand As Boolean, _
     Optional bUseHexFormatForBinary As Boolean, _
@@ -1398,7 +1398,7 @@ ErrorHandler:
 End Function
 
 
-Public Function ValueExists(lHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, Optional bUseWow64 As Boolean) As Boolean
+Public Function ValueExists(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional sValue$, Optional bUseWow64 As Boolean) As Boolean
     On Error GoTo ErrorHandler:
     Dim hKey&, lret&
     Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
@@ -2069,7 +2069,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function GetFilenameFromBinaryKey(lHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, Optional bUseWow64 As Boolean) As String
+Public Function GetFilenameFromBinaryKey(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional sValue$, Optional bUseWow64 As Boolean) As String
     On Error GoTo ErrorHandler:
     
     Dim hKey&, sFile$, cbData&
@@ -2528,7 +2528,7 @@ End Sub
 
 Public Function WrapNtOpenKeyEx( _
     hHive As ENUM_REG_HIVE, _
-    sKey As String, _
+    ByVal sKey As String, _
     dwAccess As Long, _
     retHandle As Long, _
     Optional dwAttributes As OBJ_ATTRIBUTES = OBJ_CASE_INSENSITIVE, _
@@ -2587,7 +2587,7 @@ Public Function WrapNtOpenKeyEx( _
     If OA.RootDirectory <> 0 Then RegCloseKey OA.RootDirectory
 End Function
 
-Public Function IsKeySymLink(hHive As ENUM_REG_HIVE, sKey As String, Optional out_KeyTarget As String) As Boolean
+Public Function IsKeySymLink(hHive As ENUM_REG_HIVE, ByVal sKey As String, Optional out_KeyTarget As String) As Boolean
     On Error GoTo ErrorHandler:
     
     Dim hKey1           As Long

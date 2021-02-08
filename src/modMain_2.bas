@@ -1186,6 +1186,7 @@ Public Sub CheckO26ToolsHiJack()
     Dim sCleanupPath As String
     Dim sDefragPath As String
     Dim sRootFile As String
+    Dim sSigner As String
     
     If OSver.IsWindows10OrGreater Then
         sBackupPath = vbNullString
@@ -1227,27 +1228,32 @@ Public Sub CheckO26ToolsHiJack()
     For i = 0 To dSafe.Count - 1
         
         sKey = "SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\" & dSafe.Keys(i)
-        sData = Reg.GetString(HKLM, sKey, "")
+        sData = Reg.GetString(HKLM, sKey, vbNullString)
         
         SplitIntoPathAndArgs sData, sFile, sArgs, bIsRegistryData:=True
         sRootFile = sFile
         sFile = FormatFileMissing(sFile, sArgs)
         
         bSafe = True
-        If StrComp(sData, EnvironW(dSafe.Items(i)), 1) <> 0 Then
-            bSafe = False
-        Else
-            If Len(sRootFile) <> 0 Then
-                If FileMissing(sFile) Then bSafe = False
-            End If
-            If StrEndWith(sRootFile, ".exe") Then
-                If Not IsMicrosoftFile(sRootFile) Then bSafe = False
+        sSigner = vbNullString
+        
+        If StrComp(sData, EnvironW(dSafe.Items(i)), 1) <> 0 Then bSafe = False
+        
+        If Len(sRootFile) <> 0 Then
+            If FileMissing(sFile) Then
+                bSafe = False
+            Else
+                If StrEndWith(sRootFile, ".exe") Then
+                    If Not IsMicrosoftFileEx(sRootFile, sSigner) Then bSafe = False
+                End If
             End If
         End If
         
         If Not bSafe Then
             
             sHit = "O26 - Tools: " & "HKLM\" & sKey & " (default) = " & ConcatFileArg(sFile, sArgs)
+            
+            If Len(sSigner) <> 0 Then sHit = sHit & " " & sSigner
             
             If Not IsOnIgnoreList(sHit) Then
             
