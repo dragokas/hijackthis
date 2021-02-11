@@ -666,7 +666,7 @@ End Function
 '
 '              'sHit = "O22 - ScheduledTask: " & "(" & taskState & ") " & registeredTask.Name & " - " & DirParent & " - " & RunObj & _
 '              '  IIf(Len(RunArgs) <> 0, " " & RunArgs, "") & _
-'              '  IIf(NoFile, " (file missing)", "") & _
+'              '  IIf(NoFile, " " & STR_FILE_MISSING, "") & _
 '              '  IIf(0 <> Len(SignResult.SubjectName) And SignResult.isLegit, " (" & SignResult.SubjectName & ")", "") & _
 '              '  IIf(0 <> Len(HRESULT), " (" & HRESULT & ", idx: " & StadyLast & ")", "") '& _
 '              '  'IIf(NoFile Or 0 <> Len(HRESULT), " <==== ATTENTION", "")
@@ -677,13 +677,13 @@ End Function
 ''I temporarily remove EDS name in log
 ''              sHit = sHit & " - " & RunObj & _
 ''                IIf(Len(RunArgs) <> 0, " " & RunArgs, "") & _
-''                IIf(NoFile, " (file missing)", "") & _
+''                IIf(NoFile, " " & STR_FILE_MISSING, "") & _
 ''                IIf(0 <> Len(SignResult.SubjectName) And SignResult.isLegit, " (" & SignResult.SubjectName & ")", "") & _
 ''                IIf(0 <> Len(HRESULT), " (" & HRESULT & ", idx: " & StadyLast & ")", "")
 '
 '              sHit = sHit & " - " & RunObj & _
 '                IIf(Len(RunArgs) <> 0, " " & RunArgs, "") & _
-'                IIf(NoFile, " (file missing)", "") & _
+'                IIf(NoFile, " " & STR_FILE_MISSING, "") & _
 '                IIf(0 <> Len(HRESULT), " (" & HRESULT & ", idx: " & StadyLast & ")", "")
 '
 '              If Not IsOnIgnoreList(sHit) Then
@@ -1322,7 +1322,7 @@ Public Sub EnumTasksVista(Optional MakeCSV As Boolean)
 
                 sHit = sHit & " - " & te(j).RunObj & _
                     IIf(Len(te(j).RunArgs) <> 0, " " & te(j).RunArgs, "") & _
-                    IIf(te(j).FileMissing And Not bNoFile, " (file missing)", "") & _
+                    IIf(te(j).FileMissing And Not bNoFile, " " & STR_FILE_MISSING, "") & _
                     IIf(bIsMicrosoftFile, " (Microsoft)", "") & _
                     " (user missing)"
                   
@@ -1540,7 +1540,7 @@ Public Sub EnumTasksVista(Optional MakeCSV As Boolean)
                   
                   sHit = sHit & " - " & te(j).RunObj & _
                     IIf(Len(te(j).RunArgs) <> 0, " " & te(j).RunArgs, "") & _
-                    IIf(te(j).FileMissing And Not bNoFile, " (file missing)", "") & _
+                    IIf(te(j).FileMissing And Not bNoFile, " " & STR_FILE_MISSING, "") & _
                     IIf(bIsMicrosoftFile, " (Microsoft)", "")
                   
                   If Not IsOnIgnoreList(sHit) Then
@@ -2261,7 +2261,7 @@ Sub EnumTasksXP() 'Win XP / Server 2003
             sFile = STR_NO_FILE
         Else
             If Not FileExists(sFile) Then
-                sFile = sFile & " (file missing)"
+                sFile = sFile & " " & STR_FILE_MISSING
             End If
         End If
         

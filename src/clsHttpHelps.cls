@@ -534,7 +534,7 @@ Resend:         '
                             Dim aLine() As String
                             aLine = Split(m_StrRequestHeaders, vbCrLf)
                             For i = 0 To UBound(aLine)
-                                If UCase$(Left(aLine(i), 7)) = "STATUS:" Then
+                                If UCase$(Left$(aLine(i), 7)) = "STATUS:" Then
                                     sStatus = Mid$(aLine(i), 8)
                                 End If
                             Next
@@ -630,7 +630,7 @@ Private Function CheckUrl(ByVal txtURL As String) As String
     posSlash = InStr(txtURL, "/")
 
     If InStr(txtURL, "/") <> 0 Then
-        CheckUrl = Left(txtURL, InStr(txtURL, "/") - 1)
+        CheckUrl = Left$(txtURL, InStr(txtURL, "/") - 1)
     Else
         CheckUrl = txtURL
     End If
@@ -650,7 +650,7 @@ Private Function GetUrlObject(ByVal txtURL As String) As String
     txtURL = Replace(txtURL, "https://", "")
     
     If InStr(txtURL, "/") <> 0 Then
-        GetUrlObject = Right(txtURL, Len(txtURL) - InStr(txtURL, "/") + 1)
+        GetUrlObject = Right$(txtURL, Len(txtURL) - InStr(txtURL, "/") + 1)
     Else
         GetUrlObject = ""
     End If
@@ -891,7 +891,7 @@ Public Property Get ReturnString() As String
     ReturnString = StrConv(ReturnString, vbUnicode)
     Dim pos As Long
     pos = InStr(ReturnString, vbNullChar)
-    If pos > 0 Then ReturnString = Left(ReturnString, pos - 1)
+    If pos > 0 Then ReturnString = Left$(ReturnString, pos - 1)
 End Property
 
 Public Property Let TimeOut(ByVal intValue As Long)

@@ -572,12 +572,12 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function KillProcessByFile(sPath$, Optional bForceMicrosoft As Boolean) As Boolean
+Public Function KillProcessByFile(ByVal sPath$, Optional bForceMicrosoft As Boolean, Optional ExitCode As Long = 0) As Boolean
     Dim hProcess&, i&, sTaskKill As String, lCriticalFlag As Long
     Dim aPID() As Long, bKilled As Boolean
     'Note: this sub is silent - it displays no errors !
     
-    If sPath = vbNullString Then Exit Function
+    If Len(sPath) = 0 Then Exit Function
     
     sPath = FindOnPath(sPath, True)
     
@@ -623,10 +623,10 @@ Public Function KillProcessByFile(sPath$, Optional bForceMicrosoft As Boolean) A
                 If lCriticalFlag = 0 Then
                     PauseProcess Process(i).pid
                     hProcess = OpenProcess(PROCESS_TERMINATE, 0, Process(i).pid)
-                    AddToArrayLong aPID, Process(i).pid
+                    ArrayAddLong aPID, Process(i).pid
                     bKilled = False
                     If hProcess <> 0 Then
-                        If TerminateProcess(hProcess, 0) <> 0 Then
+                        If TerminateProcess(hProcess, ExitCode) <> 0 Then
                             bKilled = True
                             KillProcessByFile = True
                         End If

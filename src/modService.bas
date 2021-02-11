@@ -383,7 +383,7 @@ Public Function GetServiceDllPath(sServiceName As String) As String
             tmp = FindOnPath(sServiceDll)
             
             If Len(tmp) = 0 Then
-                sServiceDll = sServiceDll & " (file missing)"
+                sServiceDll = sServiceDll & " " & STR_FILE_MISSING
                 bDllMissing = True
             Else
                 sServiceDll = tmp
@@ -469,7 +469,7 @@ Public Function CleanServiceFileName(sFilename As String, sServiceName As String
             j = InStr(1, sFile, ".exe ", vbTextCompare) + 3 ' mark -> '.exe' + space
             If j < Len(sFile) And j > 3 Then sFile = Left$(sFile, j)
             
-            If Left(sFile, 4) = "\??\" Then sFile = Mid$(sFile, 5)
+            If Left$(sFile, 4) = "\??\" Then sFile = Mid$(sFile, 5)
             If Left$(sFile, 1) = "\" Then sFile = SysDisk & sFile
             
             'add .exe if not specified

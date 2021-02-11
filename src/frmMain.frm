@@ -2171,7 +2171,6 @@ Private Sub FormStart_Stady1()
     
     g_HJT_Items_Count = 36 'R + F + O1-...-O26 + Subsections (for progressbar)
 
-    DisableSubclassing = False
     If inIDE Then DisableSubclassing = True
     
     If bAutoLogSilent Then 'timeout timer
@@ -2192,17 +2191,11 @@ Private Sub FormStart_Stady1()
           
     AppVerPlusName = "HiJackThis Fork " & IIf(bIsAlpha, "(Alpha) ", IIf(bIsBeta, "(Beta) ", vbNullString)) & _
         "by Alex Dragokas v." & AppVerString
-    
-    'Ver. on Misc tools window
-    'lblVersionRaw.Caption = AppVerString & IIf(bIsAlpha, " (Alpha)", IIf(bIsBeta, " (Beta)", vbNullString))
-    
+
     If Not bAutoLogSilent Then
         Call PictureBoxRgn(pictLogo, RGB(255, 255, 255))
     End If
     
-    'enable x64 redirection
-    'ToggleWow64FSRedirection True ' -> moved to GetWindowsVersion()
-        
     InitVariables   'sWinDir, classes init. and so.
     
     SetCurrentDirectory StrPtr(AppPath())
@@ -2569,7 +2562,7 @@ Private Sub FormStart_Stady2()
             
             lTotal = ParseSubCmdLine(sCMDLine, "autostart", aKey(), aValue())
             For i = 0 To lTotal - 1
-                Select Case UCase(aKey(i))
+                Select Case UCase$(aKey(i))
                 Case "D"
                     If IsNumeric(aValue(i)) Then
                         lDelay = CLng(aValue(i))
@@ -2626,14 +2619,16 @@ Private Sub FormStart_Stady2()
     
     DoHotFixes
     
-    If (Not inIDE) And g_sCommandLine = "" And Not bPolymorph Then
-        If Not CheckIntegrityHJT() Then
-            If Not bAutoLogSilent Then
-                'Warning! Integrity of HiJackThis program is corrupted. Perhaps, file is patched or infected by file virus.
-                MsgBoxW TranslateNative(1023), vbExclamation
+    #If Not NoSelfSignTest Then
+        If (Not inIDE) And Len(g_sCommandLine) = 0 And Not bPolymorph Then
+            If Not CheckIntegrityHJT() Then
+                If Not bAutoLogSilent Then
+                    'Warning! Integrity of HiJackThis program is corrupted. Perhaps, file is patched or infected by file virus.
+                    MsgBoxW TranslateNative(1023), vbExclamation
+                End If
             End If
         End If
-    End If
+    #End If
     
     '/tool:xxx
     If bRunToolStartupList Then
@@ -3662,7 +3657,7 @@ Private Sub LoadResources()
     Dim i           As Long
     Dim j           As Long
     Dim Columns()   As String
-    Dim ID          As Long
+    Dim id          As Long
     
     'Task Scheduler white list
     sBuf = StrConv(LoadResData(101, "CUSTOM"), vbUnicode, 1049)
@@ -3714,11 +3709,11 @@ Private Sub LoadResources()
                     If Not oDict.TaskWL_ID.Exists(.Path) Then
                         oDict.TaskWL_ID.Add .Path, i
                     Else 'append several lines with same paths
-                        ID = oDict.TaskWL_ID(.Path)
+                        id = oDict.TaskWL_ID(.Path)
                         
                         'additional check in case 'FindOnPath' didn't find executable
-                        g_TasksWL(ID).RunObj = g_TasksWL(ID).RunObj & IIf(Len(g_TasksWL(ID).RunObj) = 0, "", "|") & .RunObj
-                        g_TasksWL(ID).Args = g_TasksWL(ID).Args & "|" & .Args
+                        g_TasksWL(id).RunObj = g_TasksWL(id).RunObj & IIf(Len(g_TasksWL(id).RunObj) = 0, "", "|") & .RunObj
+                        g_TasksWL(id).Args = g_TasksWL(id).Args & "|" & .Args
                     End If
                 End If
             End With
@@ -3767,6 +3762,7 @@ Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
             g_ExitCodeProcess = 1067
         End If
     End If
+    g_bAppShutdown = True
     BackupFlush
     If g_WER_Disabled Then DisableWER bRevert:=True
     
@@ -3944,7 +3940,7 @@ Private Sub cmdDeleteService_Click() 'Misc Tools -> Delete service ...
     sCompany = GetFilePropCompany(IIf(sDllPath <> "", sDllPath, sFile))
     If sCompany = vbNullString Then sCompany = Translate(502) '"Unknown owner" '"?"
     
-    If Not FileExists(sFile) Then sFile = sFile & " (" & Translate(503) & ")"  '" (file missing)"
+    If Not FileExists(sFile) Then sFile = sFile & " (" & Translate(503) & ")"  '" " & STR_FILE_MISSING
     
     If MsgBoxW(Translate(117) & vbCrLf & _
               Translate(505) & ": " & sServiceName & vbCrLf & _
@@ -4008,7 +4004,6 @@ End Sub
 
 Private Sub cmdHostsManager_Click() 'Misc Tools -> 'Hosts' file manager
     fraConfigTabs(3).Visible = False
-    'SubClassScroll False
     fraHostsMan.Visible = True
     NotifyChangeFrame FRAME_ALIAS_HOSTS
     ListHostsFile lstHostsMan, lblHostsTip1
@@ -4019,7 +4014,6 @@ Private Sub cmdHostsManBack_Click()
     fraHostsMan.Visible = False
     fraConfigTabs(3).Visible = True
     NotifyChangeFrame FRAME_ALIAS_MISC_TOOLS
-    'SubClassScroll True
 End Sub
 
 'Hosts -> Delete line
@@ -4055,7 +4049,6 @@ Private Sub cmdMainMenu_Click()
 
     CloseProgressbar
     
-    'SubClassScroll False
     frmMain.pictLogo.Visible = True
     'If cmdConfig.Caption = Translate(19) Then 'Report
     
@@ -4127,7 +4120,6 @@ Private Sub cmdN00bClose_Click()
         lblInfo(1).Visible = False
         ResumeHashProgressbar
     End If
-    'SubClassScroll True
 End Sub
 
 '// Online guide
@@ -4156,7 +4148,6 @@ Private Sub cmdN00bLog_Click()
     fraSubmit.Visible = True
     lstResults.Visible = True
     bAutoLog = True
-    'SubClassScroll True
     cmdScan_Click
 End Sub
 
@@ -4172,7 +4163,6 @@ Private Sub cmdN00bScan_Click()
     fraSubmit.Visible = True
     lstResults.Visible = True
     pictLogo.Visible = False
-    'SubClassScroll True
     cmdScan_Click
 End Sub
 
@@ -4236,11 +4226,9 @@ Private Sub chkConfigTabs_Click(Index As Integer)
     Select Case Index
     
     Case 0 'main settings
-        'SubClassScroll False 'unSubClass
         NotifyChangeFrame FRAME_ALIAS_SETTING
         
     Case 1 'ignore list
-        'SubClassScroll False 'unSubClass
         NotifyChangeFrame FRAME_ALIAS_IGNORE_LIST
         
         lstIgnore.Clear
@@ -4259,12 +4247,10 @@ Private Sub chkConfigTabs_Click(Index As Integer)
         AddHorizontalScrollBarToResults lstIgnore
         
     Case 2 'backups
-        'SubClassScroll False 'unSubClass
         NotifyChangeFrame FRAME_ALIAS_BACKUPS
         ListBackups
         
     Case 3 'Misc tools
-        'SubClassScroll True ' mouse scrolling support
         NotifyChangeFrame FRAME_ALIAS_MISC_TOOLS
         
     End Select
@@ -4283,8 +4269,6 @@ Private Sub cmdConfig_Click()
     'сперва выйти из фрейма "Help"
     'If cmdHelp.Caption = Translate(17) Then cmdHelp_Click
     If cmdHelp.Tag = "1" Then cmdHelp_Click
-    
-    'SubClassScroll True
     
     CloseProgressbar
     
@@ -4813,7 +4797,7 @@ Private Sub cmdFix_Click()
     
     g_bScanInProgress = False
     g_bGeneralScanned = False
-       
+    
     'if somewhere explorer.exe has been killed, but not launched
     If Not ProcessExist("explorer.exe", True) Then
         RestartExplorer
@@ -5221,7 +5205,6 @@ Private Function HJT_Uninstall(bSilent As Boolean) As Boolean
     CreateUninstallKey False
     DeleteBackup "", True
     ABR_RemoveBackupALL True
-    SubClassScroll False
     RemoveHJTShortcuts
     
     RemoveAutorunHJT

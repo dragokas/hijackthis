@@ -350,10 +350,10 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
     Translate() = gLines()
     
     With frmMain
-        For i = 0 To UBound(gLines)
-            If Len(gLines(i)) <> 0 Then
+        For i = 0 To UBound(Translate)
+            If Len(Translate(i)) <> 0 Then
                 ID = Right$("000" & i, 4)
-                Translation = gLines(i)
+                Translation = Translate(i)
                 
                 If bDontTouchMainForm Then
                   bAnotherForm = True

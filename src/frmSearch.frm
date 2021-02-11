@@ -343,10 +343,6 @@ Private Sub SetWindowHeight()
     
 End Sub
 
-Private Sub Form_Initialize()
-    optDirBegin_Click
-End Sub
-
 Private Sub Form_Load()
     Dim OptB As OptionButton
     Dim Ctl As Control
@@ -368,6 +364,7 @@ Private Sub Form_Load()
     End If
     
     m_iCompareMethod = vbTextCompare
+    F_DIR = DIR_BEGIN
     ResetCursor
     
     SAVE_OPT = RegReadHJT("SearchOptions", "0")
@@ -990,7 +987,7 @@ Private Function IsHex(sStr As String) As Boolean
     Dim i As Long
     Dim Code As Long
     If Len(sStr) > 0 Then IsHex = True
-    For i = 1 To Len(UCase(sStr))
+    For i = 1 To Len(UCase$(sStr))
         Code = Asc(Mid$(sStr, i, 1))
         If Not ((Code >= 48 And Code <= 57) Or (Code >= 65 And Code <= 70)) Then
             IsHex = False

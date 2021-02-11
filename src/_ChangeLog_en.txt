@@ -11,6 +11,13 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[2.10.0.6 beta] (Nightly) - Feb 12, 2021
+ - Fixed: HJT uninstallation removes not all keys.
+ - Fixed: Explorer is restarted in 'Limited Mode' after O21 Fix.
+ - Fixed: O26 - Tools false positives.
+ - Hotkeys: 'Ctrl' + 'Mouse Wheel' to change the font size of results window list.
+ - More optimizations.
+
 [2.10.0.5 beta] (Nightly) - Feb 08, 2021
  - Search window: added option to search in filtering mode (only scan results window).
  - Search window: added option to mark all items automatically in filtering mode.

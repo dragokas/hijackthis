@@ -117,6 +117,7 @@ Option Explicit
 #Const SilentAutoLog = False    ' /silentautolog key analogue
 #Const DoCrash = False          ' crash the program (test reason)
 #Const CryptDisable = False     ' disable encryption of ignore list and several other settings
+#Const NoSelfSignTest = False   ' whether I should disable the checking of own signature
 
 Private Const ICC_STANDARD_CLASSES As Long = &H4000&
 

@@ -670,7 +670,7 @@ Public Function ProcessRunUnelevated( _
     GetStartupInfo si                                   ' клонируем структуру текущего процесса
     si.dwFlags = STARTF_USESHOWWINDOW
     si.wShowWindow = WindowStyle                        ' Стиль окна
-        
+    
     'SetCurrentProcessPrivileges "SeIncreaseQuotaPrivilege"  'CreateProcessWithTokenW
     'SetCurrentProcessPrivileges "SeImpersonatePrivilege"    'CreateProcessWithTokenW
     

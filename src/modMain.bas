@@ -371,7 +371,6 @@ Public Type SCAN_RESULT
     Reboot          As Boolean
     ForceMicrosoft  As Boolean
     FixAll          As Boolean
-    Hide            As Boolean
 End Type
 
 Type TYPE_PERFORMANCE
@@ -2525,7 +2524,7 @@ Private Function IsBingScopeKeyPara(sRegParam As String, sURL As String) As Bool
         Case "URL", UCase$("SuggestionsURL"), UCase$("SuggestionsURLFallback"), UCase$("TopResultURL"), UCase$("TopResultURLFallback")
             If AryItems(aKey) Then
                 For i = 0 To UBound(aKey)
-                    Select Case LCase(aKey(i))
+                    Select Case LCase$(aKey(i))
                     Case "q", "query"
                     '{searchTerms}
                         If StrComp(aVal(i), "{searchTerms}", 1) = 0 Then bSearchTermPresent = True
@@ -3867,15 +3866,10 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Public Sub FixO2Item(sItem$, result As SCAN_RESULT)
-    'O2 - Enumeration of existing MSIE BHO's
-    'O2 - BHO: AcroIEHlprObj Class - {00000...000} - C:\PROGRAM FILES\ADOBE\ACROBAT 5.0\ACROBAT\ACTIVEX\ACROIEHELPER.OCX
-    'O2 - BHO: ... (no file)
-    'O2 - BHO: ... c:\bla.dll (file missing)
-    
-    On Error GoTo ErrorHandler:
+Public Sub RequestCloseIE()
     
     Dim bIE_Exist As Boolean
+    Static bForceWarningDisplayed As Boolean
     
     bIE_Exist = ProcessExist("iexplore.exe", True)
     
@@ -3890,13 +3884,26 @@ Public Sub FixO2Item(sItem$, result As SCAN_RESULT)
         bShownBHOWarning = True
     End If
     
-    If bIE_Exist Then
+    If bIE_Exist And Not bForceWarningDisplayed Then
         If MsgBox(Translate(311), vbExclamation) = vbYes Then
             'Internet Explorer still run. Would you like HJT close IE forcibly?
             'WARNING: current browser session will be lost!
             Proc.ProcessClose ProcessName:="iexplore.exe", Async:=False, TimeOutMs:=1000, SendCloseMsg:=True
         End If
+        bForceWarningDisplayed = True
     End If
+    
+End Sub
+
+Public Sub FixO2Item(sItem$, result As SCAN_RESULT)
+    'O2 - Enumeration of existing MSIE BHO's
+    'O2 - BHO: AcroIEHlprObj Class - {00000...000} - C:\PROGRAM FILES\ADOBE\ACROBAT 5.0\ACROBAT\ACTIVEX\ACROIEHELPER.OCX
+    'O2 - BHO: ... (no file)
+    'O2 - BHO: ... c:\bla.dll (file missing)
+    
+    On Error GoTo ErrorHandler:
+    
+    RequestCloseIE
     
     '//TODO: Add:
     'HKLM\SOFTWARE\WOW6432NODE\MICROSOFT\INTERNET EXPLORER\LOW RIGHTS\ELEVATIONPOLICY\{CLSID}
@@ -3908,8 +3915,9 @@ Public Sub FixO2Item(sItem$, result As SCAN_RESULT)
     'HKLM\SOFTWARE\CLASSES\TYPELIB\{GUID}
     
     'file should go first bacause it can use reg. info for its dll unregistration.
-    FixFileHandler result
-    FixRegistryHandler result
+    
+    FixIt result
+    
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "modMain_FixO2Item", "sItem=", sItem
@@ -4094,10 +4102,7 @@ ErrorHandler:
 End Sub
 
 Public Sub FixO3Item(sItem$, result As SCAN_RESULT)
-    'O3 - Enumeration of existing MSIE toolbars
-
-    FixFileHandler result
-    FixRegistryHandler result
+    FixIt result
 End Sub
 
 
@@ -5034,9 +5039,9 @@ Sub CheckO4_MSConfig(aHives() As String, aUserOfHive() As String)
             End If
             
             If 0 <> Len(sTarget) Then
-                sHit = sAlias & aSubKey(i) & " [backup] => " & sTarget & IIf(sArgs <> "", " " & sArgs, "") & " (" & sTime & ")" & IIf(Not FileExists(sTarget), " (file missing)", "")
+                sHit = sAlias & aSubKey(i) & " [backup] => " & sTarget & IIf(sArgs <> "", " " & sArgs, "") & " (" & sTime & ")" & IIf(Not FileExists(sTarget), " " & STR_FILE_MISSING, "")
             Else
-                sHit = sAlias & aSubKey(i) & " [backup] = " & sFile & " (" & sTime & ")" & IIf(sFile = "", " (no file)", IIf(Not FileExists(sFile), " (file missing)", ""))
+                sHit = sAlias & aSubKey(i) & " [backup] = " & sFile & " (" & sTime & ")" & IIf(sFile = "", " (no file)", IIf(Not FileExists(sFile), " " & STR_FILE_MISSING, ""))
             End If
             
             If Not IsOnIgnoreList(sHit) Then
@@ -5487,7 +5492,7 @@ Public Sub CheckO5Item()
                 End If
                 
                 sHit = IIf(HE.Redirected, "O5-32", "O5") & " - " & HE.KeyAndHive & ": [" & sSnapIn & "]" & _
-                    IIf(Len(sDescr) <> 0, " (" & sDescr & ")", "") & IIf(bFileExist, "", " (file missing)")
+                    IIf(Len(sDescr) <> 0, " (" & sDescr & ")", "") & IIf(bFileExist, "", " " & STR_FILE_MISSING)
                 
                 If Not IsOnIgnoreList(sHit) Then
                     With result
@@ -5526,7 +5531,7 @@ Public Sub CheckO5Item()
                 End If
                 
                 sHit = "O5 - control.ini: [don't load] " & sSnapIn & " = " & sDummy & _
-                    IIf(Len(sDescr) <> 0, " (" & sDescr & ")", "") & IIf(bFileExist, "", " (file missing)")
+                    IIf(Len(sDescr) <> 0, " (" & sDescr & ")", "") & IIf(bFileExist, "", " " & STR_FILE_MISSING)
                 
                 If Not IsOnIgnoreList(sHit) Then
                     With result
@@ -5605,14 +5610,7 @@ ErrorHandler:
 End Sub
 
 Public Sub FixO5Item(sItem$, result As SCAN_RESULT)
-    'O5 - Blocking of loading Internet Options in Control Panel
-    'WritePrivateProfileString "don't load", "inetcpl.cpl", vbNullString, "control.ini"
-    On Error GoTo ErrorHandler:
-    FixRegistryHandler result
-    Exit Sub
-ErrorHandler:
-    ErrorMsg Err, "modMain_FixO5Item", "sItem=", sItem
-    If inIDE Then Stop: Resume Next
+    FixIt result
 End Sub
 
 Public Sub CheckO6Item()
@@ -5672,8 +5670,7 @@ ErrorHandler:
 End Sub
 
 Public Sub FixO6Item(sItem$, result As SCAN_RESULT)
-    'O6 - Disabling of Internet Options' Main tab with Policies
-    FixRegistryHandler result
+    FixIt result
 End Sub
 
 Public Sub CheckSystemProblems()
@@ -6291,7 +6288,7 @@ Public Sub CheckSystemProblemsEnvVars()
             sHit = "O7 - TroubleShooting: (EV) HKLM\..\Environment: " & "[" & aParam(i) & "]" & " = " & sDataNonExpanded
             
             If aFileBased(i) Then
-                sHit = sHit & IIf(bMissing, " (file missing)", "") & IIf(bMicrosoft, " (Microsoft)", "")
+                sHit = sHit & IIf(bMissing, " " & STR_FILE_MISSING, "") & IIf(bMicrosoft, " (Microsoft)", "")
             End If
             
             If Not IsOnIgnoreList(sHit) Then
@@ -8336,14 +8333,8 @@ Public Sub FixO8Item(sItem$, result As SCAN_RESULT)
     'O8 - Extra context menu items
     'O8 - Extra context menu item: [name] - html file
     'HKCU\Software\Microsoft\Internet Explorer\MenuExt
-    
-    On Error GoTo ErrorHandler:
-    
-    FixRegistryHandler result
-    Exit Sub
-ErrorHandler:
-    ErrorMsg Err, "modMain_FixO8Item", "sItem=", sItem
-    If inIDE Then Stop: Resume Next
+
+    FixIt result
 End Sub
 
 Public Sub CheckO9Item()
@@ -8438,7 +8429,7 @@ Public Sub CheckO9Item()
                     If FileExists(sFile) Then
                         sFile = GetLongPath(EnvironW(sFile))
                     Else
-                        sFile = GetLongPath(EnvironW(sFile)) & " (file missing)"
+                        sFile = GetLongPath(EnvironW(sFile)) & " " & STR_FILE_MISSING
                     End If
                 End If
             End If
@@ -8543,13 +8534,7 @@ Public Sub FixO9Item(sItem$, result As SCAN_RESULT)
     'O9 - Extra buttons/Tools menu items
     'O9 - Extra button: [name] - [CLSID] - [file] [(HKCU)]
     
-    On Error GoTo ErrorHandler:
-
-    FixRegistryHandler result
-    Exit Sub
-ErrorHandler:
-    ErrorMsg Err, "modMain_FixO9Item", "sItem=", sItem
-    If inIDE Then Stop: Resume Next
+    FixIt result
 End Sub
 
 Public Sub CheckO10Item()
@@ -8618,12 +8603,8 @@ End Sub
 
 Public Sub FixO11Item(sItem$, result As SCAN_RESULT)
     'O11 - Options group: [BLA] Blah"
-    On Error GoTo ErrorHandler:
-    FixRegistryHandler result
-    Exit Sub
-ErrorHandler:
-    ErrorMsg Err, "modMain_FixO11Item", "sItem=", sItem
-    If inIDE Then Stop: Resume Next
+    
+    FixIt result
 End Sub
 
 Public Sub CheckO12Item()
@@ -8713,8 +8694,7 @@ Public Sub FixO12Item(sItem$, result As SCAN_RESULT)
         bShownToolbarWarning = True
     End If
     
-    FixRegistryHandler result
-    FixFileHandler result
+    FixIt result
     
     Exit Sub
 ErrorHandler:
@@ -8814,13 +8794,8 @@ Public Sub FixO13Item(sItem$, result As SCAN_RESULT)
     'defaultprefix fix
     'O13 - DefaultPrefix: http://www.hijacker.com/redir.cgi?
     'O13 - [WWW/Home/Mosaic/FTP/Gopher] Prefix: ..
-    
-    On Error GoTo ErrorHandler:
-    FixRegistryHandler result
-    Exit Sub
-ErrorHandler:
-    ErrorMsg Err, "modMain_FixO13Item", "sItem=", sItem
-    If inIDE Then Stop: Resume Next
+
+    FixIt result
 End Sub
 
 Public Sub CheckO14Item()
@@ -9295,55 +9270,8 @@ Public Sub FixO15Item(sItem$, result As SCAN_RESULT)
 '    'O15 - ESC Trusted IP range: 66.66.66.66
 '    'O15 - ProtocolDefaults: 'http' protocol is in Trusted Zone, should be Internet Zone (HKLM)
 
-    On Error GoTo ErrorHandler:
-    FixRegistryHandler result
-    Exit Sub
-ErrorHandler:
-    ErrorMsg Err, "modMain_FixO15Item", "sItem=", sItem
-    If inIDE Then Stop: Resume Next
+    FixIt result
 End Sub
-
-'Public Sub FixNetscapeMozilla(sItem$)
-'    'N1 - Netscape 4: user_pref("browser.startup.homepage", "http://url"); (c:\..\prefs.js)
-'    'N2 - Netscape 6: user_pref("browser.startup.homepage", "http://url"); (c:\..\prefs.js)
-'    'N3 - Netscape 7: user_pref("browser.startup.homepage", "http://url"); (c:\..\prefs.js)
-'    'N4 - Mozilla: user_pref("browser.startup.homepage", "http://url"); (c:\..\prefs.js)
-'    '               user_pref("browser.search.defaultengine", "http://url"); (c:\..\prefs.js)
-'
-'    Dim sPrefsJs$, sDummy$, ff1%, ff2%
-'    On Error GoTo ErrorHandler:
-'    sPrefsJs = Mid$(sItem, InStrRev(sItem, "(") + 1)
-'    sPrefsJs = Left$(sPrefsJs, Len(sPrefsJs) - 1)
-'    If FileExists(sPrefsJs) Then
-'        ff1 = FreeFile()
-'        Open sPrefsJs For Input As #ff1
-'        ff2 = FreeFile()
-'        Open sPrefsJs & ".new" For Output As #ff2
-'            Do
-'                Line Input #ff1, sDummy
-'                If InStr(sDummy, "user_pref(""browser.startup.homepage"",") > 0 And _
-'                   InStr(sItem, "user_pref(""browser.startup.homepage"",") > 0 Then
-'                    Print #ff2, "user_pref(""browser.startup.homepage"", ""http://home.netscape.com/"");"
-'                ElseIf InStr(sDummy, "user_pref(""browser.search.defaultengine"",") > 0 And _
-'                   InStr(sItem, "user_pref(""browser.search.defaultengine"",") > 0 Then
-'                    Print #ff2, "user_pref(""browser.search.defaultengine"", ""http://www.google.com/"");"
-'                Else
-'                    Print #ff2, sDummy
-'                End If
-'            Loop Until EOF(ff1)
-'        Close #ff1
-'        Close #ff2
-'        deletefileWEx (StrPtr(sPrefsJs))
-'        Name sPrefsJs & ".new" As sPrefsJs
-'    End If
-'    Exit Sub
-'
-'ErrorHandler:
-'    Close #ff1
-'    Close #ff2
-'    ErrorMsg Err, "modMain_FixNetscapeMozilla", "sItem=", sItem
-'    If inIDE Then Stop: Resume Next
-'End Sub
 
 Public Sub CheckO16Item()
     'O16 - Downloaded Program Files
@@ -9389,18 +9317,6 @@ Public Sub CheckO16Item()
                   InStr(sCodebase, "http://windowsupdate.microsoft.com") <> 1 And _
                   InStr(sCodebase, "http://v4.windowsupdate.microsoft.com") <> 1) _
                   Or Not bHideMicrosoft Then
-           
-                  'InStr(sCodeBase, "http://java.sun.com") <> 1 And _
-                  'InStr(sCodeBase, "http://download.macromedia.com") <> 1 And _
-                  'InStr(sCodeBase, "http://fpdownload.macromedia.com") <> 1 And _
-                  'InStr(sCodeBase, "http://active.macromedia.com") <> 1 And _
-                  'InStr(sCodeBase, "http://www.apple.com") <> 1 And _
-                  'InStr(sCodeBase, "http://http://security.symantec.com") <> 1 And _
-                  'InStr(sCodeBase, "http://download.yahoo.com") <> 1 And _
-                  'InStr(sName, "Microsoft XML Parser") = 0 And _
-                  'InStr(sName, "Java Classes") = 0 And _
-                  'InStr(sName, "Classes for Java") = 0 And _
-                  'InStr(sName, "Java Runtime Environment") = 0 Or _
 
                   'a DPF object can consist of:
                   '* DPF regkey           -> sDPFKey
@@ -9478,13 +9394,7 @@ Public Sub FixO16Item(sItem$, result As SCAN_RESULT)
     'O16 - DPF: {0000000} (shit toolbar) - http://bla.com/bla.dll
     'O16 - DPF: Plugin - http://bla.com/bla.dll
     
-    On Error GoTo ErrorHandler:
-    FixFileHandler result
-    FixRegistryHandler result
-    Exit Sub
-ErrorHandler:
-    ErrorMsg Err, "modMain_FixO16Item", "sItem=", sItem
-    If inIDE Then Stop: Resume Next
+    FixIt result
 End Sub
 
 Public Sub CheckO17Item()
@@ -9726,8 +9636,6 @@ Public Sub FixO17Item(sItem$, result As SCAN_RESULT)
     '                  ...
     'ditto for NameServer
     
-    On Error GoTo ErrorHandler:
-    
     If StrBeginWith(sItem, "O17 - DHCP DNS:") Then
         'Cure for this object is not provided: []
         'You need to manually set the DNS address on the router, which is issued to you by provider.
@@ -9735,12 +9643,7 @@ Public Sub FixO17Item(sItem$, result As SCAN_RESULT)
         Exit Sub
     End If
     
-    FixRegistryHandler result
-    Exit Sub
-    
-ErrorHandler:
-    ErrorMsg Err, "modMain_FixO17Item", "sItem=", sItem
-    If inIDE Then Stop: Resume Next
+    FixIt result
 End Sub
 
 Public Sub CheckO18Item()
@@ -10072,30 +9975,6 @@ Public Function FileMissing(sFile$) As Boolean
     If StrEndWith(sFile, STR_FILE_MISSING) Then FileMissing = True: Exit Function
 End Function
 
-'Private Function O18_GetCLSIDByProtocol(sProtocol$) As String
-'    Dim i&, sCLSID$
-'    For i = 0 To UBound(aSafeProtocols)
-'        'find CLSID for protocol name
-'        If InStr(1, aSafeProtocols(i), sProtocol) > 0 Then
-'            sCLSID = SplitSafe(aSafeProtocols(i), "|")(1)
-'            Exit For
-'        End If
-'    Next i
-'    O18_GetCLSIDByProtocol = sCLSID
-'End Function
-'
-'Private Function O18_GetCLSIDByFilter(sFilter$) As String
-'    Dim i&, sCLSID$
-'    For i = 0 To UBound(aSafeFilters)
-'        'find CLSID for protocol name
-'        If InStr(1, aSafeFilters(i), sFilter) > 0 Then
-'            sCLSID = SplitSafe(aSafeFilters(i), "|")(1)
-'            Exit For
-'        End If
-'    Next i
-'    O18_GetCLSIDByFilter = sCLSID
-'End Function
-
 Public Sub FixO18Item(sItem$, result As SCAN_RESULT)
     'O18 - Protocol: cn
     'O18 - Filter: text/blah - {0} - c:\file.dll
@@ -10116,8 +9995,8 @@ Public Sub FixO18Item(sItem$, result As SCAN_RESULT)
         End If
     End If
     
-    FixRegistryHandler result
-    FixFileHandler result
+    FixIt result
+    
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "modMain_FixO18Item", "sItem=", sItem
@@ -10171,13 +10050,9 @@ ErrorHandler:
 End Sub
 
 Public Sub FixO19Item(sItem$, result As SCAN_RESULT)
-    On Error GoTo ErrorHandler:
     'O19 - User stylesheet: c:\file.css (file missing)
-    FixRegistryHandler result
-    Exit Sub
-ErrorHandler:
-    ErrorMsg Err, "modMain_FixO19Item", "sItem=", sItem
-    If inIDE Then Stop: Resume Next
+    
+    FixIt result
 End Sub
 
 Public Sub CheckO20Item()
@@ -10297,19 +10172,13 @@ ErrorHandler:
 End Sub
 
 Public Sub FixO20Item(sItem$, result As SCAN_RESULT)
-    On Error GoTo ErrorHandler:
-    
     'O20 - AppInit_DLLs: file.dll
     'O20 - Winlogon Notify: bladibla - c:\file.dll
     '
     '* clear appinit regval (don't delete it)
     '* kill regkey (for winlogon notify)
     
-    FixRegistryHandler result
-    Exit Sub
-ErrorHandler:
-    ErrorMsg Err, "modMain_FixO20Item", "sItem=", sItem
-    If inIDE Then Stop: Resume Next
+    FixIt result
 End Sub
 
 Public Sub CheckO21Item()
@@ -10579,8 +10448,6 @@ ErrorHandler:
 End Sub
 
 Public Sub FixO21Item(sItem$, result As SCAN_RESULT)
-    On Error GoTo ErrorHandler:
-    
     'O21 - SSODL: webcheck - {000....000} - c:\file.dll (file missing)
     'actions to take:
     '* kill file
@@ -10589,12 +10456,8 @@ Public Sub FixO21Item(sItem$, result As SCAN_RESULT)
     '* kill clsid regkey
     
     ShutdownExplorer
-    FixRegistryHandler result
-    FixFileHandler result
-    Exit Sub
-ErrorHandler:
-    ErrorMsg Err, "modMain_FixO21Item", "sItem=", sItem
-    If inIDE Then Stop: Resume Next
+    FixIt result
+    
 End Sub
 
 Public Sub CheckO22Item()
@@ -10617,13 +10480,9 @@ ErrorHandler:
 End Sub
 
 Public Sub FixO22Item(sItem$, result As SCAN_RESULT)
-    On Error GoTo ErrorHandler:
     'O22 - ScheduledTask: blah - {000...000} - file.dll
+    
     FixIt result
-    Exit Sub
-ErrorHandler:
-    ErrorMsg Err, "modMain_FixO22Item", "sItem=", sItem
-    If inIDE Then Stop: Resume Next
 End Sub
 
 Public Sub CheckO23Item()
@@ -10709,7 +10568,7 @@ Public Sub CheckO23Item()
             tmp = FindOnPath(sServiceDll)
             
             If Len(tmp) = 0 Then
-                sServiceDll = sServiceDll & " (file missing)"
+                sServiceDll = sServiceDll & " " & STR_FILE_MISSING
                 bDllMissing = True
             Else
                 sServiceDll = tmp
@@ -10844,7 +10703,7 @@ Public Sub CheckO23Item()
                 sFile = STR_NO_FILE
             Else
                 If (Not FileExists(sFile)) And (Not IsCompositeCmd) Then
-                    sFile = sFile & " (file missing)"
+                    sFile = sFile & " " & STR_FILE_MISSING
                 Else
 '                    If IsCompositeCmd Then
 '                        FoundFile = argv(1)
@@ -11920,12 +11779,7 @@ Public Sub FixO23Item(sItem$, result As SCAN_RESULT)
     ' (file missing) or (filesize .., MD5 ..) can be appended
     If Not bIsWinNT Then Exit Sub
     
-    On Error GoTo ErrorHandler:
     FixIt result
-    Exit Sub
-ErrorHandler:
-    ErrorMsg Err, "modMain_FixO23Item", "sItem=", sItem
-    If inIDE Then Stop: Resume Next
 End Sub
 
 Public Sub CheckO24Item()
@@ -11992,33 +11846,74 @@ ErrorHandler:
 End Sub
 
 Public Sub FixO24Item(sItem$, result As SCAN_RESULT)
-    On Error GoTo ErrorHandler:
     'delete the entire registry key
     'O24 - Desktop Component 1: Internet Explorer Channel Bar - 131A6951-7F78-11D0-A979-00C04FD705A2
     'O24 - Desktop Component 2: Security - %windir%\index.html
-    FixRegistryHandler result
-    FixFileHandler result
-    Exit Sub
-ErrorHandler:
-    ErrorMsg Err, "modMain_FixO23Item", "sItem=", sItem
-    If inIDE Then Stop: Resume Next
+    
+    FixIt result
+
 End Sub
 
 Public Sub FixO24Item_Post()
     Const SPIF_UPDATEINIFILE As Long = 1&
     
     SystemParametersInfo SPI_SETDESKWALLPAPER, 0&, 0&, SPIF_UPDATEINIFILE 'SPIF_SENDWININICHANGE Or SPIF_UPDATEINIFILE
-    SleepNoLock 1000
+    Sleep 1000
     RestartExplorer
 End Sub
 
 Public Sub RestartExplorer()
-    'We could do it in official way, e.g. with RestartManager: https://jiangsheng.net/2013/01/22/how-to-restart-windows-explorer-programmatically-using-restart-manager/
-    'but, consider we are dealing with malware, it is better to just kill process without notifying loaded modules about this action
+
+    Dim iRestartShell As Long
+    Dim bShouldRestore As Boolean
     
-    ShutdownExplorer
-    SleepNoLock 1000
+    'AutoRestartShell can be configured to prevent Explorer restarts automatically.
+    'Also, in that case the attempt to start it manually will cause Explorer to run in 'Safe Mode'.
+    'So, firstly we need to ensure the value is correct.
     
+    iRestartShell = Reg.GetDword(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", "AutoRestartShell")
+    
+    If iRestartShell <> 1 Then
+        Reg.SetDwordVal HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", "AutoRestartShell", 1
+        bShouldRestore = True
+    End If
+    
+    If ProcessExist("explorer.exe", True) Then
+    
+        'We could do it in official way, e.g. with RestartManager: https://jiangsheng.net/2013/01/22/how-to-restart-windows-explorer-programmatically-using-restart-manager/
+        'but, consider we are dealing with malware, it is better to just kill process without notifying loaded modules about this action
+    
+        KillProcessByFile sWinDir & "\" & "explorer.exe", True, 0
+        Sleep 1000
+        
+        If Not ProcessExist("explorer.exe", True) Then
+            StartExplorer
+        End If
+    Else
+        'When explorer does not exists, it could had been shut down with Exit Code 1,
+        'which means the next time it will be started in 'Safe Mode',
+        'so, we need to restart it twice in that case with 0 Exit Code.
+    
+        StartExplorer
+        Sleep 3000
+        
+        KillProcessByFile sWinDir & "\" & "explorer.exe", True, 0
+        Sleep 1000
+        
+        If Not ProcessExist("explorer.exe", True) Then
+            StartExplorer
+        End If
+    End If
+    
+    If bShouldRestore Then
+        Reg.SetDwordVal HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", "AutoRestartShell", iRestartShell
+    End If
+    
+    Sleep 500
+    
+End Sub
+
+Public Sub StartExplorer()
     ' Run unelevated (downgrade privileges)
     ' Same as CreateExplorerShellUnelevatedTask task, that uses /NOUACCHECK switch to override task policy
     ' I guess that switch used in task scheduler to prevent recurse call
@@ -12026,7 +11921,7 @@ Public Sub RestartExplorer()
 End Sub
 
 Public Sub ShutdownExplorer()
-    KillProcessByFile sWinDir & "\" & "explorer.exe", True
+    KillProcessByFile sWinDir & "\" & "explorer.exe", True, 1
 End Sub
     
 Public Function IsOnIgnoreList(sHit$, Optional UpdateList As Boolean, Optional EraseList As Boolean) As Boolean
@@ -12238,7 +12133,7 @@ Public Function ClipboardSetText(sText As String) As Boolean
     AppendErrorLogCustom "ClipboardSetText - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "ClipboardSetText"
+    'ErrorMsg Err, "ClipboardSetText" ' Out of stack space
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -12517,6 +12412,17 @@ Public Sub SetAllFontCharset(Frm As Form, Optional sFontName As String, Optional
     Dim CtlCombo    As ComboBox
     Dim CtlTree     As TreeView
     Dim CtlPict     As PictureBox
+    Dim iOldTop     As Long
+    Dim iOldSel     As Long
+    
+    If Frm Is frmMain Then
+        'save selected position on listbox
+        If frmMain.lstResults.ListIndex <> -1 Then
+            iOldSel = frmMain.lstResults.ListIndex
+        End If
+        
+        iOldTop = frmMain.lstResults.TopIndex
+    End If
     
     For Each Ctl In Frm.Controls
         Select Case TypeName(Ctl)
@@ -12556,6 +12462,15 @@ Public Sub SetAllFontCharset(Frm As Form, Optional sFontName As String, Optional
                 SetFontCharSet CtlPict, sFontName, sFontSize, bFontBold
         End Select
     Next Ctl
+    
+    're-applying subclassing is required, since the window destroys itself and re-creates as soon as font charset is changed
+    If Frm Is frmMain Then
+        SubClassScroll_ScanResults True
+        
+        'restore listbox sel. position and scroll position
+        If iOldSel > 0 Then frmMain.lstResults.ListIndex = iOldSel
+        If iOldTop <> -1 Then frmMain.lstResults.TopIndex = iOldTop
+    End If
     
     AppendErrorLogCustom "SetAllFontCharset - End"
     Exit Sub
@@ -12680,7 +12595,7 @@ Public Sub SetFontCharSet(Ctl As Control, Optional sFontName As String, Optional
         If sFontSize = "Auto" Or Len(sFontSize) = 0 Then
             lFontSize = 8
         Else
-            lFontSize = CStr(sFontSize)
+            lFontSize = CLng(sFontSize)
         End If
         ControlFont.Size = lFontSize
         
@@ -13562,7 +13477,7 @@ Public Function EnvironW(ByVal SrcEnv As String, Optional UseRedir As Boolean, O
         LastResult = EnvironW
     End If
     
-    AppendErrorLogCustom "EnvironW - End"
+    AppendErrorLogCustom "EnvironW - End", EnvironW
 End Function
 
 Public Function GetProfileDirBySID(sSid As String) As String
@@ -13854,7 +13769,9 @@ Public Function LoadWindowPos(Frm As Form, IdSection As SETTINGS_SECTION) As Boo
 End Function
 
 Public Sub SaveWindowPos(Frm As Form, IdSection As SETTINGS_SECTION)
-
+    
+    If g_UninstallState Then Exit Sub
+    
     If Frm.WindowState <> vbMinimized And Frm.WindowState <> vbMaximized Then
         RegSaveHJT "WinTop", CStr(Frm.Top), IdSection
         RegSaveHJT "WinLeft", CStr(Frm.Left), IdSection
@@ -14382,26 +14299,6 @@ Public Function StringFromPtrW(ByVal ptr As Long) As String
         End If
     End If
 End Function
-
-Public Sub AddToArray(ByRef uArray As Variant, sItem$)
-    If 0 = AryItems(uArray) Then
-        ReDim uArray(0)
-        uArray(0) = sItem
-    Else
-        ReDim Preserve uArray(UBound(uArray) + 1)
-        uArray(UBound(uArray)) = sItem
-    End If
-End Sub
-
-Public Sub AddToArrayLong(ByRef uArray As Variant, lItem As Long)
-    If 0 = AryItems(uArray) Then
-        ReDim uArray(0)
-        uArray(0) = lItem
-    Else
-        ReDim Preserve uArray(UBound(uArray) + 1)
-        uArray(UBound(uArray)) = lItem
-    End If
-End Sub
 
 Public Sub DoCrash()
     memcpy 0, ByVal 0, 4
@@ -14995,7 +14892,7 @@ MakeLog:
         If bIgnoreAllWhitelists Then
             sScanMode = sScanMode & "; Ignore ALL Whitelists"
         End If
-        If Left(sScanMode, 2) = "; " Then sScanMode = Mid$(sScanMode, 3)
+        If Left$(sScanMode, 2) = "; " Then sScanMode = Mid$(sScanMode, 3)
         
         sLog.Append "Scan mode: " & sScanMode & vbCrLf
     End If

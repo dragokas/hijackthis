@@ -1728,7 +1728,7 @@ Public Function GetRootPath(Path As String) As String
     Else
         pos = InStr(Path, "\")
         If pos <> 0 Then
-            GetRootPath = Left(Path, pos - 1)
+            GetRootPath = Left$(Path, pos - 1)
         Else
             GetRootPath = Path
         End If
@@ -2659,6 +2659,38 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
+Public Function RemoveArguments(ByVal InLine As String) As String
+    On Error GoTo ErrorHandler
+    
+    Dim pos As Long
+    Dim result As String
+    
+    InLine = Trim$(InLine)
+    
+    If Left$(InLine, 1) = """" Then
+        pos = InStr(2, InLine, """")
+        If pos <> 0 Then
+            result = Mid$(InLine, 2, pos - 2)
+        Else
+            result = Mid$(InLine, 2)
+        End If
+    Else
+        pos = InStr(InLine, " ")
+        If pos <> 0 Then
+            result = Left$(InLine, pos - 1)
+        Else
+            result = InLine
+        End If
+    End If
+    
+    RemoveArguments = result
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "RemoveArguments", InLine
+    If inIDE Then Stop: Resume Next
+End Function
+
 Public Sub SplitIntoPathAndArgs(ByVal InLine As String, Path As String, Optional Args As String, Optional bIsRegistryData As Boolean)
     On Error GoTo ErrorHandler
     Dim pos As Long
@@ -3066,7 +3098,7 @@ Public Function MkDirW(ByVal Path As String, Optional ByVal LastComponentIsFile 
     ' Return value: true, if successfully created or if folder is already exists
     Dim FC As String, lr As Boolean, pos As Long
     Dim bRedirect As Boolean, bOldStatus As Boolean
-    If LastComponentIsFile Then Path = Left(Path, InStrRev(Path, "\") - 1) ' cut off file name
+    If LastComponentIsFile Then Path = Left$(Path, InStrRev(Path, "\") - 1) ' cut off file name
     If InStr(Path, ":") = 0 And Not StrBeginWith(Path, "\\") Then 'if relative path
         Dim sCurDir$, nChar As Long
         sCurDir = String$(MAX_PATH, 0&)
@@ -3087,7 +3119,7 @@ Public Function MkDirW(ByVal Path As String, Optional ByVal LastComponentIsFile 
     Do 'looping through each path component
         pos = pos + 1
         pos = InStr(pos, Path, "\")
-        If pos Then FC = Left(Path, pos - 1) Else FC = Path
+        If pos Then FC = Left$(Path, pos - 1) Else FC = Path
         If FolderExists(FC, , True) Then
             lr = True 'if folder is already created
         Else
@@ -3144,7 +3176,7 @@ ErrorHandler:
 End Function
 
 Function ReplaceEV(p_Path As String, p_What As String, p_Into As String) As Boolean
-  If StrBeginWith(p_Path, p_What) Then p_Path = p_Into & Mid(p_Path, Len(p_What) + 1): ReplaceEV = True
+  If StrBeginWith(p_Path, p_What) Then p_Path = p_Into & Mid$(p_Path, Len(p_What) + 1): ReplaceEV = True
 End Function
 
 Public Function GetFreeDiscSpace(sRoot As String, bForCurrentUser As Boolean) As Currency ' result = Int64

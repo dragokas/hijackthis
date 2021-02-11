@@ -243,6 +243,7 @@ Public bLogModules      As Boolean
 Public bSkipErrorMsg    As Boolean
 Public bMinToTray       As Boolean
 Public bStartupListSilent As Boolean
+Public g_bAppShutdown   As Boolean
 Public g_bScanInProgress      As Boolean
 Public g_bGeneralScanned      As Boolean
 Public g_bCalcHashInProgress  As Boolean
@@ -260,6 +261,7 @@ Public gNotUserClick    As Boolean
 Public gNoGUI           As Boolean
 Public g_WER_Disabled   As Boolean
 Public g_HwndMain       As Long
+Public h_HwndScanResults As Long
 Public g_NeedTerminate  As Boolean
 Public g_FileBackupFlag As Long
 Public g_FontName       As String

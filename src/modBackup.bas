@@ -583,7 +583,7 @@ Private Function BackupAllocFile(sFilePath As String, out_FileID As Long, Option
     
     sFilename = GetFileName(sFilePath, True)
     
-    If LCase(GetExtensionName(sFilePath)) <> ".reg" Then
+    If LCase$(GetExtensionName(sFilePath)) <> ".reg" Then
         sFilename = sFilename & ".bak"
     End If
     
@@ -1047,7 +1047,7 @@ Public Function ABR_CreateBackup(bForceIgnoreDays As Boolean) As Boolean
     
     If (bBackupRequired Or bForceIgnoreDays) And Not bLowSpace Then
     
-        sCurDate = Year(Now) & "-" & Right("0" & Month(Now), 2) & "-" & Right$("0" & Day(Now), 2)
+        sCurDate = Year(Now) & "-" & Right$("0" & Month(Now), 2) & "-" & Right$("0" & Day(Now), 2)
     
         'C:\Windows\ABR + \Date
         sBackup_Folder = sBackup_Folder & "\" & sCurDate

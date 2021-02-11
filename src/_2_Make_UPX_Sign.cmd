@@ -302,6 +302,9 @@ if /i "%CheckPDB%"=="true" (
   )
 )
 
+:: linker v14.x leftover
+taskkill /f /im mspdbsrv.exe
+
 if defined bFast goto skipBackup
 
 echo.

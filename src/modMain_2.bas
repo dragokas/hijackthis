@@ -438,7 +438,7 @@ Public Sub CheckO25Item()
                                 .Consumer.Path = ConsumerPath
                                 .Consumer.KillTimeout = lKillTimeout
                                 
-                                .Timer.ID = sTimerName
+                                .Timer.id = sTimerName
                                 .Timer.className = sTimerClassName
                                 .Timer.Interval = lTimerInterval
                                 
@@ -536,10 +536,10 @@ Public Sub RemoveSubscriptionWMI(O25 As O25_ENTRY)
         objService.Get(.Consumer.Path).Delete_
         
         'timer
-        If 0 <> Len(.Timer.ID) Then
+        If 0 <> Len(.Timer.id) Then
         
             Set objService = GetObject("winmgmts:{impersonationLevel=Impersonate, (Security, Backup)}!\\.\root\subscription")
-            objService.Get(.Timer.className & ".TimerId=" & """" & .Timer.ID & """").Delete_
+            objService.Get(.Timer.className & ".TimerId=" & """" & .Timer.id & """").Delete_
         
         End If
         
@@ -698,7 +698,7 @@ Public Function RecoverO25Item(O25 As O25_ENTRY) As Boolean
         
         If Not (objTimer Is Nothing) Then
             objTimer.SkipIfPassed = False
-            objTimer.TimerId = .Timer.ID
+            objTimer.TimerId = .Timer.id
             'save timer
             objTimer.Put_
         End If
@@ -880,7 +880,7 @@ Public Sub CheckO26Item()
                 
                 If (Not bSafe) Or bIgnoreAllWhitelists Then
                     
-                    sHit = sAlias & " - Debugger: " & HE.HiveNameAndSID & "\..\" & sKeys(i) & ": [Debugger] = " & sFile & IIf(bMissing, " (file missing)", "")
+                    sHit = sAlias & " - Debugger: " & HE.HiveNameAndSID & "\..\" & sKeys(i) & ": [Debugger] = " & sFile & IIf(bMissing, " " & STR_FILE_MISSING, "")
         
                     If Not IsOnIgnoreList(sHit) Then
           
@@ -923,7 +923,7 @@ Public Sub CheckO26Item()
                 End If
                 
                 sHit = sAlias & " - Debugger: " & HE.HiveNameAndSID & "\..\" & _
-                    sKeys(i) & ": [VerifierDlls] = " & sFile & IIf(bMissing, " (file missing)", "") & IIf(bDisabled, " (disabled)", "")
+                    sKeys(i) & ": [VerifierDlls] = " & sFile & IIf(bMissing, " " & STR_FILE_MISSING, "") & IIf(bDisabled, " (disabled)", "")
                 
                 If Not IsOnIgnoreList(sHit) Then
                     
@@ -1185,7 +1185,6 @@ Public Sub CheckO26ToolsHiJack()
     Dim sBackupPath As String
     Dim sCleanupPath As String
     Dim sDefragPath As String
-    Dim sRootFile As String
     Dim sSigner As String
     
     If OSver.IsWindows10OrGreater Then
@@ -1231,20 +1230,19 @@ Public Sub CheckO26ToolsHiJack()
         sData = Reg.GetString(HKLM, sKey, vbNullString)
         
         SplitIntoPathAndArgs sData, sFile, sArgs, bIsRegistryData:=True
-        sRootFile = sFile
         sFile = FormatFileMissing(sFile, sArgs)
         
         bSafe = True
         sSigner = vbNullString
         
-        If StrComp(sData, EnvironW(dSafe.Items(i)), 1) <> 0 Then bSafe = False
+        If StrComp(EnvironW(sData), EnvironW(dSafe.Items(i)), 1) <> 0 Then bSafe = False
         
-        If Len(sRootFile) <> 0 Then
+        If bSafe And Len(dSafe.Items(i)) <> 0 Then
             If FileMissing(sFile) Then
                 bSafe = False
             Else
-                If StrEndWith(sRootFile, ".exe") Then
-                    If Not IsMicrosoftFileEx(sRootFile, sSigner) Then bSafe = False
+                If StrEndWith(sFile, ".exe") Then
+                    If Not IsMicrosoftFileEx(sFile, sSigner) Then bSafe = False
                 End If
             End If
         End If
@@ -1263,10 +1261,7 @@ Public Sub CheckO26ToolsHiJack()
                     .Section = "O26"
                     .HitLineW = sHit
                     AddRegToFix .Reg, RESTORE_VALUE, HKLM, sKey, "", dSafe.Items(i), , REG_RESTORE_EXPAND_SZ
-                    
-                    If FileMissing(sFile) And Len(sRootFile) <> 0 Then
-                        AddFileToFix .File, RESTORE_FILE_SFC, EnvironW(sRootFile)
-                    End If
+                    AddFileToFix .File, RESTORE_FILE_SFC, EnvironW(RemoveArguments(dSafe.Items(i)))
                     
                     .CureType = REGISTRY_BASED
                 End With
@@ -1285,10 +1280,5 @@ ErrorHandler:
 End Sub
 
 Public Sub FixO26Item(sItem$, result As SCAN_RESULT)
-    On Error GoTo ErrorHandler
-    FixRegistryHandler result
-    Exit Sub
-ErrorHandler:
-    ErrorMsg Err, "modMain2_FixO26Item", result.HitLineW
-    If inIDE Then Stop: Resume Next
+    FixIt result
 End Sub

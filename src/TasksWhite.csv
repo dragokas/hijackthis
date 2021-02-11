@@ -630,4 +630,4 @@ OSver;Dir\Name;RunObj;Args;Note
 6; \Microsoft\Windows\WDI\ResolutionHost; {900be39d-6be8-461a-bc4d-b0fa71f5ecb1}; %SystemRoot%\System32\wdi.dll
 6; \Microsoft\Windows\Windows Error Reporting\QueueReporting; %SystemRoot%\system32\wermgr.exe; -queuereporting
 6; \Microsoft\Windows\Wired\GatherWiredInfo; %SystemRoot%\system32\gatherWiredInfo.vbs
-6; \Microsoft\Windows\Wireless\GatherWirelessInfo; %SystemRoot%\system32\gatherWirelessInfo.vbs 
+6; \Microsoft\Windows\Wireless\GatherWirelessInfo; %SystemRoot%\system32\gatherWirelessInfo.vbs    

@@ -212,9 +212,9 @@ Friend Sub Parse(Data() As Byte, Optional Start As Long)
                     Do
                         lPos = Len(Body)
                         If lPos = 0 Then Exit Do
-                        Select Case Asc(Right(Body, 1))
+                        Select Case Asc(Right$(Body, 1))
                             Case ascSpace, ascTab, ascCr, ascLf
-                                Body = Left(Body, lPos - 1)
+                                Body = Left$(Body, lPos - 1)
                         End Select
                     Loop Until lPos = Len(Body) 'until we don't change the expression
                 Else
@@ -339,7 +339,7 @@ Public Function Serialize() As String
     ' ToDo ... XML Encode Body Data
     lPos = InStr(Body, "]]>")
     If lPos > 0 Then
-        Body = Left(Body, lPos - 1) & "]]&gt;" & Right(Body, Len(Body) - (lPos - 1) - 3)
+        Body = Left$(Body, lPos - 1) & "]]&gt;" & Right$(Body, Len(Body) - (lPos - 1) - 3)
     End If
     
     If Len(Body) <> 0 Then

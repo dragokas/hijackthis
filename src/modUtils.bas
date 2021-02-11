@@ -171,18 +171,38 @@ Public hLibPcre2        As Long
 Public oRegexp          As IRegExp
 Public g_bRegexpInit    As Boolean
 
-Private lSubclassed As Long
+Private lSubclassedTools As Long
+Private lSubclassedScan As Long
 Private hGetMsgHook As Long
 
 Public Sub SubClassScroll(SwitchON As Boolean)
+    
+    SubClassScroll_Tools SwitchON
+    SubClassScroll_ScanResults SwitchON
+    
+    'SubClassScroll_Hotkeys SwitchON 'Replaced by Form's "KeyPreview" property
+    
+End Sub
+
+Public Sub SubClassScroll_Tools(SwitchON As Boolean)
     If DisableSubclassing Then Exit Sub
-    If SwitchON Then
-        If lSubclassed = 0 Then lSubclassed = SetWindowSubclass(g_HwndMain, AddressOf WndProc, 0&)
-        'Replaced by Form's "KeyPreview" property
-        'If hGetMsgHook = 0 Then hGetMsgHook = SetWindowsHookEx(WH_GETMESSAGE, AddressOf GetMsgProc, 0, App.ThreadID) 'hotkeys support (Thanks to ManHunter)
+    If SwitchON And Not bAutoLogSilent Then
+        If lSubclassedTools = 0 Then lSubclassedTools = SetWindowSubclass(g_HwndMain, AddressOf WndProcTools, 0&)
     Else
-        If lSubclassed Then RemoveWindowSubclass g_HwndMain, AddressOf WndProc, 0&: lSubclassed = 0
-        'If hGetMsgHook Then UnhookWindowsHookEx hGetMsgHook: hGetMsgHook = 0
+        If lSubclassedTools Then RemoveWindowSubclass g_HwndMain, AddressOf WndProcTools, 0&: lSubclassedTools = 0
+    End If
+End Sub
+
+Public Sub SubClassScroll_ScanResults(SwitchON As Boolean)
+    If DisableSubclassing Then Exit Sub
+    If SwitchON And Not bAutoLogSilent Then
+        If Not (frmMain Is Nothing) Then
+            If lSubclassedScan Then SubClassScroll_ScanResults False
+            h_HwndScanResults = frmMain.lstResults.hwnd
+            If lSubclassedScan = 0 Then lSubclassedScan = SetWindowSubclass(h_HwndScanResults, AddressOf WndProcScan, 0&)
+        End If
+    Else
+        If lSubclassedScan Then RemoveWindowSubclass h_HwndScanResults, AddressOf WndProcScan, 0&: lSubclassedScan = 0
     End If
 End Sub
 
@@ -203,6 +223,16 @@ Public Function GetCursorPosRel() As POINTAPI
     End If
     GetCursorPosRel = p
 End Function
+
+'Public Sub SubClassScroll_Hotkeys(SwitchON As Boolean)
+'    If DisableSubclassing Then Exit Sub
+'    If SwitchON And Not bAutoLogSilent Then
+'        'hotkeys support (Thanks to ManHunter)
+'        If hGetMsgHook = 0 Then hGetMsgHook = SetWindowsHookEx(WH_GETMESSAGE, AddressOf GetMsgProc, 0, App.ThreadId)
+'    Else
+'        If hGetMsgHook Then UnhookWindowsHookEx hGetMsgHook: hGetMsgHook = 0
+'    End If
+'End Sub
 
 'Private Function GetMsgProc(ByVal nCode As Long, ByVal wParam As Long, lParam As msg) As Long
 '    If lParam.message = WM_KEYDOWN Then
@@ -238,29 +268,34 @@ End Function
 '    GetMsgProc = CallNextHookEx(hGetMsgHook, nCode, wParam, lParam)
 'End Function
 
-Private Function WndProc(ByVal hwnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal uIdSubclass As Long, ByVal dwRefData As Long) As Long
+Private Function WndProcTools(ByVal hwnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal uIdSubclass As Long, ByVal dwRefData As Long) As Long
     On Error Resume Next
+    
+    Static MouseKeys&, Rotation&, NewValue%
     
     Select Case uMsg
     
     Case WM_NCDESTROY
-        SubClassScroll False
+        SubClassScroll_Tools False
         
     Case WM_UAHDESTROYWINDOW 'dilettante's trick
-        SubClassScroll False
+        SubClassScroll_Tools False
         
     Case WM_MOUSEWHEEL
-        'If Not g_bMiscToolsTab Then Exit Function
+
         If Not IsMouseWithin(g_HwndMain) Then Exit Function ' mouse is outside the form
-        Dim MouseKeys&, Rotation&, NewValue%
-        MouseKeys = wParam And &HFFFF&
-        Rotation = wParam \ &HFFFF& 'direction
-        With frmMain.vscMiscTools
-            NewValue = .Value - .LargeChange * IIf(Rotation > 0, 1, -1)
-            If NewValue < .Min Then NewValue = .Min
-            If NewValue > .Max Then NewValue = .Max
-            .Value = NewValue   'change scroll value
-        End With
+        
+        If g_CurFrame = FRAME_ALIAS_MISC_TOOLS Then
+            
+            MouseKeys = wParam And &HFFFF&
+            Rotation = wParam \ &HFFFF& 'direction
+            With frmMain.vscMiscTools
+                NewValue = .Value - .LargeChange * IIf(Rotation > 0, 1, -1)
+                If NewValue < .Min Then NewValue = .Min
+                If NewValue > .Max Then NewValue = .Max
+                .Value = NewValue   'change scroll value
+            End With
+        End If
     
     'Case WM_KEYDOWN
     '  - is not working here because msg is intercepted by active control.
@@ -271,12 +306,73 @@ Private Function WndProc(ByVal hwnd As Long, ByVal uMsg As Long, ByVal wParam As
     '    WndProc = CallWindowProc(lpPrevWndProc, hwnd, uMsg, wParam, lParam)
     ' Not the best option, because RegisterHotKey() intercepts hotkeys from whole system!
     ' As well as not allows to use them by another programs until UnregisterHotKey() call.
-        
-    Case Else
-
-        WndProc = DefSubclassProc(hwnd, uMsg, wParam, lParam)
+    
     End Select
+    
+    WndProcTools = DefSubclassProc(hwnd, uMsg, wParam, lParam)
+    
 End Function
+
+Private Function WndProcScan(ByVal hwnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal uIdSubclass As Long, ByVal dwRefData As Long) As Long
+    On Error Resume Next
+    
+    Static Rotation&
+    
+    Select Case uMsg
+    
+    Case WM_NCDESTROY
+        SubClassScroll_ScanResults False
+        
+    Case WM_UAHDESTROYWINDOW 'dilettante's trick
+        SubClassScroll_ScanResults False
+        
+    Case WM_MOUSEWHEEL
+
+        If Not IsMouseWithin(h_HwndScanResults) Then Exit Function ' mouse is outside the form
+        
+        If g_CurFrame = FRAME_ALIAS_SCAN Then
+                
+            If cMath.HIWORD(GetKeyState(VK_CONTROL)) Then
+                Rotation = wParam \ &HFFFF& 'direction
+                Call SetFontSizeDelta(IIf(Rotation > 0, 1, -1))
+            End If
+                
+        End If
+    
+    End Select
+    
+    WndProcScan = DefSubclassProc(hwnd, uMsg, wParam, lParam)
+    
+End Function
+
+Private Sub SetFontSizeDelta(delta As Long)
+    On Error GoTo ErrorHandler:
+    
+    Dim lFontSize As Long
+    
+    g_FontName = frmMain.cmbFont.List(frmMain.cmbFont.ListIndex)
+    g_FontSize = frmMain.cmbFontSize.List(frmMain.cmbFontSize.ListIndex)
+    
+    If g_FontSize = "Auto" Or Len(g_FontSize) = 0 Then
+        lFontSize = 8
+    Else
+        lFontSize = CLng(g_FontSize)
+    End If
+    
+    If (g_FontName = "MS Sans Serif") And ((lFontSize Mod 2) = 0) Then delta = delta * 2
+    
+    lFontSize = lFontSize + delta
+    
+    If lFontSize < 6 Then lFontSize = 6
+    If lFontSize > 14 Then lFontSize = 14
+    
+    ComboSetValue frmMain.cmbFontSize, CStr(lFontSize)
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "SetFontSizeDelta"
+    If inIDE Then Stop: Resume Next
+End Sub
 
 Public Function GetStringFromBinary(Optional ByVal sFile As String, Optional ByVal nid As Long, Optional ByVal FileAndIDHybrid As String) As String
     On Error GoTo ErrorHandler:
@@ -298,8 +394,6 @@ Public Function GetStringFromBinary(Optional ByVal sFile As String, Optional ByV
     sInitialVar = FileAndIDHybrid
     
     If 0 <> Len(FileAndIDHybrid) Then
-    
-        Dbg "1"
     
         If Left$(FileAndIDHybrid, 1) = "@" Then FileAndIDHybrid = Mid$(FileAndIDHybrid, 2)
         If InStr(FileAndIDHybrid, "%") <> 0 Then
@@ -343,32 +437,23 @@ Public Function GetStringFromBinary(Optional ByVal sFile As String, Optional ByV
     
     sBuf = String$(160, 0)
     
-    Dbg "2"
-    
     Redirect = ToggleWow64FSRedirection(False, sFile, bOldStatus)
     
     If bIsInf Then
-        Dbg "3"
         nSize = GetPrivateProfileString(StrPtr("Strings"), StrPtr(sResVar), StrPtr(sInitialVar), StrPtr(sBuf), Len(sBuf), StrPtr(sFile))
         If nSize <> 0 Then
             sBuf = UnQuote(Left$(sBuf, nSize))
         End If
         GetStringFromBinary = sBuf
     Else
-        Dbg "4"
         hModule = LoadLibraryEx(StrPtr(sFile), 0&, LOAD_LIBRARY_AS_DATAFILE)
 
-        Dbg "5"
-
         If hModule Then
-            Dbg "6"
             nSize = LoadString(hModule, Abs(nid), StrPtr(sBuf), LenB(sBuf))
             If nSize > 0 Then
                 GetStringFromBinary = TrimNull(Left$(sBuf, nSize))
             End If
-            Dbg "7"
             FreeLibrary hModule
-            Dbg "8"
         End If
     End If
     
@@ -1437,7 +1522,7 @@ Public Sub GetFileByCLSID(ByVal sCLSID As String, out_sFile As String, Optional 
             out_sFile = GetLongPath(out_sFile)
             
     '    Else
-    '        out_sFile = GetLongPath(out_sFile) & " (file missing)"
+    '        out_sFile = GetLongPath(out_sFile) & " " & STR_FILE_MISSING
         End If
     End If
     
@@ -1556,7 +1641,7 @@ Public Function FormatFileMissing(ByVal sFile As String, Optional sArgs As Strin
         Else
             If InStr(sFile, "\") <> 0 Then
                 
-                FormatFileMissing = sFile & " (file missing)"
+                FormatFileMissing = sFile & " " & STR_FILE_MISSING
                 
             Else 'relative path?
         
@@ -1565,7 +1650,7 @@ Public Function FormatFileMissing(ByVal sFile As String, Optional sArgs As Strin
                 If FileExists(sFile) Then
                     FormatFileMissing = sFile
                 Else
-                    FormatFileMissing = sFile & " (file missing)"
+                    FormatFileMissing = sFile & " " & STR_FILE_MISSING
                 End If
             End If
         End If

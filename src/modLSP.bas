@@ -178,7 +178,7 @@ Private Function GUIDToString(uGuid As UUID)
     Dim sGUID$
     sGUID = String$(39, 0)
     If StringFromGUID2(uGuid, StrPtr(sGUID), Len(sGUID)) > 0 Then
-        GUIDToString = TrimNull(sGUID)
+        GUIDToString = Left$(sGUID, 38)
     End If
 End Function
 

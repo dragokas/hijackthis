@@ -622,7 +622,7 @@ Public Sub WipeSignResult(SignResult As SignResult_TYPE)
 End Sub
 
 Public Function SignVerify( _
-    sFilePath As String, _
+    ByVal sFilePath As String, _
     ByVal Flags As FLAGS_SignVerify, _
     SignResult As SignResult_TYPE, _
     Optional idxSignature As Long = -1) As Boolean
@@ -713,9 +713,13 @@ Public Function SignVerify( _
     
     AppendErrorLogCustom "SignVerify: " & sFilePath
     
+    If Flags And SV_SelfTest Then Dbg "Flags: " & Flags
+    
     WipeSignResult SignResult
     
     ToggleWow64FSRedirection True, , bOldRedir
+    
+    If InStr(sFilePath, "%") <> 0 Then sFilePath = EnvironW(sFilePath)
     
     If (Flags And SV_CheckSecondarySignature) Then Flags = Flags Or SV_CacheDoNotLoad Or SV_CacheDoNotSave 'Or SV_DisableCatalogVerify
     
@@ -733,9 +737,12 @@ Public Function SignVerify( _
         If oSignIndex.Exists(sFilePath) Then
             SignResult = SignCache(oSignIndex(sFilePath))
             bCacheTaken = True
+            If Flags And SV_SelfTest Then Dbg "Found in sign. cache"
             GoTo Finalize
         End If
     End If
+    
+    If Flags And SV_SelfTest Then Dbg "Stage 1"
     
     If Not CBool(Flags And SV_NoCatPrediction) Then
     
@@ -761,6 +768,7 @@ Public Function SignVerify( _
             
             LoadCatHashes
             
+            ' Don't touch it! Zero names can be used for service actions, like loading the precache.
             If Len(sFilePath) = 0 Then
                 ToggleWow64FSRedirection bOldRedir
                 Exit Function
@@ -833,6 +841,9 @@ Public Function SignVerify( _
     ToggleWow64FSRedirection False, sFilePath, bOldRedir
     'opening the file
     hFile = CreateFile(StrPtr(sFilePath), FILE_READ_ATTRIBUTES Or FILE_READ_DATA Or STANDARD_RIGHTS_READ, FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, ByVal 0&, OPEN_EXISTING, g_FileBackupFlag, ByVal 0&)
+    
+    If Flags And SV_SelfTest Then Dbg "hFile: " & hFile
+    
     If (INVALID_HANDLE_VALUE = hFile) Then GoTo Finalize
     'redir. ON
     ToggleWow64FSRedirection bOldRedir
@@ -1257,6 +1268,7 @@ SkipCatCheck:
     If ReturnVal = TRUST_E_NOSIGNATURE And Len(sCatPredict) <> 0 Then
         'wrong prediction -> should restart context
         bWrongPredict = True
+        If Flags And SV_SelfTest Then Dbg "Wrong cat. prediction"
         GoTo Finalize
     Else
         If Len(sCatPredict) <> 0 Then
@@ -1285,7 +1297,7 @@ SkipCatCheck:
         
         If (Flags And SV_CheckSecondarySignature) And idxSignature = -1 Then ' if index is not specified
         
-            If SignResult.NumberOfSigns < 2 Or Not IsWin8AndNewer Then
+            If SignResult.NumberOfSigns < 2 Or Not IsWin8AndNewer Then ' this flag is only supported on Win8+
                 WipeSignResult SignResult
                 ReturnVal = TRUST_E_NOSIGNATURE
             Else
@@ -1635,6 +1647,39 @@ Finalize:
         For i = 0 To UBound(tim)
             tim(i).Freeze
         Next
+    End If
+    
+    If Flags And SV_SelfTest Then
+        With SignResult
+            
+            Dbg "isSigned: " & .isSigned
+            Dbg "isLegit: " & .isLegit
+            Dbg "isSignedByCert: " & .isSignedByCert
+            Dbg "isWHQL: " & .isWHQL
+            Dbg "CatalogPath: " & .CatalogPath
+            Dbg "isMicrosoftSign: " & .isMicrosoftSign
+            Dbg "IsEmbedded: " & .IsEmbedded
+            Dbg "isSelfSigned: " & .isSelfSigned
+            Dbg "AlgorithmCertHash: " & .AlgorithmCertHash
+            Dbg "AlgorithmSignDigest: " & .AlgorithmSignDigest
+            Dbg "Issuer: " & .Issuer
+            Dbg "SubjectName: " & .SubjectName
+            Dbg "SubjectEmail: " & .SubjectEmail
+            Dbg "HashRootCert: " & .HashRootCert
+            Dbg "isMicrosoftCert: " & .isMicrosoftCert
+            Dbg "HashFinalCert: " & .HashFinalCert
+            Dbg "HashFileCode: " & .HashFileCode
+            Dbg "DateCertBegin: " & .DateCertBegin
+            Dbg "DateCertExpired: " & .DateCertExpired
+            Dbg "DateTimeStamp: " & .DateTimeStamp
+            Dbg "NumberOfSigns: " & .NumberOfSigns
+            Dbg "IdxVerifiedSign: " & .IdxVerifiedSign
+            Dbg "ShortMessage: " & .ShortMessage
+            Dbg "FullMessage: " & .FullMessage
+            Dbg "ReturnCode: " & .ReturnCode
+            Dbg "FilePathVerified: " & .FilePathVerified
+
+        End With
     End If
     
     If bWrongPredict Then
@@ -2569,7 +2614,7 @@ Public Function IsMicrosoftFile( _
     If bEDS_Work Then
         
         Dim SignResult As SignResult_TYPE
-        SignVerify sFile, SV_LightCheck Or SV_PreferInternalSign, SignResult
+        SignVerify sFile, SV_LightCheck Or SV_PreferInternalSign Or IIf(bDebugMode, SV_SelfTest, 0), SignResult
         
         If SignResult.isMicrosoftSign Then
             If SignResult.ReturnCode = CERT_E_EXPIRED Then
@@ -2623,7 +2668,7 @@ Public Function IsMicrosoftFileEx( _
         
         Dim SignResult As SignResult_TYPE
         
-        SignVerify sFile, SV_LightCheckMS Or SV_PreferInternalSign, SignResult
+        SignVerify sFile, SV_LightCheckMS Or SV_PreferInternalSign Or IIf(bDebugMode, SV_SelfTest, 0), SignResult
         
         If SignResult.isMicrosoftSign Then
             If SignResult.ReturnCode = CERT_E_EXPIRED Then
