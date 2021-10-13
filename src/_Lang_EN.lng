@@ -177,7 +177,7 @@
 1205=Process Manager
 1206=Hosts file Manager
 1207=DeleteFile
-1208=Unlock && Delete File...
+1208=Unlock File / Folder
 1209=Plan to Delete File on Reboot...
 1210=Delete Service
 1211=Key Unlocker
@@ -798,7 +798,7 @@
 ;
 ; (1850 - 1899)
 ;
-1850=Authenticode EDS checker - written by Stanislav
+1850=Authenticode EDS checker
 1851=This tool will create a detailed report about the digital signatures of files/folders you specify below:
 1852=Recursively (include subfolders)
 1853=Include files in Windows folder
@@ -825,7 +825,7 @@
 ;
 ; (1900 - 1949)
 ;
-1900=Registry Key Unlocker - written by Stanislav
+1900=Registry Key Unlocker
 1901=Enter Registry Key(s) to unlock and reset access rights:
 1902=Recursively (include subkeys)
 1903=Go
@@ -836,14 +836,28 @@
 1908=[Fail]
 1909=Open in Regedit
 ;
-; ============ Delete on reboot & unlock file staff ========
+; ============= Files Unlocker =========
+;
+; (2400 - 2449)
+;
+2400=Files Unlocker
+2401=Enter Files and Folders to unlock and reset access rights:
+2402=Recursively (include subfolders)
+2403=Go
+2404=Close
+2405=You must enter at least one file or folder!
+2406=[OK]
+2407=(recursively)
+2408=[Fail]
+2409=Open in Explorer
+;
+; ============ Delete on reboot ========
 ;
 ; (1950-1999)
 ;
 1950=Enter file name:
 1951=Delete on Reboot
 1952=Enter file name:
-1953=Unlock & Delete
 1954=Could not delete file.
      It may be locked by another process.
 1955=File: [] deleted successfully.
@@ -1758,5 +1772,5 @@
 ;
 ; ========= Empty ========
 ;
-; (2400 - ...)
-;               
+; (2450 - ...)
+;                

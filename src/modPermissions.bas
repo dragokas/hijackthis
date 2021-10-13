@@ -232,7 +232,7 @@ Private Const ACL_REVISION           As Long = 2&
 
 Private Const REG_CREATED_NEW_KEY    As Long = 1&
 
-Private Const ERROR_MORE_DATA        As Long = 234&
+'Private Const ERROR_MORE_DATA        As Long = 234&
 Private Const ERROR_SUCCESS          As Long = 0&
 Private Const ERROR_NO_TOKEN         As Long = 1008&
 
@@ -354,6 +354,7 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
     End If
     
     'array should be consistent
+    Dim Ace_Explicit() As EXPLICIT_ACCESS
     ReDim Ace_Explicit(10) As EXPLICIT_ACCESS   '// now used 5-8/10
     
     '1. Local System:F (OI)(CI)
@@ -557,6 +558,7 @@ Public Function CreateBufferedSID(SidString As String) As Byte()
     Dim pSid        As Long
     Dim cbSID       As Long
     
+    Dim bufSid() As Byte
     ReDim bufSid(0) As Byte
     
     If 0 = ConvertStringSidToSid(StrPtr(SidString), pSid) Then  ' * -> *
@@ -935,7 +937,7 @@ Public Function RegKeyResetDACL(lHive&, ByVal KeyName$, Optional bUseWow64 As Bo
                                         
                                             sSubKeyName = Left$(sSubKeyName, lstrlen(StrPtr(sSubKeyName)))
                                             
-                                            RegKeyResetDACL lHive, KeyName & IIf(0 <> Len(KeyName), "\", "") & sSubKeyName, bUseWow64, True
+                                            RegKeyResetDACL lHive, KeyName & IIf(0 <> Len(KeyName), "\", vbNullString) & sSubKeyName, bUseWow64, True
                                             
                                             sSubKeyName = String$(MAX_KEYNAME, vbNullChar)
                                             i = i + 1
@@ -1170,7 +1172,6 @@ Public Function CheckAccess(hObject As Long, ObjType As SE_OBJECT_TYPE, AccessMa
     Dim result As Long
     Dim PrivSet As PRIVILEGE_SET
     Dim PrivSetLength As Long
-    Dim ErrCode As Long
     
     If ObjType = SE_FILE_OBJECT Then
         With mapping
@@ -1341,6 +1342,8 @@ Public Function SetFileStringSD(sObject As String, StrSD As String, Optional bRe
     Dim SD() As Byte
     Dim bOldRedir As Boolean
     Dim hFile As Long
+    Dim i As Long
+    Dim iAttr As Long
     
     SD = ConvertStringSDToSD(StrSD)
     
@@ -1350,16 +1353,32 @@ Public Function SetFileStringSD(sObject As String, StrSD As String, Optional bRe
         hFile = CreateFile(StrPtr(sObject), READ_CONTROL Or WRITE_OWNER Or WRITE_DAC Or ACCESS_SYSTEM_SECURITY, _
             FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, ByVal 0, OPEN_EXISTING, g_FileBackupFlag, 0)
         
-        ToggleWow64FSRedirection bOldRedir
-        
         If hFile <> INVALID_HANDLE_VALUE Then
             SetFileStringSD = SetSecurityDescriptor(hFile, SE_FILE_OBJECT, SD)
             CloseHandle hFile
         End If
         
+        iAttr = GetFileAttributes(StrPtr(sObject))
+        
+        If (iAttr And FILE_ATTRIBUTE_READONLY) Then
+            iAttr = iAttr - FILE_ATTRIBUTE_READONLY
+            SetFileAttributes StrPtr(sObject), iAttr
+        End If
+        
+        ToggleWow64FSRedirection bOldRedir
+        
+        If FolderExists(sObject) Then
+            Dim aFiles() As String
+            
+            aFiles = ListFiles(sObject)
+            
+            For i = 0 To UBoundSafe(aFiles)
+                SetFileStringSD = SetFileStringSD And SetFileStringSD(aFiles(i), StrSD, False)
+            Next
+        End If
+        
         If bRecursive Then
             Dim aFolders() As String
-            Dim i As Long
             
             aFolders = ListSubfolders(sObject)
             

@@ -14,18 +14,9 @@ Begin VB.Form frmUnlockRegKey
       Caption         =   "Open in Regedit"
       Height          =   450
       Left            =   6480
-      TabIndex        =   5
+      TabIndex        =   4
       Top             =   60
       Width           =   1572
-   End
-   Begin VB.CommandButton cmdExit 
-      Cancel          =   -1  'True
-      Caption         =   "Close"
-      Height          =   495
-      Left            =   6000
-      TabIndex        =   4
-      Top             =   2520
-      Width           =   1455
    End
    Begin VB.CommandButton cmdGo 
       Caption         =   "Go"
@@ -41,6 +32,7 @@ Begin VB.Form frmUnlockRegKey
       Left            =   240
       TabIndex        =   2
       Top             =   2520
+      Value           =   1  'Checked
       Width           =   3615
    End
    Begin VB.TextBox txtKeys 
@@ -82,8 +74,6 @@ Private Sub cmdGo_Click()
     Dim vKey
     Dim Recursively As Boolean
     Dim hFile       As Long
-    Dim FixLines    As String
-    Dim sHeader     As String
     Dim sLogPath    As String
     Dim TimeStarted As String
     Dim TimeFinished As String
@@ -93,7 +83,7 @@ Private Sub cmdGo_Click()
     
     sKeys = txtKeys.Text
     
-    If sKeys = "" Then
+    If Len(sKeys) = 0 Then
         'You should enter at least one key!
         MsgBoxW Translate(1905), vbExclamation
         Exit Sub
@@ -113,7 +103,7 @@ Private Sub cmdGo_Click()
     
     Recursively = (chkRecur.Value = 1)
     
-    sKeys = Replace$(sKeys, vbCr, "")
+    sKeys = Replace$(sKeys, vbCr, vbNullString)
     aKeys = Split(sKeys, vbLf)
     
     For Each vKey In aKeys
@@ -121,7 +111,7 @@ Private Sub cmdGo_Click()
             If True = modPermissions.RegKeyResetDACL(0&, CStr(vKey), False, Recursively) Then
                 '[OK]
                 '(recursively)
-                sList.AppendLine Translate(1906) & " - " & vKey & IIf(Recursively, " " & Translate(1907), "")
+                sList.AppendLine Translate(1906) & " - " & vKey & IIf(Recursively, " " & Translate(1907), vbNullString)
             Else
                 '[Fail]
                 sList.AppendLine Translate(1908) & " - " & vKey
@@ -165,13 +155,13 @@ Private Sub cmdJump_Click()
     
     sKeys = txtKeys.Text
     
-    If sKeys = "" Then
+    If Len(sKeys) = 0 Then
         'You should enter at least one key!
         MsgBoxW Translate(1905), vbExclamation
         Exit Sub
     End If
     
-    sKeys = Replace$(sKeys, vbCr, "")
+    sKeys = Replace$(sKeys, vbCr, vbNullString)
     aKeys = Split(sKeys, vbLf)
     
     Reg.Jump 0, aKeys(0)
@@ -208,9 +198,8 @@ Private Sub Form_Resize()
     txtKeys.Height = Me.Height - 2010
     chkRecur.Top = Me.Height - 1300
     cmdGo.Top = Me.Height - 1300
-    CmdExit.Top = Me.Height - 1300
 End Sub
 
-Private Sub Text1_KeyDown(KeyCode As Integer, Shift As Integer)
+Private Sub txtKeys_KeyDown(KeyCode As Integer, Shift As Integer)
     If KeyCode = 27 Then Me.Hide
 End Sub

@@ -241,7 +241,7 @@ Private m_iArrPos()         As Long
 Private m_iLastLength       As Long
 Private m_bRegExpInit       As Boolean
 Private m_oRegexp           As IRegExp
-Private m_oRegexpItems      As Object
+'Private m_oRegexpItems      As Object
 Private m_frmOwner          As Form
 Private m_bFiltration       As Boolean
 Private m_bInstantMark      As Boolean
@@ -476,12 +476,14 @@ Private Sub CmdCancel_Click()
     If Not (m_frmOwner Is Nothing) Then m_frmOwner.SetFocus
 End Sub
 
-Private Function ScanResults_ClearFilter()
+Private Sub ScanResults_ClearFilter()
     On Error GoTo ErrorHandler
     
     Dim i As Long
     
+    Dim Hit() As String
     Dim HitSorted() As String
+    
     ReDim Hit(UBound(Scan)) As String
     
     For i = 1 To UBound(Scan)
@@ -498,19 +500,19 @@ Private Function ScanResults_ClearFilter()
         Next
     End If
     
-    Exit Function
+    Exit Sub
 ErrorHandler:
     ErrorMsg Err, "ScanResults_ClearFilter"
     If inIDE Then Stop: Resume Next
-End Function
+End Sub
 
-Private Function ScanResults_UpdateFilter()
+Private Sub ScanResults_UpdateFilter()
     On Error GoTo ErrorHandler
 
     Dim result() As Long
     Dim i As Long
     
-    If UBound(Scan) = 0 Then Exit Function
+    If UBound(Scan) = 0 Then Exit Sub
     
     If Len(cmbSearch.Text) = 0 Then
         
@@ -528,11 +530,11 @@ Private Function ScanResults_UpdateFilter()
         End With
     End If
     
-    Exit Function
+    Exit Sub
 ErrorHandler:
     ErrorMsg Err, "ScanResults_UpdateFilter"
     If inIDE Then Stop: Resume Next
-End Function
+End Sub
 
 Private Function ScanResults_GetFilterLines() As Long()
     On Error GoTo ErrorHandler
@@ -904,7 +906,7 @@ Private Sub UnselAllListIndex(lst As ListBox)
     Next
 End Sub
 
-Private Function GetListSelectedItem(lst As ListBox)
+Private Function GetListSelectedItem(lst As ListBox) As Long
     Dim i As Long
     GetListSelectedItem = -1
     For i = 0 To lst.ListCount - 1
@@ -917,7 +919,7 @@ End Function
 
 Private Function CheckRegexpSyntax(bSilent As Boolean) As Boolean
     On Error Resume Next
-    Call m_oRegexp.Test("")
+    Call m_oRegexp.Test(vbNullString)
     If Err.Number = 0 Then
         CheckRegexpSyntax = True
     Else
@@ -931,7 +933,6 @@ End Sub
 
 Private Function EscSeqToString(sStr As String) As String
     On Error GoTo ErrorHandler
-    Dim i As Long
     Dim pos As Long
     Dim pos2 As Long
     Dim pprev As Long

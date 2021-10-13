@@ -40,12 +40,14 @@ OSver;Dir\Name;RunObj;Args;Note
 10; \Microsoft\Windows\ApplicationData\DsSvcCleanup; %SystemRoot%\system32\dstokenclean.exe
 10; \Microsoft\Windows\ApplicationData\appuriverifierdaily; %SystemRoot%\system32\AppHostRegistrationVerifier.exe
 10; \Microsoft\Windows\ApplicationData\appuriverifierinstall; %SystemRoot%\system32\AppHostRegistrationVerifier.exe
+10; \Microsoft\Windows\AppListBackup\Backup; {E0DCC2CC-3354-45F2-8914-519E07809082}; %SystemRoot%\system32\AppListBackupLauncher.dll
 10; \Microsoft\Windows\AppxDeploymentClient\Pre-staged app cleanup; %SystemRoot%\system32\rundll32.exe; %SystemRoot%\system32\AppxDeploymentClient.dll,AppxPreStageCleanupRunTask
 10; \Microsoft\Windows\Autochk\Proxy; %SystemRoot%\system32\rundll32.exe; /d acproxy.dll,PerformAutochkOperations
 10; \Microsoft\Windows\BitLocker\BitLocker Encrypt All Drives; {61BCD1B9-340C-40EC-9D41-D7F1C0632F05},BitLockerEncryptAllDrives; %SystemRoot%\System32\edptask.dll
 10; \Microsoft\Windows\BitLocker\BitLocker MDM policy Refresh; {61BCD1B9-340C-40EC-9D41-D7F1C0632F05},BitLockerPolicy; %SystemRoot%\System32\edptask.dll
 10; \Microsoft\Windows\Bluetooth\UninstallDeviceTask; %SystemRoot%\System32\BthUdTask.exe; $(Arg0)
 10; \Microsoft\Windows\BrokerInfrastructure\BgTaskRegistrationMaintenanceTask; {E984D939-0E00-4DD9-AC3A-7ACA04745521};(no file)
+10; \Microsoft\Windows\capabilityaccessmanager\maintenancetasks; %SystemRoot%\system32\rundll32.exe; %SystemRoot%\system32\CapabilityAccessManager.dll,CapabilityAccessManagerDoStoreMaintenance
 10; \Microsoft\Windows\CUAssistant\CULauncher; %ProgramFiles%\CUAssistant\culauncher.exe
 10; \Microsoft\Windows\CertificateServicesClient\AikCertEnrollTask; {47E30D54-DAC1-473A-AFF7-2355BF78881F},AIKCertEnroll; %SystemRoot%\system32\ngctasks.dll
 10; \Microsoft\Windows\CertificateServicesClient\CryptoPolicyTask; {47E30D54-DAC1-473A-AFF7-2355BF78881F},CryptoPolicy; %SystemRoot%\system32\ngctasks.dll
@@ -96,7 +98,7 @@ OSver;Dir\Name;RunObj;Args;Note
 10; \Microsoft\Windows\Diagnosis\Scheduled; {C1F85EF8-BCC2-4606-BB39-70C523715EB3}; %SystemRoot%\System32\sdiagschd.dll
 10; \Microsoft\Windows\DirectX\DXGIAdapterCache; %SystemRoot%\system32\dxgiadaptercache.exe
 10; \Microsoft\Windows\DirectX\DirectXDatabaseUpdater; %SystemRoot%\system32\directxdatabaseupdater.exe
-10; \Microsoft\Windows\DiskCleanup\SilentCleanup; %SystemRoot%\system32\cleanmgr.exe; /autoclean /d %systemdrive%
+10; \Microsoft\Windows\DiskCleanup\SilentCleanup; %SystemRoot%\system32\cleanmgr.exe; /autoclean /d %systemdrive%|/autocleanstoragesense /d C:
 10; \Microsoft\Windows\DiskDiagnostic\Microsoft-Windows-DiskDiagnosticDataCollector; %SystemRoot%\system32\rundll32.exe; dfdts.dll,DfdGetDefaultPolicyAndSMART
 10; \Microsoft\Windows\DiskDiagnostic\Microsoft-Windows-DiskDiagnosticResolver; %SystemRoot%\system32\DFDWiz.exe
 10; \Microsoft\Windows\DiskFootprint\Diagnostics; %SystemRoot%\system32\disksnapshot.exe; -z
@@ -131,6 +133,7 @@ OSver;Dir\Name;RunObj;Args;Note
 10; \Microsoft\Windows\InstallService\WakeUpAndContinueUpdates; {0DC331EE-8438-49D5-A721-E10B937CE459}; %SystemRoot%\System32\InstallServiceTasks.dll
 10; \Microsoft\Windows\InstallService\WakeUpAndScanForUpdates; {D5A04D91-6FE6-4FE4-A98A-FEB4500C5AF7}; %SystemRoot%\System32\InstallServiceTasks.dll
 10; \Microsoft\Windows\International\Synchronize Language Settings; {10D62541-90D0-42FE-848C-0DBC1AC42EDA},SyncFromCloud; %SystemRoot%\System32\CoreGlobConfig.dll
+10; \Microsoft\Windows\Kernel\La57Cleanup; %systemroot%\system32\la57setup.exe
 10; \Microsoft\Windows\LanguageComponentsInstaller\Installation; {6F58F65F-EC0E-4ACA-99FE-FC5A1A25E4BE},Install $(Arg0); %SystemRoot%\System32\LanguageComponentsInstaller.dll
 10; \Microsoft\Windows\LanguageComponentsInstaller\ReconcileLanguageResources; {D0582E3B-3126-4CAA-9155-AC37C912A489}; %SystemRoot%\System32\LanguageOverlayServer.dll
 10; \Microsoft\Windows\LanguageComponentsInstaller\Uninstallation; {6F58F65F-EC0E-4ACA-99FE-FC5A1A25E4BE},Uninstall; %SystemRoot%\System32\LanguageComponentsInstaller.dll
@@ -144,6 +147,7 @@ OSver;Dir\Name;RunObj;Args;Note
 10; \Microsoft\Windows\Management\Provisioning\Cellular; %SystemRoot%\system32\ProvTool.exe; /turn 7 /source CellStateChangeTask
 10; \Microsoft\Windows\Management\Provisioning\Logon; %SystemRoot%\system32\ProvTool.exe; /turn 5
 10; \Microsoft\Windows\Management\Provisioning\Logon; %SystemRoot%\system32\ProvTool.exe; /turn 5 /source LogonIdleTask
+10; \Microsoft\Windows\Management\Provisioning\Retry; %SystemRoot%\system32\ProvTool.exe; /turn 5  /source ProvRetryTask
 10; \Microsoft\Windows\Management\Provisioning\Retry; %SystemRoot%\system32\ProvTool.exe; /turn 5  /source ProvRetryTask
 10; \Microsoft\Windows\Maps\MapsToastTask; {9885AEF2-BD9F-41E0-B15E-B3141395E803},$(Arg0)\;$(Arg1)\;$(Arg2)\;$(Arg3); %SystemRoot%\System32\mapstoasttask.dll
 10; \Microsoft\Windows\Maps\MapsToastTask; {9885AEF2-BD9F-41E0-B15E-B3141395E803},$(Arg0)\;$(Arg1)\;$(Arg2)\;$(Arg3)\;$(Arg4)\;$(Arg5)\;$(Arg6)\;$(Arg7); %SystemRoot%\System32\mapstoasttask.dll
@@ -168,6 +172,7 @@ OSver;Dir\Name;RunObj;Args;Note
 10; \Microsoft\Windows\Plug and Play\Sysprep Generalize Drivers; %SystemRoot%\System32\drvinst.exe;6
 10; \Microsoft\Windows\Power Efficiency Diagnostics\AnalyzeSystem; {927EA2AF-1C54-43D5-825E-0074CE028EEE}; %SystemRoot%\System32\energytask.dll
 10; \Microsoft\Windows\Printing\EduPrintProv; %SystemRoot%\system32\eduprintprov.exe
+10; \Microsoft\Windows\Printing\PrinterCleanupTask; {C56F065E-DE49-4E42-BE7C-305C45609D25}; %systemroot%\System32\PrinterCleanupTask.dll
 10; \Microsoft\Windows\PushToInstall\LoginCheck; %SystemRoot%\system32\sc.exe; start pushtoinstall login
 10; \Microsoft\Windows\PushToInstall\Registration; %SystemRoot%\system32\sc.exe; start pushtoinstall registration
 10; \Microsoft\Windows\RAC\RacTask; {42060D27-CA53-41F5-96E4-B1E8169308A6},$(Arg0); %SystemRoot%\system32\RacEngn.dll
@@ -193,6 +198,7 @@ OSver;Dir\Name;RunObj;Args;Note
 10; \Microsoft\Windows\Shell\FamilySafetyRefresh; {EBF00FCB-0769-4B81-9BEC-6C05514111AA},$(Arg0); %SystemRoot%\System32\WpcWebSync.dll
 10; \Microsoft\Windows\Shell\FamilySafetyRefreshTask; {C844C79D-AED8-4DCE-AB25-4D359BED84F8},$(Arg0); %SystemRoot%\System32\WpcRefreshTask.dll
 10; \Microsoft\Windows\Shell\IndexerAutomaticMaintenance; {3FBA60A6-7BF5-4868-A2CA-6623B3DFFEA6}; %SystemRoot%\System32\srchadmin.dll
+10; \Microsoft\Windows\Shell\ThemesSyncedImageDownload; {79F8E185-4E45-4B74-8182-02AA430661E4}; %systemroot%\System32\Themes.SsfDownload.ScheduledTask.dll
 10; \Microsoft\Windows\Shell\UpdateUserPictureTask; {09C5DD34-009D-40FA-BCB9-0165AD0C15D4}; %SystemRoot%\System32\Windows.UI.Immersive.dll
 10; \Microsoft\Windows\Software Inventory Logging\Configuration; %SystemRoot%\system32\cmd.exe; /d /c %SystemRoot%\system32\silcollector.cmd configure
 10; \Microsoft\Windows\SoftwareProtectionPlatform\SvcRestartTask; {B1AEBB5D-EAD9-4476-B375-9C3ED9F32AFC},timer; %SystemRoot%\System32\sppcext.dll
@@ -229,13 +235,16 @@ OSver;Dir\Name;RunObj;Args;Note
 10; \Microsoft\Windows\Unified Write Filter\Overlay Normal; %SystemRoot%\system32\uwfux.exe; -notifynormal
 10; \Microsoft\Windows\Unified Write Filter\Overlay Warning; %SystemRoot%\system32\uwfux.exe; -notifywarning
 10; \Microsoft\Windows\UpdateOrchestrator\AC Power Download; %SystemRoot%\system32\usoclient.exe; StartDownload
+10; \Microsoft\Windows\UpdateOrchestrator\AC Power Install; %SystemRoot%\system32\usoclient.exe; StartInstall
 10; \Microsoft\Windows\UpdateOrchestrator\Backup Scan; %SystemRoot%\system32\usoclient.exe; StartScan
 10; \Microsoft\Windows\UpdateOrchestrator\Driver Install; %SystemRoot%\system32\usoclient.exe; StartInstall
 10; \Microsoft\Windows\UpdateOrchestrator\Maintenance Install; %systemroot%\system32\usoclient.exe; StartInstall
 10; \Microsoft\Windows\UpdateOrchestrator\MusUx_LogonUpdateResults; %SystemRoot%\system32\MusNotification.exe; LogonUpdateResults
 10; \Microsoft\Windows\UpdateOrchestrator\MusUx_UpdateInterval; %SystemRoot%\system32\MusNotification.exe; Display
 10; \Microsoft\Windows\UpdateOrchestrator\Policy Install; %systemroot%\system32\usoclient.exe; StartInstall
-10; \Microsoft\Windows\UpdateOrchestrator\Reboot; %systemroot%\system32\MusNotification.exe; |Reboot|ReadyToReboot|RebootDialog|RebootReminder
+10; \Microsoft\Windows\UpdateOrchestrator\Reboot; %systemroot%\system32\MusNotification.exe; |Reboot|ReadyToReboot|RebootDialog|RebootReminder|ForcedRebootRetry|ForcedReboot|EngagedRebootReminder
+10; \Microsoft\Windows\UpdateOrchestrator\Reboot_AC; %systemroot%\system32\MusNotification.exe; /RunOnAC RebootDialog|/RunOnAC ReadyToReboot
+10; \Microsoft\Windows\UpdateOrchestrator\Reboot_Battery; %systemroot%\system32\MusNotification.exe; /RunOnBattery ReadyToReboot|/RunOnBattery RebootDialog
 10; \Microsoft\Windows\UpdateOrchestrator\Refresh Settings; %systemroot%\system32\usoclient.exe; RefreshSettings
 10; \Microsoft\Windows\UpdateOrchestrator\Report policies; %SystemRoot%\system32\usoclient.exe; ReportPolicies
 10; \Microsoft\Windows\UpdateOrchestrator\Resume On Boot; %systemroot%\system32\usoclient.exe; ResumeUpdate
@@ -243,12 +252,40 @@ OSver;Dir\Name;RunObj;Args;Note
 10; \Microsoft\Windows\UpdateOrchestrator\Schedule Scan Static Task; %SystemRoot%\system32\usoclient.exe; StartScan
 10; \Microsoft\Windows\UpdateOrchestrator\Schedule Scan; %systemroot%\system32\usoclient.exe; StartScan
 10; \Microsoft\Windows\UpdateOrchestrator\Schedule Work; %SystemRoot%\system32\usoclient.exe; StartWork
+10; \Microsoft\Windows\UpdateOrchestrator\Start Oobe Expedite Work; %systemroot%\system32\usoclient.exe; StartWork
+10; \Microsoft\Windows\UpdateOrchestrator\StartOobeAppsScan; %systemroot%\system32\usoclient.exe; StartOobeAppsScan
+10; \Microsoft\Windows\UpdateOrchestrator\StartOobeAppsScanAfterUpdate; %systemroot%\system32\usoclient.exe; StartOobeAppsScanAfterUpdate
 10; \Microsoft\Windows\UpdateOrchestrator\USO_Broker_Display; %SystemRoot%\system32\MusNotification.exe; Display
+10; \Microsoft\Windows\UpdateOrchestrator\USO_UxBroker; %SystemRoot%\system32\MusNotification.exe
 10; \Microsoft\Windows\UpdateOrchestrator\USO_UxBroker_Display; %SystemRoot%\system32\MusNotification.exe; Display
 10; \Microsoft\Windows\UpdateOrchestrator\USO_UxBroker_ReadyToReboot; %systemroot%\system32\MusNotification.exe; ReadyToReboot
 10; \Microsoft\Windows\UpdateOrchestrator\Universal Orchestrator Idle Start; %SystemRoot%\system32\usoclient.exe; StartUWorkIdle
 10; \Microsoft\Windows\UpdateOrchestrator\Universal Orchestrator Start; %SystemRoot%\system32\usoclient.exe; StartUWork
+10; \Microsoft\Windows\UpdateOrchestrator\UpdateAssistant; %SystemRoot%\UpdateAssistant\UpdateAssistant.exe; /ClientID Win10Upgrade:VNL:EosSih1D:{}
+10; \Microsoft\Windows\UpdateOrchestrator\UpdateAssistant; %SystemRoot%\UpdateAssistant\UpdateAssistant.exe; /ClientID Win10Upgrade:VNL:EosWu:{}
+10; \Microsoft\Windows\UpdateOrchestrator\UpdateAssistant; %SystemRoot%\UpdateAssistant\UpdateAssistant.exe; /ClientID Win10Upgrade:VNL:Hadron5:{}
+10; \Microsoft\Windows\UpdateOrchestrator\UpdateAssistant; %SystemRoot%\UpdateAssistant\UpdateAssistant.exe; /ClientID Win10Upgrade:VNL:NHV13SIH:{}
+10; \Microsoft\Windows\UpdateOrchestrator\UpdateAssistant; %SystemRoot%\UpdateAssistant\UpdateAssistant.exe; /ClientID Win10Upgrade:VNL:NHV15:{}
+10; \Microsoft\Windows\UpdateOrchestrator\UpdateAssistant; %SystemRoot%\UpdateAssistant\UpdateAssistant.exe; /ClientID Win10Upgrade:VNL:NHV16:{}
+10; \Microsoft\Windows\UpdateOrchestrator\UpdateAssistant; %SystemRoot%\UpdateAssistant\UpdateAssistant.exe; /ClientID Win10Upgrade:VNL:NHV19:{}
+10; \Microsoft\Windows\UpdateOrchestrator\UpdateAssistant; %SystemRoot%\UpdateAssistant\UpdateAssistant.exe; /ClientID Win10Upgrade:VNL:Th1Eos:{}
+10; \Microsoft\Windows\UpdateOrchestrator\UpdateAssistantAllUsersRun; %SystemRoot%\UpdateAssistant\UpdateAssistant.exe; /ClientID Win10Upgrade:VNL:NHV19:{} /AllUsersRun
+10; \Microsoft\Windows\UpdateOrchestrator\UpdateAssistantAllUsersRun; %SystemRoot%\UpdateAssistant\UpdateAssistant.exe; /ClientID Win10Upgrade:VNL:NHV16:{} /AllUsersRun
+10; \Microsoft\Windows\UpdateOrchestrator\UpdateAssistantAllUsersRun; %SystemRoot%\UpdateAssistant\UpdateAssistant.exe; /ClientID Win10Upgrade:VNL:NHV15:{} /AllUsersRun
+10; \Microsoft\Windows\UpdateOrchestrator\UpdateAssistantCalendarRun; %SystemRoot%\UpdateAssistant\UpdateAssistant.exe; /ClientID Win10Upgrade:VNL:Th1Eos:{} /CalendarRun
+10; \Microsoft\Windows\UpdateOrchestrator\UpdateAssistantCalendarRun; %SystemRoot%\UpdateAssistant\UpdateAssistant.exe; /ClientID Win10Upgrade:VNL:EosSih1D:{} /CalendarRun
+10; \Microsoft\Windows\UpdateOrchestrator\UpdateAssistantCalendarRun; %SystemRoot%\UpdateAssistant\UpdateAssistant.exe; /ClientID Win10Upgrade:VNL:EosWu:{} /CalendarRun
+10; \Microsoft\Windows\UpdateOrchestrator\UpdateAssistantCalendarRun; %SystemRoot%\UpdateAssistant\UpdateAssistant.exe; /ClientID Win10Upgrade:VNL:NHV13SIH:{} /CalendarRun
+10; \Microsoft\Windows\UpdateOrchestrator\UpdateAssistantCalendarRun; %SystemRoot%\UpdateAssistant\UpdateAssistant.exe; /ClientID Win10Upgrade:VNL:NHV15:{} /CalendarRun
+10; \Microsoft\Windows\UpdateOrchestrator\UpdateAssistantCalendarRun; %SystemRoot%\UpdateAssistant\UpdateAssistant.exe; /ClientID Win10Upgrade:VNL:NHV16:{} /CalendarRun
+10; \Microsoft\Windows\UpdateOrchestrator\UpdateAssistantCalendarRun; %SystemRoot%\UpdateAssistant\UpdateAssistant.exe; /ClientID Win10Upgrade:VNL:NHV19:{} /CalendarRun
+10; \Microsoft\Windows\UpdateOrchestrator\UpdateAssistantWakeupRun; %SystemRoot%\UpdateAssistant\UpdateAssistant.exe; /ClientID Win10Upgrade:VNL:EosSih1D:{} /WakeupRun
+10; \Microsoft\Windows\UpdateOrchestrator\UpdateAssistantWakeupRun; %SystemRoot%\UpdateAssistant\UpdateAssistant.exe; /ClientID Win10Upgrade:VNL:NHV13SIH:{} /WakeupRun
+10; \Microsoft\Windows\UpdateOrchestrator\UpdateAssistantWakeupRun; %SystemRoot%\UpdateAssistant\UpdateAssistant.exe; /ClientID Win10Upgrade:VNL:NHV15:{} /WakeupRun
+10; \Microsoft\Windows\UpdateOrchestrator\UpdateAssistantWakeupRun; %SystemRoot%\UpdateAssistant\UpdateAssistant.exe; /ClientID Win10Upgrade:VNL:NHV16:{} /WakeupRun
+10; \Microsoft\Windows\UpdateOrchestrator\UpdateAssistantWakeupRun; %SystemRoot%\UpdateAssistant\UpdateAssistant.exe; /ClientID Win10Upgrade:VNL:NHV19:{} /WakeupRun
 10; \Microsoft\Windows\UpdateOrchestrator\UpdateModelTask; %SystemRoot%\system32\usoclient.exe; StartModelUpdates
+10; \Microsoft\Windows\UpdateOrchestrator\UUS Failover Task; %systemroot%\system32\usoclient.exe; HandleUusFailoverSignal
 10; \Microsoft\Windows\User Profile Service\HiveUploadTask; {BA677074-762C-444B-94C8-8C83F93F6605}; %SystemRoot%\system32\profsvc.dll
 10; \Microsoft\Windows\WCM\WiFiTask; %SystemRoot%\System32\WiFiTask.exe
 10; \Microsoft\Windows\WDI\ResolutionHost; {900BE39D-6BE8-461A-BC4D-B0FA71F5ECB1}; %SystemRoot%\System32\wdi.dll
@@ -630,4 +667,4 @@ OSver;Dir\Name;RunObj;Args;Note
 6; \Microsoft\Windows\WDI\ResolutionHost; {900be39d-6be8-461a-bc4d-b0fa71f5ecb1}; %SystemRoot%\System32\wdi.dll
 6; \Microsoft\Windows\Windows Error Reporting\QueueReporting; %SystemRoot%\system32\wermgr.exe; -queuereporting
 6; \Microsoft\Windows\Wired\GatherWiredInfo; %SystemRoot%\system32\gatherWiredInfo.vbs
-6; \Microsoft\Windows\Wireless\GatherWirelessInfo; %SystemRoot%\system32\gatherWirelessInfo.vbs    
+6; \Microsoft\Windows\Wireless\GatherWirelessInfo; %SystemRoot%\system32\gatherWirelessInfo.vbs          

@@ -341,7 +341,7 @@ Public Sub AddKey(sKey As String, Optional sAppendPlaceholder As String)
 End Sub
 
 '// Splitting Hive\Key (if defined one) into 2 parts. In such case 'Hive' will not be iterated.
-Private Function FillPredefinedKeys()
+Private Sub FillPredefinedKeys()
     On Error GoTo ErrorHandler:
     
     Dim i As Long
@@ -360,11 +360,11 @@ Private Function FillPredefinedKeys()
         End If
     Next
     cell.lb_KeysPredefined = True
-    Exit Function
+    Exit Sub
 ErrorHandler:
     ErrorMsg Err, "clsHiveEnum.FillPredefinedKeys"
     If inIDE Then Stop: Resume Next
-End Function
+End Sub
 
 '// Go to the next state / or key (if defined one)
 'increases the state (properties of this class)
@@ -636,7 +636,7 @@ Private Function NextHive() As Boolean
         End Select
     End If
     
-    cell.ls_Key = ""
+    cell.ls_Key = vbNullString
     cell.ls_HiveNameAndSID = cell.ls_HiveName
     If state_Hive = HKU Then 'append SID
         cell.ls_Key = sSID_Key
@@ -648,12 +648,12 @@ Private Function NextHive() As Boolean
             cell.state_CS = cell.state_CS + 1
         Else
             'add SID subkey if supplied
-            cell.ls_Key = IIf(Len(cell.ls_Key) <> 0, cell.ls_Key & "\", "") & cell.la_Keys(cell.ll_KeyIndex)
+            cell.ls_Key = IIf(Len(cell.ls_Key) <> 0, cell.ls_Key & "\", vbNullString) & cell.la_Keys(cell.ll_KeyIndex)
         End If
     End If
     If cell.lb_HaveKeys Then
         If (la_predefHive(cell.ll_KeyIndex) = HKCR) Then 'append merged symlink prefix after convertion HKCR -> to HKCU/HKLM
-            cell.ls_Key = "Software\Classes" & IIf(cell.ls_Key = "", "", "\" & cell.ls_Key)
+            cell.ls_Key = "Software\Classes" & IIf(Len(cell.ls_Key) = 0, vbNullString, "\" & cell.ls_Key)
         End If
     End If
     
@@ -664,7 +664,7 @@ Private Function NextHive() As Boolean
         End If
     End If
     
-    cell.ls_KeyAndHive = cell.ls_HiveName & IIf(Len(cell.ls_Key) <> 0, "\" & cell.ls_Key, "")
+    cell.ls_KeyAndHive = cell.ls_HiveName & IIf(Len(cell.ls_Key) <> 0, "\" & cell.ls_Key, vbNullString)
     
     NextHive = True
     
@@ -723,7 +723,7 @@ Private Function KeySuitableWOW() As Boolean
     End If
 End Function
 
-Private Function PathBeginWith(sPath, sBeginPart As String) As Boolean
+Private Function PathBeginWith(sPath As String, sBeginPart As String) As Boolean
     If StrComp(Left$(sPath, Len(sBeginPart)), sBeginPart, 1) = 0 Then
         If Len(sPath) = Len(sBeginPart) Or Mid$(sPath, Len(sBeginPart) + 1, 1) = "\" Then PathBeginWith = True
     End If
@@ -894,7 +894,6 @@ Public Function Clone(DestinationClass As clsHiveEnum, _
     Dim BytesRead As Long
     Dim bIncoming As Boolean
     Dim bPipeRequired As Boolean
-    Dim i As Long
     
     bIncoming = Not IsMissing(DoNotUseValue)
     
@@ -1011,13 +1010,13 @@ End Function
 ' - Redirected
 ' - KeyIndex
 
-Public Function Uniq_ClearKeys()
+Public Sub Uniq_ClearKeys()
     With UNIQ
         Erase .KeyData
         .Index = 0
         If Not (.dictKey Is Nothing) Then .dictKey.RemoveAll
     End With
-End Function
+End Sub
 
 Public Function Uniq_Exists(hHive As ENUM_REG_HIVE, ByVal KeyName As String, Optional ValueName As String, Optional bUseWow64 As Boolean) As Boolean
     Dim s As String

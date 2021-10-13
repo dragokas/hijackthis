@@ -174,7 +174,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Private Function GUIDToString(uGuid As UUID)
+Private Function GUIDToString(uGuid As UUID) As String
     Dim sGUID$
     sGUID = String$(39, 0)
     If StringFromGUID2(uGuid, StrPtr(sGUID), Len(sGUID)) > 0 Then
@@ -182,13 +182,12 @@ Private Function GUIDToString(uGuid As UUID)
     End If
 End Function
 
-Private Function GetProviderFile$(uProviderID As UUID)
-    Dim sFile$, uFile() As Byte, lFileLen&, lErr&
+Private Function GetProviderFile(uProviderID As UUID) As String
+    Dim sFile$, lFileLen&, lErr&
     
     sFile = String$(MAX_PATH, 0)
     lFileLen = MAX_PATH
     
-    ReDim uFile(lFileLen)
     If WSCGetProviderPath(VarPtr(uProviderID), StrPtr(sFile), VarPtr(lFileLen), VarPtr(lErr)) = 0 Then
         sFile = ExpandEnvironmentVars(TrimNull(sFile))
         GetProviderFile = sFile

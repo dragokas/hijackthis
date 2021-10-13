@@ -1,1 +1,1 @@
-@call "_2_Make_&_UPX_&_Sign.cmd" Fast
+@call "_2_Make_UPX_Sign.cmd" Fast

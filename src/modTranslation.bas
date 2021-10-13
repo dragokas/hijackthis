@@ -344,7 +344,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "ReloadLanguage - Begin"
     
-    Dim i&, Translation$, ID As String, bAnotherForm As Boolean
+    Dim i&, Translation$, id As String, bAnotherForm As Boolean
     Static SecondChance As Boolean
     
     Translate() = gLines()
@@ -352,7 +352,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
     With frmMain
         For i = 0 To UBound(Translate)
             If Len(Translate(i)) <> 0 Then
-                ID = Right$("000" & i, 4)
+                id = Right$("000" & i, 4)
                 Translation = Translate(i)
                 
                 If bDontTouchMainForm Then
@@ -360,7 +360,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                 Else
                   bAnotherForm = False
                   
-                  Select Case ID
+                  Select Case id
                 
                     '; ================ Start window =================
                     
@@ -435,7 +435,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     Case "1205": .mnuToolsProcMan.Caption = Translation
                     Case "1206": .mnuToolsHosts.Caption = Translation
                     'Case "1207": .mnuToolsDelFile.Caption = Translation
-                    Case "1208": .mnuToolsUnlockAndDelFile.Caption = Translation
+                    Case "1208": .mnuToolsUnlockFiles.Caption = Translation
                     Case "1209": .mnuToolsDelFileOnReboot.Caption = Translation
                     Case "1210": .mnuToolsDelServ.Caption = Translation
                     Case "1211": .mnuToolsRegUnlockKey.Caption = Translation
@@ -615,7 +615,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                         
                         If IsFormInit(frmSearch) Then
                             With frmSearch
-                                Select Case ID
+                                Select Case id
                                     Case "2300": .Caption = Translation
                                     Case "2301": .lblWhat.Caption = Translation
                                     Case "2302": .chkMatchCase.Caption = Translation
@@ -642,7 +642,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                         If IsFormInit(frmUninstMan) Then
                             With frmUninstMan
                                 
-                                Select Case ID
+                                Select Case id
                                     Case "0210": .Caption = Translation & " v." & UninstManVer
                                     Case "0211": .lblAbout.Caption = Translation
                                     Case "0212": .lblName.Caption = Translation
@@ -675,7 +675,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                         If IsFormInit(frmADSspy) Then
                             With frmADSspy
                     
-                                Select Case ID
+                                Select Case id
                                     ' Context menu (ADS Spy)
                                     Case "0199": .mnuPopupSelAll.Caption = Translation
                                     Case "0200": .mnuPopupSelNone.Caption = Translation
@@ -723,7 +723,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                         If IsFormInit(frmCheckDigiSign) Then
                             With frmCheckDigiSign
                             
-                                Select Case ID
+                                Select Case id
                                     Case "1850": .Caption = Translation
                                     Case "1851": .lblThisTool.Caption = Translation
                                     Case "1852": .chkRecur.Caption = Translation
@@ -761,7 +761,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     
                         If IsFormInit(frmProcMan) Then
                             With frmProcMan
-                                Select Case ID
+                                Select Case id
                                     ' Context menu (Process manager)
                                     Case "0170": .Caption = Translation
                                     Case "0160": .fraProcessManager.Caption = Translation
@@ -789,7 +789,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     
                         If IsFormInit(frmStartupList2) Then
                             With frmStartupList2
-                                Select Case ID
+                                Select Case id
                                     ' Context menu (StartupList)
                                     Case "0800": .mnuFile.Caption = Translation
                                     Case "0801": .mnuFileSave.Caption = Translation
@@ -916,7 +916,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     
                         If IsFormInit(frmSysTray) Then
                             With frmSysTray
-                                Select Case ID
+                                Select Case id
                                     Case "1180": .mExit.Caption = Translation
                                 End Select
                             End With
@@ -926,16 +926,32 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     
                         If IsFormInit(frmUnlockRegKey) Then
                             With frmUnlockRegKey
-                                Select Case ID
+                                Select Case id
                                     Case "1900": .Caption = Translation
                                     Case "1901": .lblWhatToDo.Caption = Translation
                                     Case "1902": .chkRecur.Caption = Translation
                                     Case "1903": .cmdGo.Caption = Translation
-                                    Case "1904": .cmdExit.Caption = Translation
+                                    'Case "1904": .cmdExit.Caption = Translation
                                     Case "1909": .cmdJump.Caption = Translation
                                 End Select
                             End With
                         End If
+                        
+                        ' ============ Registry Key Unlocker ===========
+                    
+                        If IsFormInit(frmUnlockFile) Then
+                            With frmUnlockFile
+                                Select Case id
+                                    Case "2400": .Caption = Translation
+                                    Case "2401": .lblWhatToDo.Caption = Translation
+                                    Case "2402": .chkRecur.Caption = Translation
+                                    Case "2403": .cmdGo.Caption = Translation
+                                    'Case "2404": .cmdExit.Caption = Translation
+                                    Case "2409": .cmdJump.Caption = Translation
+                                End Select
+                            End With
+                        End If
+                        
                     End If
                 End If
             End If
@@ -947,12 +963,12 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
     Exit Sub
 ErrorHandler:
     If SecondChance Then Resume Next
-    ErrorMsg Err, "ReloadLanguage", "ID: " & ID
+    ErrorMsg Err, "ReloadLanguage", "ID: " & id
     If inIDE Then Stop: Resume Next
     SecondChance = True
-    Translation = IIf(Translate(572) <> "", Translate(572), "Invalid language File. Reset to default (English)?")
+    Translation = IIf(Len(Translate(572)) <> 0, Translate(572), "Invalid language File. Reset to default (English)?")
     If MsgBoxW( _
-      Translation & vbCrLf & vbCrLf & "[ #" & Err.Number & ", " & Err.Description & ", ID: " & ID & " ]", _
+      Translation & vbCrLf & vbCrLf & "[ #" & Err.Number & ", " & Err.Description & ", ID: " & id & " ]", _
       vbYesNo Or vbExclamation) = vbYes Then
         LoadDefaultLanguage UseResource:=True
         ReloadLanguage
@@ -1070,7 +1086,7 @@ Public Sub GetInfo(ByVal sItem$)
     aPage = Split(sMsg, "\\p")
     aPage(0) = sItem & vbCrLf & vbCrLf & aPage(0)
     For i = 0 To UBound(aPage)
-        MsgBoxW aPage(i), , IIf(UBound(aPage) > 0, CStr(i + 1) & "/" & CStr(UBound(aPage) + 1), "")
+        MsgBoxW aPage(i), , IIf(UBound(aPage) > 0, CStr(i + 1) & "/" & CStr(UBound(aPage) + 1), vbNullString)
     Next
     
     Exit Sub

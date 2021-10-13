@@ -73,7 +73,7 @@ End Type
 
 Private Const MAX_DESC              As Long = 64
 Private Const ERROR_SUCCESS         As Long = 0
-Private Const DEVICE_DRIVER_INSTALL As Long = 10
+'Private Const DEVICE_DRIVER_INSTALL As Long = 10
 Private Const MODIFY_SETTINGS       As Long = 12
 Private Const BEGIN_SYSTEM_CHANGE   As Long = 100
 Private Const END_SYSTEM_CHANGE     As Long = 101
@@ -442,7 +442,7 @@ Function PackO25_Entry(O25 As O25_ENTRY) As String
         dp.Push .Filter.Query
         dp.Push .Timer.Type
         dp.Push .Timer.className
-        dp.Push .Timer.ID
+        dp.Push .Timer.id
         dp.Push .Timer.Interval
         dp.Push .Timer.EventDateTime
     End With
@@ -482,7 +482,7 @@ Function UnpackO25_Entry(sHexed_o25_Entry As String) As O25_ENTRY
         .Filter.Query = dp.Fetch
         .Timer.Type = dp.Fetch
         .Timer.className = dp.Fetch
-        .Timer.ID = dp.Fetch
+        .Timer.id = dp.Fetch
         .Timer.Interval = dp.Fetch
         .Timer.EventDateTime = dp.Fetch
     End With
@@ -662,7 +662,7 @@ Private Function BackupAllocReg(FixReg As FIX_REG_KEY, Optional bBackupMetadata 
         
         BackupAllocReg = lRegID
         
-        bIni = (FixReg.IniFile <> "")
+        bIni = (Len(FixReg.IniFile) <> 0)
         bPermOnly = (.ActionType And RESTORE_KEY_PERMISSIONS) Or (.ActionType And RESTORE_KEY_PERMISSIONS_RECURSE)
         
         If bIni Then
@@ -745,7 +745,7 @@ Private Function BackupAllocCustom(FixCustom As FIX_CUSTOM) As Long
         tBackupList.cLastCMD.WriteParam "cmd", "numSections", lCustomID
         
         tBackupList.cLastCMD.WriteParam lCustomID, "name", FixCustom.Name
-        tBackupList.cLastCMD.WriteParam lCustomID, "id", FixCustom.ID
+        tBackupList.cLastCMD.WriteParam lCustomID, "id", FixCustom.id
         tBackupList.cLastCMD.WriteParam lCustomID, "url", FixCustom.URL
         tBackupList.cLastCMD.WriteParam lCustomID, "target", FixCustom.Target
         tBackupList.cLastCMD.WriteParam lCustomID, "commandline", FixCustom.CommandLine
@@ -853,7 +853,7 @@ Public Function BackupKey( _
     Dim aSubKeys() As String
     Dim aValues() As String
     Dim MyReg As FIX_REG_KEY
-    Dim i As Long, j As Long, k As Long
+    Dim j As Long, k As Long
     Dim DoBackupMeta As Boolean
     
     If HE_Uniq Is Nothing Then Set HE_Uniq = New clsHiveEnum
@@ -900,7 +900,7 @@ Public Function BackupKey( _
             
             'backup default value of the key
             MyReg.Key = aSubKeys(j)
-            MyReg.Param = ""
+            MyReg.Param = vbNullString
             DoBackupMeta = Not HE_Uniq.Uniq_Exists(hHive, aSubKeys(j), , bUseWow64)
             lRegID = BackupAllocReg(MyReg, DoBackupMeta)
             HE_Uniq.Uniq_AddKey hHive, aSubKeys(j), , bUseWow64, lRegID
@@ -909,7 +909,7 @@ Public Function BackupKey( _
         
         'backup default value of the root key
         MyReg.Key = sKey
-        MyReg.Param = ""
+        MyReg.Param = vbNullString
         DoBackupMeta = Not HE_Uniq.Uniq_Exists(hHive, sKey, , bUseWow64)
         lRegID = BackupAllocReg(MyReg, DoBackupMeta)
         HE_Uniq.Uniq_AddKey hHive, sKey, , bUseWow64, lRegID
@@ -1200,7 +1200,7 @@ Public Function ABR_RecoverFromBackup(sFolderDateName As String, Optional out_No
     'If MsgBoxW("Are you sure, you want to recover registry saved on: [] ? System will be rebooted automatically.", vbQuestion Or vbYesNo) = vbNo Then Exit Sub
     If MsgBoxW(Replace$(Translate(1560), "[]", sFolderDateName), vbQuestion Or vbYesNo) = vbNo Then Exit Function
     
-    ABR_RecoverFromBackup = Proc.ProcessRun(sRestorer, "", , vbHide)
+    ABR_RecoverFromBackup = Proc.ProcessRun(sRestorer, vbNullString, , vbHide)
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "ABR_RecoverFromBackup"
@@ -1293,7 +1293,6 @@ Public Function ABR_RemoveBackupALL(bSilent As Boolean) As Boolean 'only those, 
     Dim sBackup_Folder  As String
     Dim aDate_Folder()  As String
     Dim sDate           As String
-    Dim nItems          As Long
     Dim bResult         As Boolean
     Dim i               As Long
     
@@ -1366,7 +1365,7 @@ Private Function ABR_RestoreByBackupID(lBackupID As Long, Optional out_NoBackup 
     BackupExtractCommand Cmd
     If Cmd.ObjType = OBJ_ABR_BACKUP Then
         sBackupDate = Cmd.Args
-        If Format(BackupDateToDate(sBackupDate), "yyyy-mm-dd") <> Format(Now(), "yyyy-mm-dd") Then
+        If Format$(BackupDateToDate(sBackupDate), "yyyy-mm-dd") <> Format$(Now(), "yyyy-mm-dd") Then
             ABR_RunBackup 'one more shapshoot in case restore will fail
         End If
         ABR_RestoreByBackupID = ABR_RecoverFromBackup(sBackupDate, out_NoBackup)
@@ -1776,13 +1775,11 @@ Private Function BackupFindBackupIDByDateOrName(dDateExample As Date, sDecriptio
     'not full    -> 30.12.2017
     
     Dim i As Long
-    Dim sBackup As String
     Dim lBackupID As Long
     Dim sDate As String
     Dim sDecription As String
     Dim bMatch As Boolean
     Dim dDateEmpty As Date
-    Dim iSect As Long
     Dim aSection() As Variant
     
     'If cBackupIni.CountSections > 1 Then Exit Function '[main] + 1
@@ -1799,7 +1796,7 @@ Private Function BackupFindBackupIDByDateOrName(dDateExample As Date, sDecriptio
         
         'BackupSplitLine sBackup, lBackupID, , sDate, sDecription
         
-        If sDecriptionExample <> "" Then
+        If Len(sDecriptionExample) <> 0 Then
             If sDecription = sDecriptionExample Then bMatch = True
         End If
         If dDateExample <> dDateEmpty Then
@@ -1829,9 +1826,7 @@ Private Function BackupFindBackupIDByFixID(lFixID As Long, sHitLineW As String) 
     BackupFindBackupIDByFixID = 0 'default
     
     Dim i As Long
-    Dim sBackup As String
     Dim lBackupID As Long
-    Dim iSect As Long
     Dim l_out_FixID As Long
     Dim aSection() As Variant
     Dim sDecription As String
@@ -2004,7 +1999,6 @@ Public Sub DeleteBackup(sBackup As String, Optional bRemoveAll As Boolean)
     Dim lBackupID As Long
     Dim sDecription As String
     Dim sDate As String
-    Dim i As Long
     Dim nSeqID As Long
     
     If bRemoveAll Then
@@ -2076,7 +2070,6 @@ Public Function RestoreBackup(sItem As String) As Boolean
     Dim lstIdx As Long
     Dim FixReg As FIX_REG_KEY
     Dim ServiceName As String
-    Dim ServiceState As SERVICE_STATE
     Dim bRestoreRequired As Boolean
     Dim O25 As O25_ENTRY
     Dim lattrib As Long
@@ -2407,7 +2400,7 @@ Private Function BackupExtractFixRegKeyByRegID(lRegID As Long, RecovType As ENUM
         .Key = tBackupList.cLastCMD.ReadParam(lRegID, "key")
         .Param = tBackupList.cLastCMD.ReadParam(lRegID, "param")
         .DefaultData = tBackupList.cLastCMD.ReadParam(lRegID, "data")
-        If .Param = "" Then
+        If Len(.Param) = 0 Then
             If CBool(tBackupList.cLastCMD.ReadParam(lRegID, "empty")) Then
                 .DefaultData = Empty 'empty default value
             End If
@@ -2663,7 +2656,7 @@ Public Function EscapeSpecialChars(sText As String) As String 'used to view on l
     sResult = sText
     For i = 1 To 31
         If i <> 9 Then 'exclude tab
-            sResult = Replace$(sResult, Chr(i), Right$("\x0" & i, 4))
+            sResult = Replace$(sResult, Chr$(i), Right$("\x0" & i, 4))
         End If
     Next
     EscapeSpecialChars = sResult
@@ -2676,7 +2669,7 @@ Public Function HexStringW(sStr As Variant) As String 'used to serialize and sto
         HexStringW = sStr
     #Else
         For i = 1 To Len(sStr)
-            sOut = sOut & "\u" & Right$("000" & Hex(AscW(Mid$(sStr, i, 1))), 4)
+            sOut = sOut & "\u" & Right$("000" & Hex$(AscW(Mid$(sStr, i, 1))), 4)
         Next
         HexStringW = sOut
     #End If
@@ -2689,7 +2682,7 @@ Public Function UnHexStringW(sStr As Variant) As String 'used to deserialize str
         UnHexStringW = sStr
     #Else
         For i = 1 To Len(sStr) Step 6
-            sOut = sOut & ChrW(CLng("&H" & Mid$(sStr, i + 2, 4)))
+            sOut = sOut & ChrW$(CLng("&H" & Mid$(sStr, i + 2, 4)))
         Next
         UnHexStringW = sOut
     #End If

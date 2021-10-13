@@ -139,7 +139,7 @@ Err_Trap:
     If inIDE Then Stop: Resume Next
 End Property
 
-Function InByteArray(Start As Long, bArray() As Byte, str As String, Optional CompareMode As VbCompareMethod, Optional EndPos As Variant) As Long
+Function InByteArray(Start As Long, bArray() As Byte, stri As String, Optional CompareMode As VbCompareMethod, Optional EndPos As Variant) As Long
     On Error GoTo Err_Trap
     Dim i As Long
     Dim pos As Long
@@ -147,14 +147,14 @@ Function InByteArray(Start As Long, bArray() As Byte, str As String, Optional Co
     InByteArray = -1
     pos = Start
     Do
-        If pos + Len(str) - 1 > UBound(bArray) Then Exit Do
-        For i = 1 To Len(str)
+        If pos + Len(stri) - 1 > UBound(bArray) Then Exit Do
+        For i = 1 To Len(stri)
             If CompareMode = vbTextCompare Then
-                If 0 <> StrComp(Chr$(bArray(pos + i - 1)), Mid$(str, i, 1), vbTextCompare) Then Exit For
+                If 0 <> StrComp(Chr$(bArray(pos + i - 1)), Mid$(stri, i, 1), vbTextCompare) Then Exit For
             Else
-                If bArray(pos + i - 1) <> Asc(Mid$(str, i, 1)) Then Exit For
+                If bArray(pos + i - 1) <> Asc(Mid$(stri, i, 1)) Then Exit For
             End If
-            If i = Len(str) Then InByteArray = pos: Exit Do
+            If i = Len(stri) Then InByteArray = pos: Exit Do
         Next
         pos = pos + 1
     Loop

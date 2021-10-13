@@ -126,6 +126,8 @@ Private ControlsEvent As clsEvents
 Private Sub Form_Initialize()
     On Error GoTo ErrorHandler:
     
+    MAX_PATH_W_BUF = String$(MAX_PATH_W, 0&)
+    
     Dim argc As Long
     g_sCommandLine = Command$()
     ParseCommandLine g_sCommandLine, argc, g_sCommandLineArg()
@@ -137,7 +139,6 @@ Private Sub Form_Initialize()
     Dim sTime       As String
     Dim sCMDLine    As String
     Dim sPath       As String
-    Dim sFile       As String
     Dim ExeName     As String
     
     ' Code launched from IDE ?
@@ -301,7 +302,7 @@ Private Sub Form_Initialize()
     If Len(sPath) <> 0 Then
         If Not FolderExists(sPath, , True) Then
             If Not MkDirW(sPath, StrEndWith(sPath, ".log")) Then
-                sPath = ""
+                sPath = vbNullString
             End If
         End If
     End If
@@ -314,7 +315,7 @@ Private Sub Form_Initialize()
             g_sDebugLogFile = BuildPath(sPath, "HiJackThis_debug.log")
         End If
         'check write access
-        If Not CheckAccessWrite(g_sLogFile, True) Then sPath = ""
+        If Not CheckAccessWrite(g_sLogFile, True) Then sPath = vbNullString
     End If
     If Len(sPath) = 0 Then
         g_sLogFile = BuildPath(AppPath(), "HiJackThis.log")
@@ -422,7 +423,6 @@ Sub WatchForProcess()   'waiting for process completion to release unpacked reso
     Const INFINITE                  As Long = -1
     Const SYNCHRONIZE               As Long = &H100000
     Const PROCESS_QUERY_INFORMATION As Long = 1024&
-    Const PROCESS_QUERY_LIMITED_INFORMATION As Long = &H1000
     
     Dim ProcessID As Long
     Dim hProc As Long

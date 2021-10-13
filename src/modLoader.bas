@@ -200,7 +200,7 @@ Private Const ProcessBasicInformation               As Long = 0
 
 ' // Obtain string from resource (it should be less or equal MAX_PATH)
 Public Function ResGetString( _
-                ByVal ID As MessagesID) As Long
+                ByVal id As MessagesID) As Long
         
     Dim hInstance As Long
     
@@ -210,7 +210,7 @@ Public Function ResGetString( _
         
         hInstance = llib.GetModuleHandle(ByVal 0&)
     
-        If llib.LoadString(hInstance, ID, ResGetString, MAX_PATH) = 0 Then llib.SysFreeString ResGetString: ResGetString = 0: Exit Function
+        If llib.LoadString(hInstance, id, ResGetString, MAX_PATH) = 0 Then llib.SysFreeString ResGetString: ResGetString = 0: Exit Function
         If llib.SysReAllocString(ResGetString, ResGetString) = 0 Then llib.SysFreeString ResGetString: ResGetString = 0: Exit Function
         
     End If
@@ -335,7 +335,7 @@ Private Function InitShellLoader( _
     Dim hLib    As Long:        Dim sName   As Long
     Dim sFunc   As Long:        Dim lpAddr  As Long
     Dim libIdx  As Long:        Dim fncIdx  As Long
-    Dim libName As MessagesID:  Dim fncName As MessagesID
+    Dim libName As MessagesID   ':  Dim fncName As MessagesID
     Dim fncSpc  As Long:        Dim splAddr As Long
     
     ' // +----------------------------------------------------------------+
@@ -462,9 +462,9 @@ Private Function LoadExeFromMemory( _
                  ByVal pErrMsgTable As Long) As Boolean
     Dim NtHdr   As IMAGE_NT_HEADERS
     Dim pBase   As Long
-    Dim Index   As Long
+    'Dim Index   As Long
     Dim iError  As ERROR_MESSAGES
-    Dim pszMsg  As Long
+    'Dim pszMsg  As Long
     
     ' // Get IMAGE_NT_HEADERS
     If GetImageNtHeaders(pRawData, NtHdr) = 0 Then
@@ -479,7 +479,7 @@ Private Function LoadExeFromMemory( _
        (NtHdr.FileHeader.Characteristics And IMAGE_FILE_32BIT_MACHINE) = 0 Then Exit Function
 
     ' // Release main EXE memory. After that main exe is unloaded from memory.
-    llib.ZwUnmapViewOfSection llib.GetCurrentProcess(), llib.GetModuleHandle(ByVal 0&)
+    'llib.ZwUnmapViewOfSection llib.GetCurrentProcess(), llib.GetModuleHandle(ByVal 0&)
 
     ' // Reserve memory for EXE
     iError = ReserveMemory(pRawData, pBase)

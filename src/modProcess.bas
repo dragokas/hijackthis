@@ -970,11 +970,6 @@ End Function
 
 Function GetFilePathByPID(pid As Long) As String
     On Error GoTo ErrorHandler:
-
-    Const MAX_PATH_W                        As Long = 32767&
-    Const PROCESS_VM_READ                   As Long = 16&
-    Const PROCESS_QUERY_INFORMATION         As Long = 1024&
-    Const PROCESS_QUERY_LIMITED_INFORMATION As Long = &H1000&
     
     Dim ProcPath    As String
     Dim hProc       As Long
@@ -994,34 +989,20 @@ Function GetFilePathByPID(pid As Long) As String
     
         If bIsWinVistaAndNewer Then
             cnt = MAX_PATH_W + 1
-            ProcPath = Space$(cnt)
-            Call QueryFullProcessImageName(hProc, 0&, StrPtr(ProcPath), VarPtr(cnt))
+            Call QueryFullProcessImageName(hProc, 0&, StrPtr(MAX_PATH_W_BUF), VarPtr(cnt))
         End If
         
         If 0 <> Err.LastDllError Or Not bIsWinVistaAndNewer Then     'Win 2008 Server (x64) can cause Error 128 if path contains space characters
         
-            ProcPath = Space$(MAX_PATH)
-            cnt = GetModuleFileNameEx(hProc, 0&, StrPtr(ProcPath), Len(ProcPath))
-        
-            If cnt = MAX_PATH Then 'Path > MAX_PATH -> realloc
-                ProcPath = Space$(MAX_PATH_W)
-                cnt = GetModuleFileNameEx(hProc, 0&, StrPtr(ProcPath), Len(ProcPath))
-            End If
-        End If
-        
-        If cnt <> 0 Then                          'clear path
-            ProcPath = Left$(ProcPath, cnt)
-            ProcPath = PathNormalize(ProcPath)
-        Else
-            ProcPath = vbNullString
+            cnt = GetModuleFileNameEx(hProc, 0&, StrPtr(MAX_PATH_W_BUF), MAX_PATH_W)
         End If
         
         If ERROR_PARTIAL_COPY = Err.LastDllError Or cnt = 0 Then     'because GetModuleFileNameEx cannot access to that information for 64-bit processes on WOW64
-            ProcPath = Space$(MAX_PATH)
-            cnt = GetProcessImageFileName(hProc, StrPtr(ProcPath), Len(ProcPath))
+
+            cnt = GetProcessImageFileName(hProc, StrPtr(MAX_PATH_W_BUF), MAX_PATH_W)
             
             If cnt <> 0 Then
-                ProcPath = Left$(ProcPath, cnt)
+                ProcPath = Left$(MAX_PATH_W_BUF, cnt)
                 
                 ' Convert DosDevice format to Disk drive format
                 If StrComp(Left$(ProcPath, 8), "\Device\", 1) = 0 Then
@@ -1033,10 +1014,10 @@ Function GetFilePathByPID(pid As Long) As String
                         End If
                     End If
                 End If
-            Else
-                ProcPath = vbNullString
             End If
-            
+        Else
+            ProcPath = Left$(MAX_PATH_W_BUF, cnt)
+            ProcPath = PathNormalize(ProcPath) 'clear path
         End If
         
         If Len(ProcPath) <> 0 Then    'if process ran with 8.3 style, GetModuleFileNameEx will return 8.3 style on x64 and full pathname on x86
@@ -1452,7 +1433,7 @@ Public Function EnumModules64(pid As Long) As String()
     'Const PROCESS_ALL_ACCESS As Long = &H1FFFFF
     
     Dim hProc As Long
-    Dim ID As Long
+    Dim id As Long
     Dim Wow64Process As Long
     Dim PEB As PEB64
     Dim PEB_LDR_DATA As PEB_LDR_DATA64
@@ -1576,7 +1557,7 @@ Private Function read_mem64(Handle As Long, address As Currency, Length As Long,
     If NT_SUCCESS(HRes) Then
         read_mem64 = True
     Else
-        Debug.Print "NtWow64ReadVirtualMemory64 failed with code: 0x" & Hex(HRes)
+        Debug.Print "NtWow64ReadVirtualMemory64 failed with code: 0x" & Hex$(HRes)
     End If
 End Function
 
@@ -1589,7 +1570,7 @@ Private Function read_pbi(Handle As Long, PBI As PROCESS_BASIC_INFORMATION64) As
     If NT_SUCCESS(HRes) Then
         read_pbi = True
     Else
-        Debug.Print "NtWow64QueryInformationProcess64 failed with code: 0x" & Hex(HRes)
+        Debug.Print "NtWow64QueryInformationProcess64 failed with code: 0x" & Hex$(HRes)
     End If
 End Function
 
@@ -1693,11 +1674,11 @@ Public Function SetProcessIOPriority(lPID As Long, dwPriority As Long) 'required
             If 0 = lret Then
                 SetProcessIOPriority = True
             Else
-                Debug.Print "Failed in NtSetInformationProcess (ProcessIoPriority) with error = 0x" & Hex(lret)
+                Debug.Print "Failed in NtSetInformationProcess (ProcessIoPriority) with error = 0x" & Hex$(lret)
             End If
             CloseHandle hProc
         Else
-            Debug.Print "Failed in OpenProcess with error = 0x" & Hex(Err.LastDllError) & ", PID = " & lPID
+            Debug.Print "Failed in OpenProcess with error = 0x" & Hex$(Err.LastDllError) & ", PID = " & lPID
         End If
     End If
 End Function
@@ -1712,7 +1693,7 @@ Public Function GetProcessPagePriority(lPID As Long) As Long
         If 0 = lret Then
             GetProcessPagePriority = dwPrio
         Else
-            Debug.Print "Failed in NtQueryInformationProcess (ProcessPagePriority) with error = 0x" & Hex(lret) & ", PID = " & lPID
+            Debug.Print "Failed in NtQueryInformationProcess (ProcessPagePriority) with error = 0x" & Hex$(lret) & ", PID = " & lPID
         End If
         CloseHandle hProc
     End If
@@ -1729,7 +1710,7 @@ Public Function GetParentPID(lPID As Long) As Long
         If 0 = lret Then
             GetParentPID = PBI.InheritedFromUniqueProcessId
         Else
-            Debug.Print "Failed in NtQueryInformationProcess (ProcessBasicInformation) with error = 0x" & Hex(lret) & ", PID = " & lPID
+            Debug.Print "Failed in NtQueryInformationProcess (ProcessBasicInformation) with error = 0x" & Hex$(lret) & ", PID = " & lPID
         End If
         CloseHandle hProc
     End If
@@ -1791,11 +1772,11 @@ Public Function GetProcessCriticalFlag(lPID&, l_OutFlag As Long) As Boolean
             l_OutFlag = Flag
             GetProcessCriticalFlag = True
         Else
-            Debug.Print "Failed in NtQueryInformationProcess (ProcessBreakOnTermination) with error = 0x" & Hex(lret) & ", PID = " & lPID
+            Debug.Print "Failed in NtQueryInformationProcess (ProcessBreakOnTermination) with error = 0x" & Hex$(lret) & ", PID = " & lPID
         End If
         CloseHandle hProc
     Else
-        Debug.Print "Failed in OpenProcess with error = 0x" & Hex(Err.LastDllError) & ", PID = " & lPID
+        Debug.Print "Failed in OpenProcess with error = 0x" & Hex$(Err.LastDllError) & ", PID = " & lPID
     End If
 End Function
 
@@ -1809,11 +1790,11 @@ Public Function SetProcessCriticalFlag(lPID&, bEnable As Boolean) As Boolean 're
         If 0 = lret Then
             SetProcessCriticalFlag = True
         Else
-            Debug.Print "Failed in NtSetInformationProcess (ProcessBreakOnTermination) with error = 0x" & Hex(lret)
+            Debug.Print "Failed in NtSetInformationProcess (ProcessBreakOnTermination) with error = 0x" & Hex$(lret)
         End If
         CloseHandle hProc
     Else
-        Debug.Print "Failed in OpenProcess with error = 0x" & Hex(Err.LastDllError) & ", PID = " & lPID
+        Debug.Print "Failed in OpenProcess with error = 0x" & Hex$(Err.LastDllError) & ", PID = " & lPID
     End If
 End Function
 

@@ -57,7 +57,7 @@ Public Sub InitFile(sFile As String, id_Codepage As Long)
         End If
     End If
     'if another file is already loaded
-    If (ms_IniFile <> "") Then
+    If (Len(ms_IniFile) <> 0) Then
         'if the same file
         If StrComp(ms_IniFile, sIniFile, 1) = 0 And ml_Codepage = id_Codepage Then
             'do nothing
@@ -243,7 +243,7 @@ Public Function Flush() As Boolean
             If Not CheckAccessWrite(sIniFile) Then
                 If Not bAutoLogSilent Then
                     'The value '[*]' could not be written to the settings file '[**]'. Please verify that write access is allowed to that file.
-                    MsgBoxW Replace$(Replace$(Translate(1008), "'[*]' ", ""), "[**]", sIniFile), vbCritical
+                    MsgBoxW Replace$(Replace$(Translate(1008), "'[*]' ", vbNullString), "[**]", sIniFile), vbCritical
                 End If
                 Exit Function
             End If

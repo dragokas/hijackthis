@@ -102,7 +102,7 @@ Private Declare Function LCMapString Lib "kernel32" _
                          ByVal cchSrc As Long, _
                          ByRef lpDestStr As Any, _
                          ByVal cchDest As Long) As Long
-Private Declare Function GetUserDefaultLCID Lib "kernel32" () As Long
+'Private Declare Function GetUserDefaultLCID Lib "kernel32" () As Long
 Private Declare Function VarR4FromUI1 Lib "oleaut32" ( _
                          ByRef Value As Any, _
                          ByRef R4 As Any) As Long
@@ -323,10 +323,10 @@ Attribute Remove.VB_Description = "Remove the item, having the specified key"
     If mCount = 0 Then Exit Sub
 
     Dim pt  As tPointer
-    Dim ln  As tPointer
-    Dim lp  As tPointer
-    Dim p   As tPointer
-    Dim L   As Long
+    'Dim ln  As tPointer
+    'Dim lp  As tPointer
+    'Dim p   As tPointer
+    'Dim L   As Long
     
     If Not GetFromKey(Key, pt) Then
         Err.Raise 5
@@ -761,7 +761,7 @@ End Function
 Private Function GetEnumInterface() As Long
     Dim sHex    As String
     
-    sHex = Space(&H8)
+    sHex = Space$(&H8)
     
     If GetEnvironmentVariable(StrPtr("TrickHashEnumerationInterface"), StrPtr(sHex), Len(sHex) + 1) = 0 Then
         
@@ -827,7 +827,7 @@ Private Function CreateAsm() As Long
     GetMem4 lpAddr + &HA6, ByVal lpAddr + &HFC  ' // IEnumVariant::Skip
     GetMem4 lpAddr + &HDD, ByVal lpAddr + &H100 ' // IEnumVariant::Reset
     
-    If SetEnvironmentVariable(StrPtr("TrickHashEnumerationInterface"), StrPtr(Hex(lpAddr))) = 0 Then GoTo Clear
+    If SetEnvironmentVariable(StrPtr("TrickHashEnumerationInterface"), StrPtr(Hex$(lpAddr))) = 0 Then GoTo Clear
     
     CreateAsm = lpAddr
     

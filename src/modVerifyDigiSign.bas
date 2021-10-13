@@ -2023,7 +2023,7 @@ Private Function GetSignaturesFromStateData( _
     '
     '                                            If CryptBlob.pbData <> 0 Then
     '
-    '                                                sTime = string(CryptBlob.cbData - 3, 0)
+    '                                                sTime = String$(CryptBlob.cbData - 3, 0)
     '                                                lstrcpynA StrPtr(sTime), CryptBlob.pbData + 2, Len(sTime) + 1
     '                                                sTime = StrConv(sTime, vbUnicode)
     '
@@ -2203,7 +2203,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function ExtractPropertyFromCertificateByID(pCertContext As Long, ID As Long) As String
+Public Function ExtractPropertyFromCertificateByID(pCertContext As Long, id As Long) As String
     On Error GoTo ErrorHandler
     
     Dim bufSize As Long
@@ -2211,11 +2211,11 @@ Public Function ExtractPropertyFromCertificateByID(pCertContext As Long, ID As L
     Dim i       As Long
     Dim hash    As String
 
-    CertGetCertificateContextProperty pCertContext, ID, 0&, bufSize
+    CertGetCertificateContextProperty pCertContext, id, 0&, bufSize
     If bufSize Then
         ReDim buf(bufSize - 1)
         hash = String$(bufSize * 2, 0&)
-        If CertGetCertificateContextProperty(pCertContext, ID, buf(0), bufSize) Then
+        If CertGetCertificateContextProperty(pCertContext, id, buf(0), bufSize) Then
             For i = 0 To bufSize - 1
                 Mid$(hash, i * 2 + 1) = Right$("0" & Hex$(buf(i)), 2&)
             Next
@@ -2232,7 +2232,7 @@ End Function
 
 ' Note: prefer ExtractStringFromCertificate() over this function
 '
-Public Function ExtractPropertyStrFromCertificateByID(pCertContext As Long, ID As Long) As String
+Public Function ExtractPropertyStrFromCertificateByID(pCertContext As Long, id As Long) As String
     On Error GoTo ErrorHandler
     
     Dim bufSize As Long
@@ -2240,10 +2240,10 @@ Public Function ExtractPropertyStrFromCertificateByID(pCertContext As Long, ID A
     Dim i       As Long
     Dim hash    As String
 
-    CertGetCertificateContextProperty pCertContext, ID, 0&, bufSize
+    CertGetCertificateContextProperty pCertContext, id, 0&, bufSize
     If bufSize Then
         buf = String$(bufSize \ 2 + 1, 0)
-        If CertGetCertificateContextProperty(pCertContext, ID, ByVal StrPtr(buf), bufSize) Then
+        If CertGetCertificateContextProperty(pCertContext, id, ByVal StrPtr(buf), bufSize) Then
             ExtractPropertyStrFromCertificateByID = buf
         End If
     End If
@@ -2556,7 +2556,10 @@ Public Sub FindNewMicrosoftCodeSignCert()
                                     sData = Reg.ExportKeyToVariable(HKCU, "SOFTWARE\Microsoft\SystemCertificates\ROOT\Certificates\" & HashCert, False, True, True)
                                 End If
                                 If Len(sData) <> 0 Then
-                                    AddWarning "New Root certificate is detected! Report to developer, please:" & vbCrLf & Replace(sData, vbCrLf, "\n")
+                                    AddWarning "New Root certificate is detected! Report to developer, please: " & _
+                                    "Name: """ & FriendlyName & """, " & _
+                                    "Valid: """ & FileTime_To_VT_Date(CertInfo.NotBefore) & " - " & FileTime_To_VT_Date(CertInfo.NotAfter) & """" & _
+                                    vbCrLf & Replace(sData, vbCrLf, "\n")
                                 End If
                             End If
                         End If

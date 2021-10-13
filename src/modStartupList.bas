@@ -59,7 +59,7 @@ Private Type KEYBDINPUT
     wVk As Integer
     wScan As Integer
     dwFlags As Long
-    time As Long
+    Time As Long
     dwExtraInfo As Long
 End Type
 
@@ -572,7 +572,7 @@ Public Sub RunScannerGetMD5(sFile$, sKey$)
     On Error GoTo ErrorHandler:
     Dim sMD5$, sAppVer$, sSection$
     sMD5 = GetFileCheckSum(sFile, , True)
-    sAppVer = "StartupList" & App.Major & "." & Format$(App.Minor, "00") & "." & App.Revision
+    sAppVer = "StartupList" & AppVerString
     sSection = GetRunScannerItem(GetSectionFromKey(sKey), sKey)
     
     'ShellRun
@@ -589,12 +589,12 @@ End Sub
 Public Sub RunScannerGetCLSID(sCLSID$, sKey$)
     On Error GoTo ErrorHandler:
     Dim sAppVer$, sSection$
-    sAppVer = "StartupList" & App.Major & "." & Format$(App.Minor, "00") & "." & App.Revision
+    sAppVer = "StartupList" & AppVerString
     sSection = GetRunScannerItem(GetSectionFromKey(sKey), sKey)
     
     'ShellRun
     OpenURL "https://www.runscanner.net/getGUID.aspx?GUID=" & sCLSID & _
-          "&source=StartupList" & App.Major & "." & Format$(App.Minor, "00") & "." & App.Revision
+          "&source=StartupList" & AppVerString
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "RunScannerGetCLSID"
@@ -769,7 +769,7 @@ Public Function NodeIsValidFile(objNode As Node) As Boolean
     On Error GoTo ErrorHandler:
     NodeIsValidFile = False
     If objNode.Tag <> vbNullString Then
-        If FileExists(objNode.Tag) And Not IsFolder(objNode.Tag) Then
+        If FileExists(objNode.Tag) And Not FolderExists(objNode.Tag) Then
             NodeIsValidFile = True
         End If
     End If
@@ -817,19 +817,6 @@ Public Function NodeExists(sKey$) As Boolean
     Else
         NodeExists = True
     End If
-End Function
-
-Private Function IsFolder(sFile$) As Boolean
-    On Error GoTo ErrorHandler:
-    If GetFileAttributes(sFile) And FILE_ATTRIBUTE_DIRECTORY Then
-        IsFolder = True
-    Else
-        IsFolder = False
-    End If
-    Exit Function
-ErrorHandler:
-    ErrorMsg Err, "IsFolder"
-    If inIDE Then Stop: Resume Next
 End Function
 
 Public Sub RegEnumIEBands(tvwMain As TreeView)

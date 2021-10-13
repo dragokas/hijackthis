@@ -178,7 +178,7 @@ Public Sub GetTargetShellLinkW(LNK_file As String, Optional Target As String, Op
     
     If StrComp(LnkHeader, FileHeader) <> 0 Then
 
-        Argument = ""
+        Argument = vbNullString
         Target = "(lnk is corrupted)"
 
         Exit Sub
@@ -412,7 +412,7 @@ Public Function GetUrlTargetW(URLpathW As String) As String
             If Len(sTemp) <> 0 Then buf = sTemp
         End If
         
-        GetUrlTargetW = buf & IIf(Len(sAppend) <> 0, " ... " & sAppend, "")
+        GetUrlTargetW = buf & IIf(Len(sAppend) <> 0, " ... " & sAppend, vbNullString)
     End If
     
     Exit Function
@@ -678,12 +678,12 @@ End Function
 Public Function CreateShortcut( _
     sPathLnk As String, _
     sTarget As String, _
-    Optional sArg As String = "", _
-    Optional sIcon As String = "", _
+    Optional sArg As String = vbNullString, _
+    Optional sIcon As String = vbNullString, _
     Optional iShowCmd As Long = 1, _
-    Optional sDescription As String = "") As Boolean
+    Optional sDescription As String = vbNullString) As Boolean
     
-    If sIcon = "" Then sIcon = sTarget
+    If Len(sIcon) = 0 Then sIcon = sTarget
     
     With oSLink
         .SetPath sTarget

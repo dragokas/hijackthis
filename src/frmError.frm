@@ -69,10 +69,10 @@ Private Declare Function MessageBeep Lib "user32.dll" (ByVal uType As Long) As L
 Private Declare Function LoadIcon Lib "user32.dll" Alias "LoadIconW" (ByVal hInstance As Long, ByVal lpIconName As Long) As Long
 Private Declare Function DrawIcon Lib "user32.dll" (ByVal hdc As Long, ByVal X As Long, ByVal Y As Long, ByVal hIcon As Long) As Long
 
-Private Const IDI_ASTERISK      As Long = 32516&    'Information
-Private Const IDI_EXCLAMATION   As Long = 32515&    'Exclamation
+'Private Const IDI_ASTERISK      As Long = 32516&    'Information
+'Private Const IDI_EXCLAMATION   As Long = 32515&    'Exclamation
 Private Const IDI_HAND          As Long = 32513&    'Critical Stop
-Private Const IDI_QUESTION      As Long = 32514&    'Question Mark
+'Private Const IDI_QUESTION      As Long = 32514&    'Question Mark
 
 Private Const MB_ICONERROR      As Long = &H10&
 

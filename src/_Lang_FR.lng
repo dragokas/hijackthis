@@ -177,7 +177,7 @@ et enregistrer un rapport
 1205=Gestionnaire de processus
 1206=Gestionnaire de fichiers Hosts
 1207=Suppression de fichier
-1208=Déverrouiller && Supprimer un fichier...
+1208=Déverrouiller fichier / dossier
 1209=Planification de suppression d'un fichier au redémarrage...
 1210=Supprimer un service
 1211=Clé de déverrouillage
@@ -797,7 +797,7 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 ;
 ; (1850 - 1899)
 ;
-1850=Authenticode EDS checker - écrit par Stanislav
+1850=Authenticode EDS checker
 1851=Cet outil créera un rapport détaillé sur les signatures numériques des fichiers/dossiers que vous indiquerez ci-dessous :
 1852=Recursivement (inclure les sous-dossiers)
 1853=Inclure les fichiers du dossier de Windows
@@ -824,7 +824,7 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 ;
 ; (1900 - 1949)
 ;
-1900=Déblocage de la Clé de Registre - écrit par Stanislav
+1900=Déblocage de la Clé de Registre
 1901=Entrer la Clé de registre pour déverrouiller et réinitialiser les droits d'accès:
 1902=Récursivement (inclure les sous-clés)
 1903=Réinitialiser
@@ -835,14 +835,28 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 1908=[Echec]
 1909=Ouvrir dans le Regedit
 ;
-; ============ Delete on reboot & unlock file staff ========
+; ============= Files Unlocker =========
+;
+; (2400 - 2449)
+;
+2400=Déblocage de la fichier
+2401=Entrer la fichier et des dossiers pour déverrouiller et réinitialiser les droits d'accès:
+2402=Récursivement (inclure les sous-dossiers)
+2403=Réinitialiser
+2404=Fermer
+2405=Vous devez entrer au moins une fichier ou dossier!
+2406=[OK]
+2407=(récursivement)
+2408=[Echec]
+2409=Ouvrir dans le Explorer
+;
+; ============ Delete on reboot ========
 ;
 ; (1950-1999)
 ;
 1950=Entrer le nom du fichier:
 1951=Supprimer au redémarrage
 1952=Entrer le nom du fichier:
-1953=Déverrouiller & Supprimer
 1954=Impossible de supprimer le fichier.
      Il peut être verrouillé par un autre processus.
 1955=Dossier: [] supprimé avec succès.
@@ -1758,5 +1772,5 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 ;
 ; ========= Empty ========
 ;
-; (2400 - ...)
+; (2450 - ...)
 ;                                 

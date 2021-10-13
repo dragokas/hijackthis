@@ -1306,6 +1306,7 @@ Public Const FOF_SILENT            As Long = &H4&
 Public Const SM_CLEANBOOT          As Long = &H43&
 
 Public Const FILE_ATTRIBUTE_READONLY  As Long = 1&
+Public Const FILE_ATTRIBUTE_COMPRESSED As Long = &H800&
 
 Public Const SEE_MASK_INVOKEIDLIST     As Long = &HC&
 Public Const SEE_MASK_NOCLOSEPROCESS   As Long = &H40&
@@ -1645,7 +1646,7 @@ Public Type STARTUPINFO
     dwFlags As Long
     wShowWindow As Integer
     cbReserved2 As Integer
-    lpReserved2 As Byte
+    lpReserved2 As Long
     hStdInput As Long
     hStdOutput As Long
     hStdError As Long
@@ -1807,6 +1808,16 @@ Public Type MODULEENTRY32W
     szExePath(MAX_PATH - 1) As Integer
 End Type
 
+Public Type MEMORY_BASIC_INFORMATION32
+    BaseAddress As Long
+    AllocationBase As Long
+    AllocationProtect As Long
+    RegionSize As Long
+    State As Long
+    Protect As Long
+    Type As Long
+End Type
+
 Public Declare Function NtQuerySystemInformation Lib "ntdll.dll" (ByVal infoClass As Long, Buffer As Any, ByVal BufferSize As Long, ret As Long) As Long
 Public Declare Function GetModuleFileNameEx Lib "psapi.dll" Alias "GetModuleFileNameExW" (ByVal hProcess As Long, ByVal hModule As Long, ByVal lpFileName As Long, ByVal nSize As Long) As Long
 Public Declare Function GetProcessImageFileName Lib "psapi.dll" Alias "GetProcessImageFileNameW" (ByVal hProcess As Long, ByVal lpImageFileName As Long, ByVal nSize As Long) As Long
@@ -1846,7 +1857,8 @@ Public Declare Function CreateProcessWithTokenW Lib "Advapi32.dll" (ByVal hToken
 'Public Declare Function OpenThreadToken Lib "Advapi32.dll" (ByVal ThreadHandle As Long, ByVal DesiredAccess As Long, ByVal OpenAsSelf As Long, TokenHandle As Long) As Long
 Public Declare Function NtSetInformationProcess Lib "ntdll.dll" (ByVal ProcessHandle As Long, ByVal ProcessInformationClass As PROCESSINFOCLASS, ByVal ProcessInformation As Long, ByVal ProcessInformationLength As Long) As Long
 Public Declare Function NtQueryInformationProcess Lib "ntdll.dll" (ByVal ProcessHandle As Long, ByVal ProcessInformationClass As PROCESSINFOCLASS, ByVal ProcessInformation As Long, ByVal ProcessInformationLength As Long, ByVal ReturnLength As Long) As Long
-
+Public Declare Function VirtualQuery Lib "kernel32.dll" (ByVal lpAddress As Long, lpBuffer As Any, ByVal dwLength As Long) As Long
+Public Declare Function VirtualQueryEx Lib "kernel32.dll" (ByVal hProcess As Long, ByVal lpAddress As Long, lpBuffer As Any, ByVal dwLength As Long) As Long
 
 Public Const TH32CS_SNAPPROCESS = &H2
 Public Const TH32CS_SNAPMODULE = &H8
@@ -1868,6 +1880,8 @@ Public Const ERROR_ACCESS_DENIED           As Long = 5&
 
 Public Const MAX_PATH_W     As Long = 32767&
 Public Const MAX_VALUENAME  As Long = 32767&
+
+Public MAX_PATH_W_BUF As String
 
 Public Enum ENUM_REG_HIVE
     HKEY_USER_SPECIFIED = 0
@@ -2119,7 +2133,7 @@ Public Type msg
     message     As Long
     wParam      As Long
     lParam      As Long
-    time        As Long
+    Time        As Long
     pt          As POINTAPI
     lPrivate    As Long
 End Type
@@ -2153,8 +2167,8 @@ Public Declare Function RemoveWindowSubclass Lib "comctl32.dll" Alias "#412" (By
 Public Declare Function SHParseDisplayName Lib "shell32" (ByVal pszName As Long, ByVal IBindCtx As Long, ByRef ppidl As Long, sfgaoIn As Long, sfgaoOut As Long) As Long
 Public Declare Function NtQueryObject Lib "ntdll.dll" (ByVal Handle As Long, ByVal ObjectInformationClass As OBJECT_INFORMATION_CLASS, ObjectInformation As Any, ByVal ObjectInformationLength As Long, ReturnLength As Long) As Long
 Public Declare Function GetKeyState Lib "user32.dll" (ByVal nVirtKey As Long) As Integer
-Public Declare Function RegisterHotKey Lib "user32.dll" (ByVal hwnd As Long, ByVal ID As Long, ByVal fsModifiers As Long, ByVal vk As Long) As Long
-Public Declare Function UnregisterHotKey Lib "user32.dll" (ByVal hwnd As Long, ByVal ID As Long) As Long
+Public Declare Function RegisterHotKey Lib "user32.dll" (ByVal hwnd As Long, ByVal id As Long, ByVal fsModifiers As Long, ByVal vk As Long) As Long
+Public Declare Function UnregisterHotKey Lib "user32.dll" (ByVal hwnd As Long, ByVal id As Long) As Long
 Public Declare Function SetWindowsHookEx Lib "user32.dll" Alias "SetWindowsHookExA" (ByVal idHook As Long, ByVal lpfn As Long, ByVal hMod As Long, ByVal dwThreadId As Long) As Long
 Public Declare Function CallNextHookEx Lib "user32.dll" (ByVal hhk As Long, ByVal nCode As Long, ByVal wParam As Long, lParam As msg) As Long
 Public Declare Function UnhookWindowsHookEx Lib "user32.dll" (ByVal hhk As Long) As Long
@@ -2228,7 +2242,7 @@ Public Declare Function GetProfilesDirectory Lib "Userenv.dll" Alias "GetProfile
 Public Declare Function GetTickCount Lib "kernel32.dll" () As Long
 Public Declare Function GetDiskFreeSpaceEx Lib "kernel32.dll" Alias "GetDiskFreeSpaceExW" (ByVal lpDirectoryName As Long, ByVal lpFreeBytesAvailable As Long, ByVal lpTotalNumberOfBytes As Long, ByVal lpTotalNumberOfFreeBytes As Long) As Long
 Public Declare Function RemoveDirectory Lib "kernel32.dll" Alias "RemoveDirectoryW" (ByVal lpPathName As Long) As Long
-Public Declare Function AssocQueryString Lib "Shlwapi.dll" Alias "AssocQueryStringW" (ByVal Flags As Long, ByVal str As Long, ByVal pszAssoc As Long, ByVal pszExtra As Long, ByVal pszOut As Long, pcchOut As Long) As Long
+Public Declare Function AssocQueryString Lib "Shlwapi.dll" Alias "AssocQueryStringW" (ByVal Flags As Long, ByVal stri As Long, ByVal pszAssoc As Long, ByVal pszExtra As Long, ByVal pszOut As Long, pcchOut As Long) As Long
 Public Declare Function WritePrivateProfileString Lib "kernel32.dll" Alias "WritePrivateProfileStringW" (ByVal lpAppName As Long, ByVal lpKeyName As Long, ByVal lpString As Long, ByVal lpFileName As Long) As Long
 Public Declare Function CreateDirectory Lib "kernel32" Alias "CreateDirectoryW" (ByVal lpPathName As Long, lpSecurityAttributes As Any) As Long
 Public Declare Function GetCurrentDirectory Lib "kernel32" Alias "GetCurrentDirectoryW" (ByVal nBufferLength As Long, ByVal lpBuffer As Long) As Long
@@ -2265,7 +2279,7 @@ Public Type SYSTEM_MODULE
     ImageBaseAddress    As Long
     ImageSize           As Long
     Flags               As Long
-    ID                  As Integer
+    id                  As Integer
     Rank                As Integer
     w018                As Integer
     NameOffset          As Integer

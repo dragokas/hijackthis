@@ -271,28 +271,15 @@ Private Type FILE_STREAM_INFORMATION
     StreamName(259) As Byte
 End Type
 
-Private Type IO_STATUS_BLOCK
-    IoStatus As Long
-    Information As Long
-End Type
+'Private Type IO_STATUS_BLOCK
+'    IoStatus As Long
+'    Information As Long
+'End Type
 
-Private Type FILETIME
-    dwLowDateTime As Long
-    dwHighDateTime As Long
-End Type
-
-Private Type WIN32_FIND_DATA
-    dwFileAttributes As Long
-    ftCreationTime As FILETIME
-    ftLastAccessTime As FILETIME
-    ftLastWriteTime As FILETIME
-    nFileSizeHigh As Long
-    nFileSizeLow As Long
-    dwReserved0 As Long
-    dwReserved1 As Long
-    lpszFileName(MAX_PATH - 1) As Integer
-    lpszAlternate(13) As Integer
-End Type
+'Private Type FILETIME
+'    dwLowDateTime As Long
+'    dwHighDateTime As Long
+'End Type
 
 Private Type BrowseInfo
     hWndOwner As Long
@@ -305,44 +292,44 @@ Private Type BrowseInfo
     iImage As Long
 End Type
 
-Private Type OPENFILENAME
-    lStructSize As Long
-    hWndOwner As Long
-    hInstance As Long
-    lpstrFilter As String
-    lpstrCustomFilter As String
-    nMaxCustFilter As Long
-    nFilterIndex As Long
-    lpstrFile As String
-    nMaxFile As Long
-    lpstrFileTitle As String
-    nMaxFileTitle As Long
-    lpstrInitialDir As String
-    lpstrTitle As String
-    Flags As Long
-    nFileOffset As Integer
-    nFileExtension As Integer
-    lpstrDefExt As String
-    lCustData As Long
-    lpfnHook As Long
-    lpTemplateName As String
-End Type
+'Private Type OPENFILENAME
+'    lStructSize As Long
+'    hWndOwner As Long
+'    hInstance As Long
+'    lpstrFilter As String
+'    lpstrCustomFilter As String
+'    nMaxCustFilter As Long
+'    nFilterIndex As Long
+'    lpstrFile As String
+'    nMaxFile As Long
+'    lpstrFileTitle As String
+'    nMaxFileTitle As Long
+'    lpstrInitialDir As String
+'    lpstrTitle As String
+'    Flags As Long
+'    nFileOffset As Integer
+'    nFileExtension As Integer
+'    lpstrDefExt As String
+'    lCustData As Long
+'    lpfnHook As Long
+'    lpTemplateName As String
+'End Type
 
-Private Declare Function FindFirstFile Lib "kernel32.dll" Alias "FindFirstFileW" (ByVal lpFileName As Long, lpFindFileData As WIN32_FIND_DATA) As Long
-Private Declare Function FindNextFile Lib "kernel32.dll" Alias "FindNextFileW" (ByVal hFindFile As Long, lpFindFileData As WIN32_FIND_DATA) As Long
-Private Declare Function FindClose Lib "kernel32.dll" (ByVal hFindFile As Long) As Long
+'Private Declare Function FindFirstFile Lib "kernel32.dll" Alias "FindFirstFileW" (ByVal lpFileName As Long, lpFindFileData As WIN32_FIND_DATA) As Long
+'Private Declare Function FindNextFile Lib "kernel32.dll" Alias "FindNextFileW" (ByVal hFindFile As Long, lpFindFileData As WIN32_FIND_DATA) As Long
+'Private Declare Function FindClose Lib "kernel32.dll" (ByVal hFindFile As Long) As Long
 'Private Declare Function GetWindowsDirectory Lib "kernel32.dll" Alias "GetWindowsDirectoryA" (ByVal lpBuffer As String, ByVal nSize As Long) As Long
 Private Declare Function GetSystemWindowsDirectory Lib "kernel32.dll" Alias "GetSystemWindowsDirectoryW" (ByVal lpBuffer As Long, ByVal uSize As Long) As Long
 Private Declare Function GetTickCount Lib "kernel32.dll" () As Long
 Private Declare Function GetVolumeInformation Lib "kernel32.dll" Alias "GetVolumeInformationA" (ByVal lpRootPathName As String, ByVal lpVolumeNameBuffer As String, ByVal nVolumeNameSize As Long, lpVolumeSerialNumber As Long, lpMaximumComponentLength As Long, lpFileSystemFlags As Long, ByVal lpFileSystemNameBuffer As String, ByVal nFileSystemNameSize As Long) As Long
-Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
+'Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
 
 Private Declare Function GetLogicalDrives Lib "kernel32.dll" () As Long
 Private Declare Function GetDriveType Lib "kernel32.dll" Alias "GetDriveTypeA" (ByVal nDrive As String) As Long
 
-Private Declare Function CreateFileW Lib "kernel32.dll" (ByVal lpFileName As Long, ByVal dwDesiredAccess As Long, ByVal dwShareMode As Long, ByVal lpSecurityAttributes As Long, ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, ByVal hTemplateFile As Long) As Long
-Private Declare Function NtQueryInformationFile Lib "ntdll.dll" (ByVal FileHandle As Long, IoStatusBlock_Out As IO_STATUS_BLOCK, lpFileInformation_Out As Long, ByVal Length As Long, ByVal FileInformationClass As FILE_INFORMATION_CLASS) As Long
-Private Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long)
+'Private Declare Function CreateFileW Lib "kernel32.dll" (ByVal lpFileName As Long, ByVal dwDesiredAccess As Long, ByVal dwShareMode As Long, ByVal lpSecurityAttributes As Long, ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, ByVal hTemplateFile As Long) As Long
+'Private Declare Function NtQueryInformationFile Lib "ntdll.dll" (ByVal FileHandle As Long, IoStatusBlock_Out As IO_STATUS_BLOCK, lpFileInformation_Out As Long, ByVal Length As Long, ByVal FileInformationClass As FILE_INFORMATION_CLASS) As Long
+'Private Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long)
 Private Declare Function DeleteFile Lib "kernel32.dll" Alias "DeleteFileW" (ByVal lpFileName As Long) As Long
 'Private Declare Function SHFileExists Lib "shell32.dll" Alias "#45" (ByVal szPath As String) As Long
 'Private Declare Sub Sleep Lib "kernel32.dll" (ByVal dwMilliseconds As Long)
@@ -352,60 +339,60 @@ Private Declare Function RegCloseKey Lib "Advapi32.dll" (ByVal hKey As Long) As 
 Private Declare Function RegOpenKeyEx Lib "Advapi32.dll" Alias "RegOpenKeyExA" (ByVal hKey As Long, ByVal lpSubKey As String, ByVal ulOptions As Long, ByVal samDesired As Long, phkResult As Long) As Long
 Private Declare Function RegQueryValueEx Lib "Advapi32.dll" Alias "RegQueryValueExA" (ByVal hKey As Long, ByVal lpValueName As String, ByVal lpReserved As Long, lpType As Long, lpData As Any, lpcbData As Long) As Long
 
-Private Declare Function CryptAcquireContext Lib "Advapi32.dll" Alias "CryptAcquireContextA" (ByRef phProv As Long, ByVal pszContainer As String, ByVal pszProvider As String, ByVal dwProvType As Long, ByVal dwFlags As Long) As Long
-Private Declare Function CryptCreateHash Lib "Advapi32.dll" (ByVal hProv As Long, ByVal Algid As Long, ByVal hKey As Long, ByVal dwFlags As Long, ByRef phHash As Long) As Long
-Private Declare Function CryptDestroyHash Lib "Advapi32.dll" (ByVal hHash As Long) As Long
-Private Declare Function CryptGetHashParam Lib "Advapi32.dll" (ByVal pCryptHash As Long, ByVal dwParam As Long, ByRef pbData As Any, ByRef pcbData As Long, ByVal dwFlags As Long) As Long
-Private Declare Function CryptHashData Lib "Advapi32.dll" (ByVal hHash As Long, ByVal pbData As String, ByVal dwDataLen As Long, ByVal dwFlags As Long) As Long
-Private Declare Function CryptReleaseContext Lib "Advapi32.dll" (ByVal hProv As Long, ByVal dwFlags As Long) As Long
+'Private Declare Function CryptAcquireContext Lib "Advapi32.dll" Alias "CryptAcquireContextA" (ByRef phProv As Long, ByVal pszContainer As String, ByVal pszProvider As String, ByVal dwProvType As Long, ByVal dwFlags As Long) As Long
+'Private Declare Function CryptCreateHash Lib "Advapi32.dll" (ByVal hProv As Long, ByVal Algid As Long, ByVal hKey As Long, ByVal dwFlags As Long, ByRef phHash As Long) As Long
+'Private Declare Function CryptDestroyHash Lib "Advapi32.dll" (ByVal hHash As Long) As Long
+'Private Declare Function CryptGetHashParam Lib "Advapi32.dll" (ByVal pCryptHash As Long, ByVal dwParam As Long, ByRef pbData As Any, ByRef pcbData As Long, ByVal dwFlags As Long) As Long
+'Private Declare Function CryptHashData Lib "Advapi32.dll" (ByVal hHash As Long, ByVal pbData As String, ByVal dwDataLen As Long, ByVal dwFlags As Long) As Long
+'Private Declare Function CryptReleaseContext Lib "Advapi32.dll" (ByVal hProv As Long, ByVal dwFlags As Long) As Long
 
-Private Declare Sub CoTaskMemFree Lib "ole32.dll" (ByVal hMem As Long)
+'Private Declare Sub CoTaskMemFree Lib "ole32.dll" (ByVal hMem As Long)
 'Private Declare Function lstrcat Lib "kernel32.dll" Alias "lstrcatA" (ByVal lpString1 As String, ByVal lpString2 As String) As Long
 Private Declare Function SHBrowseForFolder Lib "shell32.dll" Alias "SHBrowseForFolderW" (lpbi As BrowseInfo) As Long
-Private Declare Function SHGetPathFromIDList Lib "shell32.dll" Alias "SHGetPathFromIDListW" (ByVal pidList As Long, ByVal lpBuffer As Long) As Long
+'Private Declare Function SHGetPathFromIDList Lib "shell32.dll" Alias "SHGetPathFromIDListW" (ByVal pidList As Long, ByVal lpBuffer As Long) As Long
 Private Declare Function SetWindowTheme Lib "UxTheme.dll" (ByVal hwnd As Long, ByVal pszSubAppName As Long, ByVal pszSubIdList As Long) As Long
-Private Declare Function lstrlen Lib "kernel32.dll" Alias "lstrlenW" (ByVal lpString As Long) As Long
-Private Declare Function lstrcpy Lib "kernel32.dll" Alias "lstrcpyW" (ByVal lpStrDest As Long, ByVal lpStrSrc As Long) As Long
+'Private Declare Function lstrlen Lib "kernel32.dll" Alias "lstrlenW" (ByVal lpString As Long) As Long
+'Private Declare Function lstrcpy Lib "kernel32.dll" Alias "lstrcpyW" (ByVal lpStrDest As Long, ByVal lpStrSrc As Long) As Long
 
-Private Enum FILE_INFORMATION_CLASS
-    FileDirectoryInformation = 1
-    FileFullDirectoryInformation   ' // 2
-    FileBothDirectoryInformation   ' // 3
-    FileBasicInformation           ' // 4  wdm
-    FileStandardInformation        ' // 5  wdm
-    FileInternalInformation        ' // 6
-    FileEaInformation              ' // 74
-    FileAccessInformation          ' // 8
-    FileNameInformation            ' // 9
-    FileRenameInformation          ' // 10
-    FileLinkInformation            ' // 11
-    FileNamesInformation           ' // 12
-    FileDispositionInformation     ' // 13
-    FilePositionInformation        ' // 14 wdm
-    FileFullEaInformation          ' // 15
-    FileModeInformation            ' // 16
-    FileAlignmentInformation       ' // 17
-    FileAllInformation             ' // 18
-    FileAllocationInformation      ' // 19
-    FileEndOfFileInformation       ' // 20 wdm
-    FileAlternateNameInformation   ' // 21
-    FileStreamInformation          ' // 22
-    FilePipeInformation            ' // 23
-    FilePipeLocalInformation       ' // 24
-    FilePipeRemoteInformation      ' // 25
-    FileMailslotQueryInformation   ' // 26
-    FileMailslotSetInformation     ' // 27
-    FileCompressionInformation     ' // 28
-    FileObjectIdInformation        ' // 29
-    FileCompletionInformation      ' // 30
-    FileMoveClusterInformation     ' // 31
-    FileQuotaInformation           ' // 32
-    FileReparsePointInformation    ' // 33
-    FileNetworkOpenInformation     ' // 34
-    FileAttributeTagInformation    ' // 35
-    FileTrackingInformation        ' // 36
-    FileMaximumInformation
-End Enum
+'Private Enum FILE_INFORMATION_CLASS
+'    FileDirectoryInformation = 1
+'    FileFullDirectoryInformation   ' // 2
+'    FileBothDirectoryInformation   ' // 3
+'    FileBasicInformation           ' // 4  wdm
+'    FileStandardInformation        ' // 5  wdm
+'    FileInternalInformation        ' // 6
+'    FileEaInformation              ' // 74
+'    FileAccessInformation          ' // 8
+'    FileNameInformation            ' // 9
+'    FileRenameInformation          ' // 10
+'    FileLinkInformation            ' // 11
+'    FileNamesInformation           ' // 12
+'    FileDispositionInformation     ' // 13
+'    FilePositionInformation        ' // 14 wdm
+'    FileFullEaInformation          ' // 15
+'    FileModeInformation            ' // 16
+'    FileAlignmentInformation       ' // 17
+'    FileAllInformation             ' // 18
+'    FileAllocationInformation      ' // 19
+'    FileEndOfFileInformation       ' // 20 wdm
+'    FileAlternateNameInformation   ' // 21
+'    FileStreamInformation          ' // 22
+'    FilePipeInformation            ' // 23
+'    FilePipeLocalInformation       ' // 24
+'    FilePipeRemoteInformation      ' // 25
+'    FileMailslotQueryInformation   ' // 26
+'    FileMailslotSetInformation     ' // 27
+'    FileCompressionInformation     ' // 28
+'    FileObjectIdInformation        ' // 29
+'    FileCompletionInformation      ' // 30
+'    FileMoveClusterInformation     ' // 31
+'    FileQuotaInformation           ' // 32
+'    FileReparsePointInformation    ' // 33
+'    FileNetworkOpenInformation     ' // 34
+'    FileAttributeTagInformation    ' // 35
+'    FileTrackingInformation        ' // 36
+'    FileMaximumInformation
+'End Enum
 
 Private Const BIF_RETURNONLYFSDIRS = 1
 
@@ -416,35 +403,35 @@ Private Const DRIVE_REMOTE = 4
 Private Const DRIVE_CDROM = 5
 Private Const DRIVE_RAMDISK = 6
 
-Private Const ALG_TYPE_ANY As Long = 0
-Private Const ALG_SID_MD5 As Long = 3
-Private Const ALG_CLASS_HASH As Long = 32768
+'Private Const ALG_TYPE_ANY As Long = 0
+'Private Const ALG_SID_MD5 As Long = 3
+'Private Const ALG_CLASS_HASH As Long = 32768
 
-Private Const HP_HASHVAL As Long = 2
-Private Const HP_HASHSIZE As Long = 4
+'Private Const HP_HASHVAL As Long = 2
+'Private Const HP_HASHSIZE As Long = 4
 
-Private Const CRYPT_VERIFYCONTEXT = &HF0000000
+'Private Const CRYPT_VERIFYCONTEXT = &HF0000000
 
-Private Const PROV_RSA_FULL As Long = 1
-Private Const MS_ENHANCED_PROV As String = "Microsoft Enhanced Cryptographic Provider v1.0"
+'Private Const PROV_RSA_FULL As Long = 1
+'Private Const MS_ENHANCED_PROV As String = "Microsoft Enhanced Cryptographic Provider v1.0"
 
-Private Const OFN_HIDEREADONLY = &H4
-Private Const OFN_NONETWORKBUTTON = &H20000
-Private Const OFN_OVERWRITEPROMPT = &H2
-Private Const OFN_PATHMUSTEXIST = &H800
+'Private Const OFN_HIDEREADONLY = &H4
+'Private Const OFN_NONETWORKBUTTON = &H20000
+'Private Const OFN_OVERWRITEPROMPT = &H2
+'Private Const OFN_PATHMUSTEXIST = &H800
 
 'Private Const HKEY_LOCAL_MACHINE = &H80000002
-Private Const KEY_QUERY_VALUE = &H1
+'Private Const KEY_QUERY_VALUE = &H1
 
 Private Const FILE_NAMED_STREAMS As Long = &H40000
-Private Const FILE_ATTRIBUTE_DIRECTORY = &H10
-Private Const FILE_FLAG_BACKUP_SEMANTICS = &H2000000
-Const INVALID_HANDLE_VALUE      As Long = &HFFFFFFFF
-Const FILE_ATTRIBUTE_REPARSE_POINT As Long = &H400&
+'Private Const FILE_ATTRIBUTE_DIRECTORY = &H10
+'Private Const FILE_FLAG_BACKUP_SEMANTICS = &H2000000
+'Const INVALID_HANDLE_VALUE      As Long = &HFFFFFFFF
+'Const FILE_ATTRIBUTE_REPARSE_POINT As Long = &H400&
 
-Private Const GENERIC_READ = &H80000000
-Private Const FILE_SHARE_READ = &H1
-Private Const FILE_SHARE_WRITE = &H2
+'Private Const GENERIC_READ = &H80000000
+'Private Const FILE_SHARE_READ = &H1
+'Private Const FILE_SHARE_WRITE = &H2
 
 Private bQuickScan As Boolean, bScanFolder As Boolean, bAbortScanNow As Boolean
 Private bIgnoreEncryptable As Boolean, bCalcMD5 As Boolean, bQueryUnload As Boolean
@@ -617,7 +604,7 @@ Private Sub cmdViewEdit_Click()
     End If
     
     sWordpadPath = String$(MAX_PATH, 0)
-    If RegQueryValueEx(hKey, "", 0, ByVal 0, ByVal sWordpadPath, Len(sWordpadPath)) <> 0 Then
+    If RegQueryValueEx(hKey, vbNullString, 0, ByVal 0, ByVal sWordpadPath, Len(sWordpadPath)) <> 0 Then
         RegCloseKey hKey
         'Unable to open the ADS for editing: Wordpad not found.
         MsgBoxW Translate(2201), vbExclamation
@@ -885,11 +872,11 @@ Private Sub EnumADSInAllFiles(sFolder$)
     
     hFind = FindFirstFile(StrPtr(BuildPath(sFolder, "*.*")), uWFD)
     If hFind = INVALID_HANDLE_VALUE Then
-        Status "FindFirstFile() failed", ""
+        Status "FindFirstFile() failed", vbNullString
         Exit Sub
     End If
     
-    picStatus.Tag = ""
+    picStatus.Tag = vbNullString
     Do
         lpSTR = VarPtr(uWFD.dwReserved1) + 4&
         sFilename = String$(lstrlen(lpSTR), 0)
@@ -921,9 +908,9 @@ Private Sub EnumADSInFile(sFilePath$, Optional bIsFolder As Boolean = False)
     If bAbortScanNow Then Exit Sub
 
     If bIsFolder = False Then
-        hFile = CreateFileW(StrPtr(sFilePath), GENERIC_READ, FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, ByVal 0, OPEN_EXISTING, 0, 0)
+        hFile = CreateFile(StrPtr(sFilePath), GENERIC_READ, FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, ByVal 0, OPEN_EXISTING, 0, 0)
     Else
-        hFile = CreateFileW(StrPtr(sFilePath), GENERIC_READ, FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, ByVal 0, OPEN_EXISTING, g_FileBackupFlag, 0)
+        hFile = CreateFile(StrPtr(sFilePath), GENERIC_READ, FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, ByVal 0, OPEN_EXISTING, g_FileBackupFlag, 0)
     End If
     If hFile = -1 Then Exit Sub
     
@@ -1114,7 +1101,7 @@ Private Sub mnuPopupShowFile_Click()
     sStream = RTrim$(Left$(sStream, InStr(sStream, " :") - 1))
     
     If FileExists(sStream) Or FolderExists(sStream) Then
-        Shell "explorer.exe /select," & """" & sStream & """", vbNormalFocus
+        OpenAndSelectFile sStream
     End If
 End Sub
 

@@ -118,12 +118,8 @@ Private Declare Function SetComputerNameEx Lib "kernel32.dll" Alias "SetComputer
 '
 'Private Const ERROR_BUFFER_OVERFLOW = 111&
 
-
 'Private Const sURLUpdate$ = "http://www.spywareinfo.com/~merijn/files/HiJackThis-update.txt"
 'Private Const sURLDownload$ = "http://www.spywareinfo.com/~merijn/files/HiJackThis.zip"
-
-Private Const sURLUpdate$ = vbNullString
-Private Const sURLDownload$ = vbNullString
 
 Public bDebug As Boolean
 Public szResponse As String
@@ -196,7 +192,7 @@ Public Sub CheckForUpdate(bSilentIfNoUpdates As Boolean, bSilentReplace As Boole
     'bSilentReplace - true, to replace exe file in automatic mode.
     'bUseTestVersion - true, to use test (nightly) build.
     
-    Dim sThisVersion$, sNewVersion$, sUpdateUrl$, sUpdVersionURL$, bNoConnection As Boolean
+    Dim sThisVersion$, sNewVersion$, sUpdateUrl$, bNoConnection As Boolean
     
     RegSaveProxySettings
     
@@ -310,7 +306,7 @@ Public Sub SendData(szUrl As String, szData As String)
     xmlhttp.setRequestHeader "Content-Type", "application/x-www-form-urlencoded"
     'xmlhttp.setRequestHeader "User-Agent", "HJT.1.99.2" & "|" & sWinVersion & "|" & sMSIEVersion
 
-    xmlhttp.send "" & szRequest
+    xmlhttp.send "" & szRequest ' Do not touch!
     'msgboxW szData
 
     szResponse = xmlhttp.responseText
@@ -555,7 +551,7 @@ Public Function GetTriage$()
     Dim hInternet&, hConnect&, sURL$, sUserAgent$, sPost$
     Dim hRequest&, sResponse$, sBuffer$, lBufferLen&, sHeaders$
     sURL = "https://www.spywareguide.com/report/triage.php"
-    sUserAgent = "StartupList v" & App.Major & "." & Format$(App.Minor, "00")
+    sUserAgent = "StartupList v" & AppVerString
     sPost = Mid$(URLEncode(Join(sTriageObj, "&")), 2)
     If sPost = vbNullString Then Exit Function
     sHeaders = "Accept: text/html,text/plain" & vbCrLf & _
@@ -591,7 +587,7 @@ Public Function DownloadFile(sURL$, sTarget$, Optional bSilent As Boolean) As Bo
 
     Const Chunk As Long = 16384
 
-    Dim hInternet&, hFile&, sFile$, lBytesRead&
+    Dim hInternet&, hFile&, lBytesRead&
     Dim sUserAgent$, ff%
     Dim aBuf() As Byte, curPos As Long
     
@@ -653,7 +649,7 @@ Public Function DownloadFileToArray(sURL$, aBuf() As Byte, Optional bSilent As B
 
     Const Chunk As Long = 16384
 
-    Dim hInternet&, hFile&, sFile$, lBytesRead&
+    Dim hInternet&, hFile&, lBytesRead&
     Dim sUserAgent$, ff%
     Dim curPos As Long
     
@@ -723,7 +719,7 @@ Public Function OpenURL(sEnglishURL As String, Optional sRussianURL As String, O
         szUrl = sEnglishURL
     End If
     
-    If szUrl = "" Then szUrl = szDefault
+    If Len(szUrl) = 0 Then szUrl = szDefault
     
     If StrBeginWith(szUrl, "https") And OSver.MajorMinor <= 5.2 Then
         szUrl = Replace$(szUrl, "https", "http", 1, 1, 1)
@@ -770,7 +766,7 @@ Public Function DownloadUnzipAndRun( _
                     End If
                 End If
             End If
-            DownloadUnzipAndRun = Proc.ProcessRun(ExePath, "", GetParentDir(ExePath), 1, True)
+            DownloadUnzipAndRun = Proc.ProcessRun(ExePath, vbNullString, GetParentDir(ExePath), 1, True)
         End If
     Else
         'Downloading is failed -> trying to open link in default browser
@@ -830,7 +826,7 @@ Private Function DownloadAndUpdateSelf(ZipURL As String, bSilent As Boolean) As 
                     frmMain.ReleaseMutex
                     
                     Proc.ProcessRun _
-                        Environ("ComSpec"), _
+                        Environ$("ComSpec"), _
                         "/d /c (cd\& for /L %+ in (1,1,10) do ((timeout /t 1|| ping 127.1 -n 2)& " & _
                         "move /y """ & AppPath(True) & """" & " " & """" & AppPath(True) & ".bak" & """ && " & _
                         "move /y """ & ExePath & """ """ & AppPath(True) & """ && " & _

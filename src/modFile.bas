@@ -303,15 +303,15 @@ Private Declare Function NtQueryObject Lib "ntdll.dll" (ByVal Handle As Long, By
 'Private Const IOCTL_STORAGE_CHECK_VERIFY2   As Long = &H2D0800
 'Private Const IOCTL_STORAGE_CHECK_VERIFY    As Long = &H2D4800
 
-Const FileNameInformation       As Long = 9&
+'Const FileNameInformation       As Long = 9&
 
 Const ch_Dot                    As String = "."
 Const ch_DotDot                 As String = ".."
-Const ch_Slash                  As String = "\"
+'Const ch_Slash                  As String = "\"
 Const ch_SlashAsterisk          As String = "\*"
 
 Private lWow64Old               As Long
-Private DriveTypeName           As New Collection
+'Private DriveTypeName           As New Collection
 Private arrPathFolders()        As String
 Private arrPathFiles()          As String
 Private Total_Files             As Long
@@ -666,15 +666,22 @@ Public Function GetW(hFile As Long, Optional vPos As Variant, Optional vOut As V
 '    Resume Next
 End Function
 
-Public Function PutStringW(hFile As Long, Optional pos As Long, Optional sStr As String) As Boolean
+Public Function PutStringW(hFile As Long, Optional pos As Long, Optional sStr As String, Optional bUnicode As Boolean = True) As Boolean
     Dim doAppend As Boolean
     If Len(sStr) <> 0 Then
         If pos = 0 Then doAppend = True
-        PutStringW = PutW(hFile, pos, StrPtr(sStr), LenB(sStr), doAppend)
+        If bUnicode Then
+            PutStringW = PutW(hFile, pos, StrPtr(sStr), LenB(sStr), doAppend)
+        Else
+            Dim ansi As String
+            ansi = StrConv(sStr, vbFromUnicode)
+            PutStringW = PutW(hFile, pos, StrPtr(ansi), LenB(ansi), doAppend)
+        End If
     Else
         PutStringW = True
     End If
 End Function
+
 
 Public Function PutW(hFile As Long, pos As Long, vInPtr As Long, cbToWrite As Long, Optional doAppend As Boolean) As Boolean
     On Error GoTo ErrorHandler
@@ -691,11 +698,7 @@ Public Function PutW(hFile As Long, pos As Long, vInPtr As Long, cbToWrite As Lo
         If INVALID_SET_FILE_POINTER = SetFilePointer(hFile, pos, ByVal 0&, FILE_BEGIN) Then Exit Function
     End If
     
-    If NO_ERROR = Err.LastDllError Then
-    
-        If WriteFile(hFile, vInPtr, cbToWrite, lBytesWrote, 0&) Then PutW = True
-        
-    End If
+    If WriteFile(hFile, vInPtr, cbToWrite, lBytesWrote, 0&) Then PutW = True
     
     'AppendErrorLogCustom "PutW - End"
     Exit Function
@@ -743,7 +746,7 @@ Public Function PrintW(hFile As Long, sStr As String, Optional bUnicode As Boole
         If bUnicode Then
             bSuccess = bSuccess And PutW(hFile, 0, StrPtr(vbCrLf), 4, True)
         Else
-            bSuccess = bSuccess And PutW(hFile, 0, StrPtr(ChrW(&HA0D&)), 2, True)
+            bSuccess = bSuccess And PutW(hFile, 0, StrPtr(ChrW$(&HA0D&)), 2, True)
         End If
     End If
 End Function
@@ -1055,7 +1058,7 @@ End Sub
 '
 'ret - string array( 0 to MAX-1 ) or non-touched array if none.
 '
-Public Function ListFiles(Path As String, Optional ExtensionWithDot As String = "", Optional Recursively As Boolean = False) As String()
+Public Function ListFiles(Path As String, Optional ExtensionWithDot As String = vbNullString, Optional Recursively As Boolean = False) As String()
     On Error GoTo ErrorHandler
 
     AppendErrorLogCustom "ListFiles - Begin", "Path: " & Path, "Ext-s: " & ExtensionWithDot, "Recur: " & Recursively
@@ -1091,7 +1094,7 @@ ErrorHandler:
 End Function
 
 
-Private Sub ListFiles_Ex(Path As String, Optional Extension As String = "", Optional Recursively As Boolean = False)
+Private Sub ListFiles_Ex(Path As String, Optional Extension As String = vbNullString, Optional Recursively As Boolean = False)
     'Example of Extension:
     '".txt" - txt files
     '".txt;.doc" - multiple extensions are supported
@@ -1344,45 +1347,32 @@ Public Function GetFilePropCompany(sFilename As String) As String
     
     Redirect = ToggleWow64FSRedirection(False, sFilename, bOldStatus)
     
-    Stady = 1
     lDataLen = GetFileVersionInfoSize(StrPtr(sFilename), ByVal 0&)
     If lDataLen = 0 Then GoTo Finalize
     
-    Stady = 2
     ReDim uBuf(0 To lDataLen - 1)
     
-    Stady = 3
     If 0 <> GetFileVersionInfo(StrPtr(sFilename), 0&, lDataLen, uBuf(0)) Then
         
-        Stady = 4
         VerQueryValue uBuf(0), StrPtr("\VarFileInfo\Translation"), hData, lDataLen
         If lDataLen = 0 Then GoTo Finalize
         
-        Stady = 5
         CopyMemory uCodePage(0), ByVal hData, 4
         
-        Stady = 6
         sCodePage = Right$("0" & Hex$(uCodePage(1)), 2) & _
                 Right$("0" & Hex$(uCodePage(0)), 2) & _
                 Right$("0" & Hex$(uCodePage(3)), 2) & _
                 Right$("0" & Hex$(uCodePage(2)), 2)
         
-        'get CompanyName string
-        Stady = 7
         If VerQueryValue(uBuf(0), StrPtr("\StringFileInfo\" & sCodePage & "\CompanyName"), hData, lDataLen) = 0 Then GoTo Finalize
     
         If lDataLen > 0 And hData <> 0 Then
-            Stady = 8
             sCompanyName = String$(lDataLen, 0)
-            
-            Stady = 9
             lstrcpy ByVal StrPtr(sCompanyName), ByVal hData
         End If
         
-        Stady = 10
         GetFilePropCompany = RTrimNull(sCompanyName)
     End If
-    
 Finalize:
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     Exit Function
@@ -1444,7 +1434,7 @@ Finalize:
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "GetFilePropCompany", sFilename, sPropertyName
+    ErrorMsg Err, "GetFileProperty", sFilename, sPropertyName
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     If inIDE Then Stop: Resume Next
 End Function
@@ -1673,7 +1663,7 @@ End Function
 
 ' ¬озвращает true, если искомое значение найдено в одном из элементов массива (lB, uB ограничивает просматриваемый диапазон индексов)
 Private Function inArray( _
-    Stri As String, _
+    stri As String, _
     MyArray() As String, _
     Optional lB As Long = -2147483647, _
     Optional uB As Long = 2147483647, _
@@ -1684,7 +1674,7 @@ Private Function inArray( _
     If uB = 2147483647 Then uB = UBound(MyArray)    'Thanks to  азанский :)
     Dim i As Long
     For i = lB To uB
-        If StrComp(Stri, MyArray(i), CompareMethod) = 0 Then inArray = True: Exit For
+        If StrComp(stri, MyArray(i), CompareMethod) = 0 Then inArray = True: Exit For
     Next
     Exit Function
 ErrorHandler:
@@ -2015,7 +2005,6 @@ Public Function ReadFileContents(sFile As String, isUnicode As Boolean) As Strin
     AppendErrorLogCustom "ReadFileContents - Begin", "File: " & sFile
     Dim hFile   As Long
     Dim b()     As Byte
-    Dim Text    As String
     Dim lSize   As Currency
     Dim Redirect As Boolean, bOldStatus As Boolean
     If Not FileExists(sFile) Then Exit Function
@@ -2061,7 +2050,7 @@ Public Function IniGetString( _
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "IniGetString - Begin", "File: " & sFile
     
-    Dim sIniFile$, i&, aContents() As String, sData$, hFile As Long, sText As String
+    Dim sIniFile$, i&, aContents() As String, sData$
     Dim Redirect As Boolean, bOldStatus As Boolean
     
     'if bMultiple == true, get several "values | values" from the same parameter's names
@@ -2337,7 +2326,7 @@ Public Function IniRemoveString( _
             'if next char is =, excluding space characters after parameter's name
             If Left$(LTrim$(Mid$(aContents(i), Len(sParameter) + 1)), 1) = "=" Then
                 'erase parameter
-                aContents(i) = ""
+                aContents(i) = vbNullString
                 'replace file
                 IniRemoveString = WriteDataToFile(sIniFile, Join(aContents, vbCrLf), CBool(isUnicode), True)
                 Exit Function
@@ -2363,7 +2352,7 @@ Public Function WriteDataToFile(sFile As String, sContents As String, Optional i
     Redirect = ToggleWow64FSRedirection(False, sFile, bOldStatus)
     
     iAttr = GetFileAttributes(StrPtr(sFile))
-    If (iAttr And 2048) Then iAttr = iAttr And Not 2048
+    If (iAttr And FILE_ATTRIBUTE_COMPRESSED) Then iAttr = iAttr And Not FILE_ATTRIBUTE_COMPRESSED
     
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     
@@ -2725,7 +2714,7 @@ Public Sub SplitIntoPathAndArgs(ByVal InLine As String, Path As String, Optional
                     sTmp = Mid$(InLine, pos + 4, 1)
                     If sTmp = " " Or sTmp = "/" Then
                         Path = Left$(InLine, pos + 3)
-                        Args = LTrim(Mid$(InLine, pos + 4))
+                        Args = LTrim$(Mid$(InLine, pos + 4))
                         If Not FileExists(Path) Then bFail = True
                     End If
                 End If
@@ -2809,7 +2798,7 @@ Public Function DeleteFolderForce(sFolder As String, Optional bForceDeleteMicros
         DeleteFolderForce = True
         bRedirect = ToggleWow64FSRedirection(False, sFolder, bOldStatus)
         iAttr = GetFileAttributes(StrPtr(sFolder))
-        If (iAttr And 2048) Then iAttr = iAttr - 2048
+        If (iAttr And FILE_ATTRIBUTE_COMPRESSED) Then iAttr = iAttr - FILE_ATTRIBUTE_COMPRESSED
         If iAttr And FILE_ATTRIBUTE_READONLY Then SetFileAttributes StrPtr(sFolder), iAttr And Not FILE_ATTRIBUTE_READONLY
         If Not DeleteFolder(sFolder) Then
             TryUnlock sFolder, True
@@ -2927,7 +2916,7 @@ Public Function GetLongPath(sFile As String) As String '8.3 -> to Full name
                 
             Loop While pos <> 0
         End If
-        If GetLongPath = "" Then GetLongPath = sFile
+        If Len(GetLongPath) = 0 Then GetLongPath = sFile
         Exit Function
     End If
     
@@ -3008,7 +2997,7 @@ Public Function GetSpecialFolderPath(CSIDL As Long, Optional hToken As Long = 0&
     On Error GoTo ErrorHandler:
 
     Const SHGFP_TYPE_CURRENT As Long = &H0&
-    Const SHGFP_TYPE_DEFAULT As Long = &H1&
+    'Const SHGFP_TYPE_DEFAULT As Long = &H1&
     Const CSIDL_FLAG_DONT_UNEXPAND As Long = &H2000&
     Const CSIDL_FLAG_DONT_VERIFY As Long = &H4000&
     Dim lr      As Long
@@ -3031,7 +3020,7 @@ Public Function GetKnownFolderPath(ByVal KnownFolderID As String) As String
     
     Const KF_FLAG_NOT_PARENT_RELATIVE   As Long = &H200&
     Const KF_FLAG_DEFAULT_PATH          As Long = &H400&
-    Const KF_FLAG_CREATE                As Long = &H8000&
+    'Const KF_FLAG_CREATE                As Long = &H8000&
     Const KF_FLAG_DONT_VERIFY           As Long = &H4000&
     
     If OSver.MajorMinor < 6 Then Exit Function
@@ -3066,7 +3055,7 @@ Public Function GetKnownFolderPath_GUID(iid As UUID) As String
     
     Const KF_FLAG_NOT_PARENT_RELATIVE   As Long = &H200&
     Const KF_FLAG_DEFAULT_PATH          As Long = &H400&
-    Const KF_FLAG_CREATE                As Long = &H8000&
+    'Const KF_FLAG_CREATE                As Long = &H8000&
     Const KF_FLAG_DONT_VERIFY           As Long = &H4000&
     
     If OSver.MajorMinor < 6 Then Exit Function
@@ -3242,6 +3231,7 @@ Public Function GetEmptyDriveNames() As String()
     Dim Letters As String
     Dim Drives() As String
     Dim EmptyDrive() As String
+    Dim ReadyDrives() As String
     Dim i As Long
 
     Letters = StrReverse("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -3255,10 +3245,10 @@ Public Function GetEmptyDriveNames() As String()
         
         Drives = Split(buf, vbNullChar)
        
-        ReDim ReadyDrives(UBound(Drives) + 1)
+        ReDim ReadyDrives(UBound(Drives) + 1) As String
        
         For i = 0 To UBound(Drives)
-            Letters = Replace(Letters, Left$(Drives(i), 1), "", , , vbTextCompare)
+            Letters = Replace(Letters, Left$(Drives(i), 1), vbNullString, , , vbTextCompare)
         Next
         
         If Len(Letters) <> 0 Then
@@ -3272,18 +3262,18 @@ Public Function GetEmptyDriveNames() As String()
     End If
 End Function
 
-Public Function GetVolumeFlags(ByVal sVolume) As VOLUME_INFO_FLAGS
+Public Function GetVolumeFlags(ByVal sVolume As String) As VOLUME_INFO_FLAGS
     Dim Flags As Long
     Dim lMaxCompLength As Long
     Dim sFS As String
-    Dim sVolName As String
     Dim lVolSN As Long
+    Dim sVolName As String
     
     If Len(sVolume) > 3 Then sVolume = Left$(sVolume, 3)
     If Right$(sVolume, 1) <> "\" Then sVolume = sVolume & "\"
     
-    sFS = String(MAX_PATH, 0)
-    sVolName = String(MAX_PATH, 0)
+    sFS = String$(MAX_PATH, 0)
+    sVolName = String$(MAX_PATH, 0)
     
     If GetVolumeInformation(sVolume, sVolName, Len(sVolName), lVolSN, lMaxCompLength, Flags, sFS, Len(sFS)) Then
         GetVolumeFlags = Flags
@@ -3298,6 +3288,7 @@ Public Function FileHasBOM_UTF16(sFile As String) As Boolean
     If hFile <= 0 Then Exit Function
     lSize = LOFW(hFile)
     If lSize < 2 Then CloseW hFile: Exit Function
+    Dim b() As Byte
     ReDim b(1) As Byte
     GetW hFile, 1, , VarPtr(b(0)), UBound(b) + 1
     CloseW hFile
@@ -3313,6 +3304,7 @@ Public Function FileHasBOM_UTF8(sFile As String) As Boolean
     If hFile <= 0 Then Exit Function
     lSize = LOFW(hFile)
     If lSize < 3 Then CloseW hFile: Exit Function
+    Dim b() As Byte
     ReDim b(2) As Byte
     GetW hFile, 1, , VarPtr(b(0)), UBound(b) + 1
     CloseW hFile
@@ -3328,6 +3320,7 @@ Public Function FileGetTypeBOM(sFile As String) As Long
     If hFile <= 0 Then Exit Function
     lSize = LOFW(hFile)
     If lSize < 2 Then CloseW hFile: Exit Function
+    Dim b() As Byte
     ReDim b(IIf(lSize < 3, 2, 3)) As Byte
     GetW hFile, 1, , VarPtr(b(0)), UBound(b) + 1
     CloseW hFile

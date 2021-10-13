@@ -1405,23 +1405,23 @@ Private Declare Function RegQueryValueEx Lib "Advapi32.dll" Alias "RegQueryValue
 'Private Const HKEY_LOCAL_MACHINE = &H80000002
 'Private Const HKEY_USERS = &H80000003
 
-Private Const KEY_QUERY_VALUE = &H1
-Private Const KEY_ENUMERATE_SUB_KEYS = &H8
-Private Const KEY_NOTIFY = &H10
-Private Const SYNCHRONIZE = &H100000
-Private Const READ_CONTROL = &H20000
-Private Const STANDARD_RIGHTS_READ = (READ_CONTROL)
-Private Const KEY_READ = ((STANDARD_RIGHTS_READ Or KEY_QUERY_VALUE Or KEY_ENUMERATE_SUB_KEYS Or KEY_NOTIFY) And (Not SYNCHRONIZE))
+'Private Const KEY_QUERY_VALUE = &H1
+'Private Const KEY_ENUMERATE_SUB_KEYS = &H8
+'Private Const KEY_NOTIFY = &H10
+'Private Const SYNCHRONIZE = &H100000
+'Private Const READ_CONTROL = &H20000
+'Private Const STANDARD_RIGHTS_READ = (READ_CONTROL)
+'Private Const KEY_READ = ((STANDARD_RIGHTS_READ Or KEY_QUERY_VALUE Or KEY_ENUMERATE_SUB_KEYS Or KEY_NOTIFY) And (Not SYNCHRONIZE))
 
-Private Const REG_NONE = 0
-Private Const REG_SZ = 1
-Private Const REG_EXPAND_SZ = 2
-Private Const REG_BINARY = 3
-Private Const REG_DWORD = 4
-Private Const REG_DWORD_LITTLE_ENDIAN = 4
-Private Const REG_DWORD_BIG_ENDIAN = 5
-Private Const REG_LINK = 6
-Private Const REG_MULTI_SZ = 7
+'Private Const REG_NONE = 0
+'Private Const REG_SZ = 1
+'Private Const REG_EXPAND_SZ = 2
+'Private Const REG_BINARY = 3
+'Private Const REG_DWORD = 4
+'Private Const REG_DWORD_LITTLE_ENDIAN = 4
+'Private Const REG_DWORD_BIG_ENDIAN = 5
+'Private Const REG_LINK = 6
+'Private Const REG_MULTI_SZ = 7
 
 Private NUM_OF_SECTIONS As Long
 Private lCountedNodes& 'for GetStartupListReport()
@@ -3417,12 +3417,12 @@ Private Function GetStartupListReport$()
     cmdAbort.Enabled = True
     cmdAbort.Visible = True
     Form_Resize
-    
-    sLog = "StartupList report, " & Date & ", " & time & vbCrLf & _
-            "StartupList version " & App.Major & "." & Format$(App.Minor, "00") & _
-            "." & App.Revision & vbCrLf & _
+            
+    sLog = "StartupList report, " & Date & ", " & Time & vbCrLf & _
+            "StartupList version " & AppVerString & vbCrLf & _
             "Started from: " & AppPath(True) & vbCrLf & _
-            "Detected: " & GetWindowsVersion & vbCrLf
+            "Detected: " & GetWindowsVersion() & vbCrLf
+    
     If bShowPrivacy Then
         sLog = sLog & "Logged on as '" & OSver.UserName & "' to '" & OSver.ComputerName & "'" & vbCrLf
     End If
@@ -3617,7 +3617,7 @@ Private Sub EnumProcesses()
     AppendErrorLogCustom "EnumProcesses - End"
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, ""
+    ErrorMsg Err, vbNullString
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -8742,7 +8742,7 @@ Public Sub ShowError(sMsg$)
         txtHelp.Visible = False
         Form_Resize
     End If
-    txtWarning.Text = txtWarning.Text & "[" & Format$(time, "Hh:Mm:Ss") & "] " & sMsg & vbCrLf
+    txtWarning.Text = txtWarning.Text & "[" & Format$(Time, "Hh:Mm:Ss") & "] " & sMsg & vbCrLf
 End Sub
 
 Public Function IsSectionChecked(sKey$) As Boolean

@@ -1,7 +1,7 @@
 
 :: Project builder by Alex Dragokas
 
-:: This is visual Basic 6 project builder                               [ ver. 1.10 private ]
+:: This is visual Basic 6 project builder                               [ ver. 1.11 ]
 :: which provide backup system with local version management
 
 :: Script contains third party software:
@@ -227,10 +227,15 @@ for %%a in ("%AppName%") do set "ExeName=%%~na"
 :: !!! required for v14.14 linker !!!
 del %ExeName%.pdb 2>NUL
 
+call :SetupCompilerAdmin true
+
+echo.
+echo.
 echo Starting compilation ...
 echo.
 echo [Building basic project]
 echo.
+::set __COMPAT_LAYER=RUNASINVOKER
 
 if exist "%AppName%" del "%AppName%"
 "%compiler%" /m "%ProjFile%" /outdir "%~dp0" && echo Compilation is successfull. || (
@@ -245,6 +250,10 @@ if exist "%AppName%" del "%AppName%"
   start "" "%ProjFile%"
   Exit /B
 )
+::set "__COMPAT_LAYER="
+echo.
+
+call :SetupCompilerAdmin false
 
 >NUL copy NUL "Registration_Marker.txt"
 
@@ -285,8 +294,12 @@ if %errorlevel%==0 (
 
 :: Adding digital signature
 ping -n 2 127.1 >NUL
-if exist "%SignScript_1%" call "%SignScript_1%" "%cd%\%AppName%" /silent
-if exist "%SignScript_2%" call "%SignScript_2%" "%cd%\%AppName%" /silent
+set "signed="
+if exist "%SignScript_1%" (
+  call "%SignScript_1%" "%cd%\%AppName%" /silent
+  set signed=true
+)
+if not defined signed if exist "%SignScript_2%" call "%SignScript_2%" "%cd%\%AppName%" /silent
 
 For /F "delims=" %%a in ("%AppName%") do set "AppTitle=%%~na"
 
@@ -303,7 +316,7 @@ if /i "%CheckPDB%"=="true" (
 )
 
 :: linker v14.x leftover
-taskkill /f /im mspdbsrv.exe
+taskkill /f /im mspdbsrv.exe 2>NUL
 
 if defined bFast goto skipBackup
 
@@ -421,7 +434,14 @@ exit /B
   echo.
   for %%a in ("%prj%") do set "fld=%%~dpa"
   <NUL set /p "x=%prj% - "
-  if not exist "%exe%" ("%compiler%" /m "%prj%" /outdir "%fld%" && call "%flags_patch%" "%exe%"&& echo OK || echo FAILED !!!) else (echo Exist)
+  if not exist "%exe%" (
+    call :SetupCompilerAdmin true
+    "%compiler%" /m "%prj%" /outdir "%fld%" && echo OK || echo FAILED !!!
+	call "%flags_patch%" "%exe%"
+	call :SetupCompilerAdmin false
+  ) else (
+    echo Exist
+  )
 exit /b
 
 :GetOSBitness
@@ -581,3 +601,20 @@ Exit /B
     exit /B 1
   )
 exit /B
+
+:SetupCompilerAdmin [true/false]
+  if "%~1"=="true" (
+    echo.
+    echo Forcing Compiler to run as Admin...
+    reg export "HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "%temp%\Layers.reg" /y
+    reg add "HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v "%compiler%" /t REG_SZ /d RUNASADMIN /f
+	exit /b
+  )
+  echo.
+  echo Restoring compiler state...
+  echo.
+  reg delete "HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v "%compiler%" /f
+  reg import "%temp%\Layers.reg"
+  del "%temp%\Layers.reg"
+  echo.
+exit /b

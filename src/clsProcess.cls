@@ -135,7 +135,7 @@ Private Declare Sub GetStartupInfo Lib "kernel32.dll" Alias "GetStartupInfoW" (l
 Private Declare Sub Sleep Lib "kernel32.dll" (ByVal dwMilliseconds As Long)
 
 Private Const INVALID_HANDLE_VALUE      As Long = -1
-Private Const PROCESS_ALL_ACCESS        As Long = &H1F0FFF
+'Private Const PROCESS_ALL_ACCESS        As Long = &H1F0FFF
 Private Const INFINITE                  As Long = -1
 Private Const STILL_ACTIVE              As Long = &H103
 Private Const WAIT_FAILED               As Long = -1
@@ -150,9 +150,9 @@ Private Const PROCESS_TERMINATE         As Long = &H1
 Private Const ERROR_SUCCESS             As Long = 0&
 Private Const SW_SHOWNORMAL             As Long = 1&
 Private Const CREATE_NEW_CONSOLE        As Long = &H10&
-Private Const STARTF_USESHOWWINDOW      As Long = &H1&
+'Private Const STARTF_USESHOWWINDOW      As Long = &H1&
 Private Const STARTF_USESTDHANDLES      As Long = &H100&
-Private Const SW_HIDE                   As Long = 0&
+'Private Const SW_HIDE                   As Long = 0&
 
 Private si      As STARTUPINFO
 Private pi      As PROCESS_INFORMATION
@@ -426,7 +426,7 @@ Public Function ProcessClose( _
         If Not Async Then
             If TimeOutMs = INFINITE Then
                 For i = 1 To UBound(pid)
-                    ProcNameCur = ""
+                    ProcNameCur = vbNullString
                     Call IsRunned(ProcNameCur, pid(i)) 'get name by PID
                     If StrComp(ProcNameCur, ProcessName, vbTextCompare) = 0 Then 'not changed ?
                         Call WaitForTerminate(, , False, INFINITE, pid(i))
@@ -548,7 +548,7 @@ Public Function ProcessRun( _
         End If
         
         'если командная строка подготовлена для cmd.exe, не трогаем аргументы
-        If StrComp(FileName, Environ("ComSpec"), 1) = 0 Or StrComp(FileName, "schtasks.exe", 1) = 0 Then
+        If StrComp(FileName, Environ$("ComSpec"), 1) = 0 Or StrComp(FileName, "schtasks.exe", 1) = 0 Then
             CMDLine = """" & FileName & """" & " " & CommandLine
         End If
     Else
@@ -662,7 +662,7 @@ Public Function ProcessRunUnelevated( _
     End If
     
     'если командная строка подготовлена для cmd.exe, не трогаем аргументы
-    If StrComp(FileName, Environ("ComSpec"), 1) = 0 Or StrComp(FileName, "schtasks.exe", 1) = 0 Then
+    If StrComp(FileName, Environ$("ComSpec"), 1) = 0 Or StrComp(FileName, "schtasks.exe", 1) = 0 Then
         CMDLine = """" & FileName & """" & " " & CommandLine
     End If
     
@@ -752,18 +752,12 @@ Public Function ProcessRunUnelevated2( _
         ProcessRunUnelevated2 = ProcessRun(FileName, CommandLine, CurrentDirectory, WindowStyle, True)
         Exit Function
     End If
-    
-    If Not ProcessExist("explorer.exe", True) Then
-        'ProcessRunUnelevated2 = ProcessRunUnelevated(FileName, CommandLine, CurrentDirectory, WindowStyle, True)
-        ProcessRunUnelevated2 = ProcessRun(FileName, CommandLine, CurrentDirectory, WindowStyle, True)
-        Exit Function
-    End If
 
     Dim IShellBrowser As IUnknown, IShellView As IUnknown, Obj As Object, ShellFolderView As Object
     Dim IID_IDispatch(3&) As Long, IID_IShellBrowser(3&) As Long, SID_STopLevelBrowser(3&) As Long
     Dim hwnd As Long, RV As Variant, v(2&) As Variant, VT(2&) As Integer, pv(2&) As Long
     
-    Dim vOperation As Variant:          vOperation = "" 'by default - open
+    Dim vOperation As Variant:          vOperation = vbNullString 'by default - open
     Dim vCommandLine As Variant:        vCommandLine = CommandLine
     Dim vCurrentDirectory As Variant:   vCurrentDirectory = CurrentDirectory
     Dim vWindowStyle As Variant:        vWindowStyle = WindowStyle
@@ -771,27 +765,38 @@ Public Function ProcessRunUnelevated2( _
     On Error Resume Next
     Set Obj = CreateObject("Shell.Application").Windows.FindWindowSW(Empty, Empty, SWC_DESKTOP, hwnd, SWFO_NEEDDISPATCH)
     On Error GoTo 0
-    If (Obj Is Nothing) Then Exit Function
-    If CLSIDFromString(StrPtr("{4C96BE40-915C-11CF-99D3-00AA004AE837}"), SID_STopLevelBrowser(0&)) <> NOERROR Then Exit Function
-    If CLSIDFromString(StrPtr("{000214E2-0000-0000-C000-000000000046}"), IID_IShellBrowser(0&)) <> NOERROR Then Exit Function
-    If IUnknown_QueryService(Obj, SID_STopLevelBrowser(0&), IID_IShellBrowser(0&), IShellBrowser) <> S_OK Then Exit Function
-    If DispCallFunc(ObjPtr(IShellBrowser), QueryActiveShellView_Offset, CC_STDCALL, vbLong, 1&, vbLong, VarPtr(CVar(VarPtr(IShellView))), RV) <> S_OK Or RV <> S_OK Then Exit Function
-    If CLSIDFromString(StrPtr("{00020400-0000-0000-C000-000000000046}"), IID_IDispatch(0&)) <> NOERROR Then Exit Function
+    If Not (Obj Is Nothing) Then
+      If CLSIDFromString(StrPtr("{4C96BE40-915C-11CF-99D3-00AA004AE837}"), SID_STopLevelBrowser(0&)) = NOERROR Then
+        If CLSIDFromString(StrPtr("{000214E2-0000-0000-C000-000000000046}"), IID_IShellBrowser(0&)) = NOERROR Then
+          If IUnknown_QueryService(Obj, SID_STopLevelBrowser(0&), IID_IShellBrowser(0&), IShellBrowser) = S_OK Then
+            If DispCallFunc(ObjPtr(IShellBrowser), QueryActiveShellView_Offset, CC_STDCALL, vbLong, 1&, vbLong, VarPtr(CVar(VarPtr(IShellView))), RV) = S_OK And RV = S_OK Then
+              If CLSIDFromString(StrPtr("{00020400-0000-0000-C000-000000000046}"), IID_IDispatch(0&)) = NOERROR Then
     
-    v(0&) = SVGIO_BACKGROUND:          VT(0&) = vbLong:  pv(0&) = VarPtr(v(0&))
-    v(1&) = VarPtr(IID_IDispatch(0&)): VT(1&) = vbLong:  pv(1&) = VarPtr(v(1&))
-    v(2&) = VarPtr(ShellFolderView):   VT(2&) = vbLong:  pv(2&) = VarPtr(v(2&))
+                v(0&) = SVGIO_BACKGROUND:          VT(0&) = vbLong:  pv(0&) = VarPtr(v(0&))
+                v(1&) = VarPtr(IID_IDispatch(0&)): VT(1&) = vbLong:  pv(1&) = VarPtr(v(1&))
+                v(2&) = VarPtr(ShellFolderView):   VT(2&) = vbLong:  pv(2&) = VarPtr(v(2&))
     
-    If DispCallFunc(ObjPtr(IShellView), GetItemObject_Offset, CC_STDCALL, vbLong, 3&, VT(0&), pv(0&), RV) <> S_OK Or RV <> S_OK Then Exit Function
+                If DispCallFunc(ObjPtr(IShellView), GetItemObject_Offset, CC_STDCALL, vbLong, 3&, VT(0&), pv(0&), RV) = S_OK And RV = S_OK Then
     
-    ShellFolderView.Application.ShellExecute FileName, vCommandLine, vCurrentDirectory, vOperation, vWindowStyle
+                  ShellFolderView.Application.ShellExecute FileName, vCommandLine, vCurrentDirectory, vOperation, vWindowStyle
+                  
+                  ProcessRunUnelevated2 = True
+                End If
+              End If
+            End If
+          End If
+        End If
+      End If
+    End If
     
-    ProcessRunUnelevated2 = True
+    If Not ProcessRunUnelevated2 Then
+        ProcessRunUnelevated2 = ProcessRun(FileName, CommandLine, CurrentDirectory, WindowStyle, True)
+    End If
     
     AppendErrorLogCustom "ProcessRunUnelevated - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "clsProcess_ProcessRunUnelevated2", "FileName:", FileName, "CommandLine:", CommandLine
+    ErrorMsg Err, "ProcessRunUnelevated2", "FileName:", FileName, "CommandLine:", CommandLine
     If inIDE Then Stop: Resume Next
 End Function
 

@@ -6,8 +6,8 @@ Option Explicit
 'Menu Icons loader' by Alex Dragokas
 
 Private Const MF_BYPOSITION = &H400&
-Private Const MIIM_ID = &H2
-Private Const MIIM_TYPE = &H10
+'Private Const MIIM_ID = &H2
+'Private Const MIIM_TYPE = &H10
 Private Const MFT_STRING = &H0&
 Private Const MIIM_STRING = &H40&
 
@@ -34,28 +34,28 @@ End Type
 Private Declare Function GetMenu Lib "user32" (ByVal hwnd As Long) As Long
 Private Declare Function GetSubMenu Lib "user32" (ByVal hMenu As Long, ByVal nPos As Long) As Long
 Private Declare Function SetMenuItemBitmaps Lib "user32" (ByVal hMenu As Long, ByVal nPosition As Long, ByVal wFlags As Long, ByVal hBitmapUnchecked As Long, ByVal hBitmapChecked As Long) As Long
-Private Declare Function GetMenuItemID Lib "user32" (ByVal hMenu As Long, ByVal nPos As Long) As Long
+'Private Declare Function GetMenuItemID Lib "user32" (ByVal hMenu As Long, ByVal nPos As Long) As Long
 Private Declare Function GetMenuItemCount Lib "user32" (ByVal hMenu As Long) As Long
 Private Declare Function GetMenuItemInfo Lib "user32" Alias "GetMenuItemInfoW" (ByVal hMenu As Long, ByVal uItem As Long, ByVal fByPosition As Long, lpmii As MENUITEMINFOW) As Long
-Private Declare Function CreateFont Lib "Gdi32.dll" Alias "CreateFontW" (ByVal nHeight As Long, ByVal nWidth As Long, ByVal nEscapement As Long, ByVal nOrientation As Long, ByVal fnWeight As Long, ByVal fdwItalic As Long, ByVal fdwUnderline As Long, ByVal fdwStrikeOut As Long, ByVal fdwCharSet As Long, ByVal fdwOutputPrecision As Long, ByVal fdwClipPrecision As Long, ByVal fdwQuality As Long, ByVal fdwPitchAndFamily As Long, ByVal lpszFace As Long) As Long
-Private Declare Function DeleteObject Lib "Gdi32.dll" (ByVal hObject As Long) As Long
-Private Declare Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hwnd As Long, ByVal wMsg As Long, ByVal wParam As Long, lParam As Any) As Long
+'Private Declare Function CreateFont Lib "Gdi32.dll" Alias "CreateFontW" (ByVal nHeight As Long, ByVal nWidth As Long, ByVal nEscapement As Long, ByVal nOrientation As Long, ByVal fnWeight As Long, ByVal fdwItalic As Long, ByVal fdwUnderline As Long, ByVal fdwStrikeOut As Long, ByVal fdwCharSet As Long, ByVal fdwOutputPrecision As Long, ByVal fdwClipPrecision As Long, ByVal fdwQuality As Long, ByVal fdwPitchAndFamily As Long, ByVal lpszFace As Long) As Long
+'Private Declare Function DeleteObject Lib "Gdi32.dll" (ByVal hObject As Long) As Long
+'Private Declare Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hwnd As Long, ByVal wMsg As Long, ByVal wParam As Long, lParam As Any) As Long
 
-Private Const FW_DONTCARE       As Long = 0&
-Private Const FF_SWISS          As Long = 32&
-Private Const ANSI_CHARSET      As Long = 0&
-Private Const OUT_DEFAULT_PRECIS As Long = 0&
-Private Const CLIP_DEFAULT_PRECIS As Long = 0&
-Private Const DEFAULT_QUALITY   As Long = 0&
-Private Const DEFAULT_PITCH     As Long = 0&
-Private Const WM_SETFONT        As Long = &H30&
+'Private Const FW_DONTCARE       As Long = 0&
+'Private Const FF_SWISS          As Long = 32&
+'Private Const ANSI_CHARSET      As Long = 0&
+'Private Const OUT_DEFAULT_PRECIS As Long = 0&
+'Private Const CLIP_DEFAULT_PRECIS As Long = 0&
+'Private Const DEFAULT_QUALITY   As Long = 0&
+'Private Const DEFAULT_PITCH     As Long = 0&
+'Private Const WM_SETFONT        As Long = &H30&
 
 Public g_hPrevIcon As Long
 
 
-Public Function MenuReleaseIcons()
-    SetMenuIconByName 0, "", Nothing, True 'free objects
-End Function
+Public Sub MenuReleaseIcons()
+    SetMenuIconByName 0, vbNullString, Nothing, True 'free objects
+End Sub
 
 ' It doesn't react on font change.
 ' To change font we need to change Style of menu into OwnerDraw and implement own draw code to window proc.
@@ -240,7 +240,7 @@ Public Sub SetMenuIcons(WndHandle As Long)
     
     SetMenuIconByName WndHandle, Translate(1212), LoadResPicture("ADSSPY", vbResBitmap)
     SetMenuIconByName WndHandle, Translate(1202), LoadResPicture("CROSS_RED", vbResBitmap)
-    SetMenuIconByName WndHandle, Translate(1208), LoadResPicture("CROSS_BLACK", vbResBitmap)
+    SetMenuIconByName WndHandle, Translate(1208), LoadResPicture("KEY", vbResBitmap)
     SetMenuIconByName WndHandle, Translate(1209), LoadResPicture("CROSS_BLACK", vbResBitmap)
     SetMenuIconByName WndHandle, Translate(1210), LoadResPicture("CROSS_BLACK", vbResBitmap)
 '    SetMenuIconByName WndHandle, Translate(1226), LoadResPicture("GLOBE", vbResBitmap)

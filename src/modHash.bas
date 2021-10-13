@@ -10,7 +10,7 @@ Option Explicit
 
 Private Const MAX_HASH_FILE_SIZE As Currency = 314572800@ '300 MB. (maximum file size to calculate hash)
 
-Private Const poly As Long = &HEDB88320
+'Private Const poly As Long = &HEDB88320
 
 Private Declare Function Mul Lib "msvbvm60.dll" Alias "_allmul" (ByVal dw1 As Long, ByVal Reserved As Long, ByVal dw3 As Long, ByVal Reserved As Long) As Long
 Private Declare Function CryptAcquireContext Lib "Advapi32.dll" Alias "CryptAcquireContextW" (ByRef phProv As Long, ByVal pszContainer As Long, ByVal pszProvider As Long, ByVal dwProvType As Long, ByVal dwFlags As Long) As Long
@@ -191,7 +191,6 @@ Public Function GetFileSHA1( _
     Dim hCrypt      As Long
     Dim hHash       As Long
     Dim uSHA1(19)   As Byte
-    Dim lSHA1Len    As Long
     Dim i           As Long
     Dim sSHA1       As String
     Dim aBuf()      As Byte
@@ -242,7 +241,7 @@ Public Function GetFileSHA1( _
 
                 If CryptGetHashParam(hHash, HP_HASHVAL, uSHA1(0), UBound(uSHA1) + 1, 0) <> 0 Then
                     
-                    sSHA1 = String(40, 0&)
+                    sSHA1 = String$(40, 0&)
                     For i = 0 To 19
                         Mid$(sSHA1, i * 2 + 1) = Right$("0" & Hex$(uSHA1(i)), 2)
                     Next i
@@ -391,7 +390,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function CalcSha256(Stri As String) As String
+Public Function CalcSha256(stri As String) As String
 
     On Error GoTo ErrorHandler:
     
@@ -403,7 +402,7 @@ Public Function CalcSha256(Stri As String) As String
     Dim uSHA2(31)   As Byte
     Dim i           As Long
     
-    aBuf = StrConv(Stri, vbFromUnicode)
+    aBuf = StrConv(stri, vbFromUnicode)
     
     If CryptAcquireContext(hCrypt, 0&, 0&, PROV_RSA_AES, CRYPT_VERIFYCONTEXT) <> 0 Then
 
@@ -805,7 +804,7 @@ End Function
 
 '::::::::::::::: Вычислить CRC-код строки ::::::::::::::::::::
 
-Public Function CalcCRC(Stri As String) As String '// Dragokas - добавил перевод в Hex
+Public Function CalcCRC(stri As String) As String '// Dragokas - добавил перевод в Hex
 
     Dim CRC As Long
     Dim i   As Long
@@ -814,9 +813,9 @@ Public Function CalcCRC(Stri As String) As String '// Dragokas - добавил перевод
 
     CRC = &HFFFFFFFF
 
-    For i = 1& To Len(Stri)
+    For i = 1& To Len(stri)
 
-        m = Asc(Mid$(Stri, i&, 1&))
+        m = Asc(Mid$(stri, i&, 1&))
 
         n = (CRC Xor m&) And &HFF&
 
@@ -890,8 +889,9 @@ End Sub
 Public Function RecoverCRC(ForwardCRC As Long, newCRC As Long) As String
     
     'Dim newCRC&, InitStri$, ForwardCRC&
-    Dim oldCRC&, ChkCRC&, a(3) As Byte, b(3) As Byte, c(3) As Byte, d(3) As Byte, e(3) As Byte, F(3) As Byte, r(3) As Byte
-    Dim NewStri$, PatchAddr&, BackwardCRC&, AddBytes$
+    Dim a(3) As Byte, b(3) As Byte, c(3) As Byte, d(3) As Byte, e(3) As Byte, F(3) As Byte, r(3) As Byte
+    Dim BackwardCRC&, AddBytes$
+    'Dim oldCRC&, ChkCRC&, NewStri$, PatchAddr&
     
     ' Исходные данные
     'InitStri = "Some Data"
@@ -949,15 +949,15 @@ Public Function RecoverCRC(ForwardCRC As Long, newCRC As Long) As String
     'Debug.Print "Корректирующие байты: " & hex$(Mul(r(3), 0, &H1000000, 0) Or Mul(r(2), 0, &H10000, 0) Or Mul(r(1), 0, &H100, 0) Or r(0))
 End Function
 
-Public Function CalcCRCLong(Stri As String) As Long
+Public Function CalcCRCLong(stri As String) As Long
     Dim CRC&, i&, m&, n&
 
     'If CRC_32_Tab(1) = 0 Then Make_CRC_32_Table
 
     CRC = -1
 
-    For i = 1& To Len(Stri)
-        m = Asc(Mid$(Stri, i, 1&))
+    For i = 1& To Len(stri)
+        m = Asc(Mid$(stri, i, 1&))
         n = (CRC Xor m) And &HFF&
         CRC = (CRC_32_Tab(n) Xor (((CRC And &HFFFFFF00) \ &H100) And &HFFFFFF)) And -1  ' Tab ^ (crc >> 8)
     Next
@@ -981,15 +981,15 @@ Public Function CalcArrayCRCLong(arr() As Byte, Optional prevValue As Long = -1)
     CalcArrayCRCLong = -(CRC + 1&)
 End Function
 
-Public Function CalcCRCReverse(Stri As String, Optional nextValue As Long = -1) As Long
+Public Function CalcCRCReverse(stri As String, Optional nextValue As Long = -1) As Long
     Dim CRC&, i&, m&, prevValueL&, prevValueH&, B3 As Byte
 
     'If CRC_32_Tab(1) = 0 Then Make_CRC_32_Table
 
     CRC = nextValue
 
-    For i = Len(Stri) To 1 Step -1
-        m = Asc(Mid$(Stri, i, 1&))
+    For i = Len(stri) To 1 Step -1
+        m = Asc(Mid$(stri, i, 1&))
         B3 = ((CRC And &HFF000000) \ &H1000000) And &HFF
         prevValueL = (pTable(B3) Xor m) And &HFF
         prevValueH = Mul(CRC Xor CRC_32_Tab(pTable(B3)), 0, &H100, 0)  ' << 8

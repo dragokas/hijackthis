@@ -258,7 +258,7 @@ End Function
 '    For i = 0 To UBound(aText)
 '        s = s & " " & aText(i)
 '    Next
-'    Debug.Print "Error: " & Error.Number & " in '" & sFunctionName & "' - " & Error.Description & IIf(Len(s) > 0, " - " & s, "")
+'    Debug.Print "Error: " & Error.Number & " in '" & sFunctionName & "' - " & Error.Description & IIf(Len(s) > 0, " - " & s, vbnullstring)
 'End Function
 '
 'Public Function InIDE() As Boolean

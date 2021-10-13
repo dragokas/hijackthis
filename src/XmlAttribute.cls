@@ -26,8 +26,6 @@ Friend Function Serialize() As String
 End Function
 
 Friend Sub Parse(Data() As Byte, Start As Long)
-    Dim bData As Boolean
-    
     On Error GoTo Err_Trap
     
     Do

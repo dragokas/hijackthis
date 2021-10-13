@@ -126,9 +126,9 @@ Private Declare Function pcre2_match Lib "pcre2-16.dll" Alias "_pcre2_match_16@2
 Private Declare Function pcre2_get_ovector_pointer Lib "pcre2-16.dll" Alias "_pcre2_get_ovector_pointer_16@4" (ByVal p_MatchDataHandle As Long) As Long
 Private Declare Sub pcre2_match_data_free Lib "pcre2-16.dll" Alias "_pcre2_match_data_free_16@4" (ByVal p_MatchDataHandle As Long)
 Private Declare Function pcre2_substitute Lib "pcre2-16.dll" Alias "_pcre2_substitute_16@44" (ByVal p_CompiledRegexHandle As Long, ByVal p_StringToSearchPointer As Long, ByVal p_StringToSearchLength As Long, ByVal p_StartSearchOffset As Long, ByVal p_MatchOptions As Long, ByVal p_MatchDataHandle As Long, ByVal p_MatchContextHandle As Long, ByVal p_ReplacementTextPointer As Long, ByVal p_ReplacementTextLength As Long, ByVal p_OutputBufferPointer As Long, ByRef p_OutputBufferLength As Long) As Long
-Private Declare Function pcre2_match_context_create Lib "pcre2-16.dll" Alias "_pcre2_match_context_create_16@4" (ByVal p_GeneralContext As Long) As Long
+'Private Declare Function pcre2_match_context_create Lib "pcre2-16.dll" Alias "_pcre2_match_context_create_16@4" (ByVal p_GeneralContext As Long) As Long
 Private Declare Function pcre2_match_context_free Lib "pcre2-16.dll" Alias "_pcre2_match_context_free_16@4" (ByVal p_MatchContextHandle As Long) As Long
-Private Declare Function pcre2_get_ovector_count Lib "pcre2-16.dll" Alias "_pcre2_get_ovector_count_16@4" (ByVal p_MatchDataHandle As Long) As Long
+'Private Declare Function pcre2_get_ovector_count Lib "pcre2-16.dll" Alias "_pcre2_get_ovector_count_16@4" (ByVal p_MatchDataHandle As Long) As Long
 Private Declare Function pcre2_get_error_message Lib "pcre2-16.dll" Alias "_pcre2_get_error_message_16@12" (ByVal p_ErrorCode As Long, ByVal p_ErrorMessageBufferPointer As Long, ByVal p_ErrorMessageBufferLength As Long) As Long
 
 
@@ -505,7 +505,7 @@ Private Function IPcre_InitRegex(ByVal p_RegexToMatch As String) As Boolean
    
    ' Use the value of the Pattern property if option p_RegexToMatch parameter is empty
    ' Otherwise set the value of the Pattern property to the passed p_RegexToMatch value
-   If p_RegexToMatch = "" Then
+   If Len(p_RegexToMatch) = 0 Then
       p_RegexToMatch = IPcre_Pattern
    Else
       IPcre_Pattern = p_RegexToMatch
@@ -615,7 +615,7 @@ NoErrorCleanup:
    On Error Resume Next
    
    l_ErrorNumber = 0
-   l_ErrorDesc = ""
+   l_ErrorDesc = vbNullString
 
 CleanUp:
    On Error Resume Next
@@ -833,7 +833,7 @@ NoErrorCleanup:
    Execute2.AppendText p_TextToSearch
    
    l_ErrorNumber = 0
-   l_ErrorDesc = ""
+   l_ErrorDesc = vbNullString
    
 CleanUp:
    On Error Resume Next

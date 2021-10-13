@@ -19,11 +19,19 @@ Begin VB.Form frmCheckDigiSign
    LinkTopic       =   "Form1"
    ScaleHeight     =   4680
    ScaleWidth      =   9252
+   Begin VB.CommandButton cmdExit 
+      Caption         =   "Exit"
+      Height          =   492
+      Left            =   2400
+      TabIndex        =   14
+      Top             =   4080
+      Width           =   1452
+   End
    Begin VB.CommandButton cmdSelectFile 
       Caption         =   "Add file(s) ..."
       Height          =   375
       Left            =   7320
-      TabIndex        =   14
+      TabIndex        =   13
       Top             =   120
       Width           =   1815
    End
@@ -31,14 +39,14 @@ Begin VB.Form frmCheckDigiSign
       Caption         =   "Report format:"
       Height          =   1335
       Left            =   5400
-      TabIndex        =   9
+      TabIndex        =   8
       Top             =   2640
       Width           =   3735
       Begin VB.OptionButton OptCSV 
          Caption         =   "CSV (Full log in ANSI)"
          Height          =   195
          Left            =   120
-         TabIndex        =   11
+         TabIndex        =   10
          Top             =   720
          Value           =   -1  'True
          Width           =   2895
@@ -47,7 +55,7 @@ Begin VB.Form frmCheckDigiSign
          Caption         =   "Plain Text (Short log in Unicode)"
          Height          =   255
          Left            =   120
-         TabIndex        =   10
+         TabIndex        =   9
          Top             =   360
          Width           =   3495
       End
@@ -56,14 +64,14 @@ Begin VB.Form frmCheckDigiSign
       Caption         =   "Filter"
       Height          =   1335
       Left            =   240
-      TabIndex        =   5
+      TabIndex        =   4
       Top             =   2640
       Width           =   5055
       Begin VB.OptionButton OptExtension 
          Caption         =   "by extension"
          Height          =   255
          Left            =   1680
-         TabIndex        =   13
+         TabIndex        =   12
          Top             =   240
          Value           =   -1  'True
          Width           =   1575
@@ -72,7 +80,7 @@ Begin VB.Form frmCheckDigiSign
          Caption         =   "All Files"
          Height          =   255
          Left            =   120
-         TabIndex        =   12
+         TabIndex        =   11
          Top             =   240
          Width           =   1455
       End
@@ -80,7 +88,7 @@ Begin VB.Form frmCheckDigiSign
          Caption         =   "Include files in Windows\System32 (SysWOW64) folder"
          Height          =   255
          Left            =   120
-         TabIndex        =   8
+         TabIndex        =   7
          Top             =   960
          Width           =   4815
       End
@@ -88,7 +96,7 @@ Begin VB.Form frmCheckDigiSign
          Caption         =   "Recursively (include subfolders)"
          Height          =   255
          Left            =   120
-         TabIndex        =   7
+         TabIndex        =   6
          Top             =   600
          Value           =   1  'Checked
          Width           =   4815
@@ -96,20 +104,11 @@ Begin VB.Form frmCheckDigiSign
       Begin VB.TextBox txtExtensions 
          Height          =   285
          Left            =   3240
-         TabIndex        =   6
+         TabIndex        =   5
          Text            =   "exe;dll;sys"
          Top             =   240
          Width           =   1695
       End
-   End
-   Begin VB.CommandButton CmdExit 
-      Cancel          =   -1  'True
-      Caption         =   "Close"
-      Height          =   480
-      Left            =   2520
-      TabIndex        =   3
-      Top             =   4080
-      Width           =   1455
    End
    Begin VB.CommandButton cmdGo 
       Caption         =   "Go"
@@ -135,7 +134,7 @@ Begin VB.Form frmCheckDigiSign
       ForeColor       =   &H0000FFFF&
       Height          =   195
       Left            =   4560
-      TabIndex        =   4
+      TabIndex        =   3
       Top             =   4320
       Visible         =   0   'False
       Width           =   1575
@@ -187,7 +186,7 @@ Private Declare Function DeleteFileW Lib "kernel32.dll" (ByVal lpFileName As Lon
 Private Declare Function SfcIsFileProtected Lib "Sfc.dll" (ByVal RpcHandle As Long, ByVal ProtFileName As Long) As Long
 Private Declare Function SetWindowTheme Lib "UxTheme.dll" (ByVal hwnd As Long, ByVal pszSubAppName As Long, ByVal pszSubIdList As Long) As Long
 
-Private Const CERT_E_UNTRUSTEDROOT          As Long = &H800B0109
+'Private Const CERT_E_UNTRUSTEDROOT          As Long = &H800B0109
 Private Const TRUST_E_NOSIGNATURE           As Long = &H800B0100
 Private Const CRYPT_E_BAD_MSG               As Long = &H8009200D
 
@@ -214,8 +213,6 @@ Private Sub cmdGo_Click()
     Dim oDictFiles      As Object
     Dim OriginPath      As String
     Dim SFCFiles()      As String
-    Dim sTmp            As String
-    Dim cnt             As Long
     Dim hResult         As Long
     Dim sExtensions     As String
     Dim sb              As clsStringBuilder
@@ -241,13 +238,13 @@ Private Sub cmdGo_Click()
     
     sPathes = txtPaths.Text
     
-    If sPathes = "" And Not bListSystemPath Then
+    If Len(sPathes) = 0 And Not bListSystemPath Then
         'You should enter at least one path to file or folder!
         MsgBoxW Translate(1859), vbExclamation
         Exit Sub
     End If
     
-    sPathes = Replace$(sPathes, vbCr, "")
+    sPathes = Replace$(sPathes, vbCr, vbNullString)
     aPathes = Split(sPathes, vbLf)
     
     ReportPath = BuildPath(App.Path(), "DigiSign") & IIf(bCSV, ".csv", ".log")
@@ -266,7 +263,7 @@ Private Sub cmdGo_Click()
     'normalize extensions string (allowing * and . )
     sExtensions = txtExtensions.Text
     If Len(sExtensions) > 0 Then
-        sExtensions = Replace$(sExtensions, "*", "")
+        sExtensions = Replace$(sExtensions, "*", vbNullString)
         arrTmp = SplitSafe(sExtensions, ";")
         For i = 0 To UBound(arrTmp)
             If Left$(arrTmp(i), 1) <> "." Then arrTmp(i) = "." & arrTmp(i)
@@ -296,7 +293,7 @@ Private Sub cmdGo_Click()
         If FileExists(CStr(vPath)) Then
             If Not oDictFiles.Exists(vPath) Then oDictFiles.Add vPath, 0
         ElseIf FolderExists(CStr(vPath)) Then
-            arrTmp = ListFiles(CStr(vPath), IIf(OptAllFiles.Value, "", sExtensions), bRecursively)
+            arrTmp = ListFiles(CStr(vPath), IIf(OptAllFiles.Value, vbNullString, sExtensions), bRecursively)
             CopyArrayToDictionary arrTmp, oDictFiles
             DoEvents
         Else
@@ -324,13 +321,13 @@ Private Sub cmdGo_Click()
     
     If bListSystemPath Then
         'default - .exe;.dll;.sys
-        arrTmp = ListFiles(sWinDir, IIf(OptAllFiles.Value, "", sExtensions), bRecursively)
+        arrTmp = ListFiles(sWinDir, IIf(OptAllFiles.Value, vbNullString, sExtensions), bRecursively)
         DoEvents
         CopyArrayToDictionary arrTmp, oDictFiles
     End If
     
     lblStatus.ForeColor = vbYellow
-    lblStatus.Caption = ""
+    lblStatus.Caption = vbNullString
     lblStatus.Visible = False
     
     ' Checking digital signature
@@ -365,11 +362,11 @@ Private Sub cmdGo_Click()
         lblStatus.Visible = True
         lblStatus.Caption = Translate(1871)
         Me.Refresh
-        SignVerify "", SV_EnableHashPrecache, SignResult
+        SignVerify vbNullString, SV_EnableHashPrecache, SignResult
         lblStatus.ForeColor = vbYellow
     End If
     
-    lblStatus.Caption = ""
+    lblStatus.Caption = vbNullString
     lblStatus.Visible = True
     shpBack.Visible = True
     
@@ -390,7 +387,7 @@ Private Sub cmdGo_Click()
     isRan = True
     cmdGo.Enabled = False
     
-    ErrReport = ""
+    ErrReport = vbNullString
     
     i = 0
     For Each vKey In oDictFiles.Keys
@@ -402,7 +399,7 @@ Private Sub cmdGo_Click()
         If isRan = False Then
             CloseW hFile, True
             cmdGo.Enabled = True
-            lblStatus.Caption = ""
+            lblStatus.Caption = vbNullString
             lblStatus.Visible = False
             shpBack.Visible = False
             shpFore.Visible = False
@@ -477,14 +474,14 @@ Private Sub cmdGo_Click()
         With SignResult
             If Not bCSV Then
                 sb.AppendLine _
-                    IIf(bPE_File, "", "[not PE File] ") & _
-                    IIf(bIsDriver, IIf(bWHQL, "[OK] ", ""), IIf(.isLegit, "[OK] ", "")) & _
-                    IIf(.ShortMessage = "TRUST_E_NOSIGNATURE: Not signed", "[NoSign] ", IIf(.ShortMessage = "Legit signature.", "", "[" & .ShortMessage & "] ")) & _
-                    IIf(.isMicrosoftSign, "[MS] ", "") & _
+                    IIf(bPE_File, vbNullString, "[not PE File] ") & _
+                    IIf(bIsDriver, IIf(bWHQL, "[OK] ", vbNullString), IIf(.isLegit, "[OK] ", vbNullString)) & _
+                    IIf(.ShortMessage = "TRUST_E_NOSIGNATURE: Not signed", "[NoSign] ", IIf(.ShortMessage = "Legit signature.", vbNullString, "[" & .ShortMessage & "] ")) & _
+                    IIf(.isMicrosoftSign, "[MS] ", vbNullString) & _
                     sFile & " - " & _
-                    IIf(bIsDriver, IIf(bWHQL, "legit.", IIf(.isLegit, "legit, but not WHQL", "")), IIf(.isLegit, "legit.", "")) & _
-                    IIf(.isMicrosoftSign, " (Microsoft)", "") & _
-                    IIf(bWPF, " (protected)", "")
+                    IIf(bIsDriver, IIf(bWHQL, "legit.", IIf(.isLegit, "legit, but not WHQL", vbNullString)), IIf(.isLegit, "legit.", vbNullString)) & _
+                    IIf(.isMicrosoftSign, " (Microsoft)", vbNullString) & _
+                    IIf(bWPF, " (protected)", vbNullString)
             Else
                 sb.Append sFile  'FullPath
                 sb.Append ";" & GetFileNameAndExt(sFile)   'File
@@ -496,7 +493,7 @@ Private Sub cmdGo_Click()
                 sb.Append ";" & .Issuer
                 sb.Append ";" & .SubjectName
                 sb.Append ";" & .SubjectEmail
-                sb.Append ";" & IIf(.ReturnCode = TRUST_E_NOSIGNATURE, "", IIf(.isSignedByCert, "Certificate", "Internal"))  'Embedded Sign?
+                sb.Append ";" & IIf(.ReturnCode = TRUST_E_NOSIGNATURE, vbNullString, IIf(.isSignedByCert, "Certificate", "Internal"))  'Embedded Sign?
                 sb.Append ";" & IIf(.IsEmbedded, "yes", "no")
                 sb.Append ";" & .CatalogPath
                 sb.Append ";" & .HashRootCert
@@ -506,9 +503,9 @@ Private Sub cmdGo_Click()
                 sb.Append ";" & .ReturnCode
                 sb.Append ";" & .ShortMessage
                 sb.Append ";" & .FullMessage
-                sb.Append ";" & IIf(.DateTimeStamp = #12:00:00 AM#, "", Format$(.DateTimeStamp, "yyyy\/MM\/dd HH:nn:ss"))
-                sb.Append ";" & IIf(.DateCertBegin = #12:00:00 AM#, "", Format$(.DateCertBegin, "yyyy\/MM\/dd"))
-                sb.AppendLine ";" & IIf(.DateCertExpired = #12:00:00 AM#, "", Format$(.DateCertExpired, "yyyy\/MM\/dd"))
+                sb.Append ";" & IIf(.DateTimeStamp = #12:00:00 AM#, vbNullString, Format$(.DateTimeStamp, "yyyy\/MM\/dd HH:nn:ss"))
+                sb.Append ";" & IIf(.DateCertBegin = #12:00:00 AM#, vbNullString, Format$(.DateCertBegin, "yyyy\/MM\/dd"))
+                sb.AppendLine ";" & IIf(.DateCertExpired = #12:00:00 AM#, vbNullString, Format$(.DateCertExpired, "yyyy\/MM\/dd"))
             End If
         End With
 
@@ -523,7 +520,7 @@ Private Sub cmdGo_Click()
     aLogLine = Split(sb.ToString, vbCrLf)
     sb.Clear
     QuickSort aLogLine, 0, UBound(aLogLine)
-    sLogLine = Join(aLogLine, vbCrLf) & IIf(Len(ErrReport) <> 0, vbCrLf & vbCrLf & "There are some errors while verification:" & vbCrLf & ErrReport, "")
+    sLogLine = Join(aLogLine, vbCrLf) & IIf(Len(ErrReport) <> 0, vbCrLf & vbCrLf & "There are some errors while verification:" & vbCrLf & ErrReport, vbNullString)
     
     If bCSV Then
         sb.Append "Full path"
@@ -703,15 +700,11 @@ Private Sub Form_Resize()
     fraReportFormat.Top = TopLevel2
 End Sub
 
-Private Sub Text1_KeyDown(KeyCode As Integer, Shift As Integer)
+Private Sub txtPaths_KeyDown(KeyCode As Integer, Shift As Integer)
     If KeyCode = 27 Then cmdExit_Click
 End Sub
 
-Private Sub Text1_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
-    AddObjToList Data
-End Sub
-
-Private Sub Form_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub txtPaths_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
     AddObjToList Data
 End Sub
 
@@ -720,7 +713,7 @@ Private Sub AddObjToList(Data As DataObject)
     Dim vObj
     If Data.GetFormat(vbCFFiles) Then
         For Each vObj In Data.Files
-            txtPaths.Text = txtPaths.Text & IIf(Right$(txtPaths.Text, 2) <> vbCrLf And Len(txtPaths.Text) > 0, vbCrLf, "") & CStr(vObj)
+            txtPaths.Text = txtPaths.Text & IIf(Right$(txtPaths.Text, 2) <> vbCrLf And Len(txtPaths.Text) > 0, vbCrLf, vbNullString) & CStr(vObj)
         Next
     End If
 End Sub

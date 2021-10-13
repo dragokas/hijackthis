@@ -38,11 +38,11 @@ Public Sub ListHostsFile(objList As ListBox, objInfo As Label)
     frmMain.cmdHostsManToggle.Enabled = False
     DoEvents
     iAttr = GetFileAttributes(StrPtr(sHostsFile))
-    If (iAttr And 1) Then sAttr = sAttr & "R"
-    If (iAttr And 32) Then sAttr = sAttr & "A"
-    If (iAttr And 2) Then sAttr = sAttr & "H"
-    If (iAttr And 4) Then sAttr = sAttr & "S"
-    If (iAttr And 2048) Then sAttr = sAttr & "C"
+    If (iAttr And FILE_ATTRIBUTE_READONLY) Then sAttr = sAttr & "R"
+    If (iAttr And FILE_ATTRIBUTE_ARCHIVE) Then sAttr = sAttr & "A"
+    If (iAttr And FILE_ATTRIBUTE_HIDDEN) Then sAttr = sAttr & "H"
+    If (iAttr And FILE_ATTRIBUTE_SYSTEM) Then sAttr = sAttr & "S"
+    If (iAttr And FILE_ATTRIBUTE_COMPRESSED) Then sAttr = sAttr & "C"
     
     ff = FreeFile()
     Open sHostsFile For Binary As #ff
@@ -110,7 +110,7 @@ Public Function GetDefaultHostsContents() As String
     "#" & vbCrLf & _
     "#      102.54.94.97     rhino.acme.com          # source server" & vbCrLf & _
     "#       38.25.63.10     x.acme.com              # x client host" & vbCrLf & _
-    "" & vbCrLf & _
+    vbCrLf & _
     "127.0.0.1       localhost"
     
   ElseIf OSver.MajorMinor < 6.1 Then
@@ -134,7 +134,7 @@ Public Function GetDefaultHostsContents() As String
     "#" & vbCrLf & _
     "#      102.54.94.97     rhino.acme.com          # source server" & vbCrLf & _
     "#       38.25.63.10     x.acme.com              # x client host" & vbCrLf & _
-    "" & vbCrLf & _
+    vbCrLf & _
     "127.0.0.1       localhost" & vbCrLf & _
     "::1             localhost"
   
@@ -159,7 +159,7 @@ Public Function GetDefaultHostsContents() As String
     "#" & vbCrLf & _
     "#      102.54.94.97     rhino.acme.com          # source server" & vbCrLf & _
     "#       38.25.63.10     x.acme.com              # x client host" & vbCrLf & _
-    "" & vbCrLf & _
+    vbCrLf & _
     "# localhost name resolution is handled within DNS itself." & vbCrLf & _
     "#   127.0.0.1       localhost" & vbCrLf & _
     "#   ::1             localhost"
@@ -177,8 +177,6 @@ Public Sub HostsDeleteLine(objList As ListBox)
     'delete ith line in hosts file (zero-based)
     Dim iAttr&, sDummy$, vContent As Variant, i&, ff%
     
-    iAttr = GetFileAttributes(StrPtr(sHostsFile))
-    If (iAttr And 2048) Then iAttr = iAttr - 2048
     SetFileAttributes StrPtr(sHostsFile), vbArchive
     If Err.Number Then
         'MsgBoxW "The hosts file is locked for reading and cannot be edited. " & vbCrLf & _
@@ -219,8 +217,6 @@ Public Sub HostsToggleLine(objList As ListBox)
     'enable/disable ith line in hosts file (zero-based)
     Dim iAttr&, sDummy$, vContent As Variant, i&, ff%
     
-    iAttr = GetFileAttributes(StrPtr(sHostsFile))
-    If (iAttr And 2048) Then iAttr = iAttr - 2048
     SetFileAttributes StrPtr(sHostsFile), vbArchive
     If Err.Number Then
         '"The hosts file is locked for reading and cannot be edited. " & vbCrLf & _

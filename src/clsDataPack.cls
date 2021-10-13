@@ -111,7 +111,7 @@ Public Function Fetch() As Variant
     memcpy dr, g_Array(g_BytePos), 6&                   'get header
     
     Select Case dr.Type
-        Case vbString: v = String(dr.Size \ 2, 0&)
+        Case vbString: v = String$(dr.Size \ 2, 0&)
         Case vbByte: v = CByte(0)
         Case vbInteger: v = CInt(0)
         Case vbBoolean: v = CBool(0)
@@ -165,9 +165,9 @@ Public Property Get SerializeToHexString() As String
     arr = SerializeToArray()
     
     If AryItems(arr) Then
-        s = String((UBound(arr) + 1) * 2, 0&)
+        s = String$((UBound(arr) + 1) * 2, 0&)
         For i = 0 To UBound(arr)
-            Mid$(s, i * 2 + 1) = Right$("0" & Hex(arr(i)), 2)
+            Mid$(s, i * 2 + 1) = Right$("0" & Hex$(arr(i)), 2)
         Next
     End If
     

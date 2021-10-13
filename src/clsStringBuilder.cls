@@ -93,7 +93,8 @@ End Enum
 
 ' ############################# TYPE DECLARES
 Private Type SYSTEM_INFO
-    dwOemID As Long
+    wProcessorArchitecture As Integer
+    wReserved As Integer
     dwPageSize As Long
     lpMinimumApplicationAddress As Long
     lpMaximumApplicationAddress As Long
@@ -111,15 +112,15 @@ Private Declare Sub GetSystemInfo Lib "kernel32.dll" (lpSystemInfo As SYSTEM_INF
 Private Declare Function HeapCreate Lib "kernel32.dll" (ByVal flOptions As Long, ByVal dwInitialSize As Long, ByVal dwMaximumSize As Long) As Long
 Private Declare Function HeapAlloc Lib "kernel32.dll" (ByVal hHeap As Long, ByVal dwFlags As Long, ByVal dwBytes As Long) As Long
 Private Declare Function HeapReAlloc Lib "kernel32.dll" (ByVal hHeap As Long, ByVal dwFlags As Long, ByVal lpMem As Long, ByVal dwBytes As Long) As Long
-Private Declare Function HeapFree Lib "kernel32.dll" (ByVal hHeap As Long, ByVal dwFlags As Long, ByVal lpMem As Long) As Long
+'Private Declare Function HeapFree Lib "kernel32.dll" (ByVal hHeap As Long, ByVal dwFlags As Long, ByVal lpMem As Long) As Long
 Private Declare Function HeapDestroy Lib "kernel32.dll" (ByVal hHeap As Long) As Long
-Private Declare Function HeapValidate Lib "kernel32.dll" (ByVal hHeap As Long, ByVal dwFlags As Long, ByVal lpMem As Long) As Long
+'Private Declare Function HeapValidate Lib "kernel32.dll" (ByVal hHeap As Long, ByVal dwFlags As Long, ByVal lpMem As Long) As Long
 'Private Declare Function GetProcessHeap Lib "kernel32.dll" () As Long
 'Private Declare Sub RtlZeroMemory Lib "kernel32.dll" (Destination As Any, ByVal length As Long)
 Private Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long) As Long
 Private Declare Function GetMem2 Lib "msvbvm60.dll" (Src As Any, Dst As Any) As Long
-Private Declare Function PutMem4 Lib "msvbvm60.dll" (ByVal Addr As Long, ByVal NewVal As Long) As Long
-Private Declare Function SysAllocString Lib "oleaut32.dll" (ByVal pOlechar As Long) As Long
+'Private Declare Function PutMem4 Lib "msvbvm60.dll" (ByVal Addr As Long, ByVal NewVal As Long) As Long
+'Private Declare Function SysAllocString Lib "oleaut32.dll" (ByVal pOlechar As Long) As Long
 Private Declare Function StrStrW Lib "Shlwapi.dll" (ByVal pszFirst As Long, ByVal pszSrch As Long) As Long
 Private Declare Function StrStrIW Lib "Shlwapi.dll" (ByVal pszFirst As Long, ByVal pszSrch As Long) As Long
 Private Declare Function CompareStringOrdinal Lib "kernel32.dll" (ByVal lpString1 As Long, ByVal cchCount1 As Long, ByVal lpString2 As Long, ByVal cchCount2 As Long, ByVal bIgnoreCase As Long) As Long
@@ -130,13 +131,13 @@ Private Declare Function lstrcmpiW Lib "kernel32.dll" (ByVal lpString1 As Long, 
 ' ############################# CONSTANTS
 Private Const CHUNK_SIZE_INITIAL    As Long = 1048576 'init by 1 MB. buffer (further, it will be increased with *1.6 factor).
 Private Const HEAP_NO_SERIALIZE     As Long = 1&
-Private Const HEAP_ZERO_MEMORY      As Long = &H8&
+'Private Const HEAP_ZERO_MEMORY      As Long = &H8&
 Private Const CSTR_EQUAL            As Long = 2&
 
 ' ############################# MEMBER VARIABLES
 Private m_pMemoryPtr         As Long
 Private m_lAllocSize         As Long
-Private m_lChunkLength       As Long
+'Private m_lChunkLength       As Long
 Private m_lLength            As Long
 Private m_hHeap              As Long
 Private m_Chunk_Size_Aligned As Long
@@ -163,7 +164,7 @@ Private Sub Class_Initialize()
     GetSystemInfo si
     
     If si.dwPageSize = 0 Then
-        Debug.Print "Error in retrieving page size. GetSystemInfo failed with 0x" & Hex(Err.LastDllError)
+        Debug.Print "Error in retrieving page size. GetSystemInfo failed with 0x" & Hex$(Err.LastDllError)
         Err.Raise 5, , "Cannot obtain page size"
         Exit Sub
     End If
@@ -178,7 +179,7 @@ Private Sub Class_Initialize()
     
     m_hHeap = HeapCreate(HEAP_NO_SERIALIZE, m_Chunk_Size_Aligned, 0&)
     If m_hHeap = 0 Then
-        Debug.Print "HeapCreate failed with 0x" & Hex(Err.LastDllError)
+        Debug.Print "HeapCreate failed with 0x" & Hex$(Err.LastDllError)
         Err.Raise 5, , "Cannot create new heap"
         Exit Sub
     End If
@@ -204,9 +205,6 @@ End Function
 '
 ' #############################
 Private Sub Allocate(Size As Long)
-    Dim tmp As Long
-    Dim newSize As Long
-    
     ' If no memory is allocated yet, allocate some from the heap - otherwise
     ' reallocate (resize) the block that has already been allocated
     If m_pMemoryPtr = 0 Then
@@ -239,10 +237,10 @@ End Property
 '   Set the new string by clearing all stored data
 '
 ' #############################
-Public Property Let StringData(str As String)
+Public Property Let StringData(stri As String)
     If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     Clear
-    Append str
+    Append stri
 End Property
 
 
@@ -350,24 +348,24 @@ End Sub
 '   buffer.
 '
 ' #############################
-Public Sub Append(str As String)
+Public Sub Append(stri As String)
     If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     Dim pTo As Long
     
-    If Len(str) = 0 Then Exit Sub
+    If Len(stri) = 0 Then Exit Sub
     
     ' If we are going to need more memory (if the final size of the append is going to be
     ' greater than the currently allocated size), we need to find out how much more we
     ' need (in increments of CHUNK_SIZE, default 1MB) and allocate it
     ' +2 to hold NUL terminator
-    If m_lLength + LenB(str) + 2 > m_lAllocSize Then
-        Allocate AlignUp(m_lAllocSize * 1.6 + LenB(str), m_Chunk_Size_Aligned)
+    If m_lLength + LenB(stri) + 2 > m_lAllocSize Then
+        Allocate AlignUp(m_lAllocSize * 1.6 + LenB(stri), m_Chunk_Size_Aligned)
     End If
     
     ' Put the specified string at the end of the string buffer
     pTo = m_pMemoryPtr + m_lLength
     
-    memcpy ByVal pTo, ByVal StrPtr(str), LenB(str) + 2 '+2 for NUL terminator
+    memcpy ByVal pTo, ByVal StrPtr(stri), LenB(stri) + 2 '+2 for NUL terminator
     
     #If UseUndo Then
         If Not m_bInRevert Then
@@ -377,7 +375,7 @@ Public Sub Append(str As String)
         End If
     #End If
     
-    m_lLength = m_lLength + LenB(str)
+    m_lLength = m_lLength + LenB(stri)
 End Sub
 
 ' #############################
@@ -389,7 +387,7 @@ End Sub
 '   buffer plus additional CrLf characters
 '
 ' #############################
-Public Sub AppendLine(Optional str As String)
+Public Sub AppendLine(Optional stri As String)
     If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     Dim pTo As Long
     
@@ -397,13 +395,13 @@ Public Sub AppendLine(Optional str As String)
     ' greater than the currently allocated size), we need to find out how much more we
     ' need (in increments of CHUNK_SIZE, default 1MB) and allocate it
     ' +2 to hold NUL terminator
-    If m_lLength + LenB(str) + 4 + 2 > m_lAllocSize Then
-        Allocate AlignUp(m_lAllocSize * 1.6 + LenB(str), m_Chunk_Size_Aligned)
+    If m_lLength + LenB(stri) + 4 + 2 > m_lAllocSize Then
+        Allocate AlignUp(m_lAllocSize * 1.6 + LenB(stri), m_Chunk_Size_Aligned)
     End If
     
     ' Put the specified string at the end of the string buffer
     pTo = m_pMemoryPtr + m_lLength
-    memcpy ByVal pTo, ByVal StrPtr(str), LenB(str)
+    memcpy ByVal pTo, ByVal StrPtr(stri), LenB(stri)
     
     #If UseUndo Then
         If Not m_bInRevert Then
@@ -414,9 +412,9 @@ Public Sub AppendLine(Optional str As String)
     #End If
     
     ' Put CrLf + NUL to the end of buffer
-    memcpy ByVal (m_pMemoryPtr + m_lLength + LenB(str)), ByVal StrPtr(vbCrLf), 6
+    memcpy ByVal (m_pMemoryPtr + m_lLength + LenB(stri)), ByVal StrPtr(vbCrLf), 6
     
-    m_lLength = m_lLength + LenB(str) + 4
+    m_lLength = m_lLength + LenB(stri) + 4
 End Sub
 
 ' #############################
@@ -427,14 +425,14 @@ End Sub
 '   stored string at a specific index.
 '
 ' #############################
-Public Sub Insert(pos As Long, str As String)
+Public Sub Insert(pos As Long, stri As String)
     If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     Dim pFrom As Long
     Dim pTo As Long
     Dim Index As Long
     
     Index = pos - 1
-    If Len(str) = 0 Then Exit Sub
+    If Len(stri) = 0 Then Exit Sub
     If (Index < 0) Then Exit Sub
     If (Index > (m_lLength \ 2)) Then Exit Sub
     
@@ -442,8 +440,8 @@ Public Sub Insert(pos As Long, str As String)
     ' greater than the currently allocated size), we need to find out how much more we
     ' need (in increments of CHUNK_SIZE, default 1MB) and allocate it
     ' +2 to consider 2 NUL characters as terminator
-    If m_lLength + LenB(str) + 2 > m_lAllocSize Then
-        Allocate AlignUp(m_lAllocSize * 1.6 + LenB(str), m_Chunk_Size_Aligned)
+    If m_lLength + LenB(stri) + 2 > m_lAllocSize Then
+        Allocate AlignUp(m_lAllocSize * 1.6 + LenB(stri), m_Chunk_Size_Aligned)
     End If
     
     ' Copy the entire stored string, from 'index' to the end and move it over to the
@@ -463,18 +461,18 @@ Public Sub Insert(pos As Long, str As String)
     ' m_pMemoryPtr
     
     pFrom = m_pMemoryPtr + (Index * 2&)
-    pTo = pFrom + LenB(str)
+    pTo = pFrom + LenB(stri)
     
     memcpy ByVal pTo, ByVal pFrom, m_lLength - (Index * 2&) + 2 '+2 - include NUL terminator
-    memcpy ByVal pFrom, ByVal StrPtr(str), LenB(str)
+    memcpy ByVal pFrom, ByVal StrPtr(stri), LenB(stri)
     
-    m_lLength = m_lLength + LenB(str)
+    m_lLength = m_lLength + LenB(stri)
     
     #If UseUndo Then
         If Not m_bInRevert Then
             'backup
             m_UndoIndexStart = Index
-            m_UndoLength = Len(str)
+            m_UndoLength = Len(stri)
             m_LastOp = SB_LAST_INSERT
         End If
     #End If
@@ -489,14 +487,13 @@ End Sub
 '   the characters at that position.
 '
 ' #############################
-Public Sub Overwrite(pos As Long, str As String)
+Public Sub Overwrite(pos As Long, stri As String)
     If m_pMemoryPtr = 0 Then Err.Raise 17, , "Class is about to be destroyed"
     Dim pTo As Long
     Dim Index As Long
-    Dim bExpanded As Boolean
     
     Index = pos - 1
-    If Len(str) = 0 Then Exit Sub
+    If Len(stri) = 0 Then Exit Sub
     If (Index < 0) Then Exit Sub
     If (Index > (m_lLength \ 2)) Then Exit Sub
     
@@ -505,8 +502,8 @@ Public Sub Overwrite(pos As Long, str As String)
     ' memory block, we need to calculate how much we need (in increments of CHUNK_SIZE,
     ' default 1MB) and allocate it
     ' +2 to consider 2 NUL characters as terminator
-    If Index * 2 + LenB(str) + 2 > m_lAllocSize Then
-        Allocate AlignUp(m_lAllocSize * 1.6 + LenB(str), m_Chunk_Size_Aligned)
+    If Index * 2 + LenB(stri) + 2 > m_lAllocSize Then
+        Allocate AlignUp(m_lAllocSize * 1.6 + LenB(stri), m_Chunk_Size_Aligned)
     End If
     
     ' str = 'OVER'
@@ -525,21 +522,21 @@ Public Sub Overwrite(pos As Long, str As String)
     #If UseUndo Then
         If Not m_bInRevert Then
             ' Backup old value
-            m_UndoText = String$(Len(str), 0&)
-            memcpy ByVal StrPtr(m_UndoText), ByVal pTo, LenB(str)
+            m_UndoText = String$(Len(stri), 0&)
+            memcpy ByVal StrPtr(m_UndoText), ByVal pTo, LenB(stri)
             m_UndoIndexStart = Index
             m_LastOp = SB_LAST_OVERWRITE
         End If
     #End If
     
     'Copy the specified string into the stored string
-    memcpy ByVal pTo, ByVal StrPtr(str), LenB(str)
+    memcpy ByVal pTo, ByVal StrPtr(stri), LenB(stri)
     
     ' If the string got longer (the inserted string hung over the end of the
     ' old string) we need to calculate how much bigger it got
     ' and append NUL terminator
-    If (Index * 2&) + LenB(str) > m_lLength Then
-        m_lLength = Index * 2& + LenB(str)
+    If (Index * 2&) + LenB(stri) > m_lLength Then
+        m_lLength = Index * 2& + LenB(stri)
         GetMem2 ByVal StrPtr(vbNullChar), ByVal (m_pMemoryPtr + m_lLength)
     End If
 End Sub

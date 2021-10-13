@@ -349,13 +349,13 @@ End Sub
 'click on list item
 '
 Private Sub lstUninstMan_Click()
-    Dim ItemID&, ID&, sKey$, Blink As Boolean
+    Dim ItemID&, id&, sKey$, Blink As Boolean
     
     ItemID = lstUninstMan.ListIndex
     If ItemID = -1 Then Exit Sub
     
-    ID = lstUninstMan.ItemData(ItemID)
-    With UninstData(ID)
+    id = lstUninstMan.ItemData(ItemID)
+    With UninstData(id)
         If Not Reg.KeyExists(.AppRegHive, .AppRegKey, .AppRegRedir) Then
             lstUninstMan.RemoveItem ItemID
             ClearTextboxes
@@ -406,15 +406,15 @@ End Sub
 Private Sub cmdDelete_Click()
     On Error GoTo ErrorHandler:
 
-    Dim sName$, sUninst$, ItemID&, ID&
+    Dim ItemID&, id&
     
     If lstUninstMan.ListCount = 0 Then Exit Sub
     
     ItemID = lstUninstMan.ListIndex
     If ItemID = -1 Then Exit Sub
-    ID = lstUninstMan.ItemData(ItemID)
+    id = lstUninstMan.ItemData(ItemID)
     
-    With UninstData(ID)
+    With UninstData(id)
         'Are you sure you want to delete this item from the list?
         If MsgBoxW(Translate(1710) & vbCrLf & vbCrLf & .DisplayName, vbQuestion Or vbYesNo) = vbYes Then
             Reg.DelKey .AppRegHive, .AppRegKey, .AppRegRedir
@@ -438,15 +438,15 @@ End Sub
 Private Sub cmdUninstall_Click()
     On Error GoTo ErrorHandler:
 
-    Dim sName$, sUninst$, ItemID&, sApplication$, sArguments$, ID&
+    Dim ItemID&, id&
     
     If lstUninstMan.ListCount = 0 Then Exit Sub
     
     ItemID = lstUninstMan.ListIndex
     If ItemID = -1 Then Exit Sub
-    ID = lstUninstMan.ItemData(ItemID)
+    id = lstUninstMan.ItemData(ItemID)
     
-    With UninstData(ID)
+    With UninstData(id)
         'if no uninstall string
         If Len(.UninstString) = 0 Then
             'MsgBox "No uninstall string"
@@ -482,22 +482,22 @@ Sub ProcessRunAsX64(sCMDLine As String)
     sFileX64 = PathX64(sFile)
     
     If sFile <> sFileX64 Then
-        Proc.ProcessRun "", """" & sFileX64 & """" & " " & sArgs
+        Proc.ProcessRun vbNullString, """" & sFileX64 & """" & " " & sArgs
     Else
-        Proc.ProcessRun "", sCMDLine
+        Proc.ProcessRun vbNullString, sCMDLine
     End If
 End Sub
 
 Private Sub cmdNameEdit_Click()
     On Error GoTo ErrorHandler:
     
-    Dim s$, sName$, sUninst$, ItemID&, ID&
+    Dim ItemID&, id&
     
     If lstUninstMan.ListCount = 0 Then Exit Sub
     
     ItemID = lstUninstMan.ListIndex
     If ItemID = -1 Then Exit Sub
-    ID = lstUninstMan.ItemData(ItemID)
+    id = lstUninstMan.ItemData(ItemID)
     
     If cmdNameEdit.Caption = Translate(216) Then 'Edit
         cmdNameEdit.Caption = Translate(219)
@@ -507,7 +507,7 @@ Private Sub cmdNameEdit_Click()
         cmdNameEdit.Caption = Translate(216)
         txtName.BackColor = &H8000000F 'gray
         txtName.Locked = True
-        With UninstData(ID)
+        With UninstData(id)
             .DisplayName = txtName.Text
             Reg.SetStringVal .AppRegHive, .AppRegKey, "DisplayName", .DisplayName, .AppRegRedir
         End With
@@ -530,13 +530,13 @@ End Sub
 Private Sub cmdUninstStrEdit_Click()
     On Error GoTo ErrorHandler:
     
-    Dim s$, sName$, sUninst$, ItemID&, ID&
+    Dim ItemID&, id&
     
     If lstUninstMan.ListCount = 0 Then Exit Sub
     
     ItemID = lstUninstMan.ListIndex
     If ItemID = -1 Then Exit Sub
-    ID = lstUninstMan.ItemData(ItemID)
+    id = lstUninstMan.ItemData(ItemID)
     
     If cmdUninstStrEdit.Caption = Translate(216) Then 'Edit
         cmdUninstStrEdit.Caption = Translate(219)
@@ -546,7 +546,7 @@ Private Sub cmdUninstStrEdit_Click()
         cmdUninstStrEdit.Caption = Translate(216)
         txtUninstCmd.BackColor = &H8000000F 'gray
         txtUninstCmd.Locked = True
-        With UninstData(ID)
+        With UninstData(id)
             .UninstString = txtUninstCmd.Text
             Reg.SetStringVal .AppRegHive, .AppRegKey, "UninstallString", .UninstString, .AppRegRedir
             Reg.DelVal .AppRegHive, .AppRegKey, "QuietUninstallString", .AppRegRedir
@@ -570,15 +570,15 @@ End Sub
 Private Sub cmdWebSiteOpen_Click()
     On Error GoTo ErrorHandler:
     
-    Dim ItemID&, ID&, sURL$, sFile$
+    Dim ItemID&, id&, sURL$, sFile$
     
     If lstUninstMan.ListCount = 0 Then Exit Sub
     
     ItemID = lstUninstMan.ListIndex
     If ItemID = -1 Then Exit Sub
-    ID = lstUninstMan.ItemData(ItemID)
+    id = lstUninstMan.ItemData(ItemID)
     
-    sURL = UninstData(ID).WebSite
+    sURL = UninstData(id).WebSite
     
     If Len(sURL) <> 0 Then
         If isURL(sURL) Then
@@ -602,15 +602,15 @@ End Sub
 Private Sub cmdKeyJump_Click()
     On Error GoTo ErrorHandler:
     
-    Dim ItemID&, ID&
+    Dim ItemID&, id&
     
     If lstUninstMan.ListCount = 0 Then Exit Sub
     
     ItemID = lstUninstMan.ListIndex
     If ItemID = -1 Then Exit Sub
-    ID = lstUninstMan.ItemData(ItemID)
+    id = lstUninstMan.ItemData(ItemID)
     
-    With UninstData(ID)
+    With UninstData(id)
         Reg.Jump .AppRegHive, .AppRegKey, , .AppRegRedir
     End With
     
@@ -652,7 +652,7 @@ End Sub
 Private Sub cmdRefresh_Click()
     On Error GoTo ErrorHandler:
 
-    Dim aItems() As String, sName$, sUninst$, i&, j&, cnt&, bHidden As Boolean, sURL$, sPublisher$, bComply As Boolean
+    Dim aItems() As String, sName$, sUninst$, i&, cnt&, bHidden As Boolean, sURL$, sPublisher$, bComply As Boolean
     Dim sVer$, aVer(3) As Byte, sVerMajor$, sVerMinor$, lVerNum As Long
     Dim HiveFilter As HE_HIVE
     
@@ -764,12 +764,12 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Private Function FormatLogString(ID As Long) As String
+Private Function FormatLogString(id As Long) As String
     
     Dim sLine As String
     Dim sKey As String
     
-    With UninstData(ID)
+    With UninstData(id)
         sLine = .DisplayName
         
         sKey = Reg.GetShortHiveName(Reg.GetHiveNameByHandle(.AppRegHive))
@@ -793,7 +793,7 @@ End Function
 Private Sub cmdSave_Click()
     On Error GoTo ErrorHandler:
     
-    Dim i&, sFile$, hFile&, ID&, bShowHeader As Boolean, Stady&, HE As clsHiveEnum
+    Dim i&, sFile$, hFile&, id&, bShowHeader As Boolean, Stady&, HE As clsHiveEnum
     Dim sList As clsStringBuilder
     
     Set HE = New clsHiveEnum
@@ -840,7 +840,7 @@ Private Sub cmdSave_Click()
             IIf(chkFilterHidden.Value = vbChecked, "{v}", "{-}") & " Hidden"
     End If
     
-    sList.AppendLine ""
+    sList.AppendLine vbNullString
     sList.AppendLine String$(55, "-")
     sList.AppendLine Space$(20) & "Sort by Alphabet"
     sList.AppendLine String$(55, "-")
@@ -849,8 +849,8 @@ Private Sub cmdSave_Click()
     Stady = 5
     
     For i = 0 To lstUninstMan.ListCount - 1
-        ID = lstUninstMan.ItemData(i)
-        sList.AppendLine FormatLogString(ID)
+        id = lstUninstMan.ItemData(i)
+        sList.AppendLine FormatLogString(id)
     Next i
     
     sList.AppendLine

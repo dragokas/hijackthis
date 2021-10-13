@@ -63,7 +63,7 @@ End Enum
 Private Type JOB_HEADER
     ProductVer As Integer
     FormatVer As Integer
-    ID As UUID
+    id As UUID
     AppNameOffset As Integer
     TriggerOffset As Integer
     ErrRetryCount As Integer
@@ -243,7 +243,7 @@ Public Function CreateTask(TaskName As String, FullPath As String, Arguments As 
             Set pActionCollection = Nothing
             
             Set pRegisteredTask = pRootFolder.RegisterTaskDefinition( _
-                TaskName, pTask, TASK_CREATE_OR_UPDATE, "", "", TASK_LOGON_INTERACTIVE_TOKEN, "")
+                TaskName, pTask, TASK_CREATE_OR_UPDATE, vbNullString, vbNullString, TASK_LOGON_INTERACTIVE_TOKEN, vbNullString)
             
             If Not (pRegisteredTask Is Nothing) Then
                 CreateTask = True
@@ -829,11 +829,11 @@ Public Function isInTasksWhiteList(sPathName As String, sTargetFile As String, O
                 isInTasksWhiteList = True
             End If
         ElseIf sPathName Like "{root}\OneDrive Standalone Update Task-S-1-5-21-*" Then
-            If StrComp(sTargetFile, LocalAppData & "\Microsoft\OneDrive\OneDriveStandaloneUpdater.exe", 1) = 0 And sArguments = "" Then
+            If StrComp(sTargetFile, LocalAppData & "\Microsoft\OneDrive\OneDriveStandaloneUpdater.exe", 1) = 0 And Len(sArguments) = 0 Then
                 isInTasksWhiteList = True
             End If
         ElseIf sPathName Like "\Microsoft\VisualStudio\Updates\UpdateConfiguration_S*" Then
-            If StrComp(sTargetFile, PF_32 & "\Microsoft Visual Studio\Installer\resources\app\ServiceHub\Services\Microsoft.VisualStudio.Setup.Service\VSIXConfigurationUpdater.exe", 1) = 0 And sArguments = "" Then
+            If StrComp(sTargetFile, PF_32 & "\Microsoft Visual Studio\Installer\resources\app\ServiceHub\Services\Microsoft.VisualStudio.Setup.Service\VSIXConfigurationUpdater.exe", 1) = 0 And Len(sArguments) = 0 Then
                 isInTasksWhiteList = True
             End If
         End If
@@ -1173,7 +1173,7 @@ Public Sub EnumTasksVista(Optional MakeCSV As Boolean)
     Dim bNoFile         As Boolean
     Dim aSubKeys()      As String
     Dim oKey            As Variant
-    Dim ID              As String
+    Dim id              As String
     Dim bTelemetry      As Boolean
     Dim sRunFilename    As String
     Dim bActivation     As Boolean
@@ -1203,7 +1203,7 @@ Public Sub EnumTasksVista(Optional MakeCSV As Boolean)
     
     sWinTasksFolder = BuildPath(sWinSysDir, "Tasks")
     
-    aFiles = ListFiles(sWinTasksFolder, "", True)
+    aFiles = ListFiles(sWinTasksFolder, vbNullString, True)
     
     If AryItems(aFiles) Then
       For i = 0 To UBound(aFiles)
@@ -1235,7 +1235,7 @@ Public Sub EnumTasksVista(Optional MakeCSV As Boolean)
                 Print #LogHandle, OSver.MajorMinor & ";" & ScreenChar(DirParent & "\" & TaskName) & ";" & _
                     ScreenChar(te(j).RunObj) & ";" & _
                     IIf(te(j).ActionType = TASK_ACTION_EXEC, ScreenChar(te(j).RunArgs), ScreenChar(te(j).RunObjCom)) & ";" & _
-                    IIf(te(j).FileMissing, STR_FILE_MISSING, "") & ";"
+                    IIf(te(j).FileMissing, STR_FILE_MISSING, vbNullString) & ";"
             End If
             
             If Len(te(j).RunObjExpanded) <> 0 Then te(j).RunObj = te(j).RunObjExpanded
@@ -1317,13 +1317,13 @@ Public Sub EnumTasksVista(Optional MakeCSV As Boolean)
             '
             If Not IsValidTaskUserId(te(j).UserId) And Not IsValidTaskGroupId(te(j).GroupId) Then
             
-                sHit = "O22 - Task: (damaged) " & IIf(te(j).Enabled, "", "(disabled) ") & _
+                sHit = "O22 - Task: (damaged) " & IIf(te(j).Enabled, vbNullString, "(disabled) ") & _
                     IIf(DirParent = "{root}", TaskName, DirParent & "\" & TaskName)
 
                 sHit = sHit & " - " & te(j).RunObj & _
-                    IIf(Len(te(j).RunArgs) <> 0, " " & te(j).RunArgs, "") & _
-                    IIf(te(j).FileMissing And Not bNoFile, " " & STR_FILE_MISSING, "") & _
-                    IIf(bIsMicrosoftFile, " (Microsoft)", "") & _
+                    IIf(Len(te(j).RunArgs) <> 0, " " & te(j).RunArgs, vbNullString) & _
+                    IIf(te(j).FileMissing And Not bNoFile, " " & STR_FILE_MISSING, vbNullString) & _
+                    IIf(bIsMicrosoftFile, " (Microsoft)", vbNullString) & _
                     " (user missing)"
                   
                   If Not IsOnIgnoreList(sHit) Then
@@ -1343,7 +1343,7 @@ Public Sub EnumTasksVista(Optional MakeCSV As Boolean)
                           AddFileToFix .File, REMOVE_FILE, aFiles(i)
                           
                           te(j).RegID = Reg.GetString(HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree" & DirXml, "Id")
-                          If te(j).RegID <> "" Then
+                          If Len(te(j).RegID) <> 0 Then
                               AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Boot\" & te(j).RegID
                               AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Logon\" & te(j).RegID
                               AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Plain\" & te(j).RegID
@@ -1532,16 +1532,16 @@ Public Sub EnumTasksVista(Optional MakeCSV As Boolean)
                       End If
                   End If
                   
-                  sHit = "O22 - Task: " & IIf(te(j).Enabled, "", "(disabled) ") & _
-                    IIf(bTelemetry, "(telemetry) ", "") & _
-                    IIf(bActivation, "(activation) ", "") & _
-                    IIf(bUpdate, "(update) ", "") & _
+                  sHit = "O22 - Task: " & IIf(te(j).Enabled, vbNullString, "(disabled) ") & _
+                    IIf(bTelemetry, "(telemetry) ", vbNullString) & _
+                    IIf(bActivation, "(activation) ", vbNullString) & _
+                    IIf(bUpdate, "(update) ", vbNullString) & _
                     IIf(DirParent = "{root}", TaskName, DirParent & "\" & TaskName)
                   
                   sHit = sHit & " - " & te(j).RunObj & _
-                    IIf(Len(te(j).RunArgs) <> 0, " " & te(j).RunArgs, "") & _
-                    IIf(te(j).FileMissing And Not bNoFile, " " & STR_FILE_MISSING, "") & _
-                    IIf(bIsMicrosoftFile, " (Microsoft)", "")
+                    IIf(Len(te(j).RunArgs) <> 0, " " & te(j).RunArgs, vbNullString) & _
+                    IIf(te(j).FileMissing And Not bNoFile, " " & STR_FILE_MISSING, vbNullString) & _
+                    IIf(bIsMicrosoftFile, " (Microsoft)", vbNullString)
                   
                   If Not IsOnIgnoreList(sHit) Then
                 
@@ -1561,7 +1561,7 @@ Public Sub EnumTasksVista(Optional MakeCSV As Boolean)
                           AddFileToFix .File, REMOVE_FILE, aFiles(i)
                           
                           te(j).RegID = Reg.GetString(HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree" & DirXml, "Id")
-                          If te(j).RegID <> "" Then
+                          If Len(te(j).RegID) <> 0 Then
                               AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Boot\" & te(j).RegID
                               AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Logon\" & te(j).RegID
                               AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Plain\" & te(j).RegID
@@ -1634,12 +1634,12 @@ Public Sub EnumTasksVista(Optional MakeCSV As Boolean)
 
     For i = 1 To Reg.EnumSubKeysToArray(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree", aSubKeys(), , , True)
         
-        ID = Reg.GetString(HKEY_LOCAL_MACHINE, aSubKeys(i), "Id")
+        id = Reg.GetString(HKEY_LOCAL_MACHINE, aSubKeys(i), "Id")
         
-        If Not dTasksTreeGuid.Exists(ID) Then dTasksTreeGuid.Add ID, 0&
+        If Not dTasksTreeGuid.Exists(id) Then dTasksTreeGuid.Add id, 0&
         
         'if a final task key (not a subkey)
-        If Len(ID) <> 0 Then
+        If Len(id) <> 0 Then
             
             nIndex = -1
 
@@ -1655,7 +1655,7 @@ Public Sub EnumTasksVista(Optional MakeCSV As Boolean)
             '
             If nIndex <> 0 Then
                 
-                If Not Reg.KeyExists(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\" & ID) Then
+                If Not Reg.KeyExists(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\" & id) Then
                 
                     sHit = "O22 - Task: (damaged) HKLM\" & aSubKeys(i) & " (key missing)"
                     
@@ -1664,9 +1664,9 @@ Public Sub EnumTasksVista(Optional MakeCSV As Boolean)
                             .Section = "O22"
                             .HitLineW = sHit
         
-                            AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Boot\" & ID
-                            AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Logon\" & ID
-                            AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Plain\" & ID
+                            AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Boot\" & id
+                            AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Logon\" & id
+                            AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Plain\" & id
                             
                             AddRegToFix .Reg, REMOVE_KEY, HKLM, aSubKeys(i)
                             
@@ -1690,11 +1690,11 @@ Public Sub EnumTasksVista(Optional MakeCSV As Boolean)
         
         If Not dTasksTreeGuid.Exists(aSubKeys(i)) Then
         
-            ID = aSubKeys(i)
+            id = aSubKeys(i)
         
-            DirXml = Reg.GetString(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\" & ID, "Path")
+            DirXml = Reg.GetString(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\" & id, "Path")
             
-            sHit = "O22 - Task: (damaged) HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\" & ID & _
+            sHit = "O22 - Task: (damaged) HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\" & id & _
                 " (no key)"
             
             If Not IsOnIgnoreList(sHit) Then
@@ -1706,10 +1706,10 @@ Public Sub EnumTasksVista(Optional MakeCSV As Boolean)
                         AddFileToFix .File, REMOVE_FILE, BuildPath(sWinSysDir, "Tasks", DirXml)
                     End If
                     
-                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Boot\" & ID
-                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Logon\" & ID
-                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Plain\" & ID
-                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\" & ID
+                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Boot\" & id
+                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Logon\" & id
+                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Plain\" & id
+                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\" & id
                     
                     .CureType = REGISTRY_BASED Or FILE_BASED
                 End With
@@ -1931,7 +1931,7 @@ Private Function AnalyzeTask(sFilename As String, te() As TASK_ENTRY) As Long
         For i = 1 To xmlElement.NodeCount
             If 0 = StrComp(xmlElement.Node(i).Name, "Exec", 1) Then
                 te(j).RunObj = xmlElement.Node(i).NodeValueByName("Command")
-                If te(j).RunObj <> "" Then
+                If Len(te(j).RunObj) <> 0 Then
                     te(j).WorkDir = xmlElement.Node(i).NodeValueByName("WorkingDirectory")
                     te(j).RunArgs = xmlElement.Node(i).NodeValueByName("Arguments")
                     te(j).RunObjExpanded = UnQuote(EnvironW(te(j).RunObj))
@@ -1942,7 +1942,7 @@ Private Function AnalyzeTask(sFilename As String, te() As TASK_ENTRY) As Long
                         te(j).FileMissing = True
                     Else
                         If Mid$(te(j).RunObjExpanded, 2, 1) <> ":" Then
-                            If te(j).WorkDir <> "" Then
+                            If Len(te(j).WorkDir) <> 0 Then
                                 sTmp = BuildPath(te(j).WorkDir, te(j).RunObjExpanded)
                                 If FileExists(sTmp) Then te(j).RunObjExpanded = sTmp 'if only file exists in this work. folder
                             End If
@@ -1951,7 +1951,7 @@ Private Function AnalyzeTask(sFilename As String, te() As TASK_ENTRY) As Long
                         te(j).RunObjExpanded = FindOnPath(te(j).RunObjExpanded, True) 'otherwise, search on %PATH%
                         te(j).FileMissing = Not FileExists(te(j).RunObjExpanded)
                     
-                        If te(j).FileMissing And sTmp <> "" Then 'not exists at all? -> use initial Work.Dir + File, if present one
+                        If te(j).FileMissing And Len(sTmp) <> 0 Then 'not exists at all? -> use initial Work.Dir + File, if present one
                             te(j).RunObjExpanded = sTmp
                         End If
                     End If
@@ -1969,8 +1969,8 @@ Private Function AnalyzeTask(sFilename As String, te() As TASK_ENTRY) As Long
                 If 0 = StrComp(xmlElement.Node(i).Name, "ComHandler", 1) Then
                     te(j).ClassID = xmlElement.Node(i).NodeValueByName("ClassId")
                     te(j).ClassData = xmlElement.Node(i).NodeValueByName("Data")
-                    If te(j).ClassID <> "" Then
-                        te(j).RunObj = te(j).ClassID & IIf(Len(te(j).ClassData) <> 0, "," & te(j).ClassData, "")
+                    If Len(te(j).ClassID) <> 0 Then
+                        te(j).RunObj = te(j).ClassID & IIf(Len(te(j).ClassData) <> 0, "," & te(j).ClassData, vbNullString)
                         
                         Call GetFileByCLSID(te(j).ClassID, te(j).RunObjCom)
                         te(j).ActionType = TASK_ACTION_COM_HANDLER
@@ -2018,7 +2018,7 @@ Public Function KillTask2(TaskFullPath As String) As Boolean
     On Error GoTo ErrorHandler:
     
     Dim sWinTasksFolder As String
-    Dim ID As String
+    Dim id As String
     
     If Len(TaskFullPath) = 0 Then Exit Function
     
@@ -2026,13 +2026,13 @@ Public Function KillTask2(TaskFullPath As String) As Boolean
     
     KillTask2 = DeleteFileWEx(StrPtr(BuildPath(sWinTasksFolder, TaskFullPath)))
     
-    ID = Reg.GetString(HKEY_LOCAL_MACHINE, BuildPath("SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree", TaskFullPath), "Id")
+    id = Reg.GetString(HKEY_LOCAL_MACHINE, BuildPath("SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree", TaskFullPath), "Id")
     
-    If ID <> "" Then
-        Reg.DelKey HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Boot\" & ID
-        Reg.DelKey HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Logon\" & ID
-        Reg.DelKey HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Plain\" & ID
-        Reg.DelKey HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\" & ID
+    If Len(id) <> 0 Then
+        Reg.DelKey HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Boot\" & id
+        Reg.DelKey HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Logon\" & id
+        Reg.DelKey HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Plain\" & id
+        Reg.DelKey HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\" & id
     End If
     
     KillTask2 = KillTask2 And Reg.DelKey(HKLM, BuildPath("SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree", TaskFullPath))
@@ -2076,7 +2076,7 @@ Public Sub EnumJobs()
             Job.prop.AppName.Data = EnvironW(PathNormalize(Job.prop.AppName.Data))
             
             If Mid$(Job.prop.AppName.Data, 2, 1) <> ":" Then
-                If Job.prop.WorkDir.Data <> "" Then
+                If Len(Job.prop.WorkDir.Data) <> 0 Then
                     sTmp = BuildPath(Job.prop.WorkDir.Data, Job.prop.AppName.Data)
                     If FileExists(sTmp) Then Job.prop.AppName.Data = sTmp 'if only file exists in this work. folder
                 End If
@@ -2089,7 +2089,7 @@ Public Sub EnumJobs()
                 bEnabled = bEnabled Or Not CBool(Job.prop.Triggers.aTrigger(j).Flags And TASK_TRIGGER_FLAG_DISABLED)
             Next
             
-            sRunState = ""
+            sRunState = vbNullString
             Select Case Job.head.Status
                 Case SCHED_S_TASK_READY
                     sRunState = "Ready"
@@ -2110,9 +2110,9 @@ Public Sub EnumJobs()
             
             Job.prop.AppName.Data = FormatFileMissing(Job.prop.AppName.Data, Job.prop.Parameters.Data)
             
-            sHit = "O22 - Task (.job): " & IIf(bEnabled, "", "(disabled) ") & IIf(sRunState <> "", "(" & sRunState & ") ", "") & _
-                IIf(bUpdate, "(update) ", "") & _
-                IIf(bActivation, "(activation) ", "") & _
+            sHit = "O22 - Task (.job): " & IIf(bEnabled, vbNullString, "(disabled) ") & IIf(Len(sRunState) <> 0, "(" & sRunState & ") ", vbNullString) & _
+                IIf(bUpdate, "(update) ", vbNullString) & _
+                IIf(bActivation, "(activation) ", vbNullString) & _
                 sJobName & " - " & _
                 Job.prop.AppName.Data
 
@@ -2331,7 +2331,7 @@ Public Sub EnumBITS_Stage2()
     
     Dim sLog As String, aLog() As String, sGUID As String, aURL() As String, sNotify As String, sName As String
     Dim bSectFile As Boolean, bSafe As Boolean, sHit As String, result As SCAN_RESULT, resultAll As SCAN_RESULT
-    Dim sType As String, sURL As String, sDestination As String, pos As Long
+    Dim sType As String, sURL As String, sDestination As String, pos As Long, sHost As String
     
     If Not BitsAdminExecuted Then Exit Sub
     
@@ -2382,11 +2382,17 @@ Public Sub EnumBITS_Stage2()
                         bSafe = False
                         
                         If Not bIgnoreAllWhitelists And bHideMicrosoft Then
-                            If Not bSafe Then If StrBeginWith(aURL(i), "https://g.live.com/") Then bSafe = True
-                            If Not bSafe Then If StrBeginWith(aURL(i), "http://download.windowsupdate.com/") Then bSafe = True
-                            If Not bSafe Then If StrBeginWith(aURL(i), "http://au.download.windowsupdate.com/") Then bSafe = True
-                            If Not bSafe Then If StrBeginWith(aURL(i), "http://bg.v4.emdl.ws.microsoft.com/") Then bSafe = True
-                            If Not bSafe Then If StrBeginWith(aURL(i), "https://api.browser.yandex.ru/") Then bSafe = True
+                            sHost = ExtractHost(aURL(i))
+                            If Not bSafe Then If StrComp(sHost, "live.com", vbBinaryCompare) = 0 Then bSafe = True
+                            If Not bSafe Then If StrComp(sHost, "windowsupdate.com", vbBinaryCompare) = 0 Then bSafe = True
+                            If Not bSafe Then If StrComp(sHost, "microsoft.com", vbBinaryCompare) = 0 Then bSafe = True
+                            
+                            'If Not bSafe Then If StrBeginWith(aURL(i), "https://g.live.com/") Then bSafe = True
+                            'If Not bSafe Then If StrBeginWith(aURL(i), "http://download.windowsupdate.com/") Then bSafe = True
+                            'If Not bSafe Then If StrBeginWith(aURL(i), "http://au.download.windowsupdate.com/") Then bSafe = True
+                            'If Not bSafe Then If StrBeginWith(aURL(i), "http://bg.v4.emdl.ws.microsoft.com/") Then bSafe = True
+                            'If Not bSafe Then If StrBeginWith(aURL(i), "http://msedge.b.tlu.dl.delivery.mp.microsoft.com/") Then bSafe = True
+                            'If Not bSafe Then If StrBeginWith(aURL(i), "https://api.browser.yandex.ru/") Then bSafe = True
                         End If
                         
                         If Not bSafe Then
@@ -2432,9 +2438,37 @@ Public Sub EnumBITS_Stage2()
     
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "EnumBITS"
+    ErrorMsg Err, "EnumBITS_Stage2"
     If inIDE Then Stop: Resume Next
 End Sub
+
+' http://msedge.b.tlu.dl.delivery.mp.microsoft.com/xxx => microsoft.com
+'
+Public Function ExtractHost(ByVal sURL As String) As String
+    On Error GoTo ErrorHandler:
+    Dim pos As Long
+    pos = InStr(sURL, "//")
+    If pos <> 0 Then
+        If StrBeginWith(sURL, "http://") Or StrBeginWith(sURL, "https://") Then
+            sURL = Mid$(sURL, pos + 2)
+            pos = InStr(sURL, "/")
+            If pos <> 0 Then
+                ExtractHost = Left$(sURL, pos - 1)
+                pos = InStrRev(ExtractHost, ".")
+                If pos <> 0 Then
+                    pos = InStrRev(ExtractHost, ".", pos - 1)
+                    If pos <> 0 Then
+                        ExtractHost = Mid$(ExtractHost, pos + 1)
+                    End If
+                End If
+            End If
+        End If
+    End If
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "ExtractHost"
+    If inIDE Then Stop: Resume Next
+End Function
 
 ' Split string by tokens, retrieve one or several tokens (in CMD/"for" manner)
 '

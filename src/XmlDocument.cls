@@ -33,7 +33,7 @@ Public Function LoadFile(sFilePath As String) As Boolean
     hFile = FreeFile()
     
     Open sFilePath For Binary Access Read As #hFile
-    sFileData = String(LOF(hFile), vbNullChar)
+    sFileData = String$(LOF(hFile), vbNullChar)
     Get #hFile, , sFileData
     Close #hFile
     

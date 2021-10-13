@@ -29,6 +29,7 @@ Public Enum SETTINGS_SECTION
     SETTINGS_SECTION_STARTUPLIST
     SETTINGS_SECTION_UNINSTMAN
     SETTINGS_SECTION_REGUNLOCKER
+    SETTINGS_SECTION_FILEUNLOCKER
 End Enum
 
 'Private Type RECT
@@ -239,10 +240,10 @@ End Function
 '        'http://www.manhunter.ru/assembler/878_obrabotka_soobscheniy_ot_klaviaturi_v_dialogbox.html
 '
 '        If nCode = HC_ACTION Then
-'            'Debug.Print "MSG: " & Hex(lParam.message) & ", " & _
-'                "HWND: " & Hex(lParam.hwnd) & ", " & _
-'                "WPARAM: " & Hex(lParam.wParam) & ", " & _
-'                "LPARAM: " & Hex(lParam.lParam) & ", " & _
+'            'Debug.Print "MSG: " & Hex$(lParam.message) & ", " & _
+'                "HWND: " & Hex$(lParam.hwnd) & ", " & _
+'                "WPARAM: " & Hex$(lParam.wParam) & ", " & _
+'                "LPARAM: " & Hex$(lParam.lParam) & ", " & _
 '                "MSGREMOVED: " & wParam
 '
 '            If (inIDE And wParam = 0) Or Not inIDE Then
@@ -431,7 +432,7 @@ Public Function GetStringFromBinary(Optional ByVal sFile As String, Optional ByV
     sFile = EnvironW(sFile)
     
     If Not FileExists(sFile) Then
-        sFile = FindOnPath(sFile, , IIf(bIsInf, BuildPath(sWinDir, "inf"), ""))
+        sFile = FindOnPath(sFile, , IIf(bIsInf, BuildPath(sWinDir, "inf"), vbNullString))
         If 0 = Len(sFile) Then Exit Function
     End If
     
@@ -514,7 +515,7 @@ Public Function GetChromeVersion() As String
     End If
     If Len(sVer) = 0 Then
         sPath = Reg.GetString(HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe", vbNullString)
-        If sPath <> "" Then
+        If Len(sPath) <> 0 Then
             sVer = GetFilePropVersion(sPath)
         End If
     End If
@@ -853,7 +854,7 @@ Public Function AppExeName(Optional WithExtension As Boolean) As String
     End If
 
     If inIDE Then
-        AppExeName = App.ExeName & IIf(WithExtension, ".exe", "")
+        AppExeName = App.ExeName & IIf(WithExtension, ".exe", vbNullString)
         Exit Function
     End If
 
@@ -869,7 +870,7 @@ Public Function AppExeName(Optional WithExtension As Boolean) As String
     End If
     
     If cnt = 0 Then                          'clear path
-        ProcPath = App.ExeName & IIf(WithExtension, ".exe", "")
+        ProcPath = App.ExeName & IIf(WithExtension, ".exe", vbNullString)
     Else
         ProcPath = Left$(ProcPath, cnt)
         
@@ -911,15 +912,15 @@ Public Function ParseCommandLine(Line As String, argc As Long, argv() As String)
       Unit = Lex(nL) '«аписысаем текущую лексему как начало нового аргумента
       If Len(Unit) <> 0 Then '«ащита от двойных пробелов между аргументами
         'если в лексеме найдена кавычка или непарное их число, то начинаем процесс "квотировани€"
-        If (Len(Lex(nL)) - Len(Replace$(Lex(nL), """", ""))) Mod 2 = 1 Then
+        If (Len(Lex(nL)) - Len(Replace$(Lex(nL), """", vbNullString))) Mod 2 = 1 Then
           Do
             nL = nL + 1
             If nL > UBound(Lex) Then Exit Do '≈сли не дождались завершающей кавычки, а больше лексем нет
             Unit = Unit & " " & Lex(nL) 'дополн€ем соседней лексемой
           ' аргумент должен завершатьс€ 1 или непарным числом кавычек лексемы со всеми прил€гающими к ней справа символами (кроме знака пробела)
-          Loop Until (Len(Lex(nL)) - Len(Replace$(Lex(nL), """", ""))) Mod 2 = 1
+          Loop Until (Len(Lex(nL)) - Len(Replace$(Lex(nL), """", vbNullString))) Mod 2 = 1
         End If
-        Unit = Replace$(Unit, """", "") '”дал€ем кавычки
+        Unit = Replace$(Unit, """", vbNullString) '”дал€ем кавычки
         nA = nA + 1 '—четчик кол-ва выходных аргументов
         argv(nA) = Unit
       End If
@@ -996,7 +997,7 @@ Public Function DeleteFileWEx(lpSTR As Long, Optional ForceDeleteMicrosoft As Bo
     Redirect = ToggleWow64FSRedirection(False, FileName, bOldStatus)
     
     iAttr = GetFileAttributes(lpSTR)
-    If (iAttr And 2048) Then iAttr = iAttr - 2048
+    If (iAttr And FILE_ATTRIBUTE_COMPRESSED) Then iAttr = iAttr - FILE_ATTRIBUTE_COMPRESSED
     
     If iAttr And FILE_ATTRIBUTE_READONLY Then SetFileAttributes lpSTR, iAttr And Not FILE_ATTRIBUTE_READONLY
     lr = DeleteFileW(lpSTR)
@@ -1335,7 +1336,7 @@ Public Function ScanAfterReboot(Optional bSaveState As Boolean = True) As Boolea
     dNow = Now()
     dReboot = dNow - dUptime
     
-    sTime = RegReadHJT("DateLastScan", "")
+    sTime = RegReadHJT("DateLastScan", vbNullString)
     
     If Len(sTime) <> 0 Then
         If StrBeginWith(sTime, "HJT:") Then
@@ -1502,7 +1503,7 @@ Public Sub GetFileByCLSID(ByVal sCLSID As String, out_sFile As String, Optional 
                     End If
                 End If
             End If
-            If out_sFile = "" Then
+            If Len(out_sFile) = 0 Then
                 out_sFile = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\LocalServer32", vbNullString, bRedirState)
             End If
         End If
@@ -1731,7 +1732,7 @@ Function UnpackZIP(Archive As String, DestFolder As String) As Boolean
     
     Do While enm.Next(1&, itm) = S_OK
         cb = lstrlen(itm.pwcsName)
-        nam = Space(cb)
+        nam = Space$(cb)
         
         lstrcpyn StrPtr(nam), itm.pwcsName, cb + 1
         CoTaskMemFree itm.pwcsName
@@ -1797,7 +1798,7 @@ Function UnpackZIPtoArray(Archive As String, out_Buf() As Byte) As Boolean
     enm.Reset
     Do While enm.Next(1&, itm) = S_OK
         cb = lstrlen(itm.pwcsName)
-        nam = Space(cb)
+        nam = Space$(cb)
         
         lstrcpyn StrPtr(nam), itm.pwcsName, cb + 1
         CoTaskMemFree itm.pwcsName
@@ -1829,13 +1830,13 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Sub CreateUninstallKey(bCreate As Boolean, Optional EXE_Location As String = "") ' if false -> delete registry entries
+Public Sub CreateUninstallKey(bCreate As Boolean, Optional EXE_Location As String = vbNullString) ' if false -> delete registry entries
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "CreateUninstallKey - Begin"
     Dim Setup_Key$:   Setup_Key = "Software\Microsoft\Windows\CurrentVersion\Uninstall\HiJackThis Fork"
     
     If bCreate Then
-        If EXE_Location = "" Then EXE_Location = AppPath(True)
+        If Len(EXE_Location) = 0 Then EXE_Location = AppPath(True)
         
         Reg.CreateKey HKEY_LOCAL_MACHINE, Setup_Key
         Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "DisplayName", "HiJackThis Fork " & AppVerString
@@ -2482,7 +2483,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function PathBeginWith(sPath, sBeginPart As String) As Boolean
+Public Function PathBeginWith(sPath As String, sBeginPart As String) As Boolean
     If StrComp(Left$(sPath, Len(sBeginPart)), sBeginPart, 1) = 0 Then
         If Len(sPath) = Len(sBeginPart) Or Mid$(sPath, Len(sBeginPart) + 1, 1) = "\" Then PathBeginWith = True
     End If
@@ -2619,7 +2620,7 @@ Public Function HasCommandLineKey(ByVal sKey As String) As Boolean
             If bHasKey Then
                 If Right$(sKey, 1) = ":" Then offset = -1
                 ch = Mid$(g_sCommandLineArg(i), Len(sKey) + 2 + offset, 1)
-                If (ch = "" Or ch = ":") Then
+                If (Len(ch) = 0 Or ch = ":") Then
                     HasCommandLineKey = True
                     Exit Function
                 End If
@@ -2640,6 +2641,7 @@ Public Function SectionNameById(IdSection As SETTINGS_SECTION) As String
     Case SETTINGS_SECTION_STARTUPLIST:  sName = "Tools\StartupList"
     Case SETTINGS_SECTION_UNINSTMAN:    sName = "Tools\UninstMan"
     Case SETTINGS_SECTION_REGUNLOCKER:  sName = "Tools\RegUnlocker"
+    Case SETTINGS_SECTION_FILEUNLOCKER:  sName = "Tools\FileUnlocker"
     End Select
     
     SectionNameById = sName

@@ -198,24 +198,24 @@ Option Explicit
 
 'ADS Enum alternatives - see: https://www.cyberforum.ru/win-api/thread1842785.html
 
-Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
-Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteW" (ByVal hwnd As Long, ByVal lpOperation As Long, ByVal lpFile As Long, ByVal lpParameters As Long, ByVal lpDirectory As Long, ByVal nShowCmd As Long) As Long
-Private Declare Function SHRunDialog Lib "shell32.dll" Alias "#61" (ByVal hOwner As Long, ByVal Unknown1 As Long, ByVal Unknown2 As Long, ByVal szTitle As String, ByVal szPrompt As String, ByVal uFlags As Long) As Long
-Private Declare Sub ReleaseCapture Lib "user32.dll" ()
+'Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
+'Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteW" (ByVal hwnd As Long, ByVal lpOperation As Long, ByVal lpFile As Long, ByVal lpParameters As Long, ByVal lpDirectory As Long, ByVal nShowCmd As Long) As Long
+'Private Declare Function SHRunDialog Lib "shell32.dll" Alias "#61" (ByVal hOwner As Long, ByVal Unknown1 As Long, ByVal Unknown2 As Long, ByVal szTitle As String, ByVal szPrompt As String, ByVal uFlags As Long) As Long
+'Private Declare Sub ReleaseCapture Lib "user32.dll" ()
 
-Private Const TH32CS_SNAPPROCESS = &H2
+'Private Const TH32CS_SNAPPROCESS = &H2
 Private Const TH32CS_SNAPNOHEAPS = &H40000000
-Private Const TH32CS_SNAPMODULE = &H8
-Private Const TH32CS_SNAPTHREAD = &H4
-Private Const PROCESS_TERMINATE = &H1
-Private Const PROCESS_QUERY_INFORMATION = 1024
-Private Const PROCESS_QUERY_LIMITED_INFORMATION = &H1000
-Private Const PROCESS_VM_READ = 16
-Private Const THREAD_SUSPEND_RESUME = &H2
+'Private Const TH32CS_SNAPMODULE = &H8
+'Private Const TH32CS_SNAPTHREAD = &H4
+'Private Const PROCESS_TERMINATE = &H1
+'Private Const PROCESS_QUERY_INFORMATION = 1024
+'Private Const PROCESS_QUERY_LIMITED_INFORMATION = &H1000
+'Private Const PROCESS_VM_READ = 16
+'Private Const THREAD_SUSPEND_RESUME = &H2
 
-Private Const LB_SETTABSTOPS = &H192
-Private Const WM_NCLBUTTONDOWN = &HA1
-Private Const HTCAPTION = 2
+'Private Const LB_SETTABSTOPS = &H192
+'Private Const WM_NCLBUTTONDOWN = &HA1
+'Private Const HTCAPTION = 2
 
 Private lstProcessManagerHasFocus As Boolean
 Private lstProcManDLLsHasFocus As Boolean

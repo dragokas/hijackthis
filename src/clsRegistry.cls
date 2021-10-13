@@ -231,13 +231,13 @@ Private Enum KEY_SET_INFORMATION_CLASS
     MaxKeySetInfoClass
 End Enum
 
-Private Type PUBLIC_OBJECT_BASIC_INFORMATION
-    Attributes As Long
-    GrantedAccess As Long
-    HandleCount As Long
-    PointerCount As Long
-    Reserved(9) As Long
-End Type
+'Private Type PUBLIC_OBJECT_BASIC_INFORMATION
+'    Attributes As Long
+'    GrantedAccess As Long
+'    HandleCount As Long
+'    PointerCount As Long
+'    Reserved(9) As Long
+'End Type
 
 Private Type OBJECT_ATTRIBUTES
     Length                   As Long
@@ -248,39 +248,39 @@ Private Type OBJECT_ATTRIBUTES
     SecurityQualityOfService As Long
 End Type
 
-Private Type KEY_VIRTUALIZATION_INFORMATION
-    VirtualizationCandidate As Long
-    VirtualizationEnabled   As Long
-    VirtualTarget           As Long
-    VirtualStore            As Long
-    VirtualSource           As Long
-    Reserved                As Long
-End Type
+'Private Type KEY_VIRTUALIZATION_INFORMATION
+'    VirtualizationCandidate As Long
+'    VirtualizationEnabled   As Long
+'    VirtualTarget           As Long
+'    VirtualStore            As Long
+'    VirtualSource           As Long
+'    Reserved                As Long
+'End Type
 
-Private Type KEY_FULL_INFORMATION
-    LastWriteTime           As Currency
-    TitleIndex              As Long
-    ClassOffset             As Long
-    ClassLength             As Long
-    SubKeys                 As Long
-    MaxNameLen              As Long
-    MaxClassLen             As Long
-    Values                  As Long
-    MaxValueNameLen         As Long
-    MaxValueDataLen         As Long
-    Class(0)                As Integer 'WCHAR Class[1]
-End Type
+'Private Type KEY_FULL_INFORMATION
+'    LastWriteTime           As Currency
+'    TitleIndex              As Long
+'    ClassOffset             As Long
+'    ClassLength             As Long
+'    SubKeys                 As Long
+'    MaxNameLen              As Long
+'    MaxClassLen             As Long
+'    Values                  As Long
+'    MaxValueNameLen         As Long
+'    MaxValueDataLen         As Long
+'    Class(0)                As Integer 'WCHAR Class[1]
+'End Type
 
 Private Const STANDARD_RIGHTS_READ   As Long = &H20000
 Private Const KEY_READ = ((STANDARD_RIGHTS_READ Or KEY_QUERY_VALUE Or KEY_ENUMERATE_SUB_KEYS Or KEY_NOTIFY) And (Not SYNCHRONIZE))
-Private Const REG_OPTION_OPEN_LINK   As Long = 8&
+'Private Const REG_OPTION_OPEN_LINK   As Long = 8&
 Private Const REG_OPTION_BACKUP_RESTORE As Long = 4&
 Private Const STATUS_SUCCESS         As Long = 0&
-Private Const STATUS_INVALID_PARAMETER As Long = &HC000000D
+'Private Const STATUS_INVALID_PARAMETER As Long = &HC000000D
 
 'Private Declare Function CompareObjectHandles Lib "Kernelbase.dll" (ByVal hFirstObjectHandle As Long, ByVal hSecondObjectHandle As Long) As Long
 Private Declare Function NtQueryKey Lib "ntdll.dll" (ByVal KeyHandle As Long, ByVal KeyInformationClass As KEY_INFORMATION_CLASS, KeyInformation As Any, ByVal Length As Long, ResultLength As Long) As Long
-Private Declare Function NtQueryObject Lib "ntdll.dll" (ByVal Handle As Long, ByVal ObjectInformationClass As OBJECT_INFORMATION_CLASS, ObjectInformation As Any, ByVal ObjectInformationLength As Long, ReturnLength As Long) As Long
+'Private Declare Function NtQueryObject Lib "ntdll.dll" (ByVal Handle As Long, ByVal ObjectInformationClass As OBJECT_INFORMATION_CLASS, ObjectInformation As Any, ByVal ObjectInformationLength As Long, ReturnLength As Long) As Long
 Private Declare Function NtOpenKeyEx Lib "ntdll.dll" (KeyHandle As Long, ByVal DesiredAccess As Long, ObjectAttributes As OBJECT_ATTRIBUTES, ByVal OpenOptions As Long) As Long
 Private Declare Function NtOpenKey Lib "ntdll.dll" (KeyHandle As Long, ByVal DesiredAccess As Long, ObjectAttributes As OBJECT_ATTRIBUTES) As Long
 Private Declare Function RegFlushKey Lib "Advapi32.dll" (ByVal hKey As Long) As Long
@@ -1651,7 +1651,7 @@ Public Function EnumSubKeysToArray( _
                 If Not bRecursively Then
                     aSubKeys(BeginIdx + idx) = sName
                 Else
-                    aSubKeys(BeginIdx + idx) = IIf(sKey <> "", sKey & "\" & sName, sName)
+                    aSubKeys(BeginIdx + idx) = IIf(Len(sKey) <> 0, sKey & "\" & sName, sName)
                 End If
             Else
                 ReDim Preserve aSubKeys(1 To BeginIdx + idx)
@@ -1697,7 +1697,6 @@ Public Function NtEnumSubKeysToArray( _
     Dim buf()       As Byte
     Dim cchBuf      As Long
     Dim reqSize     As Long
-    Dim kfi         As KEY_FULL_INFORMATION
     Dim strLength   As Long
     
     If bEraseArray Then Erase aSubKeys
@@ -1758,7 +1757,7 @@ Public Function NtEnumSubKeysToArray( _
             If Not bRecursively Then
                 aSubKeys(BeginIdx + idx) = sName
             Else
-                aSubKeys(BeginIdx + idx) = IIf(sKey <> "", sKey & "\" & sName, sName)
+                aSubKeys(BeginIdx + idx) = IIf(Len(sKey) <> 0, sKey & "\" & sName, sName)
             End If
         End If
     
@@ -1958,7 +1957,6 @@ End Function
 Public Function SetKeyTime(lHive As ENUM_REG_HIVE, ByVal KeyName$, dDate As Date, Optional bUseWow64 As Boolean) As Boolean
     On Error GoTo ErrorHandler:
     Dim hKey         As Long
-    Dim lret         As Long
     Dim fTime        As FILETIME
     Dim sTime        As SYSTEMTIME
     
@@ -2007,7 +2005,7 @@ Public Function ExportKeyToVariable( _
     
     If FileExists(sWinSysDir & "\reg.exe", True) Then
         
-        If Proc.ProcessRun(sWinSysDir & "\reg.exe", "export " & """" & sKey & """" & " " & """" & sTempFile & """" & " /y" & IIf(bUseWow64 Or OSver.IsWin32, "", " /reg:64"), , vbHide) Then
+        If Proc.ProcessRun(sWinSysDir & "\reg.exe", "export " & """" & sKey & """" & " " & """" & sTempFile & """" & " /y" & IIf(bUseWow64 Or OSver.IsWin32, vbNullString, " /reg:64"), , vbHide) Then
 
             If ERROR_SUCCESS <> Proc.WaitForTerminate(, , False, 10000) Then    '10 sec. timeout
                 Proc.ProcessClose , , True
@@ -2078,6 +2076,7 @@ Public Function GetFilenameFromBinaryKey(lHive As ENUM_REG_HIVE, ByVal sKey$, Op
     
     cbData = MAX_VALUENAME
     If RegOpenKeyEx(lHive, StrPtr(sKey), 0, KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) = 0 Then
+        Dim uData() As Byte
         ReDim uData(MAX_VALUENAME - 1) As Byte
         If RegQueryValueEx(hKey, StrPtr(sValue), 0, ByVal 0&, ByVal VarPtr(uData(0)), cbData) = 0 Then
             sFile = TrimNull(StrConv(uData, vbUnicode))
@@ -2126,14 +2125,14 @@ Public Function GetDefaultProgram(sExtension As String) As String 'e.g., ".txt"
     Dim sFile       As String
     Dim sVerb       As String
     
-    TXTClassID = GetData(HKEY_CLASSES_ROOT, sExtension, "")
+    TXTClassID = GetData(HKEY_CLASSES_ROOT, sExtension, vbNullString)
     
-    If TXTClassID <> "" Then
+    If Len(TXTClassID) <> 0 Then
         sVerb = GetData(HKEY_CLASSES_ROOT, TXTClassID & "\shell", "")
         
-        If sVerb = "" Then sVerb = "open"
+        If Len(sVerb) = 0 Then sVerb = "open"
     
-        TXTProg = EnvironW(GetData(HKEY_CLASSES_ROOT, TXTClassID & "\shell\" & sVerb & "\command", ""))
+        TXTProg = EnvironW(GetData(HKEY_CLASSES_ROOT, TXTClassID & "\shell\" & sVerb & "\command", vbNullString))
         
         SplitIntoPathAndArgs TXTProg, sFile, , True
         TXTProg = sFile
@@ -2299,7 +2298,7 @@ Public Sub Jump(lHive As ENUM_REG_HIVE, ByVal sKey As String, Optional sValue As
         sKey = GetParentDir(sKey)
     Loop
     
-    If sValue <> "" Then
+    If Len(sValue) <> 0 Then
         'value exists ?
         bNoValue = Not ValueExists(lHive, sKey, sValue, bUseWow64)
     End If
@@ -2324,7 +2323,7 @@ Public Sub Jump(lHive As ENUM_REG_HIVE, ByVal sKey As String, Optional sValue As
     bVista = (OSver.MajorMinor = 6)
     If Not bVista Then
         sPrefix = GetString(HKCU, "Software\Microsoft\Windows\CurrentVersion\Applets\Regedit", "Lastkey")
-        If sPrefix = "" Then
+        If Len(sPrefix) = 0 Then
             If OSver.LangDisplayCode = &H419& Then
                 'sPrefix = "Компьютер\"
                 sPrefix = STR_CONST.RU_PC
@@ -2407,7 +2406,7 @@ Public Sub Jump(lHive As ENUM_REG_HIVE, ByVal sKey As String, Optional sValue As
         SendMessage hwndTreeView, WM_KEYDOWN, VK_RIGHT, ByVal 0
     End If
     
-    If sValue <> "" And (Not bNoValue) Then
+    If Len(sValue) <> 0 And (Not bNoValue) Then
     
         'setting the focus on SysListView32 control
         Dim thrCurrent As Long
@@ -2434,7 +2433,7 @@ Public Sub Jump(lHive As ENUM_REG_HIVE, ByVal sKey As String, Optional sValue As
         
             Dim ItemCount As Long, iItem As Long
             Dim lvi As LVITEMW
-            Dim pHandle As Long, ProcessID As Long, Index As Long
+            Dim pHandle As Long, ProcessID As Long
             Dim pStrBufferMemory As Long, pMyItemMemory As Long, strLength As Long
             Dim strBuffer As String, result As Long
         
@@ -2544,7 +2543,7 @@ Public Function WrapNtOpenKeyEx( _
     
     bOS_32 = Not bIsWOW64
     
-    sNtKey = MapHiveToNtName(hHive) & IIf(Len(sKey) = 0, "", "\" & sKey)
+    sNtKey = MapHiveToNtName(hHive) & IIf(Len(sKey) = 0, vbNullString, "\" & sKey)
     
     If Not bOS_32 And Not bUseWow64 Then
         'walkaround for WOW since Native API doesn't support KEY_WOW64_64KEY access flag (thanks to David Heffernan (StackOverflow))
@@ -2581,7 +2580,7 @@ Public Function WrapNtOpenKeyEx( _
     'WrapNtOpenKeyEx = NtOpenKey(retHandle, dwAccess, OA)
     
     If STATUS_SUCCESS <> lret Then
-        Debug.Print "NtOpenKey(Ex) returns: 0x" & Hex(lret)
+        Debug.Print "NtOpenKey(Ex) returns: 0x" & Hex$(lret)
     End If
     
     If OA.RootDirectory <> 0 Then RegCloseKey OA.RootDirectory
@@ -2683,7 +2682,7 @@ Public Function IsKeySymLink(hHive As ENUM_REG_HIVE, ByVal sKey As String, Optio
                     '// TODO.
                     'add RegMapNtNameToHive
                 Else
-                    out_KeyTarget = ""
+                    out_KeyTarget = vbNullString
                 End If
             Else
                 Debug.Print "Error in query SymbolicLinkValue for: " & hHive & "\" & sKey & ". Code = " & lret
@@ -3070,13 +3069,13 @@ Private Function RegGetKeyInfoNameEx(hKey As Long) As String
                 memcpy ByVal StrPtr(sKeyName), buf(1), strLength
                 RegGetKeyInfoNameEx = sKeyName
             Else
-                Debug.Print "Error in RegGetKeyInfoNameEx (strLength = 0), code = 0x" & Hex(lret)
+                Debug.Print "Error in RegGetKeyInfoNameEx (strLength = 0), code = 0x" & Hex$(lret)
             End If
         Else
-            Debug.Print "Error in RegGetKeyInfoNameEx (NtQueryKey, second call), code = 0x" & Hex(lret)
+            Debug.Print "Error in RegGetKeyInfoNameEx (NtQueryKey, second call), code = 0x" & Hex$(lret)
         End If
     Else
-        Debug.Print "Error in RegGetKeyInfoNameEx (NtQueryKey, first call), code = 0x" & Hex(lret)
+        Debug.Print "Error in RegGetKeyInfoNameEx (NtQueryKey, first call), code = 0x" & Hex$(lret)
     End If
     
     Exit Function
@@ -3123,7 +3122,7 @@ Private Function RegGetKeyFlags(hKey As Long) As KEY_FLAGS_INFORMATION
     If lret = STATUS_SUCCESS Then
         RegGetKeyFlags = KeyFlags
     Else
-        Debug.Print "Error in RegGetKeyInfoNameEx (NtQueryKey), code = 0x" & Hex(lret)
+        Debug.Print "Error in RegGetKeyInfoNameEx (NtQueryKey), code = 0x" & Hex$(lret)
     End If
     
     Exit Function
@@ -3221,7 +3220,7 @@ Private Sub KeyShowInfo(hHive As Long, sSubKey As String, hFile As Long)
     Call NtGetKeyVirtualType(hHive, sSubKey, True, sSymTarget)
 
     sLog = "HKLM\" & sSubKey & " => " & IIf(bExist, " (exist, handle = " & hKey & ")", "(not exist, handle = " & hKey & ")") & _
-        IIf(Len(sSymTarget) <> 0, " => (symlink) " & sSymTarget, "")
+        IIf(Len(sSymTarget) <> 0, " => (symlink) " & sSymTarget, vbNullString)
 
     Debug.Print sLog
 End Sub

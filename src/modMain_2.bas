@@ -177,14 +177,14 @@ Public Sub CheckO25Item()
                 Set objConsumer = objServiceConsumer.Get(ConsumerPath)
                 On Error GoTo ErrorHandler:
                 
-                cmdExecute = ""
-                cmdWorkDir = ""
-                cmdArguments = ""
-                sScriptFile = ""
-                sScriptText = ""
-                sAdditionalInfo = ""
-                sScriptEngine = ""
-                sTimerName = ""
+                cmdExecute = vbNullString
+                cmdWorkDir = vbNullString
+                cmdArguments = vbNullString
+                sScriptFile = vbNullString
+                sScriptText = vbNullString
+                sAdditionalInfo = vbNullString
+                sScriptEngine = vbNullString
+                sTimerName = vbNullString
                 lTimerInterval = 0
                 lKillTimeout = 0
                 bRunInteractively = False
@@ -219,7 +219,7 @@ Public Sub CheckO25Item()
                         End If
                         If 0 <> Len(sScriptText) Then
                             'sAdditionalInfo = sAdditionalInfo & "ScriptCode=" & """" & StripCode(sScriptText) & """"
-                            sAdditionalInfo = sAdditionalInfo & IIf(sAdditionalInfo <> "", " / ", "") & StripCode(sScriptText)
+                            sAdditionalInfo = sAdditionalInfo & IIf(Len(sAdditionalInfo) <> 0, " / ", vbNullString) & StripCode(sScriptText)
                         End If
 
                     ElseIf StrComp(ConsumerClassName, "CommandLineEventConsumer", 1) = 0 Then
@@ -248,7 +248,7 @@ Public Sub CheckO25Item()
                         '    ", WorkDir=" & """" & cmdWorkDir & """" & _
                         '    ", Arguments=" & """" & StripCode(cmdArguments) & """"
                            
-                        sAdditionalInfo = cmdExecute & " " & cmdArguments & IIf(cmdWorkDir <> "", " (WorkDir = " & cmdWorkDir & ")", "")
+                        sAdditionalInfo = cmdExecute & " " & cmdArguments & IIf(Len(cmdWorkDir) <> 0, " (WorkDir = " & cmdWorkDir & ")", vbNullString)
                         
                         ComeBack = False
                         
@@ -352,8 +352,8 @@ Public Sub CheckO25Item()
                             On Error GoTo ErrorHandler:
                             
                             If objTimer Is Nothing Then
-                                sTimerClassName = ""
-                                sTimerName = ""
+                                sTimerClassName = vbNullString
+                                sTimerName = vbNullString
                             Else
                                 Set objTimer = Nothing
                             End If
@@ -380,11 +380,11 @@ Public Sub CheckO25Item()
                 If Not bOtherConsumerClass Then
                     If Not bIgnoreAllWhitelists Then
                         If bHideMicrosoft Then
-                            If ConsumerName = "BVTConsumer" And cmdExecute = "" And cmdArguments = "cscript KernCap.vbs" Then
-                                If cmdWorkDir <> "" Then
+                            If ConsumerName = "BVTConsumer" And Len(cmdExecute) = 0 And cmdArguments = "cscript KernCap.vbs" Then
+                                If Len(cmdWorkDir) <> 0 Then
                                     If Not FileExists(BuildPath(cmdWorkDir, "KernCap.vbs")) Then bDangerScript = False
                                 Else
-                                    If FindOnPath("KernCap.vbs") = "" Then bDangerScript = False
+                                    If Len(FindOnPath("KernCap.vbs")) = 0 Then bDangerScript = False
                                 End If
                             
                             ElseIf FilterName = "BVTFilter" And sEventName = "__InstanceModificationEvent WITHIN 60 WHERE TargetInstance ISA ""Win32_Processor"" AND TargetInstance.LoadPercentage > 99" Then
@@ -723,13 +723,13 @@ End Function
 Function StripCode(ByVal sCode As String, Optional Max_Characters As Long = MAX_CODE_LENGTH, Optional AddActualLength As Boolean = True) As String
     On Error GoTo ErrorHandler
 
-    sCode = Replace$(sCode, vbCr, "")
+    sCode = Replace$(sCode, vbCr, vbNullString)
     sCode = Replace$(sCode, vbLf, ChrW$(182) & Space$(1))
 
     If Len(sCode) <= Max_Characters Then
         StripCode = sCode
     Else
-        StripCode = Left$(sCode, Max_Characters) & IIf(AddActualLength, "(" & Len(sCode) & " bytes" & ")", "")
+        StripCode = Left$(sCode, Max_Characters) & IIf(AddActualLength, "(" & Len(sCode) & " bytes" & ")", vbNullString)
     End If
     Exit Function
 ErrorHandler:
@@ -745,8 +745,8 @@ End Function
 Sub ExtractNameSpaceAndClassNameFromString(sComplexString As String, out_NameSpace As String, Optional out_ClassName As String)
     On Error GoTo ErrorHandler
     Dim pos As Long, pos2 As Long, pos3 As Long
-    out_NameSpace = ""
-    out_ClassName = ""
+    out_NameSpace = vbNullString
+    out_ClassName = vbNullString
     If InStr(1, sComplexString, "\\") = 1 Then
         pos = InStr(3, sComplexString, "\")
         If pos <> 0 Then
@@ -810,10 +810,10 @@ Public Sub CheckO26Item()
     
     Const FLG_APPLICATION_VERIFIER As Long = &H100&
     
-    Dim sKeys$(), sSubkeys$(), i&, j&, sFile$, sHit$, result As SCAN_RESULT
+    Dim sKeys$(), sSubkeys$(), i&, j&, sFile$, sArgs$, sHit$, sData$, result As SCAN_RESULT
     Dim bDisabled As Boolean, vGFlag As Variant
-    Dim bPerUser As Boolean, bIsSafe As Boolean, aTmp() As String, sNonSafe As String, bMissing As Boolean, sAlias As String
-    Dim bSafe As Boolean, bShared As Boolean, sOrigLine As String
+    Dim bPerUser As Boolean, aTmp() As String, sAlias As String
+    Dim bSafe As Boolean, bMicrosoft As Boolean, sOrigLine As String
     
     If bIsWinVistaAndNewer Then
         If IsProcedureAvail("VerifierIsPerUserSettingsEnabled", "Verifier.dll") Then
@@ -843,25 +843,21 @@ Public Sub CheckO26Item()
         
         For i = 0 To UBound(sKeys)
 
-            sFile = Reg.GetString(HE.Hive, HE.Key & "\" & sKeys(i), "Debugger", HE.Redirected)
-    
-            If sFile <> vbNullString Then
-                sFile = FindOnPath(UnQuote(EnvironW(sFile)), True)
-        
-                If FileExists(sFile) Then
-                    sFile = GetLongPath(sFile) '8.3 -> Full
-                    bMissing = False
-                Else
-                    bMissing = True
-                End If
+            sData = Reg.GetString(HE.Hive, HE.Key & "\" & sKeys(i), "Debugger", HE.Redirected)
+            
+            If Len(sData) <> 0 Then
+            
+                SplitIntoPathAndArgs sData, sFile, sArgs, bIsRegistryData:=True
+                sFile = FormatFileMissing(sFile, sArgs)
                 
                 bSafe = False
+                bMicrosoft = IsMicrosoftFile(sFile)
                 
                 'check by safe list
                 If bHideMicrosoft Then
                     If StrComp(sKeys(i), "taskmgr.exe", 1) = 0 Then
                         If InStr(1, GetFileProperty(sFile, "FileDescription"), "Process Explorer", 1) <> 0 Then
-                            If IsMicrosoftFile(sFile) Then
+                            If bMicrosoft Then
                                 bSafe = True
                             End If
                         End If
@@ -880,8 +876,9 @@ Public Sub CheckO26Item()
                 
                 If (Not bSafe) Or bIgnoreAllWhitelists Then
                     
-                    sHit = sAlias & " - Debugger: " & HE.HiveNameAndSID & "\..\" & sKeys(i) & ": [Debugger] = " & sFile & IIf(bMissing, " " & STR_FILE_MISSING, "")
-        
+                    sHit = sAlias & " - Debugger: " & HE.HiveNameAndSID & "\..\" & sKeys(i) & ": [Debugger] = " & _
+                        ConcatFileArg(sFile, sArgs) & IIf(bMicrosoft, " (Microsoft)", vbNullString)
+                    
                     If Not IsOnIgnoreList(sHit) Then
           
                         If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
@@ -900,9 +897,9 @@ Public Sub CheckO26Item()
             
             'Detecting AVRF Hook
             
-            sFile = Reg.GetString(HE.Hive, HE.Key & "\" & sKeys(i), "VerifierDlls", HE.Redirected)
+            sData = Reg.GetString(HE.Hive, HE.Key & "\" & sKeys(i), "VerifierDlls", HE.Redirected)
             
-            If Len(sFile) <> 0 Then
+            If Len(sData) <> 0 Then
                 
                 bDisabled = False
                 vGFlag = Reg.GetString(HE.Hive, HE.Key & "\" & sKeys(i), "GlobalFlag", HE.Redirected)
@@ -913,17 +910,14 @@ Public Sub CheckO26Item()
                     If CStr(vGFlag) <> "0x100" Then bDisabled = True
                 End If
                 
-                sFile = FindOnPath(UnQuote(EnvironW(sFile)), True)
+                SplitIntoPathAndArgs sData, sFile, sArgs, bIsRegistryData:=True
+                sFile = FormatFileMissing(sFile, sArgs)
                 
-                If FileExists(sFile) Then
-                    sFile = GetLongPath(sFile) '8.3 -> Full
-                    bMissing = False
-                Else
-                    bMissing = True
-                End If
+                bMicrosoft = IsMicrosoftFile(sFile)
                 
                 sHit = sAlias & " - Debugger: " & HE.HiveNameAndSID & "\..\" & _
-                    sKeys(i) & ": [VerifierDlls] = " & sFile & IIf(bMissing, " " & STR_FILE_MISSING, "") & IIf(bDisabled, " (disabled)", "")
+                    sKeys(i) & ": [VerifierDlls] = " & ConcatFileArg(sFile, sArgs) & IIf(bMicrosoft, " (Microsoft)", vbNullString) & _
+                    IIf(bDisabled, " (disabled)", vbNullString)
                 
                 If Not IsOnIgnoreList(sHit) Then
                     
@@ -949,7 +943,7 @@ Public Sub CheckO26Item()
         
         sFile = Reg.GetString(HE.Hive, HE.Key & "\" & "{ApplicationVerifierGlobalSettings}", "VerifierProviders", HE.Redirected)
         
-        If sFile <> "" Then
+        If Len(sFile) <> 0 Then
             
             aTmp = SplitSafe(sFile)
             ArrayRemoveEmptyItems aTmp
@@ -974,7 +968,7 @@ Public Sub CheckO26Item()
                             
                             AddRegToFix .Reg, REPLACE_VALUE Or TRIM_VALUE, _
                                 HE.Hive, HE.Key & "\" & "{ApplicationVerifierGlobalSettings}", "VerifierProviders", , HE.Redirected, , _
-                                sOrigLine, "", " "
+                                sOrigLine, vbNullString, " "
                             
                             .CureType = REGISTRY_BASED
                         End With
@@ -995,7 +989,7 @@ Public Sub CheckO26Item()
     
         For i = 1 To Reg.EnumSubKeysToArray(HKCU, "Software\Microsoft\Windows\CurrentVersion\PackagedAppXDebug", sKeys())
             
-            sFile = Reg.GetString(HKCU, "Software\Microsoft\Windows\CurrentVersion\PackagedAppXDebug\" & sKeys(i), "")
+            sFile = Reg.GetString(HKCU, "Software\Microsoft\Windows\CurrentVersion\PackagedAppXDebug\" & sKeys(i), vbNullString)
             
             sFile = FormatFileMissing(sFile)
                     
@@ -1065,7 +1059,7 @@ Public Sub CheckO26ToolsHiJack()
     
     Dim sFile$, sHit$, result As SCAN_RESULT
     Dim aKey$(), sRestore$
-    Dim i As Long, j As Long, bSafe As Boolean, bUseSFC As Boolean
+    Dim i As Long, bSafe As Boolean, bUseSFC As Boolean
     
     Dim dSafe As clsTrickHashTable
     Set dSafe = New clsTrickHashTable
@@ -1082,7 +1076,7 @@ Public Sub CheckO26ToolsHiJack()
     dSafe.Add "caretbrowsing", "21"
     dSafe.Add "caretwidth", "8"
     dSafe.Add "colorfiltering", "22"
-    dSafe.Add "cursorscheme", ""
+    dSafe.Add "cursorscheme", vbNullString
     dSafe.Add "filterkeys", "0"
     dSafe.Add "focusborderheight", "6"
     dSafe.Add "focusborderwidth", "7"
@@ -1120,7 +1114,7 @@ Public Sub CheckO26ToolsHiJack()
             If sRestore = "*" Then
             
                 bSafe = True
-                sRestore = ""
+                sRestore = vbNullString
                 
             ElseIf StrComp(sFile, EnvironW(sRestore), 1) = 0 Then
                 
@@ -1260,7 +1254,7 @@ Public Sub CheckO26ToolsHiJack()
                 With result
                     .Section = "O26"
                     .HitLineW = sHit
-                    AddRegToFix .Reg, RESTORE_VALUE, HKLM, sKey, "", dSafe.Items(i), , REG_RESTORE_EXPAND_SZ
+                    AddRegToFix .Reg, RESTORE_VALUE, HKLM, sKey, vbNullString, dSafe.Items(i), , REG_RESTORE_EXPAND_SZ
                     AddFileToFix .File, RESTORE_FILE_SFC, EnvironW(RemoveArguments(dSafe.Items(i)))
                     
                     .CureType = REGISTRY_BASED

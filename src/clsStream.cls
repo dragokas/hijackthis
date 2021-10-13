@@ -102,7 +102,7 @@ Private Const GENERIC_WRITE                   As Long = &H40000000
 Private Const GENERIC_READ                    As Long = &H80000000
 Private Const CREATE_ALWAYS                   As Long = 2
 Private Const OPEN_EXISTING                   As Long = 3
-Private Const FILE_ATTRIBUTE_NORMAL           As Long = &H80
+'Private Const FILE_ATTRIBUTE_NORMAL           As Long = &H80
 Private Const COMPRESSION_FORMAT_LZNT1        As Long = 2
 
 ' // Size of data

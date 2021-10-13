@@ -50,7 +50,7 @@ End Enum
 
 Const CHUNK_SIZE As Long = &H2000&
 
-Private Const INTERNET_COOKIE_HTTPONLY As Long = 8192& 'INTERNET_COOKIE_HTTPONLY = 8192, //Requires IE 8 or higher
+'Private Const INTERNET_COOKIE_HTTPONLY As Long = 8192& 'INTERNET_COOKIE_HTTPONLY = 8192, //Requires IE 8 or higher
 
 Private Declare Function InternetOpen Lib "wininet.dll" Alias "InternetOpenW" (ByVal sAgent As Long, ByVal lAccessType As Long, ByVal sProxyName As Long, ByVal sProxyBypass As Long, ByVal lFlags As Long) As Long
 ' Queries an Internet option on the specified handle
@@ -71,25 +71,25 @@ Private Declare Function InternetSetOption Lib "wininet.dll" Alias "InternetSetO
 ' Queries for information about an HTTP request.
 Private Declare Function HttpQueryInfo Lib "wininet.dll" Alias "HttpQueryInfoW" (ByVal hRequest As Long, ByVal dwInfoLevel As Long, ByVal lpvBuffer As Long, ByVal lpdwBufferLength As Long, ByVal lpdwIndex As Long) As Long
 Private Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long) As Long
-Private Declare Function InternetGetConnectedStateEx Lib "wininet.dll" Alias "InternetGetConnectedStateExA" (ByRef lpdwFlags As Long, ByVal lpszConnectionName As String, ByVal dwNameLen As Long, ByVal dwReserved As Long) As Long
-Private Declare Function InternetGetConnectedState Lib "wininet.dll" (ByRef dwFlags As Long, ByVal dwReserved As Long) As Long
-Private Declare Function InternetGetCookieEx Lib "wininet.dll" Alias "InternetGetCookieExA" (ByVal URL As String, ByVal cookieName As String, ByVal cookieData As String, ByRef Size As Long, ByVal Flags As Long, ByVal pReserved As Long) As Long
-Private Declare Function InternetDial Lib "wininet.dll" (ByVal hwnd As Long, ByVal sConnectoid As String, ByVal dwFlags As Long, lpdwConnection As Long, ByVal dwReserved As Long) As Long
-Private Declare Function InternetHangUp Lib "wininet.dll" (ByVal dwConnection As Long, ByVal dwReserved As Long) As Long
-Private Declare Function InternetCheckConnectionW Lib "wininet.dll" (ByVal lpszUrl As Long, ByVal dwFlags As Long, ByVal dwReserved As Long) As Long
-Private Declare Function InternetOpenUrlW Lib "wininet.dll" (ByVal hInternet As Long, ByVal lpszUrl As Long, ByVal lpszHeaders As Long, ByVal dwHeadersLength As Long, ByVal dwFlags As Long, ByRef dwContext As Long) As Long
+'Private Declare Function InternetGetConnectedStateEx Lib "wininet.dll" Alias "InternetGetConnectedStateExA" (ByRef lpdwFlags As Long, ByVal lpszConnectionName As String, ByVal dwNameLen As Long, ByVal dwReserved As Long) As Long
+'Private Declare Function InternetGetConnectedState Lib "wininet.dll" (ByRef dwFlags As Long, ByVal dwReserved As Long) As Long
+'Private Declare Function InternetGetCookieEx Lib "wininet.dll" Alias "InternetGetCookieExA" (ByVal URL As String, ByVal cookieName As String, ByVal cookieData As String, ByRef Size As Long, ByVal Flags As Long, ByVal pReserved As Long) As Long
+'Private Declare Function InternetDial Lib "wininet.dll" (ByVal hwnd As Long, ByVal sConnectoid As String, ByVal dwFlags As Long, lpdwConnection As Long, ByVal dwReserved As Long) As Long
+'Private Declare Function InternetHangUp Lib "wininet.dll" (ByVal dwConnection As Long, ByVal dwReserved As Long) As Long
+'Private Declare Function InternetCheckConnectionW Lib "wininet.dll" (ByVal lpszUrl As Long, ByVal dwFlags As Long, ByVal dwReserved As Long) As Long
+'Private Declare Function InternetOpenUrlW Lib "wininet.dll" (ByVal hInternet As Long, ByVal lpszUrl As Long, ByVal lpszHeaders As Long, ByVal dwHeadersLength As Long, ByVal dwFlags As Long, ByRef dwContext As Long) As Long
 Private Declare Function FormatMessage Lib "kernel32.dll" Alias "FormatMessageW" (ByVal dwFlags As Long, ByVal lpSource As Long, ByVal dwMessageId As Long, ByVal dwLanguageId As Long, ByVal lpBuffer As Long, ByVal nSize As Long, Arguments As Any) As Long
 Private Declare Function GetModuleHandle Lib "kernel32.dll" Alias "GetModuleHandleW" (ByVal lpModuleName As Long) As Long
 
-Private Const INTERNET_CONNECTION_MODEM      As Long = &H1
-Private Const INTERNET_CONNECTION_LAN        As Long = &H2
-Private Const INTERNET_CONNECTION_PROXY      As Long = &H4
-Private Const INTERNET_CONNECTION_MODEM_BUSY As Long = &H8
-Private Const INTERNET_RAS_INSTALLED         As Long = &H10
-Private Const INTERNET_CONNECTION_OFFLINE    As Long = &H20
-Private Const INTERNET_CONNECTION_CONFIGURED As Long = &H40
-Private Const INTERNET_COOKIE_THIRD_PARTY    As Long = 131072
-Private Const INTERNET_FLAG_RESTRICTED_ZONE  As Long = 16
+'Private Const INTERNET_CONNECTION_MODEM      As Long = &H1
+'Private Const INTERNET_CONNECTION_LAN        As Long = &H2
+'Private Const INTERNET_CONNECTION_PROXY      As Long = &H4
+'Private Const INTERNET_CONNECTION_MODEM_BUSY As Long = &H8
+'Private Const INTERNET_RAS_INSTALLED         As Long = &H10
+'Private Const INTERNET_CONNECTION_OFFLINE    As Long = &H20
+'Private Const INTERNET_CONNECTION_CONFIGURED As Long = &H40
+'Private Const INTERNET_COOKIE_THIRD_PARTY    As Long = 131072
+'Private Const INTERNET_FLAG_RESTRICTED_ZONE  As Long = 16
 
 'Private inIDE As Boolean
 
@@ -106,15 +106,15 @@ Private m_VarPostDatas      As Variant
 ' Variable to hold 'Referer' property value
 Private m_StrReferer        As String
 ' Variable to hold 'ProxyIp' property value
-Private m_StrProxyIp        As String
+'Private m_StrProxyIp        As String
 ' Variable to hold 'Timeout' property value
-Private m_LonTimeout        As Long
+'Private m_LonTimeout        As Long
 
 Const INTERNET_DEFAULT_FTP_PORT = 21
-Const INTERNET_DEFAULT_GOPHER_PORT = 70
+'Const INTERNET_DEFAULT_GOPHER_PORT = 70
 Const INTERNET_DEFAULT_HTTP_PORT = 80
 Const INTERNET_DEFAULT_HTTPS_PORT = 443
-Const INTERNET_DEFAULT_SOCKS_PORT = 1080
+'Const INTERNET_DEFAULT_SOCKS_PORT = 1080
 Const INTERNET_OPTION_CONNECT_TIMEOUT = 2
 Const INTERNET_OPTION_RECEIVE_TIMEOUT = 6
 Const INTERNET_OPTION_SEND_TIMEOUT = 5
@@ -131,12 +131,12 @@ Const INTERNET_OPTION_PROXY_USERNAME = 43
 Const INTERNET_OPTION_PROXY_PASSWORD = 44
 ' Type of service to access.
 Const INTERNET_SERVICE_FTP = 1
-Const INTERNET_SERVICE_GOPHER = 2
+'Const INTERNET_SERVICE_GOPHER = 2
 Const INTERNET_SERVICE_HTTP = 3
 
 ' Brings the data across the wire even if it locally cached.
 Const INTERNET_FLAG_RELOAD = &H80000000
-Const INTERNET_FLAG_KEEP_CONNECTION = &H400000
+'Const INTERNET_FLAG_KEEP_CONNECTION = &H400000
 ' Security constants
 Const INTERNET_OPTION_SECURITY_FLAGS = 31
 Const SECURITY_FLAG_IGNORE_UNKNOWN_CA = &H100
@@ -145,27 +145,27 @@ Const INTERNET_FLAG_IGNORE_CERT_CN_INVALID = &H1000
 Const INTERNET_FLAG_SECURE = &H800000
 
 ' (HttpQueryInfo) The possible values for the lInfoLevel parameter include:
-Const HTTP_QUERY_CONTENT_TYPE = 1
-Const HTTP_QUERY_CONTENT_LENGTH = 5
-Const HTTP_QUERY_EXPIRES = 10
-Const HTTP_QUERY_LAST_MODIFIED = 11
-Const HTTP_QUERY_PRAGMA = 17
-Const HTTP_QUERY_VERSION = 18
+'Const HTTP_QUERY_CONTENT_TYPE = 1
+'Const HTTP_QUERY_CONTENT_LENGTH = 5
+'Const HTTP_QUERY_EXPIRES = 10
+'Const HTTP_QUERY_LAST_MODIFIED = 11
+'Const HTTP_QUERY_PRAGMA = 17
+'Const HTTP_QUERY_VERSION = 18
 Const INTERNET_FLAG_NO_COOKIES = 524288
-Const HTTP_QUERY_STATUS_CODE = 19
-Const HTTP_QUERY_STATUS_TEXT = 20
-Const HTTP_QUERY_RAW_HEADERS = 21
-Const HTTP_QUERY_RAW_HEADERS_CRLF = 22
-Const HTTP_QUERY_FORWARDED = 30
-Const HTTP_QUERY_SERVER = 37
-Const HTTP_QUERY_USER_AGENT = 39
-Const HTTP_QUERY_SET_COOKIE = 43
-Const HTTP_QUERY_REQUEST_METHOD = 45
+'Const HTTP_QUERY_STATUS_CODE = 19
+'Const HTTP_QUERY_STATUS_TEXT = 20
+'Const HTTP_QUERY_RAW_HEADERS = 21
+'Const HTTP_QUERY_RAW_HEADERS_CRLF = 22
+'Const HTTP_QUERY_FORWARDED = 30
+'Const HTTP_QUERY_SERVER = 37
+'Const HTTP_QUERY_USER_AGENT = 39
+'Const HTTP_QUERY_SET_COOKIE = 43
+'Const HTTP_QUERY_REQUEST_METHOD = 45
 Const HTTP_STATUS_DENIED = 401
 Const HTTP_STATUS_PROXY_AUTH_REQ = 407
 ' Add this flag to the about flags to get request header.
-Const HTTP_QUERY_FLAG_REQUEST_HEADERS = &H80000000
-Const HTTP_QUERY_FLAG_NUMBER = &H20000000
+'Const HTTP_QUERY_FLAG_REQUEST_HEADERS = &H80000000
+'Const HTTP_QUERY_FLAG_NUMBER = &H20000000
 
 ' Returns the version number of Wininet.dll.
 Const INTERNET_OPTION_VERSION = 40
@@ -180,14 +180,14 @@ End Type
 ' (HttpAddRequestHeaders)
 ' Flags to modify the semantics of this function. Can be a combination of these values:
 ' Adds the header only if it does not already exist; otherwise, an error is returned.
-Const HTTP_ADDREQ_FLAG_ADD_IF_NEW = &H10000000
+'Const HTTP_ADDREQ_FLAG_ADD_IF_NEW = &H10000000
 ' Adds the header if it does not exist. Used with REPLACE.
 Const HTTP_ADDREQ_FLAG_ADD = &H20000000
 ' Replaces or removes a header. If the header value is empty and the header is found,
 ' it is removed. If not empty, the header value is replaced
 Const HTTP_ADDREQ_FLAG_REPLACE = &H80000000
 
-Const FLAG_ICC_FORCE_CONNECTION = &H1
+'Const FLAG_ICC_FORCE_CONNECTION = &H1
 Const INTERNET_OPEN_TYPE_DIRECT = &H1
 Const INTERNET_OPEN_TYPE_PRECONFIG = 0
 Const INTERNET_OPEN_TYPE_PROXY = 3
@@ -195,13 +195,13 @@ Const INTERNET_OPEN_TYPE_PROXY = 3
 Const INTERNET_FLAG_NO_AUTO_REDIRECT = 2097152
 Const INTERNET_FLAG_NO_CACHE_WRITE = &H4000000
 
-Private Const ERROR_INSUFFICIENT_BUFFER       As Long = 122
+'Private Const ERROR_INSUFFICIENT_BUFFER       As Long = 122
 'Public ReturnHeads                                 As String
 Public m_ReturnStatus                                  As String
 'Public ReturnCookies                               As String
 Public Event RequestFinished(URL As String, ReturBytArry() As Byte, ByVal lResponseLen As Long)
 Public Event RequestError(URL As String, ByVal ErrScriping As String)
-Dim hInternetSession As Long
+'Dim hInternetSession As Long
 Public Event RequestHeads(URL As String, Heads As String)
 ' Variable to hold 'UserAgent' property value
 Private m_StrsUserAgent    As String
@@ -264,14 +264,13 @@ End Sub
 ' main method
 Public Function API_Http(Optional sURL As String, _
                          Optional sMethod As Method, _
-                         Optional sRequestHeads As String = "", _
-                         Optional sCookie As String = "", _
-                         Optional sPostData As String = "")
+                         Optional sRequestHeads As String = vbNullString, _
+                         Optional sCookie As String = vbNullString, _
+                         Optional sPostData As String = vbNullString) As Boolean
 
     On Error GoTo ErrorHandler:
 
     Dim iRetVal          As Long
-    Dim sBuffer          As String * 1024
     Dim lBufferLen       As Long
     Dim vDllVersion      As tWinInetDLLVersion
     Dim sStatus          As String
@@ -288,11 +287,11 @@ Public Function API_Http(Optional sURL As String, _
     Dim i As Long
     
     'substitute class level values to optional arguments
-    If sURL = "" Then sURL = m_StrURL
+    If Len(sURL) = 0 Then sURL = m_StrURL
     If sMethod = 0 Then sMethod = m_StrRequestMethod
-    If sRequestHeads = "" Then sRequestHeads = m_StrRequestHeaders
-    If sCookie = "" Then sCookie = m_StrRequestCookies
-    If sPostData = "" Then sPostData = m_VarPostDatas
+    If Len(sRequestHeads) = 0 Then sRequestHeads = m_StrRequestHeaders
+    If Len(sCookie) = 0 Then sCookie = m_StrRequestCookies
+    If Len(sPostData) = 0 Then sPostData = m_VarPostDatas
     Erase m_BytReturnBytArry
     
     Screen.MousePointer = vbHourglass
@@ -395,7 +394,7 @@ Public Function API_Http(Optional sURL As String, _
                 
                 iRetVal = HttpAddRequestHeaders(hHttpOpenRequest, StrPtr(sHeader), Len(sHeader), HTTP_ADDREQ_FLAG_REPLACE Or HTTP_ADDREQ_FLAG_ADD)
 
-                If sCookie <> "" Then
+                If Len(sCookie) <> 0 Then
                     sCookie = "Cookie: " + sCookie + vbCrLf
                     ' szHeaders = szHeaders + sCookie
                     iRetVal = HttpAddRequestHeaders(hHttpOpenRequest, StrPtr(sCookie), Len(sCookie), HTTP_ADDREQ_FLAG_REPLACE Or HTTP_ADDREQ_FLAG_ADD)
@@ -422,7 +421,7 @@ Public Function API_Http(Optional sURL As String, _
                 iRetVal = InternetSetOption(hHttpOpenRequest, INTERNET_REQFLAG_NET_TIMEOUT, VarPtr(dwTimeOut), 4)  'not suitable
                 'Debug.Print iRetVal & " " & "INTERNET_REQFLAG_NET_TIMEOUT"
                 
-                If sPostData <> "" Then
+                If Len(sPostData) <> 0 Then
                     If InStr(sHeader, "Content-Type:") = 0 Then
                         sRequestHeads = sRequestHeads + "Content-Type: application/x-www-form-urlencoded" + vbCrLf
                     End If
@@ -453,7 +452,7 @@ Resend:         '
                         sStatus = ErrMessageText(Err.LastDllError)
                     End If
                 Else
-                    sStatus = ""
+                    sStatus = vbNullString
                 End If
                 
                 If iRetVal Then
@@ -486,16 +485,16 @@ Resend:         '
                                 End If
                             End If
                         Else
-                            sStatus = ""
+                            sStatus = vbNullString
                         End If
                     End If
                     
                     'Debug.Print "HttpQueryInfo"
                     'response headers ReturnHeads
-                    Dim lblContentType    As String, lblContentLength As String, lblLastModified As String
-                    Dim lblVersion        As String, lblStatusCode As String, lblRawHeaders As String, lblStatusText As String
-                    Dim txtRequestHeaders As String
-                    Dim lblForwarded      As String, lblServer As String, lblRequestMethod As String, lblPragma As String, lblUserAgent As String, lblRequestMethod2 As String
+                    'Dim lblContentType    As String, lblContentLength As String, lblLastModified As String
+                    'Dim lblVersion        As String, lblStatusCode As String, lblRawHeaders As String, lblStatusText As String
+                    'Dim txtRequestHeaders As String
+                    'Dim lblForwarded      As String, lblServer As String, lblRequestMethod As String, lblPragma As String, lblUserAgent As String, lblRequestMethod2 As String
                     '                    GetQueryInfo hHttpOpenRequest, lblContentType, HTTP_QUERY_CONTENT_TYPE
                     '                    GetQueryInfo hHttpOpenRequest, lblContentLength, HTTP_QUERY_CONTENT_LENGTH
                     '                    GetQueryInfo hHttpOpenRequest, lblLastModified, HTTP_QUERY_LAST_MODIFIED
@@ -529,7 +528,7 @@ Resend:         '
                         End If
                     End If
                     
-                    If sStatus = "" Then
+                    If Len(sStatus) = 0 Then
                         If Len(m_StrRequestHeaders) > 0 Then
                             Dim aLine() As String
                             aLine = Split(m_StrRequestHeaders, vbCrLf)
@@ -554,7 +553,7 @@ Resend:         '
                     End If
                     
                     If dwStatus <> HTTP_STATUS_PROXY_AUTH_REQ And dwStatus <> HTTP_STATUS_DENIED And dwStatus <> 400 Then
-                        If sStatus = "" Then
+                        If Len(sStatus) = 0 Then
                             sStatus = "ok~~~"
                         End If
                     Else
@@ -622,8 +621,8 @@ Private Function CheckUrl(ByVal txtURL As String) As String
     If Right$(txtURL, 1) = "/" Then
         txtURL = Mid$(txtURL, 1, Len(txtURL) - 1)
     End If
-    txtURL = Replace(txtURL, "http://", "")
-    txtURL = Replace(txtURL, "https://", "")
+    txtURL = Replace(txtURL, "http://", vbNullString)
+    txtURL = Replace(txtURL, "https://", vbNullString)
 
     If Len(txtURL) = 0 Then txtURL = "www.microsoft.com"
     Dim posSlash As Long
@@ -646,13 +645,13 @@ Private Function GetUrlObject(ByVal txtURL As String) As String
     If Right$(txtURL, 1) = "/" Then
         txtURL = Mid$(txtURL, 1, Len(txtURL) - 1)
     End If
-    txtURL = Replace(txtURL, "http://", "")
-    txtURL = Replace(txtURL, "https://", "")
+    txtURL = Replace(txtURL, "http://", vbNullString)
+    txtURL = Replace(txtURL, "https://", vbNullString)
     
     If InStr(txtURL, "/") <> 0 Then
         GetUrlObject = Right$(txtURL, Len(txtURL) - InStr(txtURL, "/") + 1)
     Else
-        GetUrlObject = ""
+        GetUrlObject = vbNullString
     End If
     Exit Function
 ErrorHandler:
@@ -667,7 +666,7 @@ Private Function GetQueryInfo(hHttpRequest As Long, s_outRequest As String, iInf
     Dim dwIndex As Long
     Dim pos As Long
     dwIndex = 0
-    sBuffer = String(5000, 0&)
+    sBuffer = String$(5000, 0&)
     lBufferLength = LenB(sBuffer)
     GetQueryInfo = HttpQueryInfo(hHttpRequest, iInfoLevel, StrPtr(sBuffer), VarPtr(lBufferLength), VarPtr(dwIndex))
     If GetQueryInfo Then
@@ -723,7 +722,7 @@ Private Function GetCleanCookie(Source As String, inStrs As String) As String
     Dim Changed As Boolean, tem() As String
     Dim i       As Long
 
-    If Source <> "" And inStrs <> "" Then
+    If Len(Source) <> 0 And Len(inStrs) <> 0 Then
         Changed = False
         tem = Split(Source, ";")
 
@@ -747,9 +746,9 @@ Private Function GetCleanCookie(Source As String, inStrs As String) As String
             GetCleanCookie = Source
         End If
         
-    ElseIf Source <> "" Then
+    ElseIf Len(Source) <> 0 Then
         GetCleanCookie = Source
-    ElseIf inStrs <> "" Then
+    ElseIf Len(inStrs) <> 0 Then
         GetCleanCookie = inStrs
     End If
     Exit Function
@@ -819,7 +818,7 @@ Private Function ParseURL(ByVal sURL As String, _
         End If
         
         sTemp = sURL
-        sURL = ""
+        sURL = vbNullString
         sPort = sDefaultPort
     Else
         sTemp = Left$(sURL, iHostDelimiter)
@@ -886,7 +885,7 @@ End Property
 
 Public Property Get ReturnString() As String
     If Not m_BytRead Then Exit Property
-    ReturnString = String(UBound(m_BytReturnBytArry) \ 2 + 1, 0)
+    ReturnString = String$(UBound(m_BytReturnBytArry) \ 2 + 1, 0)
     memcpy ByVal StrPtr(ReturnString), m_BytReturnBytArry(0), UBound(m_BytReturnBytArry) + 1
     ReturnString = StrConv(ReturnString, vbUnicode)
     Dim pos As Long

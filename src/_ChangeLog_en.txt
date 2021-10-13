@@ -11,6 +11,26 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[2.10.0.10] - Oct 14, 2021
+ - Added detection of Windows 11, Windows Server 2016, Windows Server 2022.
+ - Added DisplayVersion in addition to ReleseId where possible.
+ - O22 - Tasks: whitelists are updated.
+
+[2.10.0.9]
+ - Moved status to a stable release.
+ - O26 - Fixed false "file missing".
+ - O7 Policy - Added more keys for detection DisableTaskMgr.
+
+[2.10.0.8 beta] (Nightly) - Mar 16, 2021
+ - More code clear.
+ - Improved filter of O22 - Bits whitelists.
+
+[2.10.0.7 beta] (Nightly) - Feb 20, 2021
+ - Added new 'Files Unlocker' tool (see 'Tools' menu => Files => Unlock File / Folder).
+ - Global code clear and optimization (thanks to LaVolpe and his 'Project Scaner' tool).
+ - Some errors are fixed.
+ - Improved source code building script.
+
 [2.10.0.6 beta] (Nightly) - Feb 12, 2021
  - Fixed: HJT uninstallation removes not all keys.
  - Fixed: Explorer is restarted in 'Limited Mode' after O21 Fix.
@@ -1564,4 +1584,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                                                     
+                                                                

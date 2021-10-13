@@ -72,7 +72,8 @@ Option Explicit
 
 'Rev. 19
 'IID additions for oleexp 4.7
-Public Declare Function IsEqualIID Lib "ole32" Alias "IsEqualGUID" (riid1 As UUID, riid2 As UUID) As Long
+
+'Public Declare Function IsEqualIID Lib "ole32" Alias "IsEqualGUID" (riid1 As UUID, riid2 As UUID) As Long
 
 Private iid(750) As UUID
 
