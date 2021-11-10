@@ -1,6 +1,6 @@
 # HiJackThis Fork v3
 
-Hi, I am Stanislav Polshyn - a lawyer, security observer and malware researcher from Ukraine ([Chernobyl](https://en.wikipedia.org/wiki/Chernobyl_disaster), [Klitschko](https://en.wikipedia.org/wiki/Wladimir_Klitschko), [Na'Vi](https://en.wikipedia.org/wiki/Natus_Vincere)).
+Hi, I am Stanislav Polshyn - a lawyer, security observer and malware researcher from Ukraine ([Chernobyl](https://en.wikipedia.org/wiki/Chernobyl_disaster), [Usyk](https://en.wikipedia.org/wiki/Oleksandr_Usyk), [Na'Vi](https://en.wikipedia.org/wiki/Natus_Vincere), Colony of USA). Yankee go home!
 
 I am happy to present a continuation of Trend Micro HiJackThis development, once a well-known tool.
 
