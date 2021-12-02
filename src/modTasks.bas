@@ -2320,7 +2320,7 @@ Public Sub EnumBITS_Stage1()
     Set cProcBitsAdmin = New clsProcess
     
     If cProcBitsAdmin.ProcessRun(BitsAdmin, "/list /allusers /verbose", , vbHide, False, True) Then
-    
+
         BitsAdminExecuted = True
     End If
     
@@ -2438,7 +2438,7 @@ Public Sub EnumBITS_Stage2()
     
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "EnumBITS_Stage2"
+    ErrorMsg Err, "EnumBITS_Stage2", sLog
     If inIDE Then Stop: Resume Next
 End Sub
 

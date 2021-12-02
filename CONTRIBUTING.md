@@ -25,8 +25,7 @@ The results of scanning are beeing saved in SCAN_RESULT structure as well as fix
 
 Each 'Check' procedure has appropriate 'Fix', like CheckO1Item() <-> FixO1Item().
 
-All another modules and forms are self-exmplained by its names.
+All other modules and forms are self-explained according to its names.
 
 Best wishes,
 Alex.
-

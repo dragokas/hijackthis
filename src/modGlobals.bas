@@ -409,6 +409,7 @@ Public g_UninstallState     As Boolean  'HJT is beeing uninstalled
 Public g_ProgressMaxTags    As Long     'last progressbar tag number (count of items)
 Public g_HJT_Items_Count    As Long
 Public g_CurrentLang        As String
+Public g_CurrentLangID      As Long
 Public CryptVer             As Long
 
 Public ErrLogCustomText As clsStringBuilder
@@ -2053,7 +2054,9 @@ Public Declare Function GetModuleFileName Lib "kernel32.dll" Alias "GetModuleFil
 
 'modTranslation
 
-Public Declare Function MultiByteToWideChar Lib "kernel32.dll" (ByVal CodePage As Long, ByVal dwFlags As Long, ByVal lpMultiByteStr As String, ByVal cchMultiByte As Long, ByVal lpWideCharStr As Long, ByVal cchWideChar As Long) As Long
+Public Declare Function WideCharToMultiByte Lib "kernel32.dll" (ByVal CodePage As Long, ByVal dwFlags As Long, ByVal lpWideCharStr As Long, ByVal cchWideChar As Long, ByVal lpMultiByteStr As Long, ByVal cbMultiByte As Long, ByVal lpDefaultChar As Long, ByVal lpUsedDefaultChar As Long) As Long
+Public Declare Function MultiByteToWideChar Lib "kernel32.dll" (ByVal CodePage As Long, ByVal dwFlags As Long, ByVal lpMultiByteStr As Long, ByVal cbMultiByte As Long, ByVal lpWideCharStr As Long, ByVal cchWideChar As Long) As Long
+
 Public Const LOCALE_SENGLANGUAGE = &H1001&
 Public Const LOCALE_US As Long = 1033&
 
@@ -2328,3 +2331,5 @@ Public Declare Function SHGetKnownFolderIDList Lib "shell32" (rfid As UUID, ByVa
 'Public Declare Sub CoTaskMemFree Lib "ole32.dll" (ByVal pv As Long)
 
 Public Const vbDarkRed As Long = &H80& 'burgundy
+
+

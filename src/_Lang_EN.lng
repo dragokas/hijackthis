@@ -100,6 +100,8 @@
 1052=Fix && Backup
 1053=Interface
 1070=Command line
+1080=length of address
+1081=characters
 ;
 ; ============== EULA ============
 ;
@@ -366,7 +368,7 @@
      System Compatibility
      -------------------------
      
-      * Microsoft™ Windows™ 10 / 8.1 / 8 / 7 / Vista / XP / 2000, including Server editions, both 32 and 64-bit.
+      * Microsoft™ Windows™ 11 / 10 / 8.1 / 8 / 7 / Vista / XP / 2000, including Server editions, both 32 and 64-bit.
 
 
      Authors and copyrights
@@ -1773,4 +1775,4 @@
 ; ========= Empty ========
 ;
 ; (2450 - ...)
-;                
+;                  

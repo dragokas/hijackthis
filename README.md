@@ -21,6 +21,9 @@ Therefore, FALSE POSITIVES ARE LIKELY. If you are ever unsure, you should consul
 
 [Nightly build (private test version) for Windows](https://dragokas.com/tools/HiJackThis_test.zip)
 
+Files are digitally signed by "Stanislav Polshyn".
+Certificate's thumbprint (SHA256) should be: 1b78ef517e81a07d1c1c4c6adfa66a2b7c3269c3
+
 ![](https://dragokas.com/tools/img/hjt/Scanning2.png)
 
 ## Features
@@ -82,7 +85,7 @@ If you are not already an expert, we recommend submitting your case to an online
 ## System Requirements
 
 Operating System
-  * Microsoft™ Windows™ 10 / 8.1 / 8 / 7 / Vista / XP / 2000 (32/64-bit desktop and server)
+  * Microsoft™ Windows™ 11 / 10 / 8.1 / 8 / 7 / Vista / XP / 2000 (32/64-bit desktop and server)
 
 ## Copyrights
 

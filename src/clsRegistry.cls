@@ -1992,7 +1992,7 @@ Public Function ExportKeyToVariable( _
     
     On Error GoTo ErrorHandler:
 
-    Dim sTempFile$, sData$, hFile&, FSize@, isUnicode As Boolean, pos&
+    Dim sTempFile$, sData$, hFile&, FSize@, pos&
 
     Randomize
     sTempFile$ = BuildPath(TempCU, "backup_" & Int(Rnd * 10000) & ".reg")
@@ -2022,34 +2022,13 @@ Public Function ExportKeyToVariable( _
                         sData = String$(FSize, 0)
                         
                         If GetW(hFile, 1, sData) Then
-                            
-                            isUnicode = HasBOM_UTF16(sData)
-                            
-                            'adding 2 extra CrLf for future purposes - if we would like to concat. several export. variables
-                            If isUnicode Then
-                                sData = sData & vbCr & vbNullChar & vbLf & vbNullChar & vbCr & vbNullChar & vbLf & vbNullChar
-                            Else
-                                sData = sData & vbCrLf & vbCrLf
-                            End If
-                            
-                            If isUnicode Then
-                                If ConvertToANSI Then
-                                    sData = StrConv(Mid$(sData, 3), vbFromUnicode)
-                                    isUnicode = False
-                                End If
-                            End If
+                        
+                            sData = sData & vbCrLf & vbCrLf
                             
                             If Not SaveHeader Then
-                                If isUnicode Then
-                                    pos = InStr(sData, vbCr & vbNullChar & vbLf & vbNullChar)
-                                    If pos <> 0 Then
-                                        sData = Mid$(sData, pos + 4)
-                                    End If
-                                Else
-                                    pos = InStr(sData, vbCrLf)
-                                    If pos <> 0 Then
-                                        sData = Mid$(sData, pos + 2)
-                                    End If
+                                pos = InStr(sData, vbCrLf)
+                                If pos <> 0 Then
+                                    sData = Mid$(sData, pos + 2)
                                 End If
                             End If
                         End If

@@ -11,8 +11,22 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[2.10.0.13] - Dec 02, 2021
+ - Fixed potential crash related to bad buffer size in codepage encoder (thanks to @thetrik for letting me know).
+ - Fixed missing translation.
+ - Fixed font size on some controls.
+ - [Updates checker] Corrected error code returned.
+ - System errors description are now displayed on selected language.
+ - [Uninstall manager] Fixed double-unicode in registry snapshot report on some locales.
+
+[2.10.0.12] - Nov 23, 2021
+ - Updated MS certificates list.
+
+[2.10.0.11] - Nov 21, 2021
+ - Improved error logging.
+
 [2.10.0.10] - Oct 14, 2021
- - Added detection of Windows 11, Windows Server 2016, Windows Server 2022.
+ - Added detection of Windows 11, Windows Server 2019, Windows Server 2022.
  - Added DisplayVersion in addition to ReleseId where possible.
  - O22 - Tasks: whitelists are updated.
 
@@ -1584,4 +1598,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                                                                
+                                                                   

@@ -103,11 +103,11 @@ Begin VB.Form frmCheckDigiSign
       End
       Begin VB.TextBox txtExtensions 
          Height          =   285
-         Left            =   3240
+         Left            =   3360
          TabIndex        =   5
          Text            =   "exe;dll;sys"
          Top             =   240
-         Width           =   1695
+         Width           =   1572
       End
    End
    Begin VB.CommandButton cmdGo 

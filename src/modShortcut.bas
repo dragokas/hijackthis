@@ -362,7 +362,6 @@ Public Function GetUrlTargetW(URLpathW As String) As String
     Dim aBuf()      As Byte
     Dim cpPercent   As Long
     Dim sAppend     As String
-    Dim Stady       As Long
     
     buf = String$(256&, 0)
     lr = GetPrivateProfileString(StrPtr("InternetShortcut"), StrPtr("URL"), StrPtr(""), StrPtr(buf), Len(buf), StrPtr(URLpathW))
@@ -373,16 +372,12 @@ Public Function GetUrlTargetW(URLpathW As String) As String
             buf = String$(10001&, 0)
             lr = GetPrivateProfileString(StrPtr("InternetShortcut"), StrPtr("URL"), StrPtr(""), StrPtr(buf), Len(buf), StrPtr(URLpathW))
             If Err.LastDllError = ERROR_MORE_DATA Then
-                'sAppend = "(" & "длина адреса" & " > 10000 " & "символов" & ")"
-                sAppend = "(" & Translate(51) & " > 10000 " & Translate(52) & ")"
+                sAppend = "(" & Translate(1080) & " > 10000 " & Translate(1081) & ")" 'length of address > X characters
             Else
-                'sAppend = "(" & "длина адреса" & " = " & lr & " " & "символов" & ")"
-                sAppend = "(" & Translate(51) & " = " & lr & " " & Translate(52) & ")"
+                sAppend = "(" & Translate(1080) & " = " & lr & " " & Translate(1081) & ")"
             End If
         End If
     End If
-    
-    Stady = 1
     
     If lr <> 0 Then
         If lr > 1000 Then
@@ -391,24 +386,15 @@ Public Function GetUrlTargetW(URLpathW As String) As String
             buf = Left$(buf, lr)
         End If
         
-        Stady = 2
-        
         sTemp = UnEscape(buf)
         If Len(sTemp) <> 0 Then buf = sTemp
         
-        Stady = 3
-        
-        'identify codepage
         aBuf() = StrConv(buf, vbFromUnicode, OSver.LangNonUnicodeCode)
-
-        Stady = 4
-
+        
         CodePage = GetEncoding(aBuf, cpPercent, URLpathW)
         
-        Stady = 5
-        
-        If (UTF8 = CodePage) And (cpPercent = -1 Or cpPercent > 10) Then
-            sTemp = ConvertCodePageW(buf, UTF8)
+        If (CP_UTF8 = CodePage) And (cpPercent = -1 Or cpPercent > 10) Then
+            sTemp = ConvertCodePage(VarPtr(aBuf(0)), CP_UTF8)
             If Len(sTemp) <> 0 Then buf = sTemp
         End If
         
@@ -417,7 +403,7 @@ Public Function GetUrlTargetW(URLpathW As String) As String
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "Parser.GetUrlTargetW", "File: ", URLpathW, "Stady:", Stady
+    ErrorMsg Err, "Parser.GetUrlTargetW", "File: ", URLpathW
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -567,7 +553,7 @@ Function GetEncoding_UTF8(aBytes() As Byte, Optional Percent As Long) As Long
     On Error GoTo ErrorHandler
     AppendErrorLogCustom "Parser.GetEncoding_UTF8 - Begin"
     
-    Dim c As Long, n As Long, i As Long, bSuccess As Boolean, btc As Long 'bytes to check
+    Dim c As Long, n As Long, i As Long, bSuccess As Boolean, BTC As Long 'bytes to check
     
     Do
         '2-bytes seq.: 110x xxxx, 10xx xxxx (0xC0, 0x80)
@@ -582,24 +568,24 @@ Function GetEncoding_UTF8(aBytes() As Byte, Optional Percent As Long) As Long
         '              1111...  = 0xF0
         '              1111 1...= 0xF8
         
-        btc = 0
+        BTC = 0
         If ((aBytes(c) Xor &HC0) And &HE0) = 0 Then
-            btc = 1
+            BTC = 1
         ElseIf ((aBytes(c) Xor &HE0) And &HF0) = 0 Then
-            btc = 2
+            BTC = 2
         ElseIf ((aBytes(c) Xor &HF0) And &HF8) = 0 Then
-            btc = 3
+            BTC = 3
         End If
         
-        If (btc > 0) And ((c + btc) <= UBound(aBytes)) Then
+        If (BTC > 0) And ((c + BTC) <= UBound(aBytes)) Then
             bSuccess = True
-            For i = c + 1 To c + btc
+            For i = c + 1 To c + BTC
                 If ((aBytes(c + 1) Xor &H80) And &HC0) <> 0 Then bSuccess = False: Exit For
             Next
             If bSuccess Then n = n + 1
         End If
         
-        c = c + 1 + btc
+        c = c + 1 + BTC
         
     Loop Until c >= UBound(aBytes)
     

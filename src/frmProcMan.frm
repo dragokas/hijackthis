@@ -22,13 +22,7 @@ Begin VB.Form frmProcMan
    Begin VB.Frame fraProcessManager 
       Caption         =   "Itty Bitty Process Manager v."
       BeginProperty Font 
-         Name            =   "MS Sans Serif"
-         Size            =   7.8
-         Charset         =   204
          Weight          =   700
-         Underline       =   0   'False
-         Italic          =   0   'False
-         Strikethrough   =   0   'False
       EndProperty
       Height          =   3975
       Left            =   120

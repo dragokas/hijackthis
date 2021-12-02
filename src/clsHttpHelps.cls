@@ -435,7 +435,9 @@ Resend:         '
                 '
                 
                 If (iRetVal <> 1) Then
-                    If (Err.LastDllError = 12045) Then
+                    m_intStatusCode = Err.LastDllError
+                    
+                    If (m_intStatusCode = 12045) Then
                         If eCertAuthTry = 0 Then
                             '
                             'Certificate Authority is invalid.
@@ -449,7 +451,7 @@ Resend:         '
                             GoTo Resend
                         End If
                     Else
-                        sStatus = ErrMessageText(Err.LastDllError)
+                        sStatus = ErrMessageText(m_intStatusCode)
                     End If
                 Else
                     sStatus = vbNullString
@@ -581,7 +583,9 @@ Resend:         '
                     'RaiseEvent RequestFinished(sURL, m_BytReturnBytArry, lBytesRead)
                 Else
                     ' HttpSendRequest failed
-                    sStatus = "HttpSendRequest call failed; Error code: " & Err.LastDllError & "."
+                    If Len(sStatus) = 0 Then
+                        sStatus = "HttpSendRequest call failed; Error code: " & Err.LastDllError & "."
+                    End If
                     API_Http = False
                     'RaiseEvent RequestError(sURL, sStatus)
                 End If
@@ -851,28 +855,6 @@ ErrorHandler:
     ErrorMsg Err, "ParseURL", sURL
     If inIDE Then Stop: Resume Next
 End Function
-
-Private Function ErrMessageText(lCode As Long) As String
-    Const FORMAT_MESSAGE_FROM_SYSTEM    As Long = &H1000&
-    Const FORMAT_MESSAGE_IGNORE_INSERTS As Long = &H200&
-    Const FORMAT_MESSAGE_FROM_HMODULE As Long = 2048&
-    Const MSG_SIZE = 300&
-    
-    Dim sRtrnMessage    As String
-    Dim lret            As Long
-    Dim hModule         As Long
-    
-    hModule = GetModuleHandle(StrPtr("wininet.dll"))
-    
-    sRtrnMessage = String$(MSG_SIZE, vbNullChar)
-    lret = FormatMessage(FORMAT_MESSAGE_FROM_HMODULE Or FORMAT_MESSAGE_FROM_SYSTEM Or FORMAT_MESSAGE_IGNORE_INSERTS, hModule, lCode, 0&, StrPtr(sRtrnMessage), MSG_SIZE, ByVal 0&)
-    If lret > 0 Then
-        ErrMessageText = Left$(sRtrnMessage, lret)
-        ErrMessageText = Replace$(ErrMessageText, vbCrLf, vbNullString)
-    End If
-End Function
-
-
 
 Public Property Let NocookieAndcache(ByVal bValue As Boolean)
     m_bNocookieAndcache = bValue

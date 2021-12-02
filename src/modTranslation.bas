@@ -10,14 +10,15 @@ Option Explicit
 Private Const MAX_LOCALE_LINES As Long = 9999
 
 Public Enum idCodePage
-    WIN = 1251
-    DOS = 866
-    KOI = 20866
-    ISO = 28595
-    UTF8 = 65001
+    CP_WIN = 1251
+    CP_DOS = 866
+    CP_KOI = 20866
+    CP_ISO = 28595
+    CP_UTF8 = 65001
+    CP_UTF16LE = 1200
 End Enum
 #If False Then
-    Dim WIN, DOS, KOI, ISO, UTF8
+    Dim CP_WIN, CP_DOS, CP_KOI, CP_ISO, CP_UTF8, CP_UTF16LE
 #End If
 
 'Private Declare Function GetUserDefaultUILanguage Lib "kernel32.dll" () As Long
@@ -25,7 +26,6 @@ End Enum
 'Private Declare Function GetSystemDefaultLCID Lib "kernel32.dll" () As Long
 'Private Declare Function GetUserDefaultLCID Lib "kernel32.dll" () As Long
 'Private Declare Function GetLocaleInfo Lib "kernel32.dll" Alias "GetLocaleInfoW" (ByVal lcid As Long, ByVal LCTYPE As Long, ByVal lpLCData As Long, ByVal cchData As Long) As Long
-'Private Declare Function MultiByteToWideChar Lib "Kernel32.dll" (ByVal CodePage As Long, ByVal dwFlags As Long, ByVal lpMultiByteStr As String, ByVal cchMultiByte As Long, ByVal lpWideCharStr As Long, ByVal cchWideChar As Long) As Long
 
 Private Const LOCALE_SENGLANGUAGE = &H1001&
 
@@ -261,25 +261,23 @@ Sub LoadLangFile(sFilename As String, Optional ResID As Long, Optional UseResour
     On Error GoTo ErrorHandler:
 
     AppendErrorLogCustom "LoadLangFile - Begin", "File: " & sFilename, "ResID: " & ResID, "UseResource? " & UseResource
-
-    Dim sPath As String, sText As String, b() As Byte
+    
+    Dim sPath As String, sText As String
     sPath = BuildPath(AppPath(), sFilename)
     
     If 0 = AryItems(Translate) Then ReDim Translate(MAX_LOCALE_LINES)
     If 0 = AryItems(TranslateNative) Then ReDim TranslateNative(MAX_LOCALE_LINES)
     
+    ' read text as raw utf8
     If FileExists(sPath) And Not UseResource Then
-        sText = ReadFileContents(sPath, isUnicode:=False)
+        sText = ReadFileContents(sPath, isUnicode:=True)
     Else
         If ResID <> 0 Then
-            b() = LoadResData(ResID, "CUSTOM")
-            sText = StrConv(b, vbUnicode, OSver.LangNonUnicodeCode)
-            If b(0) = &HEF& And b(1) = &HBB& And b(2) = &HBF& Then      ' - BOM UTF-8
-                sText = Mid$(sText, 4)
-            End If
+            sText = LoadResData(ResID, "CUSTOM")
         End If
     End If
-    sText = ConvertCodePageW(sText, 65001)  ' UTF8
+    
+    sText = ConvertCodePage(StrPtr(sText), CP_UTF8)
     ExtractLanguage sText, sFilename  ' parse sText -> gLines()
     
     AppendErrorLogCustom "LoadLangFile - End"
@@ -296,27 +294,26 @@ Function LoadResFile(sFilename As String, Optional ResID As Long, Optional UseRe
 
     AppendErrorLogCustom "LoadResFile - Begin", "File: " & sFilename, "ResID: " & ResID, "UseResource? " & UseResource
 
-    Dim sPath As String, sText As String, b() As Byte
+    Dim sPath As String, sText As String
     sPath = BuildPath(AppPath(), sFilename)
     
+    'load as row utf8
     If FileExists(sPath) And Not UseResource Then
-        sText = ReadFileContents(sPath, isUnicode:=False)
+        sText = ReadFileContents(sPath, isUnicode:=True)
     Else
         If ResID <> 0 Then
-            b() = LoadResData(ResID, "CUSTOM")
-            sText = StrConv(b, vbUnicode, OSver.LangNonUnicodeCode)
-            If UBound(b) >= 2 Then
-                If b(0) = &HEF& And b(1) = &HBB& And b(2) = &HBF& Then      ' - BOM UTF-8
-                    sText = Mid$(sText, 4)
-                End If
-            End If
+            sText = LoadResData(ResID, "CUSTOM")
         End If
     End If
     
-    LoadResFile = ConvertCodePageW(sText, 65001) ' UTF8
+    LoadResFile = ConvertCodePage(StrPtr(sText), CP_UTF8)
+    
+    If AscW(Left$(LoadResFile, 1)) = -257 Then
+        LoadResFile = Mid$(LoadResFile, 2)
+    End If
     
     AppendErrorLogCustom "LoadResFile - End"
-
+    
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "LoadResFile"
@@ -1344,31 +1341,51 @@ Public Function IsRunningInIDE() As Boolean
     IsRunningInIDE = inIDE
 End Function
 
-'// converting specified CodePage to UTF-16
-Public Function ConvertCodePageW(Src As String, inPage As idCodePage) As String
+Public Function ConvertCodePage(SrcPtr As Long, inPage As idCodePage, Optional outPage As idCodePage = CP_UTF16LE) As String
     On Error GoTo ErrorHandler
-    AppendErrorLogCustom "ConvertCodePageW - Begin"
-    
-    Const MB_ERR_INVALID_CHARS As Long = 8&
-    
     Dim buf   As String
-    Dim Size  As Long
-    Dim kFlags As Long
-    kFlags = 0
-    'kFlags = MB_ERR_INVALID_CHARS ' https://blogs.msdn.microsoft.com/oldnewthing/20120504-00/?p=7703
-
-    Size = MultiByteToWideChar(inPage, kFlags, Src, Len(Src), 0&, 0&)
+    Dim Dst   As String
+    Dim cchBuf As Long
+    Dim cchSrc As Long
+    Dim cbBuf As Long
+    cchSrc = lstrlen(SrcPtr)
+    If cchSrc = 0 Then Exit Function
     
-    If Size > 0 Then
-        buf = String$(Size, 0)
-        Size = MultiByteToWideChar(inPage, kFlags, Src, Len(Src), StrPtr(buf), Len(buf))
-
-        If Size <> 0 Then ConvertCodePageW = Left$(buf, Size)
+    If inPage = CP_UTF16LE Then
+        cbBuf = WideCharToMultiByte(outPage, 0&, SrcPtr, cchSrc, 0&, 0&, 0&, 0&) 'returns size in bytes
+        If cbBuf > 0 Then
+            ConvertCodePage = String$((cbBuf + 1) \ 2, 0)
+            cbBuf = WideCharToMultiByte(outPage, 0&, SrcPtr, cchSrc, StrPtr(ConvertCodePage), cbBuf, 0&, 0&)
+            ConvertCodePage = Left$(ConvertCodePage, lstrlen(StrPtr(ConvertCodePage)))
+        End If
+    Else
+        If inPage = CP_DOS Then 'W -> A
+            Dim AnsiBuf As String
+            AnsiBuf = String(cchSrc, 0&)
+            memcpy ByVal StrPtr(AnsiBuf), ByVal SrcPtr, cchSrc * 2
+            AnsiBuf = StrConv(AnsiBuf, vbFromUnicode)
+            SrcPtr = StrPtr(AnsiBuf)
+            cchSrc = lstrlen(SrcPtr)
+        End If
+    
+        cchBuf = MultiByteToWideChar(inPage, 0&, SrcPtr, cchSrc * 2, 0&, 0&) 'returns size in characters
+        If cchBuf > 0 Then
+            buf = String$(cchBuf, 0)
+            cchBuf = MultiByteToWideChar(inPage, 0&, SrcPtr, cchSrc * 2, StrPtr(buf), cchBuf)
+            
+            If outPage = CP_UTF16LE Then
+                ConvertCodePage = buf
+            Else
+                cbBuf = WideCharToMultiByte(outPage, 0&, StrPtr(buf), cchBuf, 0&, 0&, 0&, 0&)
+                If cbBuf > 0 Then
+                    ConvertCodePage = String$((cbBuf + 1) \ 2, 0)
+                    cbBuf = WideCharToMultiByte(outPage, 0&, StrPtr(buf), cchBuf, StrPtr(ConvertCodePage), cbBuf, 0&, 0&)
+                End If
+            End If
+        End If
     End If
-    
-    AppendErrorLogCustom "ConvertCodePageW - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "ConvertCodePageW", "src: " & Src
+    ErrorMsg Err, "ConvertCodePage", "inPage:", inPage, "outPage:", outPage
     If inIDE Then Stop: Resume Next
 End Function

@@ -128,8 +128,6 @@ Private Declare Function CreatePipe Lib "kernel32" (phReadPipe As Long, phWriteP
 Private Declare Function PeekNamedPipe Lib "kernel32" (ByVal hNamedPipe As Long, lpBuffer As Any, ByVal nBufferSize As Long, lpBytesRead As Long, lpTotalBytesAvail As Long, lpBytesLeftThisMessage As Any) As Long
 Private Declare Function ReadFile Lib "kernel32" (ByVal hFile As Long, lpBuffer As Any, ByVal nNumberOfBytesToRead As Long, lpNumberOfBytesRead As Long, lpOverlapped As Any) As Long
 Private Declare Function WriteFile Lib "kernel32" (ByVal hFile As Long, ByVal lpBuffer As Long, ByVal nNumberOfBytesToWrite As Long, lpNumberOfBytesWritten As Long, ByVal lpOverlapped As Long) As Long
-Private Declare Function MultiByteToWideChar Lib "kernel32.dll" (ByVal CodePage As Long, ByVal dwFlags As Long, ByVal lpMultiByteStr As String, ByVal cchMultiByte As Long, ByVal lpWideCharStr As Long, ByVal cchWideChar As Long) As Long
-Private Declare Function WideCharToMultiByte Lib "kernel32.dll" (ByVal CodePage As Long, ByVal dwFlags As Long, ByVal lpWideCharStr As Long, ByVal cchWideChar As Long, ByVal lpMultiByteStr As String, ByVal cchMultiByte As Long, ByVal lpDefaultChar As Long, ByVal lpUsedDefaultChar As Long) As Long
 
 Private Declare Sub GetStartupInfo Lib "kernel32.dll" Alias "GetStartupInfoW" (lpStartupInfo As STARTUPINFO)
 Private Declare Sub Sleep Lib "kernel32.dll" (ByVal dwMilliseconds As Long)
@@ -818,7 +816,7 @@ Public Function ConsoleRead() As String
     If Count > 0 Then
         buf = String$((Count + 1) \ 2, 0&)
         If ReadFile(PipeOut.hRead, ByVal StrPtr(buf), Count, Count, ByVal 0&) Then
-            ConsoleRead = ConvertCodePage(StrConv(Left$(buf, Count), vbUnicode), DOS, WIN)
+            ConsoleRead = ConvertCodePage(StrPtr(StrConv(buf, vbUnicode)), CP_DOS, CP_UTF16LE)
         End If
     End If
 End Function
@@ -847,31 +845,6 @@ ErrorHandler:
     ErrorMsg Err, "clsProcess_ParseCommandLine", "Line:", Line
     If inIDE Then Stop: Resume Next
 End Sub
-
-Private Function ConvertCodePage(Src As String, inPage As idCodePage, outPage As idCodePage) As String
-    On Error GoTo ErrorHandler:
-    Dim buf   As String
-    Dim Dst   As String
-    Dim Size  As Long
-    
-    Size = MultiByteToWideChar(inPage, 0&, Src, Len(Src), 0&, 0&)
-    If Size > 0 Then
-        buf = String$(Size, 0)
-        Size = MultiByteToWideChar(inPage, 0&, Src, Len(Src), StrPtr(buf), Len(Src))
-    
-        Size = WideCharToMultiByte(outPage, 0&, StrPtr(buf), Size, ByVal 0&, 0&, 0&, 0&)
-        If Size > 0 Then
-            Dst = String$(Size, 0)
-            Size = WideCharToMultiByte(outPage, 0&, StrPtr(buf), Size, Dst, LenB(Dst), 0&, 0&)
-            
-            If Size <> 0 Then ConvertCodePage = Left$(Dst, lstrlen(StrPtr(Dst)))
-        End If
-    End If
-    Exit Function
-ErrorHandler:
-    ErrorMsg Err, "ConvertCodePage", "String:", Src, "In:", CStr(inPage), "Out:", CStr(outPage)
-    If inIDE Then Stop: Resume Next
-End Function
 
 Private Function TrimNull(s$) As String
     TrimNull = Left$(s, lstrlen(StrPtr(s)))

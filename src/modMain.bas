@@ -12225,17 +12225,23 @@ Public Function ErrMessageText(lCode As Long) As String
     Const FORMAT_MESSAGE_FROM_SYSTEM As Long = &H1000&
     Const FORMAT_MESSAGE_IGNORE_INSERTS As Long = &H200
     Const FORMAT_MESSAGE_FROM_HMODULE As Long = &H800&
+    Const MSG_SIZE = 300&
     
     Dim sRtrnMsg   As String
     Dim lret       As Long
     Dim hLib       As Long
     
-    sRtrnMsg = String$(MAX_PATH, 0&)
+    sRtrnMsg = String$(MSG_SIZE, 0&)
     hLib = GetModuleHandle(StrPtr("wininet.dll"))
     If hLib = 0 Then
         hLib = LoadLibrary(StrPtr("wininet.dll"))
     End If
-    lret = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM Or FORMAT_MESSAGE_FROM_HMODULE Or FORMAT_MESSAGE_IGNORE_INSERTS, ByVal hLib, lCode, 0&, StrPtr(sRtrnMsg), MAX_PATH, 0&)
+    
+    lret = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM Or FORMAT_MESSAGE_FROM_HMODULE Or FORMAT_MESSAGE_IGNORE_INSERTS, ByVal hLib, lCode, g_CurrentLangID, StrPtr(sRtrnMsg), MSG_SIZE, 0&)
+    
+    If Err.LastDllError = 1815 Then 'lang id not found => fallback to english
+        lret = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM Or FORMAT_MESSAGE_FROM_HMODULE Or FORMAT_MESSAGE_IGNORE_INSERTS, ByVal hLib, lCode, &H409&, StrPtr(sRtrnMsg), MSG_SIZE, 0&)
+    End If
     If lret > 0 Then
         ErrMessageText = Left$(sRtrnMsg, lret)
         ErrMessageText = Replace$(ErrMessageText, vbCrLf, vbNullString)

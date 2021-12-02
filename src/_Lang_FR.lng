@@ -98,6 +98,8 @@
 1052=Correction && Sauvegarde
 1053=Interface
 1070=Ligne de commande
+1080=Taille de l'adresse
+1081=caractères
 ;
 ; ============== EULA ============
 ;
@@ -365,7 +367,7 @@ HiJackThis est livré avec plusieurs outils, disponibles sous le bouton "Outils 
      Systèmes compatibles
      -------------------------
      
-      * Microsoft™ Windows™ 10 / 8.1 / 8 / 7 / Vista / XP / 2000 et les éditions Serveurs en 32 et 64-bits.
+      * Microsoft™ Windows™ 11 / 10 / 8.1 / 8 / 7 / Vista / XP / 2000 et les éditions Serveurs en 32 et 64-bits.
 
 
      Auteurs et copyrights
@@ -1773,4 +1775,4 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 ; ========= Empty ========
 ;
 ; (2450 - ...)
-;                                 
+;                                    

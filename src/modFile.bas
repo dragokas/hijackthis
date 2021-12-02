@@ -637,8 +637,12 @@ Public Function GetW(hFile As Long, Optional vPos As Variant, Optional vOut As V
         lr = ReadFile(hFile, StrPtr(vOut), Len(vOut), lBytesRead, 0&)
         If Err.LastDllError <> 0 Or lr = 0 Then Err.Raise 52
         
-        vOut = StrConv(vOut, vbUnicode)
-        If Len(vOut) <> 0 Then vOut = Left$(vOut, Len(vOut) \ 2)
+        If AscW(Left$(vOut, 1)) = -257 Then
+            vOut = Mid$(vOut, 2)
+        Else
+            vOut = StrConv(vOut, vbUnicode)
+        End If
+        If Len(vOut) <> 0 Then vOut = Left$(vOut, lBytesRead \ 2)
     Else
         'do a bit of magik :)
         memcpy ptr, ByVal VarPtr(vOut) + 8, 4&  'VT_BYREF

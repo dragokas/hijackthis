@@ -190,7 +190,11 @@ Private Declare Function NtOpenSymbolicLinkObject Lib "ntdll.dll" (LinkHandle As
 'Private Declare Function NtOpenDirectoryObject Lib "ntdll.dll" (DirectoryHandle As Long, ByVal DesiredAccess As Long, ObjectAttributes As OBJECT_ATTRIBUTES) As Long
 Private Declare Function NtClose Lib "ntdll.dll" (ByVal Handle As Long) As Long
 'Private Declare Function IsOS Lib "Shlwapi.dll" Alias "#437" (ByVal dwOS As Long) As Long
+Private Declare Function GetUserName Lib "Advapi32.dll" Alias "GetUserNameW" (ByVal lpBuffer As Long, nSize As Long) As Long
+Private Declare Function GetComputerName Lib "kernel32.dll" Alias "GetComputerNameW" (ByVal lpBuffer As Long, nSize As Long) As Long
+Private Declare Function lstrlen Lib "kernel32.dll" Alias "lstrlenW" (ByVal lpString As Long) As Long
 
+Private Const MAX_PATH                  As Long = 260&
 Private Const SM_SERVERR2               As Long = 89&
 Private Const SM_MEDIACENTER            As Long = 87&
 Private Const SM_STARTER                As Long = 88&
@@ -280,7 +284,7 @@ Dim IsWin64_                As Boolean
 Dim SecureBoot_             As Boolean
 Dim PlatformID_             As Long
 Dim IsLocalSystemContext_   As Boolean
-Dim IsAdmin_                As Boolean
+Dim IsAdminGroup_           As Boolean
 Dim IsSystemCaseSensitive_  As Boolean
 Dim IsEmbedded_             As Boolean
 Dim LCID_UserDefault_       As Long
@@ -603,7 +607,7 @@ Private Sub Class_Initialize()
     UserType_ = GetUserType()
     UserName_ = GetUserName_()
     ComputerName_ = GetComputerName_()
-    IsAdmin_ = (UserType_ = "Administrators")
+    IsAdminGroup_ = (UserType_ = "Administrators")
     
     GetCodePageInfo
     
@@ -1644,7 +1648,7 @@ Public Property Get IsWindowsXPOrGreater() As Boolean
     IsWindowsXPOrGreater = IsWindowsXPOrGreater_
 End Property
 
-Public Property Get IsWindowsXP_SP3OrGreater() As Long
+Public Property Get IsWindowsXP_SP3OrGreater() As Boolean
     Select Case MajorMinor_
     Case Is > 5.1: IsWindowsXP_SP3OrGreater = True
     Case Is < 5.1: IsWindowsXP_SP3OrGreater = False
@@ -1744,8 +1748,8 @@ Public Property Get IsLocalSystemContext() As Boolean
     IsLocalSystemContext = IsLocalSystemContext_
 End Property
 
-Public Property Get IsAdmin() As Boolean
-    IsAdmin = IsAdmin_
+Public Property Get IsAdminGroup() As Boolean
+    IsAdminGroup = IsAdminGroup_
 End Property
 
 Public Property Get IsSystemCaseSensitive() As Boolean

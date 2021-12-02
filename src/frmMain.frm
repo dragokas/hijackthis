@@ -2043,7 +2043,7 @@ Private Sub Form_Load()
     
     pvSetFormIcon Me
     
-    If Not (OSver.IsAdmin Or OSver.IsLocalSystemContext) Then
+    If Not (OSver.IsElevated Or OSver.IsLocalSystemContext) Then
         cmdDelOnReboot.Enabled = False
         mnuToolsDelFileOnReboot.Enabled = False
     End If
@@ -5711,20 +5711,26 @@ Private Sub cboN00bLanguage_Click()
     If sFile = "English" Then
         'LoadDefaultLanguage
         LoadLanguage &H409, bForceEN
+        g_CurrentLangID = &H409
         g_CurrentLang = sFile
     ElseIf sFile = "Russian" Then
         LoadLanguage &H419, bForceRU
+        g_CurrentLangID = &H419
         g_CurrentLang = sFile
     ElseIf sFile = "Ukrainian" Then
         LoadLanguage &H422, bForceUA
+        g_CurrentLangID = &H422
         g_CurrentLang = "Russian" 'magik
     ElseIf sFile = "French" Then
         LoadLanguage &H40C, bForceFR
+        g_CurrentLangID = &H40C
         g_CurrentLang = sFile
     Else
         LoadLangFile sFile
         ReloadLanguageNative
         ReloadLanguage
+        g_CurrentLangID = &H409
+        g_CurrentLang = "English"
     End If
     
     ' Do not save force mode state!
