@@ -58,25 +58,25 @@ set "bRefreshRequired="
   echo It's mean you need manually add them to source code in 'modMain.bas' colDisallowedCert collection.
   echo To simplify procedure:
   echo.
-  echo 1. Open disallowedcert.sst, select all, and export them to file.
-  echo 2. Import that storage to your system in "Disallowed" section. Use certmgr.msc to verify.
+  echo 1. Open disallowedcert.sst (from folder: "tools\Cert\ms-new"), select all, and export them to file in format p7b.
+  echo 2. Import that storage to your system in "Untrusted" section by right click - "Install". Use certmgr.msc to verify.
   echo 3. Extract cert info using tools\Cert\enumerator\Disallowed\DisallowedCertEnumerator.exe
   echo 4. Update hjt.txt with HJT source code of "colDisallowedCert" collection contents.
-  echo 5. Run "Compare-cert.exe" and receive Hashes.txt to append HJT source code with.
+  echo 5. Run "Compare-cert.exe" and receive Hashes_new.txt to append HJT source code with.
   echo.
   call :dlg "Open .sst container file? (Y/N)" && start "" "%certnew%\disallowedcert.sst"
 )
 echo.
 >NUL fc /b "%certold%\WURoots.sst" "%certnew%\WURoots.sst" && echo Trusted certs are up-to-date. || (
   set bRefreshRequired=true
-  echo NEW TRUSTED CERT FOUND !!! ^(see: WURoots.sst^)
+  echo NEW TRUSTED CERT FOUND !!! ^(see: WURoots.sst - from folder: "tools\Cert\ms-new" ^)
   echo It's mean you need manually check are there any new Microsoft Root cert. If so, please add it to source code 'modVerifyDigiSign.bas' IsMicrosoftCertHash^(^).
   echo To simplify procedure:
   echo.
-  echo 1. Open WURoots.sst, select all, and export them to file.
-  echo 2. Import that storage to your system in "Trusted Root" section. Use certmgr.msc to verify. 
+  echo 1. Open WURoots.sst, select all, and export them to file in format p7b.
+  echo 2. Import that storage to your system in "Trusted Root" section by right click - "Install". Use certmgr.msc to verify. 
   echo 3. Extract cert info using tools\Cert\enumerator\Root\CertEnumerator.exe
-  echo 4. Compare HJT source code with Hashes.csv and append with new certs.
+  echo 4. Compare HJT source code (modVerifyDigiSign.bas - IsMicrosoftCertHash) with Hashes.csv and append with new certs.
   echo.
   echo Also, this script is about to create delta, you can use it to found new root certificates.
   echo.
@@ -100,8 +100,8 @@ for %%a in ("%certnew%\*.crt") do if not exist "%certold%\%%~nxa" (
 if %n%==0 (
   echo No new cert was found.
 ) else (
-  echo WARNING: this list contains both trusted root and disallowed if found.
-  echo WARNING: this list contains both trusted root and disallowed if found.>>"%logfile%"
+  echo WARNING: above list contains both trusted root and disallowed if found.
+  echo WARNING: above list contains both trusted root and disallowed if found.>>"%logfile%"
   echo So, you need manually check is it 'Trusted root' or 'Disallowed' certificate !!!
   echo So, you need manually check is it 'Trusted root' or 'Disallowed' certificate !!!>>"%logfile%"
 )

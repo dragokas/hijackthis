@@ -1695,7 +1695,7 @@ Public Sub EnumTasksVista(Optional MakeCSV As Boolean)
             DirXml = Reg.GetString(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\" & id, "Path")
             
             sHit = "O22 - Task: (damaged) HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\" & id & _
-                " (no key)"
+                " - (no key)"
             
             If Not IsOnIgnoreList(sHit) Then
                 With result
@@ -2377,6 +2377,8 @@ Public Sub EnumBITS_Stage2()
                     sNotify = GetStringToken(aLog(n), 4, -1)
                     bSectFile = False
                     
+                    If AryItems(aURL) = 0 Then ReDim aURL(0)
+                    
                     For i = 0 To UBound(aURL)
                         
                         bSafe = False
@@ -2399,7 +2401,9 @@ Public Sub EnumBITS_Stage2()
                             
                             If sNotify = "none" Then sNotify = vbNullString
                             
-                            sHit = "O22 - BITS Job: (" & sType & ") " & sGUID & " - " & aURL(i) & IIf(Len(sNotify) <> 0, " - " & sNotify, vbNullString)
+                            sHit = "O22 - BITS Job: (" & sType & ") " & sGUID & " - "
+                            sHit = sHit & IIf(Len(aURL(i)) = 0, sName & " - (no URL)", aURL(i)) 'in case url is empty, display a job title
+                            If Len(sNotify) <> 0 Then sHit = sHit & " - " & sNotify
                             
                             pos = InStr(aURL(i), "->")
                             If pos <> 0 Then

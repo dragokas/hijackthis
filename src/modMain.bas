@@ -1619,7 +1619,6 @@ Public Sub LoadStuff()
         .Add "DigiNotar Cyber CA", "2B84BFBB34EE2EF949FE1CBE30AA026416EB2216"
         .Add "Microsoft Enforced Licensing Intermediate PCA", "2A83E9020591A55FC6DDAD3FB102794C52B24E70"
         .Add "www.google.com", "1916A2AF346D399F50313C393200F14140456616"
-        'additional certificates on XP
         .Add "e-islem.kktcmerkezbankasi.org", "F92BE5266CC05DB2DC0DC3F2DC74E02DEFD949CB"
         .Add "Microsoft Online Svcs BPOS CA2", "F5A874F3987EB0A9961A564B669A9050F770308A"
         .Add "Microsoft Online Svcs BPOS EMEA CA2", "E9809E023B4512AA4D4D53F40569C313C1D0294D"
@@ -1652,7 +1651,6 @@ Public Sub LoadStuff()
         .Add "Microsoft Online Svcs CA6", "09FF2CC86CEEFA8A8BB3F2E3E84D6DA3FABBF63E"
         .Add "Microsoft Online Svcs BPOS EMEA CA5", "09271DD621EBD3910C2EA1D059F99B8181405A17"
         .Add "Microsoft Online Svcs BPOS APAC CA6", "08738A96A4853A52ACEF23F782E8E1FEA7BCED02"
-        'fresh update
         .Add "DSDTestProvider", "02C2D931062D7B1DC2A5C7F5F0685064081FB221"
         .Add "www.live.fi", "08E4987249BC450748A4A78133CBF041A3510033"
         .Add "D-LINK CORPORATION", "3EB44E5FFE6DC72DED703E99902722DB38FFD1CB"
@@ -1665,7 +1663,6 @@ Public Sub LoadStuff()
         .Add "NIC CA 2014", "D2DBF71823B2B8E78F5958096150BFCB97CC388A"
         .Add "TRENDnet, Inc.", "DB5042ED256FF426867B332887ECCE2D95E79614"
         .Add "MCSHOLDING TEST", "E1F3591E769865C4E447ACC37EAFC9E2BFE4C576"
-        'updated 30 may 2020
         .Add "DarkMatter High Assurance CA", "D3FD325D0F2259F693DD789430E3A9430BB59B98"
         .Add "127.0.0.1", "C597D4E7FF9CE5BD3EC321C11827FCA9294A6BA1"
         .Add "DarkMatter Assured CA", "9FEB091E053D1C453C789E8E9C446D31CB177ED9"
@@ -1674,8 +1671,8 @@ Public Sub LoadStuff()
         .Add "DarkMatter Secure CA", "6A2C691767C2F1999B8C020CBAB44756A99A0C41"
         .Add "DarkMatter Secure CA", "3AD010247A8F1E991F8DDE5D47989CB5202E5614"
         .Add "SenncomRootCA", "1990649205B55EAB5D692E9EDB1BE0DDD3B037DE"
-        'updated 04 jan 2021
         .Add "Information Security Certification Authority CA", "EE45853E5C81DB8FDBB7F92C18B20972C744911C"
+        .Add "Solarwinds Worldwide, LLC", "47D92D49E6F7F296260DA1AF355F941EB25360C4"
     End With
     
     LoadLoLBinList
@@ -5795,7 +5792,7 @@ Public Sub CheckKnownFoldersHKLM()
     
             sValue = Reg.GetString(0&, sKey, aParam(i), bDoNotExpand:=True)
             
-            If StrComp(sValue, aValue(i), vbTextCompare) <> 0 Then
+            If (StrComp(sValue, aValue(i), vbTextCompare) <> 0) Or bIgnoreAllWhitelists Then
             
                 sHit = "O7 - KnownFolder: " & sKey & ", " & aParam(i) & " = " & sValue
                 

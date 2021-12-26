@@ -11,6 +11,10 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[2.10.0.14] - Dec 26, 2021
+ - O22 - BITS: Fixed throwing error when URL is missing (thanks to @Sandor-Helper for report).
+ - Certificates are updated.
+
 [2.10.0.13] - Dec 02, 2021
  - Fixed potential crash related to bad buffer size in codepage encoder (thanks to @thetrik for letting me know).
  - Fixed missing translation.
@@ -1598,4 +1602,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                                                                   
+                                                                       

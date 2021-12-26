@@ -257,6 +257,7 @@ Dim IsWindows7OrGreater_    As Boolean
 Dim IsWindows8OrGreater_    As Boolean
 Dim IsWindows8Point1OrGreater_ As Boolean
 Dim IsWindows10OrGreater_   As Boolean
+Dim IsWindows11OrGreater_   As Boolean
 Dim LangSystemName_         As String
 Dim LangSystemNameFull_     As String
 Dim LangSystemCode_         As Long
@@ -462,12 +463,14 @@ Private Sub Class_Initialize()
                 
                 If osi.dwBuildNumber >= 22000 And bIsWin11Core Then
                     OSName_ = "Windows 11"
+                    IsWindows11OrGreater_ = True
                 Else
                     OSName_ = "Windows 10"
                 End If
             Else
                 If ReleaseId_ >= 2009 And bIsWin11Core Then
                     OSName_ = "Windows Server 2022"
+                    IsWindows11OrGreater_ = True
                 ElseIf ReleaseId_ >= 1803 Then
                     OSName_ = "Windows Server 2019"
                 Else
@@ -970,9 +973,11 @@ Private Function GetIntegrityLevel(Optional hProcess As Long) As String
     Const SECURITY_MANDATORY_LOW_RID                As Long = &H1000&
     Const SECURITY_MANDATORY_MEDIUM_RID             As Long = &H2000&
     Const SECURITY_MANDATORY_UIACCESS_RID           As Long = SECURITY_MANDATORY_MEDIUM_RID + &H10&
+    Const SECURITY_MANDATORY_MEDIUM_PLUS_RID        As Long = &H2100&
     Const SECURITY_MANDATORY_HIGH_RID               As Long = &H3000&
     Const SECURITY_MANDATORY_SYSTEM_RID             As Long = &H4000&
     Const SECURITY_MANDATORY_PROTECTED_PROCESS_RID  As Long = &H5000&
+    Const SECURITY_MANDATORY_SECURE_PROCESS_RID     As Long = &H7000&
     
     Const TokenIntegrityLevel       As Long = 25&
     Const TOKEN_QUERY               As Long = &H8&
@@ -986,11 +991,11 @@ Private Function GetIntegrityLevel(Optional hProcess As Long) As String
     Dim pSidAuthCnt      As Long
     Dim SidAuthCnt       As Long
     Dim pILSid           As Long
-    Dim iLevel           As String
+    Dim sLevel           As String
     
     If osi.dwMajorVersion < 6 Then GetIntegrityLevel = "Not supported": Exit Function ' < Win Vista
     
-    iLevel = "Unknown"
+    sLevel = "Unknown"
     
     If hProcess = 0 Then hProcess = GetCurrentProcess()
     
@@ -1022,22 +1027,28 @@ Private Function GetIntegrityLevel(Optional hProcess As Long) As String
                     
                             Select Case dwIntegrityLevel
                             
-                                Case Is < SECURITY_MANDATORY_UNTRUSTED_RID
-                                    iLevel = "Unknown"
                                 Case Is < SECURITY_MANDATORY_LOW_RID
-                                    iLevel = "Untrusted"
+                                    sLevel = "Untrusted"
                                 Case Is < SECURITY_MANDATORY_MEDIUM_RID
-                                    iLevel = "Low"
+                                    sLevel = "Low"
                                 Case SECURITY_MANDATORY_UIACCESS_RID
-                                    iLevel = "Medium (UIAccess)"
+                                    sLevel = "Medium (UIAccess)"
+                                Case SECURITY_MANDATORY_MEDIUM_PLUS_RID
+                                    sLevel = "Medium Plus"
                                 Case Is < SECURITY_MANDATORY_HIGH_RID
-                                    iLevel = "Medium"
+                                    sLevel = "Medium"
                                 Case Is < SECURITY_MANDATORY_SYSTEM_RID
-                                    iLevel = "High"
+                                    sLevel = "High"
                                 Case Is < SECURITY_MANDATORY_PROTECTED_PROCESS_RID
-                                    iLevel = "System"
+                                    sLevel = "System"
                                 Case Else
-                                    iLevel = "ProtectedProcess"
+                                    If dwIntegrityLevel And SECURITY_MANDATORY_PROTECTED_PROCESS_RID Then
+                                        sLevel = "Protected Process"
+                                    ElseIf dwIntegrityLevel And SECURITY_MANDATORY_SECURE_PROCESS_RID Then
+                                        sLevel = "Secure Process"
+                                    Else
+                                        sLevel = "Unknown (Level: 0x" & Hex(dwIntegrityLevel) & ")"
+                                    End If
                             End Select
                         End If
                     End If
@@ -1047,7 +1058,7 @@ Private Function GetIntegrityLevel(Optional hProcess As Long) As String
         End If
         CloseHandle hToken: hToken = 0
     End If
-    GetIntegrityLevel = iLevel
+    GetIntegrityLevel = sLevel
     
     AppendErrorLogCustom "GetIntegrityLevel - End"
     Exit Function
@@ -1674,6 +1685,10 @@ End Property
 
 Public Property Get IsWindows10OrGreater() As Boolean
     IsWindows10OrGreater = IsWindows10OrGreater_
+End Property
+
+Public Property Get IsWindows11OrGreater() As Boolean
+    IsWindows11OrGreater = IsWindows11OrGreater_
 End Property
 
 Public Property Get CodepageOEM() As String
