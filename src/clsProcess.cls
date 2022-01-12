@@ -18,7 +18,7 @@ Attribute VB_Ext_KEY = "Top_Level" ,"Yes"
 '
 ' Process Class Module by Alex Dragokas
 '
-' Thanks to Catstail (Boris Fayfel) & The Trick (Anatolii Krivous) for improvements.
+' Thanks to Catstail (Boris Fayfel), The Trick (Anatolii Krivous) and Victor Bravo VI for improvements.
 '
 
 Option Explicit

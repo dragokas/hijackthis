@@ -6,7 +6,7 @@ Option Explicit
 'mIID.bas by fafalone, an add-on module for oleexp.tlb.
 
 'Fork by Dragokas
-' - all 'Static' replaced by module-level array
+' - all 'Static' replaced by module-level array (to prevent compile-time out-of-memory errors).
 
 'Original description:
 

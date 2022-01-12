@@ -28,7 +28,7 @@ Public Const STR_FOLDER_MISSING As String = "(folder missing)"
 Public Const STR_NOT_SIGNED As String = "(not signed)"
 
 #If False Then 'for common var. names character case fixation
-    Public X, Y, Length, Index, sFilename, i, j, k, State, Frm, ret, vt, isInit, hwnd, pv, Reg, pid, File, msg
+    Public X, Y, Length, Index, sFilename, i, j, k, State, Frm, ret, VT, isInit, hwnd, pv, Reg, pid, File, msg
 #End If
 
 Public Enum HE_HIVE
@@ -325,6 +325,7 @@ Public bForceRU As Boolean
 Public bForceEN As Boolean
 Public bForceUA As Boolean
 Public bForceFR As Boolean
+Public bForceSP As Boolean
 
 Public SysDisk          As String 'c:
 Public sWinDir          As String 'c:\windows
@@ -905,7 +906,7 @@ Public Declare Function FlushFileBuffers Lib "kernel32.dll" (ByVal hFile As Long
 Public Declare Function NtClose Lib "ntdll.dll" (ByVal Handle As Long) As Long
 Public Declare Function LockFileEx Lib "kernel32.dll" (ByVal hFile As Long, ByVal dwFlags As Long, ByVal dwReserved As Long, ByVal nNumberOfBytesToLockLow As Long, ByVal nNumberOfBytesToLockHigh As Long, ByVal lpOverlapped As Long) As Long
 Public Declare Function UnlockFileEx Lib "kernel32.dll" (ByVal hFile As Long, ByVal dwReserved As Long, ByVal nNumberOfBytesToUnlockLow As Long, ByVal nNumberOfBytesToUnlockHigh As Long, ByVal lpOverlapped As Long) As Long
-Public Declare Function EmptyArray Lib "oleaut32.dll" Alias "SafeArrayCreateVector" (Optional ByVal vt As VbVarType = vbString, Optional ByVal lLow As Long = 0, Optional ByVal lCount As Long = 0) As String()
+Public Declare Function EmptyArray Lib "oleaut32.dll" Alias "SafeArrayCreateVector" (Optional ByVal VT As VbVarType = vbString, Optional ByVal lLow As Long = 0, Optional ByVal lCount As Long = 0) As String()
 
 Public Const FILE_SHARE_READ           As Long = &H1&
 Public Const FILE_SHARE_WRITE          As Long = &H2&

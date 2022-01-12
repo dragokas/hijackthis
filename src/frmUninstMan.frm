@@ -4,12 +4,12 @@ Begin VB.Form frmUninstMan
    ClientHeight    =   6756
    ClientLeft      =   120
    ClientTop       =   456
-   ClientWidth     =   11316
+   ClientWidth     =   11436
    Icon            =   "frmUninstMan.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    ScaleHeight     =   6756
-   ScaleWidth      =   11316
+   ScaleWidth      =   11436
    Begin VB.Frame fraUninstMan 
       BeginProperty Font 
          Name            =   "Tahoma"
@@ -24,35 +24,141 @@ Begin VB.Form frmUninstMan
       Left            =   120
       TabIndex        =   0
       Top             =   0
-      Width           =   11175
-      Begin VB.CommandButton cmdWebSiteOpen 
-         Caption         =   "Open"
-         Height          =   375
-         Left            =   9960
-         TabIndex        =   23
-         Top             =   2300
-         Width           =   1095
-      End
-      Begin VB.TextBox txtWebSite 
-         BackColor       =   &H8000000F&
-         Height          =   285
+      Width           =   11292
+      Begin VB.Frame fraButtons 
+         Height          =   3372
          Left            =   6000
-         Locked          =   -1  'True
-         TabIndex        =   21
-         Top             =   2400
-         Width           =   3735
+         TabIndex        =   27
+         Top             =   840
+         Width           =   5244
+         Begin VB.TextBox txtName 
+            BackColor       =   &H8000000F&
+            Height          =   285
+            Left            =   120
+            Locked          =   -1  'True
+            TabIndex        =   5
+            Top             =   480
+            Width           =   3735
+         End
+         Begin VB.TextBox txtUninstCmd 
+            BackColor       =   &H8000000F&
+            Height          =   285
+            Left            =   120
+            Locked          =   -1  'True
+            TabIndex        =   4
+            Top             =   1080
+            Width           =   3735
+         End
+         Begin VB.TextBox txtWebSite 
+            BackColor       =   &H8000000F&
+            Height          =   285
+            Left            =   120
+            Locked          =   -1  'True
+            TabIndex        =   21
+            Top             =   1680
+            Width           =   3735
+         End
+         Begin VB.TextBox txtKey 
+            BackColor       =   &H8000000F&
+            Height          =   285
+            Left            =   120
+            Locked          =   -1  'True
+            TabIndex        =   12
+            Top             =   2280
+            Width           =   3735
+         End
+         Begin VB.CommandButton cmdKeyJump 
+            Caption         =   "Jump"
+            Height          =   375
+            Left            =   3960
+            TabIndex        =   13
+            Top             =   2160
+            Width           =   1095
+         End
+         Begin VB.CommandButton cmdNameEdit 
+            Caption         =   "Edit"
+            Height          =   375
+            Left            =   3960
+            TabIndex        =   10
+            Top             =   360
+            Width           =   1095
+         End
+         Begin VB.CommandButton cmdUninstStrEdit 
+            Caption         =   "Edit"
+            Height          =   375
+            Left            =   3960
+            TabIndex        =   9
+            Top             =   960
+            Width           =   1095
+         End
+         Begin VB.CommandButton cmdWebSiteOpen 
+            Caption         =   "Open"
+            Height          =   375
+            Left            =   3960
+            TabIndex        =   23
+            Top             =   1560
+            Width           =   1095
+         End
+         Begin VB.CommandButton cmdUninstall 
+            Caption         =   "Uninstall application"
+            Height          =   425
+            Left            =   360
+            TabIndex        =   2
+            Top             =   2760
+            Width           =   1935
+         End
+         Begin VB.CommandButton cmdDelete 
+            Caption         =   "Delete this entry"
+            Height          =   425
+            Left            =   2760
+            TabIndex        =   7
+            Top             =   2760
+            Width           =   1935
+         End
+         Begin VB.Label lblName 
+            Caption         =   "Name"
+            Height          =   252
+            Left            =   120
+            TabIndex        =   26
+            Top             =   240
+            Width           =   3852
+         End
+         Begin VB.Label lblUninstCmd 
+            Caption         =   "Uninstall command"
+            Height          =   252
+            Left            =   120
+            TabIndex        =   25
+            Top             =   840
+            Width           =   3852
+         End
+         Begin VB.Label lblKey 
+            Caption         =   "Key"
+            Height          =   252
+            Left            =   120
+            TabIndex        =   22
+            Top             =   2040
+            Width           =   3852
+         End
+         Begin VB.Label lblWebSite 
+            Caption         =   "Web-site"
+            Height          =   252
+            Left            =   120
+            TabIndex        =   11
+            Top             =   1440
+            Width           =   3852
+         End
       End
       Begin VB.Frame fraFilter 
          Caption         =   "Filter"
-         Height          =   1815
+         Height          =   1692
          Left            =   6000
          TabIndex        =   14
-         Top             =   4200
-         Width           =   5000
+         Top             =   4320
+         Width           =   5244
          Begin VB.CheckBox chkFilterHKU 
             Caption         =   "HKU (other users)"
             Height          =   255
-            Left            =   2600
+            Left            =   2760
             TabIndex        =   20
             Top             =   1080
             Value           =   1  'Checked
@@ -61,7 +167,7 @@ Begin VB.Form frmUninstMan
          Begin VB.CheckBox chkFilterHKCU 
             Caption         =   "HKCU (current user)"
             Height          =   255
-            Left            =   2600
+            Left            =   2760
             TabIndex        =   19
             Top             =   720
             Value           =   1  'Checked
@@ -70,7 +176,7 @@ Begin VB.Form frmUninstMan
          Begin VB.CheckBox chkFilterHKLM 
             Caption         =   "HKLM (all users)"
             Height          =   255
-            Left            =   2600
+            Left            =   2760
             TabIndex        =   18
             Top             =   360
             Value           =   1  'Checked
@@ -79,63 +185,30 @@ Begin VB.Form frmUninstMan
          Begin VB.CheckBox chkFilterNoUninstStr 
             Caption         =   "No Uninstall command"
             Height          =   255
-            Left            =   140
+            Left            =   120
             TabIndex        =   17
             Top             =   720
             Value           =   1  'Checked
-            Width           =   2415
+            Width           =   2628
          End
          Begin VB.CheckBox chkFilterHidden 
             Caption         =   "Hidden"
             Height          =   255
-            Left            =   140
+            Left            =   120
             TabIndex        =   16
             Top             =   1080
             Value           =   1  'Checked
-            Width           =   2055
+            Width           =   2388
          End
          Begin VB.CheckBox chkFilterCommon 
             Caption         =   "Common Software"
             Height          =   255
-            Left            =   140
+            Left            =   120
             TabIndex        =   15
             Top             =   360
             Value           =   1  'Checked
-            Width           =   2055
+            Width           =   2508
          End
-      End
-      Begin VB.CommandButton cmdKeyJump 
-         Caption         =   "Jump"
-         Height          =   375
-         Left            =   9960
-         TabIndex        =   13
-         Top             =   2900
-         Width           =   1095
-      End
-      Begin VB.TextBox txtKey 
-         BackColor       =   &H8000000F&
-         Height          =   285
-         Left            =   6000
-         Locked          =   -1  'True
-         TabIndex        =   12
-         Top             =   3000
-         Width           =   3735
-      End
-      Begin VB.CommandButton cmdNameEdit 
-         Caption         =   "Edit"
-         Height          =   375
-         Left            =   9960
-         TabIndex        =   10
-         Top             =   1080
-         Width           =   1095
-      End
-      Begin VB.CommandButton cmdUninstStrEdit 
-         Caption         =   "Edit"
-         Height          =   375
-         Left            =   9960
-         TabIndex        =   9
-         Top             =   1700
-         Width           =   1095
       End
       Begin VB.ListBox lstUninstMan 
          Height          =   5100
@@ -145,42 +218,22 @@ Begin VB.Form frmUninstMan
          Top             =   960
          Width           =   5775
       End
-      Begin VB.CommandButton cmdUninstall 
-         Caption         =   "Uninstall application"
-         Height          =   425
-         Left            =   6240
-         TabIndex        =   2
-         Top             =   3540
-         Width           =   1935
-      End
       Begin VB.CommandButton cmdSave 
          Caption         =   "Save list..."
          BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   7.8
+            Charset         =   204
             Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
          EndProperty
          Height          =   425
          Left            =   4320
          TabIndex        =   3
          Top             =   6170
          Width           =   1575
-      End
-      Begin VB.TextBox txtUninstCmd 
-         BackColor       =   &H8000000F&
-         Height          =   285
-         Left            =   6000
-         Locked          =   -1  'True
-         TabIndex        =   4
-         Top             =   1800
-         Width           =   3735
-      End
-      Begin VB.TextBox txtName 
-         BackColor       =   &H8000000F&
-         Height          =   285
-         Left            =   6000
-         Locked          =   -1  'True
-         TabIndex        =   5
-         Top             =   1200
-         Width           =   3735
       End
       Begin VB.CommandButton cmdRefresh 
          Caption         =   "Refresh list"
@@ -190,37 +243,13 @@ Begin VB.Form frmUninstMan
          Top             =   6170
          Width           =   1575
       End
-      Begin VB.CommandButton cmdDelete 
-         Caption         =   "Delete this entry"
-         Height          =   425
-         Left            =   8640
-         TabIndex        =   7
-         Top             =   3540
-         Width           =   1935
-      End
       Begin VB.CommandButton cmdOpenCP 
          Caption         =   "Open Control Panel ""Remove Software"""
          Height          =   425
-         Left            =   6240
+         Left            =   6360
          TabIndex        =   8
          Top             =   6170
          Width           =   4515
-      End
-      Begin VB.Label lblName 
-         Caption         =   "Name"
-         Height          =   255
-         Left            =   6000
-         TabIndex        =   26
-         Top             =   960
-         Width           =   3855
-      End
-      Begin VB.Label lblUninstCmd 
-         Caption         =   "Uninstall command"
-         Height          =   255
-         Left            =   6000
-         TabIndex        =   25
-         Top             =   1560
-         Width           =   3855
       End
       Begin VB.Label lblAbout 
          Caption         =   $"frmUninstMan.frx":4072
@@ -229,22 +258,6 @@ Begin VB.Form frmUninstMan
          TabIndex        =   24
          Top             =   240
          Width           =   10935
-      End
-      Begin VB.Label lblKey 
-         Caption         =   "Key"
-         Height          =   255
-         Left            =   6000
-         TabIndex        =   22
-         Top             =   2760
-         Width           =   3855
-      End
-      Begin VB.Label lblWebSite 
-         Caption         =   "Web-site"
-         Height          =   255
-         Left            =   6000
-         TabIndex        =   11
-         Top             =   2160
-         Width           =   3855
       End
    End
 End
@@ -308,21 +321,22 @@ Private Sub Form_Resize()
     If Me.Width < 10980 Then Me.Width = 10980
     If Me.Height < 2715 Then Me.Height = 2715
     
-    fraUninstMan.Width = Me.ScaleWidth - 200
-    lstUninstMan.Width = Me.ScaleWidth - 5500
-    txtName.Left = Me.ScaleWidth - 5250
-    txtUninstCmd.Left = txtName.Left
-    Me.txtWebSite.Left = txtName.Left
-    Me.txtKey.Left = txtName.Left
-    Me.lblName.Left = txtName.Left
-    Me.lblUninstCmd.Left = txtName.Left
-    Me.lblWebSite.Left = txtName.Left
-    Me.lblKey.Left = txtName.Left
-    Me.cmdNameEdit.Left = txtName.Left + txtName.Width + 100
-    Me.cmdUninstStrEdit.Left = Me.cmdNameEdit.Left
-    Me.cmdWebSiteOpen.Left = Me.cmdNameEdit.Left
-    Me.cmdKeyJump.Left = Me.cmdNameEdit.Left
-    Me.fraFilter.Left = txtName.Left - 25
+    fraUninstMan.Width = Me.ScaleWidth - 170
+    lstUninstMan.Width = Me.ScaleWidth - 5700 '5500
+    'txtName.Left = Me.ScaleWidth - 5250
+    'txtUninstCmd.Left = txtName.Left
+    'Me.txtWebSite.Left = txtName.Left
+    'Me.txtKey.Left = txtName.Left
+    'Me.lblName.Left = txtName.Left
+    'Me.lblUninstCmd.Left = txtName.Left
+    'Me.lblWebSite.Left = txtName.Left
+    'Me.lblKey.Left = txtName.Left
+    'Me.cmdNameEdit.Left = txtName.Left + txtName.Width + 100
+    'Me.cmdUninstStrEdit.Left = Me.cmdNameEdit.Left
+    'Me.cmdWebSiteOpen.Left = Me.cmdNameEdit.Left
+    'Me.cmdKeyJump.Left = Me.cmdNameEdit.Left
+    Me.fraButtons.Left = Me.ScaleWidth - 5480
+    Me.fraFilter.Left = Me.ScaleWidth - 5480
     lblAbout.Width = Me.fraUninstMan.Width - 240
     Me.fraUninstMan.Height = Me.ScaleHeight - 30
     lstUninstMan.Height = Me.fraUninstMan.Height - 1635
@@ -330,8 +344,8 @@ Private Sub Form_Resize()
     cmdSave.Top = cmdRefresh.Top
     cmdSave.Left = lstUninstMan.Left + lstUninstMan.Width - cmdSave.Width
     cmdRefresh.Left = lstUninstMan.Left + lstUninstMan.Width \ 2 - cmdRefresh.Width \ 2
-    cmdUninstall.Left = txtName.Left + 240
-    cmdDelete.Left = txtName.Left + 2640
+    cmdUninstall.Left = Me.ScaleWidth - 5250 + 240
+    cmdDelete.Left = Me.ScaleWidth - 5250 + 2640
     cmdOpenCP.Left = cmdUninstall.Left
     'cmdOpenCP.Top = fraFilter.Top + fraFilter.Height + 155
 End Sub

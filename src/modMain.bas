@@ -17,6 +17,8 @@ Attribute VB_Name = "modMain"
 ' O17 Policy Scripts / DHCP DNS by Alex Dragokas
 ' O21 ShellIconOverlayIdentifiers / ShellExecuteHooks by Alex Dragokas
 ' O22 Tasks (Vista+) / .job / BITS by Alex Dragokas
+'
+' Everything else is based on Merijn Bellekom work
 
 '
 ' List of all sections:
@@ -16729,6 +16731,8 @@ Public Function RemoveAutorunHJT() As Boolean
 End Function
 
 Public Sub OpenAndSelectFile(sFile As String)
+    On Error GoTo ErrorHandler:
+
     Dim hRet As Long
     Dim pidl As Long
     Dim sFileIDL As String
@@ -16761,6 +16765,11 @@ Public Sub OpenAndSelectFile(sFile As String)
             Shell "explorer.exe /select," & """" & sFile & """", vbNormalFocus
         End If
     End If
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "OpenAndSelectFile", "File:", sFile
+    If inIDE Then Stop: Resume Next
 End Sub
 
 Public Function GetDateAtMidnight(dDate As Date) As Date

@@ -37,20 +37,20 @@ Begin VB.Form frmADSspy
       Width           =   8175
       Begin VB.CommandButton cmdSave 
          Caption         =   "Save log..."
-         Height          =   375
+         Height          =   492
          Left            =   2220
          TabIndex        =   19
          Tag             =   "1"
-         Top             =   1680
+         Top             =   1620
          Width           =   1695
       End
       Begin VB.CommandButton cmdExit 
          Cancel          =   -1  'True
          Caption         =   "Exit"
-         Height          =   360
+         Height          =   480
          Left            =   7080
          TabIndex        =   18
-         Top             =   1680
+         Top             =   1620
          Width           =   990
       End
       Begin VB.CommandButton cmdScanFolder 
@@ -70,6 +70,15 @@ Begin VB.Form frmADSspy
       End
       Begin VB.OptionButton optScanLocation 
          Caption         =   "Scan only this folder:"
+         BeginProperty Font 
+            Name            =   "Tahoma"
+            Size            =   9
+            Charset         =   204
+            Weight          =   400
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
          Height          =   255
          Index           =   2
          Left            =   120
@@ -79,6 +88,15 @@ Begin VB.Form frmADSspy
       End
       Begin VB.OptionButton optScanLocation 
          Caption         =   "Full scan (all NTFS, ReFS drives)"
+         BeginProperty Font 
+            Name            =   "Tahoma"
+            Size            =   9
+            Charset         =   204
+            Weight          =   400
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
          Height          =   255
          Index           =   1
          Left            =   120
@@ -88,6 +106,15 @@ Begin VB.Form frmADSspy
       End
       Begin VB.OptionButton optScanLocation 
          Caption         =   "Quick scan (Windows base folder only)"
+         BeginProperty Font 
+            Name            =   "Tahoma"
+            Size            =   9
+            Charset         =   204
+            Weight          =   400
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
          Height          =   255
          Index           =   0
          Left            =   120
@@ -98,19 +125,19 @@ Begin VB.Form frmADSspy
       End
       Begin VB.CommandButton cmdScan 
          Caption         =   "Scan"
-         Height          =   375
+         Height          =   492
          Left            =   120
          TabIndex        =   11
          Tag             =   "1"
-         Top             =   1680
+         Top             =   1620
          Width           =   1815
       End
       Begin VB.CommandButton cmdRemove 
          Caption         =   "Remove selected streams"
-         Height          =   375
+         Height          =   492
          Left            =   4200
          TabIndex        =   10
-         Top             =   1680
+         Top             =   1620
          Width           =   2535
       End
       Begin VB.CheckBox chkIgnoreEncryptable 

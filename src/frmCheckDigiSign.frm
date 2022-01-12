@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin VB.Form frmCheckDigiSign 
    Caption         =   "Digital signature checker"
-   ClientHeight    =   4680
+   ClientHeight    =   4920
    ClientLeft      =   120
    ClientTop       =   468
    ClientWidth     =   9252
@@ -17,14 +17,14 @@ Begin VB.Form frmCheckDigiSign
    Icon            =   "frmCheckDigiSign.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   ScaleHeight     =   4680
+   ScaleHeight     =   4920
    ScaleWidth      =   9252
    Begin VB.CommandButton cmdExit 
       Caption         =   "Exit"
       Height          =   492
       Left            =   2400
       TabIndex        =   14
-      Top             =   4080
+      Top             =   4320
       Width           =   1452
    End
    Begin VB.CommandButton cmdSelectFile 
@@ -37,7 +37,7 @@ Begin VB.Form frmCheckDigiSign
    End
    Begin VB.Frame fraReportFormat 
       Caption         =   "Report format:"
-      Height          =   1335
+      Height          =   1572
       Left            =   5400
       TabIndex        =   8
       Top             =   2640
@@ -47,13 +47,13 @@ Begin VB.Form frmCheckDigiSign
          Height          =   195
          Left            =   120
          TabIndex        =   10
-         Top             =   720
+         Top             =   960
          Value           =   -1  'True
          Width           =   2895
       End
       Begin VB.OptionButton optPlainText 
          Caption         =   "Plain Text (Short log in Unicode)"
-         Height          =   255
+         Height          =   492
          Left            =   120
          TabIndex        =   9
          Top             =   360
@@ -62,7 +62,7 @@ Begin VB.Form frmCheckDigiSign
    End
    Begin VB.Frame fraFilter 
       Caption         =   "Filter"
-      Height          =   1335
+      Height          =   1572
       Left            =   240
       TabIndex        =   4
       Top             =   2640
@@ -70,11 +70,11 @@ Begin VB.Form frmCheckDigiSign
       Begin VB.OptionButton OptExtension 
          Caption         =   "by extension"
          Height          =   255
-         Left            =   1680
+         Left            =   120
          TabIndex        =   12
-         Top             =   240
+         Top             =   480
          Value           =   -1  'True
-         Width           =   1575
+         Width           =   2052
       End
       Begin VB.OptionButton OptAllFiles 
          Caption         =   "All Files"
@@ -82,40 +82,40 @@ Begin VB.Form frmCheckDigiSign
          Left            =   120
          TabIndex        =   11
          Top             =   240
-         Width           =   1455
+         Width           =   2052
       End
       Begin VB.CheckBox chkIncludeSys 
          Caption         =   "Include files in Windows\System32 (SysWOW64) folder"
          Height          =   255
          Left            =   120
          TabIndex        =   7
-         Top             =   960
-         Width           =   4815
+         Top             =   1200
+         Width           =   4812
       End
       Begin VB.CheckBox chkRecur 
          Caption         =   "Recursively (include subfolders)"
          Height          =   255
          Left            =   120
          TabIndex        =   6
-         Top             =   600
+         Top             =   840
          Value           =   1  'Checked
          Width           =   4815
       End
       Begin VB.TextBox txtExtensions 
          Height          =   285
-         Left            =   3360
+         Left            =   2280
          TabIndex        =   5
          Text            =   "exe;dll;sys"
-         Top             =   240
+         Top             =   480
          Width           =   1572
       End
    End
    Begin VB.CommandButton cmdGo 
       Caption         =   "Go"
       Height          =   480
-      Left            =   360
+      Left            =   480
       TabIndex        =   2
-      Top             =   4080
+      Top             =   4320
       Width           =   1575
    End
    Begin VB.TextBox txtPaths 
@@ -132,30 +132,30 @@ Begin VB.Form frmCheckDigiSign
       BackStyle       =   0  'Transparent
       Caption         =   "1 / 1 - File - (in folder)"
       ForeColor       =   &H0000FFFF&
-      Height          =   195
+      Height          =   192
       Left            =   4560
       TabIndex        =   3
-      Top             =   4320
+      Top             =   4404
       Visible         =   0   'False
-      Width           =   1575
+      Width           =   4452
    End
    Begin VB.Shape shpFore 
       BackColor       =   &H00C00000&
       BackStyle       =   1  'Opaque
-      Height          =   375
+      Height          =   372
       Left            =   4320
-      Top             =   4200
+      Top             =   4320
       Visible         =   0   'False
-      Width           =   255
+      Width           =   252
    End
    Begin VB.Shape shpBack 
       BackColor       =   &H00000080&
       BackStyle       =   1  'Opaque
-      Height          =   375
+      Height          =   372
       Left            =   4320
-      Top             =   4200
+      Top             =   4320
       Visible         =   0   'False
-      Width           =   4815
+      Width           =   4812
    End
    Begin VB.Label lblThisTool 
       AutoSize        =   -1  'True
@@ -688,12 +688,14 @@ Private Sub Form_Resize()
     TopLevel1 = Me.Height - 1300
     TopLevel2 = TopLevel1 - 1440
     
-    cmdGo.Top = TopLevel1
-    cmdExit.Top = TopLevel1
+    Dim offset As Long: offset = 220
     
-    shpBack.Top = TopLevel1 + 120
-    shpFore.Top = TopLevel1 + 120
-    lblStatus.Top = TopLevel1 + 210
+    cmdGo.Top = TopLevel1 + offset
+    cmdExit.Top = TopLevel1 + offset
+    
+    shpBack.Top = TopLevel1 + 120 + offset
+    shpFore.Top = TopLevel1 + 120 + offset
+    lblStatus.Top = TopLevel1 + 210 + offset
     shpBack.Width = Me.Width - 4680
     
     fraFilter.Top = TopLevel2

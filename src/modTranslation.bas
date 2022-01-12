@@ -142,6 +142,8 @@ Public Sub LoadLanguage(lCode As Long, Force As Boolean, Optional PreLoadNativeL
             LangRU
         Case &H40C&, &H80C&, &HC0C&, &H140C&, &H180C&, &H100C&  'French
             LangFR
+        Case &H40A&, &HC0A&  'Spanish
+            LangSP
         Case &H409& 'English
             LoadDefaultLanguage
         Case Else
@@ -168,6 +170,8 @@ Public Sub LoadLanguage(lCode As Long, Force As Boolean, Optional PreLoadNativeL
             End If
         Case &H40C&, &H80C&, &HC0C&, &H140C&, &H180C&, &H100C& 'French
             LangFR
+        Case &H40A&, &HC0A&  'Spanish
+            LangSP
         Case &H409& 'English
             LoadDefaultLanguage
         Case Else
@@ -191,6 +195,8 @@ Public Sub LoadLanguage(lCode As Long, Force As Boolean, Optional PreLoadNativeL
             End If
         Case &H40C&, &H80C&, &HC0C&, &H140C&, &H180C&, &H100C& 'French
             LangFR
+        Case &H40A&, &HC0A&  'Spanish
+            LangSP
         Case &H409& 'English
             LoadDefaultLanguage
         Case Else
@@ -254,6 +260,12 @@ End Sub
 '// French
 Public Sub LangFR()
     LoadLangFile "_Lang_FR.lng", 204
+    g_VersionHistory = LoadResFile("_ChangeLog_en.txt", 103)
+End Sub
+
+'// Spanish
+Public Sub LangSP()
+    LoadLangFile "_Lang_SP.lng", 205
     g_VersionHistory = LoadResFile("_ChangeLog_en.txt", 103)
 End Sub
 

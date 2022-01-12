@@ -52,24 +52,24 @@ Begin VB.Form frmMain
          Caption         =   "Add checked to ignorelist"
          Enabled         =   0   'False
          Height          =   450
-         Left            =   240
+         Left            =   120
          TabIndex        =   6
          Top             =   850
-         Width           =   2295
+         Width           =   2532
       End
       Begin VB.CommandButton cmdConfig 
          Caption         =   "Settings"
          Height          =   450
-         Left            =   1440
+         Left            =   1320
          TabIndex        =   5
          Tag             =   "0"
          Top             =   300
-         Width           =   1095
+         Width           =   1332
       End
       Begin VB.CommandButton cmdHelp 
          Caption         =   "Help"
          Height          =   450
-         Left            =   240
+         Left            =   120
          TabIndex        =   4
          Tag             =   "0"
          Top             =   300
@@ -183,6 +183,28 @@ Begin VB.Form frmMain
       TabIndex        =   82
       Top             =   14760
       Width           =   75
+   End
+   Begin VB.TextBox txtNothing 
+      Alignment       =   2  'Center
+      BorderStyle     =   0  'None
+      Enabled         =   0   'False
+      BeginProperty Font 
+         Name            =   "Tahoma"
+         Size            =   8.4
+         Charset         =   204
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   285
+      Left            =   1080
+      Locked          =   -1  'True
+      TabIndex        =   32
+      Text            =   "No suspicious items found!"
+      Top             =   1560
+      Visible         =   0   'False
+      Width           =   4695
    End
    Begin VB.Frame fraConfig 
       BeginProperty Font 
@@ -417,7 +439,7 @@ Begin VB.Form frmMain
                Left            =   0
                TabIndex        =   94
                Top             =   120
-               Width           =   3975
+               Width           =   3372
                Begin VB.CheckBox chkAdditionalScan 
                   Caption         =   "Additional scan"
                   Height          =   255
@@ -530,14 +552,14 @@ Begin VB.Form frmMain
                   Strikethrough   =   0   'False
                EndProperty
                Height          =   1575
-               Left            =   4080
+               Left            =   3480
                TabIndex        =   95
                Top             =   120
-               Width           =   3855
+               Width           =   4452
                Begin VB.ComboBox cmbHashType 
                   Height          =   300
                   ItemData        =   "frmMain.frx":9180
-                  Left            =   2400
+                  Left            =   3120
                   List            =   "frmMain.frx":9182
                   Style           =   2  'Dropdown List
                   TabIndex        =   40
@@ -552,7 +574,7 @@ Begin VB.Form frmMain
                   TabIndex        =   78
                   ToolTipText     =   "Run HiJackThis scan at Windows startup and show results (if only items are found)"
                   Top             =   1120
-                  Width           =   3255
+                  Width           =   3972
                End
                Begin VB.CheckBox chkDoCheckSum 
                   Caption         =   "Calculate Checksum"
@@ -561,7 +583,7 @@ Begin VB.Form frmMain
                   TabIndex        =   101
                   ToolTipText     =   "Calculate checksum of files if possible"
                   Top             =   900
-                  Width           =   2172
+                  Width           =   2892
                End
                Begin VB.CheckBox chkIgnoreAll 
                   Caption         =   "Ignore ALL Whitelists"
@@ -570,7 +592,7 @@ Begin VB.Form frmMain
                   TabIndex        =   100
                   ToolTipText     =   "Include in log any entries regardless whitelist"
                   Top             =   610
-                  Width           =   3015
+                  Width           =   3972
                End
                Begin VB.CheckBox chkIgnoreMicrosoft 
                   Caption         =   "Hide Microsoft entries"
@@ -580,7 +602,7 @@ Begin VB.Form frmMain
                   ToolTipText     =   "Do not include in log files and registry related to Microsoft"
                   Top             =   360
                   Value           =   1  'Checked
-                  Width           =   3015
+                  Width           =   3972
                End
             End
          End
@@ -677,7 +699,7 @@ Begin VB.Form frmMain
             Left            =   120
             TabIndex        =   36
             Top             =   0
-            Width           =   8292
+            Width           =   8250
          End
          Begin VB.Line linSeperator 
             BorderColor     =   &H80000010&
@@ -873,11 +895,12 @@ Begin VB.Form frmMain
                   BackStyle       =   0  'Transparent
                   Caption         =   "Remove all HiJackThis Registry entries, backups and quit"
                   ForeColor       =   &H000000FF&
-                  Height          =   195
+                  Height          =   444
                   Left            =   2640
                   TabIndex        =   69
-                  Top             =   400
-                  Width           =   4065
+                  Top             =   348
+                  Width           =   4548
+                  WordWrap        =   -1  'True
                End
             End
             Begin VB.Frame FraPlugins 
@@ -1485,28 +1508,6 @@ Begin VB.Form frmMain
          Top             =   480
          Width           =   1935
       End
-   End
-   Begin VB.TextBox txtNothing 
-      Alignment       =   2  'Center
-      BorderStyle     =   0  'None
-      Enabled         =   0   'False
-      BeginProperty Font 
-         Name            =   "Tahoma"
-         Size            =   8.4
-         Charset         =   204
-         Weight          =   700
-         Underline       =   0   'False
-         Italic          =   0   'False
-         Strikethrough   =   0   'False
-      EndProperty
-      Height          =   285
-      Left            =   1080
-      Locked          =   -1  'True
-      TabIndex        =   32
-      Text            =   "No suspicious items found!"
-      Top             =   1560
-      Visible         =   0   'False
-      Width           =   4695
    End
    Begin VB.Frame fraHelp 
       Caption         =   "Help"
@@ -5658,6 +5659,7 @@ Private Sub LoadLanguageList()
     cboN00bLanguage.AddItem "English"
     cboN00bLanguage.AddItem "French"
     cboN00bLanguage.AddItem "Russian"
+    cboN00bLanguage.AddItem "Spanish"
     cboN00bLanguage.AddItem "Ukrainian"
     
     sFile = DirW$(BuildPath(AppPath(), "*.lng"), vbFile)
@@ -5666,7 +5668,8 @@ Private Sub LoadLanguageList()
         If sFile <> "_Lang_EN.lng" And _
             sFile <> "_Lang_FR.lng" And _
             sFile <> "_Lang_RU.lng" And _
-            sFile <> "_Lang_UA.lng" Then
+            sFile <> "_Lang_UA.lng" And _
+            sFile <> "_Lang_SP.lng" Then
                 cboN00bLanguage.AddItem sFile
         End If
         sFile = DirW$()
@@ -5677,6 +5680,7 @@ Private Sub LoadLanguageList()
     If bForceRU Then sCurLang = "Russian"
     If bForceUA Then sCurLang = "Ukrainian"
     If bForceEN Then sCurLang = "English"
+    If bForceSP Then sCurLang = "Spanish"
     
     LangID = -1
     For i = 0 To cboN00bLanguage.ListCount - 1
@@ -5701,7 +5705,7 @@ Private Sub cboN00bLanguage_Click()
     AppendErrorLogCustom "frmMain.cboN00bLanguage_Click - Begin"
     
     'Lang IDs
-    'https://msdn.microsoft.com/en-us/library/windows/desktop/dd318693(v=vs.85).aspx
+    'https://docs.microsoft.com/en-US/windows/win32/intl/language-identifier-constants-and-strings
     
     sFile = cboN00bLanguage.List(cboN00bLanguage.ListIndex)
     
@@ -5725,6 +5729,10 @@ Private Sub cboN00bLanguage_Click()
         LoadLanguage &H40C, bForceFR
         g_CurrentLangID = &H40C
         g_CurrentLang = sFile
+    ElseIf sFile = "Spanish" Then
+        LoadLanguage &H40A, bForceSP
+        g_CurrentLangID = &H40A
+        g_CurrentLang = sFile
     Else
         LoadLangFile sFile
         ReloadLanguageNative
@@ -5734,7 +5742,7 @@ Private Sub cboN00bLanguage_Click()
     End If
     
     ' Do not save force mode state!
-    If Not (bForceRU Or bForceEN Or bForceUA Or bForceFR) Then RegSaveHJT "LanguageFile", sFile
+    If Not (bForceRU Or bForceEN Or bForceUA Or bForceFR Or bForceSP) Then RegSaveHJT "LanguageFile", sFile
     
     If cmdN00bScan.Enabled And cmdN00bScan.Visible Then cmdN00bScan.SetFocus
     AppendErrorLogCustom "frmMain.cboN00bLanguage_Click - End"

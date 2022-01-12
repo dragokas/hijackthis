@@ -293,7 +293,7 @@ ErrorHandler:
 End Function
 
 Public Sub ShowFile(sFile$)
-    OpenAndSelectFile PathX64(sFile)
+    OpenAndSelectFile sFile 'PathX64(sFile)
 End Sub
 
 Public Sub SendToNotepad(sFile$)

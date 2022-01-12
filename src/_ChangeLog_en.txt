@@ -11,6 +11,14 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[2.10.0.16] - Jan 12, 2022
+ - Added Spanish translation (thanks to Andago).
+ - Added key /LangSP - force use Spanish language for user interface.
+ - Corrected size of the forms for better match the translation.
+ - Minor edits of RU/UA/FR translations.
+ - Updated Merijn Bellekom donation link in StartupList tool.
+ - StartupList (and HJT): fixed "Show file" context menu didn't work with System32 files.
+
 [2.10.0.14] - Dec 26, 2021
  - O22 - BITS: Fixed throwing error when URL is missing (thanks to @Sandor-Helper for report).
  - Certificates are updated.
@@ -1602,4 +1610,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                                                                       
+                                                                          

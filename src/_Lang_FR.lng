@@ -90,7 +90,7 @@
 1041=Ne pas inclure dans les rapports les fichiers et le registre liés à Microsoft
 1042=Ignorer TOUTES les listes blanches
 1043=Inclure dans le rapport toutes les entrées indépendamment de la liste blanche
-1044=Calculer CS
+1044=Calculer la somme de contrôle
 1045=Si possible, calculer la somme de contrôle des fichiers
 1046=Calcul de hash
 1050=Zone du scan
@@ -304,6 +304,7 @@ et enregistrer un rapport
        /LangEN 	- force la langue anglaise pour l'interface utilisateur.
        /LangFR 	- force la langue française pour l'interface utilisateur.
        /LangRU 	- force la langue russe pour l'interface utilisateur.
+       /LangSP	 	- force la langue espagnol pour l'interface utilisateur.
        /LangUA 	- force la langue ukrainienne pour l'interface utilisateur.
        /skipErrors	- n'affiche pas les messages d'erreur et empêche les avertissements et les erreurs d'écrire dans le fichier journal.
        /debug 		- mode de traçage. Les noms de fonction seront ajoutés au rapport principal et au fichier HiJackThis_debug.log. Vous pouvez également renommer le fichier HiJackThis_debug.exe.
@@ -384,7 +385,7 @@ HiJackThis est livré avec plusieurs outils, disponibles sous le bouton "Outils 
      - regist -= VIRUSNET association =- conseils et idées utiles, manuel d'utilisation, mises à jour de la base de données et bêta-testeurs
      - Sandor -= VIRUSNET association =- béta-testeurs, traitement des PC sur GitHub et les forums
      - akok -= VIRUSNET association =- promotion de produits, fournissant une plateforme de tests et de discussions, aide à la résolution des conflits avec antivirus
-     - SafeZone.cc team - promotion et support, traitement des PC sur les forums associés
+     - SafeZone.cc - promotion et support, traitement des PC sur les forums associés
      
      Coordination:
 
@@ -398,6 +399,7 @@ HiJackThis est livré avec plusieurs outils, disponibles sous le bouton "Outils 
      Ukrainien: Dragokas
      Anglais: Dragokas, Tanner Helland
      Français: Colok du site Colok-Traductions.com
+     Espagnol: Andago
 	 
      Développement tiers:
 
@@ -579,8 +581,8 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 0149=Mot de passe
 0150=Suppression de HJT
 0151=Désinstaller HiJackThis
-0152=Supprimera tous vos paramètres et vos sauvegardes! 
-0153=Cela supprimera les paramètres et les sauvegardes de HiJackThis . Notez que vous devrez supprimer manuellement le fichier HiJackThis.exe.
+0152=Supprimera tous vos paramètres et vos sauvegardes, puis quitte
+0153=Cela supprimera les paramètres et les sauvegardes de HiJackThis. Notez que vous devrez supprimer manuellement le fichier HiJackThis.exe.
      
      Continuer avec la désinstallation?
 0154=Cela supprimera complètement HiJackThis, y compris les paramètres et les sauvegardes. Continuer?
@@ -1629,7 +1631,7 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 0946=Entrez un nom de fichier, un mot ou une expression à rechercher:
 0947=Rechercher...
 0948=StartupList
-     Ecrit par Merijn Bellekom - http://www.merijn.org/
+     Ecrit par Merijn Bellekom - http://merijn.nu/
 
      Basé sur StartupList v1, TonyKlein's Collection of Autostart Locations et Andrew Aronoff's SilentRunners
 
@@ -1639,7 +1641,7 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
      Note : StartupList ne modifie rien et ne peut rien modifier sur le système.
 
      Si vous trouvez ce programme utile, faites un don !
-     http://www.merijn.org/donate.php
+     http://merijn.nu/donate.php
 0949=Texte du nœud copié dans le presse-papiers.
 0950=Chemin du nœud et du texte copié dans le presse-papiers.
 0951=Arborescence du nœud copié dans le presse-papiers.
@@ -1775,4 +1777,4 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 ; ========= Empty ========
 ;
 ; (2450 - ...)
-;                                    
+;                                        

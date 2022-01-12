@@ -304,6 +304,7 @@
        /LangEN		- force use English language for user interface.
        /LangFR		- force use French language for user interface.
        /LangRU	- force use Russian language for user interface.
+       /LangSP		- force use Spanish language for user interface.
        /LangUA	- force use Ukrainian language for user interface.
        /skipErrors	- do not show error messages and prevent warnings and errors from writing to log file.
        /debug		- tracing mode. Function names will be appended to main log and HiJackThis_debug.log file. You can also rename the file to HiJackThis_debug.exe.
@@ -385,7 +386,7 @@
      - regist -= VIRUSNET association =- valuable tips and ideas, new user's manual, database updates, closed and beta-testing
      - Sandor -= VIRUSNET association =- beta-testing, PC treatment on GitHub and forums of association
      - akok -= VIRUSNET association =- product promotion, providing a platform for tests and discussion, help with resolving conflicts with antiviruses
-     - SafeZone.cc team - promotion and support, feedback and bug reports, PC treatment on forums of association
+     - SafeZone.cc - promotion and support, feedback and bug reports, PC treatment on forums of association
      
      Coordination:
 
@@ -399,6 +400,7 @@
      Ukrainian: Dragokas
      English: Dragokas, Tanner Helland
      French: Colok (Colok-Traductions.com)
+     Spanish: Andago
      
      Third-party development:
 
@@ -1629,7 +1631,7 @@
 0946=Enter a filename, word or phrase to look for:
 0947=Find...
 0948=StartupList
-     Written by Merijn Bellekom - http://www.merijn.org/
+     Written by Merijn Bellekom - http://merijn.nu/
 
      Based on StartupList v1, TonyKlein's Collection of Autostart Locations and Andrew Aronoff's SilentRunners
 
@@ -1639,7 +1641,7 @@
      Note: StartupList does not and cannot change anything on the system.
 
      If you find this program useful, please donate!
-     http://www.merijn.org/donate.php
+     http://merijn.nu/donate.php
 0949=Node text copied to clipboard.
 0950=Node path and text copied to clipboard.
 0951=Node tree copied to clipboard.
@@ -1775,4 +1777,4 @@
 ; ========= Empty ========
 ;
 ; (2450 - ...)
-;                  
+;                     

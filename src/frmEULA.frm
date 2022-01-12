@@ -371,6 +371,7 @@ Private Sub Form_Load()
     bForceEN = InStr(1, AppExeName(), "_EN", 1) Or HasCommandLineKey("langEN")  '/langEN
     bForceUA = InStr(1, AppExeName(), "_UA", 1) Or HasCommandLineKey("langUA")  '/langUA
     bForceFR = InStr(1, AppExeName(), "_FR", 1) Or HasCommandLineKey("langFR")  '/langUA
+    bForceSP = InStr(1, AppExeName(), "_SP", 1) Or HasCommandLineKey("langSP")  '/langSP
 
     bIsWOW64 = IsWow64()
 
@@ -475,6 +476,8 @@ Sub Localize()
         LoadLanguage &H422, True, PreLoadNativeLang:=True
     ElseIf bForceFR Then
         LoadLanguage &H40C, True, PreLoadNativeLang:=True
+    ElseIf bForceSP Then
+        LoadLanguage &H40A, True, PreLoadNativeLang:=True
     Else
         LoadLanguage 0, False, PreLoadNativeLang:=True
     End If

@@ -1,4 +1,12 @@
 Attribute VB_Name = "modVirusTotal"
+'[modVirusTotal.bas]
+
+'
+' VirusTotal uploader by Alex Dragokas
+'
+' 3rd-party tools are used:
+' - "Autoruns" by Mark Russinovich
+'
 Option Explicit
 
 Public Function DownloadAutoruns() As Boolean
