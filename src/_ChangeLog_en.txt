@@ -11,6 +11,10 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[2.10.0.17] - Apr 07, 2022
+ - Added new Microsoft certificates.
+ - Files unlocker: Added buttons "Add File(s) / Folder(s)".
+
 [2.10.0.16] - Jan 12, 2022
  - Added Spanish translation (thanks to Andago).
  - Added key /LangSP - force use Spanish language for user interface.
@@ -1610,4 +1614,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                                                                          
+                                                                             

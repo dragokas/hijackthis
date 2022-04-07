@@ -28,7 +28,7 @@ Public Const STR_FOLDER_MISSING As String = "(folder missing)"
 Public Const STR_NOT_SIGNED As String = "(not signed)"
 
 #If False Then 'for common var. names character case fixation
-    Public X, Y, Length, Index, sFilename, i, j, k, State, Frm, ret, VT, isInit, hwnd, pv, Reg, pid, File, msg
+    Public X, Y, Length, Index, sFilename, i, j, k, State, Frm, ret, VT, isInit, hwnd, pv, Reg, pid, File, msg, VT
 #End If
 
 Public Enum HE_HIVE
@@ -1081,11 +1081,31 @@ Public Declare Function InternetGetConnectedState Lib "wininet.dll" (ByRef dwFla
 Public Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteW" (ByVal hwnd As Long, ByVal lpOperation As Long, ByVal lpFile As Long, ByVal lpParameters As Long, ByVal lpDirectory As Long, ByVal nShowCmd As Long) As Long
 Public Declare Function GetNetworkParams Lib "IPHlpApi.dll" (FixedInfo As Any, pOutBufLen As Long) As Long
 
-Public Const OFN_HIDEREADONLY = &H4
-Public Const OFN_NONETWORKBUTTON = &H20000
-Public Const OFN_PATHMUSTEXIST = &H800
-Public Const OFN_FILEMUSTEXIST = &H1000
-Public Const OFN_OVERWRITEPROMPT = &H2
+Public Enum CdlgExt_Flags
+    OFN_ALLOWMULTISELECT = &H200
+    OFN_CreatePrompt = &H2000
+    OFN_EXPLORER = &H80000
+    OFN_EnableHook = &H20
+    OFN_ExtensionDifferent = &H400
+    OFN_FILEMUSTEXIST = &H1000
+    OFN_HelpButton = &H10
+    OFN_HIDEREADONLY = &H4
+    OFN_LongNames = &H200000
+    OFN_NoChangeDir = &H8
+    OFN_NODEREFERENCELINKS = &H100000
+    OFN_NoLongNames = &H40000
+    OFN_NoReadOnlyReturn = &H8000
+    OFN_NOVALIDATE = &H100
+    OFN_OVERWRITEPROMPT = &H2
+    OFN_PATHMUSTEXIST = &H800
+    OFN_ReadOnly = &H1
+    OFN_ShareAware = &H4000
+    OFN_EnableIncludeNotify = &H400000
+    OFN_NONETWORKBUTTON = &H20000
+    OFN_ENABLESIZING = &H800000
+    OFN_FORCESHOWHIDDEN = &H10000000
+    OFN_DONTADDTORECENT = &H2000000
+End Enum
 
 Public Const INTERNET_OPEN_TYPE_DIRECT = 1
 Public Const INTERNET_FLAG_RELOAD = &H80000000

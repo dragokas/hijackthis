@@ -323,18 +323,6 @@ Private Sub Form_Resize()
     
     fraUninstMan.Width = Me.ScaleWidth - 170
     lstUninstMan.Width = Me.ScaleWidth - 5700 '5500
-    'txtName.Left = Me.ScaleWidth - 5250
-    'txtUninstCmd.Left = txtName.Left
-    'Me.txtWebSite.Left = txtName.Left
-    'Me.txtKey.Left = txtName.Left
-    'Me.lblName.Left = txtName.Left
-    'Me.lblUninstCmd.Left = txtName.Left
-    'Me.lblWebSite.Left = txtName.Left
-    'Me.lblKey.Left = txtName.Left
-    'Me.cmdNameEdit.Left = txtName.Left + txtName.Width + 100
-    'Me.cmdUninstStrEdit.Left = Me.cmdNameEdit.Left
-    'Me.cmdWebSiteOpen.Left = Me.cmdNameEdit.Left
-    'Me.cmdKeyJump.Left = Me.cmdNameEdit.Left
     Me.fraButtons.Left = Me.ScaleWidth - 5480
     Me.fraFilter.Left = Me.ScaleWidth - 5480
     lblAbout.Width = Me.fraUninstMan.Width - 240

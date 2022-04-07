@@ -2431,7 +2431,7 @@ End Sub
 
 Public Function IsMicrosoftCertHash(hash As String) As Boolean
     Static isInit As Boolean
-    Static Hashes(27) As String
+    Static Hashes(28) As String
     Dim i As Long
     
     If Not isInit Then
@@ -2494,6 +2494,8 @@ Public Function IsMicrosoftCertHash(hash As String) As Boolean
         Hashes(26) = "2AA752FE64C49ABE82913C463529CF10FF2F04EE"
         'Microsoft Identity Verification Root Certificate Authority 2020; F40042E2E5F7E8EF8189FED15519AECE42C3BFA2; 41CE925678DFE0CCAA8089263C242B897CA582089D14E5EB685FCA967F36DBD334E97E81FD0E64815F851F914ADE1A1E; 9F687581F7EF744ECFC12B9CEE6238F1
         Hashes(27) = "F40042E2E5F7E8EF8189FED15519AECE42C3BFA2"
+        'Microsoft Intune Root Certification Authority; 12ECCCE41034DB56EC978443531DB185327E70F5; 6AAB6CC62ED96438F2E4CEB96A9DE488E9D6061C0D11250018CEBCC54407E823; 5B4342A039A7B238E44E6A5A0B1DD1F7
+        Hashes(28) = "12ECCCE41034DB56EC978443531DB185327E70F5"
         
         'Root Agency (MD5 digest); FEE449EE0E3965A5246F000E87FDE2A065FD89D4
         
@@ -2564,7 +2566,7 @@ Public Sub FindNewMicrosoftCodeSignCert()
                                     sData = Reg.ExportKeyToVariable(HKCU, "SOFTWARE\Microsoft\SystemCertificates\ROOT\Certificates\" & HashCert, False, True, True)
                                 End If
                                 If Len(sData) <> 0 Then
-                                    AddWarning "New Root certificate is detected! Report to developer, please: " & _
+                                    AddWarning "New Root certificate is detected! Report to developer, please, at https://github.com/dragokas/hijackthis/issues" & vbCrLf & _
                                     "Name: """ & FriendlyName & """, " & _
                                     "Valid: """ & FileTime_To_VT_Date(CertInfo.NotBefore) & " - " & FileTime_To_VT_Date(CertInfo.NotAfter) & """" & _
                                     vbCrLf & Replace(sData, vbCrLf, "\n")

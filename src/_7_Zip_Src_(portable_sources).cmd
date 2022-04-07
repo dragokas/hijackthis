@@ -8,7 +8,7 @@ if exist "%cd%\_HJT_src.zip" (
 )
 
 copy /y Archive\MSCOMCTL.OCX MSCOMCTL.OCX
-del MSCOMCTL.OCA
+2>NUL del MSCOMCTL.OCA
 
 :: Pack
 Tools\7zip\7za.exe a -mx1 -y -o"%cd%" -x!*.zip _HJT_src.zip *.* Tools Ico

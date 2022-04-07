@@ -853,6 +853,9 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 2407=(récursivement)
 2408=[Echec]
 2409=Ouvrir dans le Explorer
+2410=Sélectionner
+2411=Dossiers
+2412=Sélectionner un dossier
 ;
 ; ============ Delete on reboot ========
 ;
@@ -1777,4 +1780,4 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 ; ========= Empty ========
 ;
 ; (2450 - ...)
-;                                        
+;                                          

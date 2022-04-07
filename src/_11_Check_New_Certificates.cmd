@@ -58,7 +58,7 @@ set "bRefreshRequired="
   echo It's mean you need manually add them to source code in 'modMain.bas' colDisallowedCert collection.
   echo To simplify procedure:
   echo.
-  echo 1. Open disallowedcert.sst (from folder: "tools\Cert\ms-new"), select all, and export them to file in format p7b.
+  echo 1. Open disallowedcert.sst ^(from folder: "tools\Cert\ms-new"^), select all, and export them to file in format p7b.
   echo 2. Import that storage to your system in "Untrusted" section by right click - "Install". Use certmgr.msc to verify.
   echo 3. Extract cert info using tools\Cert\enumerator\Disallowed\DisallowedCertEnumerator.exe
   echo 4. Update hjt.txt with HJT source code of "colDisallowedCert" collection contents.
@@ -76,7 +76,7 @@ echo.
   echo 1. Open WURoots.sst, select all, and export them to file in format p7b.
   echo 2. Import that storage to your system in "Trusted Root" section by right click - "Install". Use certmgr.msc to verify. 
   echo 3. Extract cert info using tools\Cert\enumerator\Root\CertEnumerator.exe
-  echo 4. Compare HJT source code (modVerifyDigiSign.bas - IsMicrosoftCertHash) with Hashes.csv and append with new certs.
+  echo 4. Compare HJT source code ^(modVerifyDigiSign.bas - IsMicrosoftCertHash^) with Hashes.csv and append with new certs.
   echo.
   echo Also, this script is about to create delta, you can use it to found new root certificates.
   echo.

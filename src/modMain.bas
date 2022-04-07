@@ -13148,19 +13148,29 @@ Public Sub InitVariables()
     UserProfile = GetSpecialFolderPath(CSIDL_PROFILE)
     If Len(UserProfile) = 0 Then UserProfile = EnvironW("%UserProfile%")
     
-    If GetProfilesDirectory(StrPtr(Path), dwBufSize) Then
-        Path = Left$(Path, lstrlen(StrPtr(Path)))
-    Else
-        If OSver.IsLocalSystemContext Then
-            If OSver.IsWindowsVistaOrGreater Then
-                Path = SysDisk & "\Users"
-            Else
-                Path = SysDisk & "\Documents and Settings"
-            End If
+    If OSver.IsLocalSystemContext Then
+        If OSver.IsWindowsVistaOrGreater Then
+            Path = SysDisk & "\Users"
         Else
-            Path = GetParentDir(UserProfile)
+            Path = SysDisk & "\Documents and Settings"
+        End If
+    Else
+        Call GetProfilesDirectory(StrPtr(Path), dwBufSize)
+        If dwBufSize > 0 Then
+            Path = String(dwBufSize, 0)
+            dwBufSize = Len(Path)
+            
+            If GetProfilesDirectory(StrPtr(Path), dwBufSize) Then
+                Path = Left$(Path, lstrlen(StrPtr(Path)))
+            Else
+                Path = vbNullString
+            End If
         End If
     End If
+    If Len(Path) = 0 Then
+        Path = GetParentDir(UserProfile)
+    End If
+    
     ProfilesDir = Path
     
     nChars = MAX_PATH
@@ -17058,12 +17068,12 @@ Public Function LenSafe(var As Variant) As Long
     End If
 End Function
 
-Public Function LoadResString(idFrom As Long, Optional idTo As Long) As String
+Public Function LoadResString(idfrom As Long, Optional idTo As Long) As String
     If idTo = 0 Then
-        LoadResString = LoadResData(idFrom, 6)
+        LoadResString = LoadResData(idfrom, 6)
     Else
         Dim i&, s$
-        For i = idFrom To idTo
+        For i = idfrom To idTo
             s = s & LoadResData(i, 6)
         Next
         LoadResString = s

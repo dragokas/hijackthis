@@ -86,12 +86,19 @@ Option Explicit
 Private sList As clsStringBuilder
 
 Private Sub cmdAddFile_Click()
-    Dim sFilename$
-    sFilename = OpenFileDialog("", Desktop, Translate(1003) & " (*.*)|*.*", Me.hwnd)
-    If 0 = Len(sFilename) Then Exit Sub
-    txtInput.Text = txtInput.Text & vbCrLf & sFilename
-    
-    'OpenFileDialog_Multi
+    Dim aFile() As String
+    Dim i As Long
+    For i = 1 To OpenFileDialog_Multi(aFile, Translate(1003), Desktop, Translate(1003) & " (*.*)|*.*", Me.hwnd)
+        txtInput.Text = txtInput.Text & vbCrLf & aFile(i)
+    Next
+End Sub
+
+Private Sub cmdAddFolder_Click()
+    Dim aFile() As String
+    Dim i As Long
+    For i = 1 To OpenFolderDialog_Multi(aFile, , Desktop, Me.hwnd)
+        txtInput.Text = txtInput.Text & vbCrLf & aFile(i)
+    Next
 End Sub
 
 Private Sub cmdGo_Click()
@@ -268,8 +275,8 @@ Private Sub Form_Resize()
     Me.cmdJump.Visible = Me.ScaleHeight > 2200
     'Me.cmdExit.Visible = Me.ScaleHeight >= 3240
     
-    Me.cmdAddFile.Visible = False
-    Me.cmdAddFolder.Visible = False
+    'Me.cmdAddFile.Visible = False
+    'Me.cmdAddFolder.Visible = False
     
 End Sub
 

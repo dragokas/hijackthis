@@ -854,6 +854,9 @@
 2407=(recursively)
 2408=[Fail]
 2409=Open in Explorer
+2410=Select
+2411=Folders
+2412=Select Folder
 ;
 ; ============ Delete on reboot ========
 ;
@@ -1777,4 +1780,4 @@
 ; ========= Empty ========
 ;
 ; (2450 - ...)
-;                     
+;                      

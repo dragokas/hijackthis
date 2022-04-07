@@ -32,140 +32,6 @@ Public Enum SETTINGS_SECTION
     SETTINGS_SECTION_FILEUNLOCKER
 End Enum
 
-'Private Type RECT
-'    Left    As Long
-'    Top     As Long
-'    Right   As Long
-'    Bottom  As Long
-'End Type
-'
-'Private Type POINTAPI
-'    x As Long
-'    y As Long
-'End Type
-'
-'Private Type OPENFILENAME
-'    lStructSize As Long
-'    hWndOwner As Long
-'    hInstance As Long
-'    lpstrFilter As Long
-'    lpstrCustomFilter As Long
-'    nMaxCustFilter As Long
-'    nFilterIndex As Long
-'    lpstrFile As Long
-'    nMaxFile As Long
-'    lpstrFileTitle As Long
-'    nMaxFileTitle As Long
-'    lpstrInitialDir As Long
-'    lpstrTitle As Long
-'    flags As Long
-'    nFileOffset As Integer
-'    nFileExtension As Integer
-'    lpstrDefExt As Long
-'    lCustData As Long
-'    lpfnHook As Long
-'    lpTemplateName As Long
-'    pvReserved As Long
-'    dwReserved As Long
-'    FlagsEx As Long
-'End Type
-'
-'Private Type OSVERSIONINFOEX
-'    dwOSVersionInfoSize As Long
-'    dwMajorVersion As Long
-'    dwMinorVersion As Long
-'    dwBuildNumber As Long
-'    dwPlatformId As Long
-'    szCSDVersion(255) As Byte
-'    wServicePackMajor As Integer
-'    wServicePackMinor As Integer
-'    wSuiteMask As Integer
-'    wProductType As Byte
-'    wReserved As Byte
-'End Type
-'
-'Private Type SYSTEMTIME
-'    wYear           As Integer
-'    wMonth          As Integer
-'    wDayOfWeek      As Integer
-'    wDay            As Integer
-'    wHour           As Integer
-'    wMinute         As Integer
-'    wSecond         As Integer
-'    wMilliseconds   As Integer
-'End Type
-'
-'Public Type UUID
-'    Data1 As Long
-'    Data2 As Integer
-'    Data3 As Integer
-'    Data4(0 To 7) As Byte
-'End Type
-'
-'Private Declare Function SetWindowLong Lib "user32.dll" Alias "SetWindowLongW" (ByVal hWnd As Long, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
-'Private Declare Function CallWindowProc Lib "user32.dll" Alias "CallWindowProcW" (ByVal lpPrevWndFunc As Long, ByVal hWnd As Long, ByVal msg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
-'Private Declare Function GetCursorPos Lib "user32.dll" (lpPoint As POINTAPI) As Long
-'Private Declare Function GetWindowRect Lib "user32.dll" (ByVal hWnd As Long, lpRect As RECT) As Long
-'Private Declare Function PtInRect Lib "user32.dll" (lpRect As RECT, ByVal x As Long, ByVal y As Long) As Long
-'Private Declare Sub SHChangeNotify Lib "shell32.dll" (ByVal wEventId As Long, ByVal uFlags As Long, ByVal dwItem1 As Long, ByVal dwItem2 As Long)
-'Private Declare Function GetModuleHandle Lib "kernel32.dll" Alias "GetModuleHandleW" (ByVal lpModuleName As Long) As Long
-'Private Declare Function GetModuleFileName Lib "kernel32.dll" Alias "GetModuleFileNameW" (ByVal hModule As Long, ByVal lpFileName As Long, ByVal nSize As Long) As Long
-'Private Declare Function LoadLibraryEx Lib "kernel32.dll" Alias "LoadLibraryExW" (ByVal lpFileName As Long, ByVal hFile As Long, ByVal dwFlags As Long) As Long
-'Private Declare Function FreeLibrary Lib "kernel32.dll" (ByVal hLibModule As Long) As Long
-'Private Declare Function LoadString Lib "user32.dll" Alias "LoadStringW" (ByVal hInstance As Long, ByVal uID As Long, ByVal lpBuffer As Long, ByVal nBufferMax As Long) As Long
-'Private Declare Function lstrlen Lib "kernel32.dll" Alias "lstrlenW" (ByVal lpString As Long) As Long
-'Private Declare Function lstrcpy Lib "kernel32.dll" Alias "lstrcpyW" (ByVal lpStrDest As Long, ByVal lpStrSrc As Long) As Long
-'Private Declare Function SystemTimeToVariantTime Lib "oleaut32.dll" (lpSystemTime As SYSTEMTIME, vtime As Date) As Long
-'Private Declare Function VariantTimeToSystemTime Lib "oleaut32.dll" (ByVal vtime As Date, lpSystemTime As SYSTEMTIME) As Long
-'Private Declare Function SystemTimeToTzSpecificLocalTime Lib "kernel32.dll" (ByVal lpTimeZone As Any, lpUniversalTime As SYSTEMTIME, lpLocalTime As SYSTEMTIME) As Long
-'Private Declare Function FileTimeToSystemTime Lib "kernel32.dll" (ByVal lpFileTime As Long, lpSystemTime As SYSTEMTIME) As Long
-''Private Declare Function FileTimeToLocalFileTime Lib "kernel32.dll" (lpFileTime As FILETIME, lpLocalFileTime As FILETIME) As Long
-''Private Declare Function SystemTimeToFileTime Lib "kernel32.dll" (lpSystemTime As SYSTEMTIME, lpFileTime As FILETIME) As Long
-''Private Declare Function GetTimeZoneInformation Lib "kernel32.dll" (ByVal lpTimeZoneInformation As Long) As Long
-'Private Declare Function GetCurrentProcess Lib "kernel32.dll" () As Long
-'Private Declare Function IsWow64Process Lib "kernel32.dll" (ByVal hProcess As Long, ByRef Wow64Process As Long) As Long
-'Private Declare Function GetSystemMetrics Lib "user32.dll" (ByVal nIndex As Long) As Long
-'Private Declare Function GetVersionEx Lib "kernel32.dll" Alias "GetVersionExW" (lpVersionInformation As OSVERSIONINFOEX) As Long
-'Private Declare Function GetPrivateProfileString Lib "kernel32.dll" Alias "GetPrivateProfileStringW" (ByVal lpApplicationName As Long, ByVal lpKeyName As Long, ByVal lpDefault As Long, ByVal lpReturnedString As Long, ByVal nSize As Long, ByVal lpFileName As Long) As Long
-'Private Declare Function MoveFile Lib "kernel32.dll" Alias "MoveFileW" (ByVal lpExistingFileName As Long, ByVal lpNewFileName As Long) As Long
-'Private Declare Function GetFileAttributes Lib "kernel32.dll" Alias "GetFileAttributesW" (ByVal lpFileName As Long) As Long
-'Private Declare Function SetFileAttributes Lib "kernel32.dll" Alias "SetFileAttributesW" (ByVal lpFileName As Long, ByVal dwFileAttributes As Long) As Long
-'Private Declare Function DeleteObject Lib "gdi32.dll" (ByVal hObject As Long) As Long
-'Private Declare Function GetPixel Lib "gdi32.dll" (ByVal hdc As Long, ByVal x As Long, ByVal y As Long) As Long
-'Private Declare Function SetWindowRgn Lib "user32.dll" (ByVal hWnd As Long, ByVal hRgn As Long, ByVal bRedraw As Boolean) As Long
-'Private Declare Function CreateRectRgn Lib "gdi32.dll" (ByVal X1 As Long, ByVal Y1 As Long, ByVal X2 As Long, ByVal Y2 As Long) As Long
-'Private Declare Function CombineRgn Lib "gdi32.dll" (ByVal hDestRgn As Long, ByVal hSrcRgn1 As Long, ByVal hSrcRgn2 As Long, ByVal nCombineMode As Long) As Long
-'Private Declare Function CLSIDFromString Lib "ole32.dll" (ByVal lpszGuid As Long, pGuid As UUID) As Long
-'Private Declare Function LoadLibrary Lib "kernel32.dll" Alias "LoadLibraryW" (ByVal lpFileName As Long) As Long
-'
-'
-'Private Const LOAD_LIBRARY_AS_DATAFILE As Long = &H2   'Read Only      ( do not execute DllMain )
-'
-'Public Const GWL_WNDPROC    As Long = &HFFFFFFFC
-'Public Const WM_MOUSEWHEEL  As Long = &H20A&
-'
-'Public Const SHCNE_DELETE       As Long = 4&
-'Public Const SHCNF_PATH         As Long = 1&
-'Public Const SHCNF_FLUSHNOWAIT  As Long = &H2000&
-'Public Const SHCNE_CREATE       As Long = 2&
-'Public Const SHCNE_RENAMEITEM   As Long = 1&
-'Public Const SHCNE_ATTRIBUTES   As Long = &H800&
-'
-'Private Const FILE_ATTRIBUTE_READONLY   As Long = 1&
-'Private Const ERROR_FILE_NOT_FOUND      As Long = 2&
-'Private Const ERROR_ACCESS_DENIED       As Long = 5&
-'
-'Private Const RGN_OR            As Long = 2
-
-'Public Const WM_NCDESTROY As Long = &H82&
-'Public Const WM_UAHDESTROYWINDOW As Long = &H90&
-'
-'Public Declare Function SHParseDisplayName Lib "Shell32" (ByVal pszName As Long, ByVal IBindCtx As Long, ByRef ppidl As Long, sfgaoIn As Long, sfgaoOut As Long) As Long
-'Public Declare Function NtQueryObject Lib "ntdll.dll" (ByVal Handle As Long, ByVal ObjectInformationClass As OBJECT_INFORMATION_CLASS, ObjectInformation As Any, ByVal ObjectInformationLength As Long, ReturnLength As Long) As Long
-'
-'Public Const ZipFldrCLSID      As String = "{E88DCCE0-B7B3-11d1-A9F0-00AA0060FA31}"
-'Public Const IID_IShellExtInit As String = "{000214E8-0000-0000-C000-000000000046}"
-
 Public BROWSERS As MY_BROWSERS
 
 Public hLibPcre2        As Long
@@ -1091,7 +957,11 @@ ErrorHandler:
 End Function
 
 Private Function BuildPath$(sPath$, sFile$)
-    BuildPath = sPath & IIf(Right$(sPath, 1) = "\", vbNullString, "\") & sFile
+    If Right$(sPath, 1) = "\" Then
+        BuildPath = sPath & sFile
+    Else
+        BuildPath = sPath & "\" & sFile
+    End If
 End Function
 
 Public Function GetWindowsVersion() As String    'Init by Form_load.
