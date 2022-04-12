@@ -13,21 +13,18 @@ _________________________________________________________________
 ### BEFORE ASKING HELP, READ CAREFULLY THIS INSTRUCTION:
 _________________________________________________________________
 
-### Step 1: Are you in the right place?
+### Step 1: Show us the required logs (for PC cure only):
 
-  * Do you need assistance in PC cure from viruses?
-  * Or would you like to report a bug or propose a feature for HiJackThis?
+  * Read carefully: "How to make a request for help in the PC cure section":
+https://github.com/dragokas/hijackthis/wiki/How-to-make-a-request-for-help-in-the-PC-cure-section%3F)
 
-If yes, see the next step.
+  * Attach 'Collection-[Date].zip' log created by "AutoLogger" tool:
+http://tools.safezone.cc/drongo/test/AutoLogger-test.zip
 
-### Step 2: Show us the required logs (for PC cure):
-
-  * Read carefully: [How to make a request for help in the PC cure section](https://github.com/dragokas/hijackthis/wiki/How-to-make-a-request-for-help-in-the-PC-cure-section%3F)
-
-  * Attach 'Collection-[Date].zip' log created by [AutoLogger](http://tools.safezone.cc/drongo/test/AutoLogger-test.zip)
-
-  * Describe your problem in details:
+### Step 2: Describe your problem in details:
 
 1. What did you done before the problem occurs: _________________
 2. What programs (browsers) affected by the problem: ________________
 3. Steps to reproduce: _________________
+4. Expected behavior: _________________
+5. If applicable, add screenshots to help explain your problem.
