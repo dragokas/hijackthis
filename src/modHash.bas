@@ -836,22 +836,50 @@ End Function
 Public Function CalcFileCRC(FileName As String) As String '// Added by Dragokas
     On Error GoTo ErrorHandler
 
-    Dim ff      As Long
-    Dim str     As String
+    Dim CRC     As Long
+    Dim i       As Long
+    Dim n       As Long
+    Dim hFile   As Long
+    Dim b()     As Byte
+    Dim lSize   As Currency
     Dim Redirect As Boolean, bOldStatus As Boolean
-
-    Redirect = ToggleWow64FSRedirection(False, FileName, bOldStatus)
-
-    If OpenW(FileName, FOR_READ, ff, g_FileBackupFlag) Then
-        If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
-        str = String$(LOFW(ff), vbNullChar)
-        GetW ff, 1&, str
-        CloseW ff: ff = 0
-    End If
     
+    If Not FileExists(FileName) Then Exit Function
+    
+    Redirect = ToggleWow64FSRedirection(False, FileName, bOldStatus)
+    OpenW FileName, FOR_READ, hFile, g_FileBackupFlag
+    If hFile <= 0 Then
+        If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
+        Exit Function
+    End If
+    lSize = LOFW(hFile)
+    If lSize = 0 Then
+        CloseW hFile
+        If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
+        CalcFileCRC = "00000000"
+        Exit Function
+    End If
+    ReDim b(lSize - 1)
+    GetW hFile, 1, , VarPtr(b(0)), UBound(b) + 1
+    CloseW hFile
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     
-    If Len(str) <> 0 Then CalcFileCRC = CalcCRC(str)
+    CRC = &HFFFFFFFF
+
+    For i = 0& To UBound(b)
+    
+        n = (CRC Xor b(i)) And &HFF&
+
+        CRC = CRC_32_Tab(n&) Xor (Shr(CRC, 8&) And &HFFFFFF)
+
+    Next i
+
+    CalcFileCRC = Hex$(-(CRC + 1&))
+
+    If Len(CalcFileCRC) < 8& Then
+        CalcFileCRC = Right$("0000000" & CalcFileCRC, 8&)
+    End If
+
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "CalcFileCRC", "File:", FileName

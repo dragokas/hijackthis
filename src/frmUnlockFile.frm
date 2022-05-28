@@ -232,7 +232,7 @@ Private Sub cmdJump_Click()
     End If
     
     sFiles = Replace$(sFiles, vbCr, vbNullString)
-    aFiles = Split(sFiles, vbLf)
+    aFiles = Split(TrimEx(sFiles, vbLf), vbLf)
     
     OpenAndSelectFile aFiles(0)
 End Sub

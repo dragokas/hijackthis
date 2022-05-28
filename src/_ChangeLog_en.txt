@@ -11,6 +11,13 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[2.10.0.18]
+ - Returned missing buttons in Uninstall Manager ^^
+ - Fixed broken functionality of 01 - Hosts (thanks to Boxersteavee for report).
+ - Improved Hosts file read speed.
+ - Improved registry export speed.
+ - [Backup] CRC32 calculation speed and reliability are impoved.
+ 
 [2.10.0.17] - Apr 07, 2022
  - Added new Microsoft certificates.
  - Files unlocker: Added buttons "Add File(s) / Folder(s)".
@@ -1614,4 +1621,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                                                                             
+                                                                                

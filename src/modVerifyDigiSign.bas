@@ -2946,57 +2946,6 @@ End Function
 '        If hFileHandle = 0 Then CloseHandle hFile
 '    End If
 'End Function
-'
-'                                                                  'do not change Variant type at all or you will die ^_^
-'Private Function GetW(hFile As Long, ByVal pos As Long, Optional vOut As Variant, Optional vOutPtr As Long, Optional cbToRead As Long) As Boolean
-'    Dim lBytesRead  As Long
-'    Dim lr          As Long
-'    Dim ptr         As Long
-'    Dim vType       As Long
-'    Dim UnknType    As Boolean
-'
-'    pos = pos - 1   ' VB's Get & SetFilePointer difference correction
-'
-'    If INVALID_SET_FILE_POINTER <> SetFilePointer(hFile, pos, ByVal 0&, FILE_BEGIN) Then
-'        If NO_ERROR = Err.LastDllError Then
-'            vType = VarType(vOut)
-'
-'            If 0 <> cbToRead Then   'vbError = vType
-'                lr = ReadFile(hFile, vOutPtr, cbToRead, lBytesRead, 0&)
-'
-'            ElseIf vbString = vType Then
-'                lr = ReadFile(hFile, StrPtr(vOut), Len(vOut), lBytesRead, 0&)
-'                If Err.LastDllError <> 0 Or lr = 0 Then Err.Raise 52, , "Cannot read file! Handle: " & hFile
-'
-'                vOut = StrConv(vOut, vbUnicode)
-'                If Len(vOut) <> 0 Then vOut = Left$(vOut, Len(vOut) \ 2)
-'            Else
-'                'do a bit of magik :)
-'                memcpy ptr, ByVal VarPtr(vOut) + 8, 4& 'VT_BYREF
-'                Select Case vType
-'                Case vbByte
-'                    lr = ReadFile(hFile, ptr, 1&, lBytesRead, 0&)
-'                Case vbInteger
-'                    lr = ReadFile(hFile, ptr, 2&, lBytesRead, 0&)
-'                Case vbLong
-'                    lr = ReadFile(hFile, ptr, 4&, lBytesRead, 0&)
-'                Case vbCurrency
-'                    lr = ReadFile(hFile, ptr, 8&, lBytesRead, 0&)
-'                Case Else
-'                    UnknType = True
-'                    Debug.Print "Error! GetW for type #" & VarType(vOut) & " of buffer is not supported."
-'                    Err.Raise 52, , "Error! GetW for type #" & VarType(vOut) & " of buffer is not supported."
-'                End Select
-'            End If
-'            GetW = (0 <> lr)
-'            If 0 = lr And Not UnknType Then Debug.Print "Cannot read file!": Err.Raise 52, , "Cannot read file! Handle: " & hFile
-'        Else
-'            Debug.Print "Cannot set file pointer!": Err.Raise 52, , "Cannot set file pointer! Handle: " & hFile
-'        End If
-'    Else
-'        Debug.Print "Cannot set file pointer!": Err.Raise 52, , "Cannot set file pointer! Handle: " & hFile
-'    End If
-'End Function
 
 Public Function GetWindowsDir() As String
     Static SysRoot As String

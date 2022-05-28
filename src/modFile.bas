@@ -605,7 +605,6 @@ Public Function GetW(hFile As Long, Optional vPos As Variant, Optional vOut As V
     Dim oldPos      As Long
     Dim pos         As Long
     
-    'modMain_CheckO1Item - #52 (Bad file name or number) LastDllError = 126 (Не найден указанный модуль.)
     If Not IsMissing(vPos) Then
       pos = CLng(vPos)
       If pos >= 1 Then
@@ -632,17 +631,19 @@ Public Function GetW(hFile As Long, Optional vPos As Variant, Optional vOut As V
     
     If 0 <> cbToRead Then   'vbError = vType
         lr = ReadFile(hFile, vOutPtr, cbToRead, lBytesRead, 0&)
-                
-    ElseIf vbString = vType Then
+    
+    ElseIf vbString = vType Then 'slow operation -> use ReadFileContents() instead!
         lr = ReadFile(hFile, StrPtr(vOut), Len(vOut), lBytesRead, 0&)
         If Err.LastDllError <> 0 Or lr = 0 Then Err.Raise 52
         
-        If AscW(Left$(vOut, 1)) = -257 Then
-            vOut = Mid$(vOut, 2)
-        Else
-            vOut = StrConv(vOut, vbUnicode)
+        If lBytesRead <> 0 Then
+            If AscW(Left$(vOut, 1)) = -257 Then
+                vOut = Mid$(vOut, 2, Len(vOut) \ 2 - 1)
+            Else
+                vOut = StrConv(Left$(vOut, RoundUp(Len(vOut) / 2)), vbUnicode)
+                If AscW(Right$(vOut, 1)) = 0 Then vOut = Left$(vOut, Len(vOut) - 1)
+            End If
         End If
-        If Len(vOut) <> 0 Then vOut = Left$(vOut, lBytesRead \ 2)
     Else
         'do a bit of magik :)
         memcpy ptr, ByVal VarPtr(vOut) + 8, 4&  'VT_BYREF
@@ -1996,6 +1997,8 @@ Public Function ReadFileToArray(sFile As String, Optional isUnicode As Boolean) 
     Text = Replace$(ReadFileContents(sFile, isUnicode), vbCr, vbNullString)
     If Len(Text) <> 0 Then
         ReadFileToArray = SplitSafe(Text, vbLf)
+    Else
+        ReadFileToArray = EmptyArray()
     End If
     AppendErrorLogCustom "ReadFileToArray - End"
     Exit Function
@@ -2014,9 +2017,16 @@ Public Function ReadFileContents(sFile As String, isUnicode As Boolean) As Strin
     If Not FileExists(sFile) Then Exit Function
     Redirect = ToggleWow64FSRedirection(False, sFile, bOldStatus)
     OpenW sFile, FOR_READ, hFile, g_FileBackupFlag
-    If hFile <= 0 Then Exit Function
+    If hFile <= 0 Then
+        If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
+        Exit Function
+    End If
     lSize = LOFW(hFile)
-    If lSize = 0 Then CloseW hFile: Exit Function
+    If lSize = 0 Then
+        CloseW hFile
+        If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
+        Exit Function
+    End If
     ReDim b(lSize - 1)
     GetW hFile, 1, , VarPtr(b(0)), UBound(b) + 1
     CloseW hFile
@@ -2081,7 +2091,7 @@ Public Function IniGetString( _
     If FileLenW(sIniFile) = 0 Then Exit Function 'size == 0
     
     If IsMissing(isUnicode) Then
-        isUnicode = (FileGetTypeBOM(sIniFile) = 1200)
+        isUnicode = (FileGetTypeBOM(sIniFile) = CP_UTF16LE)
     End If
     
     aContents = ReadFileToArray(sIniFile, CBool(isUnicode))
@@ -2181,7 +2191,7 @@ Public Function IniSetString( _
     End If
     
     If IsMissing(isUnicode) Then
-        isUnicode = (FileGetTypeBOM(sIniFile) = 1200)
+        isUnicode = (FileGetTypeBOM(sIniFile) = CP_UTF16LE)
     End If
     
     aContents = ReadFileToArray(sIniFile, CBool(isUnicode))
@@ -2291,7 +2301,7 @@ Public Function IniRemoveString( _
     End If
     
     If IsMissing(isUnicode) Then
-        isUnicode = (FileGetTypeBOM(sIniFile) = 1200)
+        isUnicode = (FileGetTypeBOM(sIniFile) = CP_UTF16LE)
     End If
     
     aContents = ReadFileToArray(sIniFile, CBool(isUnicode))
@@ -3330,12 +3340,12 @@ Public Function FileGetTypeBOM(sFile As String) As Long
     CloseW hFile
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     If b(0) = &HFF& And b(1) = &HFE& Then
-        FileGetTypeBOM = 1200
+        FileGetTypeBOM = CP_UTF16LE
         Exit Function
     End If
     If UBound(b) > 1 Then
         If b(0) = &HEF& And b(1) = &HBB& And b(2) = &HBF& Then
-            FileGetTypeBOM = 65001
+            FileGetTypeBOM = CP_UTF8
         End If
     End If
 End Function

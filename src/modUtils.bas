@@ -1919,22 +1919,22 @@ Public Function OpenFileDialog(Optional sTitle As String, Optional InitDir As St
     If InStr(sFilter, "|") > 0 Then sFilter = Replace$(sFilter, "|", vbNullChar)
     If Right$(sFilter, 2) <> vbNullChar & vbNullChar Then sFilter = sFilter & vbNullChar & vbNullChar
     
-    Dim ofn As OPENFILENAME
+    Dim OFN As OPENFILENAME
     Dim out As String
     
-    ofn.nMaxFile = MAX_PATH_W
+    OFN.nMaxFile = MAX_PATH_W
     out = String$(MAX_PATH_W, vbNullChar)
     
-    With ofn
+    With OFN
         .hWndOwner = IIf(hwnd = 0, g_HwndMain, hwnd)
         .lpstrTitle = StrPtr(sTitle)
         .lpstrFile = StrPtr(out)
-        .lStructSize = Len(ofn)
+        .lStructSize = Len(OFN)
         .lpstrInitialDir = StrPtr(InitDir)
         .lpstrFilter = StrPtr(sFilter)
         .Flags = OFN_DONTADDTORECENT Or OFN_ENABLESIZING Or OFN_FORCESHOWHIDDEN Or OFN_HIDEREADONLY Or OFN_NOVALIDATE
     End With
-    If GetOpenFileName(ofn) Then OpenFileDialog = TrimNull(out)
+    If GetOpenFileName(OFN) Then OpenFileDialog = TrimNull(out)
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "OpenFileDialog"
@@ -1971,24 +1971,24 @@ Public Function OpenFileDialog_Multi( _
     If InStr(sFilter, "|") > 0 Then sFilter = Replace$(sFilter, "|", vbNullChar)
     If Right$(sFilter, 2) <> vbNullChar & vbNullChar Then sFilter = sFilter & vbNullChar & vbNullChar
 
-    Dim ofn As OPENFILENAME
+    Dim OFN As OPENFILENAME
     Dim out As String
     Dim aFiles() As String
     Dim i As Long
     
-    ofn.nMaxFile = MAX_PATH_W
+    OFN.nMaxFile = MAX_PATH_W
     out = String$(MAX_PATH_W, vbNullChar)
     
-    With ofn
+    With OFN
         .hWndOwner = IIf(hwnd = 0, g_HwndMain, hwnd)
         .lpstrTitle = StrPtr(sTitle)
         .lpstrFile = StrPtr(out)
-        .lStructSize = Len(ofn)
+        .lStructSize = Len(OFN)
         .lpstrInitialDir = StrPtr(InitDir)
         .lpstrFilter = StrPtr(sFilter)
         .Flags = OFN_DONTADDTORECENT Or OFN_ENABLESIZING Or OFN_FORCESHOWHIDDEN Or OFN_HIDEREADONLY Or OFN_NOVALIDATE Or OFN_ALLOWMULTISELECT Or OFN_EXPLORER
     End With
-    If GetOpenFileName(ofn) Then
+    If GetOpenFileName(OFN) Then
         aFiles = Split(RTrimNull(out), vbNullChar)
         If UBound(aFiles) = 0 Then
             ReDim aPath(1)
@@ -2550,6 +2550,10 @@ Public Sub ArrayAddLong(arr() As Long, Value As Long)
     
     arr(UBound(arr)) = Value
 End Sub
+
+Public Function RoundUp(num As Double) As Double
+    RoundUp = -Int(-num)
+End Function
 
 ' Explain:
 '

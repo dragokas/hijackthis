@@ -185,7 +185,7 @@ Dim HE_Uniq As clsHiveEnum
 Public Sub InitBackupIni()
     If cBackupIni Is Nothing Then
         Set cBackupIni = New clsIniFile
-        cBackupIni.InitFile LIST_BACKUP_FILE, 1200
+        cBackupIni.InitFile LIST_BACKUP_FILE, CP_UTF16LE
         tBackupList.Total = cBackupIni.ReadParam("main", "Total", 0)
         tBackupList.LastFixID = cBackupIni.ReadParam("main", "LastFixID", 0)
         tBackupList.LastBackupID = cBackupIni.ReadParam("main", "LastBackupID", 0)
@@ -539,14 +539,14 @@ Private Sub UpdateBackupEntry(result As SCAN_RESULT, Optional bForceCreateNewEnt
         tBackupList.LastHitW = result.HitLineW
         
         Set tBackupList.cLastCMD = New clsIniFile
-        tBackupList.cLastCMD.InitFile BuildPath(AppPath, "Backups\" & tBackupList.LastBackupID & "\" & BACKUP_COMMAND_FILE_NAME), 1200
+        tBackupList.cLastCMD.InitFile BuildPath(AppPath, "Backups\" & tBackupList.LastBackupID & "\" & BACKUP_COMMAND_FILE_NAME), CP_UTF16LE
         'tBackupList.cLastCMD.Flush
         
         MkDirW BuildPath(AppPath, "Backups\" & tBackupList.LastBackupID)
     Else
         tBackupList.CurrentBackupID = lBackupID
         Set tBackupList.cLastCMD = New clsIniFile
-        tBackupList.cLastCMD.InitFile BuildPath(AppPath, "Backups\" & lBackupID & "\" & BACKUP_COMMAND_FILE_NAME), 1200
+        tBackupList.cLastCMD.InitFile BuildPath(AppPath, "Backups\" & lBackupID & "\" & BACKUP_COMMAND_FILE_NAME), CP_UTF16LE
     End If
     
     Exit Sub
@@ -1756,7 +1756,7 @@ Private Function BackupLoadBackupByID(lBackupID As Long) As Boolean
     Dim CmdFile As String
     CmdFile = BuildPath(AppPath, "Backups\" & lBackupID & "\" & BACKUP_COMMAND_FILE_NAME)
     If FileExists(CmdFile) Then
-        tBackupList.cLastCMD.InitFile CmdFile, 1200
+        tBackupList.cLastCMD.InitFile CmdFile, CP_UTF16LE
         BackupLoadBackupByID = True
     Else
         MsgBoxW "Error! Backup entry for this item is no longer exists. Cannot continue.", vbCritical

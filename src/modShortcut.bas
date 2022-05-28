@@ -283,30 +283,19 @@ End Function
 Private Function isFileFilledByNUL(FileName As String) As Boolean
     On Error GoTo ErrorHandler
     
-    Dim ff As Long
-    Dim Size As Currency
     Dim Data As String
     Dim i As Long
     
-    OpenW FileName, FOR_READ, ff, g_FileBackupFlag
-    If ff < 1 Then Exit Function
-    
-    Size = LOFW(ff)
-    If Size = 0@ Then CloseW ff: ff = 0: Exit Function
-    Data = String$(Size, vbNullChar)
-    GetW ff, 1&, Data    ' читаем файл целиком
-    
-    CloseW ff: ff = 0
+    Data = ReadFileContents(FileName, False)
     
     isFileFilledByNUL = True
     
-    For i = 1 To Size
-        If Asc(Mid$(Data, i, 1)) <> 0& Then isFileFilledByNUL = False: Exit For
+    For i = 1 To Len(Data)
+        If AscW(Mid$(Data, i, 1)) <> 0& Then isFileFilledByNUL = False: Exit For
     Next
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "Parser.isFileFilledByNUL", "File:", FileName
-    If ff <> 0 Then CloseW ff: ff = 0
 End Function
 
 ' Инициализация интерфейса IShellLink
@@ -591,7 +580,7 @@ Function GetEncoding_UTF8(aBytes() As Byte, Optional Percent As Long) As Long
     
     Percent = n / UBound(aBytes) * 100&
     
-    If Percent > 10 Then Percent = -1: GetEncoding_UTF8 = 65001
+    If Percent > 10 Then Percent = -1: GetEncoding_UTF8 = CP_UTF8
     
     AppendErrorLogCustom "Parser.GetEncoding_UTF8 - End"
     Exit Function

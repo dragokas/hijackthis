@@ -3008,9 +3008,8 @@ Public Sub CheckO1Item_ICS()
     End If
     
     If OpenW(sHostsFileICS, FOR_READ, hFile, g_FileBackupFlag) Then
-        sLines = String$(cFileSize, vbNullChar)
-        GetW hFile, 1, sLines
         CloseW hFile
+        sLines = ReadFileContents(sHostsFileICS, False)
         ToggleWow64FSRedirection True
     Else
     
@@ -3081,9 +3080,8 @@ CheckHostsICS_Default:
     If cFileSize = 0 Then Exit Sub
     
     If OpenW(sHostsFileICS_Default, FOR_READ, hFile, g_FileBackupFlag) Then
-        sLines = String$(cFileSize, vbNullChar)
-        GetW hFile, 1, sLines
         CloseW hFile
+        sLines = ReadFileContents(sHostsFileICS_Default, False)
     Else
         sHit = "O1 - Unable to read Hosts.ICS default file"
         
@@ -3219,11 +3217,11 @@ Public Sub CheckO1Item()
     Dbg "5"
     
     If OpenW(sHostsFile, FOR_READ, hFile, g_FileBackupFlag) Then
-        sLines = String$(cFileSize, vbNullChar)
-        GetW hFile, 1, sLines
         CloseW hFile
+        sLines = ReadFileContents(sHostsFile, False) 'speed up
         ToggleWow64FSRedirection True
     Else
+        ToggleWow64FSRedirection True
     
         sHit = "O1 - Hosts: Unable to read Hosts file"
         
@@ -3237,7 +3235,6 @@ Public Sub CheckO1Item()
             AddToScanResults result
         End If
         
-        ToggleWow64FSRedirection True
         If NonDefaultPath Then
             GoTo CheckHostsDefault:
         Else
@@ -3261,7 +3258,6 @@ Public Sub CheckO1Item()
             AddToScanResults result
         End If
         
-        ToggleWow64FSRedirection True
         If NonDefaultPath Then
             GoTo CheckHostsDefault:
         Else
@@ -3381,9 +3377,8 @@ CheckHostsDefault:
                 Dbg "9"
 
                 If OpenW(HostsDefaultFile, FOR_READ, hFile, g_FileBackupFlag) Then
-                    sLines = String$(cFileSize, vbNullChar)
-                    GetW hFile, 1, sLines
                     CloseW hFile
+                    sLines = ReadFileContents(HostsDefaultFile, False)
                 Else
                     sHit = "O1 - Hosts default: Unable to read Default Hosts file"
 
@@ -8818,7 +8813,7 @@ Public Sub CheckO14Item()
     If Not FileExists(sFile) Then Exit Sub
     If FileLenW(sFile) = 0 Then Exit Sub
     
-    aLogStrings = ReadFileToArray(sFile, FileGetTypeBOM(sFile) = 1200)
+    aLogStrings = ReadFileToArray(sFile, FileGetTypeBOM(sFile) = CP_UTF16LE)
     
     For i = 0 To UBound(aLogStrings)
         sLine = aLogStrings(i)
@@ -8916,7 +8911,7 @@ Public Sub FixO14Item(sItem$, result As SCAN_RESULT)
     
     BackupFile result, sFile
     
-    isUnicode = (FileGetTypeBOM(sFile) = 1200)
+    isUnicode = (FileGetTypeBOM(sFile) = CP_UTF16LE)
     aLogStrings = ReadFileToArray(sFile, IIf(isUnicode, True, False))
     
     For i = 0 To UBound(aLogStrings)
@@ -14409,11 +14404,13 @@ Public Sub LockInterfaceMain(bDoUnlock As Boolean)
 End Sub
 
 Public Function TrimEx(ByVal sStr As String, sDelimiter As String) As String
-    Do While Left$(sStr, 1) = sDelimiter And Len(sStr) <> 0
-        sStr = Mid$(sStr, 2)
+    Dim iLenDelim As Long
+    iLenDelim = Len(sDelimiter)
+    Do While Left$(sStr, iLenDelim) = sDelimiter And Len(sStr) <> 0
+        sStr = Mid$(sStr, iLenDelim + 1)
     Loop
-    Do While Right$(sStr, 1) = sDelimiter And Len(sStr) <> 0
-        sStr = Left$(sStr, Len(sStr) - 1)
+    Do While Right$(sStr, iLenDelim) = sDelimiter And Len(sStr) <> 0
+        sStr = Left$(sStr, Len(sStr) - iLenDelim)
     Loop
     TrimEx = sStr
 End Function

@@ -1898,7 +1898,7 @@ Private Function AnalyzeTask(sFilename As String, te() As TASK_ENTRY) As Long
     
     ReDim te(0)
     
-    sFileData = ReadFileContents(sFilename, FileGetTypeBOM(sFilename) = 1200)
+    sFileData = ReadFileContents(sFilename, FileGetTypeBOM(sFilename) = CP_UTF16LE)
     
     If Len(sFileData) = 0 Then Exit Function
     

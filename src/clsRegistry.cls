@@ -18,7 +18,7 @@ Option Explicit
 ' Registry functions class by Alex Dragokas
 '
 
-'Revision 3.4 (07.02.2021)
+'Revision 3.5 (21.04.2022)
 
 'Private Const MAX_PATH       As Long = 260&
 'Private Const MAX_PATH_W     As Long = 32767&
@@ -495,41 +495,39 @@ End Function
 
 
 ' if main hive handle wasn't defined, assigns handle according to hive's name defined by Full key name directed
-Public Sub NormalizeKeyNameAndHiveHandle(ByRef lHive As ENUM_REG_HIVE, ByRef in_out_KeyName As String)
+Public Sub NormalizeKeyNameAndHiveHandle(ByRef hHive As ENUM_REG_HIVE, ByRef in_out_KeyName As String)
     Dim iPos        As Long
-    If lHive = 0 Then
-        lHive = GetHKey(in_out_KeyName)
+    If hHive = 0 Then
+        hHive = GetHKey(in_out_KeyName)
         iPos = InStr(in_out_KeyName, "\")
         If (iPos <> 0&) Then in_out_KeyName = Mid$(in_out_KeyName, iPos + 1&) Else in_out_KeyName = vbNullString
     End If
 End Sub
 
 
-Public Function CreateKey(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 As Boolean) As Boolean
+Public Function CreateKey(hHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 As Boolean) As Boolean
     On Error GoTo ErrorHandler:
     Dim hKey&, lret&
-    Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
+    Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
-    lret = RegCreateKeyEx(lHive, StrPtr(sKey), 0&, ByVal 0&, 0&, KEY_CREATE_SUB_KEY Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), ByVal 0&, hKey, ByVal 0&)
+    lret = RegCreateKeyEx(hHive, StrPtr(sKey), 0&, ByVal 0&, 0&, KEY_CREATE_SUB_KEY Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), ByVal 0&, hKey, ByVal 0&)
     
     If lret <> ERROR_SUCCESS Then
         If lret = ERROR_ACCESS_DENIED Then
-            If modPermissions.RegKeyResetDACL(lHive, GetParentDir(sKey), bUseWow64, False) Then
-                lret = RegCreateKeyEx(lHive, StrPtr(sKey), 0&, ByVal 0&, 0&, KEY_CREATE_SUB_KEY Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), ByVal 0&, hKey, ByVal 0&)
-                modPermissions.RegKeyResetDACL lHive, sKey, bUseWow64, True
+            If modPermissions.RegKeyResetDACL(hHive, GetParentDir(sKey), bUseWow64, False) Then
+                lret = RegCreateKeyEx(hHive, StrPtr(sKey), 0&, ByVal 0&, 0&, KEY_CREATE_SUB_KEY Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), ByVal 0&, hKey, ByVal 0&)
+                modPermissions.RegKeyResetDACL hHive, sKey, bUseWow64, True
             End If
         End If
         If lret = ERROR_CHILD_MUST_BE_VOLATILE Then
-            lret = RegCreateKeyEx(lHive, StrPtr(sKey), 0&, ByVal 0&, REG_OPTION_VOLATILE, KEY_CREATE_SUB_KEY Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), ByVal 0&, hKey, ByVal 0&)
+            lret = RegCreateKeyEx(hHive, StrPtr(sKey), 0&, ByVal 0&, REG_OPTION_VOLATILE, KEY_CREATE_SUB_KEY Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), ByVal 0&, hKey, ByVal 0&)
         End If
     End If
     CreateKey = (ERROR_SUCCESS = lret)
-    If hKey <> 0 Then
-        RegCloseKey hKey
-    End If
+    If hKey <> 0 Then RegCloseKey hKey
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "CreateKey", lHive & "," & sKey
+    ErrorMsg Err, "CreateKey", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Wow64:", bUseWow64
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -547,7 +545,7 @@ Public Function GetDword(hHive As ENUM_REG_HIVE, sKey$, Optional sValue$, Option
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "GetDword", hHive & "," & sKey & "," & sValue
+    ErrorMsg Err, "GetDword", "hHive:", hHive, "Key:", sKey, "Value:", sValue, "Wow64:", bUseWow64
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -560,7 +558,7 @@ Public Function GetQword(hHive As ENUM_REG_HIVE, sKey$, Optional sValue$, Option
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "GetQword", hHive & "," & sKey & "," & sValue
+    ErrorMsg Err, "GetQword", "hHive:", hHive, "Key:", sKey, "Value:", sValue, "Wow64:", bUseWow64
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -599,17 +597,17 @@ Public Function GetBinary(hHive As ENUM_REG_HIVE, ByVal KeyName As String, Optio
         End If
     End If
     
-    If hKey <> 0& Then RegCloseKey hKey
+    RegCloseKey hKey
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "GetBinary", "hHive:", hHive, KeyName & "\" & ValueName, "bUseWow64:", bUseWow64
+    ErrorMsg Err, "GetBinary", "hHive:", hHive, "hKey:", hKey, "Key:", KeyName, "Value:", ValueName, "Wow64:", bUseWow64
     If hKey <> 0 Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
 
 Public Function GetMultiSZ(hHive As ENUM_REG_HIVE, ByVal KeyName As String, Optional ValueName As String, Optional bUseWow64 As Boolean) As String()
     On Error GoTo ErrorHandler:
-
+    
     Dim cData        As Long
     Dim hKey         As Long
     Dim lret         As Long
@@ -639,18 +637,15 @@ Public Function GetMultiSZ(hHive As ENUM_REG_HIVE, ByVal KeyName As String, Opti
             
             lret = RegQueryValueEx(hKey, StrPtr(ValueName), 0&, ordType, StrPtr(sData), cData)
             If lret = ERROR_SUCCESS Then
-                Do While AscW(Right$(sData, 1)) = 0 'safe rtim 'nul'
-                    sData = Left$(sData, Len(sData) - 1)
-                Loop
-                GetMultiSZ = Split(sData, vbNullChar) 'struct is: item1 nul item2 nul ... itemN nul nul
+                GetMultiSZ = Split(RTrimNull(sData), vbNullChar) 'struct is: item1 nul item2 nul ... itemN nul nul
             End If
         End If
     End If
     
-    If hKey <> 0& Then RegCloseKey hKey
+    RegCloseKey hKey
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "GetMultiSZ", "hHive:", hHive, KeyName & "\" & ValueName, "bUseWow64:", bUseWow64
+    ErrorMsg Err, "GetMultiSZ", "hHive:", hHive, "hKey:", hKey, "Key:", KeyName, "Value:", ValueName, "Wow64:", bUseWow64
     If hKey <> 0 Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
@@ -670,10 +665,10 @@ Public Function GetValueType(hHive As ENUM_REG_HIVE, ByVal KeyName As String, Op
     
     GetValueType = ordType
     
-    If hKey <> 0& Then RegCloseKey hKey
+    RegCloseKey hKey
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "GetValueType", "hHive:", hHive, KeyName & "\" & ValueName, "bUseWow64:", bUseWow64
+    ErrorMsg Err, "GetValueType", "hHive:", hHive, "hKey:", hKey, "Key:", KeyName, "Value:", ValueName, "Wow64:", bUseWow64
     If hKey <> 0 Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
@@ -830,10 +825,10 @@ Public Function GetData(hHive As ENUM_REG_HIVE, ByVal KeyName As String, Optiona
     
     End Select
     GetData = vValue
-    If hKey <> 0& Then RegCloseKey hKey
+    RegCloseKey hKey
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "GetData", "hHive:", hHive, KeyName & "\" & ValueName, "bUseWow64:", bUseWow64
+    ErrorMsg Err, "GetData", "hHive:", hHive, "hKey:", hKey, "Key:", KeyName, "Value:", ValueName, "Wow64:", bUseWow64
     If hKey <> 0 Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
@@ -852,12 +847,12 @@ Public Function GetKeysCount(hHive As ENUM_REG_HIVE, ByVal KeyName As String, Op
         If ERROR_SUCCESS = RegQueryInfoKey(hKey, ByVal 0&, ByVal 0&, 0&, KeysCnt, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&) Then
             GetKeysCount = KeysCnt
         End If
-        CloseHandle hKey
+        RegCloseKey hKey
     End If
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "GetValuesCount", "hHive:", hHive, KeyName, "bUseWow64:", bUseWow64
+    ErrorMsg Err, "GetValuesCount", "hHive:", hHive, "hKey:", hKey, "Key:", KeyName, "Wow64:", bUseWow64
     If hKey <> 0 Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
@@ -876,17 +871,17 @@ Public Function GetValuesCount(hHive As ENUM_REG_HIVE, ByVal KeyName As String, 
         If ERROR_SUCCESS = RegQueryInfoKey(hKey, ByVal 0&, ByVal 0&, 0&, ByVal 0&, ByVal 0&, ByVal 0&, ValuesCnt, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&) Then
             GetValuesCount = ValuesCnt
         End If
-        CloseHandle hKey
+        RegCloseKey hKey
     End If
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "GetValuesCount", "hHive:", hHive, KeyName, "bUseWow64:", bUseWow64
+    ErrorMsg Err, "GetValuesCount", "hHive:", hHive, "hKey:", hKey, "Key:", KeyName, "Wow64:", bUseWow64
     If hKey <> 0 Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function EnumValuesAndData(lHive As ENUM_REG_HIVE, ByVal KeyName As String, _
+Public Function EnumValuesAndData(hHive As ENUM_REG_HIVE, ByVal KeyName As String, _
     uRegTypesToQuery As FLAG_REG_TYPE, _
     aValueNames() As String, _
     aDataValues() As Variant, _
@@ -916,9 +911,9 @@ Public Function EnumValuesAndData(lHive As ENUM_REG_HIVE, ByVal KeyName As Strin
     Erase aDataValues
     Erase aTypes
     
-    Call NormalizeKeyNameAndHiveHandle(lHive, KeyName)
+    Call NormalizeKeyNameAndHiveHandle(hHive, KeyName)
     
-    lret = RegOpenKeyEx(lHive, StrPtr(KeyName), 0&, KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+    lret = RegOpenKeyEx(hHive, StrPtr(KeyName), 0&, KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
     
     If lret <> ERROR_SUCCESS Then
         Exit Function
@@ -1035,35 +1030,35 @@ Public Function EnumValuesAndData(lHive As ENUM_REG_HIVE, ByVal KeyName As Strin
         ReDim Preserve aTypes(1& To CurValueN)
     End If
     
-    If (hKey <> 0&) Then RegCloseKey hKey
+    RegCloseKey hKey
     EnumValuesAndData = CurValueN
 
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "EnumValuesAndData", "lHive:", lHive, "Key:", KeyName, "uTypesToQuery:", uRegTypesToQuery, "bUseWow64:", bUseWow64
+    ErrorMsg Err, "EnumValuesAndData", "hHive:", hHive, "hKey:", hKey, "Key:", KeyName, "uTypesToQuery:", uRegTypesToQuery, "Wow64:", bUseWow64
     If (hKey <> 0&) Then RegCloseKey hKey
 End Function
 
 
-Public Function SetStringVal(lHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, sData$, Optional bUseWow64 As Boolean) As Boolean
+Public Function SetStringVal(hHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, sData$, Optional bUseWow64 As Boolean) As Boolean
     On Error GoTo ErrorHandler:
     Dim hKey&, lret&
     
-    Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
+    Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
-    If Not KeyExists(lHive, sKey, bUseWow64) Then
-        CreateKey lHive, sKey, bUseWow64
+    If Not KeyExists(hHive, sKey, bUseWow64) Then
+        CreateKey hHive, sKey, bUseWow64
     End If
-    lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+    lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
     
     If lret <> ERROR_SUCCESS Then
         If lret = ERROR_ACCESS_DENIED Then
-            modPermissions.RegKeyResetDACL lHive, sKey, bUseWow64, False
-            lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+            modPermissions.RegKeyResetDACL hHive, sKey, bUseWow64, False
+            lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
         End If
         If lret = ERROR_FILE_NOT_FOUND Then
-            If CreateKey(lHive, sKey, bUseWow64) Then
-                lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+            If CreateKey(hHive, sKey, bUseWow64) Then
+                lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
             End If
         End If
     End If
@@ -1077,29 +1072,29 @@ Public Function SetStringVal(lHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, sData
     End If
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "SetStringVal", lHive & "," & sKey & "\" & sValue & "," & sData
+    ErrorMsg Err, "SetStringVal", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Value:", sValue, "Wow64:", bUseWow64, "Data:", sData
     If hKey <> 0 Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
 
 
-Public Function SetExpandStringVal(lHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, sData$, Optional bUseWow64 As Boolean) As Boolean
+Public Function SetExpandStringVal(hHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, sData$, Optional bUseWow64 As Boolean) As Boolean
     On Error GoTo ErrorHandler:
     Dim hKey&, lret&
-    Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
+    Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
-    If Not KeyExists(lHive, sKey, bUseWow64) Then
-        CreateKey lHive, sKey, bUseWow64
+    If Not KeyExists(hHive, sKey, bUseWow64) Then
+        CreateKey hHive, sKey, bUseWow64
     End If
-    lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+    lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
     If lret <> ERROR_SUCCESS Then
         If lret = ERROR_ACCESS_DENIED Then
-            modPermissions.RegKeyResetDACL lHive, sKey, bUseWow64, False
-            lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+            modPermissions.RegKeyResetDACL hHive, sKey, bUseWow64, False
+            lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
         End If
         If lret = ERROR_FILE_NOT_FOUND Then
-            If CreateKey(lHive, sKey, bUseWow64) Then
-                lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+            If CreateKey(hHive, sKey, bUseWow64) Then
+                lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
             End If
         End If
     End If
@@ -1109,29 +1104,29 @@ Public Function SetExpandStringVal(lHive As ENUM_REG_HIVE, ByVal sKey$, sValue$,
     End If
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "SetExpandStringVal", lHive & "," & sKey & "\" & sValue & "," & sData
+    ErrorMsg Err, "SetExpandStringVal", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Value:", sValue, "Wow64:", bUseWow64, "Data:", sData
     If hKey <> 0 Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
 
 
-Public Function SetDwordVal(lHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, lData&, Optional bUseWow64 As Boolean) As Boolean
+Public Function SetDwordVal(hHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, lData&, Optional bUseWow64 As Boolean) As Boolean
     On Error GoTo ErrorHandler:
     Dim hKey&, lret&
-    Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
+    Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
-    If Not KeyExists(lHive, sKey, bUseWow64) Then
-        CreateKey lHive, sKey, bUseWow64
+    If Not KeyExists(hHive, sKey, bUseWow64) Then
+        CreateKey hHive, sKey, bUseWow64
     End If
-    lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+    lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
     If lret <> ERROR_SUCCESS Then
         If lret = ERROR_ACCESS_DENIED Then
-            modPermissions.RegKeyResetDACL lHive, sKey, bUseWow64, False
-            lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+            modPermissions.RegKeyResetDACL hHive, sKey, bUseWow64, False
+            lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
         End If
         If lret = ERROR_FILE_NOT_FOUND Then
-            If CreateKey(lHive, sKey, bUseWow64) Then
-                lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+            If CreateKey(hHive, sKey, bUseWow64) Then
+                lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
             End If
         End If
     End If
@@ -1141,29 +1136,29 @@ Public Function SetDwordVal(lHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, lData&
     End If
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "SetDwordVal", lHive & "," & sKey & "\" & sValue & "," & lData
+    ErrorMsg Err, "SetDwordVal", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Value:", sValue, "Wow64:", bUseWow64, "Data:", lData
     If hKey <> 0 Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
 
 
-Public Function SetQwordVal(lHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, vData As Variant, Optional bUseWow64 As Boolean) As Boolean
+Public Function SetQwordVal(hHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, vData As Variant, Optional bUseWow64 As Boolean) As Boolean
     On Error GoTo ErrorHandler:
     Dim hKey&, lret&, cData As Currency
-    Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
+    Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
-    If Not KeyExists(lHive, sKey, bUseWow64) Then
-        CreateKey lHive, sKey, bUseWow64
+    If Not KeyExists(hHive, sKey, bUseWow64) Then
+        CreateKey hHive, sKey, bUseWow64
     End If
-    lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+    lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
     If lret <> ERROR_SUCCESS Then
         If lret = ERROR_ACCESS_DENIED Then
-            modPermissions.RegKeyResetDACL lHive, sKey, bUseWow64, False
-            lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+            modPermissions.RegKeyResetDACL hHive, sKey, bUseWow64, False
+            lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
         End If
         If lret = ERROR_FILE_NOT_FOUND Then
-            If CreateKey(lHive, sKey, bUseWow64) Then
-                lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+            If CreateKey(hHive, sKey, bUseWow64) Then
+                lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
             End If
         End If
     End If
@@ -1179,29 +1174,29 @@ Public Function SetQwordVal(lHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, vData 
     End If
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "SetQwordVal", lHive & "," & sKey & "\" & sValue & "," & cData
+    ErrorMsg Err, "SetQwordVal", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Value:", sValue, "Wow64:", bUseWow64, "Data:", vData
     If hKey <> 0 Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
 
 
-Public Function SetBinaryVal(lHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, aData() As Byte, Optional bUseWow64 As Boolean) As Boolean
+Public Function SetBinaryVal(hHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, aData() As Byte, Optional bUseWow64 As Boolean) As Boolean
     On Error GoTo ErrorHandler:
     Dim hKey&, lret&
-    Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
+    Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
-    If Not KeyExists(lHive, sKey, bUseWow64) Then
-        CreateKey lHive, sKey, bUseWow64
+    If Not KeyExists(hHive, sKey, bUseWow64) Then
+        CreateKey hHive, sKey, bUseWow64
     End If
-    lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+    lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
     If lret <> ERROR_SUCCESS Then
         If lret = ERROR_ACCESS_DENIED Then
-            modPermissions.RegKeyResetDACL lHive, sKey, bUseWow64, False
-            lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+            modPermissions.RegKeyResetDACL hHive, sKey, bUseWow64, False
+            lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
         End If
         If lret = ERROR_FILE_NOT_FOUND Then
-            If CreateKey(lHive, sKey, bUseWow64) Then
-                lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+            If CreateKey(hHive, sKey, bUseWow64) Then
+                lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
             End If
         End If
     End If
@@ -1215,29 +1210,29 @@ Public Function SetBinaryVal(lHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, aData
     End If
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "SetBinaryVal", lHive & "," & sKey & "\" & sValue & ",UBound=" & UBound(aData)
+    ErrorMsg Err, "SetBinaryVal", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Value:", sValue, "Wow64:", bUseWow64, "Data UBound:" & UBound(aData)
     If hKey <> 0 Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
 
 
-Public Function SetMultiSZVal(lHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, aData() As String, Optional bUseWow64 As Boolean) As Boolean
+Public Function SetMultiSZVal(hHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, aData() As String, Optional bUseWow64 As Boolean) As Boolean
     On Error GoTo ErrorHandler:
     Dim hKey&, lret&, sData$, i&
-    Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
+    Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
-    If Not KeyExists(lHive, sKey, bUseWow64) Then
-        CreateKey lHive, sKey, bUseWow64
+    If Not KeyExists(hHive, sKey, bUseWow64) Then
+        CreateKey hHive, sKey, bUseWow64
     End If
-    lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+    lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
     If lret <> ERROR_SUCCESS Then
         If lret = ERROR_ACCESS_DENIED Then
-            modPermissions.RegKeyResetDACL lHive, sKey, bUseWow64, False
-            lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+            modPermissions.RegKeyResetDACL hHive, sKey, bUseWow64, False
+            lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
         End If
         If lret = ERROR_FILE_NOT_FOUND Then
-            If CreateKey(lHive, sKey, bUseWow64) Then
-                lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+            If CreateKey(hHive, sKey, bUseWow64) Then
+                lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
             End If
         End If
     End If
@@ -1256,22 +1251,22 @@ Public Function SetMultiSZVal(lHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, aDat
     End If
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "SetBinaryVal", lHive & "," & sKey & "\" & sValue & ",UBound=" & UBound(aData)
+    ErrorMsg Err, "SetBinaryVal", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Value:", sValue, "Wow64:", bUseWow64, "Data UBound:" & UBound(aData)
     If hKey <> 0 Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
 
 
-Public Function DelVal(lHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, Optional bUseWow64 As Boolean) As Boolean
+Public Function DelVal(hHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, Optional bUseWow64 As Boolean) As Boolean
     On Error GoTo ErrorHandler:
     Dim hKey&, lret&
-    Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
+    Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
-    lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+    lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
     If lret <> ERROR_SUCCESS Then
         If lret = ERROR_ACCESS_DENIED Then
-            modPermissions.RegKeyResetDACL lHive, sKey, bUseWow64, False
-            lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+            modPermissions.RegKeyResetDACL hHive, sKey, bUseWow64, False
+            lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
         End If
         If lret = ERROR_FILE_NOT_FOUND Then
             DelVal = True
@@ -1287,13 +1282,13 @@ Public Function DelVal(lHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, Optional bU
     End If
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "DelVal", lHive & "," & sKey & "\" & sValue
+    ErrorMsg Err, "DelVal", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Value:", sValue, "Wow64:", bUseWow64
     If hKey <> 0 Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
 
 
-Public Function DelKey(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 As Boolean) As Boolean
+Public Function DelKey(hHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 As Boolean) As Boolean
     On Error GoTo ErrorHandler:
     '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
     '''   Function   ''  Can recursively    ''  Support flag    '' Must close  ''   Minimum    ''
@@ -1308,55 +1303,55 @@ Public Function DelKey(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 A
     
     Dim lret&
     
-    Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
+    Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
        
     If OSver.Bitness = "x32" And Not OSver.IsWindowsVistaOrGreater Then
         'XP x32
-        SHDeleteKey lHive, StrPtr(sKey)
-        If KeyExists(lHive, sKey, True) Then
+        SHDeleteKey hHive, StrPtr(sKey)
+        If KeyExists(hHive, sKey, True) Then
         
-            If modPermissions.RegKeyResetDACL(lHive, sKey, True, True) Then
-                SHDeleteKey lHive, StrPtr(sKey)
+            If modPermissions.RegKeyResetDACL(hHive, sKey, True, True) Then
+                SHDeleteKey hHive, StrPtr(sKey)
             End If
         End If
     Else
-        DeleteAllSubKeys lHive, sKey, bUseWow64
+        DeleteAllSubKeys hHive, sKey, bUseWow64
         
-        lret = RegDeleteKeyEx(lHive, StrPtr(sKey), bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64, 0&)
+        lret = RegDeleteKeyEx(hHive, StrPtr(sKey), bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64, 0&)
         
         If lret = ERROR_ACCESS_DENIED Then   'root key self
         
-            If modPermissions.RegKeyResetDACL(lHive, sKey, bUseWow64, False) Then
-                RegDeleteKeyEx lHive, StrPtr(sKey), bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64, 0&
+            If modPermissions.RegKeyResetDACL(hHive, sKey, bUseWow64, False) Then
+                RegDeleteKeyEx hHive, StrPtr(sKey), bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64, 0&
             End If
         End If
         
     End If
-    DelKey = Not KeyExists(lHive, sKey, bUseWow64)
+    DelKey = Not KeyExists(hHive, sKey, bUseWow64)
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "DelKey", lHive & "," & sKey
+    ErrorMsg Err, "DelKey", "hHive:", hHive, "hKey:", sKey, "Wow64:", bUseWow64
     If inIDE Then Stop: Resume Next
 End Function
 
 
-Public Function DeleteAllSubKeys(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 As Boolean) As Boolean
+Public Function DeleteAllSubKeys(hHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 As Boolean) As Boolean
     'del subkeys without root
     On Error GoTo ErrorHandler:
     Dim i&, sSubKey$, aSubKeys() As String, Flag As Boolean, lret&
     
-    Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
+    Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
     Flag = True
     
-    For i = 1 To EnumSubKeysToArray(lHive, sKey, aSubKeys(), bUseWow64, True)
+    For i = 1 To EnumSubKeysToArray(hHive, sKey, aSubKeys(), bUseWow64, True)
         sSubKey = sKey & "\" & aSubKeys(i)
-        Flag = Flag And DeleteAllSubKeys(lHive, sSubKey, bUseWow64)   '< --- recursively
-        lret = RegDeleteKeyEx(lHive, StrPtr(sSubKey), bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64, 0&)
+        Flag = Flag And DeleteAllSubKeys(hHive, sSubKey, bUseWow64)   '< --- recursively
+        lret = RegDeleteKeyEx(hHive, StrPtr(sSubKey), bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64, 0&)
         
         If lret = ERROR_ACCESS_DENIED Then
-            If modPermissions.RegKeyResetDACL(lHive, sSubKey, bUseWow64, False) Then
-                lret = RegDeleteKeyEx(lHive, StrPtr(sSubKey), bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64, 0&)
+            If modPermissions.RegKeyResetDACL(hHive, sSubKey, bUseWow64, False) Then
+                lret = RegDeleteKeyEx(hHive, StrPtr(sSubKey), bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64, 0&)
             End If
         End If
         If lret <> ERROR_SUCCESS Then Flag = False
@@ -1364,17 +1359,17 @@ Public Function DeleteAllSubKeys(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional b
     DeleteAllSubKeys = Flag
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "DeleteAllSubKeys", lHive & "," & sKey
+    ErrorMsg Err, "DeleteAllSubKeys", "hHive:", hHive, "Key:", sKey, "Wow64:", bUseWow64
     If inIDE Then Stop: Resume Next
 End Function
 
 
-Public Function KeyExists(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 As Boolean) As Boolean
+Public Function KeyExists(hHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 As Boolean) As Boolean
     On Error GoTo ErrorHandler:
     Dim hKey&, lStatus&
-    Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
+    Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
-    lStatus = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, WRITE_OWNER Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+    lStatus = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, WRITE_OWNER Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
     
     If lStatus = ERROR_SUCCESS Then
         KeyExists = True
@@ -1383,7 +1378,7 @@ Public Function KeyExists(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow6
     ElseIf lStatus = ERROR_ACCESS_DENIED Then
         
         'for 'Limited User'
-        If ERROR_SUCCESS = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) Then
+        If ERROR_SUCCESS = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) Then
         
             KeyExists = True
             RegCloseKey hKey
@@ -1392,24 +1387,24 @@ Public Function KeyExists(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow6
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "KeyExists", lHive & "," & sKey
+    ErrorMsg Err, "KeyExists", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Wow64:", bUseWow64
     If hKey <> 0 Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
 
 
-Public Function ValueExists(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional sValue$, Optional bUseWow64 As Boolean) As Boolean
+Public Function ValueExists(hHive As ENUM_REG_HIVE, ByVal sKey$, Optional sValue$, Optional bUseWow64 As Boolean) As Boolean
     On Error GoTo ErrorHandler:
     Dim hKey&, lret&
-    Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
+    Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
-    lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, WRITE_OWNER Or KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+    lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, WRITE_OWNER Or KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
     If lret <> ERROR_SUCCESS Then
         If lret = ERROR_FILE_NOT_FOUND Then
             Exit Function
         End If
         If lret = ERROR_ACCESS_DENIED Then
-            lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+            lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
         End If
     End If
     If hKey <> 0 Then
@@ -1418,18 +1413,18 @@ Public Function ValueExists(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional sValue
     End If
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "ValueExists", lHive & "," & sKey & "\" & sValue
+    ErrorMsg Err, "ValueExists", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Value:", sValue, "Wow64:", bUseWow64
     If hKey <> 0 Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function KeyHasSubKeys(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 As Boolean) As Boolean
+Public Function KeyHasSubKeys(hHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 As Boolean) As Boolean
     On Error GoTo ErrorHandler:
     Dim hKey&, sBuf$, cbBuf&
-    Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
+    Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
     KeyHasSubKeys = False
-    If RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_ENUMERATE_SUB_KEYS Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) = 0& Then
+    If RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_ENUMERATE_SUB_KEYS Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) = 0& Then
         cbBuf = MAX_KEYNAME
         sBuf = String$(cbBuf, vbNullChar)
         If RegEnumKeyEx(hKey, 0&, StrPtr(sBuf), cbBuf, 0&, ByVal 0&, ByVal 0&, ByVal 0&) = 0& Then
@@ -1439,18 +1434,18 @@ Public Function KeyHasSubKeys(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUse
     End If
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "KeyHasSubKeys", lHive & "," & sKey
+    ErrorMsg Err, "KeyHasSubKeys", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Wow64:", bUseWow64
     If hKey <> 0 Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
 
 
-Public Function GetFirstSubKey(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 As Boolean) As String
+Public Function GetFirstSubKey(hHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 As Boolean) As String
     On Error GoTo ErrorHandler:
     Dim hKey&, sName$, cbBuf&
-    Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
+    Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
-    If RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_ENUMERATE_SUB_KEYS Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) = 0& Then
+    If RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_ENUMERATE_SUB_KEYS Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) = 0& Then
         cbBuf = MAX_KEYNAME
         sName = String$(cbBuf, vbNullChar)
         If ERROR_SUCCESS = RegEnumKeyEx(hKey, 0&, StrPtr(sName), cbBuf, 0&, ByVal 0&, ByVal 0&, ByVal 0&) Then
@@ -1460,18 +1455,18 @@ Public Function GetFirstSubKey(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUs
     End If
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "GetFirstSubKey", lHive & "," & sKey
+    ErrorMsg Err, "GetFirstSubKey", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Wow64:", bUseWow64
     If hKey <> 0 Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
 
 
-Public Function KeyHasValues(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 As Boolean) As Boolean
+Public Function KeyHasValues(hHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 As Boolean) As Boolean
     On Error GoTo ErrorHandler:
     Dim hKey&, sName$, cbBuf&
-    Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
+    Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
-    If RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) = 0& Then
+    If RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) = 0& Then
         cbBuf = MAX_VALUENAME
         sName = String$(cbBuf, vbNullChar)
         If RegEnumValue(hKey, 0&, StrPtr(sName), cbBuf, 0&, ByVal 0&, ByVal 0&, ByVal 0&) = 0& Then
@@ -1481,13 +1476,13 @@ Public Function KeyHasValues(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseW
     End If
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "KeyHasValues", lHive & "," & sKey
+    ErrorMsg Err, "KeyHasValues", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Wow64:", bUseWow64
     If hKey <> 0 Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
 
 
-Public Function EnumSubKeys(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 As Boolean, Optional ForceUnlock As Boolean) As String
+Public Function EnumSubKeys(hHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 As Boolean, Optional ForceUnlock As Boolean) As String
     On Error GoTo ErrorHandler:
     Dim hKey        As Long
     Dim sName       As String
@@ -1498,18 +1493,18 @@ Public Function EnumSubKeys(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWo
     Dim idx         As Long
     Dim SubkeysCnt  As Long
     
-    Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
+    Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
-    lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_ENUMERATE_SUB_KEYS Or KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+    lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_ENUMERATE_SUB_KEYS Or KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
     
     If lret = ERROR_ACCESS_DENIED Then
-        lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_ENUMERATE_SUB_KEYS Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+        lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_ENUMERATE_SUB_KEYS Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
         
         If lret = ERROR_ACCESS_DENIED And ForceUnlock Then
         
-            If modPermissions.RegKeyResetDACL(lHive, sKey, bUseWow64, False) Then
+            If modPermissions.RegKeyResetDACL(hHive, sKey, bUseWow64, False) Then
             
-                lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_ENUMERATE_SUB_KEYS Or KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+                lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_ENUMERATE_SUB_KEYS Or KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
             End If
         End If
     End If
@@ -1556,7 +1551,7 @@ Public Function EnumSubKeys(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWo
     If Len(sDummy) <> 0 Then EnumSubKeys = Left$(sDummy, Len(sDummy) - 1)
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "EnumSubKeys", lHive & "," & sKey
+    ErrorMsg Err, "EnumSubKeys", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Wow64:", bUseWow64
     If hKey <> 0 Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
@@ -1566,7 +1561,7 @@ End Function
 
 'Warning: the caller is responsible for erasing aSubKeys() array
 Public Function EnumSubKeysToArray( _
-    lHive As ENUM_REG_HIVE, _
+    hHive As ENUM_REG_HIVE, _
     ByVal sKey As String, _
     aSubKeys() As String, _
     Optional bUseWow64 As Boolean, _
@@ -1587,18 +1582,18 @@ Public Function EnumSubKeysToArray( _
     
     If bEraseArray Then Erase aSubKeys
     
-    Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
+    Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
-    lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_ENUMERATE_SUB_KEYS Or KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+    lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_ENUMERATE_SUB_KEYS Or KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
     
     If lret = ERROR_ACCESS_DENIED Then
-        lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_ENUMERATE_SUB_KEYS Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+        lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_ENUMERATE_SUB_KEYS Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
         
         If lret = ERROR_ACCESS_DENIED And ForceUnlock Then
         
-            If modPermissions.RegKeyResetDACL(lHive, sKey, bUseWow64, False) Then
+            If modPermissions.RegKeyResetDACL(hHive, sKey, bUseWow64, False) Then
             
-                lret = RegOpenKeyEx(lHive, StrPtr(sKey), 0&, KEY_ENUMERATE_SUB_KEYS Or KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
+                lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_ENUMERATE_SUB_KEYS Or KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
             End If
         End If
     End If
@@ -1663,7 +1658,7 @@ Public Function EnumSubKeysToArray( _
             If hKey <> 0 Then RegCloseKey hKey: hKey = 0
             
             For i = BeginIdx + 1 To UBound(aSubKeys)
-                Call EnumSubKeysToArray(lHive, aSubKeys(i), aSubKeys, bUseWow64, ForceUnlock, True, False)
+                Call EnumSubKeysToArray(hHive, aSubKeys(i), aSubKeys, bUseWow64, ForceUnlock, True, False)
             Next
           End If
         End If
@@ -1673,13 +1668,13 @@ Public Function EnumSubKeysToArray( _
     EnumSubKeysToArray = UBoundSafe(aSubKeys)
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "EnumSubKeysToArray", lHive & "," & sKey
+    ErrorMsg Err, "EnumSubKeysToArray", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Wow64:", bUseWow64
     If hKey <> 0 Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
 
 Public Function NtEnumSubKeysToArray( _
-    lHive As ENUM_REG_HIVE, _
+    hHive As ENUM_REG_HIVE, _
     ByVal sKey As String, _
     aSubKeys() As String, _
     Optional bUseWow64 As Boolean, _
@@ -1701,18 +1696,18 @@ Public Function NtEnumSubKeysToArray( _
     
     If bEraseArray Then Erase aSubKeys
     
-    Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
+    Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
-    lret = WrapNtOpenKeyEx(lHive, sKey, KEY_ENUMERATE_SUB_KEYS Or KEY_QUERY_VALUE, hKey, , bUseWow64)
+    lret = WrapNtOpenKeyEx(hHive, sKey, KEY_ENUMERATE_SUB_KEYS Or KEY_QUERY_VALUE, hKey, , bUseWow64)
     
     If lret = STATUS_ACCESS_DENIED Then
-        lret = WrapNtOpenKeyEx(lHive, sKey, KEY_ENUMERATE_SUB_KEYS, hKey, , bUseWow64)
+        lret = WrapNtOpenKeyEx(hHive, sKey, KEY_ENUMERATE_SUB_KEYS, hKey, , bUseWow64)
         
         If lret = STATUS_ACCESS_DENIED And ForceUnlock Then
         
-            If modPermissions.RegKeyResetDACL(lHive, sKey, bUseWow64, False) Then
+            If modPermissions.RegKeyResetDACL(hHive, sKey, bUseWow64, False) Then
             
-                lret = WrapNtOpenKeyEx(lHive, sKey, KEY_ENUMERATE_SUB_KEYS Or KEY_QUERY_VALUE, hKey, , bUseWow64)
+                lret = WrapNtOpenKeyEx(hHive, sKey, KEY_ENUMERATE_SUB_KEYS Or KEY_QUERY_VALUE, hKey, , bUseWow64)
             End If
         End If
     End If
@@ -1773,7 +1768,7 @@ Public Function NtEnumSubKeysToArray( _
     
     If bRecursively Then
         For i = BeginIdx + 1 To UBound(aSubKeys)
-            Call NtEnumSubKeysToArray(lHive, aSubKeys(i), aSubKeys, bUseWow64, ForceUnlock, True, False)
+            Call NtEnumSubKeysToArray(hHive, aSubKeys(i), aSubKeys, bUseWow64, ForceUnlock, True, False)
         Next
     End If
     
@@ -1781,12 +1776,12 @@ Public Function NtEnumSubKeysToArray( _
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "NtEnumSubKeysToArray", lHive & "," & sKey
+    ErrorMsg Err, "NtEnumSubKeysToArray", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Wow64:", bUseWow64
     If hKey <> 0 Then NtClose hKey: hKey = 0
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function EnumValues(lHive As ENUM_REG_HIVE, ByVal KeyName$, Optional bUseWow64 As Boolean) As String
+Public Function EnumValues(hHive As ENUM_REG_HIVE, ByVal KeyName$, Optional bUseWow64 As Boolean) As String
     On Error GoTo ErrorHandler:
     Dim iNameMax     As Long
     Dim hKey         As Long
@@ -1797,9 +1792,9 @@ Public Function EnumValues(lHive As ENUM_REG_HIVE, ByVal KeyName$, Optional bUse
     Dim sDummy       As String
     Dim ValuesCnt    As Long
     
-    Call NormalizeKeyNameAndHiveHandle(lHive, KeyName)
+    Call NormalizeKeyNameAndHiveHandle(hHive, KeyName)
     
-    If ERROR_SUCCESS = RegOpenKeyEx(lHive, StrPtr(KeyName), 0&, KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) Then
+    If ERROR_SUCCESS = RegOpenKeyEx(hHive, StrPtr(KeyName), 0&, KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) Then
         
         lret = RegQueryInfoKey(hKey, ByVal 0&, ByVal 0&, 0&, ByVal 0&, ByVal 0&, ByVal 0&, ValuesCnt, iNameMax, ByVal 0&, ByVal 0&, ByVal 0&)
         
@@ -1840,7 +1835,7 @@ Public Function EnumValues(lHive As ENUM_REG_HIVE, ByVal KeyName$, Optional bUse
     If Len(sDummy) <> 0 Then EnumValues = Left$(sDummy, Len(sDummy) - 1)
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "EnumValues", lHive & "," & KeyName
+    ErrorMsg Err, "EnumValues", "hHive:", hHive, "hKey:", hKey, "Key:", KeyName, "Wow64:", bUseWow64
     If (hKey <> 0&) Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
@@ -1848,7 +1843,7 @@ End Function
 '// returns array [1 to count], where [count] is a number returned by this function
 
 'Warning: the caller is responsible for erasing aValues() array
-Public Function EnumValuesToArray(lHive As ENUM_REG_HIVE, ByVal KeyName$, aValues() As String, Optional bUseWow64 As Boolean) As Long
+Public Function EnumValuesToArray(hHive As ENUM_REG_HIVE, ByVal KeyName$, aValues() As String, Optional bUseWow64 As Boolean) As Long
     On Error GoTo ErrorHandler:
     Dim iNameMax     As Long
     Dim hKey         As Long
@@ -1860,9 +1855,9 @@ Public Function EnumValuesToArray(lHive As ENUM_REG_HIVE, ByVal KeyName$, aValue
     
     Erase aValues()
     
-    Call NormalizeKeyNameAndHiveHandle(lHive, KeyName)
+    Call NormalizeKeyNameAndHiveHandle(hHive, KeyName)
     
-    If ERROR_SUCCESS = RegOpenKeyEx(lHive, StrPtr(KeyName), 0&, KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) Then
+    If ERROR_SUCCESS = RegOpenKeyEx(hHive, StrPtr(KeyName), 0&, KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) Then
         
         lret = RegQueryInfoKey(hKey, ByVal 0&, ByVal 0&, 0&, ByVal 0&, ByVal 0&, ByVal 0&, ValuesCnt, iNameMax, ByVal 0&, ByVal 0&, ByVal 0&)
         
@@ -1915,13 +1910,13 @@ Public Function EnumValuesToArray(lHive As ENUM_REG_HIVE, ByVal KeyName$, aValue
     If (hKey <> 0&) Then RegCloseKey hKey
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "EnumValues", lHive & "," & KeyName
+    ErrorMsg Err, "EnumValues", "hHive:", hHive, "hKey:", hKey, "Key:", KeyName, "Wow64:", bUseWow64
     If (hKey <> 0&) Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
 
 
-Public Function GetKeyTime(lHive As ENUM_REG_HIVE, ByVal KeyName$, Optional bUseWow64 As Boolean) As Date
+Public Function GetKeyTime(hHive As ENUM_REG_HIVE, ByVal KeyName$, Optional bUseWow64 As Boolean) As Date
     On Error GoTo ErrorHandler:
     Dim hKey         As Long
     Dim lret         As Long
@@ -1929,9 +1924,9 @@ Public Function GetKeyTime(lHive As ENUM_REG_HIVE, ByVal KeyName$, Optional bUse
     Dim sTime        As SYSTEMTIME
     Dim DateTime     As Date
 
-    Call NormalizeKeyNameAndHiveHandle(lHive, KeyName)
+    Call NormalizeKeyNameAndHiveHandle(hHive, KeyName)
     
-    If ERROR_SUCCESS = RegOpenKeyEx(lHive, StrPtr(KeyName), 0&, KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) Then
+    If ERROR_SUCCESS = RegOpenKeyEx(hHive, StrPtr(KeyName), 0&, KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) Then
         
         If ERROR_SUCCESS = RegQueryInfoKey(hKey, ByVal 0&, ByVal 0&, 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&, fTime) Then
         
@@ -1948,21 +1943,21 @@ Public Function GetKeyTime(lHive As ENUM_REG_HIVE, ByVal KeyName$, Optional bUse
     If (hKey <> 0&) Then RegCloseKey hKey
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "GetKeyTime", lHive & "," & KeyName
+    ErrorMsg Err, "GetKeyTime", "hHive:", hHive, "hKey:", hKey, "Key:", KeyName, "Wow64:", bUseWow64
     If (hKey <> 0&) Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
 
 
-Public Function SetKeyTime(lHive As ENUM_REG_HIVE, ByVal KeyName$, dDate As Date, Optional bUseWow64 As Boolean) As Boolean
+Public Function SetKeyTime(hHive As ENUM_REG_HIVE, ByVal KeyName$, dDate As Date, Optional bUseWow64 As Boolean) As Boolean
     On Error GoTo ErrorHandler:
     Dim hKey         As Long
     Dim fTime        As FILETIME
     Dim sTime        As SYSTEMTIME
     
-    Call NormalizeKeyNameAndHiveHandle(lHive, KeyName)
+    Call NormalizeKeyNameAndHiveHandle(hHive, KeyName)
     
-    If ERROR_SUCCESS = RegOpenKeyEx(lHive, StrPtr(KeyName), 0&, KEY_WRITE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) Then
+    If ERROR_SUCCESS = RegOpenKeyEx(hHive, StrPtr(KeyName), 0&, KEY_WRITE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) Then
         
         VariantTimeToSystemTime dDate, sTime
         SystemTimeToFileTime sTime, fTime
@@ -1971,12 +1966,12 @@ Public Function SetKeyTime(lHive As ENUM_REG_HIVE, ByVal KeyName$, dDate As Date
         If STATUS_SUCCESS = NtSetInformationKey(hKey, KeyWriteTimeInformation, VarPtr(fTime), LenB(fTime)) Then
             SetKeyTime = True
         End If
+        
+        RegCloseKey hKey
     End If
-    
-    If (hKey <> 0&) Then RegCloseKey hKey
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "SetKeyTime", lHive & "," & KeyName
+    ErrorMsg Err, "SetKeyTime", "hHive:", hHive, "hKey:", hKey, "Key:", KeyName, "Wow64:", bUseWow64
     If (hKey <> 0&) Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
@@ -1984,7 +1979,7 @@ End Function
 
 'it makes registry export (temporary .reg-file), then read its contents to variable
 Public Function ExportKeyToVariable( _
-    lHive As ENUM_REG_HIVE, _
+    hHive As ENUM_REG_HIVE, _
     ByVal sKey$, _
     Optional bUseWow64 As Boolean, _
     Optional SaveHeader As Boolean = True, _
@@ -1997,8 +1992,8 @@ Public Function ExportKeyToVariable( _
     Randomize
     sTempFile$ = BuildPath(TempCU, "backup_" & Int(Rnd * 10000) & ".reg")
     
-    If lHive <> 0 Then
-        sKey = GetHiveNameByHandle(lHive) & "\" & sKey
+    If hHive <> 0 Then
+        sKey = GetHiveNameByHandle(hHive) & "\" & sKey
     End If
     
     '// TODO: Wow6432Node is not substitutes to the name of the key in export file when you enum under Wow64
@@ -2012,29 +2007,17 @@ Public Function ExportKeyToVariable( _
             End If
             
             If FileExists(sTempFile) Then
-                    
-                If OpenW(sTempFile, FOR_READ, hFile) Then
-                    
-                    FSize = LOFW(hFile)
-                    
-                    If FSize > 0 Then
-                        
-                        sData = String$(FSize, 0)
-                        
-                        If GetW(hFile, 1, sData) Then
-                        
-                            sData = sData & vbCrLf & vbCrLf
-                            
-                            If Not SaveHeader Then
-                                pos = InStr(sData, vbCrLf)
-                                If pos <> 0 Then
-                                    sData = Mid$(sData, pos + 2)
-                                End If
-                            End If
-                        End If
+                
+                sData = ReadFileContents(sTempFile, FileGetTypeBOM(sTempFile) = CP_UTF16LE)
+                sData = sData & vbCrLf & vbCrLf
+                
+                If Not SaveHeader Then
+                    pos = InStr(sData, vbCrLf)
+                    If pos <> 0 Then
+                        sData = Mid$(sData, pos + 2)
                     End If
-                    CloseW hFile
                 End If
+
                 DeleteFileWEx (StrPtr(sTempFile))
             End If
         End If
@@ -2042,19 +2025,19 @@ Public Function ExportKeyToVariable( _
     ExportKeyToVariable = sData
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "ExportKeyToVariable", lHive & "," & sKey, "bUseWow64:", bUseWow64, "SaveHeader:", SaveHeader
+    ErrorMsg Err, "ExportKeyToVariable", "hHive:", hHive, "Key:", sKey, "Wow64:", bUseWow64, "SaveHeader:", SaveHeader
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function GetFilenameFromBinaryKey(lHive As ENUM_REG_HIVE, ByVal sKey$, Optional sValue$, Optional bUseWow64 As Boolean) As String
+Public Function GetFilenameFromBinaryKey(hHive As ENUM_REG_HIVE, ByVal sKey$, Optional sValue$, Optional bUseWow64 As Boolean) As String
     On Error GoTo ErrorHandler:
     
     Dim hKey&, sFile$, cbData&
     
-    Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
+    Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
     cbData = MAX_VALUENAME
-    If RegOpenKeyEx(lHive, StrPtr(sKey), 0, KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) = 0 Then
+    If RegOpenKeyEx(hHive, StrPtr(sKey), 0, KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) = ERROR_SUCCESS Then
         Dim uData() As Byte
         ReDim uData(MAX_VALUENAME - 1) As Byte
         If RegQueryValueEx(hKey, StrPtr(sValue), 0, ByVal 0&, ByVal VarPtr(uData(0)), cbData) = 0 Then
@@ -2065,32 +2048,32 @@ Public Function GetFilenameFromBinaryKey(lHive As ENUM_REG_HIVE, ByVal sKey$, Op
     GetFilenameFromBinaryKey = sFile
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "GetFilenameFromBinaryKey", lHive & "," & sKey, "sParam:", sValue
+    ErrorMsg Err, "GetFilenameFromBinaryKey", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Value:", sValue, "Wow64:", bUseWow64
     RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
 
 
-Public Function KeyExportToBinary(lHive As ENUM_REG_HIVE, ByVal KeyName$, destFile As String, Optional bUseWow64 As Boolean) As Boolean     'Save key to binary .hiv file
+Public Function KeyExportToBinary(hHive As ENUM_REG_HIVE, ByVal KeyName$, destFile As String, Optional bUseWow64 As Boolean) As Boolean     'Save key to binary .hiv file
     On Error GoTo ErrorHandler:
     Dim hKey         As Long
 
-    Call NormalizeKeyNameAndHiveHandle(lHive, KeyName)
+    Call NormalizeKeyNameAndHiveHandle(hHive, KeyName)
     
-    If ERROR_SUCCESS = RegOpenKeyEx(lHive, StrPtr(KeyName), 0&, KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) Then
+    If ERROR_SUCCESS = RegOpenKeyEx(hHive, StrPtr(KeyName), 0&, KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) Then
         
         If FileExists(destFile) Then DeleteFileWEx (StrPtr(destFile))
         
         'If SetCurrentProcessPrivileges("SeBackupPrivilege") Then
         ' (already defined in main form module)
-            KeyExportToBinary = ERROR_SUCCESS = RegSaveKeyEx(hKey, StrPtr(destFile), ByVal 0&, IIf(OSver.MajorMinor < 5.1, REG_STANDARD_FORMAT, REG_LATEST_FORMAT))
+            KeyExportToBinary = (ERROR_SUCCESS = RegSaveKeyEx(hKey, StrPtr(destFile), ByVal 0&, IIf(OSver.MajorMinor < 5.1, REG_STANDARD_FORMAT, REG_LATEST_FORMAT)))
         'End If
+        
+        RegCloseKey hKey
     End If
-    
-    If (hKey <> 0&) Then RegCloseKey hKey
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "KeyExportToBinary", lHive & "," & KeyName & "," & destFile
+    ErrorMsg Err, "KeyExportToBinary", "hHive:", hHive, "hKey:", hKey, "Key:", KeyName, "Wow64:", bUseWow64, "Target:", destFile
     If (hKey <> 0&) Then RegCloseKey hKey
     If inIDE Then Stop: Resume Next
 End Function
@@ -2156,7 +2139,7 @@ Public Function RenameKey(hHive As ENUM_REG_HIVE, sKey As String, sKeyNewName As
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "RenameKey", "sKeyOldPath=", sKey, "sKeyNewName=", sKeyNewName
+    ErrorMsg Err, "RenameKey", hHive, "hKey:", "Key:", sKey, "NewKey:", sKeyNewName, "Wow64:", bUseWow64
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -2257,11 +2240,11 @@ Public Function SetData(hHive As ENUM_REG_HIVE, ByVal KeyName As String, ValueNa
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "SetData"
+    ErrorMsg Err, "SetData", "hHive:", hHive, "Key:", KeyName, "Value:", ValueName, "Wow64:", bUseWow64
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Sub Jump(lHive As ENUM_REG_HIVE, ByVal sKey As String, Optional sValue As String, Optional bUseWow64 As Boolean)
+Public Sub Jump(hHive As ENUM_REG_HIVE, ByVal sKey As String, Optional sValue As String, Optional bUseWow64 As Boolean)
     On Error GoTo ErrorHandler:
     
     Dim i&, iProcId&, uSEI As SHELLEXECUTEINFO
@@ -2269,35 +2252,35 @@ Public Sub Jump(lHive As ENUM_REG_HIVE, ByVal sKey As String, Optional sValue As
     Dim bVista As Boolean, sPrefix As String, sFullKey As String
     Dim bNoValue As Boolean, nMSec As Single
     
-    Call NormalizeKeyNameAndHiveHandle(lHive, sKey)
+    Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
     'verify the key actually exists
-    Do Until KeyExists(lHive, sKey, bUseWow64) Or Len(sKey) = 0
+    Do Until KeyExists(hHive, sKey, bUseWow64) Or Len(sKey) = 0
         'move to parent key if target doesn't exist
         sKey = GetParentDir(sKey)
     Loop
     
     If Len(sValue) <> 0 Then
         'value exists ?
-        bNoValue = Not ValueExists(lHive, sKey, sValue, bUseWow64)
+        bNoValue = Not ValueExists(hHive, sKey, sValue, bUseWow64)
     End If
     
     'take account of the reg redirection
     If bUseWow64 Then
-        If Not ((lHive = HKCR) And StrBeginWith(sKey, "Wow6432Node\")) And _
+        If Not ((hHive = HKCR) And StrBeginWith(sKey, "Wow6432Node\")) And _
           Not StrBeginWith(sKey, "SOFTWARE\Classes\Wow6432Node") And _
           Not StrBeginWith(sKey, "SOFTWARE\Wow6432Node") Then
             If StrBeginWith(sKey, "SOFTWARE\Classes\") Or StrComp(sKey, "SOFTWARE\Classes", 1) = 0 Then
                 sKey = "SOFTWARE\Classes\Wow6432Node" & Mid$(sKey, Len("SOFTWARE\Classes\"))
             ElseIf StrBeginWith(sKey, "SOFTWARE\") Or StrComp(sKey, "SOFTWARE", 1) = 0 Then
                 sKey = "SOFTWARE\Wow6432Node" & Mid$(sKey, Len("SOFTWARE\"))
-            ElseIf lHive = HKCR Then
+            ElseIf hHive = HKCR Then
                 sKey = "Wow6432Node\" & sKey
             End If
         End If
     End If
     
-    sFullKey = GetHiveNameByHandle(lHive) & "\" & sKey
+    sFullKey = GetHiveNameByHandle(hHive) & "\" & sKey
     
     bVista = (OSver.MajorMinor = 6)
     If Not bVista Then
@@ -2500,7 +2483,7 @@ Public Sub Jump(lHive As ENUM_REG_HIVE, ByVal sKey As String, Optional sValue As
     
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "Jump", lHive, sKey, sValue, bUseWow64
+    ErrorMsg Err, "Jump", "hHive:", hHive, "Key:", sKey, "Value:", sValue, "Wow64:", bUseWow64
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -2511,6 +2494,8 @@ Public Function WrapNtOpenKeyEx( _
     retHandle As Long, _
     Optional dwAttributes As OBJ_ATTRIBUTES = OBJ_CASE_INSENSITIVE, _
     Optional bUseWow64 As Boolean) As Long
+    
+    On Error GoTo ErrorHandler:
     
     Dim bOS_32          As Boolean
     Dim OA              As OBJECT_ATTRIBUTES
@@ -2553,16 +2538,19 @@ Public Function WrapNtOpenKeyEx( _
         .SecurityQualityOfService = 0
     End With
     
-    '// TODO: ensure SeBackupPrivilege is granted
-    
-    WrapNtOpenKeyEx = NtOpenKeyEx(retHandle, dwAccess, OA, REG_OPTION_BACKUP_RESTORE) '// TODO: check it
-    'WrapNtOpenKeyEx = NtOpenKey(retHandle, dwAccess, OA)
+    '// require SeBackupPrivilege privilages
+    WrapNtOpenKeyEx = NtOpenKeyEx(retHandle, dwAccess, OA, REG_OPTION_BACKUP_RESTORE)
     
     If STATUS_SUCCESS <> lret Then
         Debug.Print "NtOpenKey(Ex) returns: 0x" & Hex$(lret)
     End If
     
     If OA.RootDirectory <> 0 Then RegCloseKey OA.RootDirectory
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "WrapNtOpenKeyEx", "hHive:", hHive, "hKey:", OA.RootDirectory, "Key:", sKey, "Wow64:", bUseWow64
+    If inIDE Then Stop: Resume Next
 End Function
 
 Public Function IsKeySymLink(hHive As ENUM_REG_HIVE, ByVal sKey As String, Optional out_KeyTarget As String) As Boolean
@@ -2674,10 +2662,10 @@ Public Function IsKeySymLink(hHive As ENUM_REG_HIVE, ByVal sKey As String, Optio
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "IsKeySymLink", hHive, sKey
+    ErrorMsg Err, "IsKeySymLink", "hHive:", hHive, "Key:", sKey
     If inIDE Then Stop: Resume Next
     If hKey1 <> 0 Then RegCloseKey hKey1
-    If hKeyLink <> 0 Then RegCloseKey hKeyLink
+    If hKeyLink <> 0 Then NtClose hKeyLink
     If OA.RootDirectory <> 0 Then RegCloseKey OA.RootDirectory
 End Function
 
@@ -2843,7 +2831,7 @@ Public Function GetKeyVirtualType( _
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "GetKeyVirtualType", hHive, sKey
+    ErrorMsg Err, "GetKeyVirtualType", "hHive:", hHive, "Key:", sKey
     If inIDE Then Stop: Resume Next
     If hKey1 <> 0 Then RegCloseKey hKey1
     If hKey2 <> 0 Then RegCloseKey hKey2
@@ -3011,7 +2999,7 @@ Public Function NtGetKeyVirtualType( _
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "NtGetKeyVirtualType", hHive, sKey
+    ErrorMsg Err, "NtGetKeyVirtualType", "hHive:", hHive, "Key:", sKey
     If inIDE Then Stop: Resume Next
     If hKey1 <> 0 Then NtClose hKey1
     If hKey2 <> 0 Then NtClose hKey2
@@ -3059,7 +3047,7 @@ Private Function RegGetKeyInfoNameEx(hKey As Long) As String
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "RegGetKeyInfoNameEx", hKey
+    ErrorMsg Err, "RegGetKeyInfoNameEx", "hKey:", hKey
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -3082,7 +3070,7 @@ Public Function IsKeyVolatile(hHive As ENUM_REG_HIVE, ByVal sKey As String, Opti
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "IsKeyVolatile", hKey
+    ErrorMsg Err, "IsKeyVolatile", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Wow64:", bUseWow64
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -3106,7 +3094,7 @@ Private Function RegGetKeyFlags(hKey As Long) As KEY_FLAGS_INFORMATION
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "RegGetKeyFlags", hKey
+    ErrorMsg Err, "RegGetKeyFlags", "hKey:", hKey
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -3143,7 +3131,7 @@ Public Function MapHiveToNtName(hHive As ENUM_REG_HIVE) As String
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "MapHiveToNtName", hHive
+    ErrorMsg Err, "MapHiveToNtName", "hHive:", hHive
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -3156,7 +3144,7 @@ Public Function MapNtNameToHive(sNtKey As String, out_Hive As ENUM_REG_HIVE, out
 
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "RegMapNtNameToHive", sNtKey
+    ErrorMsg Err, "RegMapNtNameToHive", "NtKey:", sNtKey
     If inIDE Then Stop: Resume Next
 End Function
 

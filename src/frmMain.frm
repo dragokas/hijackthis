@@ -2029,7 +2029,7 @@ Private JumpRegCache()  As FIX_REG_KEY
 Public Sub Test()
 
     'If you need something to test after program started and initialized all required variables, please use this sub.
-
+    
 End Sub
 
 
@@ -3382,15 +3382,10 @@ Function ParseVTResult(sLog As String, sFile As String, nDetects As Long, sURL A
     OpenW sLog, FOR_READ, hFile
     
     If hFile > 0 Then
-        sContent = String$(LOFW(hFile), vbNullChar)
-        GetW hFile, 1&, sContent
         CloseW hFile
+        sContent = ReadFileContents(sLog, FileGetTypeBOM(sLog) = CP_UTF16LE)
         
         If Len(sContent) < 2 Then Exit Function
-        
-        If HasBOM_UTF16(sContent) Then
-            sContent = StrConv(Mid$(sContent, 3), vbFromUnicode)
-        End If
         
         sContent = Replace(sContent, vbCr, vbNullString)
         aLine = Split(sContent, vbLf)
@@ -3525,15 +3520,10 @@ Sub ParseFilesXML(dRunFiles As clsTrickHashTable, sLog As String)
     OpenW sLog, FOR_READ, hFile
     
     If hFile > 0 Then
-        sContent = String$(LOFW(hFile), vbNullChar)
-        GetW hFile, 1&, sContent
         CloseW hFile
+        sContent = ReadFileContents(sLog, FileGetTypeBOM(sLog) = CP_UTF16LE)
         
         If Len(sContent) < 2 Then Exit Sub
-        
-        If HasBOM_UTF16(sContent) Then
-            sContent = StrConv(Mid$(sContent, 3), vbFromUnicode)
-        End If
         
         sContent = Replace(sContent, vbCr, vbNullString)
         aLine = Split(sContent, vbLf)
@@ -6667,7 +6657,6 @@ Private Sub TextBox_SetUnlimitSize(txt As TextBox, Optional iMaxSize As Long)
     If iMaxSize <> 0 Then iSize = iMaxSize + 2
     
     SendMessage txt.hwnd, EM_LIMITTEXT, iSize, ByVal 0&
-    SendMessage txt.hwnd, &H400 + 21, iSize, ByVal 0&
 End Sub
 
 Private Sub TextBox_SetMargin(txt As TextBox, left_margin As Long, right_margin As Long)

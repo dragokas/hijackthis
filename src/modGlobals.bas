@@ -1276,7 +1276,7 @@ Public Declare Function GlobalUnlock Lib "kernel32.dll" (ByVal hMem As Long) As 
 Public Declare Function GlobalSize Lib "kernel32.dll" (ByVal hMem As Long) As Long
 Public Declare Function GetMem4 Lib "msvbvm60.dll" (Src As Any, Dst As Any) As Long
 Public Declare Function GetMem2 Lib "msvbvm60.dll" (Src As Any, Dst As Any) As Long
-Public Declare Function PutMem4 Lib "msvbvm60.dll" (ByVal Addr As Long, ByVal NewVal As Long) As Long
+Public Declare Function PutMem4 Lib "msvbvm60.dll" (Addr As Any, ByVal NewVal As Long) As Long
 Public Declare Function LookupAccountSid Lib "Advapi32.dll" Alias "LookupAccountSidW" (ByVal lpSystemName As Long, ByVal lpSid As Long, ByVal lpName As Long, cchName As Long, ByVal lpReferencedDomainName As Long, cchReferencedDomainName As Long, eUse As Long) As Long
 Public Declare Function ConvertStringSidToSid Lib "Advapi32.dll" Alias "ConvertStringSidToSidW" (ByVal StringSid As Long, pSid As Long) As Long
 Public Declare Function IsBadReadPtr Lib "kernel32.dll" (ByVal lp As Long, ByVal ucb As Long) As Long

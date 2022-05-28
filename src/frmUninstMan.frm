@@ -332,8 +332,8 @@ Private Sub Form_Resize()
     cmdSave.Top = cmdRefresh.Top
     cmdSave.Left = lstUninstMan.Left + lstUninstMan.Width - cmdSave.Width
     cmdRefresh.Left = lstUninstMan.Left + lstUninstMan.Width \ 2 - cmdRefresh.Width \ 2
-    cmdUninstall.Left = Me.ScaleWidth - 5250 + 240
-    cmdDelete.Left = Me.ScaleWidth - 5250 + 2640
+    'cmdUninstall.Left = Me.ScaleWidth - 5250 + 240
+    'cmdDelete.Left = Me.ScaleWidth - 5250 + 2640
     cmdOpenCP.Left = cmdUninstall.Left
     'cmdOpenCP.Top = fraFilter.Top + fraFilter.Height + 155
 End Sub

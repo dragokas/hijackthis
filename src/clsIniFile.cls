@@ -86,7 +86,7 @@ End Sub
 
 Private Sub InitCodepage(id_Codepage As Long)
     On Error GoTo ErrorHandler:
-    If id_Codepage <> 1251 And id_Codepage <> 1200 And id_Codepage <> 0 Then
+    If id_Codepage <> 1251 And id_Codepage <> CP_UTF16LE And id_Codepage <> 0 Then
         MsgBoxW "Incorrect codepage!"
         Exit Sub
     End If
@@ -94,9 +94,9 @@ Private Sub InitCodepage(id_Codepage As Long)
     ml_Codepage = id_Codepage
     If ml_Codepage = 0 Then ' auto-detect
         CP = FileGetTypeBOM(ms_IniFile)
-        If CP = 1200 Then ml_Codepage = 1200
+        If CP = CP_UTF16LE Then ml_Codepage = CP_UTF16LE
     End If
-    mb_IsUnicode = IIf(ml_Codepage = 1200, True, False)
+    mb_IsUnicode = IIf(ml_Codepage = CP_UTF16LE, True, False)
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "clsIniFile_InitCodepage", id_Codepage
