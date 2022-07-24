@@ -83,14 +83,14 @@ Public Const strQuote As String = "quot"        '"
 Public Const strTagCDataBegin As String = "<![CDATA["
 Public Const strTagCDataEnd As String = "]]>"
 
-Public Function DecodeEscape(Data() As Byte, Start As Long) As String
+Public Function DecodeEscape(Data() As Integer, Start As Long) As String
     On Error GoTo Err_Trap
     
     Do      ' Until we find a semicolon
         Start = Start + 1
         If Data(Start) = ascSemiColon Then _
             Exit Do
-        DecodeEscape = DecodeEscape & Chr$(Data(Start))
+        DecodeEscape = DecodeEscape & ChrW$(Data(Start))
     Loop While Start <= UBound(Data)
     
     Select Case DecodeEscape
@@ -112,7 +112,7 @@ Public Function DecodeEscape(Data() As Byte, Start As Long) As String
         Case Else
             If Data(Start - Len(DecodeEscape)) = ascPound Then
                 ' Numeric Escape Sequence
-                If Data(Start - (Len(DecodeEscape) + 1)) = Chr$("x") Then
+                If Data(Start - (Len(DecodeEscape) + 1)) = AscW("x") Then
                     ' Hexadecimal
                     DecodeEscape = Right$(DecodeEscape, Len(DecodeEscape) - 2)
                 Else
@@ -145,7 +145,7 @@ End Function
 ' Parses a value contained within quotes
 ' Start identifies the begining quote and
 ' will identify the closing quote on exit
-Public Function ParseValue(Data() As Byte, Start As Long) As String
+Public Function ParseValue(Data() As Integer, Start As Long) As String
     Dim bEnd As Boolean
     Dim QuoteChar As Byte
     
@@ -160,7 +160,7 @@ Public Function ParseValue(Data() As Byte, Start As Long) As String
                 If Not bEnd Then Exit Do
             
             Case Is <> ascTagBegin, Is <> ascAmper
-                ParseValue = ParseValue & Chr$(Data(Start))
+                ParseValue = ParseValue & ChrW$(Data(Start))
                 
             Case ascAmper
                 ParseValue = ParseValue & DecodeEscape(Data(), Start)
@@ -190,7 +190,7 @@ End Function
 ' Start Identifies the First Character to Check
 ' Upon completion, Start should point to the first
 ' non-delimitng character after the Name Value is read
-Public Function ParseName(Data() As Byte, Start As Long) As String
+Public Function ParseName(Data() As Integer, Start As Long) As String
     Dim bEnd As Boolean
     
     On Error GoTo Err_Trap
@@ -225,7 +225,7 @@ Public Function ParseName(Data() As Byte, Start As Long) As String
                 If bEnd Then
                     Exit Do
                 Else
-                    ParseName = ParseName & Chr$(Data(Start))
+                    ParseName = ParseName & ChrW$(Data(Start))
                 End If
                 
             Case Else

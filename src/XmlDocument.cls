@@ -18,6 +18,20 @@ Attribute VB_Exposed = False
 
 Option Explicit
 
+Private Type SAFEARRAYBOUND
+    cElements   As Long
+    lLBound     As Long
+End Type
+
+Private Type SAFEARRAY1D
+    cDims       As Integer
+    fFeatures   As Integer
+    cbElements  As Long
+    cLocks      As Long
+    pvData      As Long
+    tBounds     As SAFEARRAYBOUND
+End Type
+
 Private m_RootElement As CXmlElement
 
 Public Sub AppendNode(ByVal Item As CXmlElement)
@@ -31,7 +45,6 @@ Public Function LoadFile(sFilePath As String) As Boolean
     Dim sFileData       As String
     
     hFile = FreeFile()
-    
     Open sFilePath For Binary Access Read As #hFile
     sFileData = String$(LOF(hFile), vbNullChar)
     Get #hFile, , sFileData
@@ -47,46 +60,49 @@ Err_Trap:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function LoadData(Data As Variant) As Boolean
+Public Function LoadData(Data As String) As Boolean
     On Error GoTo Err_Trap
     
-    Dim bData() As Byte
-    Dim pos As Long
+    Dim bData() As Integer
+    Dim isArrayAlloc As Boolean
     
-    ' Coerce Data into a Byte Array
-    Select Case VarType(Data)
-        Case vbString
-            If Len(Data) = 0 Then
-                'Err.Raise 13 & vbObjectError, "vbXml", "Unable to Parse Empty Data" ' Type Mismatch
-                Exit Function
-            End If
-            
-            If Len(Data) > 1 Then
-                'UTF16 ?
-                If HasBOM_UTF16(CStr(Data)) Then
-                    Data = StrConv(Mid$(Data, 3), vbFromUnicode)
-                End If
-            End If
-            
-            bData() = StrConv(Data & vbNullString, vbFromUnicode)
-            
-        Case (vbArray And vbByte)
-            bData() = Data
-            
-        Case Else
-            ErrorMsg Err, "XMLDocument.LoadData", "Type Mismatch"
+    ' Map Data to a Double-Byte Array
+
+    If Len(Data) = 0 Then
+        'Err.Raise 13 & vbObjectError, "vbXml", "Unable to Parse Empty Data" ' Type Mismatch
+        Exit Function
+    End If
     
-    End Select
+    'UTF16 ?
+    If HasBOM_UTF16(Data) Then
+        Data = StrConv(Mid$(Data, 3), vbFromUnicode)
+    End If
+    
+    Dim tArrDesc    As SAFEARRAY1D
+    With tArrDesc
+        .pvData = StrPtr(Data)
+        .cDims = 1
+        .cbElements = 2
+        .tBounds.cElements = Len(Data)
+    End With
+    
+    PutMem4 ByVal ArrPtr(bData), VarPtr(tArrDesc)
+    isArrayAlloc = True
     
     Class_Initialize
     Call m_RootElement.Parse(bData())
     
     LoadData = True
     
+CleanUp:
+    
+    PutMem4 ByVal ArrPtr(bData), ByVal 0&
+    
     Exit Function
 Err_Trap:
     ErrorMsg Err, "XMLDocument.LoadData"
     If inIDE Then Stop: Resume Next
+    If isArrayAlloc Then GoTo CleanUp
 End Function
 
 Public Property Get NewEnum() As IUnknown

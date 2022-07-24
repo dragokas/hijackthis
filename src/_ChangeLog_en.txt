@@ -11,7 +11,14 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
-[2.10.0.18]
+[2.10.0.19] - Jul 24, 2022
+ - Whitelist services is updated.
+ - Some adjustment in O4 to show "(Microsoft)" postfix for more cases.
+ - O22 - Tasks_Migrated: Added detection of migrated tasks in Windows 11.
+ - O22 - Tasks: Added detection of tasks in SysWow64.
+ - O22 - Tasks: fixed incorrect decoding of non-English characters by xml parser.
+
+[2.10.0.18] - May 28, 2022
  - Returned missing buttons in Uninstall Manager ^^
  - Fixed broken functionality of 01 - Hosts (thanks to Boxersteavee for report).
  - Improved Hosts file read speed.
@@ -1621,4 +1628,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                                                                                
+                                                                                   

@@ -139,34 +139,34 @@ Err_Trap:
     If inIDE Then Stop: Resume Next
 End Property
 
-Function InByteArray(Start As Long, bArray() As Byte, stri As String, Optional CompareMode As VbCompareMethod, Optional EndPos As Variant) As Long
+Function InIntegerArray(Start As Long, bArray() As Integer, stri As String, Optional CompareMode As VbCompareMethod, Optional EndPos As Variant) As Long
     On Error GoTo Err_Trap
     Dim i As Long
     Dim pos As Long
     If IsMissing(EndPos) Then EndPos = UBound(bArray)
-    InByteArray = -1
+    InIntegerArray = -1
     pos = Start
     Do
         If pos + Len(stri) - 1 > UBound(bArray) Then Exit Do
         For i = 1 To Len(stri)
             If CompareMode = vbTextCompare Then
-                If 0 <> StrComp(Chr$(bArray(pos + i - 1)), Mid$(stri, i, 1), vbTextCompare) Then Exit For
+                If 0 <> StrComp(ChrW$(bArray(pos + i - 1)), Mid$(stri, i, 1), vbTextCompare) Then Exit For
             Else
-                If bArray(pos + i - 1) <> Asc(Mid$(stri, i, 1)) Then Exit For
+                If bArray(pos + i - 1) <> AscW(Mid$(stri, i, 1)) Then Exit For
             End If
-            If i = Len(stri) Then InByteArray = pos: Exit Do
+            If i = Len(stri) Then InIntegerArray = pos: Exit Do
         Next
         pos = pos + 1
     Loop
     Exit Function
 Err_Trap:
-    ErrorMsg Err, "CXmlElement.InByteArray"
+    ErrorMsg Err, "CXmlElement.InIntegerArray"
     If inIDE Then Stop: Resume Next
 End Function
 
-Friend Sub Parse(Data() As Byte, Optional Start As Long)
+Friend Sub Parse(Data() As Integer, Optional Start As Long)
     On Error GoTo Err_Trap
-
+    
     Dim lPos As Long, bStart As Boolean
     Dim oTag As CXmlTag
     Dim oChild As CXmlElement
@@ -176,16 +176,16 @@ Friend Sub Parse(Data() As Byte, Optional Start As Long)
     If Start = 0 Then Start = LBound(Data)
     
     'Skip header
-    If -1 <> InByteArray(0, Data, "<?xml", vbTextCompare) Then
-        lPos = InByteArray(5, Data, "?>")
+    lPos = InIntegerArray(Start, Data, "<?xml", vbTextCompare)
+    If -1 <> lPos Then
+        lPos = InIntegerArray(lPos + 5, Data, "?>")
         If -1 <> lPos Then
-            lPos = InByteArray(lPos + 2, Data, vbLf)
-            If -1 <> lPos Then
-                'Start = lPos + 1
-                For i = 0 To UBound(Data) - 1 - lPos
-                    Data(i) = Data(lPos + 1 + i)
-                Next
-                ReDim Preserve Data(UBound(Data) - 1 - lPos)
+            Dim oelPos As Long
+            oelPos = InIntegerArray(lPos + 2, Data, vbLf)
+            If -1 <> oelPos Then
+                Start = oelPos + 1
+            Else
+                Start = lPos + 2
             End If
         End If
     End If
@@ -212,7 +212,7 @@ Friend Sub Parse(Data() As Byte, Optional Start As Long)
                     Do
                         lPos = Len(Body)
                         If lPos = 0 Then Exit Do
-                        Select Case Asc(Right$(Body, 1))
+                        Select Case AscW(Right$(Body, 1))
                             Case ascSpace, ascTab, ascCr, ascLf
                                 Body = Left$(Body, lPos - 1)
                         End Select
@@ -263,12 +263,13 @@ Friend Sub Parse(Data() As Byte, Optional Start As Long)
                 
             Case Else
                 ' Everything Else is CharData
-                If bStart Then Body = Body & Chr$(Data(Start))
+                If bStart Then Body = Body & ChrW$(Data(Start))
 
         End Select
         Start = Start + 1
         'DoEvents
     Loop
+    
 Exit Sub
 
 Err_Trap:
@@ -285,14 +286,14 @@ Err_Trap:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Private Function isCDataMarkupBegin(Data() As Byte, Start As Long) As Boolean
-    isCDataMarkupBegin = (Start = InByteArray(Start, Data, strTagCDataBegin, vbBinaryCompare, Start))
+Private Function isCDataMarkupBegin(Data() As Integer, Start As Long) As Boolean
+    isCDataMarkupBegin = (Start = InIntegerArray(Start, Data, strTagCDataBegin, vbBinaryCompare, Start))
 End Function
-Private Function isCDataMarkupEnd(Data() As Byte, Start As Long) As Boolean
-    isCDataMarkupEnd = (Start = InByteArray(Start, Data, strTagCDataEnd, vbBinaryCompare, Start))
+Private Function isCDataMarkupEnd(Data() As Integer, Start As Long) As Boolean
+    isCDataMarkupEnd = (Start = InIntegerArray(Start, Data, strTagCDataEnd, vbBinaryCompare, Start))
 End Function
 
-Private Function DecodeCData(Data() As Byte, Start As Long) As String
+Private Function DecodeCData(Data() As Integer, Start As Long) As String
     On Error GoTo Err_Trap
     
     Start = Start + Len(strTagCDataBegin)
@@ -305,7 +306,7 @@ Private Function DecodeCData(Data() As Byte, Start As Long) As String
             End If
         End If
         
-        DecodeCData = DecodeCData & Chr$(Data(Start))
+        DecodeCData = DecodeCData & ChrW$(Data(Start))
         Start = Start + 1
     Loop
     

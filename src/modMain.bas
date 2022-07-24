@@ -4250,12 +4250,13 @@ Sub CheckO4_RegRuns()
                 bMicrosoft = False
                 If InStr(1, sFile, "OneDrive", 1) <> 0 Then bMicrosoft = IsMicrosoftFile(sFile)
                 
-                sHit = sHit & ConcatFileArg(sFile, sArgs) & IIf(bMicrosoft, " (Microsoft)", vbNullString) & sUser
                 bSafe = False
                 
                 If Not bIgnoreAllWhitelists And bHideMicrosoft Then
                     
                     '//TODO: narrow down to services' SID only: S-1-5-19 + S-1-5-20 + 'UpdatusUser' (NVIDIA)
+                    
+                    'If InStr(1, sFile, "SecurityHealth", 1) <> 0 Then Stop
                     
                     'Note: For services only
                     If StrComp(sFile, PF_64 & "\Windows Sidebar\Sidebar.exe", 1) = 0 And sArgs = "/autoRun" Then
@@ -4295,6 +4296,8 @@ Sub CheckO4_RegRuns()
                     End If
 
                 End If
+                
+                sHit = sHit & ConcatFileArg(sFile, sArgs) & IIf(bMicrosoft Or bSafe, " (Microsoft)", vbNullString) & sUser
                 
                 If (Not bSafe) Or (Not bHideMicrosoft) Then
                 
@@ -11361,6 +11364,7 @@ Public Function IsWinServiceFileName(sFilePath As String, Optional sArgument As 
             .Add "<PF64>\Microsoft Office\Office12\GrooveAuditService.exe", 0&
             .Add "<PF64>\Microsoft Office\Office14\GROOVE.EXE", 0&
             .Add "<PF64>\Microsoft SQL Server\90\Shared\sqlwriter.exe", 0&
+            .Add "<PF64>\Microsoft Update Health Tools\uhssvc.exe", 0&
             .Add "<PF64>\rempl\sedsvc.exe", 0&
             .Add "<PF64>\Windows Live\Mesh\wlcrasvc.exe", 0&
             .Add "<PF64>\Windows Media Player\wmpnetwk.exe", 0&

@@ -25,7 +25,7 @@ Friend Function Serialize() As String
     Serialize = KeyWord & "='" & Value & "'"
 End Function
 
-Friend Sub Parse(Data() As Byte, Start As Long)
+Friend Sub Parse(Data() As Integer, Start As Long)
     On Error GoTo Err_Trap
     
     Do

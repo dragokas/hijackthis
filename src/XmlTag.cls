@@ -97,7 +97,7 @@ End Property
 
 ' Start is the position of the Tag Start Element
 ' Upon Return it should be positioned on the end tag on the Tag Parsed
-Friend Sub Parse(Data() As Byte, Start As Long)
+Friend Sub Parse(Data() As Integer, Start As Long)
     On Error GoTo Err_Trap
     
     Dim oAttrib As CXmlAttribute
