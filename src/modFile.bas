@@ -735,7 +735,7 @@ Public Function LOFW(hFile As Long) As Currency
 ErrorHandler:
 End Function
 
-Public Function PrintW(hFile As Long, sStr As String, Optional bUnicode As Boolean) As Boolean
+Public Function PrintLineW(hFile As Long, sStr As String, Optional bUnicode As Boolean) As Boolean
     Dim bSuccess As Boolean
     If hFile > 0 Then
         If Len(sStr) <> 0 Then

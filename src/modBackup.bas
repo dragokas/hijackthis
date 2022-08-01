@@ -36,6 +36,7 @@ End Enum
 
 Public Enum ENUM_CUSTOM_RESTORE_VERBS 'values should coerce with ENUM_RESTORE_VERBS !
     BACKUP_BITS_JOB = 512
+    BACKUP_APPLOCKER = 1024
 End Enum
 
 Private Enum ENUM_RESTORE_VERBS 'WARNING: re-enumeration of values is forbidden !!!
@@ -49,6 +50,7 @@ Private Enum ENUM_RESTORE_VERBS 'WARNING: re-enumeration of values is forbidden 
     VERB_WMI_CONSUMER = 128
     VERB_RESTART_SYSTEM = 256
     VERB_BITS_JOB = 512
+    VERB_APPLOCKER = 1024
 End Enum
 
 Private Enum ENUM_RESTORE_OBJECT_TYPES 'WARNING: re-enumeration of values is forbidden !!!
@@ -380,6 +382,10 @@ Public Function MakeBackup(result As SCAN_RESULT) As Boolean
         If .CureType And PROCESS_BASED Then
             'nothing
         End If
+        
+        If .CureType And COMMANDLINE_BASED Then
+            'nothing
+        End If
     
         If .CureType And CUSTOM_BASED Then
             If AryPtr(.Custom) Then
@@ -391,6 +397,9 @@ Public Function MakeBackup(result As SCAN_RESULT) As Boolean
                         End If
                         If (.ActionType And CUSTOM_ACTION_BITS) Then
                             BackupCustom result, result.Custom(i), BACKUP_BITS_JOB
+                        End If
+                        If (.ActionType And CUSTOM_ACTION_APPLOCKER) Then
+                            BackupCustom result, result.Custom(i), BACKUP_APPLOCKER
                         End If
                     End With
                 Next
@@ -2360,12 +2369,16 @@ Public Function RestoreBackup(sItem As String) As Boolean
                 If RestoreBitsJob(sName, sURL, sTarget, sCommandLine) Then
                     RestoreBackup = True
                 End If
+                
+            ElseIf Cmd.verb = VERB_APPLOCKER Then
+                EnableApplocker
+                RestoreBackup = True
             Else
                 MsgBoxW "Error! RestoreBackup: unknown verb: " & Cmd.verb, vbExclamation
                 RestoreBackup = False
             End If
         Case Else
-            MsgBoxW "Oh! I forgot to implement this recovery type: " & Cmd.RecovType & ". Remind me about this.", vbExclamation
+            MsgBoxW "Oh! I forgot to implement this recovery type: " & Cmd.RecovType & ". Remind me about it.", vbExclamation
             RestoreBackup = False
         End Select
         
@@ -2571,6 +2584,8 @@ Private Function MapRecoveryVerbToString(RecovVerb As ENUM_RESTORE_VERBS) As Str
         sRet = "VERB_RESTART_SYSTEM"
     ElseIf RecovVerb And VERB_BITS_JOB Then
         sRet = "VERB_BITS_JOB"
+    ElseIf RecovVerb And VERB_APPLOCKER Then
+        sRet = "VERB_APPLOCKER"
     Else
         MsgBoxW "Error! Unknown VerbType mapping! - " & RecovVerb, vbExclamation
     End If
@@ -2598,6 +2613,8 @@ Private Function MapStringToRecoveryVerb(sRecovVerb As String) As ENUM_RESTORE_V
         ret = VERB_RESTART_SYSTEM
     ElseIf sRecovVerb = "VERB_BITS_JOB" Then
         ret = VERB_BITS_JOB
+    ElseIf sRecovVerb = "VERB_APPLOCKER" Then
+        ret = VERB_APPLOCKER
     Else
         MsgBoxW "Error! Unknown VerbType mapping! - " & sRecovVerb, vbExclamation
     End If

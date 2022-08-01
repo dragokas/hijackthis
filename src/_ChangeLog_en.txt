@@ -11,6 +11,12 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[2.10.0.20] - Aug 02, 2022
+ - Several AppLocker fixes are done (thanks to regist for report, analytics and support):
+ - O7 - AppLocker: Added detection of "ManagedInstaller" rule.
+ - O7 - AppLocker: Fixed hash-based rule displayed one record instead of multiple.
+ - O7 - Applocker: Improved "Fix all" procedure.
+
 [2.10.0.19] - Jul 24, 2022
  - Whitelist services is updated.
  - Some adjustment in O4 to show "(Microsoft)" postfix for more cases.
@@ -23,7 +29,7 @@ Version history:
  - Fixed broken functionality of 01 - Hosts (thanks to Boxersteavee for report).
  - Improved Hosts file read speed.
  - Improved registry export speed.
- - [Backup] CRC32 calculation speed and reliability are impoved.
+ - [Backup] CRC32 calculation speed and reliability are improved.
  
 [2.10.0.17] - Apr 07, 2022
  - Added new Microsoft certificates.

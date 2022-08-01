@@ -155,8 +155,8 @@ Public Enum ENUM_CURE_BASED
     PROCESS_BASED = 8       ' if need to kill/freeze a process
     SERVICE_BASED = 16      ' if need to delete/restore service .ServiceName
     CUSTOM_BASED = 32       ' individual rule, based on .Custom() settings
+    COMMANDLINE_BASED = 64  ' if need to run CMD command in .CommandLine()
 End Enum
-
 #If False Then
     Dim FILE_BASED, REGISTRY_BASED, INI_BASED, PROCESS_BASED, SERVICE_BASED, CUSTOM_BASED
 #End If
@@ -223,6 +223,9 @@ Public Enum ENUM_SERVICE_ACTION_BASED
     RESTORE_SERVICE = 2 ' not yet implemented
     DISABLE_SERVICE = 4
     ENABLE_SERVICE = 8
+    MANUAL_SERVICE = 16
+    STOP_SERVICE = 32
+    START_SERVICE = 64
     USE_FEATURE_DISABLE_SERVICE = &H10000
 End Enum
 #If False Then
@@ -234,9 +237,17 @@ Public Enum ENUM_CUSTOM_ACTION_BASED
     CUSTOM_ACTION_O25 = 1
     CUSTOM_ACTION_SPECIFIC = 2
     CUSTOM_ACTION_BITS = 4
+    CUSTOM_ACTION_APPLOCKER = 8
 End Enum
 #If False Then
-    Dim CUSTOM_ACTION_O25, CUSTOM_ACTION_SPECIFIC, CUSTOM_ACTION_BITS
+    Dim CUSTOM_ACTION_O25, CUSTOM_ACTION_SPECIFIC, CUSTOM_ACTION_BITS, CUSTOM_ACTION_APPLOCKER
+#End If
+
+Public Enum ENUM_COMMANDLINE_ACTION_BASED
+    COMMANDLINE_RUN = 1
+End Enum
+#If False Then
+    COMMANDLINE_RUN
 #End If
 
 Public Type FIX_REG_KEY
@@ -282,6 +293,13 @@ Public Type FIX_CUSTOM
     URL             As String
     Target          As String
     CommandLine     As String
+End Type
+
+Public Type FIX_COMMANDLINE
+    ActionType      As ENUM_COMMANDLINE_ACTION_BASED
+    Executable      As String
+    Arguments       As String
+    Style           As SHOWWINDOW_FLAGS
 End Type
 
 Public Enum JUMP_ENTRY_TYPE
@@ -366,6 +384,7 @@ Public Type SCAN_RESULT
     Process()       As FIX_PROCESS
     Service()       As FIX_SERVICE
     Custom()        As FIX_CUSTOM
+    CommandLine()   As FIX_COMMANDLINE
     Jump()          As JUMP_ENTRY
     CureType        As ENUM_CURE_BASED
     O25             As O25_ENTRY
@@ -439,6 +458,12 @@ Private Enum APPLOCKER_RULE_TYPE
     APPLOCKER_RULE_FILE_HASH
     APPLOCKER_RULE_FILE_PUBLISHER
 End Enum
+
+Private Type APPLOCKER_HASH_RULE_DATA
+    FileName As String
+    FileLength As String
+    hash As String
+End Type
 
 Private Declare Sub OutputDebugStringA Lib "kernel32.dll" (ByVal lpOutputString As String)
 
@@ -699,6 +724,23 @@ Private Sub ConcatScanService(Dst() As FIX_SERVICE, Src() As FIX_SERVICE)
     End If
 End Sub
 
+Private Sub ConcatScanCommandline(Dst() As FIX_COMMANDLINE, Src() As FIX_COMMANDLINE)
+    
+    Dim i As Long
+    If AryPtr(Src) Then
+        If AryPtr(Dst) Then
+            For i = 0 To UBound(Src)
+                If Not InArrayResultCommandline(Dst, Src(i)) Then
+                    ReDim Preserve Dst(UBound(Dst) + 1)
+                    Dst(UBound(Dst)) = Src(i)
+                End If
+            Next
+        Else
+            Dst = Src
+        End If
+    End If
+End Sub
+
 Private Sub ConcatScanCustom(Dst() As FIX_CUSTOM, Src() As FIX_CUSTOM)
     
     Dim i As Long
@@ -756,6 +798,7 @@ Public Sub ConcatScanResults(Dst As SCAN_RESULT, Src As SCAN_RESULT)
     If Src.CureType And PROCESS_BASED Then ConcatScanProcess Dst.Process, Src.Process
     If Src.CureType And SERVICE_BASED Then ConcatScanService Dst.Service, Src.Service
     If Src.CureType And CUSTOM_BASED Then ConcatScanCustom Dst.Custom, Src.Custom
+    If Src.CureType And COMMANDLINE_BASED Then ConcatScanCommandline Dst.CommandLine, Src.CommandLine
     If AryPtr(Src.Jump) Then ConcatJumpArray Dst.Jump, Src.Jump
     
     With Dst
@@ -876,6 +919,26 @@ Public Function InArrayResultService(ServiceArray() As FIX_SERVICE, Item As FIX_
                                         Exit For
                                     End If
                                 End If
+                            End If
+                        End If
+                    End If
+                End If
+            End With
+        Next
+    End If
+End Function
+
+Public Function InArrayResultCommandline(CommandlineArray() As FIX_COMMANDLINE, Item As FIX_COMMANDLINE) As Boolean
+    Dim i As Long
+    If AryPtr(CommandlineArray) Then
+        For i = 0 To UBound(CommandlineArray)
+            With CommandlineArray(i)
+                If Item.ActionType = .ActionType Then
+                    If Item.Executable = .Executable Then
+                        If Item.Arguments = .Arguments Then
+                            If Item.Style = .Style Then
+                                InArrayResultCommandline = True
+                                Exit For
                             End If
                         End If
                     End If
@@ -7235,7 +7298,8 @@ Public Sub CheckPolicies()
    
             sData = Reg.GetData(HE.Hive, HE.Key, aValue(i), HE.Redirected)
             
-            sHit = "O7 - Policy: " & HE.HiveNameAndSID & "\..\Policies\Explorer\DisallowRun: " & "[" & aValue(i) & "] = " & sData & IIf(iEnabled = 0, " (disabled)", vbNullString)
+            sHit = "O7 - Policy: " & HE.HiveNameAndSID & "\..\Policies\Explorer\DisallowRun: " & IIf(Len(aValue(i)) = 1, " ", vbNullString) & _
+                "[" & aValue(i) & "] = " & sData & IIf(iEnabled = 0, " (disabled)", vbNullString)
             
             If Not IsOnIgnoreList(sHit) Then
                 With result
@@ -7265,6 +7329,8 @@ Public Sub CheckAppLocker()
     ' secpol.msc => Application Control Policies
     ' http://www.oszone.net/11303/AppLocker
     ' https://oddvar.moe/2019/02/01/bypassing-applocker-as-an-admin/
+    ' https://docs.microsoft.com/en-US/windows/security/threat-protection/windows-defender-application-control/applocker/delete-an-applocker-rule
+    ' https://docs.microsoft.com/ru-ru/windows/security/threat-protection/windows-defender-application-control/configure-authorized-apps-deployed-with-a-managed-installer
     '
     ' Affected keys:
     ' HKCU\Software\Microsoft\Windows\CurrentVersion\Group Policy Objects\{GUID}Machine\Software\Policies\Microsoft\Windows\SrpV2
@@ -7275,6 +7341,8 @@ Public Sub CheckAppLocker()
     '
     ' Affected files:
     ' c:\windows\system32\applocker\*
+    ' C:\windows\system32\GroupPolicy\*
+    ' c:\users\public\ntuser.pol
     ' - AppCache.dat
     ' - ???
     '
@@ -7294,6 +7362,7 @@ Public Sub CheckAppLocker()
     ' - "Script"
     ' - "Dll"
     ' - "Appx" (Windows 10)
+    ' - "ManagedInstaller" (Windows 10)
     '
     ' Values (mode):
     ' 0 - audit only
@@ -7360,7 +7429,7 @@ Public Sub CheckAppLocker()
     
     For i = 1 To Reg.EnumSubKeysToArray(HKCU, "Software\Microsoft\Windows\CurrentVersion\Group Policy Objects", aGpoKeys(), bRecursively:=False, bEraseArray:=True)
         
-        For Each vType In Array("Exe", "Msi", "Script", "Dll", "Appx")
+        For Each vType In Array("Exe", "Msi", "Script", "Dll", "Appx", "ManagedInstaller")
             
             sKey = "Software\Microsoft\Windows\CurrentVersion\Group Policy Objects\" & _
                 aGpoKeys(i) & "\Software\Policies\Microsoft\Windows\SrpV2\" & vType
@@ -7380,7 +7449,7 @@ Public Sub CheckAppLocker()
     
     'HKLM\SOFTWARE\Policies\Microsoft\Windows\SrpV2\{type}\{CLSID}
     
-    For Each vType In Array("Exe", "Msi", "Script", "Dll", "Appx")
+    For Each vType In Array("Exe", "Msi", "Script", "Dll", "Appx", "ManagedInstaller")
         
         sKey = "SOFTWARE\Policies\Microsoft\Windows\SrpV2\" & vType
         
@@ -7412,13 +7481,14 @@ Public Sub CheckAppLocker()
     Next
     
     Dim sRuleId         As String
-    Dim sFilename       As String
     Dim sFilePath       As String
     Dim sPublisherName  As String
+    Dim sHitTemplate    As String
     Dim bDeny           As Boolean
     Dim bException      As Boolean
-    Dim sHash           As String
+    Dim numEntries      As Long
     Dim eRuleType       As APPLOCKER_RULE_TYPE
+    Dim tHashRuleData() As APPLOCKER_HASH_RULE_DATA
     
     Dim xmlDoc          As XMLDocument
     Dim xmlElement      As CXmlElement
@@ -7431,7 +7501,6 @@ Public Sub CheckAppLocker()
         
         bDeny = False
         eRuleType = APPLOCKER_RULE_UNKNOWN
-        sFilename = vbNullString
         sFilePath = vbNullString
         sPublisherName = vbNullString
         
@@ -7485,6 +7554,12 @@ Public Sub CheckAppLocker()
                     
                     eRuleType = APPLOCKER_RULE_FILE_HASH
                     
+                    If xmlElement.Node(j).NodeCount <> 0 Then
+                        ReDim tHashRuleData(xmlElement.Node(j).NodeCount - 1)
+                    Else
+                        ReDim tHashRuleData(0)
+                    End If
+                    
                     For m = 1 To xmlElement.Node(j).NodeCount
                         
                         Set xmlSubNode = xmlElement.Node(j).Node(m)
@@ -7502,7 +7577,10 @@ Public Sub CheckAppLocker()
                                 ' - SourceFileLength
                                 'Debug.Print "key = " & xmlAttribute.KeyWord & " - " & xmlAttribute.Value
                                 
-                                If xmlAttribute.KeyWord = "SourceFileName" Then sFilename = xmlAttribute.Value
+                                If xmlAttribute.KeyWord = "Data" Then tHashRuleData(m - 1).hash = xmlAttribute.Value
+                                If xmlAttribute.KeyWord = "SourceFileName" Then tHashRuleData(m - 1).FileName = xmlAttribute.Value
+                                If xmlAttribute.KeyWord = "SourceFileLength" Then tHashRuleData(m - 1).FileLength = xmlAttribute.Value
+                                
                             Next
                             
                         End If
@@ -7538,65 +7616,80 @@ Public Sub CheckAppLocker()
         sHit = "O7 - AppLocker: " & IIf(bDeny, "(Deny) ", "(Allow) ")
         
         Select Case LCase$(GetFileName(GetParentDir(sKey)))
-            Case "exe":     sHit = sHit & "[Executable] "
-            Case "msi":     sHit = sHit & "[Installer] "
-            Case "script":  sHit = sHit & "[Script] "
-            Case "dll":     sHit = sHit & "[Library] "
-            Case "appx":    sHit = sHit & "[AppX] "
+            Case "exe":                 sHit = sHit & "[Executable] "
+            Case "msi":                 sHit = sHit & "[Installer] "
+            Case "script":              sHit = sHit & "[Script] "
+            Case "dll":                 sHit = sHit & "[Library] "
+            Case "appx":                sHit = sHit & "[AppX] "
+            Case "managedinstaller":    sHit = sHit & "[ManagedInstaller] "
         End Select
         
-        Select Case eRuleType
-            Case APPLOCKER_RULE_FILE_PATH:      sHit = sHit & "[Path] " & sFilePath
-            Case APPLOCKER_RULE_FILE_HASH:      sHit = sHit & "[Hash] " & sHash & " - " & sFilename
-            Case APPLOCKER_RULE_FILE_PUBLISHER: sHit = sHit & "[Publisher] " & sPublisherName
-            Case APPLOCKER_RULE_UNKNOWN:        sHit = sHit & "[Unknown] " & sRuleId
-        End Select
-        
-        If bException Then sHit = sHit & " (Exceptions present)"
-        
-        'Debug.Print sKey
-        
-        If Not IsOnIgnoreList(sHit) Then
-            With result
-                .Section = "O7"
-                .HitLineW = sHit
-                
-                AddRegToFix .Reg, REMOVE_KEY, 0, sKey
-                
-                If StrBeginWith(sKey, "HKCU") Then 'remove the mirror
-                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Policies\Microsoft\Windows\SrpV2\Exe\" & sRuleId
-                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Policies\Microsoft\Windows\SrpV2\Msi\" & sRuleId
-                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Policies\Microsoft\Windows\SrpV2\Script\" & sRuleId
-                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Policies\Microsoft\Windows\SrpV2\Dll\" & sRuleId
-                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Policies\Microsoft\Windows\SrpV2\Appx\" & sRuleId
-                End If
-                
-                AddRegToFix .Reg, REMOVE_KEY, HKLM, "SYSTEM\CurrentControlSet\Control\Srp\Gp\Exe\" & sRuleId
-                AddRegToFix .Reg, REMOVE_KEY, HKLM, "SYSTEM\CurrentControlSet\Control\Srp\Gp\Msi\" & sRuleId
-                AddRegToFix .Reg, REMOVE_KEY, HKLM, "SYSTEM\CurrentControlSet\Control\Srp\Gp\Script\" & sRuleId
-                AddRegToFix .Reg, REMOVE_KEY, HKLM, "SYSTEM\CurrentControlSet\Control\Srp\Gp\Dll\" & sRuleId
-                AddRegToFix .Reg, REMOVE_KEY, HKLM, "SYSTEM\CurrentControlSet\Control\Srp\Gp\Appx\" & sRuleId
-                
-                If AryPtr(aFiles) Then 'files in %SystemRoot%\System32\AppLocker\*
-                    For k = 0 To UBound(aFiles)
-                        AddFileToFix .File, REMOVE_FILE, aFiles(k)
-                    Next
-                End If
-                
-                AddFileToFix .File, REMOVE_FILE, BuildPath(sWinSysDir, "GroupPolicy\Machine\Registry.pol")
-                AddFileToFix .File, REMOVE_FILE, BuildPath(AllUsersProfile, "ntuser.pol")
-                
-                .CureType = REGISTRY_BASED Or FILE_BASED
-            End With
-            ConcatScanResults resultAll, result
-            AddToScanResults result
+        If eRuleType = APPLOCKER_RULE_FILE_HASH Then
+            numEntries = UBound(tHashRuleData) + 1
+        Else
+            numEntries = 1
         End If
+        
+        sHitTemplate = sHit
+        
+        For m = 0 To numEntries - 1
+        
+            sHit = sHitTemplate
+        
+            Select Case eRuleType
+                Case APPLOCKER_RULE_FILE_PATH:      sHit = sHit & "[Path] " & sFilePath
+                Case APPLOCKER_RULE_FILE_HASH:      sHit = sHit & "[Hash] " & tHashRuleData(m).FileName & " (Size: " & tHashRuleData(m).FileLength & ") - " & tHashRuleData(m).hash
+                Case APPLOCKER_RULE_FILE_PUBLISHER: sHit = sHit & "[Publisher] " & sPublisherName
+                Case APPLOCKER_RULE_UNKNOWN:        sHit = sHit & "[Unknown] " & sRuleId
+            End Select
+            
+            If bException Then sHit = sHit & " (Exceptions present)"
+            
+            If Not IsOnIgnoreList(sHit) Then
+                With result
+                    .Section = "O7"
+                    .HitLineW = sHit
+                    
+                    AddRegToFix .Reg, REMOVE_KEY, 0, sKey
+                    
+                    If StrBeginWith(sKey, "HKCU") Then 'remove the mirror
+                        AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Policies\Microsoft\Windows\SrpV2\Exe\" & sRuleId
+                        AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Policies\Microsoft\Windows\SrpV2\Msi\" & sRuleId
+                        AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Policies\Microsoft\Windows\SrpV2\Script\" & sRuleId
+                        AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Policies\Microsoft\Windows\SrpV2\Dll\" & sRuleId
+                        AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Policies\Microsoft\Windows\SrpV2\Appx\" & sRuleId
+                    End If
+                    
+                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SYSTEM\CurrentControlSet\Control\Srp\Gp\Exe\" & sRuleId
+                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SYSTEM\CurrentControlSet\Control\Srp\Gp\Msi\" & sRuleId
+                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SYSTEM\CurrentControlSet\Control\Srp\Gp\Script\" & sRuleId
+                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SYSTEM\CurrentControlSet\Control\Srp\Gp\Dll\" & sRuleId
+                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SYSTEM\CurrentControlSet\Control\Srp\Gp\Appx\" & sRuleId
+                    
+                    If AryPtr(aFiles) Then 'files in %SystemRoot%\System32\AppLocker\*
+                        For k = 0 To UBound(aFiles)
+                            AddFileToFix .File, REMOVE_FILE, aFiles(k)
+                        Next
+                    End If
+                    
+                    AddFileToFix .File, REMOVE_FILE, BuildPath(sWinSysDir, "GroupPolicy\Machine\Registry.pol")
+                    AddFileToFix .File, REMOVE_FILE, BuildPath(AllUsersProfile, "ntuser.pol")
+                    
+                    .CureType = REGISTRY_BASED Or FILE_BASED
+                End With
+                ConcatScanResults resultAll, result
+                AddToScanResults result
+            End If
+        Next
     Next
     
     If resultAll.CureType <> 0 Then
         resultAll.HitLineW = "O7 - AppLocker: Fix all (including policies)"
         resultAll.FixAll = True
+        resultAll.CureType = resultAll.CureType Or CUSTOM_BASED
         AddRegToFix resultAll.Reg, REMOVE_KEY, HKLM, "SOFTWARE\Policies\Microsoft\Windows\SrpV2"
+        AddRegToFix resultAll.Reg, REMOVE_KEY, HKCU, "SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy Objects"
+        AddCustomToFix resultAll.Custom, CUSTOM_ACTION_APPLOCKER
         AddToScanResults resultAll
     End If
     
@@ -7650,6 +7743,60 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
+Public Sub RestoreApplockerDefaults()
+    On Error GoTo ErrorHandler:
+    
+    Dim hFile As Long
+    Dim strPath As String: strPath = BuildPath(TempCU, "applocker_clear.xml")
+    
+    If OSver.IsWindows10OrGreater Then
+        If OpenW(strPath, FOR_OVERWRITE_CREATE, hFile, g_FileBackupFlag) Then
+            PrintLineW hFile, "<AppLockerPolicy Version=""1"">"
+            PrintLineW hFile, "<RuleCollection Type=""Exe"" EnforcementMode=""NotConfigured"" />"
+            PrintLineW hFile, "<RuleCollection Type=""Msi"" EnforcementMode=""NotConfigured"" />"
+            PrintLineW hFile, "<RuleCollection Type=""Script"" EnforcementMode=""NotConfigured"" />"
+            PrintLineW hFile, "<RuleCollection Type=""Dll"" EnforcementMode=""NotConfigured"" />"
+            PrintLineW hFile, "<RuleCollection Type=""Appx"" EnforcementMode=""NotConfigured"" />"
+            PrintLineW hFile, "<RuleCollection Type=""ManagedInstaller"" EnforcementMode=""NotConfigured"" />"
+            PrintLineW hFile, "</AppLockerPolicy>"
+            CloseW hFile
+            
+            If Proc.ProcessRun(BuildPath(sWinSysDir, "WindowsPowerShell\v1.0\powershell.exe"), _
+                  "-ExecutionPolicy UnRestricted -c " & """" & _
+                  "import-module AppLocker; Set-AppLockerPolicy -XMLPolicy '" & strPath & "'""", , vbHide) Then
+                Proc.WaitForTerminate , , , 30000
+                
+            End If
+            
+            DeleteFileW StrPtr(strPath)
+        End If
+        
+        If Proc.ProcessRun(BuildPath(sWinSysDir, "appidtel.exe"), "stop -mionly", , vbHide) Then
+            Proc.WaitForTerminate , , , 15000
+        End If
+    End If
+    
+    SetServiceStartMode "applockerfltr", SERVICE_MODE_MANUAL
+    SetServiceStartMode "appidsvc", SERVICE_MODE_MANUAL
+    SetServiceStartMode "appid", SERVICE_MODE_MANUAL
+    StopService "applockerfltr"
+    StopService "appidsvc"
+    StopService "appid"
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "RestoreApplockerDefaults"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Public Function EnableApplocker()
+    SetServiceStartMode "applockerfltr", SERVICE_MODE_AUTOMATIC
+    SetServiceStartMode "appidsvc", SERVICE_MODE_AUTOMATIC
+    SetServiceStartMode "appid", SERVICE_MODE_AUTOMATIC
+    StartService "applockerfltr"
+    StartService "appidsvc"
+    StartService "appid"
+End Function
 
 Public Sub CheckO7Item()
     On Error GoTo ErrorHandler:
@@ -8140,8 +8287,7 @@ Public Sub FixO7Item(sItem$, result As SCAN_RESULT)
         End If
         
     Else
-        FixRegistryHandler result
-        FixFileHandler result
+        FixIt result
         bUpdatePolicyNeeded = True
     End If
     
@@ -15864,6 +16010,37 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
+' Append results array with new command execution record
+Public Sub AddCommandlineToFix( _
+    CommandlineArray() As FIX_COMMANDLINE, _
+    ActionType As ENUM_COMMANDLINE_ACTION_BASED, _
+    Optional Executable As String, _
+    Optional Arguments As String, _
+    Optional Style As SHOWWINDOW_FLAGS)
+    
+    On Error GoTo ErrorHandler
+    
+    'speed hack
+    If bAutoLogSilent Then Exit Sub
+    
+    If AryPtr(CommandlineArray) Then
+        ReDim Preserve CommandlineArray(UBound(CommandlineArray) + 1)
+    Else
+        ReDim CommandlineArray(0)
+    End If
+    
+    With CommandlineArray(UBound(CommandlineArray))
+        .Executable = Executable
+        .Arguments = Arguments
+        .Style = Style
+    End With
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "AddCommandlineToFix", ActionType
+    If inIDE Then Stop: Resume Next
+End Sub
+
 ' Append results array with new process record
 Public Sub AddServiceToFix( _
     ServiceArray() As FIX_SERVICE, _
@@ -15905,6 +16082,7 @@ End Sub
 Public Sub FixIt(result As SCAN_RESULT)
     On Error GoTo ErrorHandler
     
+    If result.CureType And COMMANDLINE_BASED Then FixCommandlineHandler result
     If result.CureType And SERVICE_BASED Then FixServiceHandler result
     If result.CureType And PROCESS_BASED Then FixProcessHandler result
     If result.CureType And FILE_BASED Then FixFileHandler result
@@ -15935,6 +16113,9 @@ Public Sub FixCustomHandler(result As SCAN_RESULT)
                     Case CUSTOM_ACTION_BITS
                         RemoveBitsJob result.Custom(i).id, bRemoveAll:=result.FixAll
                     
+                    Case CUSTOM_ACTION_APPLOCKER
+                        RestoreApplockerDefaults
+                    
                     End Select
                 End With
             Next
@@ -15946,7 +16127,32 @@ ErrorHandler:
     ErrorMsg Err, "FixCustomHandler", result.HitLineW
     If inIDE Then Stop: Resume Next
 End Sub
-                
+
+Public Sub FixCommandlineHandler(result As SCAN_RESULT)
+    On Error GoTo ErrorHandler
+    
+    Dim i As Long
+    
+    If result.CureType And COMMANDLINE_BASED Then
+        If AryPtr(result.CommandLine) Then
+            For i = 0 To UBound(result.CommandLine)
+                With result.CommandLine(i)
+                    Select Case .ActionType
+                    
+                    Case COMMANDLINE_RUN
+                        Proc.ProcessRun .Executable, .Arguments, , .Style
+                    
+                    End Select
+                End With
+            Next
+        End If
+    End If
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "FixCustomHandler", result.HitLineW
+    If inIDE Then Stop: Resume Next
+End Sub
 
 Public Sub FixProcessHandler(result As SCAN_RESULT)
     On Error GoTo ErrorHandler
@@ -16456,6 +16662,21 @@ Public Sub FixServiceHandler(result As SCAN_RESULT)
                         
                         SetServiceStartMode .ServiceName, SERVICE_MODE_AUTOMATIC
                     End If
+                    
+                    If .ActionType And MANUAL_SERVICE Then
+                        
+                        SetServiceStartMode .ServiceName, SERVICE_MODE_MANUAL
+                    End If
+                    
+                    If .ActionType And STOP_SERVICE Then
+                        
+                        StopService .ServiceName
+                    End If
+                    
+                    If .ActionType And START_SERVICE Then
+                        
+                        StartService .ServiceName
+                    End If
 
                 End With
             Next
@@ -16611,10 +16832,10 @@ Public Function InstallHJT(Optional bAskToCreateDesktopShortcut As Boolean, Opti
             aEXE = ListFiles(BuildPath(HJT_LocationDir, "tools"), ".exe", True)
             If (AryPtr(aEXE)) Then
                 For i = 0 To UBound(aEXE)
-                    PrintW hFile, aEXE(i)
+                    PrintLineW hFile, aEXE(i)
                 Next
             End If
-            PrintW hFile, AppPath(True)
+            PrintLineW hFile, AppPath(True)
             CloseW hFile
         End If
     End If

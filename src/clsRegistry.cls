@@ -3181,7 +3181,7 @@ Private Sub KeyShowInfo(hHive As Long, sSubKey As String, hFile As Long)
 
     If bExist <> bExist2 Then
         sLog = "Warning: Key exist (with flag KEY_WOW64_64KEY) returns " & bExist & ", when without flag it returns " & bExist2
-        PrintW hFile, sLog, True
+        PrintLineW hFile, sLog, True
     End If
 
     Call NtGetKeyVirtualType(hHive, sSubKey, True, sSymTarget)

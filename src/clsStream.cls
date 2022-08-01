@@ -316,8 +316,6 @@ Public Function LoadFileToStream( _
     
     On Error GoTo error_handler
     
-    Err.Clear
-    
     ret = -1
     
     hFile = CreateFile(StrPtr(sFilename), GENERIC_READ, _

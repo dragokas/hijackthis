@@ -622,14 +622,14 @@ Public Function CreateHJTShortcuts(HJT_Location As String) As Boolean
     If IsRussianLangCode(OSver.LangSystemCode) Or IsRussianLangCode(OSver.LangDisplayCode) Then
     
         If OpenW(BuildPath(StartMenuPrograms, "HiJackThis Fork\" & LoadResString(607) & ".url"), FOR_OVERWRITE_CREATE, hFile) Then
-            PrintW hFile, "[InternetShortcut]", False
-            PrintW hFile, "URL=https://regist.safezone.cc/hijackthis_help/hijackthis.html", False
+            PrintLineW hFile, "[InternetShortcut]", False
+            PrintLineW hFile, "URL=https://regist.safezone.cc/hijackthis_help/hijackthis.html", False
             CloseW hFile
         End If
     Else
         If OpenW(BuildPath(StartMenuPrograms, "HiJackThis Fork\Users manual (short).url"), FOR_OVERWRITE_CREATE, hFile) Then
-            PrintW hFile, "[InternetShortcut]", False
-            PrintW hFile, "URL=https://dragokas.com/tools/help/hjt_tutorial.html", False
+            PrintLineW hFile, "[InternetShortcut]", False
+            PrintLineW hFile, "URL=https://dragokas.com/tools/help/hjt_tutorial.html", False
             CloseW hFile
         End If
     End If

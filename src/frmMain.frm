@@ -3087,7 +3087,7 @@ Private Sub FormStart_Stage3()
 
             For i = 0 To dRunFiles.Count - 1
                 sFile = dRunFiles.Keys(i)
-                PrintW hFile, sFile
+                PrintLineW hFile, sFile
             Next
 
             CloseW hFile, True
@@ -3174,7 +3174,7 @@ Private Sub FormStart_Stage3()
                     If nDetects = 0 Then
                         If sURL = "n/a" Then
                             If (hFile3 > 0) Then
-                                PrintW hFile3, sCheckedFile
+                                PrintLineW hFile3, sCheckedFile
                             End If
                         ElseIf Not dClearFiles.Exists(sCheckedFile) Then
                             dClearFiles.Add sCheckedFile, 0
@@ -3182,7 +3182,7 @@ Private Sub FormStart_Stage3()
                             sLine = sCheckedFile & " - " & sURL
 
                             If (hFile1 > 0) Then
-                                PrintW hFile1, sLine
+                                PrintLineW hFile1, sLine
                             End If
                         End If
                     Else
@@ -3192,7 +3192,7 @@ Private Sub FormStart_Stage3()
                             sLine = sCheckedFile & " - [" & CStr(nDetects) & "] - " & sURL
 
                             If (hFile2 > 0) Then
-                                PrintW hFile2, sLine
+                                PrintLineW hFile2, sLine
                             End If
                         End If
                     End If
@@ -3250,7 +3250,7 @@ Private Sub FormStart_Stage3()
 
                             dRunFiles.Remove sFile
                             If hFile3 > 0 Then
-                                PrintW hFile3, sFile
+                                PrintLineW hFile3, sFile
                             End If
                         Else
 

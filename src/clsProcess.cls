@@ -578,16 +578,20 @@ Public Function ProcessRun( _
     
     If si.hStdOutput <> 0 Then
     
-           lr = CreateProcess(ByVal 0&, _
-                   StrPtr(CMDLine), _
-                   ByVal 0&, _
-                   ByVal 0&, _
-                   1&, _
-                   NORMAL_PRIORITY_CLASS Or CREATE_NEW_CONSOLE, _
-                   ByVal 0&, _
-                   StrPtr(CurrentDirectory), _
-                   si, _
-                   pi)
+        lr = CreateProcess(ByVal 0&, _
+                StrPtr(CMDLine), _
+                ByVal 0&, _
+                ByVal 0&, _
+                1&, _
+                NORMAL_PRIORITY_CLASS Or CREATE_NEW_CONSOLE, _
+                ByVal 0&, _
+                StrPtr(CurrentDirectory), _
+                si, _
+                pi)
+        
+        If PipeOut.hWrite <> 0 Then
+            CloseHandle PipeOut.hWrite: PipeOut.hWrite = 0
+        End If
     Else
 
         lr = CreateProcess(ByVal 0&, _
