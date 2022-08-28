@@ -2096,8 +2096,6 @@ Private Sub Form_Load()
         End If
         tmrStart.Enabled = True
     End If
-    
-    'ABR_RunBackup
 End Sub
 
 Private Sub lstResults_ItemCheck(Item As Integer)
@@ -5006,6 +5004,9 @@ Private Sub cmdScan_Click()
         ' *******************************************************************
         
         iPrevListIndex = 0
+        
+        ' pre-cache to prevent CPU indicators distortion by own process
+        g_iCpuUsage = CLng(OSver.CpuUsage)
         
         StartScan '<<<<<<<-------- Main scan routine
         

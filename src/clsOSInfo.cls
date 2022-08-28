@@ -143,6 +143,24 @@ Private Type UNICODE_STRING
     Buffer                          As Long
 End Type
 
+Private Type MEMORYSTATUSEX
+    dwLength As Long
+    dwMemoryLoad As Long
+    ullTotalPhys As Currency
+    ullAvailPhys As Currency
+    ullTotalPageFile As Currency
+    ullAvailPageFile As Currency
+    ullTotalVirtual As Currency
+    ullAvailVirtual As Currency
+    ullAvailExtendedVirtual As Currency
+End Type
+
+Private Type PDH_FMT_COUNTERVALUE
+    CStatus As Long
+    Align(3) As Byte
+    Data(7) As Byte
+End Type
+
 Private Declare Function GetLocaleInfo Lib "kernel32.dll" Alias "GetLocaleInfoW" (ByVal lcid As Long, ByVal LCTYPE As Long, ByVal lpLCData As Long, ByVal cchData As Long) As Long
 Private Declare Function GetUserDefaultUILanguage Lib "kernel32.dll" () As Long
 Private Declare Function GetSystemDefaultUILanguage Lib "kernel32.dll" () As Long
@@ -193,6 +211,12 @@ Private Declare Function NtClose Lib "ntdll.dll" (ByVal Handle As Long) As Long
 Private Declare Function GetUserName Lib "Advapi32.dll" Alias "GetUserNameW" (ByVal lpBuffer As Long, nSize As Long) As Long
 Private Declare Function GetComputerName Lib "kernel32.dll" Alias "GetComputerNameW" (ByVal lpBuffer As Long, nSize As Long) As Long
 Private Declare Function lstrlen Lib "kernel32.dll" Alias "lstrlenW" (ByVal lpString As Long) As Long
+Private Declare Function GlobalMemoryStatusEx Lib "kernel32.dll" (lpBuffer As MEMORYSTATUSEX) As Long
+Private Declare Function PdhOpenQuery Lib "Pdh.dll" Alias "PdhOpenQueryW" (ByVal szDataSource As Long, dwUserData As Long, phQuery As Long) As Long
+Private Declare Function PdhAddEnglishCounter Lib "Pdh.dll" Alias "PdhAddEnglishCounterW" (ByVal hQuery As Long, ByVal szFullCounterPath As Long, dwUserData As Long, phCounter As Long) As Long
+Private Declare Function PdhCollectQueryData Lib "Pdh.dll" (ByVal hQuery As Long) As Long
+Private Declare Function PdhGetFormattedCounterValue Lib "Pdh.dll" (ByVal hCounter As Long, ByVal dwFormat As Long, lpdwType As Long, pValue As PDH_FMT_COUNTERVALUE) As Long
+
 
 Private Const MAX_PATH                  As Long = 260&
 Private Const SM_SERVERR2               As Long = 89&
@@ -234,6 +258,8 @@ Private Const TokenElevation            As Long = 20&
 'Private Const STATUS_ACCESS_DENIED      As Long = &HC0000022
 Private Const STATUS_OBJECT_NAME_NOT_FOUND As Long = &HC0000034
 
+Private Const PDH_FMT_LONG              As Long = &H100&
+Private Const PDH_FMT_DOUBLE            As Long = &H200&
 
 Dim osi As RTL_OSVERSIONINFOEXW
 
@@ -289,6 +315,8 @@ Dim IsAdminGroup_           As Boolean
 Dim IsSystemCaseSensitive_  As Boolean
 Dim IsEmbedded_             As Boolean
 Dim LCID_UserDefault_       As Long
+Dim m_hCpuQuery             As Long
+Dim m_hCpuCounter           As Long
 
 
 Private Sub Class_Initialize()
@@ -307,7 +335,7 @@ Private Sub Class_Initialize()
     Dim dwBuild         As Long
     
     inIDE = (App.LogMode = 0)
-    
+        
     LangDisplayCode_ = GetUserDefaultUILanguage Mod &H10000
     LangDisplayName_ = GetLangNameByCultureCode(LangDisplayCode_)
     LangDisplayNameFull_ = GetLangNameFullByCultureCode(LangDisplayCode_)
@@ -360,6 +388,21 @@ Private Sub Class_Initialize()
         Set oOS = Nothing
         Set colOS = Nothing
         Set oWMI = Nothing
+    End If
+    
+    If osi.dwMajorVersion >= 6 Then
+    
+        If PdhOpenQuery(0, 0, m_hCpuQuery) = ERROR_SUCCESS Then ' https://stackoverflow.com/a/64166/10205274
+        
+            'not supported in XP
+            If PdhAddEnglishCounter(m_hCpuQuery, StrPtr("\Processor(_Total)\% Processor Time"), 0, m_hCpuCounter) = ERROR_SUCCESS Then
+            
+                PdhCollectQueryData m_hCpuQuery
+                
+            End If
+            
+        End If
+    
     End If
     
     Bitness_ = IIf(IsWow64(), "x64", "x32") 'VB6 is always x86
@@ -1777,4 +1820,41 @@ End Property
 
 Public Property Get LCID_UserDefault() As Long
     LCID_UserDefault = LCID_UserDefault_
+End Property
+
+Public Property Get MemoryTotal() As Long ' in MB
+    Dim mem As MEMORYSTATUSEX
+    mem.dwLength = LenB(mem)
+    GlobalMemoryStatusEx mem
+    MemoryTotal = CLng(mem.ullTotalPhys / 1024 * 10)
+End Property
+
+Public Property Get MemoryFree() As Long ' in MB
+    Dim mem As MEMORYSTATUSEX
+    mem.dwLength = LenB(mem)
+    GlobalMemoryStatusEx mem
+    MemoryFree = CLng(mem.ullAvailPhys / 1024 * 10)
+End Property
+
+Public Property Get MemoryLoad() As Long ' in %
+    Dim mem As MEMORYSTATUSEX
+    mem.dwLength = LenB(mem)
+    GlobalMemoryStatusEx mem
+    MemoryLoad = mem.dwMemoryLoad
+End Property
+
+Public Property Get CpuUsage() As Double ' in % (Vista+)
+
+    If m_hCpuQuery <> 0 And m_hCpuCounter <> 0 Then
+        
+        If PdhCollectQueryData(m_hCpuQuery) = ERROR_SUCCESS Then
+        
+            Dim counterVal As PDH_FMT_COUNTERVALUE
+            PdhGetFormattedCounterValue m_hCpuCounter, PDH_FMT_DOUBLE, 0, counterVal
+            
+            GetMem8 counterVal.Data(0), CpuUsage
+            
+        End If
+    End If
+
 End Property

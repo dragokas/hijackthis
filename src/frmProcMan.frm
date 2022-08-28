@@ -22,7 +22,13 @@ Begin VB.Form frmProcMan
    Begin VB.Frame fraProcessManager 
       Caption         =   "Itty Bitty Process Manager v."
       BeginProperty Font 
+         Name            =   "Tahoma"
+         Size            =   8.4
+         Charset         =   204
          Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
       EndProperty
       Height          =   3975
       Left            =   120
@@ -129,7 +135,7 @@ Begin VB.Form frmProcMan
       Begin VB.Image imgProcManSave 
          Height          =   288
          Left            =   2880
-         Picture         =   "frmProcMan.frx":25DC
+         Picture         =   "frmProcMan.frx":21C1
          ToolTipText     =   "Save process list to file.."
          Top             =   216
          Width           =   288

@@ -145,7 +145,7 @@ Private Sub cmdGo_Click()
     
     For Each vFile In aFiles
     
-        vFile = Trim$(vFile)
+        vFile = UnQuote(Trim$(vFile))
     
         If Len(vFile) <> 0 Then
             
@@ -157,12 +157,8 @@ Private Sub cmdGo_Click()
                 
                 If Recursively And bFolder Then
 
-                    aFolders = ListSubfolders(CStr(vFile))
-                    
-                    For i = 0 To UBoundSafe(aFolders)
-                        Call UnlockMe(aFolders(i))
-                    Next
-                
+                    UnlockSubfolders CStr(vFile), True
+
                 End If
             Else
                 sList.AppendLine "(not found)" & " - " & vFile
@@ -190,6 +186,60 @@ ErrorHandler:
     ErrorMsg Err, "frmUnlockFile.cmdGo_Click"
     If inIDE Then Stop: Resume Next
 End Sub
+
+
+Private Sub UnlockSubfolders(Path As String, Optional Recursively As Boolean = False)
+    On Error GoTo ErrorHandler
+    
+    Dim SubPathName     As String
+    Dim PathName        As String
+    Dim hFind           As Long
+    Dim L               As Long
+    Dim lpSTR           As Long
+    Dim fd              As WIN32_FIND_DATA
+    
+    Do
+        If hFind <> 0& Then
+            If FindNextFile(hFind, fd) = 0& Then FindClose hFind: Exit Do
+        Else
+            hFind = FindFirstFile(StrPtr(Path & "\*"), fd)
+            If hFind = INVALID_HANDLE_VALUE Then Exit Do
+        End If
+        
+        L = fd.dwFileAttributes And FILE_ATTRIBUTE_REPARSE_POINT
+        Do While L <> 0&
+            If FindNextFile(hFind, fd) = 0& Then FindClose hFind: hFind = 0: Exit Do
+            L = fd.dwFileAttributes And FILE_ATTRIBUTE_REPARSE_POINT
+        Loop
+    
+        If hFind <> 0& Then
+            lpSTR = VarPtr(fd.dwReserved1) + 4&
+            PathName = Space$(lstrlen(lpSTR))
+            lstrcpy StrPtr(PathName), lpSTR
+            
+            If fd.dwFileAttributes And vbDirectory Then
+                If PathName <> "." Then
+                    If PathName <> ".." Then
+                        SubPathName = Path & "\" & PathName
+                        
+                        Call UnlockMe(SubPathName)
+                        
+                        If Recursively Then
+                            Call UnlockSubfolders(SubPathName, True)
+                        End If
+                    End If
+                End If
+            End If
+        End If
+        
+    Loop While hFind
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "UnlockSubfolders", "Folder:", Path
+    Resume Next
+End Sub
+
 
 Private Sub UnlockMe(sObject As String)
 
@@ -268,16 +318,10 @@ Private Sub Form_Resize()
     txtInput.Height = Me.Height - 2010
     chkRecur.Top = Me.Height - 1300
     cmdGo.Top = Me.Height - 1300
-    'cmdExit.Top = Me.Height - 1300
     Me.cmdAddFile.Left = Me.Width - 1900
     Me.cmdAddFolder.Left = Me.Width - 1900
     Me.cmdJump.Left = Me.Width - 1900
     Me.cmdJump.Visible = Me.ScaleHeight > 2200
-    'Me.cmdExit.Visible = Me.ScaleHeight >= 3240
-    
-    'Me.cmdAddFile.Visible = False
-    'Me.cmdAddFolder.Visible = False
-    
 End Sub
 
 Private Sub txtInput_KeyDown(KeyCode As Integer, Shift As Integer)

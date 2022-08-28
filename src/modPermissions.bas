@@ -10,6 +10,10 @@ Attribute VB_Name = "modPermissions"
 '
 Option Explicit
 
+'Notes:
+'Hot to get SDDL:
+'Get-Acl C:\obj | Format-List -Property PSPath, Sddl
+
 'Public Type LUID
 '   lowpart  As Long
 '   highpart As Long

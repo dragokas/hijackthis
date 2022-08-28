@@ -1658,16 +1658,11 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function SetProcessIOPriority(lPID As Long, dwPriority As Long) 'required SeIncreaseBasePriorityPrivilege 'XP SP3+
+Public Function SetProcessIOPriority(lPID As Long, dwPriority As Long) 'required SeIncreaseBasePriorityPrivilege 'Vista
     Dim hProc&, lret&, bRequirement As Boolean
     If lPID = 0 Or lPID = 4 Then Exit Function
     
-    If OSver.IsWindowsXPOrGreater Then
-        bRequirement = True
-        If OSver.MajorMinor = 5.1 And OSver.SPVer < 3 Then bRequirement = False
-    End If
-    
-    If bRequirement Then
+    If OSver.IsWindowsVistaOrGreater Then
         hProc = OpenProcess(PROCESS_SET_INFORMATION, 0, lPID)
         If hProc <> 0 Then
             lret = NtSetInformationProcess(hProc, ProcessIoPriority, VarPtr(dwPriority), 4&)

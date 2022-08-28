@@ -2551,8 +2551,8 @@ Public Sub ArrayAddLong(arr() As Long, Value As Long)
     arr(UBound(arr)) = Value
 End Sub
 
-Public Function RoundUp(num As Double) As Double
-    RoundUp = -Int(-num)
+Public Function RoundUp(Num As Double) As Double
+    RoundUp = -Int(-Num)
 End Function
 
 ' Explain:

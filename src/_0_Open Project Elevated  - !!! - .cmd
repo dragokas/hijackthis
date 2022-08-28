@@ -30,7 +30,11 @@ if not exist "%compiler%" (
 2>NUL del HiJackThis.pdb
 
 ::XP ?
-ver |>NUL find " 5." && (start "" "%PF%\Microsoft Visual Studio\VB98\vb6.exe" "%~dp0%ProjFile%" & exit /b)
+ver |>NUL find " 5." && (
+  regsvr32.exe /s MSCOMCTL.OCX
+  start "" "%PF%\Microsoft Visual Studio\VB98\vb6.exe" "%~dp0%ProjFile%"
+  exit /b
+)
 
 call :TaskExist
 
@@ -89,7 +93,8 @@ exit /b
   call :CheckErrorHandler
   if "%~1"=="NoCheck" (
     rem if project already run
-    schtasks.exe /query /FO LIST /tn "%TaskName%" | findstr /i /C:"Running" /C:"Выполняется" && (
+	chcp 437
+    schtasks.exe /query /FO LIST /tn "%TaskName%" | findstr /i /C:"Running" && (
       echo.&echo Project already run !
       pause >NUL
     ) || (

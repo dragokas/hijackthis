@@ -1126,11 +1126,6 @@ Public Function ABR_CreateBackup(bForceIgnoreDays As Boolean) As Boolean
             MsgBoxW "Error while creating registry backup (ABR)", vbExclamation, "HiJackThis"
         End If
         
-'        Sleep 2000&
-'
-'        If Not inIDE Then
-'            DisableWER bRevert:=True
-'        End If
     End If
     
     If inIDE Then

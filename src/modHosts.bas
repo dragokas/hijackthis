@@ -161,8 +161,8 @@ Public Function GetDefaultHostsContents() As String
     "#       38.25.63.10     x.acme.com              # x client host" & vbCrLf & _
     vbCrLf & _
     "# localhost name resolution is handled within DNS itself." & vbCrLf & _
-    "#   127.0.0.1       localhost" & vbCrLf & _
-    "#   ::1             localhost"
+    "#" & vbTab & "127.0.0.1       localhost" & vbCrLf & _
+    "#" & vbTab & "::1             localhost"
     
   End If
 

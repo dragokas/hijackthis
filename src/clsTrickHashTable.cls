@@ -25,6 +25,9 @@ Attribute VB_Exposed = False
 ' // Version 1.5 (by Dragokas)
 ' // Added checking for 'mCount' and class destruction in-progress state to all methods.
 
+' // Version 1.6 (by The Trick)
+' // Fixed 'Subscript out of range' in Remove_ method.
+
 Option Explicit
 
 Public Enum CompareMethod
@@ -442,6 +445,8 @@ Private Sub Add_(pt As tPointer, Key As Variant, Value As Variant)
 End Sub
 
 Private Sub Remove_(pt As tPointer)
+    On Error GoTo ErrorHandler:
+
     Dim ln  As tPointer
     Dim lp  As tPointer
     Dim p   As tPointer
@@ -467,19 +472,24 @@ Private Sub Remove_(pt As tPointer)
     
     L = List(pt.hash).ElementsCount - 1: List(pt.hash).ElementsCount = L
     
+    If lp.Index >= 0 Then List(lp.hash).Elements(lp.Index).Next = ln
+    If ln.Index >= 0 Then List(ln.hash).Elements(ln.Index).Prev = lp
+    
     If L Then
         If (L Mod GRANULARITY) = 0 Then ReDim Preserve List(pt.hash).Elements(L - 1)
     Else
         Erase List(pt.hash).Elements()
     End If
     
-    If lp.Index >= 0 Then List(lp.hash).Elements(lp.Index).Next = ln
-    If ln.Index >= 0 Then List(ln.hash).Elements(ln.Index).Prev = lp
     If lp.Index = -1 Then First = ln
     If ln.Index = -1 Then Last = lp
     
     mCount = mCount - 1
     
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "HashTable::Remove_"
+    If inIDE Then Stop: Resume Next
 End Sub
 
 Private Sub Key_(Key As Variant, NewKey As Variant)

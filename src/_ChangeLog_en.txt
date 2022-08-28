@@ -11,6 +11,14 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[2.10.0.21] - Aug 28, 2022
+ - Added free memory info and total CPU loading*.
+ * loading data may be overestimated on weak processors.
+ - Cut down icon metadata causing false positive detection by Sigma rules.
+ - Fixed Hosts template and its ACL permissions according to reference.
+ - O22 - Added -32 prefixes for 32-bit tasks on 64-bit OS.
+ - Tools=>Unlock file/folder: Improved recurvive procedure of reset permissions.
+
 [2.10.0.20] - Aug 02, 2022
  - Several AppLocker fixes are done (thanks to regist for report, analytics and support):
  - O7 - AppLocker: Added detection of "ManagedInstaller" rule.
@@ -1634,4 +1642,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                                                                                   
+                                                                                     

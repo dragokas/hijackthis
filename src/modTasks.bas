@@ -1170,12 +1170,12 @@ Public Sub EnumTasksVista(Optional MakeCSV As Boolean)
         Print #LogHandle, "OSver" & ";" & "State" & ";" & "Name" & ";" & "Dir" & ";" & "RunObj" & ";" & "Args" & ";" & "Note" & ";" & "Error"
     End If
     
-    EnumTaskFolder LogHandle, dXmlPathFromDisk, "Tasks", BuildPath(sWinSysDir, "Tasks"), False
-    EnumTaskFolder LogHandle, dXmlPathFromDisk, "Tasks_Migrated", BuildPath(sWinSysDir, "Tasks_Migrated"), True
+    EnumTaskFolder LogHandle, dXmlPathFromDisk, "Tasks", BuildPath(sWinSysDir, "Tasks"), False, True
+    EnumTaskFolder LogHandle, dXmlPathFromDisk, "Tasks_Migrated", BuildPath(sWinSysDir, "Tasks_Migrated"), True, True
     
     If OSver.IsWin64 Then
-        EnumTaskFolder LogHandle, dXmlPathFromDisk, "Tasks", BuildPath(sWinSysDirWow64, "Tasks"), False
-        EnumTaskFolder LogHandle, dXmlPathFromDisk, "Tasks_Migrated", BuildPath(sWinSysDirWow64, "Tasks_Migrated"), True
+        EnumTaskFolder LogHandle, dXmlPathFromDisk, "Tasks", BuildPath(sWinSysDirWow64, "Tasks"), False, False
+        EnumTaskFolder LogHandle, dXmlPathFromDisk, "Tasks_Migrated", BuildPath(sWinSysDirWow64, "Tasks_Migrated"), True, False
     End If
     
     EnumTaskOther dXmlPathFromDisk
@@ -1193,7 +1193,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
     
-Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, TaskAlias As String, sWinTasksFolder As String, IsMigrated As Boolean)
+Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, TaskAlias As String, sWinTasksFolder As String, IsMigrated As Boolean, IsX64 As Boolean)
 
     On Error GoTo ErrorHandler
     AppendErrorLogCustom "EnumTaskFolder - Begin"
@@ -1222,6 +1222,7 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
     Dim bActivation     As Boolean
     Dim bUpdate         As Boolean
     Dim sDllFile        As String
+    Dim sAlias          As String
 
     aFiles = ListFiles(sWinTasksFolder, vbNullString, True)
     
@@ -1337,7 +1338,9 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
             '
             If Not IsValidTaskUserId(te(j).UserId) And Not IsValidTaskGroupId(te(j).GroupId) Then
             
-                sHit = "O22 - " & TaskAlias & ": (damaged) " & IIf(te(j).Enabled, vbNullString, "(disabled) ") & _
+                sAlias = IIf(IsX64, "O22", "O22-32")
+                
+                sHit = sAlias & " - " & TaskAlias & ": (damaged) " & IIf(te(j).Enabled, vbNullString, "(disabled) ") & _
                     IIf(DirParent = "{root}", TaskName, DirParent & "\" & TaskName)
 
                 sHit = sHit & " - " & te(j).RunObj & _
@@ -1557,7 +1560,9 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
                       End If
                   End If
                   
-                  sHit = "O22 - " & TaskAlias & ": " & IIf(te(j).Enabled, vbNullString, "(disabled) ") & _
+                  sAlias = IIf(IsX64, "O22", "O22-32")
+                  
+                  sHit = sAlias & " - " & TaskAlias & ": " & IIf(te(j).Enabled, vbNullString, "(disabled) ") & _
                     IIf(bTelemetry, "(telemetry) ", vbNullString) & _
                     IIf(bActivation, "(activation) ", vbNullString) & _
                     IIf(bUpdate, "(update) ", vbNullString) & _

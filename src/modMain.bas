@@ -229,7 +229,7 @@ Public Enum ENUM_SERVICE_ACTION_BASED
     USE_FEATURE_DISABLE_SERVICE = &H10000
 End Enum
 #If False Then
-    Dim DELETE_SERVICE, RESTORE_SERVICE
+    Dim DELETE_SERVICE, RESTORE_SERVICE, DISABLE_SERVICE, ENABLE_SERVICE, MANUAL_SERVICE, STOP_SERVICE, START_SERVICE
     Dim USE_FEATURE_DISABLE_SERVICE
 #End If
 
@@ -466,6 +466,7 @@ Private Type APPLOCKER_HASH_RULE_DATA
 End Type
 
 Private Declare Sub OutputDebugStringA Lib "kernel32.dll" (ByVal lpOutputString As String)
+Private Declare Function LockWindowUpdate Lib "user32.dll" (ByVal hwndLock As Long) As Long
 
 Private HitSorted()     As String
 
@@ -573,7 +574,10 @@ Public Sub AddToScanResults( _
         'checking if one of sections planned to be contains more then 50 entries -> block such attempt
         If Not SectionOutOfLimit(result.Section, bFirstWarning) Then
             bAddedToList = True
+            'Commented (no difference)
+            'LockWindowUpdate frmMain.lstResults.hwnd
             frmMain.lstResults.AddItem result.HitLineW
+            'LockWindowUpdate 0&
             'Unicode to ANSI mapping (dirty hack)
             result.HitLineA = frmMain.lstResults.List(frmMain.lstResults.ListCount - 1)
             'select the last added line
@@ -582,7 +586,9 @@ Public Sub AddToScanResults( _
             End If
         Else
             If bFirstWarning Then
+                'LockWindowUpdate frmMain.lstResults.hwnd
                 frmMain.lstResults.AddItem result.Section & " - Too many entries ( > 250 )" '=> look Const LIMIT
+                'LockWindowUpdate 0&
                 AppendErrorLogCustom result.Section & " - Too many entries ( > 250 )"
                 If SelLastAdded Then
                     frmMain.lstResults.ListIndex = frmMain.lstResults.ListCount - 1
@@ -3651,9 +3657,7 @@ Public Sub FixO1Item(sItem$, result As SCAN_RESULT)
         End If
     End If
     
-    'Reset attributes (and save old one in var. 'iAttr')
-    iAttr = GetFileAttributes(StrPtr(sHosts))
-    If (iAttr And FILE_ATTRIBUTE_COMPRESSED) Then iAttr = iAttr - FILE_ATTRIBUTE_COMPRESSED
+    'Reset attributes
     SetFileAttributes StrPtr(sHosts), vbNormal
     
     BackupFile result, sHosts
@@ -3697,12 +3701,11 @@ Replace:
         If 0 = MoveFile(StrPtr(sHostsTemp), StrPtr(sHosts)) Then
             If Err.LastDllError = 5 Then Err.Raise 70
         End If
-        'Recover old one attrib.
-        SetFileAttributes StrPtr(sHosts), iAttr
     Else
         Err.Raise 70
     End If
     
+    SetFileStringSD sHosts, "O:SYG:SYD:AI(A;ID;FA;;;SY)(A;ID;FA;;;BA)(A;ID;0x1200a9;;;BU)", False
     
     '//TODO:
     'clear cache
@@ -7201,7 +7204,7 @@ Public Sub CheckPolicies()
     HE.AddKey "SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"
     
     aValue = Split("NoSetTaskbar|TaskbarLockAll|LockTaskbar|NoTrayItemsDisplay|NoChangeStartMenu|NoStartMenuMorePrograms|NoRun" & _
-        "NoSMConfigurePrograms|NoViewOnDrive|RestrictRun|DisallowRun|NoControlPanel|NoDispCpl", "|")
+        "NoSMConfigurePrograms|NoViewOnDrive|RestrictRun|DisallowRun|NoControlPanel|NoDispCpl|SettingsPageVisibility", "|")
     
     Do While HE.MoveNext
         For i = 0 To UBound(aValue)
@@ -14240,14 +14243,14 @@ End Sub
 Public Function UnpackResource(ResourceID As Long, DestinationPath As String) As Boolean
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "UnpackResource - Begin", "ID: " & ResourceID, "Destination: " & DestinationPath
-    Dim ff      As Integer
+    Dim hFile   As Long
     Dim b()     As Byte
     UnpackResource = True
     b = LoadResData(ResourceID, "CUSTOM")
-    ff = FreeFile
-    Open DestinationPath For Binary Access Write As #ff
-        Put #ff, , b
-    Close #ff
+    If OpenW(DestinationPath, FOR_OVERWRITE_CREATE, hFile) Then
+        PutW hFile, 1, VarPtr(b(0)), UBound(b) + 1, False
+        CloseW hFile
+    End If
     AppendErrorLogCustom "UnpackResource - End"
     Exit Function
 ErrorHandler:
@@ -14988,7 +14991,7 @@ Public Function CreateLogFile() As String
             Next
             
         End If
-            
+        
         Set dModule = Nothing
     End If
     
@@ -15347,6 +15350,13 @@ Public Function MakeLogHeader() As String
     sText = sText & "Language:  " & "OS: " & OSver.LangSystemNameFull & " (" & "0x" & Hex$(OSver.LangSystemCode) & "). " & _
             "Display: " & OSver.LangDisplayNameFull & " (" & "0x" & Hex$(OSver.LangDisplayCode) & "). " & _
             "Non-Unicode: " & OSver.LangNonUnicodeNameFull & " (" & "0x" & Hex$(OSver.LangNonUnicodeCode) & ")" & vbCrLf
+    
+    sText = sText & "Memory:    " & OSver.MemoryFree & " MiB Free (" & OSver.MemoryLoad & " %)"
+    If OSver.IsWindowsVistaOrGreater Then
+        sText = sText & ". CPU Loading: (" & IIf(g_iCpuUsage <> 0, g_iCpuUsage, CLng(OSver.CpuUsage)) & " %)" & vbCrLf
+    Else
+        sText = sText & vbCrLf
+    End If
     
     If OSver.MajorMinor >= 6 Then
         sText = sText & "Elevated:  " & IIf(OSver.IsElevated, "Yes", "No") & vbCrLf  '& vbTab & "IL: " & OSver.GetIntegrityLevel & vbCrLf

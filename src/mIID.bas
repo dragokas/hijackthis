@@ -73,9 +73,20 @@ Option Explicit
 'Rev. 19
 'IID additions for oleexp 4.7
 
+'Rev. 20
+'IID additions for oleexp 4.8
+
+'Rev. 21
+'Added FOLDERTYPEID UUIDs
+'IID additions for oleexp 5.0
+
+'Rev. 22
+'IID additions for oleexp 5.01
+
 'Public Declare Function IsEqualIID Lib "ole32" Alias "IsEqualGUID" (riid1 As UUID, riid2 As UUID) As Long
 
 Private iid(750) As UUID
+
 
 Public Sub DEFINE_UUID(Name As UUID, L As Long, w1 As Integer, w2 As Integer, B0 As Byte, b1 As Byte, b2 As Byte, B3 As Byte, b4 As Byte, b5 As Byte, b6 As Byte, b7 As Byte)
   With Name
@@ -86,12 +97,7 @@ End Sub
 Public Sub DEFINE_OLEGUID(Name As UUID, L As Long, w1 As Integer, w2 As Integer)
   DEFINE_UUID Name, L, w1, w2, &HC0, 0, 0, 0, 0, 0, 0, &H46
 End Sub
-Public Sub DEFINE_PROPERTYKEY(Name As PROPERTYKEY, L As Long, w1 As Integer, w2 As Integer, B0 As Byte, b1 As Byte, b2 As Byte, B3 As Byte, b4 As Byte, b5 As Byte, b6 As Byte, b7 As Byte, pid As Long)
-  With Name.fmtid
-    .Data1 = L: .Data2 = w1: .Data3 = w2: .Data4(0) = B0: .Data4(1) = b1: .Data4(2) = b2: .Data4(3) = B3: .Data4(4) = b4: .Data4(5) = b5: .Data4(6) = b6: .Data4(7) = b7
-  End With
-  Name.pid = pid
-End Sub
+
 
 
 Public Function UUID_NULL() As UUID
@@ -106,6 +112,12 @@ End If
 bSet = True
 UUID_NULL = iid(1)
 End Function
+Public Sub DEFINE_PROPERTYKEY(Name As PROPERTYKEY, L As Long, w1 As Integer, w2 As Integer, B0 As Byte, b1 As Byte, b2 As Byte, B3 As Byte, b4 As Byte, b5 As Byte, b6 As Byte, b7 As Byte, pid As Long)
+  With Name.fmtid
+    .Data1 = L: .Data2 = w1: .Data3 = w2: .Data4(0) = B0: .Data4(1) = b1: .Data4(2) = b2: .Data4(3) = B3: .Data4(4) = b4: .Data4(5) = b5: .Data4(6) = b6: .Data4(7) = b7
+  End With
+  Name.pid = pid
+End Sub
 Public Function GUIDToString(tg As UUID, Optional bBrack As Boolean = True) As String
 'StringFromGUID2 never works, even "working" code from vbaccelerator AND MSDN
 GUIDToString = Right$("00000000" & Hex$(tg.Data1), 8) & "-" & Right$("0000" & Hex$(tg.Data2), 4) & "-" & Right$("0000" & Hex$(tg.Data3), 4) & _
@@ -115,15 +127,167 @@ Right$("00" & Hex$(CLng(tg.Data4(6))), 2) & Right$("00" & Hex$(CLng(tg.Data4(7))
 If bBrack Then GUIDToString = "{" & GUIDToString & "}"
 End Function
 
+'====================================================
+'REV  21 New
+Public Function IID_FolderItem() As UUID
+'{FAC32C80-CBE4-11CE-8350-444553540000}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &HFAC32C80, CInt(&HCBE4), CInt(&H11CE), &H83, &H50, &H44, &H45, &H53, &H54, &H0, &H0)
+ IID_FolderItem = iid
+End Function
+Public Function IID_FolderItem2() As UUID
+'{edc817aa-92b8-11d1-b075-00c04fc33aa5}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &HEDC817AA, CInt(&H92B8), CInt(&H11D1), &HB0, &H75, &H0, &HC0, &H4F, &HC3, &H3A, &HA5)
+ IID_FolderItem2 = iid
+End Function
+Public Function IID_FolderItems() As UUID
+'{744129E0-CBE5-11CE-8350-444553540000}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &H744129E0, CInt(&HCBE5), CInt(&H11CE), &H83, &H50, &H44, &H45, &H53, &H54, &H0, &H0)
+ IID_FolderItems = iid
+End Function
+Public Function IID_FolderItems2() As UUID
+'{C94F0AD0-F363-11d2-A327-00C04F8EEC7F}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &HC94F0AD0, CInt(&HF363), CInt(&H11D2), &HA3, &H27, &H0, &HC0, &H4F, &H8E, &HEC, &H7F)
+ IID_FolderItems2 = iid
+End Function
+Public Function IID_Folder() As UUID
+'{BBCBDE60-C3FF-11CE-8350-444553540000}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &HBBCBDE60, CInt(&HC3FF), CInt(&H11CE), &H83, &H50, &H44, &H45, &H53, &H54, &H0, &H0)
+ IID_Folder = iid
+End Function
+Public Function IID_Folder2() As UUID
+'{f0d2d8ef-3890-11d2-bf8b-00c04fb93661}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &HF0D2D8EF, CInt(&H3890), CInt(&H11D2), &HBF, &H8B, &H0, &HC0, &H4F, &HB9, &H36, &H61)
+ IID_Folder2 = iid
+End Function
+Public Function IID_Folder3() As UUID
+'{A7AE5F64-C4D7-4d7f-9307-4D24EE54B841}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &HA7AE5F64, CInt(&HC4D7), CInt(&H4D7F), &H93, &H7, &H4D, &H24, &HEE, &H54, &HB8, &H41)
+ IID_Folder3 = iid
+End Function
+Public Function IID_FolderItemVerb() As UUID
+'{08EC3E00-50B0-11CF-960C-0080C7F4EE85}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &H8EC3E00, CInt(&H50B0), CInt(&H11CF), &H96, &HC, &H0, &H80, &HC7, &HF4, &HEE, &H85)
+ IID_FolderItemVerb = iid
+End Function
+Public Function IID_FolderItemVerbs() As UUID
+'{1F8352C0-50B0-11CF-960C-0080C7F4EE85}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &H1F8352C0, CInt(&H50B0), CInt(&H11CF), &H96, &HC, &H0, &H80, &HC7, &HF4, &HEE, &H85)
+ IID_FolderItemVerbs = iid
+End Function
+Public Function IID_IShellFolderViewDual() As UUID
+'{E7A1AF80-4D96-11CF-960C-0080C7F4EE85}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &HE7A1AF80, CInt(&H4D96), CInt(&H11CF), &H96, &HC, &H0, &H80, &HC7, &HF4, &HEE, &H85)
+ IID_IShellFolderViewDual = iid
+End Function
+Public Function IID_IShellFolderViewDual2() As UUID
+'{31C147b6-0ADE-4A3C-B514-DDF932EF6D17}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &H31C147B6, CInt(&HADE), CInt(&H4A3C), &HB5, &H14, &HDD, &HF9, &H32, &HEF, &H6D, &H17)
+ IID_IShellFolderViewDual2 = iid
+End Function
+Public Function IID_IShellFolderViewDual3() As UUID
+'{29EC8E6C-46D3-411f-BAAA-611A6C9CAC66}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &H29EC8E6C, CInt(&H46D3), CInt(&H411F), &HBA, &HAA, &H61, &H1A, &H6C, &H9C, &HAC, &H66)
+ IID_IShellFolderViewDual3 = iid
+End Function
+Public Function IID_IWebBrowser() As UUID
+'{EAB22AC1-30C1-11CF-A7EB-0000C05BAE0B}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &HEAB22AC1, CInt(&H30C1), CInt(&H11CF), &HA7, &HEB, &H0, &H0, &HC0, &H5B, &HAE, &HB)
+ IID_IWebBrowser = iid
+End Function
+Public Function IID_IWebBrowserApp() As UUID
+'{0002DF05-0000-0000-C000-000000000046}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &H2DF05, CInt(&H0), CInt(&H0), &HC0, &H0, &H0, &H0, &H0, &H0, &H0, &H46)
+ IID_IWebBrowserApp = iid
+End Function
+Public Function IID_IFolderViewOC() As UUID
+'{9BA05970-F6A8-11CF-A442-00A0C90A8F39}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &H9BA05970, CInt(&HF6A8), CInt(&H11CF), &HA4, &H42, &H0, &HA0, &HC9, &HA, &H8F, &H39)
+ IID_IFolderViewOC = iid
+End Function
+Public Function IID_DShellFolderViewEvents() As UUID
+'{62112AA2-EBE4-11cf-A5FB-0020AFE7292D}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &H62112AA2, CInt(&HEBE4), CInt(&H11CF), &HA5, &HFB, &H0, &H20, &HAF, &HE7, &H29, &H2D)
+ IID_DShellFolderViewEvents = iid
+End Function
+Public Function IID_DFConstraint() As UUID
+'{4a3df050-23bd-11d2-939f-00a0c91eedba}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &H4A3DF050, CInt(&H23BD), CInt(&H11D2), &H93, &H9F, &H0, &HA0, &HC9, &H1E, &HED, &HBA)
+ IID_DFConstraint = iid
+End Function
+Public Function IID_IShellLinkDual() As UUID
+'{88A05C00-F000-11CE-8350-444553540000}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &H88A05C00, CInt(&HF000), CInt(&H11CE), &H83, &H50, &H44, &H45, &H53, &H54, &H0, &H0)
+ IID_IShellLinkDual = iid
+End Function
+Public Function IID_IShellLinkDual2() As UUID
+'{317EE249-F12E-11d2-B1E4-00C04F8EEB3E}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &H317EE249, CInt(&HF12E), CInt(&H11D2), &HB1, &HE4, &H0, &HC0, &H4F, &H8E, &HEB, &H3E)
+ IID_IShellLinkDual2 = iid
+End Function
+Public Function IID_IShellDispatch() As UUID
+'{D8F015C0-C278-11CE-A49E-444553540000}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &HD8F015C0, CInt(&HC278), CInt(&H11CE), &HA4, &H9E, &H44, &H45, &H53, &H54, &H0, &H0)
+ IID_IShellDispatch = iid
+End Function
+Public Function IID_IShellDispatch2() As UUID
+'{A4C6892C-3BA9-11d2-9DEA-00C04FB16162}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &HA4C6892C, CInt(&H3BA9), CInt(&H11D2), &H9D, &HEA, &H0, &HC0, &H4F, &HB1, &H61, &H62)
+ IID_IShellDispatch2 = iid
+End Function
+Public Function IID_IShellDispatch3() As UUID
+'{177160ca-bb5a-411c-841d-bd38facdeaa0}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &H177160CA, CInt(&HBB5A), CInt(&H411C), &H84, &H1D, &HBD, &H38, &HFA, &HCD, &HEA, &HA0)
+ IID_IShellDispatch3 = iid
+End Function
+Public Function IID_IShellDispatch4() As UUID
+'{efd84b2d-4bcf-4298-be25-eb542a59fbda}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &HEFD84B2D, CInt(&H4BCF), CInt(&H4298), &HBE, &H25, &HEB, &H54, &H2A, &H59, &HFB, &HDA)
+ IID_IShellDispatch4 = iid
+End Function
+Public Function IID_IShellDispatch5() As UUID
+'{866738b9-6cf2-4de8-8767-f794ebe74f4e}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &H866738B9, CInt(&H6CF2), CInt(&H4DE8), &H87, &H67, &HF7, &H94, &HEB, &HE7, &H4F, &H4E)
+ IID_IShellDispatch5 = iid
+End Function
+Public Function IID_IShellDispatch6() As UUID
+'{286e6f1b-7113-4355-9562-96b7e9d64c5}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &H286E6F1B, CInt(&H7113), CInt(&H4355), &H95, &H62, &H96, &HB7, &HE9, &HD6, &H4C, &H5)
+ IID_IShellDispatch6 = iid
+End Function
 
 '====================================================
 'IIDs added in Rev. 8
 '====================================================
 Public Function IID_IShellExtInit() As UUID
 '{000214E8-0000-0000-C000-000000000046}
-Static id As UUID
- If (id.Data1 = 0) Then Call DEFINE_UUID(id, &H214E8, CInt(&H0), CInt(&H0), &HC0, &H0, &H0, &H0, &H0, &H0, &H0, &H46)
- IID_IShellExtInit = id
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &H214E8, CInt(&H0), CInt(&H0), &HC0, &H0, &H0, &H0, &H0, &H0, &H0, &H46)
+ IID_IShellExtInit = iid
 End Function
 Public Function IID_IShellExecuteHookA() As UUID
 '{000214F5-0000-0000-C000-000000000046}
@@ -1128,6 +1292,42 @@ Public Function IID_IInternetZoneManager() As UUID
  If (iid(202).Data1 = 0&) Then Call DEFINE_UUID(iid(202), &H79EAC9EF, CInt(&HBAF9), CInt(&H11CE), &H8C, &H82, &H0, &HAA, &H0, &H4B, &HA9, &HB)
 IID_IInternetZoneManager = iid(202)
 End Function
+Public Function IID_IInternetZoneManagerEx() As UUID
+'{A4C23339-8E06-431e-9BF4-7E711C085648}
+Static iid As UUID
+ If (iid.Data1 = 0&) Then Call DEFINE_UUID(iid, &HA4C23339, CInt(&H8E06), CInt(&H431E), &H9B, &HF4, &H7E, &H71, &H1C, &H8, &H56, &H48)
+IID_IInternetZoneManagerEx = iid
+End Function
+Public Function IID_IInternetZoneManagerEx2() As UUID
+'{EDC17559-DD5D-4846-8EEF-8BECBA5A4ABF}
+Static iid As UUID
+ If (iid.Data1 = 0&) Then Call DEFINE_UUID(iid, &HEDC17559, CInt(&HDD5D), CInt(&H4846), &H8E, &HEF, &H8B, &HEC, &HBA, &H5A, &H4A, &HBF)
+IID_IInternetZoneManagerEx2 = iid
+End Function
+Public Function IID_IInternetSecurityManagerEx() As UUID
+'{F164EDF1-CC7C-4f0d-9A94-34222625C393}
+Static iid As UUID
+ If (iid.Data1 = 0&) Then Call DEFINE_UUID(iid, &HF164EDF1, CInt(&HCC7C), CInt(&H4F0D), &H9A, &H94, &H34, &H22, &H26, &H25, &HC3, &H93)
+IID_IInternetSecurityManagerEx = iid
+End Function
+Public Function IID_IInternetSecurityManagerEx2() As UUID
+'{F1E50292-A795-4117-8E09-2B560A72AC60}
+Static iid As UUID
+ If (iid.Data1 = 0&) Then Call DEFINE_UUID(iid, &HF1E50292, CInt(&HA795), CInt(&H4117), &H8E, &H9, &H2B, &H56, &HA, &H72, &HAC, &H60)
+IID_IInternetSecurityManagerEx2 = iid
+End Function
+Public Function IID_IZoneIdentifier2() As UUID
+'{EB5E760C-09EF-45C0-B510-70830CE31E6A}
+Static iid As UUID
+ If (iid.Data1 = 0&) Then Call DEFINE_UUID(iid, &HEB5E760C, CInt(&H9EF), CInt(&H45C0), &HB5, &H10, &H70, &H83, &HC, &HE3, &H1E, &H6A)
+IID_IZoneIdentifier2 = iid
+End Function
+Public Function IID_IUri() As UUID
+'{A39EE748-6A27-4817-A6F2-13914BEF5890}
+Static iid As UUID
+ If (iid.Data1 = 0&) Then Call DEFINE_UUID(iid, &HA39EE748, CInt(&H6A27), CInt(&H4817), &HA6, &HF2, &H13, &H91, &H4B, &HEF, &H58, &H90)
+IID_IUri = iid
+End Function
 Public Function IID_IPersistFolder() As UUID
 '{000214EA-0000-0000-C000-000000000046}
  If (iid(203).Data1 = 0&) Then Call DEFINE_UUID(iid(203), &H214EA, CInt(&H0), CInt(&H0), &HC0, &H0, &H0, &H0, &H0, &H0, &H0, &H46)
@@ -1787,7 +1987,54 @@ Public Function IID_IQueryAssociations() As UUID
  If (iid(328).Data1 = 0) Then Call DEFINE_UUID(iid(328), &HC46CA590, CInt(&H3C3F), CInt(&H11D2), &HBE, &HE6, &H0, &H0, &HF8, &H5, &HCA, &H57)
  IID_IQueryAssociations = iid(328)
 End Function
-
+Public Function IID_IEnumShellReminder() As UUID
+'{6c6d9735-2d86-40e1-b348-08706b9908c0}
+Static iid As UUID
+ If (iid.Data1 = 0&) Then Call DEFINE_UUID(iid, &H6C6D9735, CInt(&H2D86), CInt(&H40E1), &HB3, &H48, &H8, &H70, &H6B, &H99, &H8, &HC0)
+IID_IEnumShellReminder = iid
+End Function
+Public Function IID_IShellReminderManager() As UUID
+'{968edb91-8a70-4930-8332-5f15838a64f9}
+Static iid As UUID
+ If (iid.Data1 = 0&) Then Call DEFINE_UUID(iid, &H968EDB91, CInt(&H8A70), CInt(&H4930), &H83, &H32, &H5F, &H15, &H83, &H8A, &H64, &HF9)
+IID_IShellReminderManager = iid
+End Function
+Public Function IID_IACLCustomMRU() As UUID
+'{F729FC5E-8769-4f3e-BDB2-D7B50FD2275B}
+Static iid As UUID
+ If (iid.Data1 = 0&) Then Call DEFINE_UUID(iid, &HF729FC5E, CInt(&H8769), CInt(&H4F3E), &HBD, &HB2, &HD7, &HB5, &HF, &HD2, &H27, &H5B)
+IID_IACLCustomMRU = iid
+End Function
+Public Function IID_IAssociationElement() As UUID
+'{e58b1abf-9596-4dba-8997-89dcdef46992}
+Static iid As UUID
+ If (iid.Data1 = 0&) Then Call DEFINE_UUID(iid, &HE58B1ABF, CInt(&H9596), CInt(&H4DBA), &H89, &H97, &H89, &HDC, &HDE, &HF4, &H69, &H92)
+IID_IAssociationElement = iid
+End Function
+Public Function IID_IEnumAssociationElements() As UUID
+'{a6b0fb57-7523-4439-9425-ebe99823b828}
+Static iid As UUID
+ If (iid.Data1 = 0&) Then Call DEFINE_UUID(iid, &HA6B0FB57, CInt(&H7523), CInt(&H4439), &H94, &H25, &HEB, &HE9, &H98, &H23, &HB8, &H28)
+IID_IEnumAssociationElements = iid
+End Function
+Public Function IID_IAssociationArrayInitialize() As UUID
+'{ee9165bf-a4d9-474b-8236-6735cb7e28b6}
+Static iid As UUID
+ If (iid.Data1 = 0&) Then Call DEFINE_UUID(iid, &HEE9165BF, CInt(&HA4D9), CInt(&H474B), &H82, &H36, &H67, &H35, &HCB, &H7E, &H28, &HB6)
+IID_IAssociationArrayInitialize = iid
+End Function
+Public Function IID_IAssociationArray() As UUID
+'{3b877e3c-67de-4f9a-b29b-17d0a1521c6a}
+Static iid As UUID
+ If (iid.Data1 = 0&) Then Call DEFINE_UUID(iid, &H3B877E3C, CInt(&H67DE), CInt(&H4F9A), &HB2, &H9B, &H17, &HD0, &HA1, &H52, &H1C, &H6A)
+IID_IAssociationArray = iid
+End Function
+Public Function IID_IFadeTask() As UUID
+'{fadb55b4-d382-4fc4-81d7-abb325c7f12a}
+Static iid As UUID
+ If (iid.Data1 = 0&) Then Call DEFINE_UUID(iid, &HFADB55B4, CInt(&HD382), CInt(&H4FC4), &H81, &HD7, &HAB, &HB3, &H25, &HC7, &HF1, &H2A)
+IID_IFadeTask = iid
+End Function
 Public Function IID_IPreviewHandler() As UUID
 '{8895b1c6-b41f-4c1c-a562-0d564250836f}
  If (iid(329).Data1 = 0) Then Call DEFINE_UUID(iid(329), &H8895B1C6, CInt(&HB41F), CInt(&H4C1C), &HA5, &H62, &HD, &H56, &H42, &H50, &H83, &H6F)
@@ -2789,7 +3036,66 @@ Public Function IID_IDefaultFolderMenuInitialize() As UUID
  If (iid(528).Data1 = 0) Then Call DEFINE_UUID(iid(528), &H7690AA79, CInt(&HF8FC), CInt(&H4615), &HA3, &H27, &H36, &HF7, &HD1, &H8F, &H5D, &H91)
  IID_IDefaultFolderMenuInitialize = iid(528)
 End Function
-
+Public Function IID_IInfoBarMessage() As UUID
+'{819d1334-9d74-4254-9ac8-dc745ebc5386}
+Static iid As UUID
+ If (iid.Data1 = 0&) Then Call DEFINE_UUID(iid, &H819D1334, CInt(&H9D74), CInt(&H4254), &H9A, &HC8, &HDC, &H74, &H5E, &HBC, &H53, &H86)
+IID_IInfoBarMessage = iid
+End Function
+Public Function IID_IInfoBarHost() As UUID
+'{e38fe0f3-3db0-47ee-a314-25cf7f4bf521}
+Static iid As UUID
+ If (iid.Data1 = 0&) Then Call DEFINE_UUID(iid, &HE38FE0F3, CInt(&H3DB0), CInt(&H47EE), &HA3, &H14, &H25, &HCF, &H7F, &H4B, &HF5, &H21)
+IID_IInfoBarHost = iid
+End Function
+Public Function IID_IBrowserProgressSessionProvider() As UUID
+'{18140CBD-AA23-4384-A38D-6A8D3E2BE505}
+Static iid As UUID
+ If (iid.Data1 = 0&) Then Call DEFINE_UUID(iid, &H18140CBD, CInt(&HAA23), CInt(&H4384), &HA3, &H8D, &H6A, &H8D, &H3E, &H2B, &HE5, &H5)
+IID_IBrowserProgressSessionProvider = iid
+End Function
+Public Function IID_IShellFolder3() As UUID
+'{711B2CFD-93D1-422B-BDF4-69BE923F2449}
+Static iid As UUID
+ If (iid.Data1 = 0&) Then Call DEFINE_UUID(iid, &H711B2CFD, CInt(&H93D1), CInt(&H422B), &HBD, &HF4, &H69, &HBE, &H92, &H3F, &H24, &H49)
+IID_IShellFolder3 = iid
+End Function
+Public Function IID_IBrowserProgressConnection() As UUID
+'{20174539-b2c7-4ec7-970b-04201f9cdbad}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &H20174539, CInt(&HB2C7), CInt(&H4EC7), &H97, &HB, &H4, &H20, &H1F, &H9C, &HDB, &HAD)
+ IID_IBrowserProgressConnection = iid
+End Function
+Public Function IID_IBrowserProgressAggregator() As UUID
+'{5EA8EEC4-C34B-4DE0-9B56-0E15FD8C8F80}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &H5EA8EEC4, CInt(&HC34B), CInt(&H4DE0), &H9B, &H56, &HE, &H15, &HFD, &H8C, &H8F, &H80)
+ IID_IBrowserProgressAggregator = iid
+End Function
+Public Function IID_IGlobalInterfaceTable() As UUID
+'{00000146-0000-0000-C000-000000000046}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &H146, CInt(&H0), CInt(&H0), &HC0, &H0, &H0, &H0, &H0, &H0, &H0, &H46)
+ IID_IGlobalInterfaceTable = iid
+End Function
+Public Function IID_IManipulationProcessor() As UUID
+'{A22AC519-8300-48a0-BEF4-F1BE8737DBA4}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &HA22AC519, CInt(&H8300), CInt(&H48A0), &HBE, &HF4, &HF1, &HBE, &H87, &H37, &HDB, &HA4)
+ IID_IManipulationProcessor = iid
+End Function
+Public Function IID_IInertiaProcessor() As UUID
+'{18b00c6d-c5ee-41b1-90a9-9d4a929095ad}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &H18B00C6D, CInt(&HC5EE), CInt(&H41B1), &H90, &HA9, &H9D, &H4A, &H92, &H90, &H95, &HAD)
+ IID_IInertiaProcessor = iid
+End Function
+Public Function IID_IManipulationEvents() As UUID
+'{4f62c8da-9c53-4b22-93df-927a862bbb03}
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(iid, &H4F62C8DA, CInt(&H9C53), CInt(&H4B22), &H93, &HDF, &H92, &H7A, &H86, &H2B, &HBB, &H3)
+ IID_IManipulationEvents = iid
+End Function
 
 Public Function IID_IStream() As UUID
 '{0000000C-0000-0000-C000-000000000046}
@@ -3713,7 +4019,146 @@ Public Function FOLDERID_AppDataProgramData() As UUID
  If (iid(705).Data1 = 0&) Then Call DEFINE_UUID(iid(705), &H559D40A3, CInt(&HA036), CInt(&H40FA), &HAF, &H61, &H84, &HCB, &H43, &HA, &H4D, &H34)
 FOLDERID_AppDataProgramData = iid(705)
 End Function
-
+Public Function FOLDERTYPEID_Invalid() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_Invalid, &H57807898, &H8C4F, &H4462, &HBB, &H63, &H71, &H4, &H23, &H80, &HB1, &H9)
+End Function
+Public Function FOLDERTYPEID_Generic() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_Generic, &H5C4F28B5, &HF869, &H4E84, &H8E, &H60, &HF1, &H1D, &HB9, &H7C, &H5C, &HC7)
+End Function
+Public Function FOLDERTYPEID_GenericSearchResults() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_GenericSearchResults, &H7FDE1A1E, &H8B31, &H49A5, &H93, &HB8, &H6B, &HE1, &H4C, &HFA, &H49, &H43)
+End Function
+Public Function FOLDERTYPEID_GenericLibrary() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_GenericLibrary, &H5F4EAB9A, &H6833, &H4F61, &H89, &H9D, &H31, &HCF, &H46, &H97, &H9D, &H49)
+End Function
+Public Function FOLDERTYPEID_Documents() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_Documents, &H7D49D726, &H3C21, &H4F05, &H99, &HAA, &HFD, &HC2, &HC9, &H47, &H46, &H56)
+End Function
+Public Function FOLDERTYPEID_Pictures() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_Pictures, &HB3690E58, &HE961, &H423B, &HB6, &H87, &H38, &H6E, &HBF, &HD8, &H32, &H39)
+End Function
+Public Function FOLDERTYPEID_Music() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_Music, &H94D6DDCC, &H4A68, &H4175, &HA3, &H74, &HBD, &H58, &H4A, &H51, &HB, &H78)
+End Function
+Public Function FOLDERTYPEID_Videos() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_Videos, &H5FA96407, &H7E77, &H483C, &HAC, &H93, &H69, &H1D, &H5, &H85, &HD, &HE8)
+End Function
+Public Function FOLDERTYPEID_UserFiles() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_UserFiles, &HCD0FC69B, &H71E2, &H46E5, &H96, &H90, &H5B, &HCD, &H9F, &H57, &HAA, &HB3)
+End Function
+Public Function FOLDERTYPEID_UsersLibraries() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_UsersLibraries, &HC4D98F09, &H6124, &H4FE0, &H99, &H42, &H82, &H64, &H16, &H8, &H2D, &HA9)
+End Function
+Public Function FOLDERTYPEID_OtherUsers() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_OtherUsers, &HB337FD00, &H9DD5, &H4635, &HA6, &HD4, &HDA, &H33, &HFD, &H10, &H2B, &H7A)
+End Function
+Public Function FOLDERTYPEID_PublishedItems() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_PublishedItems, &H7F2F5B96, &HFF74, &H41DA, &HAF, &HD8, &H1C, &H78, &HA5, &HF3, &HAE, &HA2)
+End Function
+Public Function FOLDERTYPEID_Communications() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_Communications, &H91475FE5, &H586B, &H4EBA, &H8D, &H75, &HD1, &H74, &H34, &HB8, &HCD, &HF6)
+End Function
+Public Function FOLDERTYPEID_Contacts() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_Contacts, &HDE2B70EC, &H9BF7, &H4A93, &HBD, &H3D, &H24, &H3F, &H78, &H81, &HD4, &H92)
+End Function
+Public Function FOLDERTYPEID_StartMenu() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_StartMenu, &HEF87B4CB, &HF2CE, &H4785, &H86, &H58, &H4C, &HA6, &HC6, &H3E, &H38, &HC6)
+End Function
+Public Function FOLDERTYPEID_RecordedTV() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_RecordedTV, &H5557A28F, &H5DA6, &H4F83, &H88, &H9, &HC2, &HC9, &H8A, &H11, &HA6, &HFA)
+End Function
+Public Function FOLDERTYPEID_SavedGames() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_SavedGames, &HD0363307, &H28CB, &H4106, &H9F, &H23, &H29, &H56, &HE3, &HE5, &HE0, &HE7)
+End Function
+Public Function FOLDERTYPEID_OpenSearch() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_OpenSearch, &H8FAF9629, &H1980, &H46FF, &H80, &H23, &H9D, &HCE, &HAB, &H9C, &H3E, &HE3)
+End Function
+Public Function FOLDERTYPEID_SearchConnector() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_SearchConnector, &H982725EE, &H6F47, &H479E, &HB4, &H47, &H81, &H2B, &HFA, &H7D, &H2E, &H8F)
+End Function
+Public Function FOLDERTYPEID_AccountPictures() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_AccountPictures, &HDB2A5D8F, &H6E6, &H4007, &HAB, &HA6, &HAF, &H87, &H7D, &H52, &H6E, &HA6)
+End Function
+Public Function FOLDERTYPEID_Games() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_Games, &HB689B0D0, &H76D3, &H4CBB, &H87, &HF7, &H58, &H5D, &HE, &HC, &HE0, &H70)
+End Function
+Public Function FOLDERTYPEID_ControlPanelCategory() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_ControlPanelCategory, &HDE4F0660, &HFA10, &H4B8F, &HA4, &H94, &H6, &H8B, &H20, &HB2, &H23, &H7)
+End Function
+Public Function FOLDERTYPEID_ControlPanelClassic() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_ControlPanelClassic, &HC3794F3, &HB545, &H43AA, &HA3, &H29, &HC3, &H74, &H30, &HC5, &H8D, &H2A)
+End Function
+Public Function FOLDERTYPEID_Printers() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_Printers, &H2C7BBEC6, &HC844, &H4A0A, &H91, &HFA, &HCE, &HF6, &HF5, &H9C, &HFD, &HA1)
+End Function
+Public Function FOLDERTYPEID_RecycleBin() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_RecycleBin, &HD6D9E004, &HCD87, &H442B, &H9D, &H57, &H5E, &HA, &HEB, &H4F, &H6F, &H72)
+End Function
+Public Function FOLDERTYPEID_SoftwareExplorer() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_SoftwareExplorer, &HD674391B, &H52D9, &H4E07, &H83, &H4E, &H67, &HC9, &H86, &H10, &HF3, &H9D)
+End Function
+Public Function FOLDERTYPEID_CompressedFolder() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_CompressedFolder, &H80213E82, &HBCFD, &H4C4F, &H88, &H17, &HBB, &H27, &H60, &H12, &H67, &HA9)
+End Function
+Public Function FOLDERTYPEID_NetworkExplorer() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_NetworkExplorer, &H25CC242B, &H9A7C, &H4F51, &H80, &HE0, &H7A, &H29, &H28, &HFE, &HBE, &H42)
+End Function
+Public Function FOLDERTYPEID_Searches() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_Searches, &HB0BA2E3, &H405F, &H415E, &HA6, &HEE, &HCA, &HD6, &H25, &H20, &H78, &H53)
+End Function
+Public Function FOLDERTYPEID_SearchHome() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_SearchHome, &H834D8A44, &H974, &H4ED6, &H86, &H6E, &HF2, &H3, &HD8, &HB, &H38, &H10)
+End Function
+Public Function FOLDERTYPEID_StorageProviderGeneric() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_StorageProviderGeneric, &H4F01EBC5, &H2385, &H41F2, &HA2, &H8E, &H2C, &H5C, &H91, &HFB, &H56, &HE0)
+End Function
+Public Function FOLDERTYPEID_StorageProviderDocuments() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_StorageProviderDocuments, &HDD61BD66, &H70E8, &H48DD, &H96, &H55, &H65, &HC5, &HE1, &HAA, &HC2, &HD1)
+End Function
+Public Function FOLDERTYPEID_StorageProviderPictures() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_StorageProviderPictures, &H71D642A9, &HF2B1, &H42CD, &HAD, &H92, &HEB, &H93, &H0, &HC7, &HCC, &HA)
+End Function
+Public Function FOLDERTYPEID_StorageProviderMusic() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_StorageProviderMusic, &H672ECD7E, &HAF04, &H4399, &H87, &H5C, &H2, &H90, &H84, &H5B, &H62, &H47)
+End Function
+Public Function FOLDERTYPEID_StorageProviderVideos() As UUID
+Static iid As UUID
+ If (iid.Data1 = 0) Then Call DEFINE_UUID(FOLDERTYPEID_StorageProviderVideos, &H51294DA1, &HD7B1, &H485B, &H9E, &H9A, &H17, &HCF, &HFE, &H33, &HE1, &H87)
+End Function
 
 Public Sub FreeKnownFolderDefinitionFields(pKFD As KNOWNFOLDER_DEFINITION)
 If pKFD.pszName <> 0 Then Call CoTaskMemFree(pKFD.pszName)

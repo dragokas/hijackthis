@@ -398,6 +398,7 @@ Public g_ExitCodeProcess    As Long
 Public bLoadDefaults        As Boolean
 Public bSkipIgnoreList      As Boolean
 Public g_bDelmodeDisabling  As Boolean
+Public g_iCpuUsage          As Long
 
 Public bSeenHostsFileAccessDeniedWarning As Boolean
 Public bGlobalDontFocusListBox As Boolean
@@ -1238,6 +1239,7 @@ Public Declare Function GetUserDefaultLCID Lib "kernel32.dll" () As Long
 Public Declare Function GetThreadLocale Lib "kernel32.dll" () As Long
 Public Declare Function SetThreadLocale Lib "kernel32.dll" (ByVal Locale As Long) As Long
 Public Declare Function inet_addr Lib "wsock32.dll" (ByVal CP As String) As Long
+Public Declare Function DeleteFile Lib "kernel32.dll" Alias "DeleteFileW" (ByVal lpFileName As Long) As Long
 Public Declare Function DeleteFileW Lib "kernel32.dll" (ByVal lpFileName As Long) As Long
 Public Declare Function GetSystemMetrics Lib "user32.dll" (ByVal nIndex As Long) As Long
 Public Declare Function ExpandEnvironmentStrings Lib "kernel32.dll" Alias "ExpandEnvironmentStringsW" (ByVal lpSrc As Long, ByVal lpDst As Long, ByVal nSize As Long) As Long
@@ -1562,6 +1564,9 @@ Public Const GENERIC_ALL            As Long = &H10000000
 Public Const WRITE_DAC              As Long = &H40000
 Public Const WRITE_OWNER            As Long = &H80000
 Public Const READ_CONTROL           As Long = &H20000
+Public Const STANDARD_RIGHTS_READ   As Long = READ_CONTROL
+Public Const STANDARD_RIGHTS_WRITE  As Long = READ_CONTROL
+Public Const STANDARD_RIGHTS_EXECUTE As Long = READ_CONTROL
 Public Const TOKEN_ADJUST_PRIVILEGES As Long = &H20
 Public Const SE_PRIVILEGE_ENABLED    As Long = 2&
 
@@ -2029,7 +2034,6 @@ Public Const CC_SYSCALL As Long = 6
 
 Public Const KEY_CREATE_SUB_KEY     As Long = &H4
 Public Const KEY_SET_VALUE          As Long = &H2
-Public Const STANDARD_RIGHTS_WRITE = (READ_CONTROL)
 Public Const SYNCHRONIZE            As Long = &H100000
 Public Const KEY_WRITE = ((STANDARD_RIGHTS_WRITE Or KEY_SET_VALUE Or KEY_CREATE_SUB_KEY) And (Not SYNCHRONIZE))
 
@@ -2351,6 +2355,11 @@ Public Declare Function ILCreateFromPathW Lib "shell32" (ByVal pwszPath As Long)
 Public Declare Function SHGetKnownFolderIDList Lib "shell32" (rfid As UUID, ByVal dwFlags As Long, ByVal hToken As Long, ppidl As Long) As Long
 'Public Declare Function CLSIDFromString Lib "ole32" (ByVal lpszGuid As Long, pGuid As Any) As Long
 'Public Declare Sub CoTaskMemFree Lib "ole32.dll" (ByVal pv As Long)
+Public Declare Function LoadString Lib "user32" Alias "LoadStringW" (ByVal hInstance As Long, ByVal uID As Long, ByVal lpBuffer As Long, ByVal cchBufferMax As Long) As Long
+
+Public Const ERROR_ALREADY_EXISTS As Long = 183
+Public Const MB_ICONASTERISK As Long = &H40&
+Public Const MB_ICONINFORMATION As Long = MB_ICONASTERISK
 
 Public Const vbDarkRed As Long = &H80& 'burgundy
 
