@@ -268,6 +268,7 @@ End Type
 
 Public Type FIX_FILE
     Path            As String
+    Arguments       As String
     GoodFile        As String
     ActionType      As ENUM_FILE_ACTION_BASED
 End Type
@@ -4376,7 +4377,7 @@ Sub CheckO4_RegRuns()
                             .HitLineW = sHit
                             .Alias = sAlias
                             AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key, aValue(i), , HE.Redirected
-                            AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile
+                            AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile, sArgs
                             
                             If Not isDisabledWinXP Then
                                 AddProcessToFix .Process, FREEZE_OR_KILL_PROCESS, sFile
@@ -4511,7 +4512,7 @@ Sub CheckO4_RegRuns()
                                 AddRegToFix .Reg, APPEND_VALUE_NO_DOUBLE, HE.Hive, HE.Key, sParam, _
                                     "DfsInit", HE.Redirected, REG_RESTORE_MULTI_SZ
                             End If
-                            AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile
+                            AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile, sArgs
                             
                             .CureType = REGISTRY_BASED Or FILE_BASED
                             
@@ -4519,7 +4520,7 @@ Sub CheckO4_RegRuns()
                             
                             AddRegToFix .Reg, RESTORE_VALUE, HE.Hive, HE.Key, sParam, vbNullString, HE.Redirected
                             
-                            AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile
+                            AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile, sArgs
                             AddJumpFiles .Jump, JUMP_FILE, ExtractFilesFromCommandLine(sData)
 
                             .CureType = REGISTRY_BASED Or FILE_BASED
@@ -4530,7 +4531,7 @@ Sub CheckO4_RegRuns()
                                 AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key, sParam, , HE.Redirected
                             End If
                                 
-                            AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile
+                            AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile, sArgs
 
                             .CureType = REGISTRY_BASED Or FILE_BASED
                         End If
@@ -4603,7 +4604,7 @@ Sub CheckO4_RegRuns()
                     .HitLineW = sHit
                     .Alias = sAlias
                     AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key, sParam, , HE.Redirected
-                    AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile
+                    AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile, sArgs
                     
                     .CureType = REGISTRY_BASED Or FILE_BASED
                 End With
@@ -4747,7 +4748,7 @@ Sub CheckO4_RegRuns()
                             .Alias = sAlias
                             AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key & "\" & aSubKey(i), aValue(j), , HE.Redirected
                             AddRegToFix .Reg, REMOVE_KEY_IF_NO_VALUES, HE.Hive, HE.Key & "\" & aSubKey(i), , , HE.Redirected
-                            AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile
+                            AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile, sArgs
                             
                             .CureType = REGISTRY_BASED Or FILE_BASED
                         End With
@@ -4801,7 +4802,7 @@ Sub CheckO4_RegRuns()
                         With result
                             .Section = "O4"
                             .HitLineW = sHit
-                            AddFileToFix .File, REMOVE_FILE, sAutorun
+                            AddFileToFix .File, REMOVE_FILE, sAutorun, sArgs
                             .CureType = FILE_BASED
                         End With
                         AddToScanResults result
@@ -4880,20 +4881,24 @@ Sub CheckO4_RegRuns()
     
     Do While HE.MoveNext
     
-      sFile = Reg.GetString(HE.Hive, HE.Key, "SCRNSAVE.EXE")
-      If 0 <> Len(sFile) Then
+      sData = Reg.GetString(HE.Hive, HE.Key, "SCRNSAVE.EXE")
+      If 0 <> Len(sData) Then
         bSafe = True
-        sOrigLine = sFile
-
+        
+        SplitIntoPathAndArgs sData, sFile, sArgs, bIsRegistryData:=True
         sFile = FormatFileMissing(sFile)
         
         If FileMissing(sFile) Then
             '(Нет)
-            If (sOrigLine <> STR_CONST.RU_NO And sOrigLine <> "(None)" Or bIgnoreAllWhitelists) Then
+            If (sData <> STR_CONST.RU_NO And sData <> "(None)" Or bIgnoreAllWhitelists) Then
                 bSafe = False
             End If
         Else
-            If Not IsMicrosoftFile(sFile) Then bSafe = False
+            If IsMicrosoftFile(sFile) Then
+                If IsLoLBin(sFile) Then bSafe = False
+            Else
+                bSafe = False
+            End If
         End If
         
         If Not bSafe Then
@@ -4904,7 +4909,7 @@ Sub CheckO4_RegRuns()
                     .Section = "O4"
                     .HitLineW = sHit
                     AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key, "SCRNSAVE.EXE"
-                    AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile
+                    AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile, sArgs
                     .CureType = REGISTRY_BASED Or FILE_BASED
                 End With
                 AddToScanResults result
@@ -4932,7 +4937,7 @@ Sub CheckO4_MSConfig(aHives() As String, aUserOfHive() As String)
     '\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\StartupFolder -> checked in CheckO4_AutostartFolder()
     
     Dim sHive$, i&, j&, sAlias$, sMD5$, result As SCAN_RESULT
-    Dim aSubKey$(), sDay$, sMonth$, sYear$, sKey$, sFile$, sTime$, sHit$, SourceHive$, sArgs$, sUser$, sDate$
+    Dim aSubKey$(), sDay$, sMonth$, sYear$, sKey$, sFile$, sTime$, sHit$, SourceHive$, sArgs$, sUser$, sDate$, sAddition$
     Dim Values$(), bData() As Byte, flagDisabled As Long, dDate As Date, UseWow As Variant, Wow6432Redir As Boolean, sTarget$, sData$
     Dim bMicrosoft As Boolean
     
@@ -5017,7 +5022,7 @@ Sub CheckO4_MSConfig(aHives() As String, aUserOfHive() As String)
                                     AddRegToFix .Reg, REMOVE_VALUE, 0, sHive & "\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\" & _
                                         IIf(bIsWin64 And Wow6432Redir, "Run32", "Run"), Values(j), , False
                                     AddRegToFix .Reg, REMOVE_VALUE, 0, sHive & "\SOFTWARE\Microsoft\Windows\CurrentVersion\Run", Values(j), , CLng(Wow6432Redir)
-                                    AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile
+                                    AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile, sArgs
                                     .CureType = REGISTRY_BASED Or FILE_BASED
                                 End With
                                 AddToScanResults result
@@ -5054,15 +5059,15 @@ Sub CheckO4_MSConfig(aHives() As String, aUserOfHive() As String)
             sAlias = "O4 - MSConfig\startupreg: "
             
             sHit = sAlias & aSubKey(i) & " [command] = "
-
+            
             SplitIntoPathAndArgs sData, sFile, sArgs, True
             
             sFile = FormatFileMissing(sFile)
+            sAddition = sArgs
             
-            If Len(SourceHive) <> 0 Then sArgs = sArgs & IIf(Len(sArgs) = 0, vbNullString, " ") & "(" & SourceHive & ")"
-            sArgs = sArgs & " (" & sTime & ")"
+            If Len(SourceHive) <> 0 Then sAddition = sAddition & IIf(Len(sArgs) = 0, vbNullString, " ") & "(" & SourceHive & ")"
             
-            sHit = sHit & ConcatFileArg(sFile, sArgs)
+            sHit = sHit & ConcatFileArg(sFile, sAddition & " (" & sTime & ")")
            
             If Not IsOnIgnoreList(sHit) Then
                 
@@ -5073,7 +5078,7 @@ Sub CheckO4_MSConfig(aHives() As String, aUserOfHive() As String)
                     .HitLineW = sHit
                     .Alias = sAlias
                     AddRegToFix .Reg, REMOVE_KEY, 0, sKey & "\" & aSubKey(i), , , REG_NOTREDIRECTED
-                    AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile
+                    AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile, sArgs
                     .CureType = REGISTRY_BASED
                 End With
                 AddToScanResults result
@@ -5086,6 +5091,8 @@ Sub CheckO4_MSConfig(aHives() As String, aUserOfHive() As String)
         
         
         For i = 1 To Reg.EnumSubKeysToArray(0&, sKey, aSubKey())
+        
+            sArgs = vbNullString
         
             sFile = Reg.GetData(0&, sKey & "\" & aSubKey(i), "backup")
             
@@ -5118,6 +5125,7 @@ Sub CheckO4_MSConfig(aHives() As String, aUserOfHive() As String)
                     .Alias = sAlias
                     AddRegToFix .Reg, REMOVE_KEY, 0&, sKey & "\" & aSubKey(i), , , REG_NOTREDIRECTED
                     AddFileToFix .File, REMOVE_FILE, sFile 'removing backup (.pss)
+                    AddJumpFile .Jump, JUMP_FILE, sTarget, sArgs
                     .CureType = FILE_BASED Or REGISTRY_BASED
                 End With
                 AddToScanResults result
@@ -5382,6 +5390,7 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUserOfHive() As String)
                     End If
                     
                     sTarget = vbNullString
+                    sArguments = vbNullString
                     
                     If Blink Then
                         sTarget = GetFileFromShortcut(sLinkPath, sArguments)
@@ -5428,6 +5437,7 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUserOfHive() As String)
                                 AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sTarget
                             End If
                             AddFileToFix .File, REMOVE_FILE, sLinkPath
+                            AddJumpFile .Jump, JUMP_FILE, sTarget, sArguments
                             .CureType = FILE_BASED Or PROCESS_BASED
                           End If
                         End With
@@ -6865,7 +6875,7 @@ Sub CheckPolicyScripts()
                                     AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\State\" & HE.SID & "\Scripts\" & vType & "\" & aKeyX(X) & "\" & aKeyY(Y), , , HE.Redirected
                                     AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Group Policy\State\" & HE.SID & "\Scripts\" & vType & "\" & aKeyX(X) & "\" & aKeyY(Y), , , HE.Redirected
                                 End If
-                                AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile
+                                AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile, sArgs
                                 .CureType = FILE_BASED Or REGISTRY_BASED
                             End With
                             AddToScanResults result
@@ -6997,7 +7007,7 @@ Sub CheckPolicyScripts()
                                                 .Alias = sAlias
                                                 AddIniToFix .Reg, REMOVE_VALUE_INI, sIni, aSection, aName
                                                 AddIniToFix .Reg, REMOVE_VALUE_INI, sIni, aSection, nItem & "Parameters"
-                                                AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile
+                                                AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile, sArgs
                                                 .CureType = FILE_BASED Or INI_BASED
                                             End With
                                             AddToScanResults result
@@ -8808,7 +8818,7 @@ Public Sub CheckO12Item()
                     .Section = "O12"
                     .HitLineW = sHit
                     AddRegToFix .Reg, REMOVE_KEY, HE.Hive, HE.Key & "\" & sName, , , HE.Redirected
-                    AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile
+                    AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile, sArgs
                     .CureType = REGISTRY_BASED Or FILE_BASED
                 End With
                 AddToScanResults result
@@ -10951,7 +10961,7 @@ Public Sub CheckO23Item()
                         
                             If Len(sServiceDll) = 0 Then
                                 'AddJumpFile .Jump, JUMP_FILE, sFile
-                                AddFileToFix .File, BACKUP_FILE, sFile
+                                AddFileToFix .File, BACKUP_FILE, sFile, sArgument
                             Else
                                 'AddJumpFile .Jump, JUMP_FILE, sServiceDll
                                 AddFileToFix .File, BACKUP_FILE, sServiceDll
@@ -15819,7 +15829,8 @@ End Sub
 Public Function AddJumpFile( _
     JumpArray() As JUMP_ENTRY, _
     ActionType As ENUM_FILE_ACTION_BASED, _
-    sFilePath As String) As Boolean
+    sFilePath As String, _
+    Optional sArguments As String) As Boolean
     
     On Error GoTo ErrorHandler
     
@@ -15829,7 +15840,7 @@ Public Function AddJumpFile( _
     If Len(sFilePath) = 0 Then Exit Function
     
     Dim FileFix() As FIX_FILE
-    AddFileToFix FileFix, ActionType, sFilePath
+    AddFileToFix FileFix, ActionType, sFilePath, sArguments
     
     If AryPtr(FileFix) Then
         AddJumpFile = True
@@ -15945,6 +15956,7 @@ Public Sub AddFileToFix( _
     With FileArray(UBound(FileArray))
         .ActionType = ActionType
         .Path = sFilePath
+        .Arguments = sArguments
         .GoodFile = sGoodFile
     End With
     

@@ -11,10 +11,20 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[2.10.0.23] - Sep 03, 2022
+ - Context menu: Added button "Copy" - "File Argument".
+ - Search: Save lastly entered phrase after program exits.
+ - ADS Spy: fixed functionality of "Browse" button (thanks to Alexyz21 for report).
+ - Uninstall manager: fixed location of "Remove Software" button.
+
+[2.10.0.22] - Aug 29, 2022
+ - Digital Signature Checker Tool: New buttons "Add folder", "Clear list".
+ - Translation corrected.
+
 [2.10.0.21] - Aug 28, 2022
  - Added free memory info and total CPU loading*.
  * loading data may be overestimated on weak processors.
- - Cut down icon metadata causing false positive detection by Sigma rules.
+ - Cut down icon metadata causing false positive detection by Yara rules (VT).
  - Fixed Hosts template and its ACL permissions according to reference.
  - O22 - Added -32 prefixes for 32-bit tasks on 64-bit OS.
  - Tools=>Unlock file/folder: Improved recurvive procedure of reset permissions.
@@ -1642,4 +1652,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                                                                                     
+                                                                                         

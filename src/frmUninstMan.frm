@@ -244,12 +244,12 @@ Begin VB.Form frmUninstMan
          Width           =   1575
       End
       Begin VB.CommandButton cmdOpenCP 
-         Caption         =   "Open Control Panel ""Remove Software"""
+         Caption         =   "Open snap-in ""Remove Software"""
          Height          =   425
-         Left            =   6360
+         Left            =   6720
          TabIndex        =   8
          Top             =   6170
-         Width           =   4515
+         Width           =   3672
       End
       Begin VB.Label lblAbout 
          Caption         =   $"frmUninstMan.frx":4072
@@ -332,10 +332,8 @@ Private Sub Form_Resize()
     cmdSave.Top = cmdRefresh.Top
     cmdSave.Left = lstUninstMan.Left + lstUninstMan.Width - cmdSave.Width
     cmdRefresh.Left = lstUninstMan.Left + lstUninstMan.Width \ 2 - cmdRefresh.Width \ 2
-    'cmdUninstall.Left = Me.ScaleWidth - 5250 + 240
-    'cmdDelete.Left = Me.ScaleWidth - 5250 + 2640
-    cmdOpenCP.Left = cmdUninstall.Left
-    'cmdOpenCP.Top = fraFilter.Top + fraFilter.Height + 155
+    cmdOpenCP.Left = Me.fraFilter.Left + Me.fraFilter.Width / 2 - cmdOpenCP.Width / 2
+
 End Sub
 
 '

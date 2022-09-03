@@ -456,7 +456,7 @@ Public Sub CheckO25Item()
                             
                             'Jump to ...
                             AddJumpFile .Jump, JUMP_FILE, sScriptFile
-                            AddJumpFile .Jump, JUMP_FILE, cmdExecute
+                            AddJumpFile .Jump, JUMP_FILE, cmdExecute, cmdArguments
                             AddJumpFile .Jump, JUMP_FILE, BuildPath(cmdWorkDir, cmdExecute)
                             
                             .CureType = CUSTOM_BASED Or FILE_BASED
@@ -1255,7 +1255,7 @@ Public Sub CheckO26ToolsHiJack()
                     .Section = "O26"
                     .HitLineW = sHit
                     AddRegToFix .Reg, RESTORE_VALUE, HKLM, sKey, vbNullString, dSafe.Items(i), , REG_RESTORE_EXPAND_SZ
-                    AddFileToFix .File, RESTORE_FILE_SFC, EnvironW(RemoveArguments(dSafe.Items(i)))
+                    AddFileToFix .File, RESTORE_FILE_SFC, EnvironW(RemoveArguments(dSafe.Items(i))), sArgs
                     
                     .CureType = REGISTRY_BASED
                 End With

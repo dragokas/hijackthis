@@ -160,6 +160,7 @@
      Do you allow me?
 2351=Click here to get VT results
 2352=Uploading the file ...
+2360=File Arguments
 ;
 ; =============== System Tray ================
 ;
@@ -236,7 +237,7 @@
          O1 - Hijack of Hosts and hosts.ics files / DNSApi hijacking
          O2 - Internet Explorer: BHO
          O3 - Internet Explorer: toolbars
-         O4 - Autoloading Registry entries and 'Autostart' folder / msconfig disabled items
+         O4 - Autoloading Registry entries and 'Autostart' folder / disabled items (MSConfig, StartupApproved)
          O5 - Hiding Control Panel items
          O6 - IE Policy: Disabling of 'Internet Options' main tab
          O7 - Policies: Regedit, Explorer, TaskMgr / IP Security / Certificates / OS troubleshooting
@@ -721,7 +722,7 @@
 0221=Delete this entry
 0222=Refresh list
 0223=Save list...
-0224=Open Control Panel "Remove Software"
+0224=Open snap-in "Remove Software"
 1700=Filter
 1701=No Uninstall command
 1702=Hidden
@@ -803,12 +804,14 @@
 ; (1850 - 1899)
 ;
 1850=Authenticode EDS checker
-1851=This tool will create a detailed report about the digital signatures of files/folders you specify below:
+1851=This tool will create a detailed report about the digital signatures of files you specify below:
 1852=Recursively (include subfolders)
 1853=Include files in Windows folder
-1854=Report format:
-1855=Plain Text (short log in Unicode)
-1856=CSV (full log in ANSI)
+1854=Report format
+1855=Plain Text
+(short log in Unicode)
+1856=Table CSV
+(full log in ANSI)
 1857=Go
 1858=Close
 1859=You should enter at least one path to file or folder!
@@ -822,8 +825,10 @@
 1867=Enumerating files. Please wait...
 1868=Preparing a report. Please wait...
 1869=Cannot open report file. Write access is restricted by another program.
-1870=Add file(s) ...
+1870=Add file...
 1871=Precaching security catalogues ...
+1872=Add folder...
+1873=Clear list
 ;
 ; ============= Registry Key Unlocker =========
 ;
@@ -1030,7 +1035,7 @@
       - dll file is deleted.
 ; [O4]
 0412=        This part of the scan checks for several suspicious entries that autoload when Windows starts. Autoloading registry entries may load a script (VBS, JS, HTA file, etc) possibly causing the Start Page, Search Page, Search Bar or Search Assistant to redirect to a hijacker's page. A DLL file can also be loaded that hooks into different parts of your system. Scripts, other programs, or fileless registry entries (e.g. legit system file PowerShell.exe with arguments) in autostart can also be used as droppers that load other malicious files via the internet, or ensure the survival of malware after a reboot.
-             O4 section also includes listing of autorun disabled items (MSConfig / TaskMgr).
+             O4 section also includes listing of autorun disabled items (MSConfig / StartupApproved / TaskMgr).
 \\p     
      Area to be checked: registry keys and 'Autostart' folder.
 

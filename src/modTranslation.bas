@@ -493,6 +493,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     Case "1173": .mnuResultCopyRegParam.Caption = Translation
                     Case "1174": .mnuResultCopyFilePath.Caption = Translation
                     Case "1175": .mnuResultCopyFileName.Caption = Translation
+                    Case "2360": .mnuResultCopyFileArguments.Caption = Translation
                     Case "1176": .mnuResultCopyFileObject.Caption = Translation
                     Case "1177": .mnuResultCopyValue.Caption = Translation
                     Case "1178": .mnuResultVTHash.Caption = Translation
@@ -746,6 +747,8 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                                     Case "1864": .OptAllFiles.Caption = Translation
                                     Case "1865": .OptExtension.Caption = Translation
                                     Case "1870": .cmdSelectFile.Caption = Translation
+                                    Case "1872": .cmdSelectFolder.Caption = Translation
+                                    Case "1873": .cmdClear.Caption = Translation
                                 End Select
                             End With
                         End If
@@ -957,6 +960,8 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                                     Case "2403": .cmdGo.Caption = Translation
                                     'Case "2404": .cmdExit.Caption = Translation
                                     Case "2409": .cmdJump.Caption = Translation
+                                    Case "1870": .cmdAddFile.Caption = Translation
+                                    Case "1872": .cmdAddFolder.Caption = Translation
                                 End Select
                             End With
                         End If

@@ -19,6 +19,22 @@ Begin VB.Form frmCheckDigiSign
    LinkTopic       =   "Form1"
    ScaleHeight     =   4920
    ScaleWidth      =   9252
+   Begin VB.CommandButton cmdClear 
+      Caption         =   "Clear list"
+      Height          =   492
+      Left            =   7320
+      TabIndex        =   16
+      Top             =   1800
+      Width           =   1815
+   End
+   Begin VB.CommandButton cmdSelectFolder 
+      Caption         =   "Add folder(s) ..."
+      Height          =   492
+      Left            =   7320
+      TabIndex        =   15
+      Top             =   1200
+      Width           =   1815
+   End
    Begin VB.CommandButton cmdExit 
       Caption         =   "Exit"
       Height          =   492
@@ -29,14 +45,23 @@ Begin VB.Form frmCheckDigiSign
    End
    Begin VB.CommandButton cmdSelectFile 
       Caption         =   "Add file(s) ..."
-      Height          =   375
+      Height          =   492
       Left            =   7320
       TabIndex        =   13
-      Top             =   120
+      Top             =   600
       Width           =   1815
    End
    Begin VB.Frame fraReportFormat 
       Caption         =   "Report format:"
+      BeginProperty Font 
+         Name            =   "Tahoma"
+         Size            =   7.8
+         Charset         =   204
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
       Height          =   1572
       Left            =   5400
       TabIndex        =   8
@@ -44,10 +69,10 @@ Begin VB.Form frmCheckDigiSign
       Width           =   3735
       Begin VB.OptionButton OptCSV 
          Caption         =   "CSV (Full log in ANSI)"
-         Height          =   195
+         Height          =   432
          Left            =   120
          TabIndex        =   10
-         Top             =   960
+         Top             =   840
          Value           =   -1  'True
          Width           =   2895
       End
@@ -56,12 +81,21 @@ Begin VB.Form frmCheckDigiSign
          Height          =   492
          Left            =   120
          TabIndex        =   9
-         Top             =   360
+         Top             =   240
          Width           =   3495
       End
    End
    Begin VB.Frame fraFilter 
       Caption         =   "Filter"
+      BeginProperty Font 
+         Name            =   "Tahoma"
+         Size            =   7.8
+         Charset         =   204
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
       Height          =   1572
       Left            =   240
       TabIndex        =   4
@@ -125,7 +159,7 @@ Begin VB.Form frmCheckDigiSign
       ScrollBars      =   3  'Both
       TabIndex        =   0
       Top             =   600
-      Width           =   8895
+      Width           =   6972
    End
    Begin VB.Label lblStatus 
       AutoSize        =   -1  'True
@@ -161,11 +195,11 @@ Begin VB.Form frmCheckDigiSign
       AutoSize        =   -1  'True
       BackStyle       =   0  'Transparent
       Caption         =   "This tool will create a detail report about digital signature of files/folders you specify below:"
-      Height          =   195
-      Left            =   480
+      Height          =   192
+      Left            =   240
       TabIndex        =   1
-      Top             =   120
-      Width           =   6555
+      Top             =   200
+      Width           =   8832
       WordWrap        =   -1  'True
    End
 End
@@ -551,7 +585,7 @@ Private Sub cmdGo_Click()
     Else
         sLogLine = ChrW$(-257) & "Logfile of Digital Signature Checker (HJT v." & AppVerString & ")" & vbCrLf & vbCrLf & _
             MakeLogHeader() & vbCrLf & _
-            "Is legitimate | FileName | Is Microsoft | Is WFP" & vbCrLf & _
+            "Is legitimate | FileName | Is Microsoft | Is WFP (Windows Protected File / SFC)" & vbCrLf & _
             "------------------------------------------------" & vbCrLf & _
             sLogLine & vbCrLf & vbCrLf & _
             "--" & vbCrLf & "End of file"
@@ -626,7 +660,15 @@ Private Sub cmdSelectFile_Click()
     sExt = "*.exe;*.msi;*.dll;*.sys;*.ocx"
     'PE; All files
     For i = 1 To OpenFileDialog_Multi(aFile, Translate(122), Desktop, "PE (" & sExt & ")|" & sExt & "|" & Translate(1003) & " (*.*)|*.*", Me.hwnd)
-        txtPaths.Text = txtPaths.Text & vbCrLf & aFile(i)
+        txtPaths.Text = txtPaths.Text & IIf(Len(txtPaths.Text) = 0, vbNullString, vbCrLf) & aFile(i)
+    Next
+End Sub
+
+Private Sub cmdSelectFolder_Click()
+    Dim aFolder() As String
+    Dim i As Long
+    For i = 1 To OpenFolderDialog_Multi(aFolder, , Desktop, Me.hwnd)
+        txtPaths.Text = txtPaths.Text & IIf(Len(txtPaths.Text) = 0, vbNullString, vbCrLf) & aFolder(i)
     Next
 End Sub
 
@@ -679,10 +721,10 @@ Private Sub Form_Resize()
     
     Dim TopLevel1&, TopLevel2&
     
-    If Me.Width < 8350 Then Me.Width = 8350
-    If Me.Height < 3650 Then Me.Height = 3650
+    If Me.Width < 9396 Then Me.Width = 9396
+    If Me.Height < 5208 Then Me.Height = 5208
     
-    txtPaths.Width = Me.Width - 630
+    txtPaths.Width = Me.Width - 2430
     txtPaths.Height = Me.Height - 3500
     
     TopLevel1 = Me.Height - 1300
@@ -697,6 +739,10 @@ Private Sub Form_Resize()
     shpFore.Top = TopLevel1 + 120 + offset
     lblStatus.Top = TopLevel1 + 210 + offset
     shpBack.Width = Me.Width - 4680
+    
+    cmdSelectFile.Left = txtPaths.Left + txtPaths.Width + 70
+    cmdSelectFolder.Left = txtPaths.Left + txtPaths.Width + 70
+    cmdClear.Left = txtPaths.Left + txtPaths.Width + 70
     
     fraFilter.Top = TopLevel2
     fraReportFormat.Top = TopLevel2
@@ -719,3 +765,9 @@ Private Sub AddObjToList(Data As DataObject)
         Next
     End If
 End Sub
+
+Private Sub cmdClear_Click()
+    txtPaths.Text = ""
+End Sub
+
+

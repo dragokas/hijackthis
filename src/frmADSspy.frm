@@ -476,7 +476,8 @@ End Sub
 Private Sub cmdScanFolder_Click()
     Dim sPath$, sNTFSDrives$(), i&
     'Select a folder to scan:
-    sPath = BrowseForFolder(Translate(194))
+    'sPath = BrowseForFolder(Translate(194))
+    sPath = OpenFolderDialog(Translate(194), Desktop, Me.hwnd)
     If sPath <> vbNullString Then
         sNTFSDrives = Split(GetNTFSDrives(), "|")
         For i = 0 To UBound(sNTFSDrives)

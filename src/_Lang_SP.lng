@@ -160,6 +160,7 @@
       ¿Me permite descargarlo?
 2351=Haga clic aquí para obtener los resultados de VT
 2352=Subiendo el archivo ...
+2360=Argumentos de archivo
 ;
 ; =============== System Tray ================
 ;
@@ -236,7 +237,7 @@
          O1 - Hijack de Hosts y archivos hosts.ics / Hijack de DNSApi
          O2 - Internet Explorer: BHO
          O3 - Internet Explorer: barras de herramientas
-         O4 - Entradas de registro de carga automática y carpeta de inicio automático / elementos deshabilitados de msconfig
+         O4 - Entradas de registro de carga automática y carpeta de inicio automático / elementos deshabilitados (MSConfig, StartupApproved)
          O5 - Ocultar elementos del panel de control
          O6 - Políticas de IE: Desactivación de la pestaña principal 'Opciones de Internet'
          O7 - Políticas: Regedit, Explorer, TaskMgr / Seguridad IP / Certificados / Solución de problemas del sistema operativo
@@ -721,7 +722,7 @@
 0221=Eliminar esta entrada
 0222=Actualizar lista
 0223=Guardar lista ...
-0224=Abrir el panel de control "Eliminar software"
+0224=Abrir el estampación "Eliminar software"
 1700=Filtro
 1701=Sin comando de desinstalación
 1702=Oculto
@@ -805,12 +806,14 @@
 ; (1850 - 1899)
 ;
 1850=Verificador Authenticode EDS
-1851=Esta herramienta creará un informe detallado sobre las firmas digitales de los archivos/carpetas que especifique a continuación:
+1851=Esta herramienta creará un informe detallado sobre las firmas digitales de los archivos que especifique a continuación:
 1852=Recursivamente (incluye subcarpetas)
 1853=Incluir archivos en la carpeta de Windows
-1854=Formato de informe:
-1855=Texto sin formato (registro corto en Unicode)
-1856=CSV (registro completo en ANSI)
+1854=Formato de informe
+1855=Texto sin formato
+(registro corto en Unicode)
+1856=Mesa CSV
+(registro completo en ANSI)
 1857=Ejecutar
 1858=Cerrar
 1859=¡Debe ingresar al menos una ruta al archivo o carpeta!
@@ -824,8 +827,10 @@
 1867=Enumerando archivos. Espere por favor...
 1868=Preparación de un informe. Espere por favor...
 1869=No se puede abrir el archivo de informe. El acceso de escritura está restringido por otro programa.
-1870=Agregar archivo (s) ...
+1870=Agregar archivo...
 1871=Precaching catálogos de seguridad ...
+1872=Agregar carpeta...
+1873=Borrar la lista
 ;
 ; ============= Registry Key Unlocker =========
 ;
@@ -1033,7 +1038,7 @@
       - Se elimina el archivo dll.
 ; [O4]
 0412=        Esta parte del análisis busca varias entradas sospechosas que se cargan automáticamente cuando se inicia Windows. La carga automática de entradas de registro puede cargar un script (archivo VBS, JS, HTA, etc.) que posiblemente provoque que la página de inicio, la página de búsqueda, la barra de búsqueda o el asistente de búsqueda redirijan a la página de un secuestrador. También se puede cargar un archivo DLL que se conecta a diferentes partes de su sistema. Las secuencias de comandos, otros programas o entradas de registro sin archivos (por ejemplo, el archivo de sistema legítimo PowerShell.exe con argumentos) en el inicio automático también se pueden usar como descargadores que cargan otros archivos maliciosos a través de Internet o aseguran la supervivencia del malware después de un reinicio..
-             O4 La sección también incluye una lista de elementos de ejecución automática deshabilitados (MSConfig / TaskMgr).
+             O4 La sección también incluye una lista de elementos de ejecución automática deshabilitados (MSConfig / StartupApproved / TaskMgr).
 \\p     
      Área a verificar: claves de registro y carpeta 'Autostart'.
 
@@ -1787,4 +1792,4 @@
 ; ========= Empty ========
 ;
 ; (2450 - ...)
-;                        
+;                           

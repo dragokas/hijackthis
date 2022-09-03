@@ -1852,6 +1852,9 @@ Begin VB.Form frmMain
          Begin VB.Menu mnuResultCopyFileName 
             Caption         =   "File Name"
          End
+         Begin VB.Menu mnuResultCopyFileArguments 
+            Caption         =   "File Arguments"
+         End
          Begin VB.Menu mnuResultCopyFileObject 
             Caption         =   "File (as Object)"
          End
@@ -5571,6 +5574,8 @@ Private Sub LoadSettings(Optional nRun As Long)
         sFileVals(i) = EnvironW(sFileVals(i))
     Next
     
+    g_sLastSearch = RegReadHJT("LastSearch", vbNullString)
+    
     ' move registry settings from old key to new
     If bUseOldKey And OSver.IsElevated Then
         SaveSettings
@@ -5946,6 +5951,7 @@ Sub SaveSettings()
     RegSaveHJT "DefSearchPage", Encode64(Crypt(g_DEFSEARCHPAGE))
     RegSaveHJT "DefSearchAss", Encode64(Crypt(g_DEFSEARCHASS))
     RegSaveHJT "DefSearchCust", Encode64(Crypt(g_DEFSEARCHCUST))
+    RegSaveHJT "LastSearch", g_sLastSearch
     RegSaveHJT "LogEnvVars", Abs(CLng(bLogEnvVars))
     RegSaveHJT "CalcMD5", Abs(CLng(g_bCheckSum)) 'CalcMD5 - for backward compatibility, actual meaning is "Calc CheckSum"
     Select Case g_eUseHashType
@@ -6398,6 +6404,10 @@ Private Sub mnuResultCopyRegKey_Click() ' Context menu => Copy => Registry Key
     result = GetSelected_OrCheckedItemResult()
     If AryPtr(result.Reg) Then
         ClipboardSetText BuildPath(Reg.GetHiveNameByHandle(result.Reg(0).Hive), result.Reg(0).Key)
+    ElseIf AryPtr(result.Jump) Then
+        If AryPtr(result.Jump(0).Registry) Then
+            ClipboardSetText BuildPath(Reg.GetHiveNameByHandle(result.Jump(0).Registry(0).Hive), result.Jump(0).Registry(0).Key)
+        End If
     End If
 End Sub
 
@@ -6406,6 +6416,10 @@ Private Sub mnuResultCopyRegParam_Click() ' Context menu => Copy => Registry Par
     result = GetSelected_OrCheckedItemResult()
     If AryPtr(result.Reg) Then
         ClipboardSetText result.Reg(0).Param
+    ElseIf AryPtr(result.Jump) Then
+        If AryPtr(result.Jump(0).Registry) Then
+            ClipboardSetText result.Jump(0).Registry(0).Param
+        End If
     End If
 End Sub
 
@@ -6414,6 +6428,22 @@ Private Sub mnuResultCopyFilePath_Click() ' Context menu => Copy => File Path
     result = GetSelected_OrCheckedItemResult()
     If AryPtr(result.File) Then
         ClipboardSetText result.File(0).Path
+    ElseIf AryPtr(result.Jump) Then
+        If AryPtr(result.Jump(0).File) Then
+            ClipboardSetText result.Jump(0).File(0).Path
+        End If
+    End If
+End Sub
+
+Private Sub mnuResultCopyFileArguments_Click() ' Context menu => Copy => File Argument
+    Dim result As SCAN_RESULT
+    result = GetSelected_OrCheckedItemResult()
+    If AryPtr(result.File) Then
+        ClipboardSetText result.File(0).Arguments
+    ElseIf AryPtr(result.Jump) Then
+        If AryPtr(result.Jump(0).File) Then
+            ClipboardSetText result.Jump(0).File(0).Arguments
+        End If
     End If
 End Sub
 
@@ -6422,15 +6452,27 @@ Private Sub mnuResultCopyFileName_Click() ' Context menu => Copy => File Name
     result = GetSelected_OrCheckedItemResult()
     If AryPtr(result.File) Then
         ClipboardSetText GetFileName(result.File(0).Path, True)
+    ElseIf AryPtr(result.Jump) Then
+        If AryPtr(result.Jump(0).File) Then
+            ClipboardSetText GetFileName(result.Jump(0).File(0).Path, True)
+        End If
     End If
 End Sub
 
 Private Sub mnuResultCopyFileObject_Click() ' Context menu => Copy => File (as Object)
     Dim result As SCAN_RESULT
+    Dim sFile As String
     result = GetSelected_OrCheckedItemResult()
     If AryPtr(result.File) Then
-        If FileExists(result.File(0).Path) Then
-            Call ShellExecute(g_HwndMain, StrPtr("copy"), StrPtr(result.File(0).Path), 0&, 0&, 1)
+        sFile = result.File(0).Path
+    ElseIf AryPtr(result.Jump) Then
+        If AryPtr(result.Jump(0).File) Then
+            sFile = result.Jump(0).File(0).Path
+        End If
+    End If
+    If sFile <> "" Then
+        If FileExists(sFile) Then
+            Call ShellExecute(g_HwndMain, StrPtr("copy"), StrPtr(sFile), 0&, 0&, 1)
         End If
     End If
 End Sub

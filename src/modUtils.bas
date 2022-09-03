@@ -2375,7 +2375,7 @@ Public Sub ProcessHotkey(KeyCode As Integer, Frm As Form)
             If cMath.HIWORD(GetKeyState(VK_CONTROL)) Then LoadSearchEngine Frm
         End If
     End If
-    If KeyCode = Asc("A") Then                    'Ctrl + F
+    If KeyCode = Asc("A") Then                    'Ctrl + A
         If Not (cMath Is Nothing) Then
             If cMath.HIWORD(GetKeyState(VK_CONTROL)) Then ControlSelectAll Frm
         End If

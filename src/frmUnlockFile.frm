@@ -15,7 +15,7 @@ Begin VB.Form frmUnlockFile
       Height          =   492
       Left            =   6720
       TabIndex        =   6
-      Top             =   1200
+      Top             =   600
       Width           =   1572
    End
    Begin VB.CommandButton cmdAddFolder 
@@ -23,7 +23,7 @@ Begin VB.Form frmUnlockFile
       Height          =   492
       Left            =   6720
       TabIndex        =   5
-      Top             =   600
+      Top             =   1200
       Width           =   1572
    End
    Begin VB.CommandButton cmdJump 
@@ -89,15 +89,15 @@ Private Sub cmdAddFile_Click()
     Dim aFile() As String
     Dim i As Long
     For i = 1 To OpenFileDialog_Multi(aFile, Translate(1003), Desktop, Translate(1003) & " (*.*)|*.*", Me.hwnd)
-        txtInput.Text = txtInput.Text & vbCrLf & aFile(i)
+        txtInput.Text = txtInput.Text & IIf(Len(txtInput.Text) = 0, "", vbCrLf) & aFile(i)
     Next
 End Sub
 
 Private Sub cmdAddFolder_Click()
-    Dim aFile() As String
+    Dim aFolder() As String
     Dim i As Long
-    For i = 1 To OpenFolderDialog_Multi(aFile, , Desktop, Me.hwnd)
-        txtInput.Text = txtInput.Text & vbCrLf & aFile(i)
+    For i = 1 To OpenFolderDialog_Multi(aFolder, , Desktop, Me.hwnd)
+        txtInput.Text = txtInput.Text & IIf(Len(txtInput.Text) = 0, "", vbCrLf) & aFolder(i)
     Next
 End Sub
 

@@ -160,6 +160,7 @@ et enregistrer un rapport
      Me permettez-vous?
 2351=Cliquez ici pour obtenir les résultats VT
 2352=Téléchargement du fichier ...
+2360=Arguments du fichier
 ;
 ; =============== System Tray ================
 ;
@@ -236,7 +237,7 @@ et enregistrer un rapport
          O1 - Redirections dans les fichiers Hosts et hosts.ics/DNSApi
          O2 - Internet Explorer: BHO
          O3 - Internet Explorer: barres d'outils
-         O4 - Chargement automatique des entrées du registre et du dossier 'Démarrage automatique'/éléments désactivés de msconfig
+         O4 - Chargement automatique des entrées du registre et du dossier 'Démarrage automatique' / éléments désactivés (MSConfig, StartupApproved)
          O5 - Masquer les éléments du panneau de configuration
          O6 - Politique IE: Désactivation de l'onglet principal "Options Internet"
          O7 - Stratégies: Dépannage Regedit, Explorer, TaskMgr/Sécurité IP/Certificats/Système d'exploitation
@@ -720,7 +721,7 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 0221=Supprimer cette entrée
 0222=Réactualiser la liste
 0223=Enregistrer la liste...
-0224=Ouvrir le panneau de configuration "Désinstaller un programme".
+0224=Ouvrir le outillage "Désinstaller un programme".
 1700=Filtre
 1701=Aucune commande
 1702=Cachée
@@ -802,12 +803,14 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 ; (1850 - 1899)
 ;
 1850=Authenticode EDS checker
-1851=Cet outil créera un rapport détaillé sur les signatures numériques des fichiers/dossiers que vous indiquerez ci-dessous :
+1851=Cet outil créera un rapport détaillé sur les signatures numériques des fichiers que vous indiquerez ci-dessous:
 1852=Recursivement (inclure les sous-dossiers)
 1853=Inclure les fichiers du dossier de Windows
-1854=Format du rapport:
-1855=Texte brut (rapport court en Unicode)
-1856=CSV (rapport complet en ANSI)
+1854=Format du rapport
+1855=Texte brut
+(rapport court en Unicode)
+1856=Table CSV
+(rapport complet en ANSI)
 1857=Créer
 1858=Fermer
 1859=Vous devez entrer au moins un chemin d'accès au fichier ou au dossier!
@@ -823,6 +826,8 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 1869=Impossible d'ouvrir le rapport. L'accès en écriture est limité par un autre programme.
 1870=Ajout de fichier...
 1871=Mise en cache des catalogues de sécurité...
+1872=Ajout de dossier...
+1873=Effacer la liste
 ;
 ; ============= Registry Key Unlocker =========
 ;
@@ -1030,7 +1035,7 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 ; [O4]
 0412=        Cette partie du scan vérifie plusieurs entrées suspectes qui se chargent automatiquement au démarrage de Windows. Le chargement automatique des entrées du registre peut charger un script (VBS, JS, fichier HTA, etc...), ce qui peut rediriger la page de démarrage, la page de recherche, la barre de recherche ou l'assistant de recherche vers la page du pirate. Il est également possible de charger un fichier DLL qui se charge dans différentes parties de votre système. Des scripts, d'autres programmes ou des entrées de registre sans fichier (par exemple le fichier système légitime PowerShell.exe avec arguments) peuvent également être utilisés en démarrage automatique pour charger d'autres fichiers malveillants via Internet ou assurer la persistance des programmes malveillants après un redémarrage.
 \\p
-             La section O4 comprend également la liste des éléments désactivés en exécution automatique (MSConfig / TaskMgr).
+             La section O4 comprend également la liste des éléments désactivés en exécution automatique (MSConfig / StartupApproved / TaskMgr).
 
      Zone à vérifier : clés de registre et dossier de démarrage automatique.
 
@@ -1780,4 +1785,4 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 ; ========= Empty ========
 ;
 ; (2450 - ...)
-;                                          
+;                                            

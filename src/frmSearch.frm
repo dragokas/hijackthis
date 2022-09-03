@@ -383,6 +383,8 @@ End Sub
 
 Public Sub Display(Optional frmOwner As Form)
     
+    cmbSearch.Text = g_sLastSearch
+    
     ResetCursor
     
     If SearchAllowed(frmOwner) Then
@@ -623,6 +625,8 @@ Private Sub CmdFind_Click()
     If SearchAllowed(, Ctl) And Not (Ctl Is Nothing) Then
         
         sSearch = cmbSearch.Text
+        
+        g_sLastSearch = sSearch
         
         AddSearchHistory sSearch
         

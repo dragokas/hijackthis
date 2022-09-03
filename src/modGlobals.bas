@@ -413,6 +413,7 @@ Public g_HJT_Items_Count    As Long
 Public g_CurrentLang        As String
 Public g_CurrentLangID      As Long
 Public CryptVer             As Long
+Public g_sLastSearch        As String
 
 Public ErrLogCustomText As clsStringBuilder
 Public bDebugMode   As Boolean

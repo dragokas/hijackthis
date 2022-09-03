@@ -231,7 +231,7 @@ Private Function DlgWndProc(ByVal hwnd As Long, ByVal msg As Long, ByVal wParam 
                     Do
                         If pos >= 0 Then
                             txtLen = SendMessageW(hwndLV, LVM_GETITEMTEXTW, pos, ByVal VarPtr(itm))
-                            mFolders.Add NormalizeLink(mPath, StringFromPtrW(itm.pszText))
+                            mFolders.Add Replace$(NormalizeLink(mPath, StringFromPtrW(itm.pszText)), "\\", "\")
                         End If
                         pos = SendMessageW(hwndLV, LVM_GETNEXTITEM, pos, ByVal LVIS_SELECTED)
                     Loop Until pos = -1

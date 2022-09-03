@@ -13,10 +13,10 @@ Begin VB.Form frmUnlockRegKey
    Begin VB.CommandButton cmdJump 
       Caption         =   "Open in Regedit"
       Height          =   450
-      Left            =   6480
+      Left            =   6600
       TabIndex        =   4
       Top             =   60
-      Width           =   1572
+      Width           =   1692
    End
    Begin VB.CommandButton cmdGo 
       Caption         =   "Go"
