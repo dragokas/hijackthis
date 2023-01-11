@@ -1349,14 +1349,13 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
                     IIf(bIsMicrosoftFile, " (Microsoft)", vbNullString) & _
                     " (user missing)"
                   
+                  If g_bCheckSum Then
+                    If FileExists(te(j).RunObj) Then
+                        sHit = sHit & GetFileCheckSum(te(j).RunObj)
+                    End If
+                  End If
+                  
                   If Not IsOnIgnoreList(sHit) Then
-                    
-                      If g_bCheckSum Then
-                          If FileExists(te(j).RunObj) Then
-                              sHit = sHit & GetFileCheckSum(te(j).RunObj)
-                          End If
-                      End If
-                      
                       With result
                           .Section = "O22"
                           .HitLineW = sHit
@@ -1573,14 +1572,13 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
                     IIf(te(j).FileMissing And Not bNoFile, " " & STR_FILE_MISSING, vbNullString) & _
                     IIf(bIsMicrosoftFile, " (Microsoft)", vbNullString)
                   
+                  If g_bCheckSum Then
+                    If FileExists(te(j).RunObj) Then
+                        sHit = sHit & GetFileCheckSum(te(j).RunObj)
+                    End If
+                  End If
+                  
                   If Not IsOnIgnoreList(sHit) Then
-                
-                      If g_bCheckSum Then
-                          If FileExists(te(j).RunObj) Then
-                              sHit = sHit & GetFileCheckSum(te(j).RunObj)
-                          End If
-                      End If
-                      
                       With result
                           .Section = "O22"
                           .HitLineW = sHit
@@ -2179,7 +2177,6 @@ Public Sub EnumJobs()
             If g_bCheckSum Then sHit = sHit & GetFileCheckSum(Job.prop.AppName.Data)
 
             If Not IsOnIgnoreList(sHit) Then
-            
                 With result
                     .Section = "O22"
                     .HitLineW = sHit
@@ -2331,8 +2328,9 @@ Sub EnumTasksXP() 'Win XP / Server 2003
         If Not isSafe Then
             sHit = "O22 - ScheduledTask: " & sName & " - " & sCLSID & " - " & sFile
             
+            If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
+            
             If Not IsOnIgnoreList(sHit) Then
-                If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                 With result
                     .Section = "O22"
                     .HitLineW = sHit

@@ -1296,7 +1296,7 @@ Public Sub LoadStuff()
     'did you ever see a filename with an asterisk?
     sSafeLSPFiles = "*A2antispamlsp.dll*Adlsp.dll*Agbfilt.dll*Antiyfilter.dll*Ao2lsp.dll*Aphish.dll*Asdns.dll*Aslsp.dll*Asnsp.dll*Avgfwafu.dll*Avsda.dll*Betsp.dll*Biolsp.dll*Bmi_lsp.dll*Caslsp.dll*Cavemlsp.dll*Cdnns.dll*Connwsp.dll*Cplsp.dll*Csesck32.dll*Cslsp.dll*Cssp.al*Ctxlsp.dll*Ctxnsp.dll*Cwhook.dll*Cwlsp.dll*Dcsws2.dll*Disksearchservicestub.dll*Drwebsp.dll*Drwhook.dll*Espsock2.dll*Farlsp.dll*Fbm.dll*Fbm_lsp.dll*Fortilsp.dll*Fslsp.dll*Fwcwsp.dll*Fwtunnellsp.dll*Gapsp.dll*Googledesktopnetwork1.dll*Hclsock5.dll*Iapplsp.dll*Iapp_lsp.dll*Ickgw32i.dll*Ictload.dll*Idmmbc.dll*Iga.dll*Imon.dll*Imslsp.dll*Inetcntrl.dll*Ippsp.dll*Ipsp.dll*Iss_clsp.dll*Iss_slsp.dll*Kvwsp.dll*Kvwspxp.dll*Lslsimon.dll*Lsp32.dll*" & _
         "Lspcs.dll*Mclsp.dll*Mdnsnsp.dll*Msafd.dll*Msniffer.dll*Mswsock.dll*Mswsosp.dll*Mwtsp.dll*Mxavlsp.dll*Napinsp.dll*Nblsp.dll*Ndpwsspr.dll*Netd.dll*Nihlsp.dll*Nlaapi.dll*Nl_lsp.dll*Nnsp.dll*Normanpf.dll*Nutafun4.dll*Nvappfilter.dll*Nwws2nds.dll*Nwws2sap.dll*Nwws2slp.dll*Odsp.dll*Pavlsp.dll*Pclsp.dll*Pctlsp.dll*Pfftsp.dll*Pgplsp.dll*Pidlsp.dll*Pnrpnsp.dll*Prifw.dll*Proxy.dll*Prplsf.dll*Pxlsp.dll*Rnr20.dll*Rsvpsp.dll*S5spi.dll*Samnsp.dll*Sarah.dll*Scopinet.dll*Skysocks.dll*Sliplsp.dll*Smnsp.dll*Spacklsp.dll*Spampallsp.dll*Spi.dll*Spidll.dll*Spishare.dll*Spsublsp.dll*Sselsp.dll*Stplayer.dll*Syspy.dll*Tasi.dll*Tasp.dll*Tcpspylsp.dll*Ua_lsp.dll*Ufilter.dll*Vblsp.dll*Vetredir.dll*Vlsp.dll*Vnsp.dll*" & _
-        "Wglsp.dll*Whllsp.dll*Whlnsp.dll*Winrnr.dll*Wins4f.dll*Winsflt.dll*WinSysAM.dll*Wps.dll*Wshbth.dll*Wspirda.dll*Wspwsp.dll*Xfilter.dll*xfire_lsp.dll*Xnetlsp.dll*Ypclsp.dll*Zklspr.dll*_Easywall.dll*_Handywall.dll*vsocklib.dll*wlidnsp.dll*"
+        "Wglsp.dll*Whllsp.dll*Whlnsp.dll*Winrnr.dll*Wins4f.dll*Winsflt.dll*WinSysAM.dll*Wps.dll*Wshbth.dll*Wspirda.dll*Wspwsp.dll*Xfilter.dll*xfire_lsp.dll*Xnetlsp.dll*Ypclsp.dll*Zklspr.dll*_Easywall.dll*_Handywall.dll*vsocklib.dll*wlidnsp.dll*nlansp_c.dll*"
     
     ' === LOAD PROTOCOL SAFELIST === (O18)
     
@@ -2806,8 +2806,8 @@ Private Sub CheckFileItems(ByVal sRule$)
                 If Not inArraySerialized(sData, sLegitData, "|", , , vbTextCompare) Or (Not bHideMicrosoft) Then
                 
                     sHit = "F0 - " & sFile & ": " & "[" & sSection & "]" & " " & sParam & " = " & sData
+                    If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sData)
                     If Not IsOnIgnoreList(sHit) Then
-                        If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sData)
                         With result
                             .Section = "F0"
                             .HitLineW = sHit
@@ -2835,8 +2835,8 @@ Private Sub CheckFileItems(ByVal sRule$)
             
             If Len(sData) <> 0 Then
                 sHit = "F1 - " & sFile & ": " & "[" & sSection & "]" & " " & sParam & " = " & sData
+                If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sData)
                 If Not IsOnIgnoreList(sHit) Then
-                    If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sData)
                     With result
                         .Section = "F1"
                         .HitLineW = sHit
@@ -2871,8 +2871,8 @@ Private Sub CheckFileItems(ByVal sRule$)
                 
                         sHit = IIf(bIsWin32, "F2 - ", IIf(HE.Redirected, "F2-32 - ", "F2 - ")) & HE.HiveNameAndSID & "\..\WinLogon: " & _
                             "[" & sParam & "] = " & sData
+                        If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sData)
                         If Not IsOnIgnoreList(sHit) Then
-                            If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sData)
                             With result
                                 .Section = "F2"
                                 .HitLineW = sHit
@@ -2900,8 +2900,8 @@ Private Sub CheckFileItems(ByVal sRule$)
                 If 0 <> Len(sData) Then
                     sHit = IIf(bIsWin32, "F3 - ", IIf(HE.Redirected, "F3-32 - ", "F3 - ")) & HE.HiveNameAndSID & "\..\Windows: " & _
                         "[" & sParam & "] = " & sData
+                    If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sData)
                     If Not IsOnIgnoreList(sHit) Then
-                        If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sData)
                         With result
                             .Section = "F3"
                             .HitLineW = sHit
@@ -3874,9 +3874,9 @@ Public Sub CheckO2Item()
                         sHit = IIf(bIsWin32, "O2", IIf(HE.Redirected, "O2-32", "O2")) & _
                             " - " & HE.HiveNameAndSID & "\..\BHO: " & sName & " - " & sCLSID & " - " & sFile
                     
-                        If Not IsOnIgnoreList(sHit) Then
+                        If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                         
-                            If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
+                        If Not IsOnIgnoreList(sHit) Then
                             
                             With result
                                 .Section = "O2"
@@ -4112,8 +4112,10 @@ Public Sub CheckO3Item()
                     sHit = IIf(bIsWin32, "O3", IIf(HE.Redirected, "O3-32", "O3")) & _
                         " - " & HE.HiveNameAndSID & "\..\" & aDescr(HE.KeyIndex) & ": " & sName & " - " & sCLSID & " - " & sFile
                     
+                    If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
+                    
                     If Not IsOnIgnoreList(sHit) Then
-                        If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
+                        
                         With result
                             .Section = "O3"
                             .HitLineW = sHit
@@ -4219,7 +4221,7 @@ Sub CheckO4_RegRuns()
     Const BAT_LENGTH_LIMIT As Long = 300&
     
     Dim aRegRuns() As String, aDes() As String, result As SCAN_RESULT
-    Dim i&, j&, sKey$, sData$, sHit$, sAlias$, sParam As String, sMD5$, aValue() As String
+    Dim i&, j&, sKey$, sData$, sHit$, sAlias$, sParam As String, sHash$, aValue() As String
     Dim bData() As Byte, isDisabledWin8 As Boolean, isDisabledWinXP As Boolean, flagDisabled As Long, sKeyDisable As String
     Dim sFile$, sArgs$, sUser$, bSafe As Boolean, aLines() As String
     Dim aData() As String, bDisabled As Boolean, bMicrosoft As Boolean
@@ -4368,9 +4370,9 @@ Sub CheckO4_RegRuns()
                 
                 If (Not bSafe) Or (Not bHideMicrosoft) Then
                 
+                    If g_bCheckSum Then sHash = GetFileCheckSum(sFile): sHit = sHit & sHash
+                
                     If (Not IsOnIgnoreList(sHit)) Then
-                        
-                        If g_bCheckSum Then sMD5 = GetFileCheckSum(sFile): sHit = sHit & sMD5
                         
                         With result
                             .Section = "O4"
@@ -4491,9 +4493,9 @@ Sub CheckO4_RegRuns()
                 
                 If bDisabled Then sHit = sHit & " (disabled)"
                 
+                If g_bCheckSum Then sHash = GetFileCheckSum(sFile): sHit = sHit & sHash
+                
                 If Not IsOnIgnoreList(sHit) Then
-                    
-                    If g_bCheckSum Then sMD5 = GetFileCheckSum(sFile): sHit = sHit & sMD5
                     
                     With result
                         .Section = "O4"
@@ -4593,11 +4595,11 @@ Sub CheckO4_RegRuns()
             
             sHit = sAlias & ConcatFileArg(sFile, sArgs)
             
+            If g_bCheckSum Then sHash = GetFileCheckSum(sFile): sHit = sHit & sHash
+            
             If Not IsOnIgnoreList(sHit) Then
             
               'If sArgs <> "-> DELETE" Or (sArgs = "-> DELETE" And bShowPendingDeleted) Then
-
-                If g_bCheckSum Then sMD5 = GetFileCheckSum(sFile): sHit = sHit & sMD5
 
                 With result
                     .Section = "O4"
@@ -4681,9 +4683,9 @@ Sub CheckO4_RegRuns()
                             sAlias = "O4 - WinNT BAT: "
                         End If
                         sHit = sAlias & sFile & " => " & EscapeSpecialChars(aData(j)) & IIf(Len(aData(j)) = 0, " (0 bytes)", vbNullString)
+                        If g_bCheckSum Then sHash = GetFileCheckSum(sFile): sHit = sHit & sHash
                         
                         If Not IsOnIgnoreList(sHit) Then
-                            If g_bCheckSum Then sMD5 = GetFileCheckSum(sFile): sHit = sHit & sMD5
                             With result
                                 .Section = "O4"
                                 .HitLineW = sHit
@@ -4936,7 +4938,7 @@ Sub CheckO4_MSConfig(aHives() As String, aUserOfHive() As String)
     '\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run32
     '\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\StartupFolder -> checked in CheckO4_AutostartFolder()
     
-    Dim sHive$, i&, j&, sAlias$, sMD5$, result As SCAN_RESULT
+    Dim sHive$, i&, j&, sAlias$, sHash$, result As SCAN_RESULT
     Dim aSubKey$(), sDay$, sMonth$, sYear$, sKey$, sFile$, sTime$, sHit$, SourceHive$, sArgs$, sUser$, sDate$, sAddition$
     Dim Values$(), bData() As Byte, flagDisabled As Long, dDate As Date, UseWow As Variant, Wow6432Redir As Boolean, sTarget$, sData$
     Dim bMicrosoft As Boolean
@@ -5010,11 +5012,9 @@ Sub CheckO4_MSConfig(aHives() As String, aUserOfHive() As String)
                             
                             sDate = Format$(dDate, "yyyy\/mm\/dd")
                             If sDate <> sDateEpoch Then sHit = sHit & " (" & sDate & ")"
+                            If g_bCheckSum Then sHash = GetFileCheckSum(sFile): sHit = sHit & sHash
                             
                             If Not IsOnIgnoreList(sHit) Then
-                            
-                                If g_bCheckSum Then sMD5 = GetFileCheckSum(sFile): sHit = sHit & sMD5
-                
                                 With result
                                     .Section = "O4"
                                     .HitLineW = sHit
@@ -5068,11 +5068,10 @@ Sub CheckO4_MSConfig(aHives() As String, aUserOfHive() As String)
             If Len(SourceHive) <> 0 Then sAddition = sAddition & IIf(Len(sArgs) = 0, vbNullString, " ") & "(" & SourceHive & ")"
             
             sHit = sHit & ConcatFileArg(sFile, sAddition & " (" & sTime & ")")
+            
+            If g_bCheckSum Then sHash = GetFileCheckSum(sFile): sHit = sHit & sHash
            
             If Not IsOnIgnoreList(sHit) Then
-                
-                If g_bCheckSum Then sMD5 = GetFileCheckSum(sFile): sHit = sHit & sMD5
-                
                 With result
                     .Section = "O4"
                     .HitLineW = sHit
@@ -5115,10 +5114,9 @@ Sub CheckO4_MSConfig(aHives() As String, aUserOfHive() As String)
                 sHit = sAlias & aSubKey(i) & " [backup] = " & sFile & " (" & sTime & ")" & IIf(Len(sFile) = 0, " (no file)", IIf(Not FileExists(sFile), " " & STR_FILE_MISSING, vbNullString))
             End If
             
+            If g_bCheckSum Then sHash = GetFileCheckSum(sFile): sHit = sHit & sHash
+            
             If Not IsOnIgnoreList(sHit) Then
-                
-                If g_bCheckSum Then sMD5 = GetFileCheckSum(sFile): sHit = sHit & sMD5
-                
                 With result
                     .Section = "O4"
                     .HitLineW = sHit
@@ -5404,18 +5402,17 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUserOfHive() As String)
                     
                     If isDisabled Then sHit = sHit & IIf(dDate <> dEpoch, " (" & Format$(dDate, "yyyy\/mm\/dd") & ")", vbNullString)
                     
-                    If Not IsOnIgnoreList(sHit) Then
-                        
-                        If g_bCheckSum Then
-                            If Not Blink Or bPE_EXE Then
-                                sHit = sHit & GetFileCheckSum(sLinkPath)
-                            Else
-                                If 0 <> Len(sTarget) Then
-                                    sHit = sHit & GetFileCheckSum(sTarget)
-                                End If
+                    If g_bCheckSum Then
+                        If Not Blink Or bPE_EXE Then
+                            sHit = sHit & GetFileCheckSum(sLinkPath)
+                        Else
+                            If 0 <> Len(sTarget) Then
+                                sHit = sHit & GetFileCheckSum(sTarget)
                             End If
                         End If
-                        
+                    End If
+                    
+                    If Not IsOnIgnoreList(sHit) Then
                         With result
                           .Section = "O4"
                           .HitLineW = sHit
@@ -6332,6 +6329,9 @@ Public Sub CheckSystemProblemsEnvVars()
     Else
         aDefValue(2) = "%SystemRoot%\system32\WindowsPowerShell\v1.0\Modules\"
     End If
+    'TODO:
+    'Add in "PSModulePath": C:\Program Files (x86)\Microsoft SQL Server\ (starts with)
+    '+ redesign to split check by separate ;
     
     sKeyFull = "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment"
     
@@ -6371,12 +6371,11 @@ Public Sub CheckSystemProblemsEnvVars()
                 sHit = sHit & IIf(bMissing, " " & STR_FILE_MISSING, vbNullString) & IIf(bMicrosoft, " (Microsoft)", vbNullString)
             End If
             
-            If Not IsOnIgnoreList(sHit) Then
+            If aFileBased(i) Then
+                If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sData)
+            End If
             
-                If aFileBased(i) Then
-                    If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sData)
-                End If
-                
+            If Not IsOnIgnoreList(sHit) Then
                 With result
                     .Section = "O7"
                     .HitLineW = sHit
@@ -6801,7 +6800,7 @@ Sub CheckPolicyScripts()
     Dim sHit$, result As SCAN_RESULT
     Dim pos As Long, X As Long, Y As Long, i As Long
     Dim vType As Variant, vFile As Variant
-    Dim sFile$, sArgs$, sAlias$, sMD5$, aKeyX$(), aKeyY$(), sKey$, aFiles$(), sIniPath$, sIniPathPS$, sFileSysPath$
+    Dim sFile$, sArgs$, sAlias$, sHash$, aKeyX$(), aKeyY$(), sKey$, aFiles$(), sIniPath$, sIniPathPS$, sFileSysPath$
     Dim oFiles As clsTrickHashTable
     Set oFiles = New clsTrickHashTable
     oFiles.CompareMode = 1
@@ -6845,9 +6844,9 @@ Sub CheckPolicyScripts()
                         sHit = sAlias & HE.HiveNameAndSID & "\..\Group Policy\Scripts\" & vType & "\" & aKeyX(X) & "\" & aKeyY(Y) & _
                             ": [" & "Script" & "] = " & ConcatFileArg(sFile, sArgs)
 
-                        If Not IsOnIgnoreList(sHit) Then
+                        If g_bCheckSum Then sHash = GetFileCheckSum(sFile): sHit = sHit & sHash
 
-                            If g_bCheckSum Then sMD5 = GetFileCheckSum(sFile): sHit = sHit & sMD5
+                        If Not IsOnIgnoreList(sHit) Then
 
                             With result
                                 .Section = "O7"
@@ -6907,10 +6906,9 @@ Sub CheckPolicyScripts()
                     sAlias = "O7 - Policy Script: "
                     sHit = sAlias & sFile
                     
+                    If g_bCheckSum Then sHash = GetFileCheckSum(sFile): sHit = sHit & sHash
+                    
                     If Not IsOnIgnoreList(sHit) Then
-                        
-                        If g_bCheckSum Then sMD5 = GetFileCheckSum(sFile): sHit = sHit & sMD5
-                        
                         With result
                             .Section = "O7"
                             .HitLineW = sHit
@@ -6997,10 +6995,9 @@ Sub CheckPolicyScripts()
                                         
                                         sHit = sAlias & sIni & ": " & "[" & aSection & "] " & aName & " = " & ConcatFileArg(sFile, sArgs)
                                         
+                                        If g_bCheckSum Then sHash = GetFileCheckSum(sFile): sHit = sHit & sHash
+                                        
                                         If Not IsOnIgnoreList(sHit) Then
-                                            
-                                            If g_bCheckSum Then sMD5 = GetFileCheckSum(sFile): sHit = sHit & sMD5
-                                            
                                             With result
                                                 .Section = "O7"
                                                 .HitLineW = sHit
@@ -8462,8 +8459,9 @@ Public Sub CheckO8Item()
                 If WhiteListed(sFile, "EXCEL.EXE", True) Then bSafe = True 'MS Office
                 If WhiteListed(sFile, "ONBttnIE.dll", True) Then bSafe = True 'MS Office
                 
+                If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
+                
                 If Not IsOnIgnoreList(sHit) And (Not bSafe) Then
-                    If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                     With result
                         .Section = "O8"
                         .HitLineW = sHit
@@ -8624,8 +8622,9 @@ Public Sub CheckO9Item()
               sHit = IIf(bIsWin32, "O9", IIf(HE.Redirected, "O9-32", "O9")) & _
                 " - Button: " & HE.HiveNameAndSID & "\..\" & sCLSID & ": " & sData & " - " & sFile
               
+              If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
+              
               If Not IsOnIgnoreList(sHit) Then
-                If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                 With result
                     .Section = "O9"
                     .HitLineW = sHit
@@ -8663,8 +8662,8 @@ Public Sub CheckO9Item()
                 'O9-32 - Extra 'Tools' menuitem:
                 sHit = IIf(bIsWin32, "O9", IIf(HE.Redirected, "O9-32", "O9")) & _
                   " - Tools menu item: " & HE.HiveNameAndSID & "\..\" & sCLSID & ": " & sData & " - " & sFile
+                If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                 If Not IsOnIgnoreList(sHit) Then
-                    If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                     With result
                         .Section = "O9"
                         .HitLineW = sHit
@@ -8811,9 +8810,10 @@ Public Sub CheckO12Item()
             'O12-32 - Plugin
             sHit = IIf(bIsWin32, "O12", IIf(HE.Redirected, "O12-32", "O12")) & " - " & _
               HE.HiveNameAndSID & "\..\" & aDes(HE.KeyIndex) & "\" & sName & ": [Location] = " & ConcatFileArg(sFile, sArgs)
-              
+            
+            If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
+            
             If Not IsOnIgnoreList(sHit) Then
-                If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                 With result
                     .Section = "O12"
                     .HitLineW = sHit
@@ -10061,8 +10061,9 @@ Public Sub CheckO18Item()
     Exit Sub
 
 labelFix:
+    If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
+    
     If Not IsOnIgnoreList(sHit) Then
-        If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
         With result
             .Section = "O18"
             .HitLineW = sHit
@@ -10312,8 +10313,8 @@ Public Sub CheckO20Item()
                     'O20 - Winlogon Notify:
                     'O20-32 - Winlogon Notify:
                     sHit = IIf(bIsWin32, "O20", IIf(Wow6432Redir, "O20-32", "O20")) & " - HKLM\..\Winlogon\Notify\" & sSubkeys(i) & ": [DllName] = " & sFile
+                    If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                     If Not IsOnIgnoreList(sHit) Then
-                        If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                         With result
                             .Section = "O20"
                             .HitLineW = sHit
@@ -10416,8 +10417,9 @@ Public Sub CheckO21Item()
                     'some shit leftover by Microsoft ^)
                     If bHideMicrosoft And (sName = "WebCheck" And sCLSID = "{E6FB5E20-DE35-11CF-9C87-00AA005127ED}" And sFile = STR_NO_FILE) Then bSafe = True
                 
+                    If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
+                
                     If Not IsOnIgnoreList(sHit) And Not bSafe Then
-                        If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                         With result
                             .Section = "O21"
                             .HitLineW = sHit
@@ -10484,9 +10486,10 @@ Public Sub CheckO21Item()
                             " - " & sFile
                     End If
 
-                    If Not IsOnIgnoreList(sHit) And Not bSafe Then
-                        If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
+                    If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
 
+                    If Not IsOnIgnoreList(sHit) And Not bSafe Then
+                        
                         If result.CureType <> 0 Then
                             If StrComp(sFile, sPrevFile, 1) <> 0 Then
                                 AddToScanResults result, DoNotDuplicate:=True
@@ -10558,8 +10561,10 @@ Public Sub CheckO21Item()
                 End If
                 
                 sHit = IIf(HE.Redirected, "O21-32", "O21") & " - HKLM\..\ShellExecuteHooks: [" & sCLSID & "] - " & sName & " - " & sFile & IIf(bDisabled, " (disabled)", vbNullString)
+                
+                If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
+                
                 If Not IsOnIgnoreList(sHit) And Not bSafe Then
-                    If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                     With result
                         .Section = "O21"
                         .HitLineW = sHit
@@ -10947,9 +10952,9 @@ Public Sub CheckO23Item()
                         sHit = sHit & "; ""ServiceDll"" = " & sServiceDll
                     End If
                     
+                    If g_bCheckSum Then sHit = sHit & GetFileCheckSum(IIf(Len(sServiceDll) = 0, sFile, sServiceDll))
+                    
                     If Not IsOnIgnoreList(sHit) Then
-                        
-                        If g_bCheckSum Then sHit = sHit & GetFileCheckSum(IIf(Len(sServiceDll) = 0, sFile, sServiceDll))
                         
                         With result
                             .Section = "O23"
@@ -11415,10 +11420,9 @@ Public Sub CheckO23Item_Drivers(sServices() As String, dLegitService As clsTrick
             sHit = "O23 - Driver " & IIf(ServState <> SERVICE_STOPPED, "R", "S") & lStart & _
                 ": " & IIf(sDisplayName = sName, sName, sDisplayName & " - (" & sName & ")") & " - " & sFile
             
-            If Not IsOnIgnoreList(sHit) Then
+            If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
             
-                If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
-
+            If Not IsOnIgnoreList(sHit) Then
                 With result
                     .Section = "O23"
                     .HitLineW = sHit

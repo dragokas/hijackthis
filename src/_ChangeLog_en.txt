@@ -11,6 +11,9 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[2.10.0.24] - Jan 11, 2023
+ - Fixed ignore list operation when "Calculate checksum" option is enabled (thanks to Gordon-Dry for the notification).
+
 [2.10.0.23] - Sep 03, 2022
  - Context menu: Added button "Copy" - "File Argument".
  - Search: Save lastly entered phrase after program exits.
@@ -1652,4 +1655,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                                                                                         
+                                                                                          

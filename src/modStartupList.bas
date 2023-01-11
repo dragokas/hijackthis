@@ -571,7 +571,7 @@ End Sub
 Public Sub RunScannerGetMD5(sFile$, sKey$)
     On Error GoTo ErrorHandler:
     Dim sMD5$, sAppVer$, sSection$
-    sMD5 = GetFileCheckSum(sFile, , True)
+    sMD5 = GetFileMD5(sFile, , True)
     sAppVer = "StartupList" & AppVerString
     sSection = GetRunScannerItem(GetSectionFromKey(sKey), sKey)
     

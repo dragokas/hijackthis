@@ -416,9 +416,9 @@ Public Sub CheckO25Item()
                             IIf(NoFilter, " (no filter)", FilterName) & " - " & _
                             sAdditionalInfo
                         
-                    If Not IsOnIgnoreList(sHit) Then
-                        If g_bCheckSum And 0 <> Len(sScriptFile) Then sHit = sHit & GetFileCheckSum(sScriptFile)
+                    If g_bCheckSum And 0 <> Len(sScriptFile) Then sHit = sHit & GetFileCheckSum(sScriptFile)
                         
+                    If Not IsOnIgnoreList(sHit) Then
                         With result
                             .Section = "O25"
                             .HitLineW = sHit
@@ -879,10 +879,9 @@ Public Sub CheckO26Item()
                     sHit = sAlias & " - Debugger: " & HE.HiveNameAndSID & "\..\" & sKeys(i) & ": [Debugger] = " & _
                         ConcatFileArg(sFile, sArgs) & IIf(bMicrosoft, " (Microsoft)", vbNullString)
                     
+                    If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
+                    
                     If Not IsOnIgnoreList(sHit) Then
-          
-                        If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
-                
                         With result
                             .Section = "O26"
                             .HitLineW = sHit
@@ -919,10 +918,9 @@ Public Sub CheckO26Item()
                     sKeys(i) & ": [VerifierDlls] = " & ConcatFileArg(sFile, sArgs) & IIf(bMicrosoft, " (Microsoft)", vbNullString) & _
                     IIf(bDisabled, " (disabled)", vbNullString)
                 
+                If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
+                
                 If Not IsOnIgnoreList(sHit) Then
-                    
-                    If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
-                    
                     With result
                         .Section = "O26"
                         .HitLineW = sHit
@@ -958,10 +956,9 @@ Public Sub CheckO26Item()
                     
                     sHit = sAlias & " - Debugger Global hook: [VerifierProviders] = " & sFile
                     
+                    If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
+                    
                     If Not IsOnIgnoreList(sHit) Then
-                        
-                        If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
-                        
                         With result
                             .Section = "O26"
                             .HitLineW = sHit
@@ -995,10 +992,9 @@ Public Sub CheckO26Item()
                     
             sHit = sAlias & " - UWP Debugger: " & sKeys(i) & " (default) = " & sFile
             
+            If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
+            
             If Not IsOnIgnoreList(sHit) Then
-                
-                If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
-                
                 With result
                     .Section = "O26"
                     .HitLineW = sHit
@@ -1019,10 +1015,9 @@ Public Sub CheckO26Item()
                         
                 sHit = sAlias & " - UWP Debugger: " & sKeys(i) & " [DebugPath] = " & sFile
                 
+                If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
+                
                 If Not IsOnIgnoreList(sHit) Then
-                    
-                    If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
-                    
                     With result
                         .Section = "O26"
                         .HitLineW = sHit
@@ -1154,10 +1149,9 @@ Public Sub CheckO26ToolsHiJack()
             sHit = "O26 - Tools: " & "HKLM\" & "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Accessibility\ATs\" & aKey(i) & _
                 " [StartExe] = " & sFile
             
+            If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
+            
             If Not IsOnIgnoreList(sHit) Then
-                
-                If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
-                
                 With result
                     .Section = "O26"
                     .HitLineW = sHit
@@ -1247,16 +1241,14 @@ Public Sub CheckO26ToolsHiJack()
             
             If Len(sSigner) <> 0 Then sHit = sHit & " " & sSigner
             
-            If Not IsOnIgnoreList(sHit) Then
+            If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
             
-                If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
-                
+            If Not IsOnIgnoreList(sHit) Then
                 With result
                     .Section = "O26"
                     .HitLineW = sHit
                     AddRegToFix .Reg, RESTORE_VALUE, HKLM, sKey, vbNullString, dSafe.Items(i), , REG_RESTORE_EXPAND_SZ
                     AddFileToFix .File, RESTORE_FILE_SFC, EnvironW(RemoveArguments(dSafe.Items(i))), sArgs
-                    
                     .CureType = REGISTRY_BASED
                 End With
                 AddToScanResults result

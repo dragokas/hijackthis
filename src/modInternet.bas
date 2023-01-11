@@ -525,7 +525,7 @@ Public Sub AddTriageObj(sName$, sType$, sFile$, Optional sCLSID$, Optional sCode
     'sPath = Left$(sFile, InStrRev(sFile, "\") - 1)
     sFilename = Mid$(sFile, InStrRev(sFile, "\") + 1)
     sFilesize = CStr(FileLen(sFile))
-    sMD5 = GetFileCheckSum(sFile, , True)
+    sMD5 = GetFileMD5(sFile, , True)
     
     ReDim sItem(8)
     sItem(0) = sName     'id to item

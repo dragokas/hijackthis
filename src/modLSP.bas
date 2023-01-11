@@ -234,6 +234,7 @@ Public Sub CheckLSP()
     Dim oUnknFile As clsTrickHashTable
     Dim oMissingFile As clsTrickHashTable
     Dim bSafe As Boolean, result As SCAN_RESULT
+    Dim bIsMicrosoftFile As Boolean
     
     Set oUnknFile = New clsTrickHashTable    'for removing duplicate records
     Set oMissingFile = New clsTrickHashTable
@@ -290,8 +291,9 @@ Public Sub CheckLSP()
                     
                     If Not bSafe Or Not bHideMicrosoft Then
                         If Not oUnknFile.Exists(sFile) Then
+                            bIsMicrosoftFile = IsMicrosoftFile(sFile)
                             oUnknFile.Add sFile, 0
-                            sHit = "O10 - Unknown file in Winsock LSP: " & sFile
+                            sHit = "O10 - Unknown file in Winsock LSP: " & sFile & IIf(bIsMicrosoftFile, " (Microsoft)", vbNullString)
                             If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                             If Not IsOnIgnoreList(sHit) Then
                                 With result
@@ -347,8 +349,9 @@ Public Sub CheckLSP()
                     
                     If Not bSafe Or Not bHideMicrosoft Then
                         If Not oUnknFile.Exists(sFile) Then
+                            bIsMicrosoftFile = IsMicrosoftFile(sFile)
                             oUnknFile.Add sFile, 0
-                            sHit = "O10 - Unknown file in Winsock LSP: " & sFile
+                            sHit = "O10 - Unknown file in Winsock LSP: " & sFile & IIf(bIsMicrosoftFile, " (Microsoft)", vbNullString)
                             If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                             If Not IsOnIgnoreList(sHit) Then
                                 With result

@@ -130,7 +130,7 @@ Private Sub cmdGo_Click()
     
     Set sList = New clsStringBuilder
     sList.Append ChrW$(-257)
-    sList.AppendLine "Logfile of Files Unlocker (HJT v." & AppVerString & ")"
+    sList.AppendLine "Logfile of Files Permission Unlocker (HJT v." & AppVerString & ")"
     sList.AppendLine
     sList.AppendLine MakeLogHeader()
     sList.AppendLine "Logging started at:      " & TimeStarted
@@ -145,7 +145,9 @@ Private Sub cmdGo_Click()
     
     For Each vFile In aFiles
     
-        vFile = UnQuote(Trim$(vFile))
+        vFile = Trim$(UnQuote(CStr(vFile)))
+        
+        If StrEndWith(CStr(vFile), "\") Then vFile = Left$(vFile, Len(vFile) - 1)
     
         If Len(vFile) <> 0 Then
             
@@ -250,6 +252,8 @@ Private Sub UnlockMe(sObject As String)
     SDDL_Before = GetFileStringSD(sObject)
     
     bSuccess = TryUnlock(sObject, False)
+    
+    SetFileAttributes StrPtr(sObject), FILE_ATTRIBUTE_ARCHIVE
     
     '[OK], [Fail]
     sList.AppendLine IIf(bSuccess, Translate(2406), Translate(2408)) & " - " & sObject

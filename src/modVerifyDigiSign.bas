@@ -2553,7 +2553,8 @@ Public Sub FindNewMicrosoftCodeSignCert()
                             If IssuedTo <> "localhost" _
                                 And FriendlyName <> "Microsoft Exchange" _
                                 And FriendlyName <> "Symantec Enterprise Mobile Root for Microsoft" _
-                                And FriendlyName <> "Microsoft Certificate Trust List PCA" Then
+                                And FriendlyName <> "Microsoft Certificate Trust List PCA" _
+                                And InStr(1, FriendlyName, "self-signed", 1) = 0 Then
                                 
                                 sData = vbNullString
                                 
@@ -3200,7 +3201,6 @@ Public Sub WinTrustVerifyNode(sKey$)
     End If
     'Verifying file signature of:
     Status Translate(973) & " " & sFile
-    'sMD5 = GetFileCheckSum(sFile)
     
     Select Case VerifyFileSignature(sFile)
         Case 1: sIcon = "wintrust1"
