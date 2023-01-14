@@ -1062,15 +1062,15 @@ End Function
 
 Public Function DisableTask(TaskFullPath As String) As Boolean
     
-    SetTaskState TaskFullPath, False
+    DisableTask = SetTaskState(TaskFullPath, False)
 End Function
 
 Public Function EnableTask(TaskFullPath As String) As Boolean
     
-    SetTaskState TaskFullPath, True
+    EnableTask = SetTaskState(TaskFullPath, True)
 End Function
 
-Function SetTaskState(TaskFullPath As String, bEnable As Boolean)
+Function SetTaskState(TaskFullPath As String, bEnable As Boolean) As Boolean
     
     On Error GoTo ErrorHandler
     Dim TaskPath As String
@@ -1411,6 +1411,8 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
                     bTelemetry = True
                 ElseIf StrComp(sRunFilename, "NvTmMon.exe", 1) = 0 Then
                     bTelemetry = True
+                ElseIf StrComp(sRunFilename, "PLUGscheduler.exe", 1) = 0 Then
+                    bTelemetry = True
                 End If
                 
                 If bIsMicrosoftFile Then
@@ -1506,7 +1508,7 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
                 '    Debug.Print "File = " & sRunFilename
                 'End If
                 
-                If (Not isSafe) Or (Not bHideMicrosoft) Then
+                If (Not isSafe) Or (Not bHideMicrosoft) Or bTelemetry Then
                   'skip signature mark for LoLBin processes
                   If bIsMicrosoftFile Then
                   

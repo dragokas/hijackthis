@@ -1044,6 +1044,8 @@ Public Function SetStringVal(hHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, sData
     On Error GoTo ErrorHandler:
     Dim hKey&, lret&
     
+    AppendErrorLogCustom "SetStringVal - Begin", sKey, sValue, sData
+    
     Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
     If Not KeyExists(hHive, sKey, bUseWow64) Then
@@ -1070,6 +1072,7 @@ Public Function SetStringVal(hHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, sData
         End If
         RegCloseKey hKey
     End If
+    AppendErrorLogCustom "SetStringVal - End"
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "SetStringVal", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Value:", sValue, "Wow64:", bUseWow64, "Data:", sData
@@ -1081,6 +1084,7 @@ End Function
 Public Function SetExpandStringVal(hHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, sData$, Optional bUseWow64 As Boolean) As Boolean
     On Error GoTo ErrorHandler:
     Dim hKey&, lret&
+    AppendErrorLogCustom "SetExpandStringVal - Begin", sKey, sValue, sData
     Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
     If Not KeyExists(hHive, sKey, bUseWow64) Then
@@ -1102,6 +1106,7 @@ Public Function SetExpandStringVal(hHive As ENUM_REG_HIVE, ByVal sKey$, sValue$,
         SetExpandStringVal = (ERROR_SUCCESS = RegSetValueEx(hKey, StrPtr(sValue), 0&, REG_EXPAND_SZ, ByVal StrPtr(sData), Len(sData) * 2 + 2))
         RegCloseKey hKey
     End If
+    AppendErrorLogCustom "SetExpandStringVal - End"
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "SetExpandStringVal", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Value:", sValue, "Wow64:", bUseWow64, "Data:", sData
@@ -1112,6 +1117,7 @@ End Function
 
 Public Function SetDwordVal(hHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, lData&, Optional bUseWow64 As Boolean) As Boolean
     On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "SetDwordVal - Begin", sKey, sValue, lData
     Dim hKey&, lret&
     Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
@@ -1134,6 +1140,7 @@ Public Function SetDwordVal(hHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, lData&
         SetDwordVal = (ERROR_SUCCESS = RegSetValueEx(hKey, StrPtr(sValue), 0&, REG_DWORD, lData, 4&))
         RegCloseKey hKey
     End If
+    AppendErrorLogCustom "SetDwordVal - End"
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "SetDwordVal", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Value:", sValue, "Wow64:", bUseWow64, "Data:", lData
@@ -1145,6 +1152,7 @@ End Function
 Public Function SetQwordVal(hHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, vData As Variant, Optional bUseWow64 As Boolean) As Boolean
     On Error GoTo ErrorHandler:
     Dim hKey&, lret&, cData As Currency
+    AppendErrorLogCustom "SetQwordVal - Begin", sKey, sValue, vData
     Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
     If Not KeyExists(hHive, sKey, bUseWow64) Then
@@ -1172,6 +1180,7 @@ Public Function SetQwordVal(hHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, vData 
         End If
         RegCloseKey hKey
     End If
+    AppendErrorLogCustom "SetQwordVal - End"
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "SetQwordVal", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Value:", sValue, "Wow64:", bUseWow64, "Data:", vData
@@ -1183,6 +1192,7 @@ End Function
 Public Function SetBinaryVal(hHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, aData() As Byte, Optional bUseWow64 As Boolean) As Boolean
     On Error GoTo ErrorHandler:
     Dim hKey&, lret&
+    AppendErrorLogCustom "SetBinaryVal - Begin", sKey, sValue
     Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
     If Not KeyExists(hHive, sKey, bUseWow64) Then
@@ -1208,6 +1218,7 @@ Public Function SetBinaryVal(hHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, aData
         End If
         RegCloseKey hKey
     End If
+    AppendErrorLogCustom "SetBinaryVal - End", sKey, sValue
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "SetBinaryVal", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Value:", sValue, "Wow64:", bUseWow64, "Data UBound:" & UBound(aData)
@@ -1219,6 +1230,7 @@ End Function
 Public Function SetMultiSZVal(hHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, aData() As String, Optional bUseWow64 As Boolean) As Boolean
     On Error GoTo ErrorHandler:
     Dim hKey&, lret&, sData$, i&
+    AppendErrorLogCustom "SetMultiSZVal - Begin", sKey, sValue
     Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
     If Not KeyExists(hHive, sKey, bUseWow64) Then
@@ -1249,6 +1261,7 @@ Public Function SetMultiSZVal(hHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, aDat
         End If
         RegCloseKey hKey
     End If
+    AppendErrorLogCustom "SetMultiSZVal - End"
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "SetBinaryVal", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Value:", sValue, "Wow64:", bUseWow64, "Data UBound:" & UBound(aData)
@@ -1259,6 +1272,7 @@ End Function
 
 Public Function DelVal(hHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, Optional bUseWow64 As Boolean) As Boolean
     On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "DelVal - Begin", sKey, sValue
     Dim hKey&, lret&
     Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
@@ -1280,6 +1294,7 @@ Public Function DelVal(hHive As ENUM_REG_HIVE, ByVal sKey$, sValue$, Optional bU
         End If
         RegCloseKey hKey
     End If
+    AppendErrorLogCustom "DelVal - End"
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "DelVal", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Value:", sValue, "Wow64:", bUseWow64
@@ -1302,6 +1317,7 @@ Public Function DelKey(hHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 A
     ' So, thank you, M$ ^_^ ):. We should write recursive function on one's own.
     
     Dim lret&
+    AppendErrorLogCustom "DelKey - Begin", sKey
     
     Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
        
@@ -1328,6 +1344,7 @@ Public Function DelKey(hHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 A
         
     End If
     DelKey = Not KeyExists(hHive, sKey, bUseWow64)
+    AppendErrorLogCustom "DelKey - End"
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "DelKey", "hHive:", hHive, "hKey:", sKey, "Wow64:", bUseWow64
@@ -1339,6 +1356,7 @@ Public Function DeleteAllSubKeys(hHive As ENUM_REG_HIVE, ByVal sKey$, Optional b
     'del subkeys without root
     On Error GoTo ErrorHandler:
     Dim i&, sSubKey$, aSubKeys() As String, Flag As Boolean, lret&
+    AppendErrorLogCustom "DeleteAllSubKeys - Begin", sKey
     
     Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
@@ -1357,6 +1375,7 @@ Public Function DeleteAllSubKeys(hHive As ENUM_REG_HIVE, ByVal sKey$, Optional b
         If lret <> ERROR_SUCCESS Then Flag = False
     Next i
     DeleteAllSubKeys = Flag
+    AppendErrorLogCustom "DeleteAllSubKeys - End"
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "DeleteAllSubKeys", "hHive:", hHive, "Key:", sKey, "Wow64:", bUseWow64
@@ -1954,6 +1973,7 @@ Public Function SetKeyTime(hHive As ENUM_REG_HIVE, ByVal KeyName$, dDate As Date
     Dim hKey         As Long
     Dim fTime        As FILETIME
     Dim sTime        As SYSTEMTIME
+    AppendErrorLogCustom "SetKeyTime - Begin", KeyName, dDate
     
     Call NormalizeKeyNameAndHiveHandle(hHive, KeyName)
     
@@ -1969,6 +1989,7 @@ Public Function SetKeyTime(hHive As ENUM_REG_HIVE, ByVal KeyName$, dDate As Date
         
         RegCloseKey hKey
     End If
+    AppendErrorLogCustom "SetKeyTime - End"
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "SetKeyTime", "hHive:", hHive, "hKey:", hKey, "Key:", KeyName, "Wow64:", bUseWow64
@@ -2116,6 +2137,7 @@ Public Function RenameKey(hHive As ENUM_REG_HIVE, sKey As String, sKeyNewName As
     On Error GoTo ErrorHandler:
 
     Dim hKey As Long, lret As Long
+    AppendErrorLogCustom "RenameKey - Begin", sKey, sKeyNewName
     Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
     lret = WrapNtOpenKeyEx(hHive, sKey, KEY_WRITE, hKey, , bUseWow64)
@@ -2136,7 +2158,7 @@ Public Function RenameKey(hHive As ENUM_REG_HIVE, sKey As String, sKeyNewName As
         
         NtClose hKey
     End If
-    
+    AppendErrorLogCustom "RenameKey - End"
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "RenameKey", hHive, "hKey:", "Key:", sKey, "NewKey:", sKeyNewName, "Wow64:", bUseWow64
@@ -2208,6 +2230,7 @@ Public Function SetData(hHive As ENUM_REG_HIVE, ByVal KeyName As String, ValueNa
     
     On Error GoTo ErrorHandler:
     
+    AppendErrorLogCustom "SetData - Begin", KeyName, ValueName
     Call NormalizeKeyNameAndHiveHandle(hHive, KeyName)
     
     Select Case ValueType
@@ -2237,7 +2260,7 @@ Public Function SetData(hHive As ENUM_REG_HIVE, ByVal KeyName As String, ValueNa
             MsgBoxW "This registry value type is not supported: " & ValueType, vbExclamation
             SetData = False
     End Select
-    
+    AppendErrorLogCustom "SetData - End"
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "SetData", "hHive:", hHive, "Key:", KeyName, "Value:", ValueName, "Wow64:", bUseWow64

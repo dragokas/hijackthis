@@ -1,4 +1,11 @@
 OSver;Dir\Name;RunObj;Args;Note
+11; \Microsoft\Windows\CloudRestore\Restore; {B4BCFA6F-948D-46B8-BF27-E8B1117E23B3}; %SystemRoot%\system32\CloudRestoreLauncher.dll
+11; \Microsoft\Windows\PI\SecureBootEncodeUEFI; %SystemRoot%\system32\SecureBootEncodeUEFI.exe
+11; \Microsoft\Windows\Printing\PrintJobCleanupTask; {8ABCE260-32B6-476C-AE13-B34D0C91292D}; %SystemRoot%\System32\PrinterCleanupTask.dll
+11; \Microsoft\Windows\Security\Pwdless\IntelligentPwdlessTask; {8702A841-D5CA-47C3-812D-9CEDC304C200}; %SystemRoot%\system32\IntelligentPwdlessTask.dll
+11; \Microsoft\Windows\SoftwareProtectionPlatform\SvcTrigger; {B1AEBB5D-EAD9-4476-B375-9C3ED9F32AFC},logon; %SystemRoot%\System32\sppcext.dll
+11; \Microsoft\Windows\UpdateOrchestrator\StartOobeAppsScan_LicenseAccepted; %SystemRoot%\system32\usoclient.exe StartOobeAppsScan
+11; \Microsoft\Windows\WlanSvc\MoProfileManagement; {085EDA12-CF4A-4944-8222-8ADCADE137CB}; %SystemRoot%\System32\WlanMediaManager.dll
 10; \Microsoft\Office\Office Automatic Updates 2.0; %ProgramFiles%\Common Files\Microsoft Shared\ClickToRun\OfficeC2RClient.exe; /frequentupdate SCHEDULEDTASK displaylevel=False
 10; \Microsoft\Office\Office Automatic Updates; %ProgramFiles%\Common Files\Microsoft Shared\ClickToRun\OfficeC2RClient.exe; /update SCHEDULEDTASK displaylevel=False
 10; \Microsoft\Office\Office Automatic Updates; %ProgramFiles%\Microsoft Office 15\ClientX64\OfficeC2RClient.exe; /update SCHEDULEDTASK displaylevel=False
@@ -311,6 +318,7 @@ OSver;Dir\Name;RunObj;Args;Note
 10; \Microsoft\Windows\WindowsUpdate\AUScheduledInstall; {F3B4E234-7A68-4E43-B813-E4BA55A065F6}; %SystemRoot%\system32\wuaueng.dll
 10; \Microsoft\Windows\WindowsUpdate\AUSessionConnect; {784E29F4-5EBE-4279-9948-1E8FE941646D}; %SystemRoot%\system32\wuaueng.dll
 10; \Microsoft\Windows\WindowsUpdate\Automatic App Update; {A6BA00FE-40E8-477C-B713-C64A14F18ADB}; %SystemRoot%\System32\wuautoappupdate.dll
+10; \Microsoft\Windows\WindowsUpdate\RUXIM\PLUGScheduler; %ProgramFiles%\RUXIM\PLUGscheduler.exe
 10; \Microsoft\Windows\WindowsUpdate\Scheduled Start With Network; %SystemRoot%\system32\sc.exe; start wuauserv
 10; \Microsoft\Windows\WindowsUpdate\Scheduled Start; %SystemRoot%\system32\sc.exe; start wuauserv
 10; \Microsoft\Windows\WindowsUpdate\sih; %systemroot%\System32\sihclient.exe
@@ -667,4 +675,4 @@ OSver;Dir\Name;RunObj;Args;Note
 6; \Microsoft\Windows\WDI\ResolutionHost; {900be39d-6be8-461a-bc4d-b0fa71f5ecb1}; %SystemRoot%\System32\wdi.dll
 6; \Microsoft\Windows\Windows Error Reporting\QueueReporting; %SystemRoot%\system32\wermgr.exe; -queuereporting
 6; \Microsoft\Windows\Wired\GatherWiredInfo; %SystemRoot%\system32\gatherWiredInfo.vbs
-6; \Microsoft\Windows\Wireless\GatherWirelessInfo; %SystemRoot%\system32\gatherWirelessInfo.vbs          
+6; \Microsoft\Windows\Wireless\GatherWirelessInfo; %SystemRoot%\system32\gatherWirelessInfo.vbs           

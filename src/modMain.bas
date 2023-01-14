@@ -156,6 +156,7 @@ Public Enum ENUM_CURE_BASED
     SERVICE_BASED = 16      ' if need to delete/restore service .ServiceName
     CUSTOM_BASED = 32       ' individual rule, based on .Custom() settings
     COMMANDLINE_BASED = 64  ' if need to run CMD command in .CommandLine()
+    TASK_BASED = 128        ' if need to change .Task() state
 End Enum
 #If False Then
     Dim FILE_BASED, REGISTRY_BASED, INI_BASED, PROCESS_BASED, SERVICE_BASED, CUSTOM_BASED
@@ -183,11 +184,12 @@ Public Enum ENUM_REG_ACTION_BASED
     RESTORE_KEY_PERMISSIONS = &H4000&
     RESTORE_KEY_PERMISSIONS_RECURSE = &H8000&
     USE_FEATURE_DISABLE_REG = &H10000
+    CREATE_KEY = &H20000
 End Enum
 #If False Then
     Dim REMOVE_KEY, REMOVE_VALUE, RESTORE_VALUE, RESTORE_VALUE_INI, REMOVE_VALUE_INI, REPLACE_VALUE
     Dim APPEND_VALUE_NO_DOUBLE, REMOVE_VALUE_IF_EMPTY, REMOVE_KEY_IF_NO_VALUES, TRIM_VALUE, BACKUP_KEY, BACKUP_VALUE
-    Dim JUMP_KEY, JUMP_VALUE, RESTORE_KEY_PERMISSIONS, RESTORE_KEY_PERMISSIONS_RECURSE, USE_FEATURE_DISABLE_REG
+    Dim JUMP_KEY, JUMP_VALUE, RESTORE_KEY_PERMISSIONS, RESTORE_KEY_PERMISSIONS_RECURSE, USE_FEATURE_DISABLE_REG, CREATE_KEY
 #End If
 
 Public Enum ENUM_FILE_ACTION_BASED
@@ -231,6 +233,14 @@ End Enum
 #If False Then
     Dim DELETE_SERVICE, RESTORE_SERVICE, DISABLE_SERVICE, ENABLE_SERVICE, MANUAL_SERVICE, STOP_SERVICE, START_SERVICE
     Dim USE_FEATURE_DISABLE_SERVICE
+#End If
+
+Public Enum ENUM_TASK_ACTION_BASED
+    ENABLE_TASK = 1
+    DISABLE_TASK = 2
+End Enum
+#If False Then
+    Dim ENABLE_TASK, DISABLE_TASK
 #End If
 
 Public Enum ENUM_CUSTOM_ACTION_BASED
@@ -285,6 +295,11 @@ Private Type FIX_SERVICE
     ServiceDisplay  As String
     RunState        As SERVICE_STATE
     ActionType      As ENUM_SERVICE_ACTION_BASED
+End Type
+
+Private Type FIX_TASK
+    TaskPath        As String
+    ActionType      As ENUM_TASK_ACTION_BASED
 End Type
 
 Public Type FIX_CUSTOM
@@ -384,6 +399,7 @@ Public Type SCAN_RESULT
     File()          As FIX_FILE
     Process()       As FIX_PROCESS
     Service()       As FIX_SERVICE
+    Task()          As FIX_TASK
     Custom()        As FIX_CUSTOM
     CommandLine()   As FIX_COMMANDLINE
     Jump()          As JUMP_ENTRY
@@ -731,6 +747,23 @@ Private Sub ConcatScanService(Dst() As FIX_SERVICE, Src() As FIX_SERVICE)
     End If
 End Sub
 
+Private Sub ConcatScanTask(Dst() As FIX_TASK, Src() As FIX_TASK)
+    
+    Dim i As Long
+    If AryPtr(Src) Then
+        If AryPtr(Dst) Then
+            For i = 0 To UBound(Src)
+                If Not InArrayResultTask(Dst, Src(i)) Then
+                    ReDim Preserve Dst(UBound(Dst) + 1)
+                    Dst(UBound(Dst)) = Src(i)
+                End If
+            Next
+        Else
+            Dst = Src
+        End If
+    End If
+End Sub
+
 Private Sub ConcatScanCommandline(Dst() As FIX_COMMANDLINE, Src() As FIX_COMMANDLINE)
     
     Dim i As Long
@@ -804,6 +837,7 @@ Public Sub ConcatScanResults(Dst As SCAN_RESULT, Src As SCAN_RESULT)
     If Src.CureType And (REGISTRY_BASED Or INI_BASED) Then ConcatScanRegistry Dst.Reg, Src.Reg
     If Src.CureType And PROCESS_BASED Then ConcatScanProcess Dst.Process, Src.Process
     If Src.CureType And SERVICE_BASED Then ConcatScanService Dst.Service, Src.Service
+    If Src.CureType And TASK_BASED Then ConcatScanTask Dst.Task, Src.Task
     If Src.CureType And CUSTOM_BASED Then ConcatScanCustom Dst.Custom, Src.Custom
     If Src.CureType And COMMANDLINE_BASED Then ConcatScanCommandline Dst.CommandLine, Src.CommandLine
     If AryPtr(Src.Jump) Then ConcatJumpArray Dst.Jump, Src.Jump
@@ -929,6 +963,21 @@ Public Function InArrayResultService(ServiceArray() As FIX_SERVICE, Item As FIX_
                             End If
                         End If
                     End If
+                End If
+            End With
+        Next
+    End If
+End Function
+
+Public Function InArrayResultTask(TaskArray() As FIX_TASK, Item As FIX_TASK) As Boolean
+    Dim i As Long
+    If AryPtr(TaskArray) Then
+        For i = 0 To UBound(TaskArray)
+            With TaskArray(i)
+                If Item.TaskPath = .TaskPath Then
+                    
+                    InArrayResultTask = True
+                    Exit For
                 End If
             End With
         Next
@@ -6206,7 +6255,7 @@ Public Sub CheckSystemProblemsEnvVars()
                 With result
                     .Section = "O7"
                     .HitLineW = sHit
-                    AddRegToFix .Reg, APPEND_VALUE_NO_DOUBLE, 0, sKeyFull, "Path", EnvironUnexpand(CStr(vValue)) & ";", , REG_RESTORE_EXPAND_SZ
+                    AddRegToFix .Reg, APPEND_VALUE_NO_DOUBLE, HKEY_ANY, sKeyFull, "Path", EnvironUnexpand(CStr(vValue)) & ";", , REG_RESTORE_EXPAND_SZ, , , ";"
                     .CureType = REGISTRY_BASED
                 End With
                 AddToScanResults result
@@ -6380,7 +6429,7 @@ Public Sub CheckSystemProblemsEnvVars()
                     .Section = "O7"
                     .HitLineW = sHit
                     
-                    AddRegToFix .Reg, RESTORE_VALUE, 0, sKeyFull, aParam(i), aDefValue(i), REG_NOTREDIRECTED, REG_RESTORE_EXPAND_SZ
+                    AddRegToFix .Reg, RESTORE_VALUE, HKEY_ANY, sKeyFull, aParam(i), aDefValue(i), REG_NOTREDIRECTED, REG_RESTORE_EXPAND_SZ, , , ";"
                     .CureType = REGISTRY_BASED
                     
                     If aFileBased(i) Then
@@ -7173,6 +7222,7 @@ Public Sub CheckPolicies()
     
     Dim sDrv As String, aValue() As String, i&, lData&, bData() As Byte
     Dim sHit$, result As SCAN_RESULT
+    Dim sKey As String, sValue As String
     
     Dim HE As clsHiveEnum
     Set HE = New clsHiveEnum
@@ -7322,7 +7372,82 @@ Public Sub CheckPolicies()
             End If
         Next
     Loop
-
+    
+    'Check Windows Defender policies
+    HE.Init HE_HIVE_ALL, , HE_REDIR_NO_WOW
+    HE.AddKey "Software\Microsoft\Windows Defender\Real-Time Protection"
+    aValue = Split("DpaDisabled|DisableRealtimeMonitoring", "|")
+    Do While HE.MoveNext
+        For i = 0 To UBound(aValue)
+            lData = Reg.GetDword(HE.Hive, HE.Key, aValue(i))
+            If lData <> 0 Then
+                sHit = "O7 - Policy: " & HE.KeyAndHive & ": " & "[" & aValue(i) & "] = " & lData
+                
+                If Not IsOnIgnoreList(sHit) Then
+                    With result
+                        .Section = "O7"
+                        .HitLineW = sHit
+                        AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key, aValue(i)
+                        AddRegToFix .Reg, CREATE_KEY, HKEY_LOCAL_MACHINE, "Software\Microsoft\AMSI\Providers\{2781761E-28E0-4109-99FE-B9D127C57AFE}"
+                        AddRegToFix .Reg, CREATE_KEY, HKEY_LOCAL_MACHINE, "Software\Microsoft\AMSI\Providers2\{2781761E-28E0-4109-99FE-B9D127C57AFE}"
+                        AddRegToFix .Reg, CREATE_KEY, HKEY_LOCAL_MACHINE, "Software\Microsoft\AMSI\UacProviders\{2781761E-28E2-4109-99FE-B9D127C57AFE}"
+                        AddServiceToFix .Service, ENABLE_SERVICE Or START_SERVICE, "WinDefend"
+                        AddTaskToFix .Task, ENABLE_TASK, "\Microsoft\Windows\ExploitGuard\ExploitGuard MDM policy Refresh"
+                        .CureType = REGISTRY_BASED Or SERVICE_BASED Or TASK_BASED
+                        '// TODO: restore tasks
+                    End With
+                    AddToScanResults result
+                End If
+            End If
+        Next
+    Loop
+    HE.Init HE_HIVE_ALL, , HE_REDIR_NO_WOW
+    HE.AddKey "Software\Microsoft\Windows Defender"
+    HE.AddKey "Software\Policies\Microsoft\Windows Defender"
+    aValue = Split("DisableAntiSpyware|DisableAntiVirus", "|")
+    Do While HE.MoveNext
+        For i = 0 To UBound(aValue)
+            lData = Reg.GetDword(HE.Hive, HE.Key, aValue(i))
+            If lData <> 0 Then
+                sHit = "O7 - Policy: " & HE.KeyAndHive & ": " & "[" & aValue(i) & "] = " & lData
+                
+                If Not IsOnIgnoreList(sHit) Then
+                    With result
+                        .Section = "O7"
+                        .HitLineW = sHit
+                        AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key, aValue(i)
+                        AddRegToFix .Reg, CREATE_KEY, HKEY_LOCAL_MACHINE, "Software\Microsoft\AMSI\Providers\{2781761E-28E0-4109-99FE-B9D127C57AFE}"
+                        AddRegToFix .Reg, CREATE_KEY, HKEY_LOCAL_MACHINE, "Software\Microsoft\AMSI\Providers2\{2781761E-28E0-4109-99FE-B9D127C57AFE}"
+                        AddRegToFix .Reg, CREATE_KEY, HKEY_LOCAL_MACHINE, "Software\Microsoft\AMSI\UacProviders\{2781761E-28E2-4109-99FE-B9D127C57AFE}"
+                        AddServiceToFix .Service, ENABLE_SERVICE Or START_SERVICE, "WinDefend"
+                        AddTaskToFix .Task, ENABLE_TASK, "\Microsoft\Windows\ExploitGuard\ExploitGuard MDM policy Refresh"
+                        .CureType = REGISTRY_BASED Or SERVICE_BASED Or TASK_BASED
+                        '// TODO: restore tasks
+                    End With
+                    AddToScanResults result
+                End If
+            End If
+        Next
+    Loop
+    If OSver.IsWindows10OrGreater Then
+        sKey = "HKLM\Software\Microsoft\Windows Defender\Features"
+        sValue = "TamperProtection"
+        lData = Reg.GetDword(HKEY_ANY, sKey, sValue)
+        If (lData And 1) = 0 Then
+            sHit = "O7 - Policy: " & sKey & ": [" & sValue & "] = " & lData
+            
+            If Not IsOnIgnoreList(sHit) Then
+                With result
+                    .Section = "O7"
+                    .HitLineW = sHit
+                    AddRegToFix .Reg, RESTORE_VALUE, HKEY_ANY, sKey, sValue, 5, , REG_RESTORE_DWORD
+                    .CureType = REGISTRY_BASED
+                End With
+                AddToScanResults result
+            End If
+        End If
+    End If
+    
     AppendErrorLogCustom "CheckPolicies - End"
     Exit Sub
 ErrorHandler:
@@ -14573,6 +14698,7 @@ End Sub
 Public Function TrimEx(ByVal sStr As String, sDelimiter As String) As String
     Dim iLenDelim As Long
     iLenDelim = Len(sDelimiter)
+    If iLenDelim = 0 Then Exit Function
     Do While Left$(sStr, iLenDelim) = sDelimiter And Len(sStr) <> 0
         sStr = Mid$(sStr, iLenDelim + 1)
     Loop
@@ -16105,15 +16231,50 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
+' Append results array with new process record
+Public Sub AddTaskToFix( _
+    TaskArray() As FIX_TASK, _
+    ActionType As ENUM_TASK_ACTION_BASED, _
+    sTaskPath As String)
+    
+    On Error GoTo ErrorHandler
+    
+    'speed hack
+    If bAutoLogSilent Then Exit Sub
+    
+    If Len(sTaskPath) = 0 Then Exit Sub
+    
+    If AryPtr(TaskArray) Then
+        ReDim Preserve TaskArray(UBound(TaskArray) + 1)
+    Else
+        ReDim TaskArray(0)
+    End If
+    
+    With TaskArray(UBound(TaskArray))
+        .ActionType = ActionType
+        .TaskPath = sTaskPath
+    End With
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "AddTaskToFix", ActionType, sTaskPath
+    If inIDE Then Stop: Resume Next
+End Sub
+
 Public Sub FixIt(result As SCAN_RESULT)
     On Error GoTo ErrorHandler
+    
+    AppendErrorLogCustom "FixIt - Begin"
     
     If result.CureType And COMMANDLINE_BASED Then FixCommandlineHandler result
     If result.CureType And SERVICE_BASED Then FixServiceHandler result
     If result.CureType And PROCESS_BASED Then FixProcessHandler result
     If result.CureType And FILE_BASED Then FixFileHandler result
     If result.CureType And (REGISTRY_BASED Or INI_BASED) Then FixRegistryHandler result
+    If result.CureType And TASK_BASED Then FixTaskHandler result
     If result.CureType And CUSTOM_BASED Then FixCustomHandler result
+    
+    AppendErrorLogCustom "FixIt - End"
     
     Exit Sub
 ErrorHandler:
@@ -16124,6 +16285,8 @@ End Sub
 
 Public Sub FixCustomHandler(result As SCAN_RESULT)
     On Error GoTo ErrorHandler
+    
+    AppendErrorLogCustom "FixCustomHandler - Begin"
     
     Dim i As Long
     
@@ -16148,6 +16311,8 @@ Public Sub FixCustomHandler(result As SCAN_RESULT)
         End If
     End If
     
+    AppendErrorLogCustom "FixCustomHandler - End"
+    
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "FixCustomHandler", result.HitLineW
@@ -16156,6 +16321,8 @@ End Sub
 
 Public Sub FixCommandlineHandler(result As SCAN_RESULT)
     On Error GoTo ErrorHandler
+    
+    AppendErrorLogCustom "FixCommandlineHandler - Begin"
     
     Dim i As Long
     
@@ -16174,6 +16341,8 @@ Public Sub FixCommandlineHandler(result As SCAN_RESULT)
         End If
     End If
     
+    AppendErrorLogCustom "FixCommandlineHandler - End"
+    
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "FixCustomHandler", result.HitLineW
@@ -16182,6 +16351,8 @@ End Sub
 
 Public Sub FixProcessHandler(result As SCAN_RESULT)
     On Error GoTo ErrorHandler
+    
+    AppendErrorLogCustom "FixProcessHandler - Begin"
     
     Dim i As Long
     Dim bParentProtected As Boolean
@@ -16222,6 +16393,8 @@ Public Sub FixProcessHandler(result As SCAN_RESULT)
         End If
     End If
     
+    AppendErrorLogCustom "FixProcessHandler - End"
+    
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "FixProcessHandler", result.HitLineW
@@ -16230,6 +16403,8 @@ End Sub
 
 Public Sub FixRegistryHandler(result As SCAN_RESULT)
     On Error GoTo ErrorHandler
+    
+    AppendErrorLogCustom "FixRegistryHandler - Begin"
     
     Dim sData As String, i As Long
     Dim lType As REG_VALUE_TYPE
@@ -16266,7 +16441,7 @@ Public Sub FixRegistryHandler(result As SCAN_RESULT)
                     End If
                     
                     If .ActionType And RESTORE_VALUE Then
-
+                        
                         Reg.DelVal .Hive, .Key, .Param, .Redirected
                         
                         Select Case .ParamType
@@ -16293,6 +16468,11 @@ Public Sub FixRegistryHandler(result As SCAN_RESULT)
                             Reg.SetMultiSZVal .Hive, .Key, .Param, aData(), .Redirected
                         
                         End Select
+                    End If
+                    
+                    If .ActionType And CREATE_KEY Then
+                    
+                        Reg.CreateKey .Hive, .Key, .Redirected
                     End If
                     
                     If .ActionType And REMOVE_VALUE Then
@@ -16448,6 +16628,8 @@ Public Sub FixRegistryHandler(result As SCAN_RESULT)
         End If
     'End If
     
+    AppendErrorLogCustom "FixRegistryHandler - End"
+    
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "FixRegistryHandler", result.HitLineW
@@ -16531,6 +16713,8 @@ End Function
 Public Sub FixFileHandler(result As SCAN_RESULT)
     On Error GoTo ErrorHandler
     
+    AppendErrorLogCustom "FixFileHandler - Begin"
+    
     Dim i As Long
     
     If result.CureType And FILE_BASED Then
@@ -16581,6 +16765,8 @@ Public Sub FixFileHandler(result As SCAN_RESULT)
         End If
     End If
     
+    AppendErrorLogCustom "FixFileHandler - End"
+    
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "FixFileHandler", result.HitLineW
@@ -16589,6 +16775,7 @@ End Sub
 
 Public Function SFC_RestoreFile(sHijacker As String, Optional bAsync As Boolean = False) As Boolean
     On Error GoTo ErrorHandler
+    AppendErrorLogCustom "SFC_RestoreFile - Begin", "File: ", sHijacker
     Dim SFC As String
     Dim sHashOld As String
     Dim sHashNew As String
@@ -16620,6 +16807,7 @@ Public Function SFC_RestoreFile(sHijacker As String, Optional bAsync As Boolean 
             End If
         End If
     End If
+    AppendErrorLogCustom "SFC_RestoreFile - End"
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "SFC_RestoreFile", sHijacker
@@ -16628,6 +16816,8 @@ End Function
 
 Public Sub FixServiceHandler(result As SCAN_RESULT)
     On Error GoTo ErrorHandler
+    
+    AppendErrorLogCustom "FixServiceHandler - Begin"
     
     Dim i As Long, j As Long, k As Long
     Dim aService() As String
@@ -16708,6 +16898,42 @@ Public Sub FixServiceHandler(result As SCAN_RESULT)
             Next
         End If
     End If
+    
+    AppendErrorLogCustom "FixServiceHandler - End"
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "FixServiceHandler", result.HitLineW
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Public Sub FixTaskHandler(result As SCAN_RESULT)
+    On Error GoTo ErrorHandler
+    
+    AppendErrorLogCustom "FixTaskHandler - Begin"
+    
+    Dim i As Long, j As Long, k As Long
+    Dim aTask() As String
+    
+    If result.CureType And TASK_BASED Then
+        If AryPtr(result.Task) Then
+            For i = 0 To UBound(result.Task)
+                With result.Task(i)
+                
+                    If .ActionType And ENABLE_TASK Then
+                        EnableTask .TaskPath
+                    End If
+                    
+                    If .ActionType And DISABLE_TASK Then
+                        DisableTask .TaskPath
+                    End If
+                    
+                End With
+            Next
+        End If
+    End If
+    
+    AppendErrorLogCustom "FixTaskHandler - End"
     
     Exit Sub
 ErrorHandler:

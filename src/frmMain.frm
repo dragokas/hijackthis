@@ -3673,6 +3673,7 @@ Private Sub LoadResources()
             
             With g_TasksWL(i)
                 .OSver = Val(Columns(0))
+                If .OSver = 11 Then .OSver = 10
 
                 'select appropriate version from DB
                 If .OSver = OSver.MajorMinor Then

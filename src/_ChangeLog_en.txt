@@ -11,6 +11,11 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[2.10.0.25] - Jan 14, 2023
+ - Fixed freeze while fixing O7 - TroubleShooting: (EV).
+ - Whitelists Windows 11 has been updated.
+ - Added detection of Windows Defender policies and restoring AMSI providers.
+
 [2.10.0.24] - Jan 11, 2023
  - Fixed ignore list operation when "Calculate checksum" option is enabled (thanks to Gordon-Dry for the notification).
 
@@ -1655,4 +1660,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                                                                                          
+                                                                                               
