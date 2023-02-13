@@ -11,6 +11,9 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[2.10.0.26] - Feb 13, 2023
+ - Fixed system reboot on Windows 11.
+
 [2.10.0.25] - Jan 14, 2023
  - Fixed freeze while fixing O7 - TroubleShooting: (EV).
  - Whitelists Windows 11 has been updated.
@@ -1660,4 +1663,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                                                                                               
+                                                                                                  

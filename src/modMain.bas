@@ -13055,48 +13055,57 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Sub RestartSystem(Optional sExtraPrompt$, Optional bSilent As Boolean, Optional bForceRestartOnServer As Boolean)
+Public Function RestartSystem(Optional sExtraPrompt$, Optional bSilent As Boolean, Optional bForceRestartOnServer As Boolean) As Boolean
+    
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "RestartSystem - Begin"
+    
     Dim OpSysSet As Object
     Dim OpSys As Object
     Dim lret As Long
     
-    If OSver.IsServer Then
+    If OSver.IsServer And Not bForceRestartOnServer Then
         'The server needs to be rebooted to complete required operations. Please, do it on your own.
         MsgBoxW TranslateNative(352), vbInformation
-        Exit Sub
+        Exit Function
     End If
     
     'HiJackThis needs to restart the system to apply the changes.
     'Please, save your work and press 'YES' if you agree to reboot now.
     If Not bSilent Then
         If MsgBoxW(IIf(Len(sExtraPrompt) <> 0, sExtraPrompt & vbCrLf & vbCrLf, vbNullString) & TranslateNative(350), vbYesNo Or vbQuestion) = vbNo Then
-            Exit Sub
+            Exit Function
         End If
     End If
     
-    SetCurrentProcessPrivileges "SeRemoteShutdownPrivilege"
+    SetCurrentProcessPrivileges "SeShutdownPrivilege"
     
     If bIsWinNT Then
-        'SHRestartSystemMB g_HwndMain, StrConv(sExtraPrompt & IIf(sExtraPrompt <> vbNullString, vbCrLf & vbCrLf, vbNullString), vbUnicode), 2
-        
-        If OSver.IsWindowsVistaOrGreater Then
-            lret = ExitWindowsEx(EWX_REBOOT Or EWX_FORCEIFHUNG, SHTDN_REASON_MAJOR_APPLICATION Or SHTDN_REASON_MINOR_INSTALLATION Or SHTDN_REASON_FLAG_PLANNED)
-            'lRet = ExitWindowsEx(EWX_RESTARTAPPS Or EWX_FORCEIFHUNG, SHTDN_REASON_MAJOR_APPLICATION Or SHTDN_REASON_MINOR_INSTALLATION Or SHTDN_REASON_FLAG_PLANNED)
-        Else 'XP/2000
+        If OSver.IsWindows7OrGreater Then
+            lret = InitiateSystemShutdownExW(0, 0, 0, 1, 1, SHTDN_REASON_MAJOR_APPLICATION Or SHTDN_REASON_MINOR_INSTALLATION Or SHTDN_REASON_FLAG_PLANNED)
+        Else
             lret = ExitWindowsEx(EWX_REBOOT Or EWX_FORCEIFHUNG, SHTDN_REASON_MAJOR_APPLICATION Or SHTDN_REASON_MINOR_INSTALLATION Or SHTDN_REASON_FLAG_PLANNED)
         End If
-        
-        If lret = 0 Then 'if ExitWindowsEx somehow failed
-            Set OpSysSet = GetObject("winmgmts:{(Shutdown)}//./root/cimv2").ExecQuery("select * from Win32_OperatingSystem where Primary=true")
-            For Each OpSys In OpSysSet
-                OpSys.Reboot
-            Next
+        If lret = 0 Then
+            If RunWMI_Service(bWait:=True, bAskBeforeLaunch:=False, bSilent:=bSilent) Then
+                Set OpSysSet = GetObject("winmgmts:{(Shutdown)}//./root/cimv2").ExecQuery("select * from Win32_OperatingSystem where Primary=true")
+                For Each OpSys In OpSysSet
+                    RestartSystem = (0 = OpSys.Reboot())
+                Next
+            End If
+        Else
+            RestartSystem = True
         End If
-        
     Else
-        SHRestartSystemMB g_HwndMain, sExtraPrompt, 0
+        RestartSystem = SHRestartSystemMB(g_HwndMain, StrPtr(sExtraPrompt), EWX_FORCE)
     End If
-End Sub
+    
+    AppendErrorLogCustom "RestartSystem - End"
+  Exit Function
+ErrorHandler:
+    ErrorMsg Err, "RestartSystem"
+    If inIDE Then Stop: Resume Next
+End Function
 
 Public Function IsIPAddress(sIP$) As Boolean
     'IsIPAddress = IIf(inet_addr(sIP) <> -1, True, False)

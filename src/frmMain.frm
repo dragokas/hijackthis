@@ -2099,6 +2099,7 @@ Private Sub Form_Load()
         End If
         tmrStart.Enabled = True
     End If
+
 End Sub
 
 Private Sub lstResults_ItemCheck(Item As Integer)

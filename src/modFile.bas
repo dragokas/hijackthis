@@ -1560,7 +1560,7 @@ Public Function GetFileDate(Optional File As String, Optional Date_Type As ENUM_
     If hFile <= 0 Then
         ToggleWow64FSRedirection False, File, bOldRedir
     
-        hFile = CreateFile(StrPtr(File), ByVal 0&, FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, ByVal 0&, OPEN_EXISTING, 0&, 0&)
+        hFile = CreateFile(StrPtr(File), GENERIC_READ, FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, ByVal 0&, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0&)
     
         ToggleWow64FSRedirection bOldRedir
     Else

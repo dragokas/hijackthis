@@ -2556,21 +2556,28 @@ Public Sub FindNewMicrosoftCodeSignCert()
                                 And FriendlyName <> "Microsoft Certificate Trust List PCA" _
                                 And InStr(1, FriendlyName, "self-signed", 1) = 0 Then
                                 
-                                sData = vbNullString
+                                Dim Issuer As String
+                                Issuer = ExtractStringFromCertificate(pCertContext, CERT_NAME_FRIENDLY_DISPLAY_TYPE, CERT_NAME_ISSUER_FLAG)
                                 
-                                If Reg.ValueExists(HKLM, "SOFTWARE\Microsoft\SystemCertificates\ROOT\Certificates\" & HashCert, "Blob") Then
-                                    'Debug.Print "Location             -> HKLM"
-                                    sData = Reg.ExportKeyToVariable(HKLM, "SOFTWARE\Microsoft\SystemCertificates\ROOT\Certificates\" & HashCert, False, True, True)
-                                End If
-                                If Reg.ValueExists(HKCU, "SOFTWARE\Microsoft\SystemCertificates\ROOT\Certificates\" & HashCert, "Blob") Then
-                                    'Debug.Print "Location             -> HKCU"
-                                    sData = Reg.ExportKeyToVariable(HKCU, "SOFTWARE\Microsoft\SystemCertificates\ROOT\Certificates\" & HashCert, False, True, True)
-                                End If
-                                If Len(sData) <> 0 Then
-                                    AddWarning "New Root certificate is detected! Report to developer, please, at https://github.com/dragokas/hijackthis/issues" & vbCrLf & _
-                                    "Name: """ & FriendlyName & """, " & _
-                                    "Valid: """ & FileTime_To_VT_Date(CertInfo.NotBefore) & " - " & FileTime_To_VT_Date(CertInfo.NotAfter) & """" & _
-                                    vbCrLf & Replace(sData, vbCrLf, "\n")
+                                If InStr(1, Issuer, "Marketplace", vbTextCompare) = 0 Then
+                                
+                                    sData = vbNullString
+                                    
+                                    If Reg.ValueExists(HKLM, "SOFTWARE\Microsoft\SystemCertificates\ROOT\Certificates\" & HashCert, "Blob") Then
+                                        'Debug.Print "Location             -> HKLM"
+                                        sData = Reg.ExportKeyToVariable(HKLM, "SOFTWARE\Microsoft\SystemCertificates\ROOT\Certificates\" & HashCert, False, True, True)
+                                    End If
+                                    If Reg.ValueExists(HKCU, "SOFTWARE\Microsoft\SystemCertificates\ROOT\Certificates\" & HashCert, "Blob") Then
+                                        'Debug.Print "Location             -> HKCU"
+                                        sData = Reg.ExportKeyToVariable(HKCU, "SOFTWARE\Microsoft\SystemCertificates\ROOT\Certificates\" & HashCert, False, True, True)
+                                    End If
+                                    If Len(sData) <> 0 Then
+                                        AddWarning "New Root certificate is detected! Report to developer, please, at https://github.com/dragokas/hijackthis/issues" & vbCrLf & _
+                                        "Name: """ & FriendlyName & """, " & _
+                                        "Issuer: """ & Issuer & """, " & _
+                                        "Valid: """ & FileTime_To_VT_Date(CertInfo.NotBefore) & " - " & FileTime_To_VT_Date(CertInfo.NotAfter) & """" & _
+                                        vbCrLf & Replace(sData, vbCrLf, "\n")
+                                    End If
                                 End If
                             End If
                         End If
