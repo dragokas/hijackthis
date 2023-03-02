@@ -2004,7 +2004,7 @@ End Sub
 Public Sub SetHashProgressBar(lPercent As Long, Optional sText As String)
     On Error GoTo ErrorHandler:
     
-    frmMain.shpMD5Progress.Width = (frmMain.ScaleWidth - 500) * (lPercent / 100)
+    frmMain.shpMD5Progress.Width = frmMain.ScaleWidth * (lPercent / 100)
     frmMain.shpMD5Progress.Tag = lPercent
     
     If Len(sText) <> 0 Then
@@ -2013,7 +2013,7 @@ Public Sub SetHashProgressBar(lPercent As Long, Optional sText As String)
     
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "SetHashProgressBar", lPercent
+    ErrorMsg Err, "SetHashProgressBar", "Percent: " & lPercent, "Form ScaleWidth: " & frmMain.ScaleWidth
     If inIDE Then Stop: Resume Next
 End Sub
 

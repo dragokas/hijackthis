@@ -11,6 +11,9 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[2.10.0.28] - Mar 02, 2023
+ - Fixed progress bar bug (thanks to @Yashil06 for report).
+
 [2.10.0.26] - Feb 13, 2023
  - Fixed system reboot on Windows 11.
 
@@ -1663,4 +1666,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                                                                                                  
+                                                                                                   
