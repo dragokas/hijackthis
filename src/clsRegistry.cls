@@ -473,10 +473,10 @@ ErrorHandler:
 End Function
 
 Private Function SwapEndian(ByVal dw As Long) As Long
-    memcpy ByVal VarPtr(SwapEndian) + 3&, dw, 1&
-    memcpy ByVal VarPtr(SwapEndian) + 2&, ByVal VarPtr(dw) + 1&, 1&
-    memcpy ByVal VarPtr(SwapEndian) + 1&, ByVal VarPtr(dw) + 2&, 1&
-    memcpy SwapEndian, ByVal VarPtr(dw) + 3&, 1&
+    GetMem1 dw, ByVal VarPtr(SwapEndian) + 3&
+    GetMem1 ByVal VarPtr(dw) + 1&, ByVal VarPtr(SwapEndian) + 2&
+    GetMem1 ByVal VarPtr(dw) + 2&, ByVal VarPtr(SwapEndian) + 1&
+    GetMem1 ByVal VarPtr(dw) + 3&, SwapEndian
 End Function
 
 Private Function ExpandEnvStr(sData As String) As String
@@ -804,8 +804,9 @@ Public Function GetData(hHive As ENUM_REG_HIVE, ByVal KeyName As String, Optiona
             End If
         
         Case REG_QWORD, REG_QWORD_LITTLE_ENDIAN
-            cData = 8 'strict size
-            lret = RegQueryValueEx(hKey, StrPtr(ValueName), 0&, ordType, VarPtr(qData), cData)
+            cData = 4 'strict size
+            lret = RegQueryValueEx(hKey, StrPtr(ValueName), 0&, ordType, VarPtr(lData), cData)
+            
             If lret = ERROR_SUCCESS Then
                 vValue = qData
             End If

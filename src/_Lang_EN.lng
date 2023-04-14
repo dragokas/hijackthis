@@ -241,6 +241,7 @@
          O5 - Hiding Control Panel items
          O6 - IE Policy: Disabling of 'Internet Options' main tab
          O7 - Policies: Regedit, Explorer, TaskMgr / IP Security / Certificates / OS troubleshooting
+         O7 - AutoLogon: User configured for automatic login
          O8 - Internet Explorer: Extra context menu items
          O9 - Internet Explorer: Extra services and buttons
          O10 - Breaking of Internet access due to the damage or infection in Winsock LSP
@@ -1785,4 +1786,4 @@
 ; ========= Empty ========
 ;
 ; (2450 - ...)
-;                      
+;                        

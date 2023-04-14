@@ -2877,3 +2877,13 @@ Public Function OS_SupportSHA2() As Boolean
     OS_SupportSHA2 = OSver.IsWindowsXP_SP3OrGreater
 
 End Function
+
+Public Function HexStringToNumber(str As String) As Long
+    If IsNumeric(str) Then
+        HexStringToNumber = CLng(str)
+    Else
+        If StrBeginWith(str, "0x") Then
+            If IsNumeric(Mid$(str, 3)) Then HexStringToNumber = CLng("&H" & Mid$(str, 3))
+        End If
+    End If
+End Function

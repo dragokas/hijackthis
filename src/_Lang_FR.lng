@@ -241,6 +241,7 @@ et enregistrer un rapport
          O5 - Masquer les éléments du panneau de configuration
          O6 - Politique IE: Désactivation de l'onglet principal "Options Internet"
          O7 - Stratégies: Dépannage Regedit, Explorer, TaskMgr/Sécurité IP/Certificats/Système d'exploitation
+         O7 - AutoLogon: Utilisateur configuré pour la connexion automatique
          O8 - Internet Explorer: Eléments du menu contextuel supplémentaires
          O9 - Internet Explorer: Services supplémentaires et boutons
          O10 - Interruption de l'accès à Internet en raison d'un dommage ou d'une infection survenue dans LSP Winsock
@@ -1785,4 +1786,4 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 ; ========= Empty ========
 ;
 ; (2450 - ...)
-;                                            
+;                                             

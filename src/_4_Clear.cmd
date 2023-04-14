@@ -28,4 +28,8 @@ del processlist.txt
 del uninstall_list.txt
 del DigiSign.csv
 del Errors.log
+del _Concat.txt
+del _Extracted_lang.txt
+del _Func.txt
+del _Dll.txt
 ) 2>NUL

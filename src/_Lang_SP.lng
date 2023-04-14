@@ -241,6 +241,7 @@
          O5 - Ocultar elementos del panel de control
          O6 - Políticas de IE: Desactivación de la pestaña principal 'Opciones de Internet'
          O7 - Políticas: Regedit, Explorer, TaskMgr / Seguridad IP / Certificados / Solución de problemas del sistema operativo
+         O7 - AutoLogon: usuario configurado para inicio de sesión automático
          O8 - Internet Explorer: elementos adicionales del menú contextual
          O9 - Internet Explorer: botones y servicios adicionales
          O10 - Interrupción del acceso a Internet debido al daño o infección en Winsock LSP
@@ -1792,4 +1793,4 @@
 ; ========= Empty ========
 ;
 ; (2450 - ...)
-;                           
+;                              

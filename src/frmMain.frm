@@ -2032,7 +2032,6 @@ Private JumpRegCache()  As FIX_REG_KEY
 Public Sub Test()
 
     'If you need something to test after program started and initialized all required variables, please use this sub.
-    
 End Sub
 
 
@@ -6566,7 +6565,7 @@ Private Sub mnuResultSearch_Click()       'Context menu => Search on Google
     If pos > 0 Then
         sItem = Left$(sItem, pos - 1)
     End If
-    OpenURL "https://www.google.com/?ie=UTF-8#q=" & URLEncode(sItem)
+    OpenURL "https://www.google.com/search?ie=UTF-8&q=" & URLEncode(sItem)
 End Sub
 
 Private Sub mnuResultReScan_Click()       'Context menu => ReScan

@@ -255,7 +255,7 @@ Public Function StartupList_UpdateCaption(Frm As Form) As Long
 End Function
     
 
-Public Sub Status(s$)
+Public Sub status(s$)
     If Not bSL_Terminate Then
         frmStartupList2.stbStatus.SimpleText = s
         DoEvents
@@ -825,7 +825,7 @@ Public Sub RegEnumIEBands(tvwMain As TreeView)
     
     If bSL_Abort Then Exit Sub
     'Loading... Internet Explorer Bands
-    Status Translate(921)
+    status Translate(921)
     'HKCR\CLSID\*\Implemented Categories\{00021493-0000-0000-C000-000000000046}
     'HKCR\CLSID\*\Implemented Categories\{00021494-0000-0000-C000-000000000046}
     tvwMain.Nodes.Add "System", tvwChild, "IEBands", SEC_IEBANDS, "msie"
@@ -856,7 +856,7 @@ Public Sub RegEnumIEBands(tvwMain As TreeView)
             i = i + 1
             If i Mod 100 = 0 And lNumItems > 0 Then
                 'Loading... Internet Explorer Bands
-                Status Translate(921) & " (" & CInt(i * 100 / lNumItems) & "%, " & i & " CLSIDs)"
+                status Translate(921) & " (" & CInt(i * 100 / lNumItems) & "%, " & i & " CLSIDs)"
             End If
         
             If bSL_Abort Then
@@ -888,7 +888,7 @@ Public Sub RegEnumKillBits(tvwMain As TreeView)
     
     If bSL_Abort Then Exit Sub
     'Loading... ActiveX killbits
-    Status Translate(922)
+    status Translate(922)
     'HKLM\Software\Microsoft\Internet Explorer\ActiveXCompatibility
     'note: this sub will not show all set Killbits - only those that
     'are actually blocking a CLSID+File that exists on the system.
@@ -957,12 +957,12 @@ Public Sub RegEnumZones(tvwMain As TreeView)
     Dim hKey&, sDomain$, lZone&, sIcon$, sSubkeys$(), j&, sRange$
     If bSL_Abort Then Exit Sub
     'Loading... Trusted sites & Restricted sites
-    Status Translate(923)
+    status Translate(923)
     tvwMain.Nodes.Add "DisabledEnums", tvwChild, "Zones", SEC_ZONES, "internet"
     sKey = "Software\Microsoft\Windows\CurrentVersion\Internet Settings"
     
     'Loading... Trusted sites & Restricted sites (this user)
-    Status Translate(924)
+    status Translate(924)
     sZoneNames = Split(Reg.EnumSubKeys(HKEY_CURRENT_USER, sKey & "\Zones"), "|")
     For i = 0 To UBound(sZoneNames)
         sZoneNames(i) = Reg.GetString(HKEY_CURRENT_USER, sKey & "\Zones\" & sZoneNames(i), "DisplayName")
@@ -1033,7 +1033,7 @@ Public Sub RegEnumZones(tvwMain As TreeView)
             i = i + 1
             If bShowLargeZones And i Mod 100 = 0 And lNumItems > 0 Then
                 'Loading... Trusted sites & Restricted sites (this user,
-                Status Replace$(Translate(924), ")", ", " & CInt(CLng(i) * 100 / lNumItems) & "%, " & i & " domains)")
+                status Replace$(Translate(924), ")", ", " & CInt(CLng(i) * 100 / lNumItems) & "%, " & i & " domains)")
             End If
             If bSL_Abort Then
                 RegCloseKey hKey
@@ -1068,7 +1068,7 @@ CheckHKCURanges:
             i = i + 1
             If bShowLargeZones And i Mod 100 = 0 And lNumItems > 0 Then
                 'Loading... Trusted sites & Restricted sites (this user,
-                Status Replace$(Translate(924), ")", ", " & CInt(CLng(i) * 100 / lNumItems) & "%, " & i & " IP)")
+                status Replace$(Translate(924), ")", ", " & CInt(CLng(i) * 100 / lNumItems) & "%, " & i & " IP)")
             End If
             If bSL_Abort Then
                 RegCloseKey hKey
@@ -1095,7 +1095,7 @@ CheckHKCURanges:
     '---------------------------------
     
     'Loading... Trusted sites & Restricted sites (all users)
-    Status Translate(925)
+    status Translate(925)
     sZoneNames = Split(Reg.EnumSubKeys(HKEY_LOCAL_MACHINE, sKey & "\Zones"), "|")
     For i = 0 To UBound(sZoneNames)
         sZoneNames(i) = Reg.GetString(HKEY_LOCAL_MACHINE, sKey & "\Zones\" & sZoneNames(i), "DisplayName")
@@ -1166,7 +1166,7 @@ CheckHKCURanges:
             i = i + 1
             If bShowLargeZones And i Mod 100 = 0 And lNumItems > 0 Then
                 'Loading... Trusted sites & Restricted sites (all users,
-                Status Replace$(Translate(925), ")", ", " & CInt(CLng(i) * 100 / lNumItems) & "%, " & i & " domains)")
+                status Replace$(Translate(925), ")", ", " & CInt(CLng(i) * 100 / lNumItems) & "%, " & i & " domains)")
             End If
             If bSL_Abort Then
                 RegCloseKey hKey
@@ -1201,7 +1201,7 @@ CheckHKLMRanges:
             i = i + 1
             If bShowLargeZones And i Mod 100 = 0 And lNumItems > 0 Then
                 'Loading... Trusted sites & Restricted sites (all users,
-                Status Replace$(Translate(925), ")", ", " & CInt(CLng(i) * 100 / lNumItems) & "%, " & i & " IPs)")
+                status Replace$(Translate(925), ")", ", " & CInt(CLng(i) * 100 / lNumItems) & "%, " & i & " IPs)")
             End If
             If bSL_Abort Then
                 RegCloseKey hKey
@@ -1235,7 +1235,7 @@ CheckHKLMRanges:
         sUsername = MapSIDToUsername(sUsernames(L))
         If sUsername <> OSver.UserName And sUsername <> vbNullString Then
             'Loading... Trusted sites & Restricted sites
-            Status Translate(923) & " (" & sUsername & ")"
+            status Translate(923) & " (" & sUsername & ")"
             tvwMain.Nodes.Add sUsernames(L) & "DisabledEnums", tvwChild, sUsernames(L) & "Zones", SEC_ZONES, "internet"
             
             For i = 0 To UBound(sZoneNames)
@@ -1305,7 +1305,7 @@ CheckHKLMRanges:
                     sDomain = String$(MAX_PATH, 0)
                     If bShowLargeZones And i Mod 100 = 0 And lNumItems > 0 Then
                         'Loading... Trusted sites & Restricted sites
-                        Status Translate(925) & " (" & sUsername & ", " & CInt(CLng(i) * 100 / lNumItems) & "%, " & i & " domains)"
+                        status Translate(925) & " (" & sUsername & ", " & CInt(CLng(i) * 100 / lNumItems) & "%, " & i & " domains)"
                     End If
                     If bSL_Abort Then
                         RegCloseKey hKey
@@ -1340,7 +1340,7 @@ CheckUserRanges:
                     i = i + 1
                     If bShowLargeZones And i Mod 100 = 0 And lNumItems > 0 Then
                         'Loading... Trusted sites & Restricted sites
-                        Status Translate(923) & " (" & sUsername & ", " & CInt(CLng(i) * 100 / lNumItems) & "%, " & i & " IPs)"
+                        status Translate(923) & " (" & sUsername & ", " & CInt(CLng(i) * 100 / lNumItems) & "%, " & i & " IPs)"
                     End If
                     If bSL_Abort Then
                         RegCloseKey hKey

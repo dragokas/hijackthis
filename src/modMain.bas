@@ -6203,21 +6203,23 @@ ErrorHandler:
 End Sub
 
 Public Sub CheckSystemProblemsEnvVars()
+    CheckEnvVarPath
+    CheckEnvVarPathExt
+    CheckEnvVarTemp
+    CheckEnvVarOther
+End Sub
+
+Public Sub CheckEnvVarPath()
+
     On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "CheckEnvVarPath - Begin"
     
-    AppendErrorLogCustom "CheckSystemProblemsEnvVars - Begin"
-    
-    'Checking for present and correct type of parameters:
-    'HKCU\Environment => temp, tmp
-    '+HKU
-    
-    'Checking for present, correct type of parameters and correct value:
-    'HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment => temp, tmp ("%SystemRoot%\TEMP")
-    
-    Dim sData As String, sDataNonExpanded As String
-    Dim vParam, sKeyFull As String, sHit As String, sDefValue As String, result As SCAN_RESULT
+    Dim sData As String
+    Dim vParam, sKeyFull As String, sHit As String, result As SCAN_RESULT
     Dim aLine() As String, i As Long, vValue, bSafe As Boolean, sPsPath As String
-    Dim bComply As Boolean
+    
+    '// TODO:
+    ' add checking %PATH% load order
     
     '// TODO:
     ' PATH len exceed the maximum allowed, see article:
@@ -6244,12 +6246,12 @@ Public Sub CheckSystemProblemsEnvVars()
             bSafe = True
         Else
             If AryItems(aLine) Then
-                If inArray(CStr(vValue), aLine, , , vbTextCompare) Then bSafe = True
+                If InArray(CStr(vValue), aLine, , , vbTextCompare) Then bSafe = True
             End If
         End If
         
         If Not bSafe Then
-            sHit = "O7 - TroubleShooting: (EV) %PATH% has missing system folder: " & vValue
+            sHit = "O7 - TroubleShooting (EV): %PATH% has missing system folder: " & vValue
             
             If Not IsOnIgnoreList(sHit) Then
                 With result
@@ -6263,10 +6265,25 @@ Public Sub CheckSystemProblemsEnvVars()
         End If
     Next
     
-    '// TODO:
-    'add checking the popular exe-files + ext. that hijack %PATH% of the normal similar exe names
+    AppendErrorLogCustom "CheckEnvVarPath - End"
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "CheckEnvVarPath"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Public Sub CheckEnvVarTemp()
+
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "CheckEnvVarTemp - Begin"
     
     'Check for %Temp% anomalies
+    'Checking for present and correct type of parameters:
+    'HKCU\Environment => temp, tmp
+    'HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment => temp, tmp ("%SystemRoot%\TEMP")
+    
+    Dim vParam, sKeyFull As String, sHit As String, result As SCAN_RESULT
+    Dim bComply As Boolean, sData As String, sDataNonExpanded As String, sDefValue As String
     
     Dim HE As clsHiveEnum
     Set HE = New clsHiveEnum
@@ -6304,16 +6321,16 @@ Public Sub CheckSystemProblemsEnvVars()
                 End If
                 
                 If bComply Then
-                    sHit = "O7 - TroubleShooting: (EV) " & HE.HiveNameAndSID & "\..\Environment: " & "[" & vParam & "]" & " = (not exist)"
+                    sHit = "O7 - TroubleShooting (EV): " & HE.HiveNameAndSID & "\..\Environment: " & "[" & vParam & "]" & " = (not exist)"
                 End If
             Else
                 sData = Reg.GetString(0, sKeyFull, CStr(vParam))
                 sDataNonExpanded = Reg.GetString(0, sKeyFull, CStr(vParam), , True)
                 
                 If InStr(sData, "%") <> 0 Then
-                    sHit = "O7 - TroubleShooting: (EV) " & HE.HiveNameAndSID & "\..\Environment: " & "[" & vParam & "]" & " = " & sData & " (wrong type of parameter)"
+                    sHit = "O7 - TroubleShooting (EV): " & HE.HiveNameAndSID & "\..\Environment: " & "[" & vParam & "]" & " = " & sData & " (wrong type of parameter)"
                 ElseIf Len(sData) = 0 Then
-                    sHit = "O7 - TroubleShooting: (EV) " & HE.HiveNameAndSID & "\..\Environment: " & "[" & vParam & "]" & " = (empty value)"
+                    sHit = "O7 - TroubleShooting (EV): " & HE.HiveNameAndSID & "\..\Environment: " & "[" & vParam & "]" & " = (empty value)"
                 End If
                 
                 sData = EnvironW(sData)
@@ -6354,9 +6371,24 @@ Public Sub CheckSystemProblemsEnvVars()
         Next
     Loop
     
+    AppendErrorLogCustom "CheckEnvVarTemp - End"
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "CheckEnvVarTemp"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Public Sub CheckEnvVarOther()
+    
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "CheckEnvVarOther - Begin"
+    
+    Dim sKeyFull As String, sHit As String, result As SCAN_RESULT, bSafe As Boolean
+    Dim i As Long, sData As String, sDataNonExpanded As String, aData() As String, sDefault As String
+    
     'check additional HKLM env. vars
     
-    ReDim aParam(2) As String
+    ReDim aParam(1) As String
     Dim aDefValue() As String
     Dim aFileBased() As Boolean
     ReDim aDefValue(UBound(aParam)) As String
@@ -6371,16 +6403,6 @@ Public Sub CheckSystemProblemsEnvVars()
 
     aParam(1) = "windir"
     aDefValue(1) = "%SystemRoot%"
-    
-    aParam(2) = "PSModulePath"
-    If OSver.IsWindows10OrGreater Then
-        aDefValue(2) = "%ProgramFiles%\WindowsPowerShell\Modules;%SystemRoot%\system32\WindowsPowerShell\v1.0\Modules"
-    Else
-        aDefValue(2) = "%SystemRoot%\system32\WindowsPowerShell\v1.0\Modules\"
-    End If
-    'TODO:
-    'Add in "PSModulePath": C:\Program Files (x86)\Microsoft SQL Server\ (starts with)
-    '+ redesign to split check by separate ;
     
     sKeyFull = "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment"
     
@@ -6408,13 +6430,9 @@ Public Sub CheckSystemProblemsEnvVars()
             End If
         End If
         
-        If aParam(i) = "PSModulePath" And Len(sData) = 0 Then
-            If Not OSver.IsWindowsVistaOrGreater Then bSafe = True
-        End If
-        
         If Not bSafe Then
             
-            sHit = "O7 - TroubleShooting: (EV) HKLM\..\Environment: " & "[" & aParam(i) & "]" & " = " & sDataNonExpanded
+            sHit = "O7 - TroubleShooting (EV): HKLM\..\Environment: " & "[" & aParam(i) & "]" & " = " & sDataNonExpanded
             
             If aFileBased(i) Then
                 sHit = sHit & IIf(bMissing, " " & STR_FILE_MISSING, vbNullString) & IIf(bMicrosoft, " (Microsoft)", vbNullString)
@@ -6442,10 +6460,62 @@ Public Sub CheckSystemProblemsEnvVars()
         End If
     Next
     
+    ' %PSModulePath% - according to "Missing list"
+    
+    If OSver.IsWindowsVistaOrGreater Then
+    
+        sKeyFull = "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment"
+        
+        sDataNonExpanded = Reg.GetString(0, sKeyFull, "PSModulePath", , True)
+        aData = Split(sDataNonExpanded, ";")
+        
+        If OSver.IsWindows10OrGreater Then
+            sDefault = "%ProgramFiles%\WindowsPowerShell\Modules;%SystemRoot%\system32\WindowsPowerShell\v1.0\Modules"
+        Else
+            sDefault = "%SystemRoot%\system32\WindowsPowerShell\v1.0\Modules"
+        End If
+        aDefValue = Split(sDefault, ";")
+        
+        For i = 0 To UBound(aDefValue)
+            If Not InArray(aDefValue(i), aData, , , vbTextCompare) Then
+                
+                sHit = "O7 - TroubleShooting (EV): " & "HKLM\..\Environment: " & "[PSModulePath]" & " = " & sDataNonExpanded & _
+                    " (Missing: " & aDefValue(i) & ")"
+                
+                If Not IsOnIgnoreList(sHit) Then
+                    With result
+                        .Section = "O7"
+                        .HitLineW = sHit
+                        AddRegToFix .Reg, RESTORE_VALUE, 0, sKeyFull, "PSModulePath", sDefault & ";" & sDataNonExpanded, , REG_RESTORE_EXPAND_SZ
+                        .CureType = REGISTRY_BASED
+                    End With
+                    AddToScanResults result
+                End If
+            End If
+        Next
+        
+    End If
+    
+    AppendErrorLogCustom "CheckEnvVarOther - Begin"
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "CheckEnvVarOther"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Public Sub CheckEnvVarPathExt()
+    
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "CheckEnvVarPathExt - Begin"
+    
+    Dim HE As clsHiveEnum
+    Dim sData As String, sDefValue As String, bSafe As Boolean, i As Long
+    Dim vParam, sKeyFull As String, sHit As String, result As SCAN_RESULT
+    
     ' %PATHEXT%
     
     Set HE = New clsHiveEnum
-    HE.Init HE_HIVE_ALL, HE_SID_USER, HE_REDIR_NO_WOW
+    HE.Init HE_HIVE_ALL And Not HE_HIVE_HKLM, HE_SID_USER, HE_REDIR_NO_WOW
     
     'HKCU - no value;
     'for HKLM only:
@@ -6455,51 +6525,74 @@ Public Sub CheckSystemProblemsEnvVars()
         sDefValue = ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH"
     End If
     
+    Dim aData() As String
+    Dim aDef() As String
+    aDef = Split(sDefValue, ";")
+    
+    'If HKCU present, it has overwrite advantage, -> check is it have %PATHEXT% or all of its required components
+    'If value empty, remove it allowing HKLM to take an advantage
+    'If not empty, prepend %PATHEXT%; to it
     Do While HE.MoveNext
+
+        sKeyFull = HE.HiveNameAndSID & "\Environment"
         
-        If HE.HiveName = "HKLM" Then
-            sKeyFull = "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment"
-        Else
-            sKeyFull = HE.HiveNameAndSID & "\Environment"
+        If Reg.ValueExists(0, sKeyFull, "PATHEXT") Then
+        
+            sData = Reg.GetString(0, sKeyFull, "PATHEXT")
+            aData = Split(sData, ";")
+            
+            For i = 0 To UBound(aDef)
+                If Not InArray(aDef(i), aData, , , vbTextCompare) Then
+                
+                    sHit = "O7 - TroubleShooting (EV): " & HE.HiveNameAndSID & "\..\Environment: " & "[PATHEXT]" & " = " & sData & _
+                        " (Missing: " & aDef(i) & ")"
+                    
+                    If Not IsOnIgnoreList(sHit) Then
+                        With result
+                            .Section = "O7"
+                            .HitLineW = sHit
+                            If Len(sData) = 0 Then
+                                AddRegToFix .Reg, REMOVE_VALUE, 0, sKeyFull, "PATHEXT"
+                            Else
+                                AddRegToFix .Reg, RESTORE_VALUE, 0, sKeyFull, "PATHEXT", "%PATHEXT%;" & sData, , REG_RESTORE_EXPAND_SZ
+                            End If
+                            .CureType = REGISTRY_BASED
+                        End With
+                        AddToScanResults result
+                    End If
+                End If
+            Next
         End If
+    Loop
+    
+    'HKLM - by "Missing list" (show item if only it has missing records)
+    
+    sKeyFull = "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment"
+    sData = Reg.GetString(0, sKeyFull, "PATHEXT")
+    
+    aData = Split(sData, ";")
+    
+    For i = 0 To UBound(aDef)
+        If Not InArray(aDef(i), aData, , , vbTextCompare) Then
         
-        sData = Reg.GetString(0, sKeyFull, "PATHEXT", , True)
-        
-        bSafe = False
-        
-        If HE.HiveName = "HKLM" Then
-            If StrComp(sData, sDefValue, 1) = 0 Then bSafe = True
-        Else
-            If Len(sData) = 0 Then bSafe = True ' HKCU doesn't have a param by default
-        End If
-        
-        If Not bSafe Then
-        
-            sHit = "O7 - TroubleShooting: (EV) " & HE.HiveNameAndSID & "\..\Environment: " & "[PATHEXT]" & " = " & sData
+            sHit = "O7 - TroubleShooting (EV): " & "HKLM\..\Environment: " & "[PATHEXT]" & " = " & sData & " (Missing: " & aDef(i) & ")"
             
             If Not IsOnIgnoreList(sHit) Then
-
                 With result
                     .Section = "O7"
                     .HitLineW = sHit
-                    
-                    If HE.HiveName = "HKLM" Then
-                        AddRegToFix .Reg, RESTORE_VALUE, 0, sKeyFull, "PATHEXT", sDefValue, , REG_RESTORE_SZ
-                    Else
-                        AddRegToFix .Reg, REMOVE_VALUE, 0, sKeyFull, "PATHEXT"
-                    End If
-                    
+                    AddRegToFix .Reg, RESTORE_VALUE, 0, sKeyFull, "PATHEXT", sDefValue, , REG_RESTORE_SZ
                     .CureType = REGISTRY_BASED
                 End With
                 AddToScanResults result
             End If
         End If
-    Loop
+    Next
     
-    AppendErrorLogCustom "CheckSystemProblemsEnvVars - End"
+    AppendErrorLogCustom "CheckEnvVarPathExt - End"
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "CheckSystemProblemsEnvVars"
+    ErrorMsg Err, "CheckEnvVarPathExt"
     If inIDE Then Stop: Resume Next
 End Sub
     
@@ -6515,7 +6608,7 @@ Public Sub CheckSystemProblemsFreeSpace()
     ' < 1 GB ?
     If (cFreeSpace < cMath.MBToInt64(1& * 1024)) And (cFreeSpace <> 0@) Then
         
-        sHit = "O7 - TroubleShooting: (Disk) Free disk space on " & SysDisk & " is too low = " & (cFreeSpace / 1024& / 1024& * 10000& \ 1) & " MB."
+        sHit = "O7 - TroubleShooting (Disk): Free disk space on " & SysDisk & " is too low = " & (cFreeSpace / 1024& / 1024& * 10000& \ 1) & " MB."
         
         If Not IsOnIgnoreList(sHit) Then
             With result
@@ -6545,7 +6638,7 @@ Public Sub CheckSystemProblemsNetwork()
     If Len(GetCompName(ComputerNamePhysicalDnsHostname)) = 0 Then
     
         sNetBiosName = GetCompName(ComputerNameNetBIOS)
-        sHit = "O7 - TroubleShooting: (Network) Computer name (hostname) is not set" & IIf(Len(sNetBiosName) <> 0, " (should be: " & sNetBiosName & ")", vbNullString)
+        sHit = "O7 - TroubleShooting (Network): Computer name (hostname) is not set" & IIf(Len(sNetBiosName) <> 0, " (should be: " & sNetBiosName & ")", vbNullString)
         
         If Not IsOnIgnoreList(sHit) Then
             With result
@@ -7965,10 +8058,79 @@ Public Sub CheckO7Item()
     UpdateProgressBar "O7-IPSec"
     Call CheckIPSec
     
+    UpdateProgressBar "O7-AutoLogon"
+    Call CheckAutoLogon
+    
     AppendErrorLogCustom "CheckO7Item - End"
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "modMain_CheckO7Item"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Public Sub CheckAutoLogon()
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "CheckAutoLogon - Begin"
+    
+    Dim sHit As String, sKey As String, sUser As String, sDomain As String, bEnabled As Boolean, result As SCAN_RESULT
+    
+    sKey = "Software\Microsoft\Windows NT\CurrentVersion\Winlogon"
+    sUser = Reg.GetString(HKEY_LOCAL_MACHINE, sKey, "DefaultUserName")
+    
+    If Len(sUser) <> 0 Then
+        
+        bEnabled = 0 <> Reg.GetDword(HKEY_LOCAL_MACHINE, sKey, "AutoAdminLogon")
+        sDomain = Reg.GetString(HKEY_LOCAL_MACHINE, sKey, "DefaultDomainName")
+        
+        sHit = "O7 - AutoLogon: HKLM\..\Winlogon: " & sDomain & "\" & sUser & IIf(bEnabled, "", " (disabled)")
+        
+        If Not IsOnIgnoreList(sHit) Then
+            With result
+                .Section = "O7"
+                .HitLineW = sHit
+                AddRegToFix .Reg, RESTORE_VALUE, HKLM, sKey, "AutoAdminLogon", "0", , REG_RESTORE_SZ
+                AddRegToFix .Reg, REMOVE_VALUE, HKLM, sKey, "DefaultDomainName"
+                AddRegToFix .Reg, REMOVE_VALUE, HKLM, sKey, "DefaultUserName"
+                .CureType = REGISTRY_BASED
+            End With
+            AddToScanResults result
+        End If
+    End If
+    
+    'Logon screen text
+    
+    Dim sText As String, i As Long
+    ReDim aParam(1) As String
+    aParam(0) = "LegalNoticeCaption"
+    aParam(1) = "LegalNoticeText"
+    
+    For i = 0 To UBound(aParam)
+        
+        sText = Reg.GetString(HKEY_LOCAL_MACHINE, sKey, aParam(i))
+        
+        If Len(sText) <> 0 Then
+            
+            sText = Replace$(sText, vbCr, vbNullString)
+            sText = Replace$(sText, vbLf, "\n")
+        
+            sHit = "O7 - AutoLogon: HKLM\..\Winlogon: [" & aParam(i) & "] = " & sText
+            
+            If Not IsOnIgnoreList(sHit) Then
+                With result
+                    .Section = "O7"
+                    .HitLineW = sHit
+                    AddRegToFix .Reg, RESTORE_VALUE, HKLM, sKey, aParam(i), "", , REG_RESTORE_SZ
+                    .CureType = REGISTRY_BASED
+                End With
+                AddToScanResults result
+            End If
+        End If
+    Next
+    
+    AppendErrorLogCustom "CheckAutoLogon - End"
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "CheckAutoLogon"
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -10521,7 +10683,7 @@ Public Sub CheckO21Item()
                 bSafe = False
                 If bHideMicrosoft And Not bIgnoreAllWhitelists Then
                     
-                    bInList = inArray(sCLSID, aSafeSSODL, , , vbTextCompare)
+                    bInList = InArray(sCLSID, aSafeSSODL, , , vbTextCompare)
 
                     If bInList Then
                         If IsMicrosoftFile(sFile) Then bSafe = True
@@ -10588,7 +10750,7 @@ Public Sub CheckO21Item()
                 bSafe = False
                 If bHideMicrosoft And Not bIgnoreAllWhitelists Then
                     
-                    bInList = inArray(sFile, aSafeSIOI, , , vbTextCompare)
+                    bInList = InArray(sFile, aSafeSIOI, , , vbTextCompare)
                     
                     If StrComp(GetFileName(sFile, True), "GROOVEEX.DLL", 1) = 0 Then bInList = True
                     If StrComp(GetFileName(sFile, True), "FileSyncShell.dll", 1) = 0 Then bInList = True
@@ -10670,7 +10832,7 @@ Public Sub CheckO21Item()
             bSafe = False
             If bHideMicrosoft And Not bIgnoreAllWhitelists Then
             
-                bInList = inArray(sFile, aSafeSEH, , , vbTextCompare)
+                bInList = InArray(sFile, aSafeSEH, , , vbTextCompare)
                 If StrComp(GetFileName(sFile, True), "GROOVEEX.DLL", 1) = 0 Then bInList = True
                 
                 If bInList Then
@@ -12226,7 +12388,7 @@ Public Function IsOnIgnoreList(sHit$, Optional UpdateList As Boolean, Optional E
     End If
     
     If isInit And Not UpdateList Then
-        If inArray(sHit, aIgnoreList) Then IsOnIgnoreList = True
+        If InArray(sHit, aIgnoreList) Then IsOnIgnoreList = True
     Else
         Dim iIgnoreNum&, i&
         
@@ -12836,7 +12998,7 @@ Private Function IsFontAllowedForControl(Ctl As Control) As Boolean
             CtlList(14) = "frmUnlockRegKey.txtKeys"
         End If
         
-        If inArray(CtlPath, CtlList, , , 1) Then
+        If InArray(CtlPath, CtlList, , , 1) Then
             IsFontAllowedForControl = True
         End If
     End If
@@ -13806,7 +13968,7 @@ Public Function StrInParamArray(stri As String, ParamArray vEtalon()) As Boolean
 End Function
 
 ' ¬озвращает true, если искомое значение найдено в одном из элементов массива (lB, uB ограничивает просматриваемый диапазон индексов)
-Public Function inArray( _
+Public Function InArray( _
     stri As String, _
     MyArray() As String, _
     Optional lB As Long = -2147483647, _
@@ -13818,7 +13980,7 @@ Public Function inArray( _
     If uB = 2147483647 Then uB = UBound(MyArray)    'Thanks to  азанский :)
     Dim i As Long
     For i = lB To uB
-        If StrComp(stri, MyArray(i), CompareMethod) = 0 Then inArray = True: Exit For
+        If StrComp(stri, MyArray(i), CompareMethod) = 0 Then InArray = True: Exit For
     Next
     Exit Function
 ErrorHandler:
@@ -13926,7 +14088,7 @@ Private Sub DeleteDuplicatesInArray(arr() As String, CompareMethod As VbCompareM
     If DontCompress Then
         For i = UBound(arr) To LBound(arr) + 1 Step -1
             If Len(arr(i)) <> 0 Then
-                If inArray(arr(i), arr, LBound(arr), i - 1, CompareMethod) Then
+                If InArray(arr(i), arr, LBound(arr), i - 1, CompareMethod) Then
                     arr(i) = vbNullString
                 End If
             End If
@@ -13937,7 +14099,7 @@ Private Sub DeleteDuplicatesInArray(arr() As String, CompareMethod As VbCompareM
         Dim cnt As Long
         cnt = LBound(arr)
         For i = LBound(arr) To UBound(arr)
-            If Not inArray(arr(i), arr, i + 1, UBound(arr), CompareMethod) Then
+            If Not InArray(arr(i), arr, i + 1, UBound(arr), CompareMethod) Then
                 TmpArr(cnt) = arr(i)
                 cnt = cnt + 1
             End If

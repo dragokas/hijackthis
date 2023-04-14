@@ -3248,7 +3248,7 @@ Public Function GetEmptyDriveNames() As String()
     Dim ReadyDrives() As String
     Dim i As Long
 
-    Letters = StrReverse("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+    Letters = StrReverse$("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
     buf = String$(MAX_PATH, 0)
 
@@ -3349,3 +3349,51 @@ Public Function FileGetTypeBOM(sFile As String) As Long
         End If
     End If
 End Function
+
+Public Function CreateFileStream(sPath As String, sStreamName As String, binData() As Byte) As Boolean
+    
+    Dim hFile As Long
+    Dim OA As OBJECT_ATTRIBUTES
+    Dim NtName As UNICODE_STRING
+    Dim iosb As IO_STATUS_BLOCK
+    Dim Status As Long
+    Dim fp As Long, rn As Long
+    
+    If RtlDosPathNameToNtPathName_U(StrPtr("\??\" & sPath & ":" & sStreamName), NtName, fp, rn) = 0 Then Exit Function
+    
+    With OA
+        .Length = LenB(OA)
+        .ObjectName = VarPtr(NtName)
+        .Attributes = OBJ_CASE_INSENSITIVE
+    End With
+    
+    Status = NtCreateFile(hFile, _
+        GENERIC_READ Or GENERIC_WRITE Or SYNCHRONIZE, _
+        OA, _
+        iosb, _
+        0&, _
+        FILE_ATTRIBUTE_NORMAL, _
+        FILE_SHARE_READ Or FILE_SHARE_WRITE, _
+        FILE_OPEN_IF, _
+        FILE_SYNCHRONOUS_IO_NONALERT Or FILE_COMPLETE_IF_OPLOCKED, _
+        0&, _
+        0&)
+    
+    If Status = STATUS_SUCCESS And hFile <> -1 Then
+
+        Status = NtWriteFile(hFile, ByVal 0, ByVal 0, ByVal 0, iosb, VarPtr(binData(0)), UBound(binData) + 1, ByVal 0, ByVal 0)
+        
+        If Status = STATUS_SUCCESS Then
+            CreateFileStream = True
+        Else
+            Debug.Print "NtWriteFile failed. Status: 0x" & Hex(Status)
+        End If
+        
+        NtClose hFile
+    Else
+        Debug.Print "NtCreateFile failed. Status: 0x" & Hex(Status)
+    End If
+    
+    RtlFreeUnicodeString NtName
+End Function
+

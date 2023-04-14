@@ -5,10 +5,14 @@ Option Explicit
 
 '
 ' Authenticode digital signature verifier / Driver's WHQL signature verifier
-' revision 2.18
+' revision 2.19
 '
 ' Copyrights: (ñ) Polshyn Stanislav Viktorovich aka Alex Dragokas
 '
+
+' 29.03.2023
+' Added SV_DisableOutdatedAlgo flag - consider MD4 and MD2 hashing algorithms as invalid
+' Microsoft files are no longer pass verification with MD4 and MD2 hashing algo on Windows 8 and later
 
 ' 07.02.2021
 ' Added SV_LightCheckMS flag - skip filling non-essential fields only if it is Microsoft signature (speed optimization)
@@ -121,6 +125,7 @@ Public Enum FLAGS_SignVerify
     SV_PreferInternalSign = &H4000&     ' check internal signature first, if present (.exe, .sys, .dll, .ocx files only)
     SV_NoCatPrediction = &H8000&        ' do not use catalogue path prediction
     SV_EnableHashPrecache = &H10000     ' read in advance all tags from security catalogues (it can win speed when you scan a huge number of files)
+    SV_DisableOutdatedAlgo = &H20000    ' consider MD4 and MD2 hashing algo as invalid
 End Enum
 
 Private Type GUID
@@ -449,7 +454,7 @@ Private Declare Function GetFileAttributes Lib "kernel32.dll" Alias "GetFileAttr
 Private Declare Function HeapFree Lib "kernel32.dll" (ByVal hHeap As Long, ByVal dwFlags As Long, ByVal lpMem As Long) As Long
 Private Declare Function GetProcessHeap Lib "kernel32.dll" () As Long
 'Private Declare Function ArrPtr Lib "msvbvm60.dll" Alias "VarPtr" (arr() As Any) As Long
-Private Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long) As Long
+Public Declare Function memcpy Lib "kernel32.dll" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As Long) As Long
 'Private Declare Function GetMem1 Lib "msvbvm60.dll" (pSrc As Any, pDst As Any) As Long
 Private Declare Function GetMem4 Lib "msvbvm60.dll" (pSrc As Any, pDst As Any) As Long
 'Private Declare Function GetMem8 Lib "msvbvm60.dll" (pSrc As Any, pDst As Any) As Long
@@ -496,6 +501,7 @@ Private Const WTD_NO_POLICY_USAGE_FLAG      As Long = 4&     ' do not mention on
 Private Const WTD_CACHE_ONLY_URL_RETRIEVAL  As Long = 4096&  ' check for certificate revocation but only by local cache
 Private Const WTD_LIFETIME_SIGNING_FLAG     As Long = &H800& ' check expiration date of certificate
 Private Const WTD_CODE_INTEGRITY_DRIVER_MODE As Long = &H8000&
+Private Const WTD_DISABLE_MD2_MD4           As Long = &H2000& ' Disable the use of MD2 and MD4 hashing algorithms. Returns NTE_BAD_ALGID
 ' action
 Private Const WTD_STATEACTION_IGNORE        As Long = 0&
 Private Const WTD_STATEACTION_VERIFY        As Long = 1&
@@ -543,6 +549,7 @@ Private Const DIGSIG_E_DECODE               As Long = &H800B0006
 Private Const CERT_E_ROLE                   As Long = &H800B0103
 Private Const PERSIST_E_SIZEDEFINITE        As Long = &H800B0009
 Private Const DIGSIG_E_CRYPTO               As Long = &H800B0008
+Private Const NTE_BAD_ALGID                 As Long = &H80090008
 
 ' OID
 Private Const szOID_CERT_STRONG_SIGN_OS_1   As String = "1.3.6.1.4.1.311.72.1.1"
@@ -1047,6 +1054,8 @@ SkipCatCheck:
         '.dwProvFlags = .dwProvFlags Or WTD_NO_POLICY_USAGE_FLAG                                          ' do not check certificate purpose (disabled)
         If Flags And SV_AllowExpired Then .dwProvFlags = .dwProvFlags Or WTD_LIFETIME_SIGNING_FLAG        ' invalidate expired signatures
         .dwProvFlags = .dwProvFlags Or WTD_SAFER_FLAG                                                     ' without UI
+        
+        If Flags And SV_DisableOutdatedAlgo Then .dwProvFlags = .dwProvFlags Or WTD_DISABLE_MD2_MD4
     End With
     
     ' If we got a valid context, verify the signature through the catalog.
@@ -1528,6 +1537,9 @@ SkipCatCheck:
         Case DIGSIG_E_CRYPTO
             .ShortMessage = "DIGSIG_E_CRYPTO"
             If 0 = Len(.FullMessage) Then .FullMessage = "Unspecified cryptographic failure."
+        Case NTE_BAD_ALGID
+            .ShortMessage = "NTE_BAD_ALGID"
+            If 0 = Len(.FullMessage) Then .FullMessage = "Outdated signature algorithm."
         Case Else
             .ShortMessage = "Other error. Code = " & ReturnVal & ". LastDLLError = " & Err.LastDllError
         End Select
@@ -2635,7 +2647,8 @@ Public Function IsMicrosoftFile( _
     If bEDS_Work Then
         
         Dim SignResult As SignResult_TYPE
-        SignVerify sFile, SV_LightCheck Or SV_PreferInternalSign Or IIf(bDebugMode, SV_SelfTest, 0), SignResult
+        SignVerify sFile, SV_LightCheck Or SV_PreferInternalSign Or IIf(bDebugMode, SV_SelfTest, 0) Or _
+            IIf(OSver.IsWindows8OrGreater, SV_DisableOutdatedAlgo, 0), SignResult
         
         If SignResult.isMicrosoftSign Then
             If SignResult.ReturnCode = CERT_E_EXPIRED Then
@@ -2689,7 +2702,8 @@ Public Function IsMicrosoftFileEx( _
         
         Dim SignResult As SignResult_TYPE
         
-        SignVerify sFile, SV_LightCheckMS Or SV_PreferInternalSign Or IIf(bDebugMode, SV_SelfTest, 0), SignResult
+        SignVerify sFile, SV_LightCheckMS Or SV_PreferInternalSign Or IIf(bDebugMode, SV_SelfTest, 0) Or _
+            IIf(OSver.IsWindows8OrGreater, SV_DisableOutdatedAlgo, 0), SignResult
         
         If SignResult.isMicrosoftSign Then
             If SignResult.ReturnCode = CERT_E_EXPIRED Then
@@ -2722,7 +2736,8 @@ Public Function IsMicrosoftDriverFile(sFile As String) As Boolean
     'Note: when we are cheking signature of driver we should give preference to internal signature rather then catalogue,
     'because there are cases when Microsoft publish its catalogue where hashes of 3d-party drivers are stored !!!
     
-    hResult = SignVerify(sFile, SV_isDriver Or SV_LightCheck Or SV_PreferInternalSign, SignResult)
+    hResult = SignVerify(sFile, SV_isDriver Or SV_LightCheck Or SV_PreferInternalSign Or _
+        IIf(OSver.IsWindows8OrGreater, SV_DisableOutdatedAlgo, 0), SignResult)
     
     'For some reason "termdd.sys" has broken internal signature in XP
     If hResult = CRYPT_E_BAD_MSG Then

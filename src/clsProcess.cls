@@ -512,7 +512,7 @@ End Function
 
 
 Public Function ProcessRun( _
-                            ByVal FileName As String, _
+                            ByVal fileName As String, _
                             Optional ByVal CommandLine As String, _
                             Optional ByVal CurrentDirectory As String = vbNullString, _
                             Optional WindowStyle As SHOWWINDOW_FLAGS = SW_SHOWNORMAL, _
@@ -520,7 +520,7 @@ Public Function ProcessRun( _
                             Optional bReadConsole As Boolean) As Long
     
     On Error GoTo ErrorHandler:
-    AppendErrorLogCustom "ProcessRun - Begin", "FileName: " & FileName, "CommandLine: " & CommandLine, "CurDir: " & CurrentDirectory, _
+    AppendErrorLogCustom "ProcessRun - Begin", "FileName: " & fileName, "CommandLine: " & CommandLine, "CurDir: " & CurrentDirectory, _
         "WindowStyle: " & WindowStyle, "CloseHandles? " & CloseHandles
     
     Const STARTF_USESHOWWINDOW      As Long = 1
@@ -532,9 +532,9 @@ Public Function ProcessRun( _
     Dim argc        As Long
     Dim argv()      As String
     
-    If Len(FileName) <> 0 Then
+    If Len(fileName) <> 0 Then
     
-        CMDLine = """" & FileName & """"                    ' Имя файла в кавычки
+        CMDLine = """" & fileName & """"                    ' Имя файла в кавычки
         
         If Len(CommandLine) <> 0 Then                       ' Если есть аргументы, их тоже добавляем в кавычках
         
@@ -546,8 +546,8 @@ Public Function ProcessRun( _
         End If
         
         'если командная строка подготовлена для cmd.exe, не трогаем аргументы
-        If StrComp(FileName, Environ$("ComSpec"), 1) = 0 Or StrComp(FileName, "schtasks.exe", 1) = 0 Then
-            CMDLine = """" & FileName & """" & " " & CommandLine
+        If StrComp(fileName, Environ$("ComSpec"), 1) = 0 Or StrComp(fileName, "schtasks.exe", 1) = 0 Then
+            CMDLine = """" & fileName & """" & " " & CommandLine
         End If
     Else
         CMDLine = CommandLine
@@ -616,19 +616,19 @@ Public Function ProcessRun( _
     AppendErrorLogCustom "ProcessRun - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "clsProcess_ProcessRun", "FileName:", FileName, "CommandLine:", CommandLine
+    ErrorMsg Err, "clsProcess_ProcessRun", "FileName:", fileName, "CommandLine:", CommandLine
     If inIDE Then Stop: Resume Next
 End Function
 
 Public Function ProcessRunUnelevated( _
-                            ByVal FileName As String, _
+                            ByVal fileName As String, _
                             Optional ByVal CommandLine As String, _
                             Optional ByVal CurrentDirectory As String = vbNullString, _
                             Optional WindowStyle As SHOWWINDOW_FLAGS = SW_SHOWNORMAL, _
                             Optional CloseHandles As Boolean = False) As Long
     
     On Error GoTo ErrorHandler:
-    AppendErrorLogCustom "ProcessRunUnelevated - Begin", "FileName: " & FileName, "CommandLine: " & CommandLine, "CurDir: " & CurrentDirectory, _
+    AppendErrorLogCustom "ProcessRunUnelevated - Begin", "FileName: " & fileName, "CommandLine: " & CommandLine, "CurDir: " & CurrentDirectory, _
         "WindowStyle: " & WindowStyle, "CloseHandles? " & CloseHandles
     
     'This code launch program via filtered token context; parent process handle is current process
@@ -653,7 +653,7 @@ Public Function ProcessRunUnelevated( _
     Dim argc        As Long
     Dim argv()      As String
     
-    CMDLine = """" & FileName & """"                    ' Имя файла в кавычки
+    CMDLine = """" & fileName & """"                    ' Имя файла в кавычки
     
     If CommandLine <> vbNullString Then                 ' Если есть аргументы, их тоже добавляем в кавычках
     
@@ -664,8 +664,8 @@ Public Function ProcessRunUnelevated( _
     End If
     
     'если командная строка подготовлена для cmd.exe, не трогаем аргументы
-    If StrComp(FileName, Environ$("ComSpec"), 1) = 0 Or StrComp(FileName, "schtasks.exe", 1) = 0 Then
-        CMDLine = """" & FileName & """" & " " & CommandLine
+    If StrComp(fileName, Environ$("ComSpec"), 1) = 0 Or StrComp(fileName, "schtasks.exe", 1) = 0 Then
+        CMDLine = """" & fileName & """" & " " & CommandLine
     End If
     
     si.cb = Len(si)
@@ -677,7 +677,7 @@ Public Function ProcessRunUnelevated( _
     'SetCurrentProcessPrivileges "SeImpersonatePrivilege"    'CreateProcessWithTokenW
     
     If Not OSver.IsElevated Then
-        ProcessRunUnelevated = ProcessRun(FileName, CommandLine, CurrentDirectory, WindowStyle, CloseHandles)
+        ProcessRunUnelevated = ProcessRun(fileName, CommandLine, CurrentDirectory, WindowStyle, CloseHandles)
         Exit Function
     End If
     
@@ -730,12 +730,12 @@ Public Function ProcessRunUnelevated( _
     AppendErrorLogCustom "ProcessRunUnelevated - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "clsProcess_ProcessRunUnelevated", "FileName:", FileName, "CommandLine:", CommandLine
+    ErrorMsg Err, "clsProcess_ProcessRunUnelevated", "FileName:", fileName, "CommandLine:", CommandLine
     If inIDE Then Stop: Resume Next
 End Function
 
 Public Function ProcessRunUnelevated2( _
-                            ByVal FileName As String, _
+                            ByVal fileName As String, _
                             Optional ByVal CommandLine As String, _
                             Optional ByVal CurrentDirectory As String = vbNullString, _
                             Optional WindowStyle As SHOWWINDOW_FLAGS = SW_SHOWNORMAL) As Boolean
@@ -744,14 +744,14 @@ Public Function ProcessRunUnelevated2( _
     'This code launch program via filtered token context; parent process handle is 'explorer.exe' process
     'Thanks to Victor Bravo VI (vbforums) for this code
     
-    AppendErrorLogCustom "ProcessRunUnelevated2 - Begin", "FileName: " & FileName, "CommandLine: " & CommandLine, "CurDir: " & CurrentDirectory, _
+    AppendErrorLogCustom "ProcessRunUnelevated2 - Begin", "FileName: " & fileName, "CommandLine: " & CommandLine, "CurDir: " & CurrentDirectory, _
         "WindowStyle: " & WindowStyle
     
     Const CC_STDCALL = 4&, QueryActiveShellView_Offset = 15& * 4&, GetItemObject_Offset = 15& * 4&
     Const NOERROR = 0&, S_OK = 0&, SVGIO_BACKGROUND = 0&, SWC_DESKTOP = 8&, SWFO_NEEDDISPATCH = 1&
 
     If OSver.MajorMinor <= 5.2 Then
-        ProcessRunUnelevated2 = ProcessRun(FileName, CommandLine, CurrentDirectory, WindowStyle, True)
+        ProcessRunUnelevated2 = ProcessRun(fileName, CommandLine, CurrentDirectory, WindowStyle, True)
         Exit Function
     End If
 
@@ -780,7 +780,7 @@ Public Function ProcessRunUnelevated2( _
     
                 If DispCallFunc(ObjPtr(IShellView), GetItemObject_Offset, CC_STDCALL, vbLong, 3&, VT(0&), pv(0&), RV) = S_OK And RV = S_OK Then
     
-                  ShellFolderView.Application.ShellExecute FileName, vCommandLine, vCurrentDirectory, vOperation, vWindowStyle
+                  ShellFolderView.Application.ShellExecute fileName, vCommandLine, vCurrentDirectory, vOperation, vWindowStyle
                   
                   ProcessRunUnelevated2 = True
                 End If
@@ -792,13 +792,13 @@ Public Function ProcessRunUnelevated2( _
     End If
     
     If Not ProcessRunUnelevated2 Then
-        ProcessRunUnelevated2 = ProcessRun(FileName, CommandLine, CurrentDirectory, WindowStyle, True)
+        ProcessRunUnelevated2 = ProcessRun(fileName, CommandLine, CurrentDirectory, WindowStyle, True)
     End If
     
     AppendErrorLogCustom "ProcessRunUnelevated - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "ProcessRunUnelevated2", "FileName:", FileName, "CommandLine:", CommandLine
+    ErrorMsg Err, "ProcessRunUnelevated2", "FileName:", fileName, "CommandLine:", CommandLine
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -834,7 +834,7 @@ Private Sub ParseCommandLine(Line As String, argc As Long, argv() As String)
     
     ptr = CommandLineToArgvW(StrPtr(Line), argc)
     ReDim argv(argc)
-    argv(0) = App.Path & "\" & App.ExeName & ".exe"
+    argv(0) = App.path & "\" & App.ExeName & ".exe"
     If argc = 0 Then Exit Sub
     
     For Index = 1 To argc

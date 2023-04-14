@@ -25,6 +25,7 @@ Option Explicit
 
 ' Versions:
 
+' 10.0* | Windows Server 2022 (ReleaseId 2009+)
 ' 10.0* | Windows 11 (builds 22000+)
 ' 10.0* | Windows Server 2016
 ' 10.0* | Windows 10 (builds 9885+, Insider Preview)
@@ -501,19 +502,24 @@ Private Sub Class_Initialize()
         Case 10
             Dim bIsWin11Core As Boolean
             bIsWin11Core = (0 <> GetProcAddress(GetModuleHandle(StrPtr("kernel32.dll")), "GetTempPath2W"))
+            If bIsWin11Core Then
+                IsWindows11OrGreater_ = True
+            End If
             
             If osi.wProductType = VER_NT_WORKSTATION Then
                 
                 If osi.dwBuildNumber >= 22000 And bIsWin11Core Then
                     OSName_ = "Windows 11"
-                    IsWindows11OrGreater_ = True
                 Else
                     OSName_ = "Windows 10"
                 End If
             Else
-                If ReleaseId_ >= 2009 And bIsWin11Core Then
-                    OSName_ = "Windows Server 2022"
-                    IsWindows11OrGreater_ = True
+                If ReleaseId_ >= 2009 Then
+                    If bIsWin11Core Then
+                        OSName_ = "Windows Server 2022"
+                    Else
+                        OSName_ = "Windows Unknown"
+                    End If
                 ElseIf ReleaseId_ >= 1803 Then
                     OSName_ = "Windows Server 2019"
                 Else

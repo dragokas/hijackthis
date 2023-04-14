@@ -811,7 +811,7 @@ Public Sub CheckO26Item()
     Const FLG_APPLICATION_VERIFIER As Long = &H100&
     
     Dim sKeys$(), sSubkeys$(), i&, j&, sFile$, sArgs$, sHit$, sData$, result As SCAN_RESULT
-    Dim bDisabled As Boolean, vGFlag As Variant
+    Dim bDisabled As Boolean, sGFlag As String
     Dim bPerUser As Boolean, aTmp() As String, sAlias As String
     Dim bSafe As Boolean, bMicrosoft As Boolean, sOrigLine As String
     
@@ -886,6 +886,7 @@ Public Sub CheckO26Item()
                             .Section = "O26"
                             .HitLineW = sHit
                             AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key & "\" & sKeys(i), "Debugger", , HE.Redirected
+                            AddJumpFile .Jump, JUMP_FILE, sFile
                             .CureType = REGISTRY_BASED
                         End With
                         AddToScanResults result
@@ -901,14 +902,10 @@ Public Sub CheckO26Item()
             If Len(sData) <> 0 Then
                 
                 bDisabled = False
-                vGFlag = Reg.GetString(HE.Hive, HE.Key & "\" & sKeys(i), "GlobalFlag", HE.Redirected)
-        
-                If IsNumeric(vGFlag) Then
-                    If Not CBool(CLng(vGFlag) And FLG_APPLICATION_VERIFIER) Then bDisabled = True
-                Else
-                    If CStr(vGFlag) <> "0x100" Then bDisabled = True
-                End If
+                sGFlag = Reg.GetString(HE.Hive, HE.Key & "\" & sKeys(i), "GlobalFlag", HE.Redirected)
                 
+                If 0 = (HexStringToNumber(sGFlag) And FLG_APPLICATION_VERIFIER) Then bDisabled = True
+
                 SplitIntoPathAndArgs sData, sFile, sArgs, bIsRegistryData:=True
                 sFile = FormatFileMissing(sFile, sArgs)
                 
@@ -928,6 +925,7 @@ Public Sub CheckO26Item()
                         If Not bDisabled Then
                             AddRegToFix .Reg, REMOVE_KEY, HE.Hive, HE.Key & "\" & sKeys(i), , , HE.Redirected
                         End If
+                        AddJumpFile .Jump, JUMP_FILE, sFile
                         .CureType = REGISTRY_BASED
                     End With
                     AddToScanResults result
@@ -967,6 +965,8 @@ Public Sub CheckO26Item()
                                 HE.Hive, HE.Key & "\" & "{ApplicationVerifierGlobalSettings}", "VerifierProviders", , HE.Redirected, , _
                                 sOrigLine, vbNullString, " "
                             
+                            AddJumpFile .Jump, JUMP_FILE, sFile
+                            
                             .CureType = REGISTRY_BASED
                         End With
                         AddToScanResults result
@@ -999,6 +999,7 @@ Public Sub CheckO26Item()
                     .Section = "O26"
                     .HitLineW = sHit
                     AddRegToFix .Reg, REMOVE_KEY, HKCU, "Software\Microsoft\Windows\CurrentVersion\PackagedAppXDebug\" & sKeys(i)
+                    AddJumpFile .Jump, JUMP_FILE, sFile
                     .CureType = REGISTRY_BASED
                 End With
                 AddToScanResults result
@@ -1022,6 +1023,7 @@ Public Sub CheckO26Item()
                         .Section = "O26"
                         .HitLineW = sHit
                         AddRegToFix .Reg, REMOVE_KEY, HKCU, "Software\Classes\ActivatableClasses\Package\" & sKeys(i) & "\DebugInformation"
+                        AddJumpFile .Jump, JUMP_FILE, sFile
                         .CureType = REGISTRY_BASED
                     End With
                     AddToScanResults result

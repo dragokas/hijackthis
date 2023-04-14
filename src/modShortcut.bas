@@ -122,7 +122,7 @@ Public Function GetPathFromIDL(sIDL As String) As String
     If (Err.Number <> 0) Or (fld Is Nothing) Then Exit Function
     
     On Error GoTo ErrorHandler
-    Path = fld.self.Path
+    Path = fld.Self.Path
     
     If Len(Path) <> 0 And StrComp(Path, sIDL, 1) <> 0 Then
         GetPathFromIDL = Path
@@ -542,7 +542,7 @@ Function GetEncoding_UTF8(aBytes() As Byte, Optional Percent As Long) As Long
     On Error GoTo ErrorHandler
     AppendErrorLogCustom "Parser.GetEncoding_UTF8 - Begin"
     
-    Dim c As Long, n As Long, i As Long, bSuccess As Boolean, BTC As Long 'bytes to check
+    Dim c As Long, N As Long, NTotal As Long, i As Long, bSuccess As Boolean, BTC As Long 'bytes to check
     
     Do
         '2-bytes seq.: 110x xxxx, 10xx xxxx (0xC0, 0x80)
@@ -569,18 +569,24 @@ Function GetEncoding_UTF8(aBytes() As Byte, Optional Percent As Long) As Long
         If (BTC > 0) And ((c + BTC) <= UBound(aBytes)) Then
             bSuccess = True
             For i = c + 1 To c + BTC
-                If ((aBytes(c + 1) Xor &H80) And &HC0) <> 0 Then bSuccess = False: Exit For
+                If ((aBytes(i) Xor &H80) And &HC0) <> 0 Then bSuccess = False: Exit For
             Next
-            If bSuccess Then n = n + 1
+            If bSuccess Then N = N + 1
+        End If
+        
+        If aBytes(c) <> 13 And aBytes(c) <> 10 Then
+            NTotal = NTotal + 1
         End If
         
         c = c + 1 + BTC
         
-    Loop Until c >= UBound(aBytes)
+    Loop While c <= UBound(aBytes)
     
-    Percent = n / UBound(aBytes) * 100&
+    If NTotal <> 0 Then
+        Percent = N * 100& / NTotal
+    End If
     
-    If Percent > 10 Then Percent = -1: GetEncoding_UTF8 = CP_UTF8
+    If Percent >= 5 Then Percent = -1: GetEncoding_UTF8 = CP_UTF8
     
     AppendErrorLogCustom "Parser.GetEncoding_UTF8 - End"
     Exit Function
