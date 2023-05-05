@@ -820,9 +820,9 @@ Function ExtractFilesFromCommandLine(sCMDLine As String) As String()
 End Function
 
 'Delete File with unlock access rights on failure. Return non 0 on success.
-Public Function DeleteFileWEx(lpSTR As Long, Optional ForceDeleteMicrosoft As Boolean, Optional DisallowRemoveOnReboot As Boolean) As Long
+Public Function DeleteFilePtr(lpSTR As Long, Optional ForceDeleteMicrosoft As Boolean, Optional DisallowRemoveOnReboot As Boolean) As Long
     On Error GoTo ErrorHandler:
-    AppendErrorLogCustom "DeleteFileWEx - Begin"
+    AppendErrorLogCustom "DeleteFilePtr - Begin"
 
     Dim iAttr As Long, lr As Long, sExt As String, sNewName As String
     Dim Redirect As Boolean, bOldStatus As Boolean
@@ -837,7 +837,7 @@ Public Function DeleteFileWEx(lpSTR As Long, Optional ForceDeleteMicrosoft As Bo
     
     ' prevent removing parent process
     If StrComp(FileName, MyParentProc.Path, vbTextCompare) = 0 Then
-        DeleteFileWEx = True
+        DeleteFilePtr = True
         Exit Function
     End If
     
@@ -869,12 +869,12 @@ Public Function DeleteFileWEx(lpSTR As Long, Optional ForceDeleteMicrosoft As Bo
     lr = DeleteFileW(lpSTR)
     
     If lr <> 0 Then 'success
-        DeleteFileWEx = lr
+        DeleteFilePtr = lr
         GoTo Finalize
     End If
     
     If Err.LastDllError = ERROR_FILE_NOT_FOUND Then
-        DeleteFileWEx = 1
+        DeleteFilePtr = 1
         GoTo Finalize
     End If
     
@@ -900,10 +900,10 @@ Public Function DeleteFileWEx(lpSTR As Long, Optional ForceDeleteMicrosoft As Bo
 Finalize:
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     
-    AppendErrorLogCustom "DeleteFileWEx - End"
+    AppendErrorLogCustom "DeleteFilePtr - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "Parser.DeleteFileWEx", "File:", FileName
+    ErrorMsg Err, "Parser.DeleteFilePtr", "File:", FileName
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -2753,12 +2753,12 @@ End Function
 
 Public Function IsValidUserName(sUsername As String) As Boolean
     If Len(sUsername) = 0 Then Exit Function
-    IsValidUserName = inArray(sUsername, g_LocalUserNames, , , vbTextCompare)
+    IsValidUserName = InArray(sUsername, g_LocalUserNames, , , vbTextCompare)
 End Function
 
 Public Function IsValidGroupName(sGroupname As String) As Boolean
     If Len(sGroupname) = 0 Then Exit Function
-    IsValidGroupName = inArray(sGroupname, g_LocalGroupNames, , , vbTextCompare)
+    IsValidGroupName = InArray(sGroupname, g_LocalGroupNames, , , vbTextCompare)
 End Function
 
 Public Function IsValidBuildInUserName(sUsername As String) As Boolean
@@ -2784,7 +2784,7 @@ Public Function IsValidBuildInUserName(sUsername As String) As Boolean
     ' BUILTIN\Administrators
     ' etc.
     
-    IsValidBuildInUserName = inArray(sUsername, names, , , vbTextCompare)
+    IsValidBuildInUserName = InArray(sUsername, names, , , vbTextCompare)
     
 End Function
 
@@ -2815,7 +2815,7 @@ Public Function IsValidTaskUserId(ByVal sUserId As String) As Boolean
         sUserId = Mid$(sUserId, pos + 1)
     End If
     If Len(sUserId) = 0 Then Exit Function
-    If inArray(sUserId, g_LocalUserNames, , , vbTextCompare) Then
+    If InArray(sUserId, g_LocalUserNames, , , vbTextCompare) Then
         IsValidTaskUserId = True
         Exit Function
     End If
@@ -2850,7 +2850,7 @@ Public Function IsValidTaskGroupId(ByVal sGroupId As String) As Boolean
         sGroupId = Mid$(sComputer, pos + 1)
     End If
     If Len(sGroupId) = 0 Then Exit Function
-    IsValidTaskGroupId = inArray(sGroupId, g_LocalGroupNames, , , vbTextCompare)
+    IsValidTaskGroupId = InArray(sGroupId, g_LocalGroupNames, , , vbTextCompare)
 End Function
 
 Public Function Deref(ptr As Long) As Long
@@ -2887,3 +2887,21 @@ Public Function HexStringToNumber(str As String) As Long
         End If
     End If
 End Function
+
+Public Function PathRemoveLastSlash(Path As String) As String
+    Dim ch As String
+    ch = Right$(Path, 1)
+    If ch = "\" Or ch = "/" Then
+        PathRemoveLastSlash = Left$(Path, Len(Path) - 1)
+    Else
+        PathRemoveLastSlash = Path
+    End If
+End Function
+
+Public Sub PathRemoveLastSlashInArray(arr() As String)
+    Dim i As Long
+    For i = 0 To UBound(arr)
+        arr(i) = PathRemoveLastSlash(arr(i))
+    Next
+End Sub
+

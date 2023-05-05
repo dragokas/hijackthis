@@ -34,6 +34,9 @@ Option Explicit
 '
 '   Fork by Alex Dragokas
 '
+'   v2.5
+'   Improved speed by replacing some RtlMoveMemory by __vbaCopyBytes
+'
 '   v2.4
 '   Added Err.raise to all methods to ensure user doesn't call it within Forms' Terminate event.
 '

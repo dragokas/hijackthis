@@ -28,7 +28,7 @@ Public Const STR_FOLDER_MISSING As String = "(folder missing)"
 Public Const STR_NOT_SIGNED As String = "(not signed)"
 
 #If False Then 'for common var. names character case fixation
-    Public X, Y, Length, Index, sFilename, i, j, k, State, Frm, ret, VT, isInit, hwnd, pv, Reg, pid, File, msg, VT, InArray
+    Public X, Y, Length, Index, sFilename, i, j, k, State, Frm, ret, VT, isInit, hwnd, pv, Reg, pid, File, msg, VT, InArray, fileName, Self, status
 #End If
 
 Public Enum HE_HIVE
@@ -507,7 +507,7 @@ End Type
 
 Public Type FILE_NAME_INFORMATION
     FileNameLength As Long
-    FileName(MAX_PATH) As Integer 'WCHAR FileName[1] 'MAX_PATH + NUL
+    fileName(MAX_PATH) As Integer 'WCHAR FileName[1] 'MAX_PATH + NUL
 End Type
 
 Public Type MOUNTMGR_BUFER
@@ -920,7 +920,7 @@ Public Declare Function UnlockFileEx Lib "kernel32.dll" (ByVal hFile As Long, By
 Public Declare Function EmptyArray Lib "oleaut32.dll" Alias "SafeArrayCreateVector" (Optional ByVal VT As VbVarType = vbString, Optional ByVal lLow As Long = 0, Optional ByVal lCount As Long = 0) As String()
 Public Declare Function NtCreateFile Lib "ntdll.dll" (ByRef FileHandle As Long, ByVal DesiredAccess As Long, ObjectAttributes As OBJECT_ATTRIBUTES, IoStatusBlock As IO_STATUS_BLOCK, AllocationSize As Any, ByVal FileAttributes As Long, ByVal ShareAccess As Long, ByVal CreateDisposition As Long, ByVal CreateOptions As Long, EaBuffer As Any, ByVal EaLength As Long) As Long
 Public Declare Function NtWriteFile Lib "ntdll.dll" (ByVal FileHandle As Long, EventArg As Any, APCRoutine As Long, APCContext As Any, IoStatusBlock As IO_STATUS_BLOCK, ByVal Buffer As Long, ByVal Length As Long, ByteOffset As Long, Key As Long) As Long
-Public Declare Function OpenFile Lib "kernel32.dll" (ByVal FileName As String, ByVal OFs As Long, ByVal Flags As Long) As Long
+Public Declare Function OpenFile Lib "kernel32.dll" (ByVal fileName As String, ByVal OFs As Long, ByVal Flags As Long) As Long
 Public Declare Function RtlDosPathNameToNtPathName_U Lib "ntdll.dll" (ByVal DosFileName As Long, NtFileName As UNICODE_STRING, FilePart As Long, RelativeName As Any) As Long
 Public Declare Sub RtlInitUnicodeString Lib "ntdll.dll" (DestinationString As Any, ByVal sourceString As Long)
 Public Declare Sub RtlFreeUnicodeString Lib "ntdll.dll" (UnicodeString As UNICODE_STRING)

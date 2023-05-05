@@ -1148,7 +1148,7 @@ Private Sub ListFiles_Ex(Path As String, Optional Extension As String = vbNullSt
                     End If
                 End If
             Else
-                If inArray(GetExtensionName(PathName), SplitSafe(Extension, ";"), , , 1) Or Len(Extension) = 0 Then
+                If InArray(GetExtensionName(PathName), SplitSafe(Extension, ";"), , , 1) Or Len(Extension) = 0 Then
                     SubPathName = BuildPath(Path, PathName)
                     If UBound(arrPathFiles) < Total_Files Then ReDim Preserve arrPathFiles(UBound(arrPathFiles) + 100&) As String
                     arrPathFiles(Total_Files) = SubPathName
@@ -1667,7 +1667,7 @@ Private Function SplitSafe(sComplexString As String, Optional Delimiter As Strin
 End Function
 
 ' ¬озвращает true, если искомое значение найдено в одном из элементов массива (lB, uB ограничивает просматриваемый диапазон индексов)
-Private Function inArray( _
+Private Function InArray( _
     stri As String, _
     MyArray() As String, _
     Optional lB As Long = -2147483647, _
@@ -1679,7 +1679,7 @@ Private Function inArray( _
     If uB = 2147483647 Then uB = UBound(MyArray)    'Thanks to  азанский :)
     Dim i As Long
     For i = lB To uB
-        If StrComp(stri, MyArray(i), CompareMethod) = 0 Then inArray = True: Exit For
+        If StrComp(stri, MyArray(i), CompareMethod) = 0 Then InArray = True: Exit For
     Next
     Exit Function
 ErrorHandler:
@@ -2370,7 +2370,7 @@ Public Function WriteDataToFile(sFile As String, sContents As String, Optional i
     
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     
-    If 0 = DeleteFileWEx(StrPtr(sFile)) Then
+    If 0 = DeleteFilePtr(StrPtr(sFile)) Then
         If (Not bAutoLogSilent) And bShowWarning Then
             'The value '[*]' could not be written to the settings file '[**]'. Please verify that write access is allowed to that file.
             MsgBoxW Replace$(Replace$(Translate(1008), "[*]", sContents), "[**]", sFile), vbCritical
@@ -2503,7 +2503,7 @@ Public Function FileCopyW(FileSource As String, FileDestination As String, Optio
         TryUnlock FileDestination
         FileCopyW = CopyFile(StrPtr(FileSource), StrPtr(FileDestination), Not bOverwrite)
         If Not FileCopyW Then
-            If DeleteFileWEx(StrPtr(FileDestination), , True) Then
+            If DeleteFilePtr(StrPtr(FileDestination), , True) Then
                 FileCopyW = CopyFile(StrPtr(FileSource), StrPtr(FileDestination), Not bOverwrite)
             End If
         End If
@@ -2823,7 +2823,7 @@ Public Function DeleteFolderForce(sFolder As String, Optional bForceDeleteMicros
                     aFiles = ListFiles(sFolder)
                     If AryItems(aFiles) Then
                         For i = 0 To UBound(aFiles)
-                            DeleteFileWEx StrPtr(aFiles(i)), bForceDeleteMicrosoft
+                            DeleteFilePtr StrPtr(aFiles(i)), bForceDeleteMicrosoft
                         Next
                     End If
                 End If

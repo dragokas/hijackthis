@@ -1945,15 +1945,16 @@ End Function
 '    End If
 'End Function
 
-Public Function HasBOM_UTF16(sText As String) As Boolean
-    Dim b1 As Long
-    Dim b2 As Long
-    b1 = AscW(Left$(sText, 1))
-    b2 = AscW(Mid$(sText, 2, 1))
-    '255, 254 - under US Locale
-    '1103, 1102 - other Locales
-    HasBOM_UTF16 = (b1 = 1103 And b2 = 1102) Or (b1 = 255 And b2 = 254)
-End Function
+'not reliable (do not use!)
+'Public Function HasBOM_UTF16(sText As String) As Boolean
+'    Dim b1 As Long
+'    Dim b2 As Long
+'    b1 = AscW(Left$(sText, 1))
+'    b2 = AscW(Mid$(sText, 2, 1))
+'    '255, 254 - under US Locale
+'    '1103, 1102 - ? (not applicable for MBCS)
+'    HasBOM_UTF16 = (b1 = 1103 And b2 = 1102) Or (b1 = 255 And b2 = 254)
+'End Function
 
 Public Sub ListBackups()
     On Error GoTo ErrorHandler:
@@ -2003,7 +2004,7 @@ Public Sub ListBackups()
             For i = UBound(aBackupDates) To 0 Step -1
                 bDoInclude = False
                 If aIsHJT(i) Then 'HJT backup?
-                    If Not inArray(aBackupDates(i), aBackupDatesHJT) Then 'not included in "backups" ?
+                    If Not InArray(aBackupDates(i), aBackupDatesHJT) Then 'not included in "backups" ?
                         bDoInclude = True
                     End If
                 Else ' not HJT backup ?

@@ -752,7 +752,7 @@ Public Function DownloadUnzipAndRun( _
         sToolsDir = GetToolsDir()
         If Not FolderExists(sToolsDir) Then MkDirW sToolsDir
         UnpackZIP ArcPath, sToolsDir
-        DeleteFileWEx StrPtr(ArcPath)
+        DeleteFilePtr StrPtr(ArcPath)
         'Downloading is completed. Run the program?
         If Not bSilent Then
             bRun = MsgBoxW(Translate(1026), vbYesNo, GetFileName(FileName)) = vbYes
@@ -815,7 +815,7 @@ Private Function DownloadAndUpdateSelf(ZipURL As String, bSilent As Boolean) As 
             
             If IsDragokasSign(SignResult) Then
                 
-                If FileExists(AppPath(True) & ".bak") Then DeleteFileWEx StrPtr(AppPath(True) & ".bak"), , True
+                If FileExists(AppPath(True) & ".bak") Then DeleteFilePtr StrPtr(AppPath(True) & ".bak"), , True
                 
                 'replacing ...
                 'move self
@@ -863,7 +863,7 @@ Private Function DownloadAndUpdateSelf(ZipURL As String, bSilent As Boolean) As 
     End If
     
     'clear
-    If FileExists(ArcPath) Then DeleteFileWEx StrPtr(ArcPath)
+    If FileExists(ArcPath) Then DeleteFilePtr StrPtr(ArcPath)
     
 End Function
 

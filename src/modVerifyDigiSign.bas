@@ -2529,6 +2529,7 @@ Public Sub FindNewMicrosoftCodeSignCert()
     Dim HashCert As String
     Dim IssuedTo As String
     Dim sData As String
+    Dim colHashReported As New Collection
     
     StoreName = "Root"
     
@@ -2548,7 +2549,7 @@ Public Sub FindNewMicrosoftCodeSignCert()
                     
                     If Not IsMicrosoftCertHash(HashCert) Then
                         
-                        If IsCodeSignCertificate(pCertContext) Then
+                        If IsCodeSignCertificate(pCertContext) And Not isCollectionItemExists(HashCert, colHashReported) Then
                         
                             IssuedTo = vbNullString
                             
@@ -2589,6 +2590,8 @@ Public Sub FindNewMicrosoftCodeSignCert()
                                         "Issuer: """ & Issuer & """, " & _
                                         "Valid: """ & FileTime_To_VT_Date(CertInfo.NotBefore) & " - " & FileTime_To_VT_Date(CertInfo.NotAfter) & """" & _
                                         vbCrLf & Replace(sData, vbCrLf, "\n")
+                                        
+                                        colHashReported.Add HashCert
                                     End If
                                 End If
                             End If

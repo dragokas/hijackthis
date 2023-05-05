@@ -5,6 +5,12 @@ Attribute VB_Name = "XmlUtil"
 ' XML Parser by Jason Thorn (Fork by Alex Dragokas)
 '
 
+' Fork v1.6 [25.04.2023]
+' - Fixed UTF16LE detection on MBCS locale
+'
+' Fork v1.5 [24.07.2022]
+' - Fixed incorrect decoding of multibyte characters
+'
 ' Fork v1.4
 ' - added .NodeValueByName
 ' - removed err.raise when trying to parse empty file
@@ -12,7 +18,6 @@ Attribute VB_Name = "XmlUtil"
 ' - .LoadData is now a function (TRUE, if success with loading)
 ' - improved UTF16 LE format detection.
 '
-
 ' Fork v1.3 [28.11.2017]
 ' - added all possible error handlers
 ' - replaced error handlers based on Err.raise by separate function (ErrorMsg), just because I don't like at all when class raises runtime error.

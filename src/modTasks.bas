@@ -1171,11 +1171,15 @@ Public Sub EnumTasksVista(Optional MakeCSV As Boolean)
     End If
     
     EnumTaskFolder LogHandle, dXmlPathFromDisk, "Tasks", BuildPath(sWinSysDir, "Tasks"), False, True
-    EnumTaskFolder LogHandle, dXmlPathFromDisk, "Tasks_Migrated", BuildPath(sWinSysDir, "Tasks_Migrated"), True, True
+    'If bAdditional Then
+        EnumTaskFolder LogHandle, dXmlPathFromDisk, "Tasks_Migrated", BuildPath(sWinSysDir, "Tasks_Migrated"), True, True
+    'End If
     
     If OSver.IsWin64 Then
         EnumTaskFolder LogHandle, dXmlPathFromDisk, "Tasks", BuildPath(sWinSysDirWow64, "Tasks"), False, False
-        EnumTaskFolder LogHandle, dXmlPathFromDisk, "Tasks_Migrated", BuildPath(sWinSysDirWow64, "Tasks_Migrated"), True, False
+        'If bAdditional Then
+            EnumTaskFolder LogHandle, dXmlPathFromDisk, "Tasks_Migrated", BuildPath(sWinSysDirWow64, "Tasks_Migrated"), True, False
+        'End If
     End If
     
     EnumTaskOther dXmlPathFromDisk
@@ -1376,9 +1380,9 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
                             AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree" & DirXml
                             
                             .CureType = REGISTRY_BASED Or FILE_BASED
-                        Else
+                          Else
                             .CureType = FILE_BASED
-                        End If
+                          End If
                       End With
                       AddToScanResults result
                   End If
@@ -2084,7 +2088,7 @@ Public Function KillTask2(TaskFullPath As String) As Boolean
     
     sWinTasksFolder = BuildPath(sWinSysDir, "Tasks")
     
-    KillTask2 = DeleteFileWEx(StrPtr(BuildPath(sWinTasksFolder, TaskFullPath)))
+    KillTask2 = DeleteFilePtr(StrPtr(BuildPath(sWinTasksFolder, TaskFullPath)))
     
     id = Reg.GetString(HKEY_LOCAL_MACHINE, BuildPath("SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree", TaskFullPath), "Id")
     
@@ -2397,44 +2401,43 @@ Public Sub EnumBITS_Stage2()
     
     BitsAdminExecuted = False
     
-    cProcBitsAdmin.WaitForTerminate , , False, 15000
-    sLog = cProcBitsAdmin.ConsoleRead()
+    sLog = cProcBitsAdmin.ConsoleReadUntilDeath()
     Set cProcBitsAdmin = Nothing
     
-    Dim n As Long, i As Long
+    Dim N As Long, i As Long
     
     If Len(sLog) <> 0 Then
         aLog = Split(sLog, vbCrLf)
         
-        Do While n <= UBound(aLog)
+        Do While N <= UBound(aLog)
             
             If Not bSectFile Then
                 
-                If StrBeginWith(aLog(n), "GUID:") Then
+                If StrBeginWith(aLog(N), "GUID:") Then
                 
                     Erase aURL
                     sNotify = vbNullString
-                    sGUID = GetStringToken(aLog(n), 2)
-                    sName = GetStringToken(aLog(n), 4, -1)
+                    sGUID = GetStringToken(aLog(N), 2)
+                    sName = GetStringToken(aLog(N), 4, -1)
                     If Len(sName) <> 0 Then
                         If Left$(sName, 1) = "'" Then sName = Mid$(sName, 2)
                         If Right$(sName, 1) = "'" And Len(sName) > 1 Then sName = Left$(sName, Len(sName) - 1)
                     End If
                     
-                ElseIf StrBeginWith(aLog(n), "TYPE:") Then
+                ElseIf StrBeginWith(aLog(N), "TYPE:") Then
                     
-                    sType = LCase$(GetStringToken(aLog(n), 2))
+                    sType = LCase$(GetStringToken(aLog(N), 2))
                     
-                ElseIf StrBeginWith(aLog(n), "JOB FILES:") Then
+                ElseIf StrBeginWith(aLog(N), "JOB FILES:") Then
                 
                     bSectFile = True
                 End If
             Else
-                If Not StrBeginWith(aLog(n), "NOTIFICATION COMMAND LINE:") Then
+                If Not StrBeginWith(aLog(N), "NOTIFICATION COMMAND LINE:") Then
                     
-                    ArrayAddStr aURL, GetStringToken(aLog(n), 5, -1)
+                    ArrayAddStr aURL, GetStringToken(aLog(N), 5, -1)
                 Else
-                    sNotify = GetStringToken(aLog(n), 4, -1)
+                    sNotify = GetStringToken(aLog(N), 4, -1)
                     bSectFile = False
                     
                     If AryItems(aURL) = 0 Then ReDim aURL(0)
@@ -2490,7 +2493,7 @@ Public Sub EnumBITS_Stage2()
                 End If
             End If
             
-            n = n + 1
+            N = N + 1
         Loop
     End If
     
@@ -2553,16 +2556,16 @@ Public Function GetStringToken( _
         Dim Tok() As String
         Dim i As Long
         Dim ret As String
-        Dim n As Long
+        Dim N As Long
         Dim ch As Long
         Dim Length As Long
         
         str = Replace$(str, vbTab, " ")
         
         Do
-            n = n + 1
-            If n > Len(str) Then Exit Function
-            ch = Asc(Mid$(str, n, 1))
+            N = N + 1
+            If N > Len(str) Then Exit Function
+            ch = Asc(Mid$(str, N, 1))
         Loop While ch = 32 'skip leading spaces
         
         Do 'remove double delims
@@ -2570,10 +2573,10 @@ Public Function GetStringToken( _
             str = Replace$(str, delim & delim, delim)
         Loop While Length <> Len(str)
         
-        If n = 1 Then
+        If N = 1 Then
             Tok = Split(str, delim)
         Else
-            Tok = Split(Mid$(str, n), delim)
+            Tok = Split(Mid$(str, N), delim)
         End If
         
         If tokEnd = 0 Then

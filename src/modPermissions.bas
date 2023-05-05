@@ -1113,7 +1113,7 @@ Public Function CheckAccessWrite(sFilePath As String, Optional bDeleteFile As Bo
 
     If bDeleteFile Then
         If FileExists(sFilePath, , True) Then
-            DeleteFileWEx StrPtr(sFilePath), , True
+            DeleteFilePtr StrPtr(sFilePath), , True
         End If
     End If
     Exit Function

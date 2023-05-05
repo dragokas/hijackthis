@@ -17,7 +17,7 @@ set "ch="
 set /p "ch=Would you like to write hot-update.txt ? (Y/N)"
 if /i "%ch%" neq "n" (
   start "" hot-changelog.txt
-  start "" ChangeLog\_TODO_HiJackThis.txt
+  start "" _ChangeLog_en.txt
 )
 
 "C:\Program Files\Git\bin\sh.exe" --login -i -- "upload.sh"

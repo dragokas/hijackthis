@@ -40,15 +40,32 @@ End Sub
 
 Public Function LoadFile(sFilePath As String) As Boolean
     On Error GoTo Err_Trap
-
-    Dim hFile           As Integer
-    Dim sFileData       As String
     
-    hFile = FreeFile()
-    Open sFilePath For Binary Access Read As #hFile
-    sFileData = String$(LOF(hFile), vbNullChar)
-    Get #hFile, , sFileData
-    Close #hFile
+    Dim ff              As Integer
+    Dim sFileData       As String
+    Dim iSize           As Long
+    ReDim b(1) As Byte
+    
+    ff = FreeFile()
+    Open sFilePath For Binary Access Read As ff
+    iSize = LOF(ff)
+    If iSize >= 2 Then
+        Get #ff, , b
+    End If
+    If b(0) = &HFF& And b(1) = &HFE& Then
+        If Not EOF(ff) Then
+            sFileData = String$(iSize - 1, vbNullChar)
+            Get #ff, , sFileData
+            sFileData = StrConv(sFileData, vbFromUnicode)
+        End If
+    Else
+        Seek #ff, 1
+        If Not EOF(ff) Then
+            sFileData = String$(iSize, vbNullChar)
+            Get #ff, , sFileData
+        End If
+    End If
+    Close #ff
     
     If Len(sFileData) = 0 Then Exit Function
     
@@ -65,19 +82,18 @@ Public Function LoadData(Data As String) As Boolean
     
     Dim bData() As Integer
     Dim isArrayAlloc As Boolean
+    Dim posTag As Long
     
-    ' Map Data to a Double-Byte Array
-
     If Len(Data) = 0 Then
         'Err.Raise 13 & vbObjectError, "vbXml", "Unable to Parse Empty Data" ' Type Mismatch
         Exit Function
     End If
     
-    'UTF16 ?
-    If HasBOM_UTF16(Data) Then
-        Data = StrConv(Mid$(Data, 3), vbFromUnicode)
-    End If
+    posTag = InStr(1, Data, "<")
+    If posTag = 0 Then Exit Function
+    If posTag > 1 Then Data = Mid$(Data, posTag) 'trim BOM
     
+    ' Map Data to a Double-Byte Array
     Dim tArrDesc    As SAFEARRAY1D
     With tArrDesc
         .pvData = StrPtr(Data)

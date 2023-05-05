@@ -2032,7 +2032,9 @@ Private JumpRegCache()  As FIX_REG_KEY
 Public Sub Test()
 
     'If you need something to test after program started and initialized all required variables, please use this sub.
+
 End Sub
+
 
 
 ' Tips on functions:
@@ -2203,7 +2205,7 @@ Private Sub FormStart_Stage1()
     SetCurrentDirectory StrPtr(AppPath())
     
     'FixLog = BuildPath(AppPath(), "\HiJack_Fix.log")           'not used yet
-    'If FileExists(FixLog) Then DeleteFileWEx StrPtr(FixLog)
+    'If FileExists(FixLog) Then DeleteFilePtr StrPtr(FixLog)
     
     bPolymorph = (InStr(1, AppExeName(), "_poly", 1) <> 0) Or (StrComp(GetExtensionName(AppExeName(True)), ".pif", 1) = 0)
     
@@ -3342,7 +3344,7 @@ Private Sub FormStart_Stage3()
         For i = 0 To dSuspFiles.Count - 1
 
             sFile = dSuspFiles.Keys(i)
-            DeleteFileWEx StrPtr(sFile), True
+            DeleteFilePtr StrPtr(sFile), True
 
         Next
 
@@ -3479,7 +3481,7 @@ Sub ParseFilesCSV(dRunFiles As clsTrickHashTable, sLog As String, lColumnPos As 
                 sFile = UnQuote(sFile)
                 bComply = False
                 If (bUseFilter) Then
-                    If inArray(GetExtensionName(sFile), aExt, , , vbTextCompare) Then
+                    If InArray(GetExtensionName(sFile), aExt, , , vbTextCompare) Then
                         bComply = True
                     End If
                 Else

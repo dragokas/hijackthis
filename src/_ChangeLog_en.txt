@@ -11,6 +11,11 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[2.10.0.30] - May 06, 2023
+ - Fixed potential error in retrieving paths of executable images on Windows 8.1- due to OS bug (thanks to HackerVlad).
+ - TamperProtection will show an error code instead of the number 0 if an access is denied.
+ - Fixed freezing for 15 seconds on Windows 10+ when checking BITS.
+
 [2.10.0.29] - Apr 14, 2023
  - Added O7 - AutoLogon.
  - O7 - TroubleShooting (EV): [PathExt] and [PSModulePath] moved to "Missing list" method, which means item is displayed if only system defaults missing.
@@ -1673,4 +1678,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                                                                                                    
+                                                                                                       

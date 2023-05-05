@@ -3673,7 +3673,7 @@ Public Sub FixO1Item(sItem$, result As SCAN_RESULT)
     End If
     
     If FileExists(sHostsTemp) Then
-        DeleteFileWEx StrPtr(sHostsTemp)
+        DeleteFilePtr StrPtr(sHostsTemp)
     End If
     
     If StrComp(GetParentDir(sHosts), sWinDir & "\System32\drivers\etc\hosts", 1) <> 0 Then
@@ -6468,6 +6468,7 @@ Public Sub CheckEnvVarOther()
         
         sDataNonExpanded = Reg.GetString(0, sKeyFull, "PSModulePath", , True)
         aData = Split(sDataNonExpanded, ";")
+        PathRemoveLastSlashInArray aData
         
         If OSver.IsWindows10OrGreater Then
             sDefault = "%ProgramFiles%\WindowsPowerShell\Modules;%SystemRoot%\system32\WindowsPowerShell\v1.0\Modules"
@@ -7527,7 +7528,11 @@ Public Sub CheckPolicies()
         sValue = "TamperProtection"
         lData = Reg.GetDword(HKEY_ANY, sKey, sValue)
         If (lData And 1) = 0 Then
-            sHit = "O7 - Policy: " & sKey & ": [" & sValue & "] = " & lData
+            If lData = 0 And Reg.StatusCode <> ERROR_SUCCESS Then
+                sHit = "O7 - Policy: " & sKey & ": [" & sValue & "] = " & "(Error code: " & Reg.StatusCode & ")"
+            Else
+                sHit = "O7 - Policy: " & sKey & ": [" & sValue & "] = " & lData
+            End If
             
             If Not IsOnIgnoreList(sHit) Then
                 With result
@@ -8080,26 +8085,30 @@ Public Sub CheckAutoLogon()
     If Len(sUser) <> 0 Then
         
         bEnabled = 0 <> Reg.GetDword(HKEY_LOCAL_MACHINE, sKey, "AutoAdminLogon")
-        sDomain = Reg.GetString(HKEY_LOCAL_MACHINE, sKey, "DefaultDomainName")
         
-        sHit = "O7 - AutoLogon: HKLM\..\Winlogon: " & sDomain & "\" & sUser & IIf(bEnabled, "", " (disabled)")
+        If bEnabled Or bIgnoreAllWhitelists Then
         
-        If Not IsOnIgnoreList(sHit) Then
-            With result
-                .Section = "O7"
-                .HitLineW = sHit
-                AddRegToFix .Reg, RESTORE_VALUE, HKLM, sKey, "AutoAdminLogon", "0", , REG_RESTORE_SZ
-                AddRegToFix .Reg, REMOVE_VALUE, HKLM, sKey, "DefaultDomainName"
-                AddRegToFix .Reg, REMOVE_VALUE, HKLM, sKey, "DefaultUserName"
-                .CureType = REGISTRY_BASED
-            End With
-            AddToScanResults result
+            sDomain = Reg.GetString(HKEY_LOCAL_MACHINE, sKey, "DefaultDomainName")
+            
+            sHit = "O7 - AutoLogon: HKLM\..\Winlogon: " & sDomain & "\" & sUser & IIf(bEnabled, "", " (disabled)")
+            
+            If Not IsOnIgnoreList(sHit) Then
+                With result
+                    .Section = "O7"
+                    .HitLineW = sHit
+                    AddRegToFix .Reg, RESTORE_VALUE, HKLM, sKey, "AutoAdminLogon", "0", , REG_RESTORE_SZ
+                    AddRegToFix .Reg, REMOVE_VALUE, HKLM, sKey, "DefaultDomainName"
+                    AddRegToFix .Reg, REMOVE_VALUE, HKLM, sKey, "DefaultUserName"
+                    .CureType = REGISTRY_BASED
+                End With
+                AddToScanResults result
+            End If
         End If
     End If
     
     'Logon screen text
     
-    Dim sText As String, i As Long
+    Dim sText As String, i As Long, iLength As Long
     ReDim aParam(1) As String
     aParam(0) = "LegalNoticeCaption"
     aParam(1) = "LegalNoticeText"
@@ -8112,7 +8121,9 @@ Public Sub CheckAutoLogon()
             
             sText = Replace$(sText, vbCr, vbNullString)
             sText = Replace$(sText, vbLf, "\n")
-        
+            iLength = Len(sText)
+            If iLength > 300 Then sText = Left$(sText, 300) & " ... (" & iLength & " characters)"
+            
             sHit = "O7 - AutoLogon: HKLM\..\Winlogon: [" & aParam(i) & "] = " & sText
             
             If Not IsOnIgnoreList(sHit) Then
@@ -9388,7 +9399,7 @@ Public Sub FixO14Item(sItem$, result As SCAN_RESULT)
     Next
     sFixedIeResetInf = Left$(sFixedIeResetInf, Len(sFixedIeResetInf) - 2)   '-CrLf
     
-    DeleteFileWEx (StrPtr(sFile))
+    DeleteFilePtr (StrPtr(sFile))
     
     ff = FreeFile()
     
@@ -12835,7 +12846,7 @@ Public Function CheckForReadOnlyMedia() As Boolean
         CheckForReadOnlyMedia = True
     End If
     
-'    DeleteFileWEx (StrPtr(sTempFile))
+'    DeleteFilePtr (StrPtr(sTempFile))
     
     AppendErrorLogCustom "CheckForReadOnlyMedia - End"
 End Function
@@ -13191,7 +13202,7 @@ Public Function CheckForStartedFromTempDir() As Boolean
                 MkDirW NewFile, True
                 If FileExists(NewFile) Then     ', Cache:=NO_CACHE
                     SetFileAttributes StrPtr(NewFile), GetFileAttributes(StrPtr(NewFile)) And Not FILE_ATTRIBUTE_READONLY
-                    DeleteFileWEx StrPtr(NewFile)
+                    DeleteFilePtr StrPtr(NewFile)
                 End If
                 CopyFile StrPtr(AppPath(True)), StrPtr(NewFile), ByVal 0&
                 If FileExists(NewFile) Then     ', Cache:=NO_CACHE
@@ -14694,7 +14705,7 @@ Public Sub OpenDebugLogHandle()
         g_sDebugLogFile = BuildPath(AppPath(), "HiJackThis_debug.log")
     End If
     
-    If FileExists(g_sDebugLogFile) Then DeleteFileWEx StrPtr(g_sDebugLogFile), , True
+    If FileExists(g_sDebugLogFile) Then DeleteFilePtr StrPtr(g_sDebugLogFile), , True
     
     On Error Resume Next
     OpenW g_sDebugLogFile, FOR_OVERWRITE_CREATE, g_hDebugLog, g_FileBackupFlag
@@ -14719,7 +14730,7 @@ Public Sub OpenLogHandle()
         g_sLogFile = BuildPath(AppPath(), "HiJackThis.log")
     End If
     
-    If FileExists(g_sLogFile, , True) Then DeleteFileWEx StrPtr(g_sLogFile), , True
+    If FileExists(g_sLogFile, , True) Then DeleteFilePtr StrPtr(g_sLogFile), , True
     
     On Error Resume Next
     OpenW g_sLogFile, FOR_OVERWRITE_CREATE, g_hLog, g_FileBackupFlag
@@ -16905,7 +16916,7 @@ Public Sub FixFileHandler(result As SCAN_RESULT)
                     
                     If .ActionType And REMOVE_FILE Then
                         If FileExists(.Path) Then
-                            DeleteFileWEx StrPtr(.Path), result.ForceMicrosoft
+                            DeleteFilePtr StrPtr(.Path), result.ForceMicrosoft
                         End If
                     End If
                     
@@ -16918,7 +16929,7 @@ Public Sub FixFileHandler(result As SCAN_RESULT)
                     If .ActionType And RESTORE_FILE Then
                         If FileExists(.GoodFile) Then
                             '// TODO: PendingFileOperation with replacing
-                            If DeleteFileWEx(StrPtr(.Path), DisallowRemoveOnReboot:=True) Then
+                            If DeleteFilePtr(StrPtr(.Path), DisallowRemoveOnReboot:=True) Then
                                 FileCopyW .GoodFile, .Path, True
                             End If
                         End If
@@ -17533,7 +17544,7 @@ Public Sub HJT_SaveReport(Optional nTry As Long)
         If 0 = FileLenW(g_sLogFile) Then
             If nTry <> 2 Then
                 SleepNoLock 100
-                DeleteFileWEx StrPtr(g_sLogFile), , True
+                DeleteFilePtr StrPtr(g_sLogFile), , True
                 SleepNoLock 400
                 HJT_SaveReport 2
                 Exit Sub

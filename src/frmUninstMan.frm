@@ -906,7 +906,7 @@ Private Sub cmdSave_Click()
     
     Stady = 11
     
-    If FileExists(sFile) Then DeleteFileWEx (StrPtr(sFile))
+    If FileExists(sFile) Then DeleteFilePtr (StrPtr(sFile))
     
     Stady = 12
     

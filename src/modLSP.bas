@@ -439,7 +439,7 @@ End Sub
 '               InStr(1, sFile, "newdot", vbTextCompare) > 0 Or _
 '               InStr(1, sFile, "cnmib.dll", vbTextCompare) > 0 Then
 '                'it's New.Net/WebHancer/CN! Kill it!
-'                DeleteFileWEx StrPtr(sFile)  ' error 53 = file not found
+'                DeleteFilePtr StrPtr(sFile)  ' error 53 = file not found
 '                If FileExists(sFile) Then
 '                    If InStr(1, sFile, "webhdll.dll", vbTextCompare) > 0 Then
 '                        MsgBoxW "The WebHancer Agent is currently active and can't be deleted. Use Ad-Aware from www.lavasoft.nu to remove it safely.", vbExclamation
@@ -479,7 +479,7 @@ End Sub
 '               InStr(1, sFile, "newdotnet", vbTextCompare) > 0 Or _
 '               InStr(1, sFile, "cnmib.dll", vbTextCompare) > 0 Then
 '                'it's New.Net/WebHancer/CN! Kill it!
-'                DeleteFileWEx StrPtr(sFile)  ' error 53 = file not found
+'                DeleteFilePtr StrPtr(sFile)  ' error 53 = file not found
 '                If FileExists(sFile) Then
 '                    If InStr(1, sFile, "webhdll.dll", vbTextCompare) > 0 Then
 '                        MsgBoxW "The WebHancer Agent is currently active and can't be deleted. Use Ad-Aware from www.lavasoft.nu to remove it safely.", vbExclamation

@@ -986,18 +986,22 @@ Function GetFilePathByPID(pid As Long) As String
     End If
     
     If hProc <> 0 Then
-    
-        If bIsWinVistaAndNewer Then
+        
+        'Win8.1- has renaming bug (same is actual for GetProcessImageFileName and NtQueryInformationProcess)
+        If OSver.IsWindows10OrGreater Then
             cnt = MAX_PATH_W \ 2
             Call QueryFullProcessImageName(hProc, 0&, StrPtr(MAX_PATH_W_BUF), VarPtr(cnt))
-        End If
-        
-        If 0 <> Err.LastDllError Or Not bIsWinVistaAndNewer Then     'Win 2008 Server (x64) can cause Error 128 if path contains space characters
-        
+            
+            If 0 <> Err.LastDllError Then
+                cnt = GetModuleFileNameEx(hProc, 0&, StrPtr(MAX_PATH_W_BUF), MAX_PATH_W \ 2)
+            End If
+        Else
+            'Note: Win 2008 Server (x64) can cause Error 128 if path contains space characters
+            'returns ERROR_PARTIAL_COPY, if access to 64-bit processes on WOW64
             cnt = GetModuleFileNameEx(hProc, 0&, StrPtr(MAX_PATH_W_BUF), MAX_PATH_W \ 2)
         End If
         
-        If ERROR_PARTIAL_COPY = Err.LastDllError Or cnt = 0 Then     'because GetModuleFileNameEx cannot access to that information for 64-bit processes on WOW64
+        If ERROR_PARTIAL_COPY = Err.LastDllError Or cnt = 0 Then
 
             cnt = GetProcessImageFileName(hProc, StrPtr(MAX_PATH_W_BUF), MAX_PATH_W \ 2)
             
