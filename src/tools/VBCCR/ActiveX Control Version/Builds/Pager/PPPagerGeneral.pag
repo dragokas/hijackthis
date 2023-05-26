@@ -1,0 +1,343 @@
+VERSION 5.00
+Begin VB.PropertyPage PPPagerGeneral 
+   Caption         =   "General"
+   ClientHeight    =   3450
+   ClientLeft      =   0
+   ClientTop       =   0
+   ClientWidth     =   6075
+   LockControls    =   -1  'True
+   PaletteMode     =   0  'Halftone
+   ScaleHeight     =   3450
+   ScaleWidth      =   6075
+   Begin VB.CheckBox CheckMouseTrack 
+      Caption         =   "MouseTrack"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   11
+      Top             =   480
+      Width           =   1800
+   End
+   Begin VB.ComboBox ComboBuddyControl 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   4
+      Top             =   840
+      Width           =   2235
+   End
+   Begin VBCCR17.TextBoxW TextButtonSize 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   10
+      Top             =   1920
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VBCCR17.TextBoxW TextBorderWidth 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   8
+      Top             =   1560
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VB.CheckBox CheckAutoScroll 
+      Caption         =   "AutoScroll"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   13
+      Top             =   1200
+      Width           =   1800
+   End
+   Begin VB.ComboBox ComboMousePointer 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   2
+      Top             =   480
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboOrientation 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   6
+      Top             =   1200
+      Width           =   2235
+   End
+   Begin VB.CheckBox CheckOLEDragDropScroll 
+      Caption         =   "OLEDragDropScroll"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   12
+      Top             =   840
+      Width           =   1800
+   End
+   Begin VB.CheckBox CheckEnabled 
+      Caption         =   "Enabled"
+      Height          =   285
+      Left            =   120
+      TabIndex        =   0
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.Label LabelBuddyControl 
+      Caption         =   "BuddyControl:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   3
+      Top             =   840
+      Width           =   1620
+   End
+   Begin VB.Label LabelButtonSize 
+      Caption         =   "ButtonSize:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   9
+      Top             =   1920
+      Width           =   1620
+   End
+   Begin VB.Label LabelBorderWidth 
+      Caption         =   "BorderWidth:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   7
+      Top             =   1560
+      Width           =   1620
+   End
+   Begin VB.Label LabelMousePointer 
+      Caption         =   "MousePointer:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   1
+      Top             =   480
+      Width           =   1620
+   End
+   Begin VB.Label LabeOrientation 
+      Caption         =   "Orientation:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   5
+      Top             =   1200
+      Width           =   1620
+   End
+End
+Attribute VB_Name = "PPPagerGeneral"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = True
+Option Explicit
+Private BuddyControlEnumerated As Boolean
+Private FreezeChanged As Boolean
+
+Private Sub PropertyPage_Initialize()
+Call ComCtlsShowAllUIStates(PropertyPage.hWnd)
+Call ComCtlsPPInitComboMousePointer(ComboMousePointer)
+With ComboBuddyControl
+.AddItem "(None)"
+.ListIndex = 0
+End With
+With ComboOrientation
+.AddItem PgrOrientationVertical & " - Vertical"
+.ItemData(.NewIndex) = PgrOrientationVertical
+.AddItem PgrOrientationHorizontal & " - Horizontal"
+.ItemData(.NewIndex) = PgrOrientationHorizontal
+End With
+End Sub
+
+Private Sub PropertyPage_ApplyChanges()
+On Error Resume Next
+PropertyPage.ValidateControls
+If Err.Number = 380 Then Exit Sub
+On Error GoTo 0
+With PropertyPage.SelectedControls(0)
+.Enabled = CBool(CheckEnabled.Value = vbChecked)
+.MousePointer = ComboMousePointer.ItemData(ComboMousePointer.ListIndex)
+.BuddyControl = ComboBuddyControl.List(ComboBuddyControl.ListIndex)
+.Orientation = ComboOrientation.ItemData(ComboOrientation.ListIndex)
+.BorderWidth = CSng(TextBorderWidth.Text)
+.ButtonSize = CSng(TextButtonSize.Text)
+.MouseTrack = CBool(CheckMouseTrack.Value = vbChecked)
+.OLEDragDropScroll = CBool(CheckOLEDragDropScroll.Value = vbChecked)
+.AutoScroll = CBool(CheckAutoScroll.Value = vbChecked)
+End With
+Call PropertyPage_SelectionChanged
+End Sub
+
+Private Sub PropertyPage_SelectionChanged()
+Dim i As Long
+FreezeChanged = True
+With PropertyPage.SelectedControls(0)
+CheckEnabled.Value = IIf(.Enabled = True, vbChecked, vbUnchecked)
+For i = 0 To ComboMousePointer.ListCount - 1
+    If ComboMousePointer.ItemData(i) = .MousePointer Then
+        ComboMousePointer.ListIndex = i
+        Exit For
+    End If
+Next i
+If BuddyControlEnumerated = False Then
+    Dim ControlEnum As Object, Handle As Long
+    For Each ControlEnum In .ControlsEnum
+        If ControlIsValid(ControlEnum, Handle) = True Then
+            If Handle <> 0 Then ComboBuddyControl.AddItem ProperControlName(ControlEnum)
+        End If
+    Next ControlEnum
+    BuddyControlEnumerated = True
+End If
+For i = 0 To ComboBuddyControl.ListCount - 1
+    If ComboBuddyControl.List(i) = .BuddyControl Then
+        ComboBuddyControl.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboOrientation.ListCount - 1
+    If ComboOrientation.ItemData(i) = .Orientation Then
+        ComboOrientation.ListIndex = i
+        Exit For
+    End If
+Next i
+TextBorderWidth.Text = CStr(.BorderWidth)
+TextButtonSize.Text = CStr(.ButtonSize)
+CheckMouseTrack.Value = IIf(.MouseTrack = True, vbChecked, vbUnchecked)
+CheckOLEDragDropScroll.Value = IIf(.OLEDragDropScroll = True, vbChecked, vbUnchecked)
+CheckAutoScroll.Value = IIf(.AutoScroll = True, vbChecked, vbUnchecked)
+End With
+FreezeChanged = False
+End Sub
+
+Private Sub CheckEnabled_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboMousePointer_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboBuddyControl_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboOrientation_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextBorderWidth_GotFocus()
+If Not TextBorderWidth.SelStart = 0 Then Exit Sub
+TextBorderWidth.SelLength = Len(TextBorderWidth.Text)
+End Sub
+
+Private Sub TextBorderWidth_LostFocus()
+TextBorderWidth.SelStart = 0
+End Sub
+
+Private Sub TextBorderWidth_Change()
+If FreezeChanged = True Then Exit Sub
+If TextBorderWidth.Text = vbNullString Then
+    TextBorderWidth.Text = PropertyPage.SelectedControls(0).BorderWidth
+    TextBorderWidth.SelStart = 0
+    TextBorderWidth.SelLength = Len(TextBorderWidth.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextBorderWidth_Validate(Cancel As Boolean)
+If Not IsNumeric(TextBorderWidth.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextBorderWidth.Text = PropertyPage.SelectedControls(0).BorderWidth
+    TextBorderWidth.SetFocus
+    Cancel = True
+Else
+    Dim SngValue As Single
+    On Error Resume Next
+    SngValue = CSng(TextBorderWidth.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If SngValue < 0 Then Cancel = True
+    If Cancel = False Then
+        TextBorderWidth.Text = SngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextBorderWidth.Text = PropertyPage.SelectedControls(0).BorderWidth
+        TextBorderWidth.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextButtonSize_GotFocus()
+If Not TextButtonSize.SelStart = 0 Then Exit Sub
+TextButtonSize.SelLength = Len(TextButtonSize.Text)
+End Sub
+
+Private Sub TextButtonSize_LostFocus()
+TextButtonSize.SelStart = 0
+End Sub
+
+Private Sub TextButtonSize_Change()
+If FreezeChanged = True Then Exit Sub
+If TextButtonSize.Text = vbNullString Then
+    TextButtonSize.Text = PropertyPage.SelectedControls(0).ButtonSize
+    TextButtonSize.SelStart = 0
+    TextButtonSize.SelLength = Len(TextButtonSize.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextButtonSize_Validate(Cancel As Boolean)
+If Not IsNumeric(TextButtonSize.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextButtonSize.Text = PropertyPage.SelectedControls(0).ButtonSize
+    TextButtonSize.SetFocus
+    Cancel = True
+Else
+    Dim SngValue As Single
+    On Error Resume Next
+    SngValue = CSng(TextButtonSize.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If SngValue < 0 And Not SngValue = -1 Then Cancel = True
+    If Cancel = False Then
+        TextButtonSize.Text = SngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextButtonSize.Text = PropertyPage.SelectedControls(0).ButtonSize
+        TextButtonSize.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub CheckMouseTrack_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckOLEDragDropScroll_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckAutoScroll_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Function ControlIsValid(ByVal Control As Object, ByRef Handle As Long) As Boolean
+On Error Resume Next
+Dim Container As Object
+Set Container = Control.Container
+ControlIsValid = CBool(Err.Number = 0 And Not Control Is PropertyPage.SelectedControls(0).ControlsExtender)
+On Error GoTo 0
+Handle = 0
+If ControlIsValid = True Then
+    On Error Resume Next
+    Handle = Control.hWndOwner
+    If Err.Number <> 0 Then Handle = Control.hWnd
+    On Error GoTo 0
+End If
+End Function

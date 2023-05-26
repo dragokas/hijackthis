@@ -1,0 +1,392 @@
+VERSION 5.00
+Begin VB.PropertyPage PPImageListGeneral 
+   Caption         =   "General"
+   ClientHeight    =   4650
+   ClientLeft      =   0
+   ClientTop       =   0
+   ClientWidth     =   5790
+   LockControls    =   -1  'True
+   PaletteMode     =   0  'Halftone
+   ScaleHeight     =   4650
+   ScaleWidth      =   5790
+   Begin VB.CheckBox CheckRightToLeftMirror 
+      Caption         =   "RightToLeftMirror"
+      Height          =   285
+      Left            =   120
+      TabIndex        =   10
+      Top             =   2160
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckUseMaskColor 
+      Caption         =   "UseMaskColor"
+      Height          =   285
+      Left            =   120
+      TabIndex        =   12
+      Top             =   2880
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckUseBackColor 
+      Caption         =   "UseBackColor"
+      Height          =   285
+      Left            =   120
+      TabIndex        =   11
+      Top             =   2520
+      Width           =   1620
+   End
+   Begin VB.OptionButton OptionSizeCustom 
+      Caption         =   "Custom"
+      Height          =   255
+      Left            =   120
+      TabIndex        =   3
+      Top             =   1200
+      Width           =   975
+   End
+   Begin VB.OptionButton OptionSize48 
+      Caption         =   "48 x 48"
+      Height          =   255
+      Left            =   120
+      TabIndex        =   2
+      Top             =   840
+      Width           =   975
+   End
+   Begin VB.OptionButton OptionSize32 
+      Caption         =   "32 x 32"
+      Height          =   255
+      Left            =   120
+      TabIndex        =   1
+      Top             =   480
+      Width           =   975
+   End
+   Begin VB.OptionButton OptionSize16 
+      Caption         =   "16 x 16"
+      Height          =   255
+      Left            =   120
+      TabIndex        =   0
+      Top             =   120
+      Width           =   975
+   End
+   Begin VB.TextBox TextImageWidth 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   7
+      Top             =   480
+      Width           =   720
+   End
+   Begin VB.TextBox TextImageHeight 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   5
+      Top             =   120
+      Width           =   720
+   End
+   Begin VB.ComboBox ComboColorDepth 
+      Height          =   315
+      Left            =   1200
+      Style           =   2  'Dropdown List
+      TabIndex        =   9
+      Top             =   1680
+      Width           =   2235
+   End
+   Begin VB.Label LabelImageHeight 
+      Caption         =   "Height:"
+      Height          =   195
+      Left            =   1200
+      TabIndex        =   4
+      Top             =   120
+      Width           =   555
+   End
+   Begin VB.Label LabelImageWidth 
+      Caption         =   "Width:"
+      Height          =   195
+      Left            =   1200
+      TabIndex        =   6
+      Top             =   480
+      Width           =   555
+   End
+   Begin VB.Label LabelColorDepth 
+      Caption         =   "ColorDepth:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   8
+      Top             =   1680
+      Width           =   975
+   End
+End
+Attribute VB_Name = "PPImageListGeneral"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Option Explicit
+Private FreezeChanged As Boolean
+
+Private Sub PropertyPage_Initialize()
+Call ComCtlsShowAllUIStates(PropertyPage.hWnd)
+With ComboColorDepth
+.AddItem "16 Colors (4 bit)"
+.ItemData(.NewIndex) = ImlColorDepth4Bit
+.AddItem "256 Colors (8 bit)"
+.ItemData(.NewIndex) = ImlColorDepth8Bit
+.AddItem "65,000 Colors (16 bit)"
+.ItemData(.NewIndex) = ImlColorDepth16Bit
+.AddItem "True Color (24 bit)"
+.ItemData(.NewIndex) = ImlColorDepth24Bit
+.AddItem "Excessive (32 bit)"
+.ItemData(.NewIndex) = ImlColorDepth32Bit
+End With
+End Sub
+
+Private Sub PropertyPage_ApplyChanges()
+On Error Resume Next
+PropertyPage.ValidateControls
+If Err.Number = 380 Then Exit Sub
+On Error GoTo 0
+Dim Height As Long, Width As Long
+With PropertyPage.SelectedControls(0)
+Height = CLng(TextImageHeight.Text)
+Width = CLng(TextImageWidth.Text)
+If .ListImages.Count > 0 Then
+    If Height <> .ImageHeight Or Width <> .ImageWidth Then
+        MsgBox "Images sizes are read-only if image list contains images", vbExclamation + vbOKOnly
+    End If
+    TextImageHeight.Text = CStr(.ImageHeight)
+    TextImageWidth.Text = CStr(.ImageWidth)
+    If ComboColorDepth.ItemData(ComboColorDepth.ListIndex) <> .ColorDepth Then
+        MsgBox "Color depth is read-only if image list contains images", vbExclamation + vbOKOnly
+    End If
+    Dim i As Long
+    For i = 0 To ComboColorDepth.ListCount - 1
+        If ComboColorDepth.ItemData(i) = .ColorDepth Then
+            ComboColorDepth.ListIndex = i
+            Exit For
+        End If
+    Next i
+    If CBool(CheckRightToLeftMirror.Value = vbChecked) <> .RightToLeftMirror Then
+        MsgBox "Right-to-left mirror is read-only if image list contains images", vbExclamation + vbOKOnly
+    End If
+    CheckRightToLeftMirror.Value = IIf(.RightToLeftMirror, vbChecked, vbUnchecked)
+    .UseBackColor = CBool(CheckUseBackColor.Value = vbChecked)
+    .UseMaskColor = CBool(CheckUseMaskColor.Value = vbChecked)
+Else
+    .ImageHeight = Height
+    .ImageWidth = Width
+    .ColorDepth = ComboColorDepth.ItemData(ComboColorDepth.ListIndex)
+    .RightToLeftMirror = CBool(CheckRightToLeftMirror.Value = vbChecked)
+    .UseBackColor = CBool(CheckUseBackColor.Value = vbChecked)
+    .UseMaskColor = CBool(CheckUseMaskColor.Value = vbChecked)
+End If
+End With
+Call PropertyPage_SelectionChanged
+End Sub
+
+Private Sub PropertyPage_SelectionChanged()
+Dim Height As Long, Width As Long
+Dim i As Long
+FreezeChanged = True
+With PropertyPage.SelectedControls(0)
+Height = .ImageHeight
+Width = .ImageWidth
+TextImageHeight.Text = CStr(Height)
+TextImageWidth.Text = CStr(Width)
+If Height = 16 And Width = 16 Then
+    OptionSize16.Value = True
+ElseIf Height = 32 And Width = 32 Then
+    OptionSize32.Value = True
+ElseIf Height = 48 And Width = 48 Then
+    OptionSize48.Value = True
+Else
+    OptionSizeCustom.Value = True
+End If
+If OptionSizeCustom.Value = True Then
+    TextImageHeight.Enabled = True
+    TextImageHeight.BackColor = vbWindowBackground
+    LabelImageHeight.Enabled = True
+    TextImageWidth.Enabled = True
+    TextImageWidth.BackColor = vbWindowBackground
+    LabelImageWidth.Enabled = True
+Else
+    TextImageHeight.Enabled = False
+    TextImageHeight.BackColor = vbButtonFace
+    LabelImageHeight.Enabled = False
+    TextImageWidth.Enabled = False
+    TextImageWidth.BackColor = vbButtonFace
+    LabelImageWidth.Enabled = False
+End If
+For i = 0 To ComboColorDepth.ListCount - 1
+    If ComboColorDepth.ItemData(i) = .ColorDepth Then
+        ComboColorDepth.ListIndex = i
+        Exit For
+    End If
+Next i
+CheckRightToLeftMirror.Value = IIf(.RightToLeftMirror, vbChecked, vbUnchecked)
+CheckUseBackColor.Value = IIf(.UseBackColor = True, vbChecked, vbUnchecked)
+CheckUseMaskColor.Value = IIf(.UseMaskColor = True, vbChecked, vbUnchecked)
+End With
+FreezeChanged = False
+End Sub
+
+Private Sub OptionSize16_Click()
+If FreezeChanged = True Then Exit Sub
+TextImageHeight.Enabled = False
+TextImageHeight.BackColor = vbButtonFace
+LabelImageHeight.Enabled = False
+TextImageWidth.Enabled = False
+TextImageWidth.BackColor = vbButtonFace
+LabelImageWidth.Enabled = False
+TextImageHeight.Text = "16"
+TextImageWidth.Text = "16"
+PropertyPage.Changed = True
+End Sub
+
+Private Sub OptionSize32_Click()
+If FreezeChanged = True Then Exit Sub
+TextImageHeight.Enabled = False
+TextImageHeight.BackColor = vbButtonFace
+LabelImageHeight.Enabled = False
+TextImageWidth.Enabled = False
+TextImageWidth.BackColor = vbButtonFace
+LabelImageWidth.Enabled = False
+TextImageHeight.Text = "32"
+TextImageWidth.Text = "32"
+PropertyPage.Changed = True
+End Sub
+
+Private Sub OptionSize48_Click()
+If FreezeChanged = True Then Exit Sub
+TextImageHeight.Enabled = False
+TextImageHeight.BackColor = vbButtonFace
+LabelImageHeight.Enabled = False
+TextImageWidth.Enabled = False
+TextImageWidth.BackColor = vbButtonFace
+LabelImageWidth.Enabled = False
+TextImageHeight.Text = "48"
+TextImageWidth.Text = "48"
+PropertyPage.Changed = True
+End Sub
+
+Private Sub OptionSizeCustom_Click()
+If FreezeChanged = True Then Exit Sub
+With PropertyPage.SelectedControls(0)
+TextImageHeight.Enabled = True
+TextImageHeight.BackColor = vbWindowBackground
+LabelImageHeight.Enabled = True
+TextImageWidth.Enabled = True
+TextImageWidth.BackColor = vbWindowBackground
+LabelImageWidth.Enabled = True
+TextImageHeight.Text = .ImageHeight
+TextImageWidth.Text = .ImageWidth
+End With
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextImageHeight_Change()
+If FreezeChanged = True Then Exit Sub
+If TextImageHeight.Text = vbNullString Then
+    TextImageHeight.Text = PropertyPage.SelectedControls(0).ImageHeight
+    TextImageHeight.SelStart = 0
+    TextImageHeight.SelLength = Len(TextImageHeight.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextImageHeight_Validate(Cancel As Boolean)
+If Not IsNumeric(TextImageHeight.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextImageHeight.Text = PropertyPage.SelectedControls(0).ImageHeight
+    TextImageHeight.SetFocus
+    Cancel = True
+Else
+    Dim LngValue As Long
+    On Error Resume Next
+    LngValue = CLng(TextImageHeight.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If LngValue < 0 Then Cancel = True
+    If Cancel = False Then
+        TextImageHeight.Text = LngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextImageHeight.Text = PropertyPage.SelectedControls(0).ImageHeight
+        TextImageHeight.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextImageHeight_GotFocus()
+If Not TextImageHeight.SelStart = 0 Then Exit Sub
+TextImageHeight.SelLength = Len(TextImageHeight.Text)
+End Sub
+
+Private Sub TextImageHeight_LostFocus()
+TextImageHeight.SelStart = 0
+End Sub
+
+Private Sub TextImageHeight_KeyPress(KeyAscii As Integer)
+Call ComCtlsPPKeyPressOnlyNumeric(KeyAscii)
+End Sub
+
+Private Sub TextImageWidth_Change()
+If FreezeChanged = True Then Exit Sub
+If TextImageWidth.Text = vbNullString Then
+    TextImageWidth.Text = PropertyPage.SelectedControls(0).ImageWidth
+    TextImageWidth.SelStart = 0
+    TextImageWidth.SelLength = Len(TextImageWidth.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextImageWidth_Validate(Cancel As Boolean)
+If Not IsNumeric(TextImageWidth.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextImageWidth.Text = PropertyPage.SelectedControls(0).ImageWidth
+    TextImageWidth.SetFocus
+    Cancel = True
+Else
+    Dim LngValue As Long
+    On Error Resume Next
+    LngValue = CLng(TextImageWidth.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If LngValue < 0 Then Cancel = True
+    If Cancel = False Then
+        TextImageWidth.Text = LngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextImageWidth.Text = PropertyPage.SelectedControls(0).ImageWidth
+        TextImageWidth.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextImageWidth_GotFocus()
+If Not TextImageWidth.SelStart = 0 Then Exit Sub
+TextImageWidth.SelLength = Len(TextImageWidth.Text)
+End Sub
+
+Private Sub TextImageWidth_LostFocus()
+TextImageWidth.SelStart = 0
+End Sub
+
+Private Sub TextImageWidth_KeyPress(KeyAscii As Integer)
+Call ComCtlsPPKeyPressOnlyNumeric(KeyAscii)
+End Sub
+
+Private Sub ComboColorDepth_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckRightToLeftMirror_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckUseBackColor_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckUseMaskColor_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub

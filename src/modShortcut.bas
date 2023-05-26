@@ -607,33 +607,33 @@ Public Function CreateHJTShortcuts(HJT_Location As String) As Boolean
     Dim bSuccess As Boolean
     Dim hFile As Long
     bSuccess = True
-    bSuccess = bSuccess And MkDirW(BuildPath(StartMenuPrograms, "HiJackThis Fork"))
-    bSuccess = bSuccess And MkDirW(BuildPath(StartMenuPrograms, "HiJackThis Fork\Tools"))
-    bSuccess = bSuccess And MkDirW(BuildPath(StartMenuPrograms, "HiJackThis Fork\Plugins"))
+    bSuccess = bSuccess And MkDirW(BuildPath(StartMenuPrograms, "HiJackThis+"))
+    bSuccess = bSuccess And MkDirW(BuildPath(StartMenuPrograms, "HiJackThis+\Tools"))
+    bSuccess = bSuccess And MkDirW(BuildPath(StartMenuPrograms, "HiJackThis+\Plugins"))
     
-    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis Fork\HiJackThis.lnk"), HJT_Location)
-    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis Fork\Uninstall HJT.lnk"), HJT_Location, "/uninstall")
+    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis+\HiJackThis.lnk"), HJT_Location)
+    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis+\Uninstall HJT.lnk"), HJT_Location, "/uninstall")
     
-    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis Fork\Tools\StartupList.lnk"), HJT_Location, "/tool+StartupList", , , "Lists startup items in a convenient way")
-    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis Fork\Tools\Uninstall Manager.lnk"), HJT_Location, "/tool+UninstMan", , , "Manage the list of installed software")
-    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis Fork\Tools\Digital Signature Checker.lnk"), HJT_Location, "/tool+DigiSign", , , "Check your PE EXE files digital signature")
-    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis Fork\Tools\Registry Key Unlocker.lnk"), HJT_Location, "/tool+RegUnlocker", , , "Unlock and reset permissions on registry key")
-    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis Fork\Tools\ADS Spy.lnk"), HJT_Location, "/tool+ADSSpy", , , "Alternative Data Streams Scanner & Remover")
-    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis Fork\Tools\Hosts File Manager.lnk"), HJT_Location, "/tool+Hosts", , , "Manage entries in hosts file")
-    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis Fork\Tools\Process Manager.lnk"), HJT_Location, "/tool+ProcMan", , , "Little tool like Task Manager")
-    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis Fork\Plugins\Check Browsers' LNK.lnk"), HJT_Location, "/tool+CheckLNK", , , "Checks your PC for shortcuts infection")
-    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis Fork\Plugins\ClearLNK.lnk"), HJT_Location, "/tool+ClearLNK", , , "LNK / URL Shortcuts cleaner & restorer")
+    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis+\Tools\StartupList.lnk"), HJT_Location, "/tool+StartupList", , , "Lists startup items in a convenient way")
+    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis+\Tools\Uninstall Manager.lnk"), HJT_Location, "/tool+UninstMan", , , "Manage the list of installed software")
+    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis+\Tools\Digital Signature Checker.lnk"), HJT_Location, "/tool+DigiSign", , , "Check your PE EXE files digital signature")
+    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis+\Tools\Registry Key Unlocker.lnk"), HJT_Location, "/tool+RegUnlocker", , , "Unlock and reset permissions on registry key")
+    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis+\Tools\ADS Spy.lnk"), HJT_Location, "/tool+ADSSpy", , , "Alternative Data Streams Scanner & Remover")
+    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis+\Tools\Hosts File Manager.lnk"), HJT_Location, "/tool+Hosts", , , "Manage entries in hosts file")
+    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis+\Tools\Process Manager.lnk"), HJT_Location, "/tool+ProcMan", , , "Little tool like Task Manager")
+    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis+\Plugins\Check Browsers' LNK.lnk"), HJT_Location, "/tool+CheckLNK", , , "Checks your PC for shortcuts infection")
+    bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis+\Plugins\ClearLNK.lnk"), HJT_Location, "/tool+ClearLNK", , , "LNK / URL Shortcuts cleaner & restorer")
     
     'Users manual url shortcut
     If IsRussianLangCode(OSver.LangSystemCode) Or IsRussianLangCode(OSver.LangDisplayCode) Then
     
-        If OpenW(BuildPath(StartMenuPrograms, "HiJackThis Fork\" & LoadResString(607) & ".url"), FOR_OVERWRITE_CREATE, hFile) Then
+        If OpenW(BuildPath(StartMenuPrograms, "HiJackThis+\" & LoadResString(607) & ".url"), FOR_OVERWRITE_CREATE, hFile) Then
             PrintLineW hFile, "[InternetShortcut]", False
             PrintLineW hFile, "URL=https://regist.safezone.cc/hijackthis_help/hijackthis.html", False
             CloseW hFile
         End If
     Else
-        If OpenW(BuildPath(StartMenuPrograms, "HiJackThis Fork\Users manual (short).url"), FOR_OVERWRITE_CREATE, hFile) Then
+        If OpenW(BuildPath(StartMenuPrograms, "HiJackThis+\Users manual (short).url"), FOR_OVERWRITE_CREATE, hFile) Then
             PrintLineW hFile, "[InternetShortcut]", False
             PrintLineW hFile, "URL=https://dragokas.com/tools/help/hjt_tutorial.html", False
             CloseW hFile
@@ -643,18 +643,15 @@ Public Function CreateHJTShortcuts(HJT_Location As String) As Boolean
 End Function
 
 Public Function CreateHJTShortcutDesktop(HJT_Location As String) As Boolean
-    CreateHJTShortcutDesktop = CreateShortcut(BuildPath(Desktop, "HiJackThis Fork.lnk"), HJT_Location)
+    CreateHJTShortcutDesktop = CreateShortcut(BuildPath(Desktop, "HiJackThis+.lnk"), HJT_Location)
 End Function
 
-Public Function RemoveHJTShortcuts() As Boolean
-    Dim bSuccess As Boolean
-    bSuccess = True
-    bSuccess = bSuccess And DeleteFolderForce(BuildPath(StartMenuPrograms, "HiJackThis Fork"))
-    If FileExists(BuildPath(Desktop, "HiJackThis Fork.lnk")) Then
-        bSuccess = bSuccess And CBool(DeleteFileW(StrPtr(BuildPath(Desktop, "HiJackThis Fork.lnk"))))
-    End If
-    RemoveHJTShortcuts = bSuccess
-End Function
+Public Sub RemoveHJTShortcuts()
+    Call DeleteFolderForce(BuildPath(StartMenuPrograms, "HiJackThis Fork"))
+    Call DeleteFolderForce(BuildPath(StartMenuPrograms, "HiJackThis+"))
+    Call DeleteFileW(StrPtr(BuildPath(Desktop, "HiJackThis Fork.lnk")))
+    Call DeleteFileW(StrPtr(BuildPath(Desktop, "HiJackThis+.lnk")))
+End Sub
 
 Public Function CreateShortcut( _
     sPathLnk As String, _

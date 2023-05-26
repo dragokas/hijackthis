@@ -18,7 +18,7 @@ Option Explicit
 ' Registry functions class by Alex Dragokas
 '
 
-'Revision 3.5 (21.04.2022)
+'Revision 3.9 (26.05.2023)
 
 'Private Const MAX_PATH       As Long = 260&
 'Private Const MAX_PATH_W     As Long = 32767&
@@ -175,38 +175,38 @@ Option Explicit
 'Private Const RRF_RT_ANY            As Long = &HFFFF&
 'Private Const RRF_NOEXPAND          As Long = &H10000000
 
-'Public Enum KEY_VIRTUAL_TYPE
-'    KEY_VIRTUAL_NOT_EXIST
-'    KEY_VIRTUAL_USUAL
-'    KEY_VIRTUAL_SHARED
-'    KEY_VIRTUAL_REDIRECTED
+'Public Enum KEY_REDIRECTION_INFO
+'    KEY_REDIRECTION_NO_KEY
+'    KEY_REDIRECTION_NOT_APPLIED
+'    KEY_REDIRECTION_SHARED
+'    KEY_REDIRECTION_WOW_AVAILABLE
 'End Enum
 '#If False Then
-'    Dim KEY_VIRTUAL_NOT_EXIST, KEY_VIRTUAL_USUAL, KEY_VIRTUAL_SHARED, KEY_VIRTUAL_REDIRECTED, KEY_VIRTUAL_SYMLINK
+'    Dim KEY_REDIRECTION_NO_KEY, KEY_REDIRECTION_NOT_APPLIED, KEY_REDIRECTION_SHARED, KEY_REDIRECTION_WOW_AVAILABLE, KEY_REDIRECTION_SYMLINK
 '#End If
 
-Private Enum KEY_INFORMATION_CLASS
-    KeyBasicInformation = 0
-    KeyNodeInformation
-    KeyFullInformation
-    KeyNameInformation
-    KeyCachedInformation
-    KeyFlagsInformation
-    KeyVirtualizationInformation
-    KeyHandleTagsInformation
-    KeyTrustInformation
-    KeyLayerInformation
-    MaxKeyInfoClass
-End Enum
-
-Private Enum OBJECT_INFORMATION_CLASS
-    ObjectBasicInformation = 0
-    ObjectNameInformation
-    ObjectTypeInformation
-    ObjectAllTypesInformation
-    ObjectHandleInformation
-    ObjectSessionInformation
-End Enum
+'Public Enum KEY_INFORMATION_CLASS
+'    KeyBasicInformation = 0
+'    KeyNodeInformation
+'    KeyFullInformation
+'    KeyNameInformation
+'    KeyCachedInformation
+'    KeyFlagsInformation
+'    KeyVirtualizationInformation
+'    KeyHandleTagsInformation
+'    KeyTrustInformation
+'    KeyLayerInformation
+'    MaxKeyInfoClass
+'End Enum
+'
+'Public Enum OBJECT_INFORMATION_CLASS
+'    ObjectBasicInformation = 0
+'    ObjectNameInformation
+'    ObjectTypeInformation
+'    ObjectAllTypesInformation
+'    ObjectHandleInformation
+'    ObjectSessionInformation
+'End Enum
 
 'Private Enum OBJ_ATTRIBUTES
 '    OBJ_INHERIT = 2&
@@ -289,6 +289,29 @@ Private Declare Function NtClose Lib "ntdll.dll" (ByVal Handle As Long) As Long
 Private Declare Function NtEnumerateKey Lib "ntdll.dll" (ByVal KeyHandle As Long, ByVal Index As Long, ByVal KeyInformationClass As KEY_INFORMATION_CLASS, ByVal KeyInformation As Any, ByVal Length As Long, ResultLength As Long) As Long
 Private Declare Function NtRenameKey Lib "ntdll.dll" (ByVal KeyHandle As Long, ByVal NewName As Long) As Long
 
+Private NTKEY_CLASSES_ROOT_STR As String
+Private NTKEY_CURRENT_USER_STR As String
+Private NTKEY_LOCAL_MACHINE_STR As String
+Private NTKEY_USERS_STR As String
+Private NTKEY_CURRENT_CONFIG_STR As String
+
+Private Const HKEY_CLASSES_ROOT_STR As String = "HKEY_CLASSES_ROOT"
+Private Const HKEY_CURRENT_USER_STR As String = "HKEY_CURRENT_USER"
+Private Const HKEY_LOCAL_MACHINE_STR As String = "HKEY_LOCAL_MACHINE"
+Private Const HKEY_USERS_STR As String = "HKEY_USERS"
+Private Const HKEY_PERFORMANCE_DATA_STR As String = "HKEY_PERFORMANCE_DATA"
+Private Const HKEY_CURRENT_CONFIG_STR As String = "HKEY_CURRENT_CONFIG"
+Private Const HKEY_DYN_DATA_STR As String = "HKEY_DYN_DATA"
+
+Private Const HKEY_CLASSES_ROOT_SHORT_STR As String = "HKCR"
+Private Const HKEY_CURRENT_USER_SHORT_STR As String = "HKCU"
+Private Const HKEY_LOCAL_MACHINE_SHORT_STR As String = "HKLM"
+Private Const HKEY_USERS_SHORT_STR As String = "HKU"
+Private Const HKEY_CURRENT_CONFIG_SHORT_STR As String = "HKCC"
+Private Const HKEY_PERFORMANCE_DATA_SHORT_STR As String = "HKPD"
+Private Const HKEY_DYN_DATA_SHORT_STR As String = "HKDD"
+
+
 Private m_StatusCode As Long
 
 Public Function GetHKey(ByVal HKeyName As String) As ENUM_REG_HIVE 'Get handle of main hive
@@ -297,19 +320,19 @@ Public Function GetHKey(ByVal HKeyName As String) As ENUM_REG_HIVE 'Get handle o
     pos = InStr(HKeyName, "\")
     If pos <> 0 Then HKeyName = Left$(HKeyName, pos - 1)
     Select Case UCase$(HKeyName)
-        Case "HKEY_CLASSES_ROOT", "HKCR"
+        Case HKEY_CLASSES_ROOT_STR, HKEY_CLASSES_ROOT_SHORT_STR
             GetHKey = HKEY_CLASSES_ROOT
-        Case "HKEY_CURRENT_USER", "HKCU"
+        Case HKEY_CURRENT_USER_STR, HKEY_CURRENT_USER_SHORT_STR
             GetHKey = HKEY_CURRENT_USER
-        Case "HKEY_LOCAL_MACHINE", "HKLM"
+        Case HKEY_LOCAL_MACHINE_STR, HKEY_LOCAL_MACHINE_SHORT_STR
             GetHKey = HKEY_LOCAL_MACHINE
-        Case "HKEY_USERS", "HKU"
+        Case HKEY_USERS_STR, HKEY_USERS_SHORT_STR
             GetHKey = HKEY_USERS
-        Case "HKEY_PERFORMANCE_DATA"
+        Case HKEY_PERFORMANCE_DATA_STR, HKEY_PERFORMANCE_DATA_SHORT_STR
             GetHKey = HKEY_PERFORMANCE_DATA
-        Case "HKEY_CURRENT_CONFIG", "HKCC"
+        Case HKEY_CURRENT_CONFIG_STR, HKEY_CURRENT_CONFIG_SHORT_STR
             GetHKey = HKEY_CURRENT_CONFIG
-        Case "HKEY_DYN_DATA"
+        Case HKEY_DYN_DATA_STR, HKEY_DYN_DATA_SHORT_STR
             GetHKey = HKEY_DYN_DATA
     End Select
     Exit Function
@@ -322,19 +345,19 @@ Public Function GetHiveNameByHandle(Handle As ENUM_REG_HIVE) As String
     On Error GoTo ErrorHandler:
     Select Case Handle
         Case HKEY_CLASSES_ROOT
-            GetHiveNameByHandle = "HKEY_CLASSES_ROOT"
+            GetHiveNameByHandle = HKEY_CLASSES_ROOT_STR
         Case HKEY_CURRENT_USER
-            GetHiveNameByHandle = "HKEY_CURRENT_USER"
+            GetHiveNameByHandle = HKEY_CURRENT_USER_STR
         Case HKEY_LOCAL_MACHINE
-            GetHiveNameByHandle = "HKEY_LOCAL_MACHINE"
+            GetHiveNameByHandle = HKEY_LOCAL_MACHINE_STR
         Case HKEY_USERS
-            GetHiveNameByHandle = "HKEY_USERS"
+            GetHiveNameByHandle = HKEY_USERS_STR
         Case HKEY_PERFORMANCE_DATA
-            GetHiveNameByHandle = "HKEY_PERFORMANCE_DATA"
+            GetHiveNameByHandle = HKEY_PERFORMANCE_DATA_STR
         Case HKEY_CURRENT_CONFIG
-            GetHiveNameByHandle = "HKEY_CURRENT_CONFIG"
+            GetHiveNameByHandle = HKEY_CURRENT_CONFIG_STR
         Case HKEY_DYN_DATA
-            GetHiveNameByHandle = "HKEY_DYN_DATA"
+            GetHiveNameByHandle = HKEY_DYN_DATA_STR
     End Select
     Exit Function
 ErrorHandler:
@@ -357,23 +380,23 @@ Public Function GetShortHiveName(ByVal FullHiveName As String, Optional bInclude
         sRoot = FullHiveName
     End If
     Select Case UCase$(sRoot)
-        Case "HKEY_CLASSES_ROOT", "HKCR"
-            GetShortHiveName = "HKCR"
-        Case "HKEY_CURRENT_USER", "HKCU"
-            GetShortHiveName = "HKCU"
-        Case "HKEY_LOCAL_MACHINE", "HKLM"
-            GetShortHiveName = "HKLM"
-        Case "HKEY_USERS", "HKU"
-            GetShortHiveName = "HKU"
-        Case "HKEY_PERFORMANCE_DATA"
-            GetShortHiveName = "HKPD"
-        Case "HKEY_CURRENT_CONFIG", "HKCC"
-            GetShortHiveName = "HKCC"
-        Case "HKEY_DYN_DATA"
-            GetShortHiveName = "HKDD"
+        Case HKEY_CLASSES_ROOT_STR, HKEY_CLASSES_ROOT_SHORT_STR
+            GetShortHiveName = HKEY_CLASSES_ROOT_SHORT_STR
+        Case HKEY_CURRENT_USER_STR, HKEY_CURRENT_USER_SHORT_STR
+            GetShortHiveName = HKEY_CURRENT_USER_SHORT_STR
+        Case HKEY_LOCAL_MACHINE_STR, HKEY_LOCAL_MACHINE_SHORT_STR
+            GetShortHiveName = HKEY_LOCAL_MACHINE_SHORT_STR
+        Case HKEY_USERS_STR, HKEY_USERS_SHORT_STR
+            GetShortHiveName = HKEY_USERS_SHORT_STR
+        Case HKEY_PERFORMANCE_DATA_STR, HKEY_PERFORMANCE_DATA_SHORT_STR
+            GetShortHiveName = HKEY_PERFORMANCE_DATA_SHORT_STR
+        Case HKEY_CURRENT_CONFIG_STR, HKEY_CURRENT_CONFIG_SHORT_STR
+            GetShortHiveName = HKEY_CURRENT_CONFIG_SHORT_STR
+        Case HKEY_DYN_DATA_STR, HKEY_DYN_DATA_SHORT_STR
+            GetShortHiveName = HKEY_DYN_DATA_SHORT_STR
     End Select
     If bIncludeSID Then
-        If GetShortHiveName = "HKU" Then
+        If GetShortHiveName = HKEY_USERS_SHORT_STR Then
             If pos <> 0 Then
                 sSidPart = Mid$(FullHiveName, pos + 1)
                 If Len(sSidPart) <> 0 Then
@@ -544,7 +567,6 @@ Public Function GetDword(hHive As ENUM_REG_HIVE, sKey$, Optional sValue$, Option
     Dim tmp As Variant
     tmp = GetData(hHive, sKey, sValue, bUseWow64)  '-> redirection to common function, just in case REG type is wrong
     If IsNumeric(tmp) Then GetDword = CLng(tmp)
-    
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "GetDword", "hHive:", hHive, "Key:", sKey, "Value:", sValue, "Wow64:", bUseWow64
@@ -557,7 +579,6 @@ Public Function GetQword(hHive As ENUM_REG_HIVE, sKey$, Optional sValue$, Option
     Dim tmp As Variant
     tmp = GetData(hHive, sKey, sValue, bUseWow64)  '-> redirection to common function, just in case REG type is wrong
     If IsNumeric(tmp) Then GetQword = CCur(tmp)
-    
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "GetQword", "hHive:", hHive, "Key:", sKey, "Value:", sValue, "Wow64:", bUseWow64
@@ -1362,7 +1383,7 @@ Public Function DelKey(hHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 A
     
     Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
        
-    If OSver.Bitness = "x32" And Not OSver.IsWindowsVistaOrGreater Then
+    If OSver.IsWin32 And Not OSver.IsWindowsVistaOrGreater Then
         'XP x32
         SHDeleteKey hHive, StrPtr(sKey)
         If KeyExists(hHive, sKey, True) Then
@@ -2418,7 +2439,7 @@ Public Sub Jump(hHive As ENUM_REG_HIVE, ByVal sKey As String, Optional sValue As
     With uSEI
         .cbSize = Len(uSEI)
         .lpVerb = StrPtr("open")
-        If OSver.Bitness = "x64" Then
+        If OSver.IsWin64 Then
             If FileExists(BuildPath(sWinDir & "\sysnative", "regedt32.exe")) Then
                 .lpFile = StrPtr(BuildPath(sWinDir & "\sysnative", "regedt32.exe"))
             Else
@@ -2498,7 +2519,7 @@ Public Sub Jump(hHive As ENUM_REG_HIVE, ByVal sKey As String, Optional sValue As
         'PS. This routine doesn't want to work for x64, however it should work, if you'll prepare correctly x64-bit structures,
         'like LVITEMW_64. Currently, I unable to do that, so I'm using SendMessage + WM_CHAR method instead.
     
-        If OSver.MajorMinor >= 6 And OSver.Bitness = "x32" Then
+        If OSver.MajorMinor >= 6 And OSver.IsWin32 Then
         
             Dim ItemCount As Long, iItem As Long
             Dim lvi As LVITEMW
@@ -2604,7 +2625,6 @@ Public Function WrapNtOpenKeyEx( _
     
     On Error GoTo ErrorHandler:
     
-    Dim bOS_32          As Boolean
     Dim OA              As OBJECT_ATTRIBUTES
     Dim UniStr          As UNICODE_STRING
     Dim lret            As Long
@@ -2612,11 +2632,7 @@ Public Function WrapNtOpenKeyEx( _
     
     Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
-    bOS_32 = Not bIsWOW64
-    
-    sNtKey = MapHiveToNtName(hHive) & IIf(Len(sKey) = 0, vbNullString, "\" & sKey)
-    
-    If Not bOS_32 And Not bUseWow64 Then
+    If Not bIsWin32 And Not bUseWow64 Then
         'walkaround for WOW since Native API doesn't support KEY_WOW64_64KEY access flag (thanks to David Heffernan (StackOverflow))
         '(opening root with Win32 API first + KEY_WOW64_64KEY, then pass the handle to the Native API)
         lret = RegOpenKeyEx(hHive, 0&, 0&, dwAccess Or (KEY_WOW64_64KEY), OA.RootDirectory)
@@ -2625,9 +2641,9 @@ Public Function WrapNtOpenKeyEx( _
             WrapNtOpenKeyEx = lret
             Exit Function
         End If
-        If OA.RootDirectory <> 0 Then
-            sNtKey = sKey
-        End If
+        sNtKey = sKey
+    Else
+        sNtKey = MapHiveToNtName(hHive) & IIf(Len(sKey) = 0, vbNullString, "\" & sKey)
     End If
     
     With UniStr
@@ -2639,7 +2655,7 @@ Public Function WrapNtOpenKeyEx( _
     With OA
         .Length = LenB(OA)
         .ObjectName = VarPtr(UniStr)
-        If bOS_32 Then
+        If bIsWin32 Then
             .RootDirectory = 0
         End If
         .Attributes = dwAttributes
@@ -2775,12 +2791,12 @@ ErrorHandler:
     If OA.RootDirectory <> 0 Then RegCloseKey OA.RootDirectory
 End Function
 
-
-Public Function GetKeyVirtualType( _
+'returns bit sum of flags
+Public Function GetKeyRedirectionType( _
     hHive As ENUM_REG_HIVE, _
     sKey As String, _
     Optional bFlagCheckForSymlink As Boolean = False, _
-    Optional out_SymlinkTarget As String) As KEY_VIRTUAL_TYPE
+    Optional out_SymlinkTarget As String) As KEY_REDIRECTION_INFO
     
     On Error GoTo ErrorHandler:
     
@@ -2796,7 +2812,7 @@ Public Function GetKeyVirtualType( _
     
     If bFlagCheckForSymlink Then
         If IsKeySymLink(hHive, sKey, out_SymlinkTarget) Then
-        GetKeyVirtualType = KEY_VIRTUAL_SYMLINK
+        GetKeyRedirectionType = KEY_REDIRECTION_SYMLINK
         End If
     End If
     
@@ -2812,41 +2828,52 @@ Public Function GetKeyVirtualType( _
     If ERROR_SUCCESS <> lret Then
         'native key is not exist
         If bOS_32 Then
-            GetKeyVirtualType = GetKeyVirtualType Or KEY_VIRTUAL_NOT_EXIST
+            GetKeyRedirectionType = GetKeyRedirectionType Or KEY_REDIRECTION_NO_KEY
             Exit Function
         End If
         'check if redirected key exist
         lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, WRITE_OWNER, hKey2)
         If ERROR_SUCCESS = lret Then
             'if alternate view exists -> key is redirected
-            GetKeyVirtualType = GetKeyVirtualType Or KEY_VIRTUAL_REDIRECTED
+            GetKeyRedirectionType = GetKeyRedirectionType Or KEY_REDIRECTION_WOW_AVAILABLE
             RegCloseKey hKey2
         Else
-            GetKeyVirtualType = GetKeyVirtualType Or KEY_VIRTUAL_NOT_EXIST
+            GetKeyRedirectionType = GetKeyRedirectionType Or KEY_REDIRECTION_NO_KEY
         End If
         Exit Function
     End If
     
     'if we are trying to check a root key
     If 0 = Len(sKey) Then
-        GetKeyVirtualType = GetKeyVirtualType Or KEY_VIRTUAL_USUAL
+        GetKeyRedirectionType = GetKeyRedirectionType Or KEY_REDIRECTION_NOT_APPLIED
         Exit Function
     End If
     
     'get native phisical key name
     sNtName1 = RegGetKeyInfoNameEx(hKey1)
+    
+    If Not OSver.IsWindows7OrGreater Then ' < Win7
+        Dim iReflectionDisabled As Long
+        lret = RegQueryReflectionKey(hKey1, iReflectionDisabled)
+        If lret = ERROR_SUCCESS Then
+            If iReflectionDisabled = 0 Then
+                GetKeyRedirectionType = GetKeyRedirectionType Or KEY_REDIRECTION_REFLECTED
+            End If
+        End If
+    End If
+    
     RegCloseKey hKey1: hKey1 = 0
     
     If Len(sNtName1) = 0 Then
         'unknown error
-        GetKeyVirtualType = GetKeyVirtualType Or KEY_VIRTUAL_USUAL
-        Debug.Print "Error in GetKeyVirtualType when open hKey1"
+        GetKeyRedirectionType = GetKeyRedirectionType Or KEY_REDIRECTION_NOT_APPLIED
+        Debug.Print "Error in GetKeyRedirectionType when open hKey1"
         Exit Function
     End If
     
     If bOS_32 Then
         'OS bit. == x86
-        GetKeyVirtualType = GetKeyVirtualType Or KEY_VIRTUAL_USUAL
+        GetKeyRedirectionType = GetKeyRedirectionType Or KEY_REDIRECTION_NOT_APPLIED
         Exit Function
     End If
     
@@ -2854,7 +2881,7 @@ Public Function GetKeyVirtualType( _
     lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, WRITE_OWNER, hKey2)
     If ERROR_SUCCESS <> lret Then
         'x64 opened, but WOW is not -> it's a redirected key with no corresponding WOW para
-        GetKeyVirtualType = GetKeyVirtualType Or KEY_VIRTUAL_REDIRECTED
+        GetKeyRedirectionType = GetKeyRedirectionType Or KEY_REDIRECTION_WOW_AVAILABLE
         Exit Function
     End If
     
@@ -2868,7 +2895,7 @@ Public Function GetKeyVirtualType( _
         ' !=
         If StrComp(sNtName1, sNtName2, 1) <> 0 Then
             'it's a redirected key
-            GetKeyVirtualType = GetKeyVirtualType Or KEY_VIRTUAL_REDIRECTED
+            GetKeyRedirectionType = GetKeyRedirectionType Or KEY_REDIRECTION_WOW_AVAILABLE
         Else
             'check whether it is shared or usual key
             'convert name to WOW
@@ -2909,7 +2936,7 @@ Public Function GetKeyVirtualType( _
                 If ERROR_SUCCESS <> RegOpenKeyEx(hHive, StrPtr(sKeyWOW), 0&, WRITE_OWNER Or (KEY_WOW64_64KEY), hKey2) Then
                     'second key doesn't exist (however, for 'shared' keys it always should be there)
                     'so, it's usual key
-                    GetKeyVirtualType = GetKeyVirtualType Or KEY_VIRTUAL_USUAL
+                    GetKeyRedirectionType = GetKeyRedirectionType Or KEY_REDIRECTION_NOT_APPLIED
                     Exit Function
                 End If
                 
@@ -2920,35 +2947,35 @@ Public Function GetKeyVirtualType( _
                 ' ==
                 If StrComp(sNtName1, sNtName2, 1) = 0 Then
                     'handles point to the same phisical name -> it's a shared key
-                    GetKeyVirtualType = GetKeyVirtualType Or KEY_VIRTUAL_SHARED
+                    GetKeyRedirectionType = GetKeyRedirectionType Or KEY_REDIRECTION_SHARED
                 Else
                     'usual key
-                    GetKeyVirtualType = GetKeyVirtualType Or KEY_VIRTUAL_USUAL
+                    GetKeyRedirectionType = GetKeyRedirectionType Or KEY_REDIRECTION_NOT_APPLIED
                 End If
             Else
                 'usual key
-                GetKeyVirtualType = GetKeyVirtualType Or KEY_VIRTUAL_USUAL
+                GetKeyRedirectionType = GetKeyRedirectionType Or KEY_REDIRECTION_NOT_APPLIED
             End If
         End If
     Else
         'error happened during query
-        GetKeyVirtualType = GetKeyVirtualType Or KEY_VIRTUAL_USUAL
+        GetKeyRedirectionType = GetKeyRedirectionType Or KEY_REDIRECTION_NOT_APPLIED
     End If
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "GetKeyVirtualType", "hHive:", hHive, "Key:", sKey
+    ErrorMsg Err, "GetKeyRedirectionType", "hHive:", hHive, "Key:", sKey
     If inIDE Then Stop: Resume Next
     If hKey1 <> 0 Then RegCloseKey hKey1
     If hKey2 <> 0 Then RegCloseKey hKey2
 End Function
 
-
-Public Function NtGetKeyVirtualType( _
+'returns bit sum of flags
+Public Function NtGetKeyRedirectionType( _
     hHive As ENUM_REG_HIVE, _
     sKey As String, _
     Optional bFlagCheckForSymlink As Boolean = False, _
-    Optional out_SymlinkTarget As String) As KEY_VIRTUAL_TYPE
+    Optional out_SymlinkTarget As String) As KEY_REDIRECTION_INFO
     
     On Error GoTo ErrorHandler:
     
@@ -2964,7 +2991,7 @@ Public Function NtGetKeyVirtualType( _
     
     If bFlagCheckForSymlink Then
         If IsKeySymLink(hHive, sKey, out_SymlinkTarget) Then
-        NtGetKeyVirtualType = KEY_VIRTUAL_SYMLINK
+        NtGetKeyRedirectionType = KEY_REDIRECTION_SYMLINK
         End If
     End If
     
@@ -2980,41 +3007,52 @@ Public Function NtGetKeyVirtualType( _
     If STATUS_SUCCESS <> lret Then
         'native key is not exist
         If bOS_32 Then
-            NtGetKeyVirtualType = NtGetKeyVirtualType Or KEY_VIRTUAL_NOT_EXIST
+            NtGetKeyRedirectionType = NtGetKeyRedirectionType Or KEY_REDIRECTION_NO_KEY
             Exit Function
         End If
         'check if redirected key exist
         lret = WrapNtOpenKeyEx(hHive, sKey, WRITE_OWNER, hKey2, , True)
         If STATUS_SUCCESS = lret Then
             'if alternate view exists -> key is redirected
-            NtGetKeyVirtualType = NtGetKeyVirtualType Or KEY_VIRTUAL_REDIRECTED
+            NtGetKeyRedirectionType = NtGetKeyRedirectionType Or KEY_REDIRECTION_WOW_AVAILABLE
             NtClose hKey2
         Else
-            NtGetKeyVirtualType = NtGetKeyVirtualType Or KEY_VIRTUAL_NOT_EXIST
+            NtGetKeyRedirectionType = NtGetKeyRedirectionType Or KEY_REDIRECTION_NO_KEY
         End If
         Exit Function
     End If
     
     'if we are trying to check a root key
     If 0 = Len(sKey) Then
-        NtGetKeyVirtualType = NtGetKeyVirtualType Or KEY_VIRTUAL_USUAL
+        NtGetKeyRedirectionType = NtGetKeyRedirectionType Or KEY_REDIRECTION_NOT_APPLIED
         Exit Function
     End If
     
     'get native phisical key name
     sNtName1 = RegGetKeyInfoNameEx(hKey1)
+    
+    If Not OSver.IsWindows7OrGreater Then ' < Win7
+        Dim iReflectionDisabled As Long
+        lret = RegQueryReflectionKey(hKey1, iReflectionDisabled)
+        If lret = ERROR_SUCCESS Then
+            If iReflectionDisabled = 0 Then
+                NtGetKeyRedirectionType = NtGetKeyRedirectionType Or KEY_REDIRECTION_REFLECTED
+            End If
+        End If
+    End If
+    
     NtClose hKey1: hKey1 = 0
     
     If Len(sNtName1) = 0 Then
         'unknown error
-        NtGetKeyVirtualType = NtGetKeyVirtualType Or KEY_VIRTUAL_USUAL
-        Debug.Print "Error in NtGetKeyVirtualType when open hKey1"
+        NtGetKeyRedirectionType = NtGetKeyRedirectionType Or KEY_REDIRECTION_NOT_APPLIED
+        Debug.Print "Error in NtGetKeyRedirectionType when open hKey1"
         Exit Function
     End If
     
     If bOS_32 Then
         'OS bit. == x86
-        NtGetKeyVirtualType = NtGetKeyVirtualType Or KEY_VIRTUAL_USUAL
+        NtGetKeyRedirectionType = NtGetKeyRedirectionType Or KEY_REDIRECTION_NOT_APPLIED
         Exit Function
     End If
     
@@ -3022,7 +3060,7 @@ Public Function NtGetKeyVirtualType( _
     lret = WrapNtOpenKeyEx(hHive, sKey, WRITE_OWNER, hKey2, , True)
     If STATUS_SUCCESS <> lret Then
         'x64 opened, but WOW is not -> it's a redirected key with no corresponding WOW para
-        NtGetKeyVirtualType = NtGetKeyVirtualType Or KEY_VIRTUAL_REDIRECTED
+        NtGetKeyRedirectionType = NtGetKeyRedirectionType Or KEY_REDIRECTION_WOW_AVAILABLE
         Exit Function
     End If
     
@@ -3036,7 +3074,7 @@ Public Function NtGetKeyVirtualType( _
         ' !=
         If StrComp(sNtName1, sNtName2, 1) <> 0 Then
             'it's a redirected key
-            NtGetKeyVirtualType = NtGetKeyVirtualType Or KEY_VIRTUAL_REDIRECTED
+            NtGetKeyRedirectionType = NtGetKeyRedirectionType Or KEY_REDIRECTION_WOW_AVAILABLE
         Else
             'check whether it is shared or usual key
             'convert name to WOW
@@ -3077,7 +3115,7 @@ Public Function NtGetKeyVirtualType( _
                 If STATUS_SUCCESS <> WrapNtOpenKeyEx(hHive, sKeyWOW, WRITE_OWNER, hKey2) Then
                     'second key doesn't exist (however, for 'shared' keys it always should be there)
                     'so, it's usual key
-                    NtGetKeyVirtualType = NtGetKeyVirtualType Or KEY_VIRTUAL_USUAL
+                    NtGetKeyRedirectionType = NtGetKeyRedirectionType Or KEY_REDIRECTION_NOT_APPLIED
                     Exit Function
                 End If
                 
@@ -3088,31 +3126,31 @@ Public Function NtGetKeyVirtualType( _
                 ' ==
                 If StrComp(sNtName1, sNtName2, 1) = 0 Then
                     'handles point to the same phisical name -> it's a shared key
-                    NtGetKeyVirtualType = NtGetKeyVirtualType Or KEY_VIRTUAL_SHARED
+                    NtGetKeyRedirectionType = NtGetKeyRedirectionType Or KEY_REDIRECTION_SHARED
                 Else
                     'usual key
-                    NtGetKeyVirtualType = NtGetKeyVirtualType Or KEY_VIRTUAL_USUAL
+                    NtGetKeyRedirectionType = NtGetKeyRedirectionType Or KEY_REDIRECTION_NOT_APPLIED
                 End If
             Else
                 'usual key
-                NtGetKeyVirtualType = NtGetKeyVirtualType Or KEY_VIRTUAL_USUAL
+                NtGetKeyRedirectionType = NtGetKeyRedirectionType Or KEY_REDIRECTION_NOT_APPLIED
             End If
         End If
     Else
         'error happened during query
-        NtGetKeyVirtualType = NtGetKeyVirtualType Or KEY_VIRTUAL_USUAL
+        NtGetKeyRedirectionType = NtGetKeyRedirectionType Or KEY_REDIRECTION_NOT_APPLIED
     End If
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "NtGetKeyVirtualType", "hHive:", hHive, "Key:", sKey
+    ErrorMsg Err, "NtGetKeyRedirectionType", "hHive:", hHive, "Key:", sKey
     If inIDE Then Stop: Resume Next
     If hKey1 <> 0 Then NtClose hKey1
     If hKey2 <> 0 Then NtClose hKey2
 End Function
 
 '// Getting the phisical location of the key by handle (thanks to greg zaharov, jupman, jr_ (CyberForum))
-Private Function RegGetKeyInfoNameEx(hKey As Long) As String
+Public Function RegGetKeyInfoNameEx(hKey As Long) As String
     On Error GoTo ErrorHandler:
 
     Dim lret As Long
@@ -3161,14 +3199,15 @@ Public Function IsKeyVolatile(hHive As ENUM_REG_HIVE, ByVal sKey As String, Opti
     Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
     
     lret = WrapNtOpenKeyEx(hHive, sKey, WRITE_OWNER, hKey, , bUseWow64)
+    m_StatusCode = lret
     
     If STATUS_SUCCESS = lret Then
         
-        IsKeyVolatile = RegGetKeyFlags(hKey).ControlFlags1 And KEY_CTRL_FL_W7_01__IS_VOLATILE
+        IsKeyVolatile = GetKeyFlagsByHandle(hKey).ControlFlags1 And KEY_CTRL_FL_W7_01__IS_VOLATILE
         
         NtClose hKey
     End If
-    m_StatusCode = lret
+    
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "IsKeyVolatile", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Wow64:", bUseWow64
@@ -3176,7 +3215,7 @@ ErrorHandler:
 End Function
 
 'Win7+ only
-Private Function RegGetKeyFlags(hKey As Long) As KEY_FLAGS_INFORMATION
+Private Function GetKeyFlagsByHandle(hKey As Long) As KEY_FLAGS_INFORMATION
     On Error GoTo ErrorHandler:
     
     Dim lret As Long
@@ -3188,7 +3227,7 @@ Private Function RegGetKeyFlags(hKey As Long) As KEY_FLAGS_INFORMATION
     lret = NtQueryKey(hKey, KeyFlagsInformation, ByVal VarPtr(KeyFlags), LenB(KeyFlags), reqSize)
     
     If lret = STATUS_SUCCESS Then
-        RegGetKeyFlags = KeyFlags
+        GetKeyFlagsByHandle = KeyFlags
     End If
     m_StatusCode = lret
     Exit Function
@@ -3197,8 +3236,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-'// e.g. HKLM -> \Registry\Machine
-Public Function MapHiveToNtName(hHive As ENUM_REG_HIVE) As String
+Private Function MapHiveToNtName_Direct(hHive As ENUM_REG_HIVE) As String
     On Error GoTo ErrorHandler:
     
     Dim hKey As Long
@@ -3209,24 +3247,32 @@ Public Function MapHiveToNtName(hHive As ENUM_REG_HIVE) As String
     
     lret = RegOpenKeyEx(hHive, 0&, 0&, KEY_QUERY_VALUE Or (KEY_WOW64_64KEY And Not bOS_32), hKey)
     m_StatusCode = lret
+    If ERROR_SUCCESS <> lret Then Exit Function
     
-    If ERROR_SUCCESS <> lret Then
-        Exit Function
+    If hKey <> 0 Then
+        MapHiveToNtName_Direct = RegGetKeyInfoNameEx(hKey)
+        RegCloseKey hKey
     End If
     
-    MapHiveToNtName = RegGetKeyInfoNameEx(hKey)
-    RegCloseKey hKey
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "MapHiveToNtName_Direct", "hHive:", hHive
+    If inIDE Then Stop: Resume Next
+End Function
+
+'// e.g. HKLM -> \Registry\Machine
+Public Function MapHiveToNtName(hHive As ENUM_REG_HIVE) As String
+    On Error GoTo ErrorHandler:
     
-    '// TODO: maybe replace by manual parsing?
-    
-    'HKLM = \REGISTRY\MACHINE
-    'HKCU = \REGISTRY\USER\<SID>
-    'HKU = \REGISTRY\USER
-    'HKCC = \REGISTRY\MACHINE\SYSTEM\ControlSet<Current>\Hardware Profiles\<CurrentID>
-    '     or by symlink: "\REGISTRY\MACHINE\SYSTEM\CurrentControlSet\Hardware Profiles\Current"
-    'HKCR = {depending on token}:
-    ' 1. User:   \REGISTRY\USER\<SID>_CLASSES
-    ' 2. System: \Registry\Machine\SOFTWARE\Classes
+    Select Case hHive
+        Case HKEY_LOCAL_MACHINE: MapHiveToNtName = NTKEY_LOCAL_MACHINE_STR
+        Case HKEY_CURRENT_USER: MapHiveToNtName = NTKEY_CURRENT_USER_STR
+        Case HKEY_CLASSES_ROOT: MapHiveToNtName = NTKEY_CLASSES_ROOT_STR
+        Case HKEY_USERS: MapHiveToNtName = NTKEY_USERS_STR
+        Case HKEY_CURRENT_CONFIG: MapHiveToNtName = NTKEY_CURRENT_CONFIG_STR
+        Case Else:
+            MapHiveToNtName = MapHiveToNtName_Direct(hHive)
+    End Select
     
     Exit Function
 ErrorHandler:
@@ -3234,18 +3280,123 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
+Public Function MapWin32NameToNtName(hHive As ENUM_REG_HIVE, ByVal sKey As String, Optional bUseWow64 As Boolean) As String
+    On Error GoTo ErrorHandler:
+    Dim lret As Long
+    Dim hKey As Long
+    
+    Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
+    
+    lret = WrapNtOpenKeyEx(hHive, sKey, WRITE_OWNER, hKey, , bUseWow64)
+    m_StatusCode = lret
+    
+    If STATUS_SUCCESS = lret Then
+        
+        MapWin32NameToNtName = RegGetKeyInfoNameEx(hKey)
+        
+        NtClose hKey
+    End If
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "MapWin32NameToNtName", "hHive:", hHive, "hKey:", hKey, "Key:", sKey, "Wow64:", bUseWow64
+    If inIDE Then Stop: Resume Next
+End Function
 
-'// e.g. \Registry\Machine\Software -> HKLM, Software
-Public Function MapNtNameToHive(sNtKey As String, out_Hive As ENUM_REG_HIVE, out_Key As String) As Boolean
+
+'// e.g. \Registry\Machine\Software -> HKEY_LOCAL_MACHINE\Software
+Public Function MapNtNameToWin32Name(sNtKey As String, Optional out_Hive As ENUM_REG_HIVE) As String
     On Error GoTo ErrorHandler:
     
-    '// TODO
-
+    '// Need help: https://stackoverflow.com/questions/76302254/how-can-i-convert-a-native-nt-registry-key-name-into-a-win32-name
+    
+    '// TODO: \REGISTRY\A\
+    '// TODO: \REGISTRY\WC\
+    
+    'Do not touch the order!
+    '=> should check in this way: HKCC => HKLM => HKCR => HKCU => HKU
+    
+    If StrBeginWith(sNtKey, NTKEY_CURRENT_CONFIG_STR) Then
+        MapNtNameToWin32Name = HKEY_CURRENT_CONFIG_STR & Mid$(sNtKey, Len(NTKEY_CURRENT_CONFIG_STR) + 1): out_Hive = HKEY_CURRENT_CONFIG
+    
+    ElseIf StrBeginWith(sNtKey, NTKEY_LOCAL_MACHINE_STR) Then
+        MapNtNameToWin32Name = HKEY_LOCAL_MACHINE_STR & Mid$(sNtKey, Len(NTKEY_LOCAL_MACHINE_STR) + 1): out_Hive = HKEY_LOCAL_MACHINE
+    
+    ElseIf StrBeginWith(sNtKey, NTKEY_CLASSES_ROOT_STR) Then
+        MapNtNameToWin32Name = HKEY_CLASSES_ROOT_STR & Mid$(sNtKey, Len(NTKEY_CLASSES_ROOT_STR) + 1): out_Hive = HKEY_CLASSES_ROOT
+    
+    ElseIf StrBeginWith(sNtKey, NTKEY_CURRENT_USER_STR) Then
+        MapNtNameToWin32Name = HKEY_CURRENT_USER_STR & Mid$(sNtKey, Len(NTKEY_CURRENT_USER_STR) + 1): out_Hive = HKEY_CURRENT_USER
+    
+    ElseIf StrBeginWith(sNtKey, NTKEY_USERS_STR) Then
+        MapNtNameToWin32Name = HKEY_USERS_STR & Mid$(sNtKey, Len(NTKEY_USERS_STR) + 1): out_Hive = HKEY_USERS
+    
+    End If
+    
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "RegMapNtNameToHive", "NtKey:", sNtKey
     If inIDE Then Stop: Resume Next
 End Function
+
+
+'// e.g. \Registry\Machine\Software -> HKLM\Software
+Public Function MapNtNameToWin32NameShort(sNtKey As String, Optional out_Hive As ENUM_REG_HIVE) As String
+    On Error GoTo ErrorHandler:
+    
+    '// Need help: https://stackoverflow.com/questions/76302254/how-can-i-convert-a-native-nt-registry-key-name-into-a-win32-name
+    
+    '// TODO: \REGISTRY\A\
+    '// TODO: \REGISTRY\WC\
+    
+    'Do not touch the order!
+    '=> should check in this way: HKCC => HKLM => HKCR => HKCU => HKU
+    
+    If StrBeginWith(sNtKey, NTKEY_CURRENT_CONFIG_STR) Then
+        MapNtNameToWin32NameShort = HKEY_CURRENT_CONFIG_SHORT_STR & Mid$(sNtKey, Len(NTKEY_CURRENT_CONFIG_STR) + 1): out_Hive = HKEY_CURRENT_CONFIG
+    
+    ElseIf StrBeginWith(sNtKey, NTKEY_LOCAL_MACHINE_STR) Then
+        MapNtNameToWin32NameShort = HKEY_LOCAL_MACHINE_SHORT_STR & Mid$(sNtKey, Len(NTKEY_LOCAL_MACHINE_STR) + 1): out_Hive = HKEY_LOCAL_MACHINE
+    
+    ElseIf StrBeginWith(sNtKey, NTKEY_CLASSES_ROOT_STR) Then
+        MapNtNameToWin32NameShort = HKEY_CLASSES_ROOT_SHORT_STR & Mid$(sNtKey, Len(NTKEY_CLASSES_ROOT_STR) + 1): out_Hive = HKEY_CLASSES_ROOT
+    
+    ElseIf StrBeginWith(sNtKey, NTKEY_CURRENT_USER_STR) Then
+        MapNtNameToWin32NameShort = HKEY_CURRENT_USER_SHORT_STR & Mid$(sNtKey, Len(NTKEY_CURRENT_USER_STR) + 1): out_Hive = HKEY_CURRENT_USER
+    
+    ElseIf StrBeginWith(sNtKey, NTKEY_USERS_STR) Then
+        MapNtNameToWin32NameShort = HKEY_USERS_SHORT_STR & Mid$(sNtKey, Len(NTKEY_USERS_STR) + 1): out_Hive = HKEY_USERS
+    
+    End If
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "RegMapNtNameToHive", "NtKey:", sNtKey
+    If inIDE Then Stop: Resume Next
+End Function
+
+
+'e.g. Can convert WOW redirected HKLM\Software (bUseWow64 == true) -> to HKLM\Software\Wow6432Node
+Public Function GetPhysicalNameWin32(hHive As ENUM_REG_HIVE, ByVal sKey As String, Optional bUseWow64 As Boolean) As String
+    On Error GoTo ErrorHandler:
+    
+    If bIsWin32 Or Not bUseWow64 Then
+        If hHive <> 0 Then
+            GetPhysicalNameWin32 = GetShortHiveName(GetHiveNameByHandle(hHive)) & IIf(Len(sKey) = 0, "", "\" & sKey)
+        Else
+            GetPhysicalNameWin32 = sKey
+        End If
+    Else
+        GetPhysicalNameWin32 = MapNtNameToWin32NameShort(MapWin32NameToNtName(hHive, sKey, bUseWow64))
+        If Len(GetPhysicalNameWin32) = 0 Then
+            GetPhysicalNameWin32 = GetPhysicalNameWin32(hHive, sKey, False)
+        End If
+    End If
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetPhysicalNameWin32", "hHive:", hHive, "Key:", sKey, "Wow64:", bUseWow64
+    If inIDE Then Stop: Resume Next
+End Function
+
 
 Public Function Flush(hHive As ENUM_REG_HIVE) As Boolean
     Flush = (0 = RegFlushKey(hHive))
@@ -3258,7 +3409,7 @@ Public Function FlushAll() As Boolean
     FlushAll = FlushAll And (0 = RegFlushKey(HKEY_USERS))
 End Function
 
-Private Sub KeyShowInfo(hHive As Long, sSubKey As String, hFile As Long)
+Private Sub KeyShowInfo(hHive As ENUM_REG_HIVE, sSubKey As String, hFile As Long)
     Dim sSymTarget As String
     Dim sLog As String
     Dim bExist As Boolean
@@ -3283,7 +3434,7 @@ Private Sub KeyShowInfo(hHive As Long, sSubKey As String, hFile As Long)
         PrintLineW hFile, sLog, True
     End If
 
-    Call NtGetKeyVirtualType(hHive, sSubKey, True, sSymTarget)
+    Call NtGetKeyRedirectionType(hHive, sSubKey, True, sSymTarget)
 
     sLog = "HKLM\" & sSubKey & " => " & IIf(bExist, " (exist, handle = " & hKey & ")", "(not exist, handle = " & hKey & ")") & _
         IIf(Len(sSymTarget) <> 0, " => (symlink) " & sSymTarget, vbNullString)
@@ -3296,3 +3447,24 @@ End Sub
 Public Property Get StatusCode() As Long
     StatusCode = m_StatusCode
 End Property
+
+'returns text description suitable for HJT logs of Win API Status code of the last operation requested in this class
+'
+Public Property Get StatusCodeDesc() As String
+    Select Case m_StatusCode
+        Case ERROR_FILE_NOT_FOUND
+            StatusCodeDesc = STR_MISSING
+        Case ERROR_ACCESS_DENIED
+            StatusCodeDesc = STR_ACCESS_DENIED
+        Case Else
+            StatusCodeDesc = "(Error code: " & m_StatusCode & ")"
+    End Select
+End Property
+
+Private Sub Class_Initialize()
+    NTKEY_CLASSES_ROOT_STR = MapHiveToNtName_Direct(HKEY_CLASSES_ROOT)
+    NTKEY_CURRENT_USER_STR = MapHiveToNtName_Direct(HKEY_CURRENT_USER)
+    NTKEY_LOCAL_MACHINE_STR = MapHiveToNtName_Direct(HKEY_LOCAL_MACHINE)
+    NTKEY_USERS_STR = MapHiveToNtName_Direct(HKEY_USERS)
+    NTKEY_CURRENT_CONFIG_STR = MapHiveToNtName_Direct(HKEY_CURRENT_CONFIG)
+End Sub

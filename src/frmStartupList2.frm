@@ -1718,7 +1718,7 @@ Private Sub cmdSaveOK_Click()
 
     Dim sFile$, sLog$, hFile&
     '"Save file...", Text files, All files
-    sFile = SaveFileDialog(Translate(900), AppPath(), "startuplist.txt", Translate(901) & " (*.txt)|*.txt|" & Translate(902) & " (*.*)|*.*", Me.hwnd)
+    sFile = SaveFileDialog(Translate(900), AppPath(), "startuplist.txt", Translate(901) & " (*.txt)|*.txt|" & Translate(902) & " (*.*)|*.*", Me.hWnd)
     If sFile = vbNullString Then Exit Sub
     If Not (LCase$(Right$(sFile, 4)) = ".txt") Then sFile = sFile & ".txt"
     sLog = GetStartupListReport
@@ -3306,7 +3306,7 @@ Private Sub mnuPopupSaveTree_Click()
     pgbStatus.Visible = False
     Form_Resize
     'Enter filename to save node tree to..., Text files, All files
-    sFile = SaveFileDialog(Translate(957), AppPath(), "node.txt", Translate(901) & " (*.txt)|*.txt|" & Translate(902) & " (*.*)|*.*", Me.hwnd)
+    sFile = SaveFileDialog(Translate(957), AppPath(), "node.txt", Translate(901) & " (*.txt)|*.txt|" & Translate(902) & " (*.*)|*.*", Me.hWnd)
     If sFile = vbNullString Then Exit Sub
     
     '" partial report" & vbCrLf & _
@@ -3342,7 +3342,7 @@ Private Sub mnuPopupShowFile_Click()
 End Sub
 
 Private Sub mnuPopupShowProp_Click()
-    ShowFileProperties tvwMain.SelectedItem.Tag, Me.hwnd
+    ShowFileProperties tvwMain.SelectedItem.Tag, Me.hWnd
 End Sub
 
 Private Sub mnuPopupVerifyFile_Click()
@@ -5277,7 +5277,7 @@ Private Sub EnumServices()
         If sAltShell <> vbNullString Or bShowEmpty Then
             tvwMain.Nodes.Add sHardwareCfgs(L) & "Services", tvwChild, sHardwareCfgs(L) & "SafeBootAltShell", "SafeBoot: Alternate shell", "registry"
             tvwMain.Nodes(sHardwareCfgs(L) & "SafeBootAltShell").Tag = "HKEY_LOCAL_MACHINE\" & sSafeBoot
-            tvwMain.Nodes.Add sHardwareCfgs(L) & "SafeBootAltShell", tvwChild, sHardwareCfgs(L) & "SafeBootAltShell0", sAltShell & IIf(lEnable = 0, " (not enabled)", " (enabled)"), "explorer"
+            tvwMain.Nodes.Add sHardwareCfgs(L) & "SafeBootAltShell", tvwChild, sHardwareCfgs(L) & "SafeBootAltShell0", sAltShell & IIf(lEnable <> 0, " (enabled)", " (not enabled)"), "explorer"
             tvwMain.Nodes(sHardwareCfgs(L) & "SafeBootAltShell0").Tag = GuessFullpathFromAutorun(sAltShell)
         End If
         

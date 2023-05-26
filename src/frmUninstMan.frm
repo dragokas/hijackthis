@@ -807,7 +807,7 @@ Private Sub cmdSave_Click()
     If Len(sFile) = 0 Then Exit Sub
     
     sList.Append ChrW$(-257)
-    sList.AppendLine "Logfile of Uninstall manager v." & UninstManVer & " (HJT Fork v." & AppVerString & ")"
+    sList.AppendLine "Logfile of Uninstall manager v." & UninstManVer & " (HiJackThis+ v." & AppVerString & ")"
     sList.AppendLine
     sList.Append MakeLogHeader()
     

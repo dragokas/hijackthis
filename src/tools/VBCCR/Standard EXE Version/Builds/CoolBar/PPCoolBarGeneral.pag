@@ -1,0 +1,296 @@
+VERSION 5.00
+Begin VB.PropertyPage PPCoolBarGeneral 
+   Caption         =   "General"
+   ClientHeight    =   4875
+   ClientLeft      =   0
+   ClientTop       =   0
+   ClientWidth     =   6225
+   LockControls    =   -1  'True
+   PaletteMode     =   0  'Halftone
+   ScaleHeight     =   4875
+   ScaleWidth      =   6225
+   Begin VB.CheckBox CheckDoubleBuffer 
+      Caption         =   "DoubleBuffer"
+      Height          =   285
+      Left            =   3480
+      TabIndex        =   15
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckMouseTrack 
+      Caption         =   "MouseTrack"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   8
+      Top             =   480
+      Width           =   1920
+   End
+   Begin VB.CheckBox CheckShowTips 
+      Caption         =   "ShowTips"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   14
+      Top             =   2640
+      Width           =   1920
+   End
+   Begin VB.CheckBox CheckVerticalGripper 
+      Caption         =   "VerticalGripper"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   13
+      Top             =   2280
+      Width           =   1920
+   End
+   Begin VB.CheckBox CheckDblClickToggle 
+      Caption         =   "DblClickToggle"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   12
+      Top             =   1920
+      Width           =   1920
+   End
+   Begin VB.CheckBox CheckFixedOrder 
+      Caption         =   "FixedOrder"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   10
+      Top             =   1200
+      Width           =   1920
+   End
+   Begin VB.ComboBox ComboMousePointer 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   3
+      Top             =   480
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboImageList 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   5
+      Top             =   840
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboOrientation 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   7
+      Top             =   1200
+      Width           =   2235
+   End
+   Begin VB.CheckBox CheckVariantHeight 
+      Caption         =   "VariantHeight"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   11
+      Top             =   1560
+      Width           =   1920
+   End
+   Begin VB.CheckBox CheckBandBorders 
+      Caption         =   "BandBorders"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   9
+      Top             =   840
+      Width           =   1920
+   End
+   Begin VB.CheckBox CheckEnabled 
+      Caption         =   "Enabled"
+      Height          =   285
+      Left            =   120
+      TabIndex        =   0
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckVisualStyles 
+      Caption         =   "VisualStyles"
+      Height          =   285
+      Left            =   1800
+      TabIndex        =   1
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.Label LabelMousePointer 
+      Caption         =   "MousePointer:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   2
+      Top             =   480
+      Width           =   1620
+   End
+   Begin VB.Label LabelImageList 
+      Caption         =   "ImageList:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   4
+      Top             =   840
+      Width           =   1620
+   End
+   Begin VB.Label LabelOrientation 
+      Caption         =   "Orientation:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   6
+      Top             =   1200
+      Width           =   1620
+   End
+End
+Attribute VB_Name = "PPCoolBarGeneral"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Option Explicit
+Private ImageListEnumerated As Boolean
+Private FreezeChanged As Boolean
+
+Private Sub PropertyPage_Initialize()
+Call ComCtlsShowAllUIStates(PropertyPage.hWnd)
+Call ComCtlsPPInitComboMousePointer(ComboMousePointer)
+With ComboImageList
+.AddItem "(None)"
+.ListIndex = 0
+End With
+With ComboOrientation
+.AddItem CbrOrientationHorizontal & " - Horizontal"
+.ItemData(.NewIndex) = CbrOrientationHorizontal
+.AddItem CbrOrientationVertical & " - Vertical"
+.ItemData(.NewIndex) = CbrOrientationVertical
+End With
+End Sub
+
+Private Sub PropertyPage_ApplyChanges()
+On Error Resume Next
+PropertyPage.ValidateControls
+If Err.Number = 380 Then Exit Sub
+On Error GoTo 0
+With PropertyPage.SelectedControls(0)
+.Enabled = CBool(CheckEnabled.Value = vbChecked)
+.VisualStyles = CBool(CheckVisualStyles.Value = vbChecked)
+.DoubleBuffer = CBool(CheckDoubleBuffer.Value = vbChecked)
+.MousePointer = ComboMousePointer.ItemData(ComboMousePointer.ListIndex)
+.ImageList = ComboImageList.List(ComboImageList.ListIndex)
+.Orientation = ComboOrientation.ItemData(ComboOrientation.ListIndex)
+.MouseTrack = CBool(CheckMouseTrack.Value = vbChecked)
+.BandBorders = CBool(CheckBandBorders.Value = vbChecked)
+.FixedOrder = CBool(CheckFixedOrder.Value = vbChecked)
+.VariantHeight = CBool(CheckVariantHeight.Value = vbChecked)
+.DblClickToggle = CBool(CheckDblClickToggle.Value = vbChecked)
+.VerticalGripper = CBool(CheckVerticalGripper.Value = vbChecked)
+.ShowTips = CBool(CheckShowTips.Value = vbChecked)
+End With
+Call PropertyPage_SelectionChanged
+End Sub
+
+Private Sub PropertyPage_SelectionChanged()
+Dim i As Long
+FreezeChanged = True
+With PropertyPage.SelectedControls(0)
+CheckEnabled.Value = IIf(.Enabled = True, vbChecked, vbUnchecked)
+CheckVisualStyles.Value = IIf(.VisualStyles = True, vbChecked, vbUnchecked)
+CheckDoubleBuffer.Value = IIf(.DoubleBuffer = True, vbChecked, vbUnchecked)
+For i = 0 To ComboMousePointer.ListCount - 1
+    If ComboMousePointer.ItemData(i) = .MousePointer Then
+        ComboMousePointer.ListIndex = i
+        Exit For
+    End If
+Next i
+Dim ControlEnum As Object
+If ImageListEnumerated = False Then
+    For Each ControlEnum In .ControlsEnum
+        If TypeName(ControlEnum) = "ImageList" Then
+            ComboImageList.AddItem ProperControlName(ControlEnum)
+        End If
+    Next ControlEnum
+    ImageListEnumerated = True
+End If
+For i = 0 To ComboImageList.ListCount - 1
+    If ComboImageList.List(i) = .ImageList Then
+        ComboImageList.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboOrientation.ListCount - 1
+    If ComboOrientation.ItemData(i) = .Orientation Then
+        ComboOrientation.ListIndex = i
+        Exit For
+    End If
+Next i
+CheckMouseTrack.Value = IIf(.MouseTrack = True, vbChecked, vbUnchecked)
+CheckBandBorders.Value = IIf(.BandBorders = True, vbChecked, vbUnchecked)
+CheckFixedOrder.Value = IIf(.FixedOrder = True, vbChecked, vbUnchecked)
+CheckVariantHeight.Value = IIf(.VariantHeight = True, vbChecked, vbUnchecked)
+CheckDblClickToggle.Value = IIf(.DblClickToggle = True, vbChecked, vbUnchecked)
+CheckVerticalGripper.Value = IIf(.VerticalGripper = True, vbChecked, vbUnchecked)
+CheckShowTips.Value = IIf(.ShowTips = True, vbChecked, vbUnchecked)
+End With
+FreezeChanged = False
+End Sub
+
+Private Sub CheckEnabled_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckVisualStyles_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckDoubleBuffer_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboMousePointer_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboImageList_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboOrientation_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckMouseTrack_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckBandBorders_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckFixedOrder_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckVariantHeight_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckDblClickToggle_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckVerticalGripper_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckShowTips_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub

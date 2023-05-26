@@ -1,7 +1,7 @@
 
 :: Project builder by Alex Dragokas
 
-:: This is visual Basic 6 project builder                               [ ver. 1.11 ]
+:: This is visual Basic 6 project builder                               [ ver. 1.12 ]
 :: which provide backup system with local version management
 
 :: Script contains third party software:
@@ -50,7 +50,7 @@ set AppName=
 set NoUPX=true
 
 :: List of file extensions and additional folders in project's directory to include in zip-backup
-set arcList=*.vbp *.vbw *.rc *.res *.exe *.frm *.frx *.lvw *.cmd *.csi *.csv *.txt *.log *.PDM *.SCC *.lng *.pdb *.tlb *.ocx *.dll *.md *.gitignore *.bak *.odl *.idl Tools Ico
+set arcList=*.vbp *.vbw *.rc *.res *.exe *.frm *.frx *.lvw *.cmd *.csi *.csv *.txt *.log *.PDM *.SCC *.lng *.pdb *.tlb *.ocx *.dll *.md *.gitignore *.bak *.odl *.idl Tools Ico apps
 
 :: Folder for backup of archive
 set ArcFolder=Archive
@@ -67,7 +67,7 @@ set Manifest=
 ::.\ManifestByTheTrick\manifest_asInvoker.txt
 
 :: Location of script(s) for adding digital signature
-set SignScript_1=h:\_AVZ\Наши разработки\_Dragokas\DigiSign\SignME.cmd
+set SignScript_1=h:\_AVZ\Наши разработки\_Dragokas\DigiSign\SignME_self.cmd
 set SignScript_2=c:\DigiSign\SignME.cmd
 
 :: Version Patcher EXE (support for 'build' field of PE EXE version)
@@ -211,7 +211,7 @@ call :BuildCustomProject "tools\TSAwarePatch\TSAware_c.vbp" "tools\TSAwarePatch\
 call :BuildCustomProject "tools\Align4byte\Project1.vbp" "tools\Align4byte\Align4byte.exe"
 call :BuildCustomProject "tools\ChangeIcon\Project1.vbp" "tools\ChangeIcon\IC.exe"
 call :BuildCustomProject "tools\RegTLib\Project1.vbp" "tools\RegTLib\RegTLib.exe"
-call :BuildCustomProject "tools\RemoveSign\Project1.vbp" "tools\RemoveSign\RemSign.exe"
+::call :BuildCustomProject "tools\RemoveSign\Project1.vbp" "tools\RemoveSign\RemSign.exe"
 
 :: updating resources (it allows prepare and concatenate several resource files: currently for HJT it is a manifest file and whitelists + language files (in future))
 call "%~dp0_1_Update_Resource.cmd"
@@ -224,8 +224,9 @@ set "arc=%ArcFolder%\%ProjTitle%_%newVersion%"
 ::::::::::::::::::::::::::::::
 
 for %%a in ("%AppName%") do set "ExeName=%%~na"
+
 :: !!! required for v14.14 linker !!!
-del %ExeName%.pdb 2>NUL
+del "%ExeName%.pdb" 2>NUL
 
 call :SetupCompilerAdmin true
 
@@ -292,23 +293,40 @@ if %errorlevel%==0 (
 :: manifest
 ::"%ManifestEXE%" "%cd%\%AppName%" "%Manifest%" -silent
 
+:: Pseudo-polymorph
+copy /y "%cd%\%AppName%" "HJT_poly.pif"
+:: patch polymorph
+::call "%cd%\..\HiJackThis_private\tools\Polymorph\poly_patcher.exe" "%cd%\HJT_poly.pif"
+
+
+::@echo on
+
+:: Apps dependency
+echo.
+md "%cd%\apps\" 2>NUL
+copy /y "%cd%\%ExeName%.pdb" "%cd%\apps\"
+copy /y "%cd%\tools\VBCCR\ActiveX Control Version\Bin\VBCCR17.OCX" "%cd%\apps\"
+:: copy /y api.exe ... "%cd%\apps\"
+:: copy /y "%cd%\tools\ABR\abr.exe" "%cd%\apps\"
+:: copy /y "%cd%\tools\ABR\restore.exe" "%cd%\apps\"
+:: copy /y "%cd%\tools\ABR\restore_x64.exe" "%cd%\apps\"
+:: copy /y "%cd%\tools\PCRE2\pcre2-16.dll" "%cd%\apps\"
+
 :: Adding digital signature
 ping -n 2 127.1 >NUL
 set "signed="
 if exist "%SignScript_1%" (
-  call "%SignScript_1%" "%cd%\%AppName%" /silent
+  call "%SignScript_1%" "%cd%\%AppName%" "" "https://github.com/dragokas/hijackthis"
   set signed=true
 )
 if not defined signed if exist "%SignScript_2%" call "%SignScript_2%" "%cd%\%AppName%" /silent
-
-For /F "delims=" %%a in ("%AppName%") do set "AppTitle=%%~na"
 
 :: Checking debug. symbols for matching the image
 if /i "%CheckPDB%"=="true" (
   echo.
   echo Checking debug. symbols ...
-  "%CheckPDB_tool%" -c "%cd%\%AppTitle%.exe" "%cd%\%AppTitle%.pdb" | find /i "Result: Matched" || (
-    "%CheckPDB_tool%" -c "%cd%\%AppTitle%.exe" "%cd%\%AppTitle%.pdb"
+  "%CheckPDB_tool%" -c "%cd%\%ExeName%.exe" "%cd%\%ExeName%.pdb" | find /i "Result: Matched" || (
+    "%CheckPDB_tool%" -c "%cd%\%ExeName%.exe" "%cd%\%ExeName%.pdb"
     echo.
     pause
     echo.
@@ -358,43 +376,41 @@ Tools\7zip\7za.exe a -mx9 -y -o"%ArcFolder%" "%ArcFolder%\%ProjTitle%_%newVersio
 :: For server uploading
 
 :: Delete old
-if exist "%AppTitle%.zip" del /f "%AppTitle%.zip"
+if exist "%ExeName%.zip" del /f "%ExeName%.zip"
 :: Pack
-Tools\7zip\7za.exe a -mx9 -y -o"%cd%" "%AppTitle%.zip" "%cd%\%AppTitle%.exe"
+Tools\7zip\7za.exe a -mx9 -y -o"%cd%" "%ExeName%.zip" "%cd%\%ExeName%.exe" "%cd%\apps"
 :: Test
-Tools\7zip\7za.exe t "%cd%\%AppTitle%.zip"
+Tools\7zip\7za.exe t "%cd%\%ExeName%.zip"
 :: If there was errors
 if %errorlevel% neq 0 (pause & exit /B)
 
 :: For debug purposes
-copy /y "%cd%\%AppTitle%.exe" "%AppTitle%_dbg.exe"
-Tools\7zip\7za.exe a -mx9 -y -o"%cd%" "%AppTitle%_dbg.zip" "%AppTitle%_dbg.exe"
-copy /y "%AppTitle%_dbg.zip" "%AppTitle%_dbg_test.zip"
+copy /y "%cd%\%ExeName%.exe" "%ExeName%_dbg.exe"
+Tools\7zip\7za.exe a -mx9 -y -o"%cd%" "%ExeName%_dbg.zip" "%ExeName%_dbg.exe" "%cd%\apps"
+copy /y "%ExeName%_dbg.zip" "%ExeName%_dbg_test.zip"
 
-:: Pseudo-polymorph
-copy /y "%cd%\%AppTitle%.exe" "HJT_poly.pif"
 :: remove signature
-Tools\RemoveSign\RemSign.exe "%cd%\HJT_poly.pif"
+::Tools\RemoveSign\RemSign.exe "%cd%\HJT_poly.pif"
 :: pack
-Tools\7zip\7za.exe a -mx9 -y -o"%cd%" "%AppTitle%_poly.zip" "HJT_poly.pif"
+Tools\7zip\7za.exe a -mx9 -y -o"%cd%" "%ExeName%_poly.zip" "HJT_poly.pif" "%cd%\apps"
 
 :: For Vir Labs
-copy /y "%cd%\%AppTitle%.exe" %AppTitle%.ex_
+copy /y "%cd%\%ExeName%.exe" %ExeName%.ex_
 
-if exist "_%AppTitle%_pass_infected.zip" del /f "_%AppTitle%_pass_infected.zip"
-if exist "_%AppTitle%_pass_virus.zip" del /f "_%AppTitle%_pass_virus.zip"
-if exist "_%AppTitle%_pass_clean.zip" del /f "_%AppTitle%_pass_clean.zip"
+if exist "_%ExeName%_pass_infected.zip" del /f "_%ExeName%_pass_infected.zip"
+if exist "_%ExeName%_pass_virus.zip" del /f "_%ExeName%_pass_virus.zip"
+if exist "_%ExeName%_pass_clean.zip" del /f "_%ExeName%_pass_clean.zip"
 :: Pack
-Tools\7zip\7za.exe a -mx1 -pinfected -y -o"%cd%" "_%AppTitle%_pass_infected.zip" "%cd%\%AppTitle%.ex_"
-Tools\7zip\7za.exe a -mx1 -pvirus -y -o"%cd%" "_%AppTitle%_pass_virus.zip" "%cd%\%AppTitle%.ex_"
-Tools\7zip\7za.exe a -mx1 -pclean -y -o"%cd%" "_%AppTitle%_pass_clean.zip" "%cd%\%AppTitle%.ex_"
-del "%cd%\%AppTitle%.ex_"
+Tools\7zip\7za.exe a -mx1 -pinfected -y -o"%cd%" "_%ExeName%_pass_infected.zip" "%cd%\%ExeName%.ex_"
+Tools\7zip\7za.exe a -mx1 -pvirus -y -o"%cd%" "_%ExeName%_pass_virus.zip" "%cd%\%ExeName%.ex_"
+Tools\7zip\7za.exe a -mx1 -pclean -y -o"%cd%" "_%ExeName%_pass_clean.zip" "%cd%\%ExeName%.ex_"
+del "%cd%\%ExeName%.ex_"
 :: Test
-Tools\7zip\7za.exe t -pinfected "%cd%\_%AppTitle%_pass_infected.zip"
+Tools\7zip\7za.exe t -pinfected "%cd%\_%ExeName%_pass_infected.zip"
 if %errorlevel% neq 0 (pause & exit /B)
-Tools\7zip\7za.exe t -pvirus "%cd%\_%AppTitle%_pass_virus.zip"
+Tools\7zip\7za.exe t -pvirus "%cd%\_%ExeName%_pass_virus.zip"
 if %errorlevel% neq 0 (pause & exit /B)
-Tools\7zip\7za.exe t -pclean "%cd%\_%AppTitle%_pass_clean.zip"
+Tools\7zip\7za.exe t -pclean "%cd%\_%ExeName%_pass_clean.zip"
 if %errorlevel% neq 0 (pause & exit /B)
 
 :skipBackup

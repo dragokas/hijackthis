@@ -5,10 +5,13 @@ Option Explicit
 
 '
 ' Authenticode digital signature verifier / Driver's WHQL signature verifier
-' revision 2.19
+' revision 2.20
 '
 ' Copyrights: (ñ) Polshyn Stanislav Viktorovich aka Alex Dragokas
 '
+
+' 20.05.2023
+' Added SV_DisableLazyCatCheck flag - to disable UseSimpleCatCheck, giving ability to fill all fields of SignResult_TYPE reliably
 
 ' 29.03.2023
 ' Added SV_DisableOutdatedAlgo flag - consider MD4 and MD2 hashing algorithms as invalid
@@ -126,6 +129,9 @@ Public Enum FLAGS_SignVerify
     SV_NoCatPrediction = &H8000&        ' do not use catalogue path prediction
     SV_EnableHashPrecache = &H10000     ' read in advance all tags from security catalogues (it can win speed when you scan a huge number of files)
     SV_DisableOutdatedAlgo = &H20000    ' consider MD4 and MD2 hashing algo as invalid
+    SV_DisableLazyCatCheck = &H40000    ' if enabled, always gives reliable info in all fields of SignResult_TYPE struct,
+                                        ' otherwise: info can be retrieved from the cache if the file located at the same security catalogue
+                                        ' ignoring WinVerifyTrust and other checks for speed up purposes
 End Enum
 
 Private Type GUID
@@ -550,6 +556,7 @@ Private Const CERT_E_ROLE                   As Long = &H800B0103
 Private Const PERSIST_E_SIZEDEFINITE        As Long = &H800B0009
 Private Const DIGSIG_E_CRYPTO               As Long = &H800B0008
 Private Const NTE_BAD_ALGID                 As Long = &H80090008
+Private Const CRYPT_E_FILE_ERROR            As Long = &H80092003
 
 ' OID
 Private Const szOID_CERT_STRONG_SIGN_OS_1   As String = "1.3.6.1.4.1.311.72.1.1"
@@ -851,9 +858,10 @@ Public Function SignVerify( _
     
     If Flags And SV_SelfTest Then Dbg "hFile: " & hFile
     
-    If (INVALID_HANDLE_VALUE = hFile) Then GoTo Finalize
     'redir. ON
     ToggleWow64FSRedirection bOldRedir
+    
+    If (INVALID_HANDLE_VALUE = hFile) Then GoTo Finalize
     
     CatalogInfo.cbStruct = Len(CatalogInfo)
     WintrustFile.cbStruct = Len(WintrustFile)
@@ -966,12 +974,14 @@ Public Function SignVerify( _
     If Not CBool(Flags And SV_DisableCatalogVerify) Then
         ' Simple checking tag by cache
         #If UseSimpleCatCheck Then
-            If oCatalogTag.Exists(sMemberTag) Then
-                SignResult = aCatCache(oCatalogTag(sMemberTag))
-                SignResult.HashFileCode = sMemberTag    'actualize
-                SignResult.FilePathVerified = sFilePath 'actualize
-                If Flags And SV_SelfTest Then Dbg "Found in catalogue cache (!)"
-                GoTo Finalize
+            If Not CBool(Flags And SV_DisableLazyCatCheck) Then
+                If oCatalogTag.Exists(sMemberTag) Then
+                    SignResult = aCatCache(oCatalogTag(sMemberTag))
+                    SignResult.HashFileCode = sMemberTag    'actualize
+                    SignResult.FilePathVerified = sFilePath 'actualize
+                    If Flags And SV_SelfTest Then Dbg "Found in catalogue cache (!)"
+                    GoTo Finalize
+                End If
             End If
         #End If
         
@@ -1034,7 +1044,7 @@ SkipCatCheck:
     With WintrustData
         'fill in common values
         
-        .cbStruct = IIf(OSver.MajorMinor <= 6.1, 48, Len(WintrustData))
+        .cbStruct = IIf(OSver.MajorMinor <= 6.1, Len(WintrustData) - 4, Len(WintrustData))
         .dwUIChoice = WTD_UI_NONE
         .dwStateAction = WTD_STATEACTION_VERIFY
         
@@ -1268,6 +1278,19 @@ SkipCatCheck:
             End If
         End If
     Else
+        'Not a driver
+        
+        'TODO: // Check difference in speed
+        
+        'Can be omitted (both)
+        'WintrustCatalog.hMemberFile = 0
+        'WintrustCatalog.pcwszMemberFilePath = 0
+        
+        'Can omit tag or hash:
+        'WintrustCatalog.pcwszMemberTag = 0
+        'WintrustCatalog.cbCalculatedFileHash = 0
+        'WintrustCatalog.pbCalculatedFileHash = 0
+        
         ReturnVal = WinVerifyTrust(INVALID_HANDLE_VALUE, ActionGuid, VarPtr(WintrustData))
         LastActionGuid = ActionGuid
     End If
@@ -1576,7 +1599,7 @@ SkipCatCheck:
     If bDebugMode Or bDebugToFile Then tim(7).Start 'CryptCATEnumerateMember
     
     'Enumerating all tags in security catalog and save them in cache (if validation was successful)
-    #If UseSimpleCatCheck Then
+    #If UseSimpleCatCheck And Not CBool(Flags And SV_DisableLazyCatCheck) Then
         
         If 0 <> Len(SignResult.CatalogPath) And SignResult.isLegit Then
             
@@ -1648,11 +1671,11 @@ Finalize:
     
     ' closing the file
     If hFile <> 0 Then
-        CloseHandle hFile: hFile = -1
+        CloseHandle hFile: hFile = INVALID_HANDLE_VALUE
     End If
     
     'revert file system redirector to its initial state
-    ToggleWow64FSRedirection bOldRedir
+    'ToggleWow64FSRedirection bOldRedir
     
     If bDebugMode Or bDebugToFile Then
         'freeze all timers

@@ -1,0 +1,619 @@
+VERSION 5.00
+Begin VB.PropertyPage PPProgressBarGeneral 
+   Caption         =   "General"
+   ClientHeight    =   4140
+   ClientLeft      =   0
+   ClientTop       =   0
+   ClientWidth     =   5925
+   LockControls    =   -1  'True
+   PaletteMode     =   0  'Halftone
+   ScaleHeight     =   4140
+   ScaleWidth      =   5925
+   Begin VBCCR17.TextBoxW TextText 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   21
+      Top             =   3720
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VB.CheckBox CheckShowInTaskBar 
+      Caption         =   "ShowInTaskBar"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   26
+      Top             =   1920
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckMouseTrack 
+      Caption         =   "MouseTrack"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   22
+      Top             =   480
+      Width           =   1620
+   End
+   Begin VBCCR17.TextBoxW TextMarqueeSpeed 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   19
+      Top             =   3360
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VBCCR17.TextBoxW TextStep 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   17
+      Top             =   3000
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VBCCR17.TextBoxW TextValue 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   9
+      Top             =   1560
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VB.CheckBox CheckSmoothReverse 
+      Caption         =   "SmoothReverse"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   25
+      Top             =   1560
+      Width           =   1620
+   End
+   Begin VB.ComboBox ComboMousePointer 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   3
+      Top             =   480
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboScrolling 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   13
+      Top             =   2280
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboState 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   15
+      Top             =   2640
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboOrientation 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   11
+      Top             =   1920
+      Width           =   2235
+   End
+   Begin VBCCR17.TextBoxW TextMax 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   7
+      Top             =   1200
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VBCCR17.TextBoxW TextMin 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   5
+      Top             =   840
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VB.CheckBox CheckMarqueeAnimation 
+      Caption         =   "MarqueeAnimation"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   24
+      Top             =   1200
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckStepAutoReset 
+      Caption         =   "StepAutoReset"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   23
+      Top             =   840
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckEnabled 
+      Caption         =   "Enabled"
+      Height          =   285
+      Left            =   120
+      TabIndex        =   0
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckVisualStyles 
+      Caption         =   "VisualStyles"
+      Height          =   285
+      Left            =   1800
+      TabIndex        =   1
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.Label LabelText 
+      Caption         =   "Text:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   20
+      Top             =   3720
+      Width           =   1620
+   End
+   Begin VB.Label LabelMarqueeSpeed 
+      Caption         =   "MarqueeSpeed:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   18
+      Top             =   3360
+      Width           =   1620
+   End
+   Begin VB.Label LabelStep 
+      Caption         =   "Step:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   16
+      Top             =   3000
+      Width           =   1620
+   End
+   Begin VB.Label LabelValue 
+      Caption         =   "Value:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   8
+      Top             =   1560
+      Width           =   1620
+   End
+   Begin VB.Label LabelMousePointer 
+      Caption         =   "MousePointer:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   2
+      Top             =   480
+      Width           =   1620
+   End
+   Begin VB.Label LabelState 
+      Caption         =   "State:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   14
+      Top             =   2640
+      Width           =   1620
+   End
+   Begin VB.Label LabelScrolling 
+      Caption         =   "Scrolling:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   12
+      Top             =   2280
+      Width           =   1620
+   End
+   Begin VB.Label LabeOrientation 
+      Caption         =   "Orientation:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   10
+      Top             =   1920
+      Width           =   1620
+   End
+   Begin VB.Label LabelMax 
+      Caption         =   "Max:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   6
+      Top             =   1200
+      Width           =   1620
+   End
+   Begin VB.Label LabelMin 
+      Caption         =   "Min:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   4
+      Top             =   840
+      Width           =   1620
+   End
+End
+Attribute VB_Name = "PPProgressBarGeneral"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = True
+Option Explicit
+Private FreezeChanged As Boolean
+
+Private Sub PropertyPage_Initialize()
+Call ComCtlsShowAllUIStates(PropertyPage.hWnd)
+Call ComCtlsPPInitComboMousePointer(ComboMousePointer)
+With ComboOrientation
+.AddItem PrbOrientationHorizontal & " - Horizontal"
+.ItemData(.NewIndex) = PrbOrientationHorizontal
+.AddItem PrbOrientationVertical & " - Vertical"
+.ItemData(.NewIndex) = PrbOrientationVertical
+End With
+With ComboScrolling
+.AddItem PrbScrollingStandard & " - Standard"
+.ItemData(.NewIndex) = PrbScrollingStandard
+.AddItem PrbScrollingSmooth & " - Smooth"
+.ItemData(.NewIndex) = PrbScrollingSmooth
+.AddItem PrbScrollingMarquee & " - Marquee"
+.ItemData(.NewIndex) = PrbScrollingMarquee
+End With
+With ComboState
+.AddItem PrbStateNormal & " - Normal"
+.ItemData(.NewIndex) = PrbStateNormal
+.AddItem PrbStateError & " - Error"
+.ItemData(.NewIndex) = PrbStateError
+.AddItem PrbStatePaused & " - Paused"
+.ItemData(.NewIndex) = PrbStatePaused
+End With
+End Sub
+
+Private Sub PropertyPage_ApplyChanges()
+On Error Resume Next
+PropertyPage.ValidateControls
+If Err.Number = 380 Then Exit Sub
+On Error GoTo 0
+With PropertyPage.SelectedControls(0)
+.Enabled = CBool(CheckEnabled.Value = vbChecked)
+.VisualStyles = CBool(CheckVisualStyles.Value = vbChecked)
+.MousePointer = ComboMousePointer.ItemData(ComboMousePointer.ListIndex)
+.Min = CLng(TextMin.Text)
+.Max = CLng(TextMax.Text)
+.Value = CLng(TextValue.Text)
+.Orientation = ComboOrientation.ItemData(ComboOrientation.ListIndex)
+.Scrolling = ComboScrolling.ItemData(ComboScrolling.ListIndex)
+.State = ComboState.ItemData(ComboState.ListIndex)
+.Step = CLng(TextStep.Text)
+.MarqueeSpeed = CLng(TextMarqueeSpeed.Text)
+.Text = TextText.Text
+.MouseTrack = CBool(CheckMouseTrack.Value = vbChecked)
+.StepAutoReset = CBool(CheckStepAutoReset.Value = vbChecked)
+.MarqueeAnimation = CBool(CheckMarqueeAnimation.Value = vbChecked)
+.SmoothReverse = CBool(CheckSmoothReverse.Value = vbChecked)
+.ShowInTaskBar = CBool(CheckShowInTaskBar.Value = vbChecked)
+End With
+Call PropertyPage_SelectionChanged
+End Sub
+
+Private Sub PropertyPage_SelectionChanged()
+Dim i As Long
+FreezeChanged = True
+With PropertyPage.SelectedControls(0)
+CheckEnabled.Value = IIf(.Enabled = True, vbChecked, vbUnchecked)
+CheckVisualStyles.Value = IIf(.VisualStyles = True, vbChecked, vbUnchecked)
+For i = 0 To ComboMousePointer.ListCount - 1
+    If ComboMousePointer.ItemData(i) = .MousePointer Then
+        ComboMousePointer.ListIndex = i
+        Exit For
+    End If
+Next i
+TextMin.Text = CStr(.Min)
+TextMax.Text = CStr(.Max)
+TextValue.Text = CStr(.Value)
+For i = 0 To ComboOrientation.ListCount - 1
+    If ComboOrientation.ItemData(i) = .Orientation Then
+        ComboOrientation.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboScrolling.ListCount - 1
+    If ComboScrolling.ItemData(i) = .Scrolling Then
+        ComboScrolling.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboState.ListCount - 1
+    If ComboState.ItemData(i) = .State Then
+        ComboState.ListIndex = i
+        Exit For
+    End If
+Next i
+TextStep.Text = CStr(.Step)
+TextMarqueeSpeed.Text = CStr(.MarqueeSpeed)
+TextText.Text = .Text
+CheckMouseTrack.Value = IIf(.MouseTrack = True, vbChecked, vbUnchecked)
+CheckStepAutoReset.Value = IIf(.StepAutoReset = True, vbChecked, vbUnchecked)
+CheckMarqueeAnimation.Value = IIf(.MarqueeAnimation = True, vbChecked, vbUnchecked)
+CheckSmoothReverse.Value = IIf(.SmoothReverse = True, vbChecked, vbUnchecked)
+CheckShowInTaskBar.Value = IIf(.ShowInTaskBar = True, vbChecked, vbUnchecked)
+End With
+FreezeChanged = False
+End Sub
+
+Private Sub CheckEnabled_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckVisualStyles_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboMousePointer_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextMin_GotFocus()
+If Not TextMin.SelStart = 0 Then Exit Sub
+TextMin.SelLength = Len(TextMin.Text)
+End Sub
+
+Private Sub TextMin_LostFocus()
+TextMin.SelStart = 0
+End Sub
+
+Private Sub TextMin_Change()
+If FreezeChanged = True Then Exit Sub
+If TextMin.Text = vbNullString Then
+    TextMin.Text = PropertyPage.SelectedControls(0).Min
+    TextMin.SelStart = 0
+    TextMin.SelLength = Len(TextMin.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextMin_Validate(Cancel As Boolean)
+If Not IsNumeric(TextMin.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextMin.Text = PropertyPage.SelectedControls(0).Min
+    TextMin.SetFocus
+    Cancel = True
+Else
+    Dim LngValue As Long
+    On Error Resume Next
+    LngValue = CLng(TextMin.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If Cancel = False Then
+        TextMin.Text = LngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextMin.Text = PropertyPage.SelectedControls(0).Min
+        TextMin.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextMax_GotFocus()
+If Not TextMax.SelStart = 0 Then Exit Sub
+TextMax.SelLength = Len(TextMax.Text)
+End Sub
+
+Private Sub TextMax_LostFocus()
+TextMax.SelStart = 0
+End Sub
+
+Private Sub TextMax_Change()
+If FreezeChanged = True Then Exit Sub
+If TextMax.Text = vbNullString Then
+    TextMax.Text = PropertyPage.SelectedControls(0).Max
+    TextMax.SelStart = 0
+    TextMax.SelLength = Len(TextMax.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextMax_Validate(Cancel As Boolean)
+If Not IsNumeric(TextMax.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextMax.Text = PropertyPage.SelectedControls(0).Max
+    TextMax.SetFocus
+    Cancel = True
+Else
+    Dim LngValue As Long
+    On Error Resume Next
+    LngValue = CLng(TextMax.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If Cancel = False Then
+        TextMax.Text = LngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextMax.Text = PropertyPage.SelectedControls(0).Max
+        TextMax.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextValue_GotFocus()
+If Not TextValue.SelStart = 0 Then Exit Sub
+TextValue.SelLength = Len(TextValue.Text)
+End Sub
+
+Private Sub TextValue_LostFocus()
+TextValue.SelStart = 0
+End Sub
+
+Private Sub TextValue_Change()
+If FreezeChanged = True Then Exit Sub
+If TextValue.Text = vbNullString Then
+    TextValue.Text = PropertyPage.SelectedControls(0).Value
+    TextValue.SelStart = 0
+    TextValue.SelLength = Len(TextValue.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextValue_Validate(Cancel As Boolean)
+If Not IsNumeric(TextValue.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextValue.Text = PropertyPage.SelectedControls(0).Value
+    TextValue.SetFocus
+    Cancel = True
+Else
+    Dim LngValue As Long
+    On Error Resume Next
+    LngValue = CLng(TextValue.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If Cancel = False Then
+        TextValue.Text = LngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextValue.Text = PropertyPage.SelectedControls(0).Value
+        TextValue.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub ComboOrientation_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboScrolling_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboState_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextStep_GotFocus()
+If Not TextStep.SelStart = 0 Then Exit Sub
+TextStep.SelLength = Len(TextStep.Text)
+End Sub
+
+Private Sub TextStep_LostFocus()
+TextStep.SelStart = 0
+End Sub
+
+Private Sub TextStep_Change()
+If FreezeChanged = True Then Exit Sub
+If TextStep.Text = vbNullString Then
+    TextStep.Text = PropertyPage.SelectedControls(0).Step
+    TextStep.SelStart = 0
+    TextStep.SelLength = Len(TextStep.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextStep_Validate(Cancel As Boolean)
+If Not IsNumeric(TextStep.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextStep.Text = PropertyPage.SelectedControls(0).Step
+    TextStep.SetFocus
+    Cancel = True
+Else
+    Dim LngValue As Long
+    On Error Resume Next
+    LngValue = CLng(TextStep.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If Cancel = False Then
+        TextStep.Text = LngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextStep.Text = PropertyPage.SelectedControls(0).Step
+        TextStep.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextMarqueeSpeed_GotFocus()
+If Not TextMarqueeSpeed.SelStart = 0 Then Exit Sub
+TextMarqueeSpeed.SelLength = Len(TextMarqueeSpeed.Text)
+End Sub
+
+Private Sub TextMarqueeSpeed_LostFocus()
+TextMarqueeSpeed.SelStart = 0
+End Sub
+
+Private Sub TextMarqueeSpeed_Change()
+If FreezeChanged = True Then Exit Sub
+If TextMarqueeSpeed.Text = vbNullString Then
+    TextMarqueeSpeed.Text = PropertyPage.SelectedControls(0).MarqueeSpeed
+    TextMarqueeSpeed.SelStart = 0
+    TextMarqueeSpeed.SelLength = Len(TextMarqueeSpeed.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextMarqueeSpeed_KeyPress(KeyAscii As Integer)
+Call ComCtlsPPKeyPressOnlyNumeric(KeyAscii)
+End Sub
+
+Private Sub TextMarqueeSpeed_Validate(Cancel As Boolean)
+If Not IsNumeric(TextMarqueeSpeed.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextMarqueeSpeed.Text = PropertyPage.SelectedControls(0).MarqueeSpeed
+    TextMarqueeSpeed.SetFocus
+    Cancel = True
+Else
+    Dim LngValue As Long
+    On Error Resume Next
+    LngValue = CLng(TextMarqueeSpeed.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If LngValue <= 0 Then Cancel = True
+    If Cancel = False Then
+        TextMarqueeSpeed.Text = LngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextMarqueeSpeed.Text = PropertyPage.SelectedControls(0).MarqueeSpeed
+        TextMarqueeSpeed.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextText_GotFocus()
+If Not TextText.SelStart = 0 Then Exit Sub
+TextText.SelLength = Len(TextText.Text)
+End Sub
+
+Private Sub TextText_LostFocus()
+TextText.SelStart = 0
+End Sub
+
+Private Sub TextText_Change()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckMouseTrack_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckStepAutoReset_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckMarqueeAnimation_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckSmoothReverse_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckShowInTaskBar_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub

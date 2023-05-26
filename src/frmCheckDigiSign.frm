@@ -387,8 +387,10 @@ Private Sub cmdGo_Click()
     
     Set sb = New clsStringBuilder
     
+    AddFlags = SV_DisableLazyCatCheck
+    
     If oDictFiles.Count > 100 Then
-        AddFlags = SV_EnableHashPrecache
+        AddFlags = AddFlags Or SV_EnableHashPrecache
         
         DoEvents
         'Precaching security catalogues ...
@@ -399,6 +401,9 @@ Private Sub cmdGo_Click()
         SignVerify vbNullString, SV_EnableHashPrecache, SignResult
         lblStatus.ForeColor = vbYellow
     End If
+    
+    DoEvents
+    SetForegroundWindow Me.hwnd
     
     lblStatus.Caption = vbNullString
     lblStatus.Visible = True
@@ -581,9 +586,9 @@ Private Sub cmdGo_Click()
         sb.Append ";" & "Valid From"
         sb.Append ";" & "Valid Until"
         
-        sLogLine = sb.ToString & vbCrLf & sLogLine
+        sLogLine = sb.ToString & sLogLine
     Else
-        sLogLine = ChrW$(-257) & "Logfile of Digital Signature Checker (HJT v." & AppVerString & ")" & vbCrLf & vbCrLf & _
+        sLogLine = ChrW$(-257) & "Logfile of Digital Signature Checker (HJT+ v." & AppVerString & ")" & vbCrLf & vbCrLf & _
             MakeLogHeader() & vbCrLf & _
             "Is legitimate | FileName | Is Microsoft | Is WFP (Windows Protected File / SFC)" & vbCrLf & _
             "------------------------------------------------" & vbCrLf & _
@@ -606,13 +611,14 @@ Private Sub cmdGo_Click()
     txtPaths.Enabled = True
     cmdExit.Caption = Translate(1858)
     
+ReportRepeat:
     If OpenW(ReportPath, FOR_OVERWRITE_CREATE, hFile, g_FileBackupFlag) Then
         PutW hFile, 1&, VarPtr(bData(0)), UBound(bData) + 1, doAppend:=True
         CloseW hFile, True
     Else
         If hFile <= 0 Then
-            'Cannot open report file. Write access is restricted by another program.
-            MsgBoxW Translate(1869) & vbCrLf & vbCrLf & ReportPath
+            'Cannot write report file. Write access is restricted by another program. Repeat?
+            If MsgBoxW(Translate(1869) & vbCrLf & vbCrLf & ReportPath, vbYesNo Or vbExclamation) = vbYes Then GoTo ReportRepeat
             Exit Sub
         End If
     End If

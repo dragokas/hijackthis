@@ -1,0 +1,276 @@
+VERSION 5.00
+Begin VB.PropertyPage PPLinkLabelGeneral 
+   Caption         =   "General"
+   ClientHeight    =   3450
+   ClientLeft      =   0
+   ClientTop       =   0
+   ClientWidth     =   5925
+   LockControls    =   -1  'True
+   PaletteMode     =   0  'Halftone
+   ScaleHeight     =   3450
+   ScaleWidth      =   5925
+   Begin VB.CheckBox CheckMouseTrack 
+      Caption         =   "MouseTrack"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   8
+      Top             =   480
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckShowTips 
+      Caption         =   "ShowTips"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   14
+      Top             =   2640
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckTransparent 
+      Caption         =   "Transparent"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   13
+      Top             =   2280
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckUseMnemonic 
+      Caption         =   "UseMnemonic"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   12
+      Top             =   1920
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckUnderlineCold 
+      Caption         =   "UnderlineCold"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   11
+      Top             =   1560
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckUnderlineHot 
+      Caption         =   "UnderlineHot"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   10
+      Top             =   1200
+      Width           =   1620
+   End
+   Begin VB.ComboBox ComboMousePointer 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   3
+      Top             =   480
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboAlignment 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   7
+      Top             =   1560
+      Width           =   2235
+   End
+   Begin VB.TextBox TextCaption 
+      Height          =   675
+      Left            =   1800
+      MultiLine       =   -1  'True
+      ScrollBars      =   2  'Vertical
+      TabIndex        =   5
+      Top             =   840
+      Width           =   2235
+   End
+   Begin VB.CheckBox CheckHotTracking 
+      Caption         =   "HotTracking"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   9
+      Top             =   840
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckEnabled 
+      Caption         =   "Enabled"
+      Height          =   285
+      Left            =   120
+      TabIndex        =   0
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckVisualStyles 
+      Caption         =   "VisualStyles"
+      Height          =   285
+      Left            =   1800
+      TabIndex        =   1
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.Label LabelMousePointer 
+      Caption         =   "MousePointer:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   2
+      Top             =   480
+      Width           =   1620
+   End
+   Begin VB.Label LabelAlignment 
+      Caption         =   "Alignment:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   6
+      Top             =   1560
+      Width           =   1620
+   End
+   Begin VB.Label LabelCaption 
+      Caption         =   "Caption:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   4
+      Top             =   840
+      Width           =   1620
+   End
+End
+Attribute VB_Name = "PPLinkLabelGeneral"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Option Explicit
+Private FreezeChanged As Boolean
+
+Private Sub PropertyPage_Initialize()
+Call ComCtlsShowAllUIStates(PropertyPage.hWnd)
+Call ComCtlsPPInitComboMousePointer(ComboMousePointer)
+With ComboAlignment
+.AddItem CCLeftRightAlignmentLeft & " - Left"
+.ItemData(.NewIndex) = CCLeftRightAlignmentLeft
+.AddItem CCLeftRightAlignmentRight & " - Right"
+.ItemData(.NewIndex) = CCLeftRightAlignmentRight
+End With
+End Sub
+
+Private Sub PropertyPage_ApplyChanges()
+With PropertyPage.SelectedControls(0)
+.Enabled = CBool(CheckEnabled.Value = vbChecked)
+.VisualStyles = CBool(CheckVisualStyles.Value = vbChecked)
+.MousePointer = ComboMousePointer.ItemData(ComboMousePointer.ListIndex)
+.Caption = TextCaption.Text
+.Alignment = ComboAlignment.ItemData(ComboAlignment.ListIndex)
+.MouseTrack = CBool(CheckMouseTrack.Value = vbChecked)
+.HotTracking = CBool(CheckHotTracking.Value = vbChecked)
+.UnderlineHot = CBool(CheckUnderlineHot.Value = vbChecked)
+.UnderlineCold = CBool(CheckUnderlineCold.Value = vbChecked)
+.UseMnemonic = CBool(CheckUseMnemonic.Value = vbChecked)
+.Transparent = CBool(CheckTransparent.Value = vbChecked)
+.ShowTips = CBool(CheckShowTips.Value = vbChecked)
+End With
+Call PropertyPage_SelectionChanged
+End Sub
+
+Private Sub PropertyPage_SelectionChanged()
+Dim i As Long
+FreezeChanged = True
+With PropertyPage.SelectedControls(0)
+CheckEnabled.Value = IIf(.Enabled = True, vbChecked, vbUnchecked)
+CheckVisualStyles.Value = IIf(.VisualStyles = True, vbChecked, vbUnchecked)
+For i = 0 To ComboMousePointer.ListCount - 1
+    If ComboMousePointer.ItemData(i) = .MousePointer Then
+        ComboMousePointer.ListIndex = i
+        Exit For
+    End If
+Next i
+TextCaption.Text = .Caption
+For i = 0 To ComboAlignment.ListCount - 1
+    If ComboAlignment.ItemData(i) = .Alignment Then
+        ComboAlignment.ListIndex = i
+        Exit For
+    End If
+Next i
+CheckMouseTrack.Value = IIf(.MouseTrack = True, vbChecked, vbUnchecked)
+CheckHotTracking.Value = IIf(.HotTracking = True, vbChecked, vbUnchecked)
+CheckUnderlineHot.Value = IIf(.UnderlineHot = True, vbChecked, vbUnchecked)
+CheckUnderlineCold.Value = IIf(.UnderlineCold = True, vbChecked, vbUnchecked)
+CheckUseMnemonic.Value = IIf(.UseMnemonic = True, vbChecked, vbUnchecked)
+CheckTransparent.Value = IIf(.Transparent = True, vbChecked, vbUnchecked)
+CheckShowTips.Value = IIf(.ShowTips = True, vbChecked, vbUnchecked)
+End With
+FreezeChanged = False
+End Sub
+
+Private Sub PropertyPage_EditProperty(PropertyName As String)
+If PropertyName = "Caption" Then TextCaption.SetFocus
+End Sub
+
+Private Sub CheckEnabled_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckVisualStyles_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboMousePointer_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextCaption_GotFocus()
+If Not TextCaption.SelStart = 0 Then Exit Sub
+TextCaption.SelLength = Len(TextCaption.Text)
+End Sub
+
+Private Sub TextCaption_LostFocus()
+TextCaption.SelStart = 0
+End Sub
+
+Private Sub TextCaption_Change()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextCaption_KeyPress(KeyChar As Integer)
+If KeyChar = vbKeyReturn Then KeyChar = AscW(vbLf)
+End Sub
+
+Private Sub ComboAlignment_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckMouseTrack_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckHotTracking_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckUnderlineHot_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckUnderlineCold_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckUseMnemonic_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckTransparent_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckShowTips_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub

@@ -1,0 +1,336 @@
+VERSION 5.00
+Begin VB.PropertyPage PPSliderAppearance 
+   AutoRedraw      =   -1  'True
+   Caption         =   "Appearance"
+   ClientHeight    =   3450
+   ClientLeft      =   0
+   ClientTop       =   0
+   ClientWidth     =   5925
+   LockControls    =   -1  'True
+   PaletteMode     =   0  'Halftone
+   ScaleHeight     =   3450
+   ScaleWidth      =   5925
+   Begin VB.ComboBox ComboDrawMode 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   11
+      Top             =   1920
+      Width           =   2235
+   End
+   Begin VB.CheckBox CheckMouseTrack 
+      Caption         =   "&MouseTrack"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   12
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckHideThumb 
+      Caption         =   "&HideThumb"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   15
+      Top             =   1200
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckShowTip 
+      Caption         =   "Sho&wTip"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   13
+      Top             =   480
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckTransparent 
+      Caption         =   "T&ransparent"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   14
+      Top             =   840
+      Width           =   1620
+   End
+   Begin VB.ComboBox ComboTipSide 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   9
+      Top             =   1560
+      Width           =   2235
+   End
+   Begin VBCCR17.TextBoxW TextTickFrequency 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   7
+      Top             =   1200
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VB.ComboBox ComboTickStyle 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   5
+      Top             =   840
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboOrientation 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   3
+      Top             =   480
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboMousePointer 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   1
+      Top             =   120
+      Width           =   2235
+   End
+   Begin VB.Label LabelDrawMode 
+      Caption         =   "DrawMode:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   10
+      Top             =   1920
+      Width           =   1620
+   End
+   Begin VB.Label LabelTipSide 
+      Caption         =   "TipSide:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   8
+      Top             =   1560
+      Width           =   1620
+   End
+   Begin VB.Label LabelTickFrequency 
+      Caption         =   "TickFrequency:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   6
+      Top             =   1200
+      Width           =   1620
+   End
+   Begin VB.Label LabelTickStyle 
+      Caption         =   "TickStyle:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   4
+      Top             =   840
+      Width           =   1620
+   End
+   Begin VB.Label LabelOrientation 
+      Caption         =   "Orientation:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   2
+      Top             =   480
+      Width           =   1620
+   End
+   Begin VB.Label LabelMousePointer 
+      Caption         =   "MousePointer:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   0
+      Top             =   120
+      Width           =   1620
+   End
+End
+Attribute VB_Name = "PPSliderAppearance"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = True
+Option Explicit
+Private FreezeChanged As Boolean
+
+Private Sub PropertyPage_Initialize()
+Call ComCtlsShowAllUIStates(PropertyPage.hWnd)
+Call ComCtlsPPInitComboMousePointer(ComboMousePointer)
+With ComboOrientation
+.AddItem SldOrientationHorizontal & " - Horizontal"
+.ItemData(.NewIndex) = SldOrientationHorizontal
+.AddItem SldOrientationVertical & " - Vertical"
+.ItemData(.NewIndex) = SldOrientationVertical
+End With
+With ComboTickStyle
+.AddItem SldTickStyleBottomRight & " - BottomRight"
+.ItemData(.NewIndex) = SldTickStyleBottomRight
+.AddItem SldTickStyleTopLeft & " - TopLeft"
+.ItemData(.NewIndex) = SldTickStyleTopLeft
+.AddItem SldTickStyleBoth & " - Both"
+.ItemData(.NewIndex) = SldTickStyleBoth
+.AddItem SldTickStyleNone & " - None"
+.ItemData(.NewIndex) = SldTickStyleNone
+End With
+With ComboTipSide
+.AddItem SldTipSideAboveLeft & " - AboveLeft"
+.ItemData(.NewIndex) = SldTipSideAboveLeft
+.AddItem SldTipSideBelowRight & " - BelowRight"
+.ItemData(.NewIndex) = SldTipSideBelowRight
+End With
+With ComboDrawMode
+.AddItem SldDrawModeNormal & " - Normal"
+.ItemData(.NewIndex) = SldDrawModeNormal
+.AddItem SldDrawModeOwnerDraw & " - OwnerDraw"
+.ItemData(.NewIndex) = SldDrawModeOwnerDraw
+End With
+End Sub
+
+Private Sub PropertyPage_ApplyChanges()
+On Error Resume Next
+PropertyPage.ValidateControls
+If Err.Number = 380 Then Exit Sub
+On Error GoTo 0
+With PropertyPage.SelectedControls(0)
+.Orientation = ComboOrientation.ItemData(ComboOrientation.ListIndex)
+.MousePointer = ComboMousePointer.ItemData(ComboMousePointer.ListIndex)
+.TickStyle = ComboTickStyle.ItemData(ComboTickStyle.ListIndex)
+.TickFrequency = CLng(TextTickFrequency.Text)
+.TipSide = ComboTipSide.ItemData(ComboTipSide.ListIndex)
+.DrawMode = ComboDrawMode.ItemData(ComboDrawMode.ListIndex)
+.MouseTrack = CBool(CheckMouseTrack.Value = vbChecked)
+.ShowTip = CBool(CheckShowTip.Value = vbChecked)
+.Transparent = CBool(CheckTransparent.Value = vbChecked)
+.HideThumb = CBool(CheckHideThumb.Value = vbChecked)
+End With
+Call PropertyPage_SelectionChanged
+End Sub
+
+Private Sub PropertyPage_SelectionChanged()
+Dim i As Long
+FreezeChanged = True
+With PropertyPage.SelectedControls(0)
+For i = 0 To ComboMousePointer.ListCount - 1
+    If ComboMousePointer.ItemData(i) = .MousePointer Then
+        ComboMousePointer.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboOrientation.ListCount - 1
+    If ComboOrientation.ItemData(i) = .Orientation Then
+        ComboOrientation.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboTickStyle.ListCount - 1
+    If ComboTickStyle.ItemData(i) = .TickStyle Then
+        ComboTickStyle.ListIndex = i
+        Exit For
+    End If
+Next i
+TextTickFrequency.Text = .TickFrequency
+For i = 0 To ComboTipSide.ListCount - 1
+    If ComboTipSide.ItemData(i) = .TipSide Then
+        ComboTipSide.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboDrawMode.ListCount - 1
+    If ComboDrawMode.ItemData(i) = .DrawMode Then
+        ComboDrawMode.ListIndex = i
+        Exit For
+    End If
+Next i
+CheckMouseTrack.Value = IIf(.MouseTrack = True, vbChecked, vbUnchecked)
+CheckShowTip.Value = IIf(.ShowTip = True, vbChecked, vbUnchecked)
+CheckTransparent.Value = IIf(.Transparent = True, vbChecked, vbUnchecked)
+CheckHideThumb.Value = IIf(.HideThumb = True, vbChecked, vbUnchecked)
+End With
+FreezeChanged = False
+End Sub
+
+Private Sub ComboMousePointer_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboOrientation_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboTickStyle_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextTickFrequency_GotFocus()
+If Not TextTickFrequency.SelStart = 0 Then Exit Sub
+TextTickFrequency.SelLength = Len(TextTickFrequency.Text)
+End Sub
+
+Private Sub TextTickFrequency_LostFocus()
+TextTickFrequency.SelStart = 0
+End Sub
+
+Private Sub TextTickFrequency_Change()
+If FreezeChanged = True Then Exit Sub
+If TextTickFrequency.Text = vbNullString Then
+    TextTickFrequency.Text = PropertyPage.SelectedControls(0).TickFrequency
+    TextTickFrequency.SelStart = 0
+    TextTickFrequency.SelLength = Len(TextTickFrequency.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextTickFrequency_KeyPress(KeyAscii As Integer)
+Call ComCtlsPPKeyPressOnlyNumeric(KeyAscii)
+End Sub
+
+Private Sub TextTickFrequency_Validate(Cancel As Boolean)
+If Not IsNumeric(TextTickFrequency.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextTickFrequency.Text = PropertyPage.SelectedControls(0).TickFrequency
+    TextTickFrequency.SetFocus
+    Cancel = True
+Else
+    Dim LngValue As Long
+    On Error Resume Next
+    LngValue = CLng(TextTickFrequency.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If LngValue <= 0 Then Cancel = True
+    If Cancel = False Then
+        TextTickFrequency.Text = LngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextTickFrequency.Text = PropertyPage.SelectedControls(0).TickFrequency
+        TextTickFrequency.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub ComboTipSide_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboDrawMode_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckMouseTrack_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckShowTip_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckTransparent_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckHideThumb_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub

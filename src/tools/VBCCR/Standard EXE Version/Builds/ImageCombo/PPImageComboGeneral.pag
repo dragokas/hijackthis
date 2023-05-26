@@ -1,0 +1,540 @@
+VERSION 5.00
+Begin VB.PropertyPage PPImageComboGeneral 
+   Caption         =   "General"
+   ClientHeight    =   3810
+   ClientLeft      =   0
+   ClientTop       =   0
+   ClientWidth     =   5925
+   LockControls    =   -1  'True
+   PaletteMode     =   0  'Halftone
+   ScaleHeight     =   3810
+   ScaleWidth      =   5925
+   Begin VB.CheckBox CheckMouseTrack 
+      Caption         =   "MouseTrack"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   21
+      Top             =   480
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckScrollTrack 
+      Caption         =   "ScrollTrack"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   24
+      Top             =   1560
+      Width           =   1620
+   End
+   Begin VB.ComboBox ComboEllipsisFormat 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   20
+      Top             =   3360
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboIMEMode 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   18
+      Top             =   3000
+      Width           =   2235
+   End
+   Begin VB.TextBox TextMaxLength 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   16
+      Top             =   2640
+      Width           =   2235
+   End
+   Begin VB.TextBox TextMaxDropDownItems 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   14
+      Top             =   2280
+      Width           =   2235
+   End
+   Begin VB.CheckBox CheckVisualStyles 
+      Caption         =   "VisualStyles"
+      Height          =   285
+      Left            =   3480
+      TabIndex        =   2
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckShowImages 
+      Caption         =   "ShowImages"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   23
+      Top             =   1200
+      Width           =   1620
+   End
+   Begin VB.ComboBox ComboMousePointer 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   4
+      Top             =   480
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboImageList 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   6
+      Top             =   840
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboStyle 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   8
+      Top             =   1200
+      Width           =   2235
+   End
+   Begin VB.TextBox TextIndentation 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   12
+      Top             =   1920
+      Width           =   2235
+   End
+   Begin VB.TextBox TextText 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   10
+      Top             =   1560
+      Width           =   2235
+   End
+   Begin VB.CheckBox CheckExtendedUI 
+      Caption         =   "ExtendedUI"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   22
+      Top             =   840
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckEnabled 
+      Caption         =   "Enabled"
+      Height          =   285
+      Left            =   120
+      TabIndex        =   0
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckLocked 
+      Caption         =   "Locked"
+      Height          =   285
+      Left            =   1800
+      TabIndex        =   1
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.Label LabelEllipsisFormat 
+      Caption         =   "EllipsisFormat:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   19
+      Top             =   3360
+      Width           =   1620
+   End
+   Begin VB.Label LabelIMEMode 
+      Caption         =   "IMEMode:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   17
+      Top             =   3000
+      Width           =   1620
+   End
+   Begin VB.Label LabelMaxLength 
+      Caption         =   "MaxLength:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   15
+      Top             =   2640
+      Width           =   1620
+   End
+   Begin VB.Label LabelMaxDropDownItems 
+      Caption         =   "MaxDropDownItems:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   13
+      Top             =   2280
+      Width           =   1620
+   End
+   Begin VB.Label LabelMousePointer 
+      Caption         =   "MousePointer:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   3
+      Top             =   480
+      Width           =   1620
+   End
+   Begin VB.Label LabelImageList 
+      Caption         =   "ImageList:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   5
+      Top             =   840
+      Width           =   1620
+   End
+   Begin VB.Label LabelStyle 
+      Caption         =   "Style:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   7
+      Top             =   1200
+      Width           =   1620
+   End
+   Begin VB.Label LabelIndentation 
+      Caption         =   "Indentation:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   11
+      Top             =   1920
+      Width           =   1620
+   End
+   Begin VB.Label LabelText 
+      Caption         =   "Text:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   9
+      Top             =   1560
+      Width           =   1620
+   End
+End
+Attribute VB_Name = "PPImageComboGeneral"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Option Explicit
+Private ImageListEnumerated As Boolean
+Private FreezeChanged As Boolean
+
+Private Sub PropertyPage_Initialize()
+Call ComCtlsShowAllUIStates(PropertyPage.hWnd)
+Call ComCtlsPPInitComboMousePointer(ComboMousePointer)
+With ComboImageList
+.AddItem "(None)"
+.ListIndex = 0
+End With
+With ComboStyle
+.AddItem ImcStyleDropDownCombo & " - DropDownCombo"
+.ItemData(.NewIndex) = ImcStyleDropDownCombo
+.AddItem ImcStyleSimpleCombo & " - SimpleCombo"
+.ItemData(.NewIndex) = ImcStyleSimpleCombo
+.AddItem ImcStyleDropDownList & " - DropDownList"
+.ItemData(.NewIndex) = ImcStyleDropDownList
+End With
+With ComboEllipsisFormat
+.AddItem ImcEllipsisFormatNone & " - None"
+.ItemData(.NewIndex) = ImcEllipsisFormatNone
+.AddItem ImcEllipsisFormatEnd & " - End"
+.ItemData(.NewIndex) = ImcEllipsisFormatEnd
+End With
+Call ComCtlsPPInitComboIMEMode(ComboIMEMode)
+End Sub
+
+Private Sub PropertyPage_ApplyChanges()
+On Error Resume Next
+PropertyPage.ValidateControls
+If Err.Number = 380 Then Exit Sub
+On Error GoTo 0
+With PropertyPage.SelectedControls(0)
+.Enabled = CBool(CheckEnabled.Value = vbChecked)
+.Locked = CBool(CheckLocked.Value = vbChecked)
+.VisualStyles = CBool(CheckVisualStyles.Value = vbChecked)
+.MousePointer = ComboMousePointer.ItemData(ComboMousePointer.ListIndex)
+.ImageList = ComboImageList.List(ComboImageList.ListIndex)
+.Style = ComboStyle.ItemData(ComboStyle.ListIndex)
+.Text = TextText.Text
+.Indentation = CLng(TextIndentation.Text)
+.MaxDropDownItems = CInt(TextMaxDropDownItems.Text)
+.MaxLength = CLng(TextMaxLength.Text)
+.IMEMode = ComboIMEMode.ItemData(ComboIMEMode.ListIndex)
+.EllipsisFormat = ComboEllipsisFormat.ItemData(ComboEllipsisFormat.ListIndex)
+.MouseTrack = CBool(CheckMouseTrack.Value = vbChecked)
+.ExtendedUI = CBool(CheckExtendedUI.Value = vbChecked)
+.ShowImages = CBool(CheckShowImages.Value = vbChecked)
+.ScrollTrack = CBool(CheckScrollTrack.Value = vbChecked)
+End With
+Call PropertyPage_SelectionChanged
+End Sub
+
+Private Sub PropertyPage_SelectionChanged()
+Dim i As Long
+FreezeChanged = True
+With PropertyPage.SelectedControls(0)
+CheckEnabled.Value = IIf(.Enabled = True, vbChecked, vbUnchecked)
+CheckLocked.Value = IIf(.Locked = True, vbChecked, vbUnchecked)
+CheckVisualStyles.Value = IIf(.VisualStyles = True, vbChecked, vbUnchecked)
+For i = 0 To ComboMousePointer.ListCount - 1
+    If ComboMousePointer.ItemData(i) = .MousePointer Then
+        ComboMousePointer.ListIndex = i
+        Exit For
+    End If
+Next i
+If ImageListEnumerated = False Then
+    Dim ControlEnum As Object
+    For Each ControlEnum In .ControlsEnum
+        If TypeName(ControlEnum) = "ImageList" Then
+            ComboImageList.AddItem ProperControlName(ControlEnum)
+        End If
+    Next ControlEnum
+    ImageListEnumerated = True
+End If
+For i = 0 To ComboImageList.ListCount - 1
+    If ComboImageList.List(i) = .ImageList Then
+        ComboImageList.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboStyle.ListCount - 1
+    If ComboStyle.ItemData(i) = .Style Then
+        ComboStyle.ListIndex = i
+        Exit For
+    End If
+Next i
+TextText.Text = .Text
+TextIndentation.Text = CStr(.Indentation)
+TextMaxDropDownItems.Text = CStr(.MaxDropDownItems)
+TextMaxLength.Text = CStr(.MaxLength)
+For i = 0 To ComboIMEMode.ListCount - 1
+    If ComboIMEMode.ItemData(i) = .IMEMode Then
+        ComboIMEMode.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboEllipsisFormat.ListCount - 1
+    If ComboEllipsisFormat.ItemData(i) = .EllipsisFormat Then
+        ComboEllipsisFormat.ListIndex = i
+        Exit For
+    End If
+Next i
+CheckMouseTrack.Value = IIf(.MouseTrack = True, vbChecked, vbUnchecked)
+CheckExtendedUI.Value = IIf(.ExtendedUI = True, vbChecked, vbUnchecked)
+CheckShowImages.Value = IIf(.ShowImages = True, vbChecked, vbUnchecked)
+CheckScrollTrack.Value = IIf(.ScrollTrack = True, vbChecked, vbUnchecked)
+End With
+FreezeChanged = False
+End Sub
+
+Private Sub CheckEnabled_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckLocked_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckVisualStyles_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboMousePointer_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboImageList_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboStyle_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextText_GotFocus()
+If Not TextText.SelStart = 0 Then Exit Sub
+TextText.SelLength = Len(TextText.Text)
+End Sub
+
+Private Sub TextText_LostFocus()
+TextText.SelStart = 0
+End Sub
+
+Private Sub TextText_Change()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextIndentation_GotFocus()
+If Not TextIndentation.SelStart = 0 Then Exit Sub
+TextIndentation.SelLength = Len(TextIndentation.Text)
+End Sub
+
+Private Sub TextIndentation_LostFocus()
+TextIndentation.SelStart = 0
+End Sub
+
+Private Sub TextIndentation_Change()
+If FreezeChanged = True Then Exit Sub
+If TextIndentation.Text = vbNullString Then
+    TextIndentation.Text = PropertyPage.SelectedControls(0).Indentation
+    TextIndentation.SelStart = 0
+    TextIndentation.SelLength = Len(TextIndentation.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextIndentation_KeyPress(KeyAscii As Integer)
+Call ComCtlsPPKeyPressOnlyNumeric(KeyAscii)
+End Sub
+
+Private Sub TextIndentation_Validate(Cancel As Boolean)
+If Not IsNumeric(TextIndentation.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextIndentation.Text = PropertyPage.SelectedControls(0).Indentation
+    TextIndentation.SetFocus
+    Cancel = True
+Else
+    Dim LngValue As Long
+    On Error Resume Next
+    LngValue = CLng(TextIndentation.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If LngValue < 0 Then Cancel = True
+    If Cancel = False Then
+        TextIndentation.Text = LngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextIndentation.Text = PropertyPage.SelectedControls(0).Indentation
+        TextIndentation.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextMaxDropDownItems_GotFocus()
+If Not TextMaxDropDownItems.SelStart = 0 Then Exit Sub
+TextMaxDropDownItems.SelLength = Len(TextMaxDropDownItems.Text)
+End Sub
+
+Private Sub TextMaxDropDownItems_LostFocus()
+TextMaxDropDownItems.SelStart = 0
+End Sub
+
+Private Sub TextMaxDropDownItems_Change()
+If FreezeChanged = True Then Exit Sub
+If TextMaxDropDownItems.Text = vbNullString Then
+    TextMaxDropDownItems.Text = PropertyPage.SelectedControls(0).MaxDropDownItems
+    TextMaxDropDownItems.SelStart = 0
+    TextMaxDropDownItems.SelLength = Len(TextMaxDropDownItems.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextMaxDropDownItems_KeyPress(KeyAscii As Integer)
+Call ComCtlsPPKeyPressOnlyNumeric(KeyAscii)
+End Sub
+
+Private Sub TextMaxDropDownItems_Validate(Cancel As Boolean)
+If Not IsNumeric(TextMaxDropDownItems.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextMaxDropDownItems.Text = PropertyPage.SelectedControls(0).MaxDropDownItems
+    TextMaxDropDownItems.SetFocus
+    Cancel = True
+Else
+    Dim IntValue As Integer
+    On Error Resume Next
+    IntValue = CInt(TextMaxDropDownItems.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    Select Case IntValue
+        Case 1 To 30
+        Case Else
+            Cancel = True
+    End Select
+    If Cancel = False Then
+        TextMaxDropDownItems.Text = IntValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextMaxDropDownItems.Text = PropertyPage.SelectedControls(0).MaxDropDownItems
+        TextMaxDropDownItems.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextMaxLength_GotFocus()
+If Not TextMaxLength.SelStart = 0 Then Exit Sub
+TextMaxLength.SelLength = Len(TextMaxLength.Text)
+End Sub
+
+Private Sub TextMaxLength_LostFocus()
+TextMaxLength.SelStart = 0
+End Sub
+
+Private Sub TextMaxLength_Change()
+If FreezeChanged = True Then Exit Sub
+If TextMaxLength.Text = vbNullString Then
+    TextMaxLength.Text = PropertyPage.SelectedControls(0).MaxLength
+    TextMaxLength.SelStart = 0
+    TextMaxLength.SelLength = Len(TextMaxLength.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextMaxLength_KeyPress(KeyAscii As Integer)
+Call ComCtlsPPKeyPressOnlyNumeric(KeyAscii)
+End Sub
+
+Private Sub TextMaxLength_Validate(Cancel As Boolean)
+If Not IsNumeric(TextMaxLength.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextMaxLength.Text = PropertyPage.SelectedControls(0).MaxLength
+    TextMaxLength.SetFocus
+    Cancel = True
+Else
+    Dim LngValue As Long
+    On Error Resume Next
+    LngValue = CLng(TextMaxLength.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If LngValue < 0 Then Cancel = True
+    If Cancel = False Then
+        TextMaxLength.Text = LngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextMaxLength.Text = PropertyPage.SelectedControls(0).MaxLength
+        TextMaxLength.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub ComboIMEMode_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboEllipsisFormat_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckMouseTrack_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckExtendedUI_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckShowImages_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckScrollTrack_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub

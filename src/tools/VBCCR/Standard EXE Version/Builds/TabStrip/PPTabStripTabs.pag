@@ -1,0 +1,478 @@
+VERSION 5.00
+Begin VB.PropertyPage PPTabStripTabs 
+   AutoRedraw      =   -1  'True
+   Caption         =   "Tabs"
+   ClientHeight    =   4875
+   ClientLeft      =   0
+   ClientTop       =   0
+   ClientWidth     =   5925
+   LockControls    =   -1  'True
+   PaletteMode     =   0  'Halftone
+   ScaleHeight     =   4875
+   ScaleWidth      =   5925
+   Begin VB.TextBox TextToolTipText 
+      BackColor       =   &H8000000F&
+      Enabled         =   0   'False
+      Height          =   315
+      Left            =   1200
+      TabIndex        =   13
+      Top             =   1560
+      Width           =   4455
+   End
+   Begin VB.TextBox TextTag 
+      BackColor       =   &H8000000F&
+      Enabled         =   0   'False
+      Height          =   315
+      Left            =   1200
+      TabIndex        =   11
+      Top             =   1200
+      Width           =   4455
+   End
+   Begin VB.TextBox TextImage 
+      BackColor       =   &H8000000F&
+      Enabled         =   0   'False
+      Height          =   315
+      Left            =   1200
+      TabIndex        =   15
+      Top             =   1920
+      Width           =   4455
+   End
+   Begin VB.TextBox TextCaption 
+      BackColor       =   &H8000000F&
+      Enabled         =   0   'False
+      Height          =   315
+      Left            =   1200
+      TabIndex        =   7
+      Top             =   480
+      Width           =   4455
+   End
+   Begin VB.TextBox TextKey 
+      BackColor       =   &H8000000F&
+      Enabled         =   0   'False
+      Height          =   315
+      Left            =   1200
+      TabIndex        =   9
+      Top             =   840
+      Width           =   4455
+   End
+   Begin VB.CommandButton CommandBack 
+      Caption         =   "3"
+      Enabled         =   0   'False
+      BeginProperty Font 
+         Name            =   "Marlett"
+         Size            =   9
+         Charset         =   2
+         Weight          =   500
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   315
+      Left            =   2160
+      TabIndex        =   2
+      ToolTipText     =   "Select Previous Tab"
+      Top             =   120
+      Width           =   300
+   End
+   Begin VB.CommandButton CommandNext 
+      Caption         =   "4"
+      Enabled         =   0   'False
+      BeginProperty Font 
+         Name            =   "Marlett"
+         Size            =   9
+         Charset         =   2
+         Weight          =   500
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   315
+      Left            =   2460
+      TabIndex        =   3
+      ToolTipText     =   "Select Next Tab"
+      Top             =   120
+      Width           =   300
+   End
+   Begin VB.TextBox TextIndex 
+      BackColor       =   &H8000000F&
+      Enabled         =   0   'False
+      Height          =   315
+      Left            =   1200
+      Locked          =   -1  'True
+      TabIndex        =   1
+      Top             =   120
+      Width           =   870
+   End
+   Begin VB.CommandButton CommandRemove 
+      Caption         =   "&Remove..."
+      Height          =   315
+      Left            =   4620
+      TabIndex        =   5
+      ToolTipText     =   "Remove Selected Tab"
+      Top             =   120
+      Width           =   1035
+   End
+   Begin VB.CommandButton CommandInsert 
+      Caption         =   "I&nsert..."
+      Height          =   315
+      Left            =   3480
+      TabIndex        =   4
+      ToolTipText     =   "Insert Tab"
+      Top             =   120
+      Width           =   1035
+   End
+   Begin VB.Label LabelToolTipText 
+      Caption         =   "ToolTi&pText:"
+      Height          =   195
+      Left            =   120
+      TabIndex        =   12
+      Top             =   1560
+      Width           =   975
+   End
+   Begin VB.Label LabelTag 
+      Caption         =   "&Tag:"
+      Height          =   195
+      Left            =   120
+      TabIndex        =   10
+      Top             =   1200
+      Width           =   975
+   End
+   Begin VB.Label LabelImage 
+      Caption         =   "Ima&ge:"
+      Height          =   195
+      Left            =   120
+      TabIndex        =   14
+      Top             =   1920
+      Width           =   975
+   End
+   Begin VB.Label LabelCaption 
+      Caption         =   "&Caption:"
+      Height          =   195
+      Left            =   120
+      TabIndex        =   6
+      Top             =   480
+      Width           =   975
+   End
+   Begin VB.Label LabelKey 
+      Caption         =   "&Key:"
+      Height          =   195
+      Left            =   120
+      TabIndex        =   8
+      Top             =   840
+      Width           =   975
+   End
+   Begin VB.Label LabelIndex 
+      Caption         =   "&Index:"
+      Height          =   195
+      Left            =   120
+      TabIndex        =   0
+      Top             =   120
+      Width           =   975
+   End
+End
+Attribute VB_Name = "PPTabStripTabs"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Option Explicit
+Private Type ShadowTabStruct
+Caption As String
+Key As String
+Tag As String
+ToolTipText As String
+Image As Variant
+End Type
+Private SelectedControl As Object
+Private CurrIndex As Long
+Private PropShadowTabs() As ShadowTabStruct
+Private FreezeChanged As Boolean
+
+Private Sub PropertyPage_Initialize()
+Call ComCtlsShowAllUIStates(PropertyPage.hWnd)
+CurrIndex = 0
+ReDim PropShadowTabs(0) As ShadowTabStruct
+End Sub
+
+Private Sub PropertyPage_ApplyChanges()
+On Error Resume Next
+PropertyPage.ValidateControls
+If Err.Number = 380 Then Exit Sub
+On Error GoTo 0
+If CurrIndex > 0 Then
+    With PropShadowTabs(CurrIndex)
+    .Caption = TextCaption.Text
+    .Tag = TextTag.Text
+    .ToolTipText = TextToolTipText.Text
+    If IsNumeric(TextImage.Text) Then
+        .Image = CLng(TextImage.Text)
+    Else
+        .Image = TextImage.Text
+    End If
+    End With
+    With PropertyPage.SelectedControls(0)
+    .Tabs.Remove CurrIndex
+    With .Tabs.Add(CurrIndex, , PropShadowTabs(CurrIndex).Caption, PropShadowTabs(CurrIndex).Image)
+    .Tag = PropShadowTabs(CurrIndex).Tag
+    .ToolTipText = PropShadowTabs(CurrIndex).ToolTipText
+    End With
+    If Not TextKey.Text = vbNullString Then
+        If .Tabs.Exists(TextKey.Text) = True Then
+            .Tabs(CurrIndex).Key = PropShadowTabs(CurrIndex).Key
+            MsgBox "This key is already associated with an element of this collection.", vbCritical + vbOKOnly
+            FreezeChanged = True
+            TextKey.Text = PropShadowTabs(CurrIndex).Key
+            FreezeChanged = False
+        Else
+            PropShadowTabs(CurrIndex).Key = TextKey.Text
+            .Tabs(CurrIndex).Key = PropShadowTabs(CurrIndex).Key
+        End If
+    Else
+        PropShadowTabs(CurrIndex).Key = vbNullString
+    End If
+    End With
+End If
+Call PropertyPage_SelectionChanged
+End Sub
+
+Private Sub PropertyPage_SelectionChanged()
+If Not SelectedControl Is PropertyPage.SelectedControls(0) Then Set SelectedControl = PropertyPage.SelectedControls(0): CurrIndex = 0
+With PropertyPage.SelectedControls(0)
+If .Tabs.Count > 0 And CurrIndex = 0 Then
+    Call FillShadowTabs
+    CurrIndex = .SelectedItem.Index
+    TextIndex.Text = CurrIndex & " of " & .Tabs.Count
+    With .SelectedItem
+    FreezeChanged = True
+    TextCaption.Text = .Caption
+    TextKey.Text = .Key
+    TextTag.Text = .Tag
+    TextToolTipText.Text = .ToolTipText
+    TextImage.Text = CStr(.Image)
+    FreezeChanged = False
+    End With
+ElseIf CurrIndex = 0 Then
+    TextIndex.Text = "0 of 0"
+End If
+Call ApplyControlStates
+End With
+End Sub
+
+Private Sub CommandBack_Click()
+With PropertyPage.SelectedControls(0)
+If CurrIndex > 1 Then
+    If PropertyPage.Changed = True Then Call PropertyPage_ApplyChanges
+    CurrIndex = CurrIndex - 1
+    TextIndex.Text = CurrIndex & " of " & .Tabs.Count
+    With .Tabs(CurrIndex)
+    FreezeChanged = True
+    TextCaption.Text = .Caption
+    TextKey.Text = .Key
+    TextTag.Text = .Tag
+    TextToolTipText.Text = .ToolTipText
+    TextImage.Text = CStr(.Image)
+    FreezeChanged = False
+    End With
+End If
+End With
+Call ApplyControlStates
+End Sub
+
+Private Sub CommandNext_Click()
+With PropertyPage.SelectedControls(0)
+If CurrIndex < .Tabs.Count Then
+    If PropertyPage.Changed = True Then Call PropertyPage_ApplyChanges
+    CurrIndex = CurrIndex + 1
+    TextIndex.Text = CurrIndex & " of " & .Tabs.Count
+    With .Tabs(CurrIndex)
+    FreezeChanged = True
+    TextCaption.Text = .Caption
+    TextKey.Text = .Key
+    TextTag.Text = .Tag
+    TextToolTipText.Text = .ToolTipText
+    TextImage.Text = CStr(.Image)
+    FreezeChanged = False
+    End With
+End If
+End With
+Call ApplyControlStates
+End Sub
+
+Private Sub CommandInsert_Click()
+If PropertyPage.Changed = True Then Call PropertyPage_ApplyChanges
+CurrIndex = CurrIndex + 1
+With PropertyPage.SelectedControls(0)
+.Tabs.Add CurrIndex
+.Tabs(1).Selected = True
+TextIndex.Text = CurrIndex & " of " & .Tabs.Count
+End With
+FreezeChanged = True
+TextCaption.Text = vbNullString
+TextKey.Text = vbNullString
+TextTag.Text = vbNullString
+TextToolTipText.Text = vbNullString
+TextImage.Text = "0"
+FreezeChanged = False
+Call ApplyControlStates
+Call FillShadowTabs
+End Sub
+
+Private Sub CommandRemove_Click()
+If CurrIndex > 0 Then
+    With PropertyPage.SelectedControls(0)
+    .Tabs.Remove CurrIndex
+    CurrIndex = CurrIndex - 1
+    If .Tabs.Count >= 1 Then
+        If CurrIndex = 0 Then CurrIndex = 1
+        .Tabs(1).Selected = True
+        With .Tabs(CurrIndex)
+        FreezeChanged = True
+        TextCaption.Text = .Caption
+        TextKey.Text = .Key
+        TextTag.Text = .Tag
+        TextToolTipText.Text = .ToolTipText
+        TextImage.Text = CStr(.Image)
+        FreezeChanged = False
+        End With
+    End If
+    TextIndex.Text = CurrIndex & " of " & .Tabs.Count
+    End With
+    Call ApplyControlStates
+    Call FillShadowTabs
+End If
+End Sub
+
+Private Sub TextCaption_Change()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextKey_Change()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextTag_Change()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextToolTipText_Change()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextImage_GotFocus()
+If Not TextImage.SelStart = 0 Then Exit Sub
+TextImage.SelLength = Len(TextImage.Text)
+End Sub
+
+Private Sub TextImage_LostFocus()
+TextImage.SelStart = 0
+End Sub
+
+Private Sub TextImage_Change()
+If FreezeChanged = True Then Exit Sub
+If TextImage.Text = vbNullString Then
+    TextImage.Text = "0"
+    TextImage.SelStart = 0
+    TextImage.SelLength = 1
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextImage_Validate(Cancel As Boolean)
+If TextImage.Text = vbNullString Then Exit Sub
+Dim LngValue As Long
+If Not IsNumeric(TextImage.Text) Then
+    On Error Resume Next
+    Call ComCtlsImlListImageIndex(PropertyPage.SelectedControls(0), PropertyPage.SelectedControls(0).ImageList, TextImage.Text, LngValue)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+Else
+    On Error Resume Next
+    Call ComCtlsImlListImageIndex(PropertyPage.SelectedControls(0), PropertyPage.SelectedControls(0).ImageList, CLng(TextImage.Text), LngValue)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If LngValue < 0 Then Cancel = True
+    If Cancel = False Then TextImage.Text = CStr(LngValue)
+End If
+If Cancel = True Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    If CurrIndex > 0 Then
+        TextImage.Text = PropertyPage.SelectedControls(0).Tabs(CurrIndex).Image
+    Else
+        TextImage.Text = "0"
+    End If
+    If TextImage.Enabled = True Then TextImage.SetFocus
+End If
+End Sub
+
+Private Sub ApplyControlStates()
+With PropertyPage.SelectedControls(0)
+FreezeChanged = True
+If .Tabs.Count > 0 Then
+    TextIndex.Enabled = True
+    If CurrIndex > 1 Then
+        CommandBack.Enabled = True
+    Else
+        CommandBack.Enabled = False
+    End If
+    If CurrIndex < .Tabs.Count Then
+        CommandNext.Enabled = True
+    Else
+        CommandNext.Enabled = False
+    End If
+    CommandRemove.Enabled = True
+    TextCaption.BackColor = vbWindowBackground
+    TextCaption.Enabled = True
+    TextKey.BackColor = vbWindowBackground
+    TextKey.Enabled = True
+    TextTag.BackColor = vbWindowBackground
+    TextTag.Enabled = True
+    TextToolTipText.BackColor = vbWindowBackground
+    TextToolTipText.Enabled = True
+    TextImage.BackColor = vbWindowBackground
+    TextImage.Enabled = True
+Else
+    TextIndex.Enabled = False
+    CommandBack.Enabled = False
+    CommandNext.Enabled = False
+    CommandRemove.Enabled = False
+    TextCaption.Text = vbNullString
+    TextCaption.BackColor = vbButtonFace
+    TextCaption.Enabled = False
+    TextKey.Text = vbNullString
+    TextKey.BackColor = vbButtonFace
+    TextKey.Enabled = False
+    TextTag.Text = vbNullString
+    TextTag.BackColor = vbButtonFace
+    TextTag.Enabled = False
+    TextToolTipText.Text = vbNullString
+    TextToolTipText.BackColor = vbButtonFace
+    TextToolTipText.Enabled = False
+    TextImage.Text = vbNullString
+    TextImage.BackColor = vbButtonFace
+    TextImage.Enabled = False
+End If
+FreezeChanged = False
+End With
+End Sub
+
+Private Sub FillShadowTabs()
+With PropertyPage.SelectedControls(0)
+ReDim PropShadowTabs(.Tabs.Count) As ShadowTabStruct
+Dim i As Long
+For i = 0 To .Tabs.Count
+    If i > 0 Then
+        With .Tabs(i)
+        PropShadowTabs(i).Caption = .Caption
+        PropShadowTabs(i).Key = .Key
+        PropShadowTabs(i).Tag = .Tag
+        PropShadowTabs(i).ToolTipText = .ToolTipText
+        PropShadowTabs(i).Image = .Image
+        End With
+    End If
+Next i
+End With
+End Sub

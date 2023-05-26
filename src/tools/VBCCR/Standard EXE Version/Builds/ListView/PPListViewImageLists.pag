@@ -1,0 +1,186 @@
+VERSION 5.00
+Begin VB.PropertyPage PPListViewImageLists 
+   Caption         =   "Image Lists"
+   ClientHeight    =   7425
+   ClientLeft      =   0
+   ClientTop       =   0
+   ClientWidth     =   6450
+   LockControls    =   -1  'True
+   PaletteMode     =   0  'Halftone
+   ScaleHeight     =   7425
+   ScaleWidth      =   6450
+   Begin VB.Frame FrameIconImageLists 
+      Caption         =   "Icon Image Lists"
+      Height          =   2055
+      Left            =   120
+      TabIndex        =   0
+      Top             =   120
+      Width           =   4455
+      Begin VB.ComboBox ComboGroup 
+         Height          =   315
+         Left            =   1920
+         Style           =   2  'Dropdown List
+         TabIndex        =   8
+         Top             =   1440
+         Width           =   2235
+      End
+      Begin VB.ComboBox ComboColumnHeader 
+         Height          =   315
+         Left            =   1920
+         Style           =   2  'Dropdown List
+         TabIndex        =   6
+         Top             =   1080
+         Width           =   2235
+      End
+      Begin VB.ComboBox ComboSmall 
+         Height          =   315
+         Left            =   1920
+         Style           =   2  'Dropdown List
+         TabIndex        =   4
+         Top             =   720
+         Width           =   2235
+      End
+      Begin VB.ComboBox ComboNormal 
+         Height          =   315
+         Left            =   1920
+         Style           =   2  'Dropdown List
+         TabIndex        =   2
+         Top             =   360
+         Width           =   2235
+      End
+      Begin VB.Label LabelGroup 
+         Caption         =   "&Group:"
+         Height          =   240
+         Left            =   240
+         TabIndex        =   7
+         Top             =   1440
+         Width           =   1620
+      End
+      Begin VB.Label LabelColumnHeader 
+         Caption         =   "&Column Header:"
+         Height          =   240
+         Left            =   240
+         TabIndex        =   5
+         Top             =   1080
+         Width           =   1620
+      End
+      Begin VB.Label LabelSmall 
+         Caption         =   "&Small:"
+         Height          =   240
+         Left            =   240
+         TabIndex        =   3
+         Top             =   720
+         Width           =   1620
+      End
+      Begin VB.Label LabelNormal 
+         Caption         =   "&Normal:"
+         Height          =   240
+         Left            =   240
+         TabIndex        =   1
+         Top             =   360
+         Width           =   1620
+      End
+   End
+End
+Attribute VB_Name = "PPListViewImageLists"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Option Explicit
+Private ImageListEnumerated As Boolean
+Private FreezeChanged As Boolean
+
+Private Sub PropertyPage_Initialize()
+Call ComCtlsShowAllUIStates(PropertyPage.hWnd)
+With ComboNormal
+.AddItem "(None)"
+.ListIndex = 0
+End With
+With ComboSmall
+.AddItem "(None)"
+.ListIndex = 0
+End With
+With ComboColumnHeader
+.AddItem "(None)"
+.ListIndex = 0
+End With
+With ComboGroup
+.AddItem "(None)"
+.ListIndex = 0
+End With
+End Sub
+
+Private Sub PropertyPage_ApplyChanges()
+With PropertyPage.SelectedControls(0)
+.Icons = ComboNormal.List(ComboNormal.ListIndex)
+.SmallIcons = ComboSmall.List(ComboSmall.ListIndex)
+.ColumnHeaderIcons = ComboColumnHeader.List(ComboColumnHeader.ListIndex)
+.GroupIcons = ComboGroup.List(ComboGroup.ListIndex)
+End With
+Call PropertyPage_SelectionChanged
+End Sub
+
+Private Sub PropertyPage_SelectionChanged()
+Dim i As Long
+FreezeChanged = True
+With PropertyPage.SelectedControls(0)
+Dim ControlEnum As Object
+If ImageListEnumerated = False Then
+    For Each ControlEnum In .ControlsEnum
+        If TypeName(ControlEnum) = "ImageList" Then
+            ComboNormal.AddItem ProperControlName(ControlEnum)
+            ComboSmall.AddItem ProperControlName(ControlEnum)
+            ComboColumnHeader.AddItem ProperControlName(ControlEnum)
+            ComboGroup.AddItem ProperControlName(ControlEnum)
+        End If
+    Next ControlEnum
+    ImageListEnumerated = True
+End If
+For i = 0 To ComboNormal.ListCount - 1
+    If ComboNormal.List(i) = .Icons Then
+        ComboNormal.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboSmall.ListCount - 1
+    If ComboSmall.List(i) = .SmallIcons Then
+        ComboSmall.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboColumnHeader.ListCount - 1
+    If ComboColumnHeader.List(i) = .ColumnHeaderIcons Then
+        ComboColumnHeader.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboGroup.ListCount - 1
+    If ComboGroup.List(i) = .GroupIcons Then
+        ComboGroup.ListIndex = i
+        Exit For
+    End If
+Next i
+End With
+FreezeChanged = False
+End Sub
+
+Private Sub ComboNormal_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboSmall_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboColumnHeader_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboGroup_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub

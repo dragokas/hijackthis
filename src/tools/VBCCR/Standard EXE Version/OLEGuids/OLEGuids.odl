@@ -1,0 +1,363 @@
+#define CALLCONV __stdcall
+[
+	uuid(5A2B9220-BF07-11E6-9598-0800200C9A66),
+	helpstring("OLE Guid and interface definitions"),
+	lcid(0x0),
+	version(1.0)
+]
+
+library OLEGuids
+{
+	importlib("stdole2.tlb");
+	interface IOleInPlaceUIWindow;
+	typedef struct
+	{
+		LONG Left;
+		LONG Top;
+		LONG Right;
+		LONG Bottom;
+	}OLERECT;
+	typedef struct
+	{
+	    LONG X;
+	    LONG Y;
+	}OLEPOINT;
+	typedef struct
+	{
+		LONG hWnd;
+		LONG Message;
+		LONG wParam;
+		LONG lParam;
+		LONG Time;
+		OLEPOINT PT;
+	}OLEACCELMSG;
+	typedef struct
+	{
+		LONG CX;
+		LONG CY;
+	}OLESIZE;
+	typedef struct
+    	{
+		LONG cb;
+		LONG fMDIApp;
+		OLE_HANDLE hWndFrame;
+		OLE_HANDLE hAccel;
+		LONG cAccelEntries;
+    	}OLEINPLACEFRAMEINFO;
+	typedef struct
+	{
+		LONG cb;
+		LONG hAccel;
+		SHORT cAccel;
+		LONG dwFlags;
+	}OLECONTROLINFO;
+	typedef struct
+	{
+    	LONG Data1;
+    	SHORT Data2;
+    	SHORT Data3;
+    	unsigned char Data4[8];
+	}OLECLSID;
+	typedef	OLECLSID *REFIID;
+	typedef struct
+	{
+		LONG cElems;
+		LONG pElems;
+	}OLECAUUID;
+	typedef OLECAUUID *LPCAUUID;
+	typedef struct
+	{
+		LONG cElems;
+		LONG pElems;
+	}OLECALPOLESTR;
+	typedef OLECALPOLESTR *LPCALPOLESTR;
+	typedef struct
+	{
+		LONG cElems;
+		LONG pElems;
+	}OLECADWORD;
+	typedef OLECADWORD *LPCADWORD;
+	[
+		uuid(00000000-0000-0000-C000-000000000046),
+		odl,
+		hidden
+	]
+	interface IUnknownUnrestricted
+	{
+                LONG QueryInterface([in] LONG priid, [in, out] LONG *pvObj);
+                LONG AddRef();
+                LONG Release();
+	};
+	[
+		uuid(00000114-0000-0000-C000-000000000046),
+		odl
+	]
+	interface IOleWindow : IUnknown
+	{
+		HRESULT GetWindow([out, retval] LONG *phWnd);
+		HRESULT ContextSensitiveHelp([in] LONG fEnterMode);
+	};
+	[
+		uuid(00000118-0000-0000-C000-000000000046),
+		odl
+	]
+	interface IOleClientSite : IUnknown
+	{
+		// Not done, guid placeholder only
+	};
+	[
+		uuid(00000112-0000-0000-C000-000000000046),
+		odl
+	]
+	interface IOleObject : IUnknown
+	{
+		HRESULT SetClientSite([in] IOleClientSite *pClientSite);
+		HRESULT GetClientSite([out, retval] IOleClientSite **ppClientSite);
+		HRESULT SetHostNames([in] LPWSTR szContainerApp, [in] LPWSTR szContainerObj);
+		HRESULT Close([in] LONG dwSaveOption);
+		HRESULT SetMoniker([in] LONG dwWhichMoniker, [in] LONG lpmk);
+		HRESULT GetMoniker([in] LONG dwAssign, [in] LONG dwWhichMoniker, [out, retval] LONG *lppmk);
+		HRESULT InitFromData([in] LONG lpDataObject, [in] LONG fCreation, [in] LONG dwReserved);
+		HRESULT GetClipboardData([in] LONG dwReserved, [out, retval] LONG *lppDataObject);
+		LONG DoVerb([in] LONG iVerb, [in] LONG lpMsg, [in] IOleClientSite *pActiveSite, [in] LONG Index, [in] LONG hWndParent, [in] LONG lprcPosRect);
+		// Lots more.
+	};
+	[
+		uuid(00000113-0000-0000-C000-000000000046),
+		odl
+	]
+	interface IOleInPlaceObject : IOleWindow
+	{
+		HRESULT InPlaceDeactivate();
+		HRESULT UIDeactivate();
+		HRESULT SetObjectRects([in] LONG lprcPosRect, [in] LONG lprcClipRect);
+		HRESULT ReactivateAndUndo();
+	};
+	[
+		uuid(B196B288-BAB4-101A-B69C-00AA00341D07),
+		odl
+	]
+	interface IOleControl : IUnknown
+	{
+		LONG GetControlInfo([out] OLECONTROLINFO *pCI);
+		LONG OnMnemonic([in] OLEACCELMSG *pMsg);
+		HRESULT OnAmbientPropertyChange([in] LONG DispID);
+		HRESULT FreezeEvents([in] LONG bFreeze);
+	};
+	[
+		uuid(B196B289-BAB4-101A-B69C-00AA00341D07),
+		odl
+	]
+	interface IOleControlSite : IUnknown
+	{
+		HRESULT OnControlInfoChanged();
+		HRESULT LockInPlaceActive([in] LONG fLock);
+		HRESULT GetExtendedControl([out, retval] IDispatch **ppDisp);
+		HRESULT TransformCoords([in] LONG pPtlHimetric, [in] LONG pPtfContainer, [in] LONG dwFlags);
+		LONG TranslateAccelerator([in] LONG lpMsg, [in] LONG grfModifiers);
+		HRESULT OnFocus([in] LONG fGotFocus);
+		HRESULT ShowPropertyFrame();
+	};
+	[
+		uuid(00000117-0000-0000-C000-000000000046),
+		odl
+	]
+	interface IOleInPlaceActiveObject : IUnknownUnrestricted
+	{
+		LONG GetWindow([out] LONG *phWnd);
+		LONG ContextSensitiveHelp([in] LONG fEnterMode);
+		LONG TranslateAccelerator([in] LONG lpMsg);
+		LONG OnFrameWindowActivate([in] LONG fActivate);
+		LONG OnDocWindowActivate([in] LONG fActivate);
+		LONG ResizeBorder([in] LONG prcBorder, [in] IOleInPlaceUIWindow *pUIWindow, [in] LONG fFrameWindow);
+		LONG EnableModeless([in] LONG fEnable);
+	};
+	[
+		uuid(00000115-0000-0000-C000-000000000046),
+		odl
+	]
+    	interface IOleInPlaceUIWindow : IOleWindow
+    	{
+		HRESULT GetBorder([in] LONG lpRectBorder);
+		HRESULT RequestBorderSpace([in] LONG pBorderWidths);
+		HRESULT SetBorderSpace([in] LONG pBorderWidths);
+		HRESULT SetActiveObject([in] IOleInPlaceActiveObject *pActiveObject, [in] LPWSTR pszObjName);
+    	};
+	[
+		uuid(00000116-0000-0000-C000-000000000046),
+		odl
+	]
+	interface IOleInPlaceFrame : IOleInPlaceUIWindow
+	{
+		// Not done, guid placeholder only
+	};
+	[
+		uuid(00000119-0000-0000-C000-000000000046),
+		odl
+	]
+	interface IOleInPlaceSite : IOleWindow
+	{
+		LONG CanInPlaceActivate();
+		HRESULT OnInPlaceActivate();
+		HRESULT OnUIActivate();
+		HRESULT GetWindowContext([out] IOleInPlaceFrame **ppFrame, [out] IOleInPlaceUIWindow **ppDoc, [in] LONG lprcPosRect, [in] LONG lprcClipRect, [in] LONG lpFrameInfo);
+		HRESULT Scroll([in] CURRENCY scrollExtant);
+		HRESULT OnUIDeactivate([in] LONG fUndoable);
+		HRESULT OnInPlaceDeactivate();
+		HRESULT DiscardUndoState();
+		HRESULT DeactivateAndUndo();
+		HRESULT OnPosRectChange([in] LONG lprcPosRect);
+	};
+	[
+		uuid(00020400-0000-0000-C000-000000000046),
+		odl
+	]
+	interface IDispatch : IUnknown
+	{
+		typedef IDispatch *LPDISPATCH;
+		HRESULT GetTypeInfoCount([out] LONG *pctInfo);
+    		HRESULT GetTypeInfo([in] LONG itinfo, [in] LONG lcid, [out] LONG *pptinfo);
+    		HRESULT GetIDsOfNames([in] REFIID riid, [in] LPWSTR *rgszNames, [in] LONG cNames, [in] LONG lcid, [in, out] LONG *rgDispID);
+    		HRESULT Invoke([in] LONG DispIDMember, [in] REFIID riid, [in] LONG lcid, [in] SHORT wFlags, [in] DISPPARAMS *pdispparams, [in, out] VARIANT *pvarResult, [out] EXCEPINFO *pexcepinfo, [out] LONG *puArgErr);
+	};
+	[
+		uuid(376BD3AA-3845-101B-84ED-08002B2EC713),
+		odl
+	]
+	interface IPerPropertyBrowsing : IUnknown
+	{
+		LONG GetDisplayString([in] LONG DispID, [out] LONG *pDisplayName);
+		LONG MapPropertyToPage([in] LONG DispID, [out] OLECLSID *pCLSID);
+		LONG GetPredefinedStrings([in] LONG DispID, [out] OLECALPOLESTR *pCaStringsOut, [out] OLECADWORD *pCaCookiesOut);
+		LONG GetPredefinedValue([in] LONG DispID, [in] LONG dwCookie, [out] VARIANT *pVarOut);
+	};
+	[
+		uuid(B196B28B-BAB4-101A-B69C-00AA00341D07),
+		odl
+	]
+	interface ISpecifyPropertyPages : IUnknown
+	{
+		HRESULT GetPages([out] OLECAUUID *pPages);
+	};
+	[
+		uuid(00020404-0000-0000-C000-000000000046),
+		odl
+	]
+	interface IEnumVARIANTUnrestricted : IDispatch
+	{
+		HRESULT Next([in] LONG cElt, [in, out] VARIANT *rgVar, [in] LONG pcEltFetched);
+		HRESULT Skip([in] LONG cElt);
+		HRESULT Reset();
+		HRESULT Clone([in, out] IEnumVARIANT **ppEnum);
+	};
+    	[
+        	uuid(0000000B-0000-0000-C000-000000000046),
+        	odl,
+    	]
+    	interface IStorage : IUnknown
+	{
+		// Not done, guid placeholder only
+    	};
+    	[
+        	uuid(0000010E-0000-0000-C000-000000000046),
+        	odl,
+    	]
+    	interface IDataObject : IUnknown
+	{
+		// Not done, guid placeholder only
+    	};
+    	[
+        	uuid(CB5BDC81-93C1-11CF-8F20-00805F2CD064),
+        	odl,
+    	]
+    	interface IObjectSafety : IUnknown
+	{
+        	HRESULT GetInterfaceSafetyOptions([in] REFIID riid, [in, out] LONG *pdwSupportedOptions, [in, out] LONG *pdwEnabledOptions);
+        	HRESULT SetInterfaceSafetyOptions([in] REFIID riid, [in] LONG dwOptionSetMask, [in] LONG dwEnabledOptions);
+    	};
+	[
+		uuid(38584260-0CFB-45E7-8FBB-5D20B311F5B8),
+		odl,
+		version(1.0),
+		dual,
+		nonextensible,
+		oleautomation
+	]
+	interface IOleInPlaceActiveObjectVB : IDispatch
+	{
+        	[id(0x00000001)]
+        	HRESULT TranslateAccelerator([in, out] boolean *Handled, [in, out] LONG *RetVal, [in] LONG hWnd, [in] LONG wMsg, [in] LONG wParam, [in] LONG lParam, [in] LONG Shift);
+    	};
+	[
+		uuid(C895C8F9-6564-4123-8760-529F72AB9322),
+		odl,
+		version(1.0),
+		dual,
+		nonextensible,
+		oleautomation
+	]
+	interface IOleControlVB : IDispatch 
+	{
+        	[id(0x00000001)]
+        	HRESULT GetControlInfo([in, out] boolean *Handled, [in, out] SHORT *AccelCount, [in, out] LONG *AccelTable, [in, out] LONG *Flags);
+		[id(0x00000002)]
+		HRESULT OnMnemonic([in, out] boolean *Handled, [in] LONG hWnd, [in] LONG wMsg, [in] LONG wParam, [in] LONG lParam, [in] LONG Shift);
+	};
+    	[
+		uuid(D5D3BBE3-DB60-4522-AF5B-D767FE736DDB),
+		odl,
+		version(1.0),
+		dual,
+		nonextensible,
+		oleautomation
+	]
+    	interface IPerPropertyBrowsingVB : IDispatch 
+	{
+		[id(0x00000001)]
+        	HRESULT GetDisplayString([in, out] boolean *Handled, [in] LONG DispID, [in, out] BSTR *DisplayName);
+		[id(0x00000002)]
+        	HRESULT GetPredefinedStrings([in, out] boolean *Handled, [in] LONG DispID, [in, out] SAFEARRAY(BSTR) *StringsOut, [in, out] SAFEARRAY(LONG) *CookiesOut);
+		[id(0x00000003)]
+		HRESULT GetPredefinedValue([in, out] boolean *Handled, [in] LONG DispID, [in] LONG Cookie, [in, out] VARIANT *Value);
+    	};
+	[
+		uuid(00020D00-0000-0000-C000-000000000046),
+		odl
+	]
+	interface IRichEditOle : IUnknown
+	{
+		HRESULT GetClientSite([out, retval] IOleClientSite **ppOleSite);
+		LONG GetObjectCount();
+		LONG GetLinkCount();
+		LONG GetObject([in] LONG iob, [in] void *pREOBJECT, [in] LONG dwFlags);
+		LONG InsertObject([in] void *pREOBJECT);
+		LONG ConvertObject([in] LONG iob, [in] OLECLSID *pCLSIDNew, [in] LPSTR pstrUserTypeNew);
+		LONG ActivateAs([in] OLECLSID *pCLSID, [in] OLECLSID *pCLSIDAs);
+		LONG SetHostNames([in] LPSTR pstrContainerApp, [in] LPSTR pstrContainerObj);
+		LONG SetLinkAvailable([in] LONG iob, [in] LONG fAvailable);
+		LONG SetDvaspect([in] LONG iob, [in] LONG dvAspect);
+		LONG HandsOffStorage([in] LONG iob);
+		LONG SaveCompleted([in] LONG iob, [in] IStorage *pStorage);
+		LONG InPlaceDeactivate();
+		LONG ContextSensitiveHelp([in] LONG fEnterMode);
+		LONG GetClipboardData([in] LONG lpCharRange, [in] LONG RECO, [out] IDataObject **ppDataObject);
+		LONG ImportDataObject([in] IDataObject *pDataObject, [in] SHORT CF, [in] LONG hMetaPict);
+	};
+	[
+    		uuid(00020D03-0000-0000-C000-000000000046),
+    		odl
+	]
+	interface IRichEditOleCallback : IUnknown
+	{
+		HRESULT GetNewStorage([in, out] IStorage **ppStorage);
+		HRESULT GetInPlaceContext([in, out] IOleInPlaceFrame **ppFrame, [in, out] IOleInPlaceUIWindow **ppDoc, [in, out] OLEINPLACEFRAMEINFO *pFrameInfo);
+		HRESULT ShowContainerUI([in] LONG fShow);
+		HRESULT QueryInsertObject([in, out] OLECLSID *pCLSID, [in] IStorage *pStorage, [in] LONG CharPos);
+		HRESULT DeleteObject([in] LONG LpOleObject);
+		HRESULT QueryAcceptData([in] IDataObject *pDataObject, [in, out] SHORT *CF, [in] LONG RECO, [in] LONG fReally, [in] LONG hMetaPict);
+		HRESULT ContextSensitiveHelp([in] LONG fEnterMode);
+		HRESULT GetClipboardData([in] LONG lpCharRange, [in] LONG RECO, [in, out] IDataObject **ppDataObject);
+		HRESULT GetDragDropEffect([in] LONG fDrag,[in] LONG KeyState, [in, out] LONG *dwEffect);
+		HRESULT GetContextMenu([in] SHORT SelType, [in] LONG LpOleObject, [in] LONG lpCharRange, [in, out] LONG *hMenu);
+	};
+}

@@ -1,0 +1,207 @@
+VERSION 5.00
+Begin VB.PropertyPage PPListViewSorting 
+   Caption         =   "Sorting"
+   ClientHeight    =   7425
+   ClientLeft      =   0
+   ClientTop       =   0
+   ClientWidth     =   6450
+   LockControls    =   -1  'True
+   PaletteMode     =   0  'Halftone
+   ScaleHeight     =   7425
+   ScaleWidth      =   6450
+   Begin VB.Frame FrameSorting 
+      Caption         =   "Sorting"
+      Height          =   2055
+      Left            =   120
+      TabIndex        =   0
+      Top             =   120
+      Width           =   4455
+      Begin VB.CheckBox CheckSorted 
+         Caption         =   "&Sorted"
+         Height          =   285
+         Left            =   240
+         TabIndex        =   1
+         Top             =   360
+         Width           =   1620
+      End
+      Begin VB.TextBox TextSortKey 
+         Height          =   315
+         Left            =   1920
+         TabIndex        =   3
+         Top             =   720
+         Width           =   2235
+      End
+      Begin VB.ComboBox ComboSortType 
+         Height          =   315
+         Left            =   1920
+         Style           =   2  'Dropdown List
+         TabIndex        =   7
+         Top             =   1440
+         Width           =   2235
+      End
+      Begin VB.ComboBox ComboSortOrder 
+         Height          =   315
+         Left            =   1920
+         Style           =   2  'Dropdown List
+         TabIndex        =   5
+         Top             =   1080
+         Width           =   2235
+      End
+      Begin VB.Label LabelSortKey 
+         Caption         =   "Sort&Key:"
+         Height          =   240
+         Left            =   240
+         TabIndex        =   2
+         Top             =   720
+         Width           =   1620
+      End
+      Begin VB.Label LabelSortType 
+         Caption         =   "Sort&Type:"
+         Height          =   240
+         Left            =   240
+         TabIndex        =   6
+         Top             =   1440
+         Width           =   1620
+      End
+      Begin VB.Label LabelSortOrder 
+         Caption         =   "Sort&Order:"
+         Height          =   240
+         Left            =   240
+         TabIndex        =   4
+         Top             =   1080
+         Width           =   1620
+      End
+   End
+End
+Attribute VB_Name = "PPListViewSorting"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Option Explicit
+Private FreezeChanged As Boolean
+
+Private Sub PropertyPage_Initialize()
+Call ComCtlsShowAllUIStates(PropertyPage.hWnd)
+With ComboSortOrder
+.AddItem LvwSortOrderAscending & " - Ascending"
+.ItemData(.NewIndex) = LvwSortOrderAscending
+.AddItem LvwSortOrderDescending & " - Descending"
+.ItemData(.NewIndex) = LvwSortOrderDescending
+End With
+With ComboSortType
+.AddItem LvwSortTypeBinary & " - Binary"
+.ItemData(.NewIndex) = LvwSortTypeBinary
+.AddItem LvwSortTypeText & " - Text"
+.ItemData(.NewIndex) = LvwSortTypeText
+.AddItem LvwSortTypeNumeric & " - Numeric"
+.ItemData(.NewIndex) = LvwSortTypeNumeric
+.AddItem LvwSortTypeCurrency & " - Currency"
+.ItemData(.NewIndex) = LvwSortTypeCurrency
+.AddItem LvwSortTypeDate & " - Date"
+.ItemData(.NewIndex) = LvwSortTypeDate
+.AddItem LvwSortTypeLogical & " - Logical"
+.ItemData(.NewIndex) = LvwSortTypeLogical
+End With
+End Sub
+
+Private Sub PropertyPage_ApplyChanges()
+On Error Resume Next
+PropertyPage.ValidateControls
+If Err.Number = 380 Then Exit Sub
+On Error GoTo 0
+With PropertyPage.SelectedControls(0)
+If CheckSorted.Value = vbChecked Then
+    If .VirtualMode = True Then
+        MsgBox "Sorted must be False when VirtualMode is True", vbExclamation + vbOKOnly
+        CheckSorted.SetFocus
+        PropertyPage.Changed = True
+        Exit Sub
+    End If
+End If
+.Sorted = CBool(CheckSorted.Value = vbChecked)
+.SortKey = CInt(TextSortKey.Text)
+.SortOrder = ComboSortOrder.ItemData(ComboSortOrder.ListIndex)
+.SortType = ComboSortType.ItemData(ComboSortType.ListIndex)
+End With
+Call PropertyPage_SelectionChanged
+End Sub
+
+Private Sub PropertyPage_SelectionChanged()
+Dim i As Long
+FreezeChanged = True
+With PropertyPage.SelectedControls(0)
+CheckSorted.Value = IIf(.Sorted = True, vbChecked, vbUnchecked)
+TextSortKey.Text = CStr(.SortKey)
+For i = 0 To ComboSortOrder.ListCount - 1
+    If ComboSortOrder.ItemData(i) = .SortOrder Then
+        ComboSortOrder.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboSortType.ListCount - 1
+    If ComboSortType.ItemData(i) = .SortType Then
+        ComboSortType.ListIndex = i
+        Exit For
+    End If
+Next i
+End With
+FreezeChanged = False
+End Sub
+
+Private Sub CheckSorted_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextSortKey_GotFocus()
+If Not TextSortKey.SelStart = 0 Then Exit Sub
+TextSortKey.SelLength = Len(TextSortKey.Text)
+End Sub
+
+Private Sub TextSortKey_LostFocus()
+TextSortKey.SelStart = 0
+End Sub
+
+Private Sub TextSortKey_Change()
+If FreezeChanged = True Then Exit Sub
+If TextSortKey.Text = vbNullString Then
+    TextSortKey.Text = "0"
+    TextSortKey.SelStart = 0
+    TextSortKey.SelLength = 1
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextSortKey_Validate(Cancel As Boolean)
+If Not IsNumeric(TextSortKey.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextSortKey.Text = PropertyPage.SelectedControls(0).SortKey
+    TextSortKey.SetFocus
+    Cancel = True
+Else
+    Dim IntValue As Integer
+    On Error Resume Next
+    IntValue = CInt(TextSortKey.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If IntValue < 0 Then Cancel = True
+    If Cancel = False Then
+        TextSortKey.Text = IntValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextSortKey.Text = PropertyPage.SelectedControls(0).SortKey
+        TextSortKey.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub ComboSortOrder_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboSortType_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub

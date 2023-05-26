@@ -16,7 +16,7 @@
 ;
 ; (1-29, 1000-1089)
 ;
-0001=Bienvenido a HiJackThis Fork.
+0001=Bienvenido a HiJackThis+
      Este programa generará un reporte de elementos inusuales
      (archivos, modificacones en registros, etc.) en las areas mas vulnerables del sistema operativo,
      comúnmente manipulado por malware, así como por buen software.
@@ -107,11 +107,11 @@
 ;
 ; (1090-1099)
 ;
-1090=Bienvenido a HiJackThis Fork 3
+1090=Bienvenido a HiJackThis+
 1091=    HiJack Esta es una herramienta gratuita y de código abierto diseñada para combatir el malware y el adware no deseado. Se proporciona "COMO ES" sin garantía de ningún tipo. Ustede debe utilizar este software bajo su propia responsabilidad.
          Este software no está permitido para fines comerciales.
          Debe leer y aceptar el acuerdo de licencia para continuar:
-1092=HiJackThis Fork - Acuerdo de licencia
+1092=HiJackThis - Acuerdo de licencia
 1093=Acepto
 1094=NO ACEPTO
 ;
@@ -210,6 +210,7 @@
 1236=Atajos
 1237=Verifique los accesos directos a través de Check Browsers' LNK
 1238=Corregir accesos directos a través de ClearLNK
+1239=Analizador de tipo de clave
 ;
 ; ============== Help window: About, Sections, Keys  =============
 ;
@@ -233,6 +234,8 @@
          F1 - Parámetro de archivo ini creado (win.ini)
          F2 - Valor de registro modificado que anula la configuración del archivo ini (shell, userinit)
          F3 - Parámetro de registro creado que anula la configuración del archivo ini (cargar, ejecutar)
+      B - Extensiones y políticas del navegador:
+         B - Chrome: para el navegador Google Chrome
       O - Otras Secciones:
          O1 - Hijack de Hosts y archivos hosts.ics / Hijack de DNSApi
          O2 - Internet Explorer: BHO
@@ -350,9 +353,9 @@
      Descripcion
      -------------
      
-          HiJackThis Fork escanea su computadora en busca de configuraciones modificadas por adware, spyware, malware y otros programas no deseados.
+          HiJackThis+ escanea su computadora en busca de configuraciones modificadas por adware, spyware, malware y otros programas no deseados.
           
-          Los resultados de HiJackThis Fork no se basan en listas negras, programas específicos o URL. En cambio, se basan en métodos y técnicas comunes utilizados por los secuestradores.
+          Los resultados de HiJackThis+ no se basan en listas negras, programas específicos o URL. En cambio, se basan en métodos y técnicas comunes utilizados por los secuestradores.
           Por lo tanto, ES POSIBLE QUE SEAN FALSOS POSITIVOS. Si alguna vez no está seguro, debe consultar con un experto con conocimientos ANTES de eliminar cualquier cosa.
      
           HiJackThis viene con varias herramientas útiles disponibles en el botón 'Herramientas varias', y la nueva barra en el menú 'Herramientas':
@@ -363,8 +366,9 @@
        - Espía de datos alternativo
        - Administrador de desinstalación
        - Herramienta de eliminación de servicios
-       - Herramienta de eliminación de archivos bloqueados
+       - Desbloqueador de archivos
        - Desbloqueador de clave de registro
+       - Analizador de tipo de clave de registro
        - Comprobador de firmas digitales por lotes
        - Chequeo y curación de accesos directos del navegador (Como componente descargable)
 
@@ -379,7 +383,7 @@
      
      Desarrolladores:
      
-     - Polshyn Stanislav { Alex Dragokas } - author de fork (Princiapales actualizaciones v3 and todo lo posterior v2.0.6 updates), refactorización, adiciones, integración de herramientas.
+     - Alex Dragokas - author de fork (Princiapales actualizaciones v3 and todo lo posterior v2.0.6 updates), refactorización, adiciones, integración de herramientas.
      - Merijn Bellekom - autor original, autor de la nueva StartupList v2 y ADS Spy
      - Trend Micro - propietario de la versión original (2.0.5)
      
@@ -420,7 +424,7 @@
 
      Licencia
      -------------
-     HiJackThis Fork es una modificación del programa HiJackThis original de Trend Micro. Está hecho por Alex Dragokas y el equipo de SafeZone.cc, y distribuido como código abierto bajo su licencia GPLv2 original. También incluye varios complementos disponibles como herramientas gratuitas.
+     HiJackThis+ es una modificación del programa HiJackThis original de Trend Micro. Está hecho por Alex Dragokas y el equipo de SafeZone.cc, y distribuido como código abierto bajo su licencia GPLv2 original. También incluye varios complementos disponibles como herramientas gratuitas.
 
      Donacion
      -------------
@@ -589,8 +593,8 @@
      ¿Continuar con la desinstalación?
 0154=Esto eliminará completamente HiJackThis, incluidas las configuraciones y las copias de seguridad. ¿Continuar?
 0155=Conexión directa
-0156=Configuración de IE
-0157=Proxy
+0156=Proxy del sistema
+0157=Otro proxy
 1600=Complementos
 1601=Comprobar el LNK de los navegadores
 1602=Identificar accesos directos infectados (.LNK) que causan publicidad no deseada en los navegadores
@@ -631,12 +635,7 @@
 0189=DLL cargados por proceso
 1650=La lista de procesos y la lista dll se han copiado en su portapapeles.
 1651=La lista de procesos se ha copiado en su portapapeles.
-1652=No se pudo finalizar el proceso seleccionado. Es posible que ya se haya cerrado o que esté protegido por Windows.
 1653=No se pudo finalizar el proceso seleccionado. Puede estar protegido por Windows.
-1654=No se pudo finalizar el proceso seleccionado. Es posible que ya se haya cerrado o que esté protegido por Windows.
-
-     Este proceso puede ser un servicio, que puede detener desde el subprograma Servicios en Panel de control -> Herramientas de administración.
-     (Para cargar esta ventana, haga clic en 'Win + R' e ingrese 'services.msc')
 ;
 ; ================= ADS Spy =================
 ;
@@ -742,6 +741,7 @@
 ;
 0230=Valores de registro de IE
 0231=valores de archivo INI
+0232=B - Navegadores
 0233=O1 - Redirección de hosts
 0234=O2 - BHO
 0235=O3 - Barra de herramientas
@@ -827,7 +827,7 @@
 1866=La firma digital está presente, pero dañada (el archivo probablemente ha sido parcheado)
 1867=Enumerando archivos. Espere por favor...
 1868=Preparación de un informe. Espere por favor...
-1869=No se puede abrir el archivo de informe. El acceso de escritura está restringido por otro programa.
+1869=No se puede escribir el archivo de informe. El acceso de escritura está restringido por otro programa. ¿Repetir?
 1870=Agregar archivo...
 1871=Precaching catálogos de seguridad ...
 1872=Agregar carpeta...
@@ -865,6 +865,28 @@
 2410=Seleccione
 2411=Carpetas
 2412=Selección de carpeta
+;
+; ============= Registry Key Type Analyzer =========
+;
+; (2450 - 2499)
+;
+2450=Analizador de tipo de clave de registro
+2451=Esta herramienta crea un informe con diversa información de las claves de registro especificadas a continuación:
+2452=Recursivamente
+2453=Ejecutar
+2454=Cerrar
+2456=Una vez
+2458=Limpiar lista
+2459=
+2460=Extracto
+2461=Puede pegar claves en formato sucio y luego aplicar un analizador con las siguientes opciones:
+2462=Extraiga la clave de registro de un texto/script complejo, donde clave:
+2463=Comienza con:
+2464=Termina con:
+2465=También reemplaza:
+2466=con
+2467=Consulta vista x32 (adicionalmente)
+2468=Modo
 ;
 ; ============ Delete on reboot
 ;
@@ -1250,6 +1272,20 @@
 
      >>> Acción tomada por HiJackThis:
       - se elimina el valor del registro.
+; [O27]
+0437=
+; [O28]
+0438=
+; [O29]
+0439=
+; [O30]
+0440=
+; [B]
+0441=        La sección del navegador representa extensiones y políticas sospechosas. Está en construcción en este momento. No se admiten muchas definiciones y navegadores.
+
+     >>> Acción tomada por HiJackThis:
+      - el navegador está cerrado
+      - los archivos y los valores del registro se modifican o eliminan
 0490=Información detallada de las secciones:
 ;
 ; ========== Delete Service ==========
@@ -1792,5 +1828,5 @@
 ;
 ; ========= Empty ========
 ;
-; (2450 - ...)
-;                              
+; (2500 - ...)
+;                                       

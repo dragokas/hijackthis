@@ -18,7 +18,7 @@ Attribute VB_Ext_KEY = "Top_Level" ,"Yes"
 Option Explicit
 
 ' OSInfo class by Alex Dragokas
-' ver 1.13
+' ver 1.14
 '
 
 'Tips:
@@ -309,6 +309,7 @@ Dim IsServer_               As Boolean
 Dim IsDomainController_     As Boolean
 Dim inIDE                   As Boolean
 Dim IsWin64_                As Boolean
+Dim IsWin32_                As Boolean
 Dim SecureBoot_             As Boolean
 Dim PlatformID_             As Long
 Dim IsLocalSystemContext_   As Boolean
@@ -318,6 +319,7 @@ Dim IsEmbedded_             As Boolean
 Dim LCID_UserDefault_       As Long
 Dim m_hCpuQuery             As Long
 Dim m_hCpuCounter           As Long
+Dim m_Pid                   As Long
 
 
 Private Sub Class_Initialize()
@@ -336,7 +338,9 @@ Private Sub Class_Initialize()
     Dim dwBuild         As Long
     
     inIDE = (App.LogMode = 0)
-        
+    
+    m_Pid = GetCurrentProcessId()
+    
     LangDisplayCode_ = GetUserDefaultUILanguage Mod &H10000
     LangDisplayName_ = GetLangNameByCultureCode(LangDisplayCode_)
     LangDisplayNameFull_ = GetLangNameFullByCultureCode(LangDisplayCode_)
@@ -406,9 +410,9 @@ Private Sub Class_Initialize()
     
     End If
     
-    Bitness_ = IIf(IsWow64(), "x64", "x32") 'VB6 is always x86
-    
-    IsWin64_ = (Bitness_ = "x64")
+    If IsWow64() Then IsWin64_ = True 'VB6 is always x86
+    IsWin32_ = Not IsWin64_
+    Bitness_ = IIf(IsWin64_, "x64", "x32")
     
     lret = GetSystemMetrics(SM_CLEANBOOT)
     IsSafeBoot_ = (lret > 0)
@@ -571,7 +575,7 @@ Private Sub Class_Initialize()
                 Else
                     Edition_ = "Standard"
                 End If
-            ElseIf osi.wProductType = VER_NT_WORKSTATION And Bitness_ = "x64" Then
+            ElseIf osi.wProductType = VER_NT_WORKSTATION And IsWin64_ Then
                 OSName_ = "Windows XP"
                 Edition_ = "Professional"
             End If
@@ -1797,7 +1801,7 @@ Public Property Get IsWin64() As Boolean
 End Property
 
 Public Property Get IsWin32() As Boolean
-    IsWin32 = Not IsWin64_
+    IsWin32 = IsWin32_
 End Property
 
 Public Property Get PlatformID() As Long
@@ -1863,4 +1867,8 @@ Public Property Get CpuUsage() As Double ' in % (Vista+)
         End If
     End If
 
+End Property
+
+Public Property Get CurrentProcessId() As Long
+    CurrentProcessId = m_Pid
 End Property

@@ -16,7 +16,7 @@
 ;
 ; (1-29, 1000-1089)
 ;
-0001=Bienvenue dans HiJackThis Fork.
+0001=Bienvenue dans HiJackThis+
      Ce programme va générer un rapport d'éléments non usuels (modifications du registre,
      de fichiers, etc...) des zones les plus vulnérables du Système d'exploitation, souvent modifiées par des logiciels officiels ou malveillants.
 
@@ -105,12 +105,12 @@
 ;
 ; (1090-1099)
 ;
-1090=Bienvenue dans HiJackThis Fork 3
+1090=Bienvenue dans HiJackThis+
 1091=     HiJackThis est un outil gratuit et Open source conçu pour lutter contre les logiciels malveillants et les logiciels publicitaires indésirables. Il est fourni "TEL QUEL"
           sans garantie d'aucune sorte. Vous pouvez utiliser ce logiciel à vos risques et périls.
           Ce logiciel n'est pas autorisé à des fins commerciales.
           Vous devez lire et accepter le contrat de licence pour continuer:
-1092=HiJackThis Fork - Contrat de licence
+1092=HiJackThis - Contrat de licence
 1093=J'accepte
 1094=Je n'accepte pas
 ;
@@ -210,6 +210,7 @@ et enregistrer un rapport
 1236=Raccourcis
 1237=Vérifier les raccourcis via Check Browsers' LNK
 1238=Corriger les raccourcis via ClearLNK
+1239=Analyseur de type de clé
 ;
 ; ============== Help window: About, Sections, Keys  =============
 ;
@@ -233,6 +234,8 @@ et enregistrer un rapport
          F1 - Paramètre ini-file créé (win.ini)
          F2 - Valeur de registre modifiée qui remplace les paramètres du fichier ini (shell, userinit)
          F3 - Paramètre de registre créé qui remplace les paramètres du fichier ini (chargement, exécution)
+      B - Extensions de navigateur et politiques:
+         B - Chrome: pour le navigateur Google Chrome
       O - Autres sections:
          O1 - Redirections dans les fichiers Hosts et hosts.ics/DNSApi
          O2 - Internet Explorer: BHO
@@ -349,9 +352,9 @@ et enregistrer un rapport
      Description
      -------------
      
-HiJackThis Fork analyse votre ordinateur à la recherche de paramètres modifiés par les logiciels publicitaires, espions, malveillants ou autres programmes indésirables.
+HiJackThis+ analyse votre ordinateur à la recherche de paramètres modifiés par les logiciels publicitaires, espions, malveillants ou autres programmes indésirables.
 
-Les résultats de HiJackThis Fork ne sont pas basés sur des listes noires, des programmes spécifiques ou des URL. En fait, ils sont basés sur des méthodes et techniques couramment utilisées par les pirates.
+Les résultats de HiJackThis+ ne sont pas basés sur des listes noires, des programmes spécifiques ou des URL. En fait, ils sont basés sur des méthodes et techniques couramment utilisées par les pirates.
 Se SONT donc probablement de FAUX POSITIFS. En cas de doute, consultez un expert AVANT de supprimer quoi que ce soit.
      
 HiJackThis est livré avec plusieurs outils, disponibles sous le bouton "Outils divers" et la nouvelle barre du menu "Outils":
@@ -362,8 +365,9 @@ HiJackThis est livré avec plusieurs outils, disponibles sous le bouton "Outils 
         - Spy alternatif de données
         - Outils de désinstallation
         - Outil de suppression de services
-        - Outil de suppression de fichiers verrouillés
+        - Déverrouilleur de fichiers
         - Déblocage de clé de registre
+        - Analyseur de type de clé de registre
         - Vérificateur de signatures numériques par lots
         - Vérifier les liens des navigateurs LNK & ClearLNK (composants téléchargeables)
 
@@ -378,7 +382,7 @@ HiJackThis est livré avec plusieurs outils, disponibles sous le bouton "Outils 
      
      Développeurs:
      
-     - Polshyn Stanislav { Alex Dragokas } - auteur de fork (v3 majeure et toutes les mises à jour post-v2.0.6), refactoring, ajouts et intégration d'outils
+     - Alex Dragokas - auteur de fork (v3 majeure et toutes les mises à jour post-v2.0.6), refactoring, ajouts et intégration d'outils
      - Merijn Bellekom - auteur original, auteur des nouveaux StartupList v2 et ADS Spy
      - Trend Micro - propriétaire de la version (2.0.5) originale
      
@@ -419,7 +423,7 @@ HiJackThis est livré avec plusieurs outils, disponibles sous le bouton "Outils 
 
      Licence
      -------------
-HiJackThis Fork est une modification du programme HiJackThis original de Trend Micro. Il a été développé par Alex Dragokas et l'équipe de SafeZone.cc. Il est distribué en open source sous sa licence GPLv2 originale. Il inclut également plusieurs plugins disponibles sous forme d'outils gratuits.
+HiJackThis+ est une modification du programme HiJackThis original de Trend Micro. Il a été développé par Alex Dragokas et l'équipe de SafeZone.cc. Il est distribué en open source sous sa licence GPLv2 originale. Il inclut également plusieurs plugins disponibles sous forme d'outils gratuits.
 
      Donation
      -------------
@@ -589,8 +593,8 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
      Continuer avec la désinstallation?
 0154=Cela supprimera complètement HiJackThis, y compris les paramètres et les sauvegardes. Continuer?
 0155=Connexion directe
-0156=Paramètres de IE
-0157=Proxy
+0156=Proxy système
+0157=Autre proxy 
 1600=Plugins
 1601=Check Browsers' LNK
 1602=Identifier les liens infectés (.LNK) qui occasionnent de la publicité non désirée dans les navigateurs
@@ -630,12 +634,7 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 0189=DLL chargées par le processus
 1650=La liste des processus et la liste des fichiers dll ont été copiées dans votre presse-papiers.
 1651=La liste des processus a été copiée dans votre presse-papiers.
-1652=Ce processus ne peut être arrêté. Il se peut qu'il soit déjà fermé ou qu'il soit protégé par Windows.
 1653=Ce processus ne peut être arrêté. Il peut être protégé par Windows.
-1654=Ce processus ne peut être arrêté. Il se peut qu'il soit déjà fermé ou qu'il soit protégé par Windows.
-
-     Ce processus peut être un service que vous pouvez arrêter à partir de l'onglet Services du Panneau de configuration -> Outils d'administration.
-	 (Pour ouvrir cette fenêtre, cliquez sur les boutons 'Win + R' et entrez 'services.msc').
 ;
 ; ================= ADS Spy =================
 ;
@@ -741,6 +740,7 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 ;
 0230=Valeur du registre IE
 0231=Valeurs du fichier INI
+0232=B - Navigateurs
 0233=O1 - Redirection des Hosts
 0234=O2 - BHO
 0235=O3 - Barre d'outils
@@ -824,7 +824,7 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 1866=La signature numérique est présente, mais endommagée (le fichier a probablement été retouché).
 1867=Comptage des dossiers. Veuillez patienter...
 1868=Préparation du rapport. Veuillez patienter...
-1869=Impossible d'ouvrir le rapport. L'accès en écriture est limité par un autre programme.
+1869=Impossible d'écrire le rapport. L'accès en écriture est limité par un autre programme. Répéter?
 1870=Ajout de fichier...
 1871=Mise en cache des catalogues de sécurité...
 1872=Ajout de dossier...
@@ -862,6 +862,28 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 2410=Sélectionner
 2411=Dossiers
 2412=Sélectionner un dossier
+;
+; ============= Registry Key Type Analyzer =========
+;
+; (2450 - 2499)
+;
+2450=Analyseur de types de clés de registre
+2451=Cet outil crée un rapport avec diverses informations sur les clés de registre spécifiées ci-dessous:
+2452=Récursivement
+2453=Réinitialiser
+2454=Fermer
+2456=Une fois
+2458=Effacer la liste
+2459=
+2460=Extrait
+2461=Vous pouvez coller des clés au format sale, puis appliquer un analyseur avec les options ci-dessous:
+2462=Extraire la clé de registre d'un texte/script complexe, où clé:
+2463=Commence avec:
+2464=Se termine par:
+2465=Remplace également:
+2466=par du
+2467=Interroger la vue x32 (en plus)
+2468=Mode
 ;
 ; ============ Delete on reboot ========
 ;
@@ -921,7 +943,7 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 0401= Une valeur de Registre a changé par rapport au paramètre par défaut, résultant en une page d'accueil IE, une page de recherche, une page de barre de recherche ou un assistant de recherche différents.     
 
      >>> Action prise par HiJackThis:
-      - la valeur de registre sera réinitialisée à l'URL par défaut.
+      - la valeur de registre sera réinitialisée à l'URL par défaut
 ; [R1]
 0402= Une valeur de Registre non présente dans une installation de Windows par défaut, ce qui peut entraîner une modification des paramètres de recherche Internet ou d'autres paramètres IE (IE Window Title, ProxyServer, ProxyOverride, Internet Connection Wizard, ShellNext, etc...)
      
@@ -931,13 +953,13 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 0403=        La clé de Registre n'est pas présente dans une installation Windows par défaut. Actuellement, cette section n'est pas utilisée (aucune entrée dans la base de données).     
     
      >>> Action prise par HiJackThis:
-      - La clé de Registre sera supprimée, avec tout ce qu'elle contient.
+      - La clé de Registre sera supprimée, avec tout ce qu'elle contient
 ; [R3]
 0404=        Plus d'une valeur détectée dans URLSearchHooks regkey. Si vous spécifiez une adresse URL sans préfixes http:// ou ftp://, le navigateur tentera de trouver le bon protocole en utilisant la liste dans UrlSearchHook.
      
-     >>> Action prise par HiJackThis :
-      - La valeur de registre sera supprimée ;
-      - la valeur par défaut de URLSearchHook sera restaurée.
+     >>> Action prise par HiJackThis:
+      - La valeur de registre sera supprimée
+      - la valeur par défaut de URLSearchHook sera restaurée
 ; [F0]
 0405=        Une valeur dans le fichier ini a changé par rapport à la valeur par défaut, ce qui peut entraîner le chargement du ou de programmes au démarrage de Windows. Souvent utilisé pour démarrer automatiquement un programme.
 
@@ -946,9 +968,9 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
      Par défaut: Shell=explorer.exe
      Exemple infecté : Shell=explorer.exe,openme.exe
      
-     >>> Action prise par HiJackThis :
-      - la valeur par défaut du fichier ini sera restaurée ;
-      - le fichier correspondant ne sera PAS supprimé.
+     >>> Action prise par HiJackThis:
+      - la valeur par défaut du fichier ini sera restaurée
+      - le fichier correspondant ne sera PAS supprimé
 ; [F1]
 0406=        Une valeur du fichier ini n'est pas présente dans l'installation de Windows par défaut, ce qui peut entraîner le chargement d'un ou de plusieurs programmes au démarrage de Windows. Souvent utilisé pour démarrer automatiquement un programme.
 
@@ -961,8 +983,8 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
      Exemple d'infection:: run=dialer.exe
      
      >>> Action prise par HiJackThis: 
-      - la valeur de ini-file sera supprimée;
-      - le fichier correspondant ne sera PAS supprimé.
+      - la valeur de ini-file sera supprimée
+      - le fichier correspondant ne sera PAS supprimé
 ; [F2]
 0407=        La section F2 correspond à l'emplacement équivalent dans le registre du fichier system.ini (F0).
 
@@ -983,8 +1005,8 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
      Shell=explorer.exe "C:\Program Files\Common Files\Microsoft Shared\Web Folders\ibm00001.exe"
 
      >>> Action prise par HiJackThis:
-      - la valeur par défaut du registre sera restaurée;
-      - le fichier correspondant ne sera PAS supprimé.
+      - la valeur par défaut du registre sera restaurée
+      - le fichier correspondant ne sera PAS supprimé
 ; [F3]
 0408=             La section F3 correspond à l'emplacement équivalent dans le registre du fichier win.ini (F1).
 
@@ -996,8 +1018,8 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
      Exemple d'infection: run=С:\WINDOWS\inet20001\services.exe
      
      >>> Action prise par HiJackThis:
-      - La valeur du registre sera supprimée;
-      - le fichier correspondant ne sera PAS supprimé.
+      - La valeur du registre sera supprimée
+      - le fichier correspondant ne sera PAS supprimé
 ; [O1]
 0409=        1) Windows utilise les entrées du fichier 'hosts' pour rechercher les noms de domaine avant d'interroger les serveurs DNS Internet. Les modifications apportées au fichier 'hosts' peuvent faire croire à Windows que, par exemple, 'google.com' a une adresse IP différente de celle qu'il a réellement, ce qui conduit les navigateurs à Ouvrir une page différente. Il peut également bloquer le(s) site(s) entièrement en les redirigeant vers localhost ou une IP inexistante. 
 
@@ -1017,22 +1039,22 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
      Hosts.ics: 192.168.137.1 AnakonDA.mshome.net # 2018 5 2 22 8 3 40 685
 \\p
      >>> Action prise par HiJackThis:
-      - Pour les entrées - ligne hosts et hosts.ics seront supprimées du fichier.
-      - Pour le fichier DNSApi - la dll sera récupéré si disponible en utilisant le sous-système SFC.
-     - Pour les emplacements hosts altérés - la valeur par défaut du registre sera restaurée.
-      - En outre, les entrées de cache DNS seront vidées et les services de cache DNS redémarreront.
+      - Pour les entrées - ligne hosts et hosts.ics seront supprimées du fichier
+      - Pour le fichier DNSApi - la dll sera récupéré si disponible en utilisant le sous-système SFC
+      - Pour les emplacements hosts altérés - la valeur par défaut du registre sera restaurée
+      - En outre, les entrées de cache DNS seront vidées et les services de cache DNS redémarreront
 ; [O2]
 0410=        Un BHO (Browser Helper Object) est un programme spécialement conçu qui s'intègre dans IE, et a des droits d'accès pratiquement illimités. Bien que les BHO puissent être utiles (comme la barre d'outils Google), les pirates les utilisent souvent à des fins malveillantes telles que le suivi de votre comportement en ligne, l'affichage de popups publicitaires, etc...
      
-     >>> Action prise par HiJackThis :
-      - Supprimer la clé de Registre BHO et toutes les clés correspondantes (comme CLSID et les polices IE BHO spéciales) ;
-      - Supprimer le fichier dll BHO.
+     >>> Action prise par HiJackThis:
+      - Supprimer la clé de Registre BHO et toutes les clés correspondantes (comme CLSID et les polices IE BHO spéciales)
+      - Supprimer le fichier dll BHO
 ; [O3]
 0411=        Les barres d'outils IE font partie des BHO (Browser Helper Objects) comme la barre d'outils Google qui peut être utile, mais qui peut aussi être gênante ou malveillante en suivant votre comportement et en affichant des popups publicitaires.
      
-     >>> Action prise par HiJackThis :
-      - Supprimer la valeur de registre et toutes les clés correspondantes (comme les paramètres et les politiques spéciales d'IE BHO).
-      - La dll sera supprimée.
+     >>> Action prise par HiJackThis:
+      - Supprimer la valeur de registre et toutes les clés correspondantes (comme les paramètres et les politiques spéciales d'IE BHO)
+      - La dll sera supprimée
 ; [O4]
 0412=        Cette partie du scan vérifie plusieurs entrées suspectes qui se chargent automatiquement au démarrage de Windows. Le chargement automatique des entrées du registre peut charger un script (VBS, JS, fichier HTA, etc...), ce qui peut rediriger la page de démarrage, la page de recherche, la barre de recherche ou l'assistant de recherche vers la page du pirate. Il est également possible de charger un fichier DLL qui se charge dans différentes parties de votre système. Des scripts, d'autres programmes ou des entrées de registre sans fichier (par exemple le fichier système légitime PowerShell.exe avec arguments) peuvent également être utilisés en démarrage automatique pour charger d'autres fichiers malveillants via Internet ou assurer la persistance des programmes malveillants après un redémarrage.
 \\p
@@ -1043,10 +1065,10 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
      Exemple d'infection: regedit c:\windows\system\sp.tmp /s
      
      >>> Action prise par HiJackThis:
-      - Démarrage automatique des entrées du registre - la valeur du registre sera supprimée.
-      - également, le processus correspondant sera arrêté ou gèlé.
-      - Dossier 'Démarrage automatique' - le fichier de chargement automatique sera supprimé.
-      - Désactiver l'exécution automatique des éléments - l'entrée du registre et le fichier de chargement automatique seront supprimées.
+      - Démarrage automatique des entrées du registre - la valeur du registre sera supprimée
+      - également, le processus correspondant sera arrêté ou gèlé
+      - Dossier 'Démarrage automatique' - le fichier de chargement automatique sera supprimé
+      - Désactiver l'exécution automatique des éléments - l'entrée du registre et le fichier de chargement automatique seront supprimées
 ; [O5]
 0413=        La modification de CONTROL.INI peut amener Windows à masquer certaines icônes dans le Panneau de configuration. Bien que conçu à l'origine pour accélérer le chargement du Panneau de contrôle et réduire la surcharge, il peut également être utilisé par les pirates, par exemple, pour empêcher l'accès à la fenêtre "Options Internet".
      
@@ -1057,13 +1079,13 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
      HKCU\Control Panel\ne pas charger: [Firewall.cpl]  (panneau de configuration du pare-feu Windows)
      
      >>> Action prise par HiJackThis:
-      - selon l'emplacement, la ligne sera supprimée du fichier Control.ini ou la valeur du registre sera supprimée.
+      - selon l'emplacement, la ligne sera supprimée du fichier Control.ini ou la valeur du registre sera supprimée
 ; [O6]
 0414=        La désactivation de l'entrée du menu 'Options Internet' dans le menu 'Outils' d'IE se fait en utilisant les stratégies Windows. Normalement utilisé par les administrateurs pour restreindre l'accès des utilisateurs. Il peut également être utilisé par les pirates pour empêcher l'accès à la fenêtre "Options Internet".
      
              StartPage Guard utilise également des politiques pour restreindre les modifications de la page d'accueil, effectuées par des pirates.
      
-     >>> Action prise par HiJackThis :
+     >>> Action prise par HiJackThis:
       - les informations correspondantes seront supprimées du registre.
 ; [O7]
 0415=
@@ -1088,7 +1110,7 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
      2.  [Disk] Manque d'espace libre sur le disque système (moins de 1 Go.)
      3.  [Network] Mauvais réglages réseau, par ex. nom de l'ordinateur vide.
 \\p
-     >>> Action prise par HiJackThis :
+     >>> Action prise par HiJackThis:
       - pour O7 - Politiques: la valeur du registre sera supprimée.
       - pour O7 - IPSec : toutes les clés de registre associées à la politique sélectionnée seront supprimées, y compris tous les filtres qui s'y rapportent.
       - pour O7 - Untrust Certificate: la clé de Registre sera  supprimée.
@@ -1098,78 +1120,78 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 ; [O8]
 0416=        Des éléments supplémentaires dans le menu contextuel (clic droit) peuvent s'avérer utiles ou ennuyeux. Certains pirates ajoutent des éléments au menu contextuel. L'Accessoire Web d'Internet Explorer PowerTweaks ajoute plusieurs éléments utiles, notamment "Surligner", "Zoom +/-", "Liste de liens", "Liste d'images" et "Recherche Web".
      
-     >>> Action prise par HiJackThis :
-      - La clé de Registre sera supprimée.
+     >>> Action prise par HiJackThis:
+      - La clé de Registre sera supprimée
 ; [O9]
 0417=        Des éléments dans le menu 'Outils' d'Internet Explorer et des boutons supplémentaires dans la barre d'outils principale sont généralement présents sous forme de vignettes (boutonAccueil de Dell) ou ajoutés après des mises à jour système (bouton MSN Messenger) et rarement par des pirates. L'Accessoire Web d'Internet Explorer PowerTweaks ajoute deux éléments au menu, "Ajouter le site à la Zone de confiance" et "Ajouter le site à la Zone de restriction".
      
-     >>> Action prise par HiJackThis :
-      - La clé de Registre sera supprimée.
+     >>> Action prise par HiJackThis:
+      - La clé de Registre sera supprimée
 ; [O10]
 0418=        Le système Windows Socket (Winsock) utilise une liste de prestataires pour résoudre les noms DNS (c'est-à-dire pour traduire www.microsoft.com en adresse IP). C'est ce qu'on appelle le fournisseur de services multicouches (FSL). Certains programmes sont capables d'injecter leurs propres prestataires (spyware) dans le FSL. Si les fichiers référencés par le FSL sont manquants ou si la "série" des fournisseurs est endommagée, aucun des programmes sur votre système ne pourra accéder à l'Internet. En supprimant les références des fichiers manquants et en réparant la série, vous rétablirez généralement l'accès à Internet.
 \\p
              Note : La réparation des LSP est une procédure risquée. Vous pouvez obtenir WinSockReset de https://www.foolishit.com/vb6-projects/winsockreset/ pour réparer la pile Winsock.
      
-     >>> Action prise par HiJackThis :
+     >>> Action prise par HiJackThis:
       - Non prévu. Il vous sera demandé d'aller sur www.foolishit.com et de télécharger le programme WinSockReset.
 ; [O11]
 0419=        Les options de l'onglet 'Avancé' des options d'Internet Explorer sont stockées dans le Registre, et des options supplémentaires peuvent être ajoutées en créant des clés de Registre supplémentaires. Très rarement, les spywares et pirates ajoutent leurs propres options qui sont difficiles à supprimer. (par exemple, CommonName ajoute une section 'CommonName' avec quelques options).
      
-     >>> Action prise par HiJackThis :
+     >>> Action prise par HiJackThis:
       - La clé du Registre sera supprimée.
 ; [O12]
 0420=        Les plugins gèrent les types de fichiers qui ne sont pas supportés nativement par Internet Explorer. Les plugins courants gèrent les formats Macromedia Flash, Acrobat PDF et Windows Media, ce qui permet au navigateur de les ouvrir au lieu de lancer un programme spécifique. Lorsque des pirates ou des logiciels espions ajoutent des plugins pour ces types de fichiers, les logiciels malveillants - même s'ils ont été supprimés - peuvent être réinstallés si le navigateur ouvre un fichier traité par ce plugin.
      
-     >>> Action prise par HiJackThis :
-      - La clé de Registre et le fichier plugin seront supprimés.
+     >>> Action prise par HiJackThis:
+      - La clé de Registre et le fichier plugin seront supprimés
 ; [O13]
 0421=        Lorsque vous tapez une URL dans la barre d'adresse d'Internet Explorer sans le préfixe (http://), un préfixe est automatiquement ajouté lorsque vous appuyez sur Entrée. Ce préfixe est stocké dans le Registre, avec les préfixes par défaut pour FTP, Gopher et autres protocoles. Lorsqu'un pirate modifie ces URL vers son serveur, vous serez toujours redirigé lorsque vous n'entrez pas de préfixe. Par exemple, Prolivation utilise ce détournement.
      
-     >>> Action prise par HiJackThis :
-      - La valeur du registre sera restaurée aux données par défaut.
+     >>> Action prise par HiJackThis:
+      - La valeur du registre sera restaurée aux données par défaut
 ; [O14]
 0422=        Lorsque vous cliquez sur 'Réinitialiser les paramètres Web' dans l'onglet 'Programmes' de la boîte de dialogue des options d'Internet Explorer, votre page d'accueil, votre page de recherche et quelques autres sites seront réinitialisés aux valeurs par défaut. Ces valeurs par défaut sont enregistrées dans C:\Windows\Inf\Iereset.inf. Lorsqu'un pirate modifie ces URL vers ses propres URL, 'Réinitialiser les paramètres Web' vous infectera de nouveau. Par exemple, SearchALot utilise ce détournement.
      
-     >>> Action prise par HiJackThis :
+     >>> Action prise par HiJackThis:
       - La valeur du fichier Inf sera restaurée avec les données par défaut.
 ; [O15]
 0423=        Les sites Web de la Zone de confiance (voir Outils => Options Internet => Sécurité => Sites de confiance => Sites) sont autorisés à utiliser des scripts et objets ActiveX potentiellement dangereux. Certains programmes ajoutent automatiquement des sites à la Zone de confiance à votre insu. Seul un très petit nombre de programmes légitimes sont connus pour faire cela. 
      
-     >>> Action prise par HiJackThis :
-      - La clé de Registre sera supprimée.
-      - Les valeurs par défaut du protocole de mappage de la zone seront restaurées.
+     >>> Action prise par HiJackThis:
+      - La clé de Registre sera supprimée
+      - Les valeurs par défaut du protocole de mappage de la zone seront restaurées
 ; [O16]
 0424=        Le dossier Download Program Files (DPF) de votre dossier de base de Windows contient divers programmes qui ont été téléchargés depuis Internet. Ces programmes sont chargés lorsque Internet Explorer est actif. Parmi les exemples légitimes, citons Java VM, Microsoft XML Parser et Google Toolbar. Une fois supprimés, ces objets sont téléchargés et réinstallés (à la demande).
              Malheureusement, IE permet aussi aux sites malveillants de télécharger automatiquement des fichiers tels que des Numéroteurs pornographiques, de faux plugins et des objets ActiveX dans ce dossier, qui vous harcèleront avec des popups, des factures téléphoniques élevées, des crashs aléatoires et autres piratages du navigateur.
 \\p
-      >>> Action prise par HiJackThis :
-      - L'enregistrement du DPF CLSID sera annulé.
-      - La dll et le fichier téléchargé seront supprimés.
+      >>> Action prise par HiJackThis:
+      - L'enregistrement du DPF CLSID sera annulé
+      - La dll et le fichier téléchargé seront supprimés
 ; [O17]
 0425=        Windows utilise plusieurs valeurs de registre pour aider à convertir les noms de domaine en adresses IP. Le détournement de ces valeurs peut entraîner la redirection vers d'autres pages de tous les programmes qui utilisent Internet.
              Lop.com utilise cette méthode, ainsi qu'une longue liste de domaines énigmatiques.
 
              DHCP DNS dans cette section affiche l'adresse DNS émise par le routeur par DHCP, c'est-à-dire lorsque la case "Recevoir automatiquement l'adresse DNS" est cochée dans les paramètres de connexion réseau.
 \\p
-     >>> Action prise par HiJackThis :
-      - La valeur du registre sera supprimée.
-      - Lors de la réparation d'un DNS DHCP, la mémoire cache de la résolution DNS sera vidée. L'utilisateur devra configurer manuellement le routeur en entrant l'adresse spécifiée par son fournisseur de contrat AVANT de corriger cet élément avec HiJackThis. 
+     >>> Action prise par HiJackThis:
+      - La valeur du registre sera supprimée
+      - Lors de la réparation d'un DNS DHCP, la mémoire cache de la résolution DNS sera vidée. L'utilisateur devra configurer manuellement le routeur en entrant l'adresse spécifiée par son fournisseur de contrat AVANT de corriger cet élément avec HiJackThis
 ; [O18]
 0426=        Un protocole est un 'langage' que Windows utilise pour 'parler' aux programmes, aux serveurs ou à lui-même. Les serveurs Web utilisent le protocole 'http:', les serveurs FTP utilisent le protocole 'ftp:', Windows Explorer utilise le protocole `fichier'. L'introduction d'un nouveau protocole dans Windows ou la modification d'un protocole existant peut modifier la façon dont Windows gère les fichiers.
              CommonName et Lop.com enregistrent tous deux, de nouveaux protocoles lorsqu'ils sont installés (cn : et ayb :).
 \\p
              Les filtres sont des types de contenu acceptés par Internet Explorer (et en interne par Windows). S'il existe un filtre pour un type de contenu, les données passeront d'abord par le gestionnaire de fichiers de type contenu. Plusieurs variantes du cheval de Troie CWS ajoutent des filtres texte/html et texte/plain, ce qui leur permet de détourner tout le contenu des pages Web transmises par Internet Explorer.
      
-     >>> Action prise par HiJackThis :
-      - La valeur CLSID sera restaurée (si possible), sinon la clé sera effacée.
-      - Le fichier sera supprimé (s'il n'appartient pas à Microsoft).
+     >>> Action prise par HiJackThis:
+      - La valeur CLSID sera restaurée (si possible), sinon la clé sera effacée
+      - Le fichier sera supprimé (s'il n'appartient pas à Microsoft)
 ; [O19]
 0427=        IE a la possibilité d'utiliser une feuille de style définie par l'utilisateur pour toutes les pages, au lieu de la feuille de style par défaut, pour permettre aux utilisateurs handicapés de mieux visualiser les pages Web.
              Une méthode de détournement particulièrement vile faite par Datanotary a fait son apparition, qui écrase toute feuille de style configurée par l'utilisateur et la remplace par une autre qui provoque des popups, ainsi qu'un ralentissement du système lorsque l'on saisit ou charge plusieurs pages ayant plusieurs images.
      
-     >>> Action prise par HiJackThis :
-      - La valeur du registre sera supprimée.
-      - L'utilisation du style sera désactivée.
+     >>> Action prise par HiJackThis:
+      - La valeur du registre sera supprimée
+      - L'utilisation du style sera désactivée
 ; [O20]
 0428=        Les fichiers spécifiés dans la valeur de registre AppInit_DLLs sont chargés très tôt lors du démarrage de Windows et restent en mémoire jusqu'à l'arrêt du système. Cette façon de charger un fichier .dll est rarement utilisée, sauf par les chevaux de Troie. Les bibliothèques de Drivers vidéo ou les systèmes de chiffrement peuvent être des exemples d'enregistrements légitimes. AppInit_DLLs ne se chargera pas si Secure Boot est activé.
              Les sous-clés WinLogon Notify Registry chargent les fichiers dll en mémoire à un moment similaire du processus de démarrage, les gardant chargés en mémoire jusqu'à la fin de la session. Outre plusieurs composants système Windows, des logiciels publicitaires comme VX2, ABetterInternet et Look2Me utilisent cette clé du registre.
@@ -1177,26 +1199,26 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
              Puisque les deux méthodes assurent que le fichier dll reste chargé en mémoire, la correction de ce problème n'aidera pas si la dll restaure les valeurs de Registre ou les clés après que vous les ayez corrigées. Dans ce cas, il est recommandé d'utiliser la fonction 'Supprimer le fichier au redémarrage' ou KillBox pour supprimer le fichier en premier.
      
      >>> Action prise par HiJackThis:
-      - pour AppInit_DLL: la valeur de registre concrète sera effacée; les paramètres ne seront PAS supprimés.
-      - pour Winlogon Notify : la clé de Registre sera supprimée.
+      - pour AppInit_DLL: la valeur de registre concrète sera effacée; les paramètres ne seront PAS supprimés
+      - pour Winlogon Notify : la clé de Registre sera supprimée
 ; [O21]
 0429=        Il s'agit d'une clé de Registre non documentée qui contient une liste de références CLSID, qui à leur tour référencent les fichiers .dll qui sont chargés par Explorer.exe au démarrage du système. Les fichiers dll restent en mémoire jusqu'à ce qu'Explorer.exe cesse de fonctionner, ce qui se fait soit en arrêtant le système, soit en arrêtant le processus Shell.
 \\p
              ShellIconOverlayIdentifiers fonctionne de la même manière. Cette clé de Registre contient plusieurs sous-clés avec les identifiants des fichiers chargés dans Explorer.exe. Habituellement, un programme enregistre plusieurs modules de ce type à la fois. Ces bibliothèques sont responsables de la gestion du rendu des icônes de fichiers dans l'explorateur de Windows, en fonction de certaines conditions (types de fichiers ou autres facteurs).
              Un exemple de programme légitime peut être un client de stockage dans le Cloud, comme DropBox ou Yandex.Disk, qui modifie l'apparence de l'icône en fonction de l'état de synchronisation des fichiers. Les programmes malveillants peuvent installer des modules de gestion qui exécutent également du code arbitraire.
      
-     >>> Action prise par HiJackThis :
-      - La valeur ou la clé de registre sera supprimée avec la clé d'identification CLSID.
-      - La dll sera supprimée.
-      - L'explorateur redémarrera.
+     >>> Action prise par HiJackThis:
+      - La valeur ou la clé de registre sera supprimée avec la clé d'identification CLSID
+      - La dll sera supprimée
+      - L'explorateur redémarrera
 ; [O22]
 0430=        Le Planificateur de tâches est un service qui peut être configuré pour exécuter un processus à un moment précis ou selon une certaine horaire. L'un de ces réglages s'appelle une tache. Les tâches peuvent être exécutées avec des privilèges élevés sans demander d'UAC, être liées à des utilisateurs spécifiques, contenir des chemins vers des processus, des arguments, des états, etc... Les logiciels malveillants utilisent souvent certaines tâches pour assurer l'exécution automatique tout en survivant après le redémarrage d'un processus.
              Les tâches peuvent être gérées via les Déclencheurs du planificateur de tâches (taskschd.msc).
 \\p
-     >>> Action prise par HiJackThis :
-      - La tâche sera désactivée.
-      - Le processus de la tâche sera arrêté.
-      - Le fichier de la tâche, le fichier exécutable et toutes les clés de registre associées seront supprimés.
+     >>> Action prise par HiJackThis:
+      - La tâche sera désactivée
+      - Le processus de la tâche sera arrêté
+      - Le fichier de la tâche, le fichier exécutable et toutes les clés de registre associées seront supprimés
 ; [O23]
 0431=O23 - Service
 
@@ -1215,38 +1237,52 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
              Les programmes malveillants peuvent s'inscrire dans la liste des dépendances du service système pour se protéger contre la suppression. Après avoir supprimé un tel service, un service Microsoft légitime ne pourra plus démarrer. Certains services Windows sont essentiels au fonctionnement normal du système d'exploitation. Leur non-lancement peut avoir des conséquences négatives sur le fonctionnement d'autres programmes, jusqu'à ce que le démarrage complet de l'OS échoue.
              Certains services sont également regroupés au sein d'un groupe de services, qui porte son nom. Si Le service dépend du groupe de services, il ne démarrera pas tant que tous les services appartenant au groupe de services n'auront pas démarré. HiJackThis vérifie également les services tiers qui ont été ajoutés dans le groupe de services Microsoft.
 \\p
-     >>> Action prise par HiJackThis :
-      - Le Service (ou le  driver) sera désactivé, arrêté et supprimé.
-      - Un redémarrage sera demandé.
-      - Pour O23 - Dépendance : la dépendance sera supprimée du registre.
+     >>> Action prise par HiJackThis:
+      - Le Service (ou le  driver) sera désactivé, arrêté et supprimé
+      - Un redémarrage sera demandé
+      - Pour O23 - Dépendance : la dépendance sera supprimée du registre
 ; [O24]
 0432=        Les composants de bureau sont des objets ActiveX qui peuvent faire partie du bureau lorsque Active Desktop est activé. Ils fonctionnent comme de (petits) widgets de site Web.
              Les logiciels malveillants exploitent cette fonction de façon malveillante en paramétrant l'arrière-plan du bureau sur un fichier HTML local avec un grand avertissement bidon, par exemple, pour un Ransomware, il peut afficher le texte des exigences de demande de rançon.
      
-     >>> Action prise par HiJackThis :
-      - La clé de Registre et le fichier seront supprimés.
-      - L'explorateur sera redémarré et l'arrière-plan du bureau sera mis à jour.
+     >>> Action prise par HiJackThis:
+      - La clé de Registre et le fichier seront supprimés
+      - L'explorateur sera redémarré et l'arrière-plan du bureau sera mis à jour
 ; [O25]
 0433=        Windows Management Instrumentation est un service Windows par défaut. Il peut créer des événements permanents à des fins légitimes et malveillantes. Ces événements peuvent collecter des données matérielles et logicielles pour automatiser des activités malveillantes telles que l'espionnage. Ils peuvent créer des liens entre des machines, exécuter des fichiers de script externes ou du code de script stocké à l'intérieur (sans fichier). Les événements peuvent être déclenchés par le sous-système WMI à des intervalles déterminés (comme planificateur de tâches) ou manuellement lorsque les applications exécutent des requêtes WMI spéciales.
 \\p
              Note : seul le client testé. S'il n'y a qu'un filtre, une reliure et/ou une temporisation (sans client), l'élément n'e seras pas affiché dans le rapport.
 
-     >>> Action prise par HiJackThis :
-      - évènements client, filtre, temporisation et engagement seront supprimés de la base de données WMI;
-     - le fichier associé sera également supprimé.
+     >>> Action prise par HiJackThis:
+      - évènements client, filtre, temporisation et engagement seront supprimés de la base de données WMI
+     - le fichier associé sera également supprimé
 ; [R4]
 0434=        Internet Explorer utilise le service de recherche (DefaultScope) pour afficher une liste de conseils dans la barre de recherche lorsque vous saisissez des requêtes de recherche dans la barre d'adresse. IE vous permet de remplacer son prestataire par défaut par un autre de la liste (SearchScopes).
 
-     >>> Action prise par HiJackThis :
-      - la clé du prestataire sera supprimée ;
-      - la valeur par défaut de DefaultScope (Microsoft Bing) et les paramètres du prestataire seront rétablis.
+     >>> Action prise par HiJackThis:
+      - la clé du prestataire sera supprimée
+      - la valeur par défaut de DefaultScope (Microsoft Bing) et les paramètres du prestataire seront rétablis
 ; [O26]
 0435=        Dans la clé de registre  'Execution du fichier Image', un programme peut être configuré pour utiliser un débogueur. Chaque fois que le programme Hosts est démarré, le programme 'Debugger' est lancé à sa place.
              Note: lorsqu'un fichier de débogage est effacé mais toujours actif, le programme Hosts ne démarre pas !
              Le pirate peut aussi configurer le débogueur pour qu'il fonctionne avec les applications UWP par défaut, comme 'Cortana' ou 'People' (Win 10 uniquement). Comme ces applications démarrent généralement automatiquement au démarrage du système, le pirate assure l'exécution automatique (un peu comme O4) de ses programmes malveillants en utilisant cette méthode.
 
-     >>> Action prise par HiJackThis :
-      - La valeur du registre sera supprimée.
+     >>> Action prise par HiJackThis:
+      - La valeur du registre sera supprimée
+; [O27]
+0437=
+; [O28]
+0438=
+; [O29]
+0439=
+; [O30]
+0440=
+; [B]
+0441=        La section du navigateur représente les extensions et les politiques suspectes. C'est en construction en ce moment. Peu de définitions et de navigateurs sont pris en charge.
+
+     >>> Action prise par HiJackThis:
+      - le navigateur est fermé
+      - les fichiers et les valeurs de registre sont modifiés ou supprimés
 0490=Informations détaillées sur les sections:
 ;
 ; ========== Delete Service ==========
@@ -1785,5 +1821,5 @@ HiJackThis Fork est une modification du programme HiJackThis original de Trend M
 ;
 ; ========= Empty ========
 ;
-; (2450 - ...)
-;                                             
+; (2500 - ...)
+;                                                    

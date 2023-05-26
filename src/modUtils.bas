@@ -30,6 +30,7 @@ Public Enum SETTINGS_SECTION
     SETTINGS_SECTION_UNINSTMAN
     SETTINGS_SECTION_REGUNLOCKER
     SETTINGS_SECTION_FILEUNLOCKER
+    SETTINGS_SECTION_REGKEYTYPECHECKER
 End Enum
 
 Public BROWSERS As MY_BROWSERS
@@ -805,7 +806,7 @@ Function ExtractFilesFromCommandLine(sCMDLine As String) As String()
     Dim argc As Long
     Dim argv() As String
     Dim i As Long
-    Dim n As Long
+    Dim N As Long
     Dim aPath() As String
     
     If ParseCommandLine(sCMDLine, argc, argv) Then
@@ -983,7 +984,7 @@ Public Function GetWindowsVersion() As String    'Init by Form_load.
     'already in form_initialize (frmEULA)
     'Set OSver = New clsOSInfo
     
-    bIsWin64 = (OSver.Bitness = "x64")
+    bIsWin64 = (OSver.IsWin64)
     bIsWOW64 = bIsWin64 ' mean VB6 app-s are always x32 bit.
     bIsWin32 = Not bIsWin64
     
@@ -1709,12 +1710,12 @@ Public Sub CreateUninstallKey(bCreate As Boolean, Optional EXE_Location As Strin
         If Len(EXE_Location) = 0 Then EXE_Location = AppPath(True)
         
         Reg.CreateKey HKEY_LOCAL_MACHINE, Setup_Key
-        Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "DisplayName", "HiJackThis Fork " & AppVerString
+        Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "DisplayName", "HiJackThis+ " & AppVerString
         Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "UninstallString", """" & EXE_Location & """ /uninstall"
         Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "QuietUninstallString", """" & EXE_Location & """ /silentuninstall"
         Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "DisplayIcon", EXE_Location & ",0"
         Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "DisplayVersion", AppVerString
-        Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "Publisher", "Polshyn Stanislav"
+        Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "Publisher", "Alex Dragokas"
         'Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "URLInfoAbout", "http://www.spywareinfo.com/~merijn/"
         'Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "URLInfoAbout", "https://sourceforge.net/projects/hjt/"
         Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "URLInfoAbout", "https://github.com/dragokas/hijackthis"
@@ -2454,6 +2455,10 @@ Sub ControlSelectAll(Optional frmExplicit As Form)
         bCanSearch = True
         Set out_Control = frmUnlockRegKey.txtKeys
         
+    Case "frmRegTypeChecker"
+        bCanSearch = True
+        Set out_Control = frmRegTypeChecker.txtKeys
+        
     End Select
     
     If bCanSearch Then
@@ -2504,14 +2509,15 @@ Public Function SectionNameById(IdSection As SETTINGS_SECTION) As String
     Dim sName As String
 
     Select Case IdSection
-    Case SETTINGS_SECTION_MAIN:         sName = vbNullString
-    Case SETTINGS_SECTION_ADSSPY:       sName = "Tools\ADSSpy"
-    Case SETTINGS_SECTION_SIGNCHECKER:  sName = "Tools\SignChecker"
-    Case SETTINGS_SECTION_PROCMAN:      sName = "Tools\ProcMan"
-    Case SETTINGS_SECTION_STARTUPLIST:  sName = "Tools\StartupList"
-    Case SETTINGS_SECTION_UNINSTMAN:    sName = "Tools\UninstMan"
-    Case SETTINGS_SECTION_REGUNLOCKER:  sName = "Tools\RegUnlocker"
-    Case SETTINGS_SECTION_FILEUNLOCKER:  sName = "Tools\FileUnlocker"
+        Case SETTINGS_SECTION_MAIN:                 sName = vbNullString
+        Case SETTINGS_SECTION_ADSSPY:               sName = "Tools\ADSSpy"
+        Case SETTINGS_SECTION_SIGNCHECKER:          sName = "Tools\SignChecker"
+        Case SETTINGS_SECTION_PROCMAN:              sName = "Tools\ProcMan"
+        Case SETTINGS_SECTION_STARTUPLIST:          sName = "Tools\StartupList"
+        Case SETTINGS_SECTION_UNINSTMAN:            sName = "Tools\UninstMan"
+        Case SETTINGS_SECTION_REGUNLOCKER:          sName = "Tools\RegUnlocker"
+        Case SETTINGS_SECTION_FILEUNLOCKER:         sName = "Tools\FileUnlocker"
+        Case SETTINGS_SECTION_REGKEYTYPECHECKER:    sName = "Tools\RegKeyTypeChecker"
     End Select
     
     SectionNameById = sName

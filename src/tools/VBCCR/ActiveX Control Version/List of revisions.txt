@@ -1,0 +1,169 @@
+List of revisions:
+
+17-May-2023
+- Revision update. (Version 1.7.55)
+
+16-May-2023
+- Revision update. (Version 1.7.54)
+
+13-May-2023
+- Revision update. (Version 1.7.53)
+
+11-May-2023
+- Revision update. (Version 1.7.52)
+
+10-May-2023
+- Revision update. (Version 1.7.51)
+
+10-May-2023
+- Revision update. (Version 1.7.50)
+
+14-Apr-2023
+- Revision update. (Version 1.7.49)
+
+28-Mar-2023
+- Revision update. (Version 1.7.48)
+
+18-Jan-2023
+- Revision update. (Version 1.7.47)
+
+11-Jan-2023
+- Revision update. (Version 1.7.46)
+
+10-Sep-2022
+- Revision update. (Version 1.7.45)
+
+30-Aug-2022
+- Revision update. (Version 1.7.44)
+
+26-Aug-2022
+- Revision update. (Version 1.7.43)
+
+22-Aug-2022
+- Revision update. (Version 1.7.42)
+
+15-Aug-2022
+- Revision update. (Version 1.7.41)
+
+27-Jun-2022
+- Revision update. (Version 1.7.40)
+
+22-Jun-2022
+- Revision update. (Version 1.7.39)
+
+30-May-2022
+- Revision update. (Version 1.7.38)
+
+18-Feb-2022
+- Revision update. (Version 1.7.37)
+
+18-Feb-2022
+- Revision update. (Version 1.7.36)
+
+04-Nov-2021
+- Revision update. (Version 1.7.35)
+
+26-Oct-2021
+- Revision update. (Version 1.7.34)
+
+25-Oct-2021
+- Revision update. (Version 1.7.33)
+
+22-Oct-2021
+- Revision update. (Version 1.7.32)
+
+21-Oct-2021
+- Revision update. (Version 1.7.31)
+
+13-Oct-2021
+- Revision update. (Version 1.7.30)
+
+12-Oct-2021
+- Revision update. (Version 1.7.29)
+
+11-Oct-2021
+- Revision update. (Version 1.7.28)
+
+07-Sep-2021
+- Revision update. (Version 1.7.27)
+
+04-Sep-2021
+- Revision update. (Version 1.7.26)
+
+10-Aug-2021
+- Revision update. (Version 1.7.25)
+
+05-Aug-2021
+- Revision update. (Version 1.7.24)
+
+24-Jul-2021
+- Revision update. (Version 1.7.23)
+
+21-Jul-2021
+- Revision update. (Version 1.7.22)
+
+15-Jul-2021
+- Revision update. (Version 1.7.21)
+
+08-Jun-2021
+- Revision update. (Version 1.7.20)
+
+04-Jun-2021
+- Revision update. (Version 1.7.19)
+
+29-May-2021
+- Revision update. (Version 1.7.18)
+
+28-May-2021
+- Revision update. (Version 1.7.17)
+
+23-May-2021
+- Revision update. (Version 1.7.16)
+
+15-May-2021
+- Revision update. (Version 1.7.15)
+
+12-Apr-2021
+- Revision update. (Version 1.7.14)
+
+26-Mar-2021
+- Revision update. (Version 1.7.13)
+
+17-Mar-2021
+- Revision update. (Version 1.7.12)
+
+15-Mar-2021
+- Revision update. (Version 1.7.11)
+
+01-Mar-2021
+- Revision update. (Version 1.7.10)
+
+28-Feb-2021
+- Revision update. (Version 1.7.9)
+
+24-Feb-2021
+- Revision update. (Version 1.7.8)
+
+19-Feb-2021
+- Revision update. (Version 1.7.7)
+
+18-Feb-2021
+- Revision update. (Version 1.7.6)
+
+16-Feb-2021
+- Revision update. (Version 1.7.5)
+
+14-Feb-2021
+- Revision update. (Version 1.7.4)
+
+13-Feb-2021
+- Revision update. (Version 1.7.3)
+
+19-Jan-2021
+- Revision update. (Version 1.7.2)
+
+26-Sep-2020
+- Revision update. (Version 1.7.1)
+
+19-Aug-2020
+- First release. (Version 1.7.0)

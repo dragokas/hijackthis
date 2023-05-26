@@ -46,6 +46,7 @@ call :AddResource - GLOBE        BITMAP ico\main\menu\globe.bmp
 call :AddResource - HOSTS        BITMAP ico\main\menu\hosts.bmp
 call :AddResource - IE           BITMAP ico\main\menu\ie.bmp
 call :AddResource - KEY          BITMAP ico\main\menu\Key.bmp
+call :AddResource - REGTYPE      BITMAP ico\main\menu\RegType.bmp
 call :AddResource - PROCMAN      BITMAP ico\main\menu\ProcMan.bmp
 call :AddResource - SETTINGS     BITMAP ico\main\menu\settings2.bmp
 call :AddResource - SIGNATURE    BITMAP ico\main\menu\signature.bmp

@@ -15,7 +15,7 @@ Attribute VB_Exposed = False
 
 Option Explicit
 
-#Const UseUndo = True 'adds .Undo method. If you disable #UseUndo it can slightly increase speed in methods .Overwrite / .Remove.
+#Const UseUndo = False 'adds .Undo method. If you disable #UseUndo it can slightly increase speed in methods .Overwrite / .Remove.
 
 ' ****************************************************
 '

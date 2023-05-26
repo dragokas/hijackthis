@@ -1,0 +1,160 @@
+VERSION 5.00
+Begin VB.PropertyPage PPAnimationGeneral 
+   Caption         =   "General"
+   ClientHeight    =   3450
+   ClientLeft      =   0
+   ClientTop       =   0
+   ClientWidth     =   5925
+   LockControls    =   -1  'True
+   PaletteMode     =   0  'Halftone
+   ScaleHeight     =   3450
+   ScaleWidth      =   5925
+   Begin VB.CheckBox CheckMouseTrack 
+      Caption         =   "MouseTrack"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   5
+      Top             =   480
+      Width           =   1620
+   End
+   Begin VB.ComboBox ComboMousePointer 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   2
+      Top             =   480
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboBackStyle 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   4
+      Top             =   840
+      Width           =   2235
+   End
+   Begin VB.CheckBox CheckCenter 
+      Caption         =   "Center"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   7
+      Top             =   1200
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckAutoPlay 
+      Caption         =   "AutoPlay"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   6
+      Top             =   840
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckEnabled 
+      Caption         =   "Enabled"
+      Height          =   285
+      Left            =   120
+      TabIndex        =   0
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.Label LabelMousePointer 
+      Caption         =   "MousePointer:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   1
+      Top             =   480
+      Width           =   1620
+   End
+   Begin VB.Label LabelBackStyle 
+      Caption         =   "BackStyle:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   3
+      Top             =   840
+      Width           =   1620
+   End
+End
+Attribute VB_Name = "PPAnimationGeneral"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Option Explicit
+Private FreezeChanged As Boolean
+
+Private Sub PropertyPage_Initialize()
+Call ComCtlsShowAllUIStates(PropertyPage.hWnd)
+Call ComCtlsPPInitComboMousePointer(ComboMousePointer)
+With ComboBackStyle
+.AddItem CCBackStyleTransparent & " - Transparent"
+.ItemData(.NewIndex) = CCBackStyleTransparent
+.AddItem CCBackStyleOpaque & " - Opaque"
+.ItemData(.NewIndex) = CCBackStyleOpaque
+End With
+End Sub
+
+Private Sub PropertyPage_ApplyChanges()
+With PropertyPage.SelectedControls(0)
+.Enabled = CBool(CheckEnabled.Value = vbChecked)
+.MousePointer = ComboMousePointer.ItemData(ComboMousePointer.ListIndex)
+.BackStyle = ComboBackStyle.ItemData(ComboBackStyle.ListIndex)
+.MouseTrack = CBool(CheckMouseTrack.Value = vbChecked)
+.AutoPlay = CBool(CheckAutoPlay.Value = vbChecked)
+.Center = CBool(CheckCenter.Value = vbChecked)
+End With
+Call PropertyPage_SelectionChanged
+End Sub
+
+Private Sub PropertyPage_SelectionChanged()
+Dim i As Long
+FreezeChanged = True
+With PropertyPage.SelectedControls(0)
+CheckEnabled.Value = IIf(.Enabled = True, vbChecked, vbUnchecked)
+For i = 0 To ComboMousePointer.ListCount - 1
+    If ComboMousePointer.ItemData(i) = .MousePointer Then
+        ComboMousePointer.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboBackStyle.ListCount - 1
+    If ComboBackStyle.ItemData(i) = .BackStyle Then
+        ComboBackStyle.ListIndex = i
+        Exit For
+    End If
+Next i
+CheckMouseTrack.Value = IIf(.MouseTrack = True, vbChecked, vbUnchecked)
+CheckAutoPlay.Value = IIf(.AutoPlay = True, vbChecked, vbUnchecked)
+CheckCenter.Value = IIf(.Center = True, vbChecked, vbUnchecked)
+End With
+FreezeChanged = False
+End Sub
+
+Private Sub CheckEnabled_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboMousePointer_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboBackStyle_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckMouseTrack_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckAutoPlay_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckCenter_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub

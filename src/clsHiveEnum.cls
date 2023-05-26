@@ -17,6 +17,12 @@ Attribute VB_Exposed = False
 ' Hives Enumerator class by Alex Dragokas
 '
 
+'1.13
+'Added ability to retrieve the physically normalized name of WOW redirected keys
+
+'1.12
+'Added skipping of reflected keys
+
 '1.11
 'Enumerator returns now "S-1-5-18" instead of ".DEFAULT"
 
@@ -691,13 +697,13 @@ End Function
 
 Private Function KeySuitableWOW() As Boolean
     
-    Dim kvt As KEY_VIRTUAL_TYPE
+    Dim kvt As KEY_REDIRECTION_INFO
     
     If cell.lb_HaveKeys Then
         
-        kvt = Reg.GetKeyVirtualType(state_Hive, cell.ls_Key)
+        kvt = Reg.GetKeyRedirectionType(state_Hive, cell.ls_Key)
         
-        cell.lb_Shared = CBool(kvt And KEY_VIRTUAL_SHARED)
+        cell.lb_Shared = CBool(kvt And KEY_REDIRECTION_SHARED) Or (kvt And KEY_REDIRECTION_REFLECTED)
         
         If req_Redir And HE_REDIR_DONT_IGNORE_SHARED Then 'force flag is given
             KeySuitableWOW = True
@@ -706,7 +712,7 @@ Private Function KeySuitableWOW() As Boolean
         
         If req_Redir = HE_REDIR_BOTH Then
             If state_Redir = REG_REDIRECTED Then
-                If 0 = (kvt And KEY_VIRTUAL_REDIRECTED) Then
+                If 0 = (kvt And KEY_REDIRECTION_WOW_AVAILABLE) Then
                     'exclude second 'shared' key
                     KeySuitableWOW = False
                 Else
@@ -832,6 +838,15 @@ Public Property Get KeyAndHive() As String
         End If
     Else
         KeyAndHive = cell.ls_KeyAndHive
+    End If
+End Property
+'// get key part together with hive prefix of current iteration, e.g.: "HKLM\SOFTWARE\Microsoft"
+'// normalize and returns Wow64 path, if we're under redirection, e.g.: "HKLM\SOFTWARE\Wow6432Node\Microsoft"
+Public Property Get KeyAndHivePhysical() As String
+    If state_Redir Then
+        KeyAndHivePhysical = Reg.GetPhysicalNameWin32(0, KeyAndHive, True)
+    Else
+        KeyAndHivePhysical = KeyAndHive
     End If
 End Property
 '// get value part of Uniq key
@@ -1121,6 +1136,7 @@ End Sub
 '        Debug.Print "Hive handle: " & HE.Hive
 '        Debug.Print "Hive name:   " & HE.HiveName
 '        Debug.Print "Hive + key:  " & HE.KeyAndHive
+'        Debug.Print "Hive+key(ph):" & HE.KeyAndHivePhysical
 '        Debug.Print "Key:         " & HE.Key
 '        Debug.Print "Redirected:  " & HE.Redirected
 '        Debug.Print "Array index: " & HE.KeyIndex

@@ -949,7 +949,36 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                             End With
                         End If
                         
-                        ' ============ Registry Key Unlocker ===========
+                        ' ============ Registry Key Type Checker ===========
+                    
+                        If IsFormInit(frmRegTypeChecker) Then
+                            With frmRegTypeChecker
+                                Select Case id
+                                    Case "2450": .Caption = Translation
+                                    Case "2451": .lblThisTool.Caption = Translation
+                                    Case "2452": .chkRecurse.Caption = Translation
+                                    Case "2453": .cmdGo.Caption = Translation
+                                    Case "2454": .cmdExit.Caption = Translation
+                                    Case "2456": .chkOnce.Caption = Translation
+                                    Case "2458": .cmdClear.Caption = Translation
+                                    Case "2459": .fraBeauty.Caption = Translation
+                                    Case "2460": .cmdBeauty.Caption = Translation
+                                    Case "2461": .lblBeautyDesc1.Caption = Translation
+                                    Case "2462": .lblBeautyDesc2.Caption = Translation
+                                    Case "2463": .chkBeautyBegin.Caption = Translation
+                                    Case "2464": .chkBeautyEnd.Caption = Translation
+                                    Case "2465": .chkReplace.Caption = Translation
+                                    Case "2466": .lblWith.Caption = Translation
+                                    Case "2467": .chkQueryX32.Caption = Translation
+                                    Case "2468": .fraMode.Caption = Translation
+                                    Case "1854": .fraReportFormat.Caption = Translation
+                                    Case "1855": .optPlainText.Caption = Translation
+                                    Case "1856": .OptCSV.Caption = Translation
+                                End Select
+                            End With
+                        End If
+                        
+                        ' ============ Files Unlocker ===========
                     
                         If IsFormInit(frmUnlockFile) Then
                             With frmUnlockFile
@@ -1009,6 +1038,49 @@ Public Function IsFormInit(Frm As Form) As Boolean
     Next
 End Function
 
+Public Function GetTranslationIndex_HelpSection(Section As String) As Long
+    Dim j As Long
+    Select Case Section
+        Case "R0": j = 401
+        Case "R1": j = 402
+        Case "R2": j = 403
+        Case "R3": j = 404
+        Case "R4": j = 434
+        Case "F0": j = 405
+        Case "F1": j = 406
+        Case "F2": j = 407
+        Case "F3": j = 408
+        Case "B": j = 441
+        Case "O1": j = 409
+        Case "O2": j = 410
+        Case "O3": j = 411
+        Case "O4": j = 412
+        Case "O5": j = 413
+        Case "O6": j = 414
+        Case "O7": j = 415
+        Case "O8": j = 416
+        Case "O9": j = 417
+        Case "O10": j = 418
+        Case "O11": j = 419
+        Case "O12": j = 420
+        Case "O13": j = 421
+        Case "O14": j = 422
+        Case "O15": j = 423
+        Case "O16": j = 424
+        Case "O17": j = 425
+        Case "O18": j = 426
+        Case "O19": j = 427
+        Case "O20": j = 428
+        Case "O21": j = 429
+        Case "O22": j = 430
+        Case "O23": j = 431
+        Case "O24": j = 432
+        Case "O25": j = 433
+        Case "O26": j = 435
+    End Select
+    GetTranslationIndex_HelpSection = j
+End Function
+
 '// Info... on selected items in results window
 Public Sub GetInfo(ByVal sItem$)
     On Error GoTo ErrorHandler:
@@ -1023,77 +1095,7 @@ Public Sub GetInfo(ByVal sItem$)
     pos = InStr(sItem, "-")
     If pos = 0 Then Exit Sub
     sPrefix = Trim$(Left$(sItem, pos - 1))
-    
-    Select Case sPrefix
-        Case "R0"
-            sMsg = Translate(401)
-        Case "R1"
-            sMsg = Translate(402)
-        Case "R2"
-            sMsg = Translate(403)
-        Case "R3"
-            sMsg = Translate(404)
-        Case "R4"
-            sMsg = Translate(434)
-        Case "F0"
-            sMsg = Translate(405)
-        Case "F1"
-            sMsg = Translate(406)
-        Case "O1"
-            sMsg = Translate(409)
-        Case "O2"
-            sMsg = Translate(410)
-        Case "O3"
-            sMsg = Translate(411)
-        Case "O4"
-            sMsg = Translate(412)
-        Case "O5"
-            sMsg = Translate(413)
-        Case "O6"
-            sMsg = Translate(414)
-        Case "O7"
-            sMsg = Translate(415)
-        Case "O8"
-            sMsg = Translate(416)
-        Case "O9"
-            sMsg = Translate(417)
-        Case "O10"
-            sMsg = Translate(418)
-        Case "O11"
-            sMsg = Translate(419)
-        Case "O12"
-            sMsg = Translate(420)
-        Case "O13"
-            sMsg = Translate(421)
-        Case "O14"
-            sMsg = Translate(422)
-        Case "O15"
-            sMsg = Translate(423)
-        Case "O16"
-            sMsg = Translate(424)
-        Case "O17"
-            sMsg = Translate(425)
-        Case "O18"
-            sMsg = Translate(426)
-        Case "O19"
-            sMsg = Translate(427)
-        Case "O20"
-            sMsg = Translate(428)
-        Case "O21"
-            sMsg = Translate(429)
-        Case "O22"
-            sMsg = Translate(430)
-        Case "O23"
-            sMsg = Translate(431)
-        Case "O24"
-            sMsg = Translate(432)
-        Case "O25"
-            sMsg = Translate(433)
-        Case "O26"
-            sMsg = Translate(435)
-        Case Else
-            Exit Sub
-    End Select
+    sMsg = Translate(GetTranslationIndex_HelpSection(sPrefix))
     
     'Detailed information on item
     sMsg = Translate(400) & " " & sPrefix & ":" & vbCrLf & vbCrLf & sMsg

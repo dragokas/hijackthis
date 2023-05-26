@@ -1,0 +1,203 @@
+VERSION 5.00
+Begin VB.PropertyPage PPIPAddressGeneral 
+   Caption         =   "General"
+   ClientHeight    =   3450
+   ClientLeft      =   0
+   ClientTop       =   0
+   ClientWidth     =   6075
+   LockControls    =   -1  'True
+   PaletteMode     =   0  'Halftone
+   ScaleHeight     =   3450
+   ScaleWidth      =   6075
+   Begin VB.CheckBox CheckLocked 
+      Caption         =   "Locked"
+      Height          =   285
+      Left            =   1800
+      TabIndex        =   1
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckMouseTrack 
+      Caption         =   "MouseTrack"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   9
+      Top             =   480
+      Width           =   1770
+   End
+   Begin VB.ComboBox ComboAutoSelect 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   6
+      Top             =   840
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboMousePointer 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   4
+      Top             =   480
+      Width           =   2235
+   End
+   Begin VB.TextBox TextText 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   8
+      Top             =   1200
+      Width           =   2235
+   End
+   Begin VB.CheckBox CheckEnabled 
+      Caption         =   "Enabled"
+      Height          =   285
+      Left            =   120
+      TabIndex        =   0
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckVisualStyles 
+      Caption         =   "VisualStyles"
+      Height          =   285
+      Left            =   3480
+      TabIndex        =   2
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.Label LabelAutoSelect 
+      Caption         =   "AutoSelect:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   5
+      Top             =   840
+      Width           =   1620
+   End
+   Begin VB.Label LabelMousePointer 
+      Caption         =   "MousePointer:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   3
+      Top             =   480
+      Width           =   1620
+   End
+   Begin VB.Label LabelText 
+      Caption         =   "Text:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   7
+      Top             =   1200
+      Width           =   1620
+   End
+End
+Attribute VB_Name = "PPIPAddressGeneral"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Option Explicit
+Private FreezeChanged As Boolean
+
+Private Sub PropertyPage_Initialize()
+Call ComCtlsShowAllUIStates(PropertyPage.hWnd)
+Call ComCtlsPPInitComboMousePointer(ComboMousePointer)
+With ComboAutoSelect
+.AddItem IpaAutoSelectNone & " - None"
+.ItemData(.NewIndex) = IpaAutoSelectNone
+.AddItem IpaAutoSelectFirst & " - First"
+.ItemData(.NewIndex) = IpaAutoSelectFirst
+.AddItem IpaAutoSelectSecond & " - Second"
+.ItemData(.NewIndex) = IpaAutoSelectSecond
+.AddItem IpaAutoSelectThird & " - Third"
+.ItemData(.NewIndex) = IpaAutoSelectThird
+.AddItem IpaAutoSelectFourth & " - Fourth"
+.ItemData(.NewIndex) = IpaAutoSelectFourth
+.AddItem IpaAutoSelectBlank & " - Blank"
+.ItemData(.NewIndex) = IpaAutoSelectBlank
+End With
+End Sub
+
+Private Sub PropertyPage_ApplyChanges()
+On Error Resume Next
+PropertyPage.ValidateControls
+If Err.Number = 380 Then Exit Sub
+On Error GoTo 0
+With PropertyPage.SelectedControls(0)
+.Enabled = CBool(CheckEnabled.Value = vbChecked)
+.Locked = CBool(CheckLocked.Value = vbChecked)
+.VisualStyles = CBool(CheckVisualStyles.Value = vbChecked)
+.MousePointer = ComboMousePointer.ItemData(ComboMousePointer.ListIndex)
+.AutoSelect = ComboAutoSelect.ItemData(ComboAutoSelect.ListIndex)
+.Text = TextText.Text
+.MouseTrack = CBool(CheckMouseTrack.Value = vbChecked)
+End With
+Call PropertyPage_SelectionChanged
+End Sub
+
+Private Sub PropertyPage_SelectionChanged()
+Dim i As Long
+FreezeChanged = True
+With PropertyPage.SelectedControls(0)
+CheckEnabled.Value = IIf(.Enabled = True, vbChecked, vbUnchecked)
+CheckLocked.Value = IIf(.Locked = True, vbChecked, vbUnchecked)
+CheckVisualStyles.Value = IIf(.VisualStyles = True, vbChecked, vbUnchecked)
+For i = 0 To ComboMousePointer.ListCount - 1
+    If ComboMousePointer.ItemData(i) = .MousePointer Then
+        ComboMousePointer.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboAutoSelect.ListCount - 1
+    If ComboAutoSelect.ItemData(i) = .AutoSelect Then
+        ComboAutoSelect.ListIndex = i
+        Exit For
+    End If
+Next i
+TextText.Text = .Text
+CheckMouseTrack.Value = IIf(.MouseTrack = True, vbChecked, vbUnchecked)
+End With
+FreezeChanged = False
+End Sub
+
+Private Sub CheckEnabled_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckLocked_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckVisualStyles_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboMousePointer_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboAutoSelect_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextText_GotFocus()
+If Not TextText.SelStart = 0 Then Exit Sub
+TextText.SelLength = Len(TextText.Text)
+End Sub
+
+Private Sub TextText_LostFocus()
+TextText.SelStart = 0
+End Sub
+
+Private Sub TextText_Change()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckMouseTrack_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub

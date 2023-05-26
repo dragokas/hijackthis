@@ -302,7 +302,7 @@ Public Sub SaveProcessList(objProcess As ListBox, objDLL As ListBox, Optional bD
     
     'Header
     sList.Append ChrW$(-257)
-    sList.AppendLine "Logfile of Itty Bitty Process Manager v." & ProcManVer & " (HJT Fork v." & AppVerString & ")"
+    sList.AppendLine "Logfile of Itty Bitty Process Manager v." & ProcManVer & " (HiJackThis+ v." & AppVerString & ")"
     sList.AppendLine
     sList.Append MakeLogHeader()
     sList.AppendLine
@@ -365,7 +365,7 @@ Public Sub CopyProcessList(objProcess As ListBox, objDLL As ListBox, Optional bD
     '[file version]
     '[company name]
     
-    sList = "Logfile of Itty Bitty Process Manager v." & ProcManVer & " (HJT Fork v." & AppVerString & ")" & vbCrLf & vbCrLf & MakeLogHeader() & vbCrLf & _
+    sList = "Logfile of Itty Bitty Process Manager v." & ProcManVer & " (HiJackThis+ v." & AppVerString & ")" & vbCrLf & vbCrLf & MakeLogHeader() & vbCrLf & _
             "[pid]" & vbTab & Translate(186) & vbTab & vbTab & Translate(187) & vbTab & Translate(188) & vbCrLf
     For i = 0 To objProcess.ListCount - 1
         sProcess = objProcess.List(i)
@@ -444,30 +444,21 @@ Private Sub cmdProcManKill_Click()
     
     'SetCurrentProcessPrivileges "SeDebugPrivilege"
     
+    Dim bSuccess As Boolean
+    bSuccess = True
+    
     'pause selected processes
     For i = 0 To lstProcessManager.ListCount - 1
         If lstProcessManager.Selected(i) Then
             s = lstProcessManager.List(i)
             s = Left$(s, InStr(s, vbTab) - 1)
             PauseProcess CLng(s)
+            bSuccess = bSuccess And KillProcess(CLng(s))
         End If
     Next i
-    For i = 0 To lstProcessManager.ListCount - 1
-        If lstProcessManager.Selected(i) Then
-            s = lstProcessManager.List(i)
-            s = Left$(s, InStr(s, vbTab) - 1)
-            KillProcess CLng(s)
-        End If
-    Next i
-    SleepNoLock 1000
-    'resume any processes still alive
-    For i = 0 To lstProcessManager.ListCount - 1
-        If lstProcessManager.Selected(i) Then
-            s = lstProcessManager.List(i)
-            s = Left$(s, InStr(s, vbTab) - 1)
-            ResumeProcess CLng(s)
-        End If
-    Next i
+    
+    'The selected process could not be killed. It may be protected by Windows.
+    If Not bSuccess Then MsgBoxW Translate(1653), vbExclamation
     
     cmdProcManRefresh_Click
 End Sub

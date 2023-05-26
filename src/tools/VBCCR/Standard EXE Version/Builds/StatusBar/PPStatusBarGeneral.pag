@@ -1,0 +1,221 @@
+VERSION 5.00
+Begin VB.PropertyPage PPStatusBarGeneral 
+   Caption         =   "General"
+   ClientHeight    =   4140
+   ClientLeft      =   0
+   ClientTop       =   0
+   ClientWidth     =   5925
+   LockControls    =   -1  'True
+   PaletteMode     =   0  'Halftone
+   ScaleHeight     =   4140
+   ScaleWidth      =   5925
+   Begin VB.CheckBox CheckDoubleBuffer 
+      Caption         =   "DoubleBuffer"
+      Height          =   285
+      Left            =   3480
+      TabIndex        =   2
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckMouseTrack 
+      Caption         =   "MouseTrack"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   9
+      Top             =   480
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckShowTips 
+      Caption         =   "ShowTips"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   11
+      Top             =   1200
+      Width           =   1620
+   End
+   Begin VB.ComboBox ComboMousePointer 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   4
+      Top             =   480
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboStyle 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   6
+      Top             =   840
+      Width           =   2235
+   End
+   Begin VB.TextBox TextSimpleText 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   8
+      Top             =   1200
+      Width           =   2235
+   End
+   Begin VB.CheckBox CheckAllowSizeGrip 
+      Caption         =   "AllowSizeGrip"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   10
+      Top             =   840
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckEnabled 
+      Caption         =   "Enabled"
+      Height          =   285
+      Left            =   120
+      TabIndex        =   0
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckVisualStyles 
+      Caption         =   "VisualStyles"
+      Height          =   285
+      Left            =   1800
+      TabIndex        =   1
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.Label LabelMousePointer 
+      Caption         =   "MousePointer:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   3
+      Top             =   480
+      Width           =   1620
+   End
+   Begin VB.Label LabelStyle 
+      Caption         =   "Style:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   5
+      Top             =   840
+      Width           =   1620
+   End
+   Begin VB.Label LabelSimpleText 
+      Caption         =   "SimpleText:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   7
+      Top             =   1200
+      Width           =   1620
+   End
+End
+Attribute VB_Name = "PPStatusBarGeneral"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Option Explicit
+Private FreezeChanged As Boolean
+
+Private Sub PropertyPage_Initialize()
+Call ComCtlsShowAllUIStates(PropertyPage.hWnd)
+Call ComCtlsPPInitComboMousePointer(ComboMousePointer)
+With ComboStyle
+.AddItem SbrStyleNormal & " - Normal"
+.ItemData(.NewIndex) = SbrStyleNormal
+.AddItem SbrStyleSimple & " - Simple"
+.ItemData(.NewIndex) = SbrStyleSimple
+End With
+End Sub
+
+Private Sub PropertyPage_ApplyChanges()
+With PropertyPage.SelectedControls(0)
+.Enabled = CBool(CheckEnabled.Value = vbChecked)
+.VisualStyles = CBool(CheckVisualStyles.Value = vbChecked)
+.DoubleBuffer = CBool(CheckDoubleBuffer.Value = vbChecked)
+.MousePointer = ComboMousePointer.ItemData(ComboMousePointer.ListIndex)
+.Style = ComboStyle.ItemData(ComboStyle.ListIndex)
+.SimpleText = TextSimpleText.Text
+.MouseTrack = CBool(CheckMouseTrack.Value = vbChecked)
+.AllowSizeGrip = CBool(CheckAllowSizeGrip.Value = vbChecked)
+.ShowTips = CBool(CheckShowTips.Value = vbChecked)
+End With
+Call PropertyPage_SelectionChanged
+End Sub
+
+Private Sub PropertyPage_SelectionChanged()
+Dim i As Long
+FreezeChanged = True
+With PropertyPage.SelectedControls(0)
+CheckEnabled.Value = IIf(.Enabled = True, vbChecked, vbUnchecked)
+CheckVisualStyles.Value = IIf(.VisualStyles = True, vbChecked, vbUnchecked)
+CheckDoubleBuffer.Value = IIf(.DoubleBuffer = True, vbChecked, vbUnchecked)
+For i = 0 To ComboMousePointer.ListCount - 1
+    If ComboMousePointer.ItemData(i) = .MousePointer Then
+        ComboMousePointer.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboStyle.ListCount - 1
+    If ComboStyle.ItemData(i) = .Style Then
+        ComboStyle.ListIndex = i
+        Exit For
+    End If
+Next i
+TextSimpleText.Text = .SimpleText
+CheckMouseTrack.Value = IIf(.MouseTrack = True, vbChecked, vbUnchecked)
+CheckAllowSizeGrip.Value = IIf(.AllowSizeGrip = True, vbChecked, vbUnchecked)
+CheckShowTips.Value = IIf(.ShowTips = True, vbChecked, vbUnchecked)
+End With
+FreezeChanged = False
+End Sub
+
+Private Sub CheckEnabled_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckVisualStyles_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckDoubleBuffer_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboMousePointer_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboStyle_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextSimpleText_GotFocus()
+If Not TextSimpleText.SelStart = 0 Then Exit Sub
+TextSimpleText.SelLength = Len(TextSimpleText.Text)
+End Sub
+
+Private Sub TextSimpleText_LostFocus()
+TextSimpleText.SelStart = 0
+End Sub
+
+Private Sub TextSimpleText_Change()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckMouseTrack_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckAllowSizeGrip_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckShowTips_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub

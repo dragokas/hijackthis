@@ -1,0 +1,732 @@
+VERSION 5.00
+Begin VB.PropertyPage PPTreeViewGeneral 
+   Caption         =   "General"
+   ClientHeight    =   5625
+   ClientLeft      =   0
+   ClientTop       =   0
+   ClientWidth     =   5925
+   LockControls    =   -1  'True
+   PaletteMode     =   0  'Halftone
+   ScaleHeight     =   5625
+   ScaleWidth      =   5925
+   Begin VB.ComboBox ComboMultiSelect 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   28
+      Top             =   4800
+      Width           =   2235
+   End
+   Begin VB.CheckBox CheckMouseTrack 
+      Caption         =   "MouseTrack"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   29
+      Top             =   480
+      Width           =   1620
+   End
+   Begin VB.ComboBox ComboIMEMode 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   26
+      Top             =   4440
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboVisualTheme 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   6
+      Top             =   840
+      Width           =   2235
+   End
+   Begin VBCCR17.TextBoxW TextOLEDragExpandTime 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   24
+      Top             =   4080
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VB.ComboBox ComboSortType 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   22
+      Top             =   3720
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboSortOrder 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   20
+      Top             =   3360
+      Width           =   2235
+   End
+   Begin VB.CheckBox CheckSorted 
+      Caption         =   "Sorted"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   37
+      Top             =   3360
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckSingleSel 
+      Caption         =   "SingleSel"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   36
+      Top             =   3000
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckScroll 
+      Caption         =   "Scroll"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   35
+      Top             =   2640
+      Width           =   1620
+   End
+   Begin VBCCR17.TextBoxW TextPathSeparator 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   18
+      Top             =   3000
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VB.CheckBox CheckHotTracking 
+      Caption         =   "HotTracking"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   34
+      Top             =   2280
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckFullRowSelect 
+      Caption         =   "FullRowSelect"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   33
+      Top             =   1920
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckHideSelection 
+      Caption         =   "HideSelection"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   32
+      Top             =   1560
+      Width           =   1620
+   End
+   Begin VB.ComboBox ComboLabelEdit 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   14
+      Top             =   2280
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboLineStyle 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   12
+      Top             =   1920
+      Width           =   2235
+   End
+   Begin VB.CheckBox CheckDoubleBuffer 
+      Caption         =   "DoubleBuffer"
+      Height          =   285
+      Left            =   3480
+      TabIndex        =   2
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckVisualStyles 
+      Caption         =   "VisualStyles"
+      Height          =   285
+      Left            =   1800
+      TabIndex        =   1
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckShowTips 
+      Caption         =   "ShowTips"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   31
+      Top             =   1200
+      Width           =   1620
+   End
+   Begin VB.ComboBox ComboMousePointer 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   4
+      Top             =   480
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboImageList 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   8
+      Top             =   1200
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboStyle 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   10
+      Top             =   1560
+      Width           =   2235
+   End
+   Begin VBCCR17.TextBoxW TextIndentation 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   16
+      Top             =   2640
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VB.CheckBox CheckCheckboxes 
+      Caption         =   "Checkboxes"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   30
+      Top             =   840
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckEnabled 
+      Caption         =   "Enabled"
+      Height          =   285
+      Left            =   120
+      TabIndex        =   0
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.Label LabelMultiSelect 
+      Caption         =   "MultiSelect:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   27
+      Top             =   4800
+      Width           =   1620
+   End
+   Begin VB.Label LabelIMEMode 
+      Caption         =   "IMEMode:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   25
+      Top             =   4440
+      Width           =   1620
+   End
+   Begin VB.Label LabelVisualTheme 
+      Caption         =   "VisualTheme:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   5
+      Top             =   840
+      Width           =   1620
+   End
+   Begin VB.Label LabelOLEDragExpandTime 
+      Caption         =   "OLEDragExpandTime:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   23
+      Top             =   4080
+      Width           =   1620
+   End
+   Begin VB.Label LabelSortType 
+      Caption         =   "SortType:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   21
+      Top             =   3720
+      Width           =   1620
+   End
+   Begin VB.Label LabelSortOrder 
+      Caption         =   "SortOrder:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   19
+      Top             =   3360
+      Width           =   1620
+   End
+   Begin VB.Label LabelPathSeparator 
+      Caption         =   "PathSeparator:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   17
+      Top             =   3000
+      Width           =   1620
+   End
+   Begin VB.Label LabelLabelEdit 
+      Caption         =   "LabelEdit:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   13
+      Top             =   2280
+      Width           =   1620
+   End
+   Begin VB.Label LabelLineStyle 
+      Caption         =   "LineStyle:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   11
+      Top             =   1920
+      Width           =   1620
+   End
+   Begin VB.Label LabelMousePointer 
+      Caption         =   "MousePointer:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   3
+      Top             =   480
+      Width           =   1620
+   End
+   Begin VB.Label LabelImageList 
+      Caption         =   "ImageList:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   7
+      Top             =   1200
+      Width           =   1620
+   End
+   Begin VB.Label LabelStyle 
+      Caption         =   "Style:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   9
+      Top             =   1560
+      Width           =   1620
+   End
+   Begin VB.Label LabelIndentation 
+      Caption         =   "Indentation:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   15
+      Top             =   2640
+      Width           =   1620
+   End
+End
+Attribute VB_Name = "PPTreeViewGeneral"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = True
+Option Explicit
+Private ImageListEnumerated As Boolean
+Private FreezeChanged As Boolean
+
+Private Sub PropertyPage_Initialize()
+Call ComCtlsShowAllUIStates(PropertyPage.hWnd)
+Call ComCtlsPPInitComboMousePointer(ComboMousePointer)
+With ComboVisualTheme
+.AddItem TvwVisualThemeStandard & " - Standard"
+.ItemData(.NewIndex) = TvwVisualThemeStandard
+.AddItem TvwVisualThemeExplorer & " - Explorer"
+.ItemData(.NewIndex) = TvwVisualThemeExplorer
+End With
+With ComboImageList
+.AddItem "(None)"
+.ListIndex = 0
+End With
+With ComboStyle
+.AddItem TvwStyleTextOnly & " - TextOnly"
+.ItemData(.NewIndex) = TvwStyleTextOnly
+.AddItem TvwStylePictureText & " - PictureText"
+.ItemData(.NewIndex) = TvwStylePictureText
+.AddItem TvwStylePlusMinusText & " - PlusMinusText"
+.ItemData(.NewIndex) = TvwStylePlusMinusText
+.AddItem TvwStylePlusMinusPictureText & " - PlusMinusPictureText"
+.ItemData(.NewIndex) = TvwStylePlusMinusPictureText
+.AddItem TvwStyleTreeLinesText & " - TreeLinesText"
+.ItemData(.NewIndex) = TvwStyleTreeLinesText
+.AddItem TvwStyleTreeLinesPictureText & " - TreeLinesPictureText"
+.ItemData(.NewIndex) = TvwStyleTreeLinesPictureText
+.AddItem TvwStyleTreeLinesPlusMinusText & " - TreeLinesPlusMinusText"
+.ItemData(.NewIndex) = TvwStyleTreeLinesPlusMinusText
+.AddItem TvwStyleTreeLinesPlusMinusPictureText & " - TreeLinesPlusMinusPictureText"
+.ItemData(.NewIndex) = TvwStyleTreeLinesPlusMinusPictureText
+End With
+With ComboLineStyle
+.AddItem TvwLineStyleTreeLines & " - TreeLines"
+.ItemData(.NewIndex) = TvwLineStyleTreeLines
+.AddItem TvwLineStyleRootLines & " - RootLines"
+.ItemData(.NewIndex) = TvwLineStyleRootLines
+End With
+With ComboLabelEdit
+.AddItem TvwLabelEditAutomatic & " - Automatic"
+.ItemData(.NewIndex) = TvwLabelEditAutomatic
+.AddItem TvwLabelEditManual & " - Manual"
+.ItemData(.NewIndex) = TvwLabelEditManual
+.AddItem TvwLabelEditDisabled & " - Disabled"
+.ItemData(.NewIndex) = TvwLabelEditDisabled
+End With
+With ComboSortOrder
+.AddItem TvwSortOrderAscending & " - Ascending"
+.ItemData(.NewIndex) = TvwSortOrderAscending
+.AddItem TvwSortOrderDescending & " - Descending"
+.ItemData(.NewIndex) = TvwSortOrderDescending
+End With
+With ComboSortType
+.AddItem TvwSortTypeBinary & " - Binary"
+.ItemData(.NewIndex) = TvwSortTypeBinary
+.AddItem TvwSortTypeText & " - Text"
+.ItemData(.NewIndex) = TvwSortTypeText
+End With
+With ComboMultiSelect
+.AddItem TvwMultiSelectNone & " - None"
+.ItemData(.NewIndex) = TvwMultiSelectNone
+.AddItem TvwMultiSelectAll & " - All"
+.ItemData(.NewIndex) = TvwMultiSelectAll
+.AddItem TvwMultiSelectVisibleOnly & " - VisibleOnly"
+.ItemData(.NewIndex) = TvwMultiSelectVisibleOnly
+.AddItem TvwMultiSelectRestrictSiblings & " - RestrictSiblings"
+.ItemData(.NewIndex) = TvwMultiSelectRestrictSiblings
+End With
+Call ComCtlsPPInitComboIMEMode(ComboIMEMode)
+End Sub
+
+Private Sub PropertyPage_ApplyChanges()
+On Error Resume Next
+PropertyPage.ValidateControls
+If Err.Number = 380 Then Exit Sub
+On Error GoTo 0
+With PropertyPage.SelectedControls(0)
+.Enabled = CBool(CheckEnabled.Value = vbChecked)
+.VisualStyles = CBool(CheckVisualStyles.Value = vbChecked)
+.DoubleBuffer = CBool(CheckDoubleBuffer.Value = vbChecked)
+.MousePointer = ComboMousePointer.ItemData(ComboMousePointer.ListIndex)
+.VisualTheme = ComboVisualTheme.ItemData(ComboVisualTheme.ListIndex)
+.ImageList = ComboImageList.List(ComboImageList.ListIndex)
+.Style = ComboStyle.ItemData(ComboStyle.ListIndex)
+.LineStyle = ComboLineStyle.ItemData(ComboLineStyle.ListIndex)
+.LabelEdit = ComboLabelEdit.ItemData(ComboLabelEdit.ListIndex)
+.Indentation = CSng(TextIndentation.Text)
+.PathSeparator = TextPathSeparator.Text
+.SortOrder = ComboSortOrder.ItemData(ComboSortOrder.ListIndex)
+.SortType = ComboSortType.ItemData(ComboSortType.ListIndex)
+.OLEDragExpandTime = CLng(TextOLEDragExpandTime.Text)
+.IMEMode = ComboIMEMode.ItemData(ComboIMEMode.ListIndex)
+.MultiSelect = ComboMultiSelect.ItemData(ComboMultiSelect.ListIndex)
+.MouseTrack = CBool(CheckMouseTrack.Value = vbChecked)
+.Checkboxes = CBool(CheckCheckboxes.Value = vbChecked)
+.ShowTips = CBool(CheckShowTips.Value = vbChecked)
+.HideSelection = CBool(CheckHideSelection.Value = vbChecked)
+.FullRowSelect = CBool(CheckFullRowSelect.Value = vbChecked)
+.HotTracking = CBool(CheckHotTracking.Value = vbChecked)
+.Scroll = CBool(CheckScroll.Value = vbChecked)
+.SingleSel = CBool(CheckSingleSel.Value = vbChecked)
+.Sorted = CBool(CheckSorted.Value = vbChecked)
+End With
+Call PropertyPage_SelectionChanged
+End Sub
+
+Private Sub PropertyPage_SelectionChanged()
+Dim i As Long
+FreezeChanged = True
+With PropertyPage.SelectedControls(0)
+CheckEnabled.Value = IIf(.Enabled = True, vbChecked, vbUnchecked)
+CheckVisualStyles.Value = IIf(.VisualStyles = True, vbChecked, vbUnchecked)
+CheckDoubleBuffer.Value = IIf(.DoubleBuffer = True, vbChecked, vbUnchecked)
+For i = 0 To ComboMousePointer.ListCount - 1
+    If ComboMousePointer.ItemData(i) = .MousePointer Then
+        ComboMousePointer.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboVisualTheme.ListCount - 1
+    If ComboVisualTheme.ItemData(i) = .VisualTheme Then
+        ComboVisualTheme.ListIndex = i
+        Exit For
+    End If
+Next i
+If ImageListEnumerated = False Then
+    Dim ControlEnum As Object
+    For Each ControlEnum In .ControlsEnum
+        If TypeName(ControlEnum) = "ImageList" Then
+            ComboImageList.AddItem ProperControlName(ControlEnum)
+        End If
+    Next ControlEnum
+    ImageListEnumerated = True
+End If
+For i = 0 To ComboImageList.ListCount - 1
+    If ComboImageList.List(i) = .ImageList Then
+        ComboImageList.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboStyle.ListCount - 1
+    If ComboStyle.ItemData(i) = .Style Then
+        ComboStyle.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboLineStyle.ListCount - 1
+    If ComboLineStyle.ItemData(i) = .LineStyle Then
+        ComboLineStyle.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboLabelEdit.ListCount - 1
+    If ComboLabelEdit.ItemData(i) = .LabelEdit Then
+        ComboLabelEdit.ListIndex = i
+        Exit For
+    End If
+Next i
+TextIndentation.Text = CStr(.Indentation)
+TextPathSeparator.Text = .PathSeparator
+For i = 0 To ComboSortOrder.ListCount - 1
+    If ComboSortOrder.ItemData(i) = .SortOrder Then
+        ComboSortOrder.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboSortType.ListCount - 1
+    If ComboSortType.ItemData(i) = .SortType Then
+        ComboSortType.ListIndex = i
+        Exit For
+    End If
+Next i
+TextOLEDragExpandTime.Text = CStr(.OLEDragExpandTime)
+For i = 0 To ComboIMEMode.ListCount - 1
+    If ComboIMEMode.ItemData(i) = .IMEMode Then
+        ComboIMEMode.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboMultiSelect.ListCount - 1
+    If ComboMultiSelect.ItemData(i) = .MultiSelect Then
+        ComboMultiSelect.ListIndex = i
+        Exit For
+    End If
+Next i
+CheckMouseTrack.Value = IIf(.MouseTrack = True, vbChecked, vbUnchecked)
+CheckCheckboxes.Value = IIf(.Checkboxes = True, vbChecked, vbUnchecked)
+CheckShowTips.Value = IIf(.ShowTips = True, vbChecked, vbUnchecked)
+CheckHideSelection.Value = IIf(.HideSelection = True, vbChecked, vbUnchecked)
+CheckFullRowSelect.Value = IIf(.FullRowSelect = True, vbChecked, vbUnchecked)
+CheckHotTracking.Value = IIf(.HotTracking = True, vbChecked, vbUnchecked)
+CheckScroll.Value = IIf(.Scroll = True, vbChecked, vbUnchecked)
+CheckSingleSel.Value = IIf(.SingleSel = True, vbChecked, vbUnchecked)
+CheckSorted.Value = IIf(.Sorted = True, vbChecked, vbUnchecked)
+End With
+FreezeChanged = False
+End Sub
+
+Private Sub CheckEnabled_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckVisualStyles_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckDoubleBuffer_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboMousePointer_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboVisualTheme_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboImageList_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboStyle_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboLineStyle_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboLabelEdit_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextIndentation_GotFocus()
+If Not TextIndentation.SelStart = 0 Then Exit Sub
+TextIndentation.SelLength = Len(TextIndentation.Text)
+End Sub
+
+Private Sub TextIndentation_LostFocus()
+TextIndentation.SelStart = 0
+End Sub
+
+Private Sub TextIndentation_Change()
+If FreezeChanged = True Then Exit Sub
+If TextIndentation.Text = vbNullString Then
+    TextIndentation.Text = PropertyPage.SelectedControls(0).Indentation
+    TextIndentation.SelStart = 0
+    TextIndentation.SelLength = Len(TextIndentation.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextIndentation_Validate(Cancel As Boolean)
+If Not IsNumeric(TextIndentation.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextIndentation.Text = PropertyPage.SelectedControls(0).Indentation
+    TextIndentation.SetFocus
+    Cancel = True
+Else
+    Dim SngValue As Single
+    On Error Resume Next
+    SngValue = CSng(TextIndentation.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If SngValue < 0 Then Cancel = True
+    If Cancel = False Then
+        TextIndentation.Text = SngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextIndentation.Text = PropertyPage.SelectedControls(0).Indentation
+        TextIndentation.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextPathSeparator_GotFocus()
+If Not TextPathSeparator.SelStart = 0 Then Exit Sub
+TextPathSeparator.SelLength = Len(TextPathSeparator.Text)
+End Sub
+
+Private Sub TextPathSeparator_LostFocus()
+TextPathSeparator.SelStart = 0
+End Sub
+
+Private Sub TextPathSeparator_Change()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboSortOrder_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboSortType_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextOLEDragExpandTime_GotFocus()
+If Not TextOLEDragExpandTime.SelStart = 0 Then Exit Sub
+TextOLEDragExpandTime.SelLength = Len(TextOLEDragExpandTime.Text)
+End Sub
+
+Private Sub TextOLEDragExpandTime_LostFocus()
+TextOLEDragExpandTime.SelStart = 0
+End Sub
+
+Private Sub TextOLEDragExpandTime_Change()
+If FreezeChanged = True Then Exit Sub
+If TextOLEDragExpandTime.Text = vbNullString Then
+    TextOLEDragExpandTime.Text = "-1"
+    TextOLEDragExpandTime.SelStart = 0
+    TextOLEDragExpandTime.SelLength = 2
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextOLEDragExpandTime_Validate(Cancel As Boolean)
+If Not IsNumeric(TextOLEDragExpandTime.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextOLEDragExpandTime.Text = PropertyPage.SelectedControls(0).OLEDragExpandTime
+    TextOLEDragExpandTime.SetFocus
+    Cancel = True
+Else
+    Dim LngValue As Long
+    On Error Resume Next
+    LngValue = CLng(TextOLEDragExpandTime.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If LngValue < -1 Then Cancel = True
+    If Cancel = False Then
+        TextOLEDragExpandTime.Text = LngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextOLEDragExpandTime.Text = PropertyPage.SelectedControls(0).OLEDragExpandTime
+        TextOLEDragExpandTime.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub ComboIMEMode_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboMultiSelect_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckMouseTrack_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckCheckboxes_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckShowTips_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckHideSelection_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckFullRowSelect_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckHotTracking_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckScroll_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckSingleSel_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckSorted_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub

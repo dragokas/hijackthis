@@ -1,7 +1,7 @@
 ﻿
 Version history:
 
-1. HiJackThis
+1. HiJackThis+
 2. StartupList
 3. ADSspy
 4. ProcMan
@@ -11,7 +11,32 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
-[2.10.0.30] - May 06, 2023
+[3.0.0.1 Alpha]
+ - F*ck them all, manifest is on github: https://github.com/dragokas/hijackthis
+ - No f*cking release
+General:
+- Renamed program to HiJackThis+ (Plus) to refer to a specific product without confusion with other forks:
+  * smooth transition from stand-alone exe version to multi-file version is planned
+  * the program can no longer be launched from the archive directly
+  * part of the modules is planned to be ported to C++ code with multithreading
+  - Due to violation EU GDPR by the certificate authorities which doesn't want to remove personal data from the certificate, excessive cost, as well as the war in Ukraine, the software certificate will not be renewed:
+  * when starting the program, the publisher name will be displayed as "Unknown"
+  * the program will be supplied with a self-signed certificate with the name of Alex Dragokas
+  * you can manually add this certificate to the Windows root store to continue see the publisher name in the UAC window. Instruction: https://github.com/dragokas/hijackthis/wiki/How-to-add-HiJackThis-root-certificate
+New:
+  - Added section "B" - (Browsers); under development; output/fix of suspicious Google Chrome extensions is currently supported.
+  - Added "Registry key type analyzer" tool (you can see symlinks, redirector type (presence of WOW companion and its type: Shared/Reflected/Simple key), virtualization, flags, date, etc.). Would be useful for researchers and developers.
+Functionality:
+ - Added new marks:
+ * "(missing)" - displayed for a missing registry entry (parameter or key).
+ * "(access denied)" - displayed if there are no access rights to the object.
+ * these marks are planned to be extended to work in all sections, but at the moment it only works in O7 [TamperProtection].
+ - x32 keys ("-32" sections) are displayed with normalized name now (\Wow6432Node\ is specified whenewer the section log record isn't shortened). Can be viewed fully through context menu "Jump".
+Bugs:
+ - Fixed Digital Signature Checker: could give incorrect (pre-cached) data for some fields due to faster processing.
+
+
+[2.10.0.31] - May 06, 2023
  - Fixed potential error in retrieving paths of executable images on Windows 8.1- due to OS bug (thanks to HackerVlad).
  - TamperProtection will show an error code instead of the number 0 if an access is denied.
  - Fixed freezing for 15 seconds on Windows 10+ when checking BITS.
@@ -121,7 +146,7 @@ Version history:
 
 [2.10.0.7 beta] (Nightly) - Feb 20, 2021
  - Added new 'Files Unlocker' tool (see 'Tools' menu => Files => Unlock File / Folder).
- - Global code clear and optimization (thanks to LaVolpe and his 'Project Scaner' tool).
+ - Global code clear and optimization (thanks to LaVolpe and his 'Project Scanner' tool).
  - Some errors are fixed.
  - Improved source code building script.
 
@@ -1678,4 +1703,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                                                                                                       
+                                                                                                            

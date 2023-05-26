@@ -1,0 +1,448 @@
+VERSION 5.00
+Begin VB.PropertyPage PPSliderGeneral 
+   Caption         =   "General"
+   ClientHeight    =   3450
+   ClientLeft      =   0
+   ClientTop       =   0
+   ClientWidth     =   5925
+   LockControls    =   -1  'True
+   PaletteMode     =   0  'Halftone
+   ScaleHeight     =   3450
+   ScaleWidth      =   5925
+   Begin VB.CheckBox CheckReversed 
+      Caption         =   "Reversed"
+      Height          =   285
+      Left            =   3000
+      TabIndex        =   15
+      Top             =   1560
+      Width           =   1620
+   End
+   Begin VB.TextBox TextSelLength 
+      Height          =   315
+      Left            =   4320
+      TabIndex        =   14
+      Top             =   1200
+      Width           =   1380
+   End
+   Begin VB.TextBox TextSelStart 
+      Height          =   315
+      Left            =   4320
+      TabIndex        =   12
+      Top             =   840
+      Width           =   1380
+   End
+   Begin VB.TextBox TextLargeChange 
+      Height          =   315
+      Left            =   1440
+      TabIndex        =   9
+      Top             =   1560
+      Width           =   1380
+   End
+   Begin VB.TextBox TextSmallChange 
+      Height          =   315
+      Left            =   1440
+      TabIndex        =   7
+      Top             =   1200
+      Width           =   1380
+   End
+   Begin VB.TextBox TextMax 
+      Height          =   315
+      Left            =   1440
+      TabIndex        =   5
+      Top             =   840
+      Width           =   1380
+   End
+   Begin VB.TextBox TextMin 
+      Height          =   315
+      Left            =   1440
+      TabIndex        =   3
+      Top             =   480
+      Width           =   1380
+   End
+   Begin VB.CheckBox CheckSelectRange 
+      Caption         =   "SelectRange"
+      Height          =   285
+      Left            =   3000
+      TabIndex        =   10
+      Top             =   480
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckEnabled 
+      Caption         =   "Enabled"
+      Height          =   285
+      Left            =   120
+      TabIndex        =   0
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckVisualStyles 
+      Caption         =   "VisualStyles"
+      Height          =   285
+      Left            =   1800
+      TabIndex        =   1
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.Label LabelSelLength 
+      Caption         =   "SelLength:"
+      Height          =   240
+      Left            =   3000
+      TabIndex        =   13
+      Top             =   1200
+      Width           =   1260
+   End
+   Begin VB.Label LabelSelStart 
+      Caption         =   "SelStart:"
+      Height          =   240
+      Left            =   3000
+      TabIndex        =   11
+      Top             =   840
+      Width           =   1260
+   End
+   Begin VB.Label LabelLargeChange 
+      Caption         =   "LargeChange:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   8
+      Top             =   1560
+      Width           =   1260
+   End
+   Begin VB.Label LabelSmallChange 
+      Caption         =   "SmallChange:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   6
+      Top             =   1200
+      Width           =   1260
+   End
+   Begin VB.Label LabelMax 
+      Caption         =   "Max:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   4
+      Top             =   840
+      Width           =   1260
+   End
+   Begin VB.Label LabelMin 
+      Caption         =   "Min:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   2
+      Top             =   480
+      Width           =   1260
+   End
+End
+Attribute VB_Name = "PPSliderGeneral"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Option Explicit
+Private FreezeChanged As Boolean
+
+Private Sub PropertyPage_Initialize()
+Call ComCtlsShowAllUIStates(PropertyPage.hWnd)
+End Sub
+
+Private Sub PropertyPage_ApplyChanges()
+On Error Resume Next
+PropertyPage.ValidateControls
+If Err.Number = 380 Then Exit Sub
+On Error GoTo 0
+With PropertyPage.SelectedControls(0)
+.Enabled = CBool(CheckEnabled.Value = vbChecked)
+.VisualStyles = CBool(CheckVisualStyles.Value = vbChecked)
+.Min = CLng(TextMin.Text)
+.Max = CLng(TextMax.Text)
+.SmallChange = CLng(TextSmallChange.Text)
+.LargeChange = CLng(TextLargeChange.Text)
+.SelectRange = CBool(CheckSelectRange.Value = vbChecked)
+.SelStart = CLng(TextSelStart.Text)
+.SelLength = CLng(TextSelLength.Text)
+.Reversed = CBool(CheckReversed.Value = vbChecked)
+End With
+Call PropertyPage_SelectionChanged
+End Sub
+
+Private Sub PropertyPage_SelectionChanged()
+FreezeChanged = True
+With PropertyPage.SelectedControls(0)
+CheckEnabled.Value = IIf(.Enabled = True, vbChecked, vbUnchecked)
+CheckVisualStyles.Value = IIf(.VisualStyles = True, vbChecked, vbUnchecked)
+TextMin.Text = CStr(.Min)
+TextMax.Text = CStr(.Max)
+TextSmallChange.Text = CStr(.SmallChange)
+TextLargeChange.Text = CStr(.LargeChange)
+CheckSelectRange.Value = IIf(.SelectRange = True, vbChecked, vbUnchecked)
+TextSelStart.Text = CStr(.SelStart)
+TextSelLength.Text = CStr(.SelLength)
+CheckReversed.Value = IIf(.Reversed = True, vbChecked, vbUnchecked)
+End With
+FreezeChanged = False
+End Sub
+
+Private Sub CheckEnabled_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckVisualStyles_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextMin_GotFocus()
+If Not TextMin.SelStart = 0 Then Exit Sub
+TextMin.SelLength = Len(TextMin.Text)
+End Sub
+
+Private Sub TextMin_LostFocus()
+TextMin.SelStart = 0
+End Sub
+
+Private Sub TextMin_Change()
+If FreezeChanged = True Then Exit Sub
+If TextMin.Text = vbNullString Then
+    TextMin.Text = PropertyPage.SelectedControls(0).Min
+    TextMin.SelStart = 0
+    TextMin.SelLength = Len(TextMin.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextMin_Validate(Cancel As Boolean)
+If Not IsNumeric(TextMin.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextMin.Text = PropertyPage.SelectedControls(0).Min
+    TextMin.SetFocus
+    Cancel = True
+Else
+    Dim LngValue As Long
+    On Error Resume Next
+    LngValue = CLng(TextMin.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If Cancel = False Then
+        TextMin.Text = LngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextMin.Text = PropertyPage.SelectedControls(0).Min
+        TextMin.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextMax_GotFocus()
+If Not TextMax.SelStart = 0 Then Exit Sub
+TextMax.SelLength = Len(TextMax.Text)
+End Sub
+
+Private Sub TextMax_LostFocus()
+TextMax.SelStart = 0
+End Sub
+
+Private Sub TextMax_Change()
+If FreezeChanged = True Then Exit Sub
+If TextMax.Text = vbNullString Then
+    TextMax.Text = PropertyPage.SelectedControls(0).Max
+    TextMax.SelStart = 0
+    TextMax.SelLength = Len(TextMax.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextMax_Validate(Cancel As Boolean)
+If Not IsNumeric(TextMax.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextMax.Text = PropertyPage.SelectedControls(0).Max
+    TextMax.SetFocus
+    Cancel = True
+Else
+    Dim LngValue As Long
+    On Error Resume Next
+    LngValue = CLng(TextMax.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If Cancel = False Then
+        TextMax.Text = LngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextMax.Text = PropertyPage.SelectedControls(0).Max
+        TextMax.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextSmallChange_GotFocus()
+If Not TextSmallChange.SelStart = 0 Then Exit Sub
+TextSmallChange.SelLength = Len(TextSmallChange.Text)
+End Sub
+
+Private Sub TextSmallChange_LostFocus()
+TextSmallChange.SelStart = 0
+End Sub
+
+Private Sub TextSmallChange_Change()
+If FreezeChanged = True Then Exit Sub
+If TextSmallChange.Text = vbNullString Then
+    TextSmallChange.Text = PropertyPage.SelectedControls(0).SmallChange
+    TextSmallChange.SelStart = 0
+    TextSmallChange.SelLength = Len(TextSmallChange.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextSmallChange_Validate(Cancel As Boolean)
+If Not IsNumeric(TextSmallChange.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextSmallChange.Text = PropertyPage.SelectedControls(0).SmallChange
+    TextSmallChange.SetFocus
+    Cancel = True
+Else
+    Dim LngValue As Long
+    On Error Resume Next
+    LngValue = CLng(TextSmallChange.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If Cancel = False Then
+        TextSmallChange.Text = LngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextSmallChange.Text = PropertyPage.SelectedControls(0).SmallChange
+        TextSmallChange.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextLargeChange_GotFocus()
+If Not TextLargeChange.SelStart = 0 Then Exit Sub
+TextLargeChange.SelLength = Len(TextLargeChange.Text)
+End Sub
+
+Private Sub TextLargeChange_LostFocus()
+TextLargeChange.SelStart = 0
+End Sub
+
+Private Sub TextLargeChange_Change()
+If FreezeChanged = True Then Exit Sub
+If TextLargeChange.Text = vbNullString Then
+    TextLargeChange.Text = PropertyPage.SelectedControls(0).LargeChange
+    TextLargeChange.SelStart = 0
+    TextLargeChange.SelLength = Len(TextLargeChange.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextLargeChange_Validate(Cancel As Boolean)
+If Not IsNumeric(TextLargeChange.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextLargeChange.Text = PropertyPage.SelectedControls(0).LargeChange
+    TextLargeChange.SetFocus
+    Cancel = True
+Else
+    Dim LngValue As Long
+    On Error Resume Next
+    LngValue = CLng(TextLargeChange.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If Cancel = False Then
+        TextLargeChange.Text = LngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextLargeChange.Text = PropertyPage.SelectedControls(0).LargeChange
+        TextLargeChange.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub CheckSelectRange_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextSelStart_GotFocus()
+If Not TextSelStart.SelStart = 0 Then Exit Sub
+TextSelStart.SelLength = Len(TextSelStart.Text)
+End Sub
+
+Private Sub TextSelStart_LostFocus()
+TextSelStart.SelStart = 0
+End Sub
+
+Private Sub TextSelStart_Change()
+If FreezeChanged = True Then Exit Sub
+If TextSelStart.Text = vbNullString Then
+    TextSelStart.Text = PropertyPage.SelectedControls(0).SelStart
+    TextSelStart.SelStart = 0
+    TextSelStart.SelLength = Len(TextSelStart.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextSelStart_Validate(Cancel As Boolean)
+If Not IsNumeric(TextSelStart.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextSelStart.Text = PropertyPage.SelectedControls(0).SelStart
+    TextSelStart.SetFocus
+    Cancel = True
+Else
+    Dim LngValue As Long
+    On Error Resume Next
+    LngValue = CLng(TextSelStart.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If Cancel = False Then
+        TextSelStart.Text = LngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextSelStart.Text = PropertyPage.SelectedControls(0).SelStart
+        TextSelStart.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextSelLength_GotFocus()
+If Not TextSelLength.SelStart = 0 Then Exit Sub
+TextSelLength.SelLength = Len(TextSelLength.Text)
+End Sub
+
+Private Sub TextSelLength_LostFocus()
+TextSelLength.SelStart = 0
+End Sub
+
+Private Sub TextSelLength_Change()
+If FreezeChanged = True Then Exit Sub
+If TextSelLength.Text = vbNullString Then
+    TextSelLength.Text = PropertyPage.SelectedControls(0).SelLength
+    TextSelLength.SelStart = 0
+    TextSelLength.SelLength = Len(TextSelLength.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextSelLength_Validate(Cancel As Boolean)
+If Not IsNumeric(TextSelLength.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextSelLength.Text = PropertyPage.SelectedControls(0).SelLength
+    TextSelLength.SetFocus
+    Cancel = True
+Else
+    Dim LngValue As Long
+    On Error Resume Next
+    LngValue = CLng(TextSelLength.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If Cancel = False Then
+        TextSelLength.Text = LngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextSelLength.Text = PropertyPage.SelectedControls(0).SelLength
+        TextSelLength.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub CheckReversed_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub

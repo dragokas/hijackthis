@@ -1,0 +1,601 @@
+VERSION 5.00
+Begin VB.PropertyPage PPImageListImages 
+   AutoRedraw      =   -1  'True
+   Caption         =   "Images"
+   ClientHeight    =   4650
+   ClientLeft      =   0
+   ClientTop       =   0
+   ClientWidth     =   5790
+   LockControls    =   -1  'True
+   PaletteMode     =   0  'Halftone
+   ScaleHeight     =   310
+   ScaleMode       =   3  'Pixel
+   ScaleWidth      =   386
+   Begin VB.CommandButton CommandMoveUp 
+      Caption         =   ">>"
+      Height          =   315
+      Left            =   3480
+      TabIndex        =   13
+      ToolTipText     =   "Move Selected Picture Forward"
+      Top             =   2640
+      Width           =   1035
+   End
+   Begin VB.CommandButton CommandMoveDown 
+      Caption         =   "<<"
+      Height          =   315
+      Left            =   2400
+      TabIndex        =   12
+      ToolTipText     =   "Move Selected Picture Back"
+      Top             =   2640
+      Width           =   1035
+   End
+   Begin VB.HScrollBar HScroll 
+      Height          =   255
+      Left            =   120
+      TabIndex        =   9
+      TabStop         =   0   'False
+      Top             =   2220
+      Width           =   5595
+   End
+   Begin VB.CommandButton CommandClear 
+      Caption         =   "&Clear..."
+      Height          =   315
+      Left            =   4680
+      TabIndex        =   14
+      ToolTipText     =   "Clear all"
+      Top             =   2640
+      Width           =   1035
+   End
+   Begin VB.CommandButton CommandRemove 
+      Caption         =   "&Remove..."
+      Height          =   315
+      Left            =   1200
+      TabIndex        =   11
+      ToolTipText     =   "Remove Selected Picture"
+      Top             =   2640
+      Width           =   1035
+   End
+   Begin VB.CommandButton CommandInsert 
+      Caption         =   "I&nsert..."
+      Height          =   315
+      Left            =   120
+      TabIndex        =   10
+      ToolTipText     =   "Insert Picture"
+      Top             =   2640
+      Width           =   1035
+   End
+   Begin VB.Frame FrameCurrentImage 
+      Caption         =   "Current Image"
+      Height          =   1155
+      Left            =   60
+      TabIndex        =   0
+      Top             =   120
+      Width           =   5655
+      Begin VB.TextBox TextTag 
+         BackColor       =   &H8000000F&
+         Enabled         =   0   'False
+         Height          =   315
+         Left            =   2520
+         MaxLength       =   20
+         TabIndex        =   6
+         Top             =   600
+         Width           =   2895
+      End
+      Begin VB.TextBox TextIndex 
+         BackColor       =   &H8000000F&
+         Enabled         =   0   'False
+         Height          =   315
+         Left            =   720
+         Locked          =   -1  'True
+         TabIndex        =   2
+         Top             =   240
+         Width           =   1230
+      End
+      Begin VB.TextBox TextKey 
+         BackColor       =   &H8000000F&
+         Enabled         =   0   'False
+         Height          =   315
+         Left            =   2520
+         MaxLength       =   20
+         TabIndex        =   4
+         Top             =   240
+         Width           =   2895
+      End
+      Begin VB.Label LabelKey 
+         Caption         =   "&Key:"
+         Height          =   195
+         Left            =   2040
+         TabIndex        =   3
+         Top             =   240
+         Width           =   435
+      End
+      Begin VB.Label LabelTag 
+         Caption         =   "&Tag:"
+         Height          =   195
+         Left            =   2040
+         TabIndex        =   5
+         Top             =   600
+         Width           =   435
+      End
+      Begin VB.Label LabelIndex 
+         Caption         =   "&Index:"
+         Height          =   195
+         Left            =   120
+         TabIndex        =   1
+         Top             =   240
+         Width           =   555
+      End
+   End
+   Begin VB.PictureBox PictureImages 
+      AutoRedraw      =   -1  'True
+      BackColor       =   &H80000005&
+      Height          =   945
+      Left            =   90
+      ScaleHeight     =   59
+      ScaleMode       =   3  'Pixel
+      ScaleWidth      =   373
+      TabIndex        =   8
+      Top             =   1560
+      Width           =   5655
+   End
+   Begin VB.Label LabelImages 
+      Caption         =   "I&mages:"
+      Height          =   195
+      Left            =   120
+      TabIndex        =   7
+      Top             =   1320
+      Width           =   555
+   End
+End
+Attribute VB_Name = "PPImageListImages"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Option Explicit
+Private Type ShadowListImageStruct
+Key As String
+Tag As String
+Picture As IPictureDisp
+End Type
+Private Type RECT
+Left As Long
+Top As Long
+Right As Long
+Bottom As Long
+End Type
+Private Declare Function DrawEdge Lib "user32" (ByVal hDC As Long, ByRef qRC As RECT, ByVal Edge As Long, ByVal grfFlags As Long) As Long
+Private Declare Function GetFocus Lib "user32" () As Long
+Private Declare Function DrawFocusRect Lib "user32" (ByVal hDC As Long, ByRef lpRect As RECT) As Long
+Private Declare Function FillRect Lib "user32" (ByVal hDC As Long, ByRef lpRect As RECT, ByVal hBrush As Long) As Long
+Private Declare Function CreateSolidBrush Lib "gdi32" (ByVal crColor As Long) As Long
+Private Declare Function DeleteObject Lib "gdi32" (ByVal hObject As Long) As Long
+Private Const BF_LEFT As Long = 1
+Private Const BF_TOP As Long = 2
+Private Const BF_RIGHT As Long = 4
+Private Const BF_BOTTOM As Long = 8
+Private Const BF_RECT As Long = BF_LEFT Or BF_TOP Or BF_RIGHT Or BF_BOTTOM
+Private Const BDR_RAISEDOUTER As Long = 1
+Private Const BDR_RAISEDINNER As Long = 4
+Private SelectedControl As Object
+Private CurrIndex As Long
+Private ImageFrameWidth As Long, ImageFrameHeight As Long
+Private PropShadowListImages() As ShadowListImageStruct
+Private FreezeChanged As Boolean
+
+Private Sub PropertyPage_Initialize()
+Call ComCtlsShowAllUIStates(PropertyPage.hWnd)
+CurrIndex = 0
+ImageFrameWidth = 42
+ImageFrameHeight = 42
+ReDim PropShadowListImages(0) As ShadowListImageStruct
+End Sub
+
+Private Sub PropertyPage_ApplyChanges()
+If CurrIndex > 0 Then
+    PropShadowListImages(CurrIndex).Tag = TextTag.Text
+    Dim i As Long
+    With PropertyPage.SelectedControls(0)
+    .ListImages.Clear
+    For i = 0 To UBound(PropShadowListImages())
+        If i > 0 Then
+            If i <> CurrIndex Then
+                With .ListImages.Add(i, PropShadowListImages(i).Key, PropShadowListImages(i).Picture)
+                .Tag = PropShadowListImages(i).Tag
+                End With
+            Else
+                With .ListImages.Add(i, , PropShadowListImages(i).Picture)
+                .Tag = PropShadowListImages(i).Tag
+                End With
+            End If
+        End If
+    Next i
+    If Not TextKey.Text = vbNullString Then
+        If .ListImages.Exists(TextKey.Text) = True Then
+            .ListImages(CurrIndex).Key = PropShadowListImages(CurrIndex).Key
+            MsgBox "This key is already associated with an element of this collection.", vbCritical + vbOKOnly
+            FreezeChanged = True
+            TextKey.Text = PropShadowListImages(CurrIndex).Key
+            FreezeChanged = False
+        Else
+            PropShadowListImages(CurrIndex).Key = TextKey.Text
+            .ListImages(CurrIndex).Key = PropShadowListImages(CurrIndex).Key
+        End If
+    Else
+        PropShadowListImages(CurrIndex).Key = vbNullString
+    End If
+    End With
+End If
+Call PropertyPage_SelectionChanged
+End Sub
+
+Private Sub PropertyPage_SelectionChanged()
+If Not SelectedControl Is PropertyPage.SelectedControls(0) Then Set SelectedControl = PropertyPage.SelectedControls(0): CurrIndex = 0
+With PropertyPage.SelectedControls(0)
+If .ListImages.Count > 0 And CurrIndex = 0 Then
+    Call FillShadowListImages
+    CurrIndex = 1
+    TextIndex.Text = "1 of " & .ListImages.Count
+    With .ListImages(CurrIndex)
+    FreezeChanged = True
+    TextKey.Text = .Key
+    TextTag.Text = .Tag
+    FreezeChanged = False
+    End With
+End If
+Call ApplyControlStates
+Call DrawImages
+End With
+End Sub
+
+Private Sub PictureImages_KeyDown(KeyCode As Integer, Shift As Integer)
+Select Case KeyCode
+    Case vbKeyUp, vbKeyLeft
+        With PropertyPage.SelectedControls(0)
+        If CurrIndex > 1 Then
+            If PropertyPage.Changed = True Then Call PropertyPage_ApplyChanges
+            CurrIndex = CurrIndex - 1
+            TextIndex.Text = CurrIndex & " of " & .ListImages.Count
+            With .ListImages(CurrIndex)
+            FreezeChanged = True
+            TextKey.Text = .Key
+            TextTag.Text = .Tag
+            FreezeChanged = False
+            End With
+            Call EnsureVisible(-1)
+            Call DrawImages
+        End If
+        End With
+        Call ApplyControlStates
+    Case vbKeyDown, vbKeyRight
+        With PropertyPage.SelectedControls(0)
+        If CurrIndex < .ListImages.Count Then
+            If PropertyPage.Changed = True Then Call PropertyPage_ApplyChanges
+            CurrIndex = CurrIndex + 1
+            TextIndex.Text = CurrIndex & " of " & .ListImages.Count
+            With .ListImages(CurrIndex)
+            FreezeChanged = True
+            TextKey.Text = .Key
+            TextTag.Text = .Tag
+            FreezeChanged = False
+            End With
+            Call EnsureVisible(1)
+            Call DrawImages
+        End If
+        End With
+        Call ApplyControlStates
+End Select
+End Sub
+
+Private Sub PictureImages_GotFocus()
+Call DrawImages
+End Sub
+
+Private Sub PictureImages_LostFocus()
+Call DrawImages
+End Sub
+
+Private Sub PictureImages_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Dim ImageListHandle As Long
+With PropertyPage.SelectedControls(0)
+ImageListHandle = .hImageList
+If ImageListHandle <> 0 Then
+    Dim SelIndex As Long
+    If X >= 0 And X <= PictureImages.ScaleWidth Then
+        If Y >= 0 And Y <= (PictureImages.ScaleHeight - HScroll.Height) Then
+            If HScroll.Enabled = True Then X = X + HScroll.Value
+            SelIndex = (X \ ImageFrameWidth) + 1
+            If SelIndex < 1 Or SelIndex > .ListImages.Count Then
+            Else
+                If PropertyPage.Changed = True Then Call PropertyPage_ApplyChanges
+                CurrIndex = SelIndex
+                Call DrawImages
+            End If
+        End If
+    End If
+End If
+End With
+End Sub
+
+Private Sub EnsureVisible(ByVal iDir As Long)
+Dim ImageListHandle As Long
+ImageListHandle = PropertyPage.SelectedControls(0).hImageList
+If ImageListHandle <> 0 Then
+    Dim X As Long, Count As Long, Pos As Long
+    X = 0
+    Pos = CurrIndex - 1
+    Count = PropertyPage.SelectedControls(0).ListImages.Count
+    If Count > 0 Then
+        If iDir = 1 Then
+            If HScroll.Enabled = True Then
+                X = X - HScroll.Value
+                X = X + (ImageFrameWidth * (Pos + 1))
+                If X > PictureImages.ScaleWidth Then
+                    If HScroll.Value + ImageFrameWidth < HScroll.Max Then
+                        HScroll.Value = HScroll.Value + ImageFrameWidth
+                    Else
+                        HScroll.Value = HScroll.Max
+                    End If
+                End If
+            End If
+        ElseIf iDir = -1 Then
+            If HScroll.Enabled = True Then
+                X = X - HScroll.Value
+                X = X + (ImageFrameWidth * Pos)
+                If X < 0 Then
+                    If HScroll.Value > ImageFrameWidth Then
+                        HScroll.Value = HScroll.Value - ImageFrameWidth
+                    Else
+                        HScroll.Value = 0
+                    End If
+                End If
+            End If
+        End If
+    End If
+End If
+End Sub
+
+Private Sub DrawImages()
+Dim ImageListHandle As Long, Count As Long
+PictureImages.Cls
+With PropertyPage.SelectedControls(0)
+ImageListHandle = .hImageList
+If ImageListHandle <> 0 Then
+    Dim RC As RECT, TRC As RECT
+    Dim i As Long, X As Long
+    Dim Brush As Long, Max As Long
+    RC.Left = 0
+    RC.Top = 0
+    RC.Right = PictureImages.ScaleWidth
+    RC.Bottom = PictureImages.ScaleHeight - HScroll.Height
+    Brush = CreateSolidBrush(WinColor(vbButtonFace))
+    Count = .ListImages.Count
+    Max = (RC.Right - RC.Left) \ ImageFrameWidth
+    If Count > Max Then
+        HScroll.Max = (Count - Max) * ImageFrameWidth
+        HScroll.SmallChange = ImageFrameWidth
+        HScroll.LargeChange = ImageFrameWidth * 8
+        HScroll.Enabled = True
+    Else
+        HScroll.Value = 0
+        HScroll.Enabled = False
+    End If
+    X = HScroll.Value * -1
+    For i = 1 To Count
+        If (X + ImageFrameWidth) > 0 Then
+            TRC.Left = X
+            TRC.Top = 0
+            TRC.Right = TRC.Left + ImageFrameWidth
+            TRC.Bottom = TRC.Top + ImageFrameHeight
+            FillRect PictureImages.hDC, TRC, Brush
+            Call RenderPicture(.ListImages(i).Picture, PictureImages.hDC, X + 4, 4, 32, 32)
+            If i = CurrIndex Then
+                DrawEdge PictureImages.hDC, TRC, BDR_RAISEDINNER Or BDR_RAISEDOUTER, BF_RECT
+                If GetFocus() = PictureImages.hWnd Then
+                    TRC.Left = TRC.Left + 2
+                    TRC.Top = TRC.Top + 2
+                    TRC.Bottom = TRC.Bottom - 2
+                    TRC.Right = TRC.Right - 2
+                    DrawFocusRect PictureImages.hDC, TRC
+                End If
+            End If
+        End If
+        X = X + ImageFrameWidth
+        If X > RC.Right Then Exit For
+    Next i
+    DeleteObject Brush
+End If
+FreezeChanged = True
+If Count = 0 Then
+    TextIndex.Text = "0 of 0"
+    TextIndex.Enabled = False
+    TextKey.Text = vbNullString
+    TextKey.Enabled = False
+    TextTag.Text = vbNullString
+    TextTag.Enabled = False
+Else
+    TextIndex.Text = CurrIndex & " of " & Count
+    TextIndex.Enabled = True
+    TextKey.Text = PropShadowListImages(CurrIndex).Key
+    TextKey.Enabled = True
+    TextTag.Text = PropShadowListImages(CurrIndex).Tag
+    TextTag.Enabled = True
+End If
+PropertyPage.Refresh
+FreezeChanged = False
+End With
+End Sub
+
+Private Sub CommandInsert_Click()
+Dim Path As String, FileNames() As String
+Dim OpenFileDialog As CommonDialog
+Set OpenFileDialog = New CommonDialog
+With OpenFileDialog
+.Flags = CdlOFNExplorer Or CdlOFNPathMustExist Or CdlOFNFileMustExist Or CdlOFNAllowMultiSelect
+.MaxFileSize = .MaxFileSize * 5000
+.Filter = "All Picture Files|*.ICO;*.CUR;*.BMP;*.GIF;*.JPG|Icons & Cursors (*.ICO;*.CUR)|*.ICO;*.CUR|Bitmaps (*.BMP;*.DIB)|*.BMP;*.DIB|GIF Images (*.GIF)|*.GIF|JPEG Images (*.JPG)|*.JPG|All Files (*.*)|*.*"
+.DialogTitle = "Select Picture"
+End With
+If OpenFileDialog.ShowOpen = True Then
+    With OpenFileDialog
+    If InStr(.FileName, vbNullChar) <> 0 Then
+        Path = Left$(.FileName, .FileOffset - 1)
+        If Not Right$(Path, 1) = "\" Then Path = Path & "\"
+        FileNames() = Split(Mid$(.FileName, .FileOffset + 1), vbNullChar)
+    Else
+        Path = Left$(.FileName, .FileOffset)
+        ReDim FileNames(0) As String
+        FileNames(0) = .FileTitle
+    End If
+    End With
+    If Not Path = vbNullString Then
+        If PropertyPage.Changed = True Then Call PropertyPage_ApplyChanges
+        Dim i As Long, Picture As IPictureDisp
+        For i = LBound(FileNames()) To UBound(FileNames())
+            Set Picture = PictureFromPath(Path & FileNames(i))
+            If Not Picture Is Nothing Then
+                CurrIndex = CurrIndex + 1
+                PropertyPage.SelectedControls(0).ListImages.Add CurrIndex, , Picture
+                Call ApplyControlStates
+                Call FillShadowListImages
+                Call DrawImages
+                PropertyPage.Changed = True
+            Else
+                MsgBox "Invalid picture", vbExclamation + vbOKOnly
+                Exit For
+            End If
+        Next i
+    End If
+End If
+End Sub
+
+Private Sub CommandRemove_Click()
+If CurrIndex > 0 Then
+    PropertyPage.SelectedControls(0).ListImages.Remove CurrIndex
+    CurrIndex = CurrIndex - 1
+    Call ApplyControlStates
+    Call FillShadowListImages
+    Call DrawImages
+End If
+End Sub
+
+Private Sub CommandClear_Click()
+If MsgBox("Are you sure you want to remove all images?", vbYesNo Or vbQuestion) = vbYes Then
+    PropertyPage.SelectedControls(0).ListImages.Clear
+    CurrIndex = 0
+    Call ApplyControlStates
+    Call FillShadowListImages
+    Call DrawImages
+End If
+End Sub
+
+Private Sub CommandMoveDown_Click()
+If PropertyPage.SelectedControls(0).hImageList <> 0 Then
+    If CurrIndex > 1 And PropertyPage.SelectedControls(0).ListImages.Count > 0 Then
+        If PropertyPage.Changed = True Then Call PropertyPage_ApplyChanges
+        Dim Buffer As ShadowListImageStruct
+        With Buffer
+        .Key = PropShadowListImages(CurrIndex).Key
+        .Tag = PropShadowListImages(CurrIndex).Tag
+        Set .Picture = PropShadowListImages(CurrIndex).Picture
+        LSet PropShadowListImages(CurrIndex) = PropShadowListImages(CurrIndex - 1)
+        PropShadowListImages(CurrIndex - 1).Key = .Key
+        PropShadowListImages(CurrIndex - 1).Tag = .Tag
+        Set PropShadowListImages(CurrIndex - 1).Picture = .Picture
+        End With
+        CurrIndex = CurrIndex - 1
+        Call EnsureVisible(-1)
+        Call DrawImages
+        PropertyPage.Changed = True
+        Call PropertyPage_ApplyChanges
+    End If
+End If
+End Sub
+
+Private Sub CommandMoveUp_Click()
+If PropertyPage.SelectedControls(0).hImageList <> 0 Then
+    If CurrIndex > 0 And CurrIndex < PropertyPage.SelectedControls(0).ListImages.Count Then
+        If PropertyPage.Changed = True Then Call PropertyPage_ApplyChanges
+        Dim Buffer As ShadowListImageStruct
+        With Buffer
+        .Key = PropShadowListImages(CurrIndex).Key
+        .Tag = PropShadowListImages(CurrIndex).Tag
+        Set .Picture = PropShadowListImages(CurrIndex).Picture
+        LSet PropShadowListImages(CurrIndex) = PropShadowListImages(CurrIndex + 1)
+        PropShadowListImages(CurrIndex + 1).Key = .Key
+        PropShadowListImages(CurrIndex + 1).Tag = .Tag
+        Set PropShadowListImages(CurrIndex + 1).Picture = .Picture
+        End With
+        CurrIndex = CurrIndex + 1
+        Call EnsureVisible(-1)
+        Call DrawImages
+        PropertyPage.Changed = True
+        Call PropertyPage_ApplyChanges
+    End If
+End If
+End Sub
+
+Private Sub HScroll_Change()
+Call DrawImages
+End Sub
+
+Private Sub HScroll_Scroll()
+Call HScroll_Change
+End Sub
+
+Private Sub TextKey_Change()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextTag_Change()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ApplyControlStates()
+With PropertyPage.SelectedControls(0)
+FreezeChanged = True
+If .ListImages.Count > 0 Then
+    CommandRemove.Enabled = True
+    If .ListImages.Count > 1 Then
+        CommandMoveDown.Enabled = True
+        CommandMoveUp.Enabled = True
+    Else
+        CommandMoveDown.Enabled = False
+        CommandMoveUp.Enabled = False
+    End If
+    TextKey.BackColor = vbWindowBackground
+    TextKey.Enabled = True
+    TextTag.BackColor = vbWindowBackground
+    TextTag.Enabled = True
+Else
+    CommandRemove.Enabled = False
+    CommandMoveDown.Enabled = False
+    CommandMoveUp.Enabled = False
+    TextKey.Text = vbNullString
+    TextKey.BackColor = vbButtonFace
+    TextKey.Enabled = False
+    TextTag.Text = vbNullString
+    TextTag.BackColor = vbButtonFace
+    TextTag.Enabled = False
+End If
+FreezeChanged = False
+End With
+End Sub
+
+Private Sub FillShadowListImages()
+With PropertyPage.SelectedControls(0)
+ReDim PropShadowListImages(.ListImages.Count) As ShadowListImageStruct
+Dim i As Long
+For i = 0 To .ListImages.Count
+    If i > 0 Then
+        With .ListImages(i)
+        PropShadowListImages(i).Key = .Key
+        PropShadowListImages(i).Tag = .Tag
+        Set PropShadowListImages(i).Picture = .Picture
+        End With
+    End If
+Next i
+End With
+End Sub

@@ -130,7 +130,7 @@ Private Sub cmdGo_Click()
     
     Set sList = New clsStringBuilder
     sList.Append ChrW$(-257)
-    sList.AppendLine "Logfile of Files Permission Unlocker (HJT v." & AppVerString & ")"
+    sList.AppendLine "Logfile of Files Permission Unlocker (HJT+ v." & AppVerString & ")"
     sList.AppendLine
     sList.AppendLine MakeLogHeader()
     sList.AppendLine "Logging started at:      " & TimeStarted

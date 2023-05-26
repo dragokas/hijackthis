@@ -1,0 +1,603 @@
+VERSION 5.00
+Begin VB.PropertyPage PPUpDownGeneral 
+   Caption         =   "General"
+   ClientHeight    =   3810
+   ClientLeft      =   0
+   ClientTop       =   0
+   ClientWidth     =   6075
+   LockControls    =   -1  'True
+   PaletteMode     =   0  'Halftone
+   ScaleHeight     =   3810
+   ScaleWidth      =   6075
+   Begin VB.CheckBox CheckMouseTrack 
+      Caption         =   "MouseTrack"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   19
+      Top             =   840
+      Width           =   1800
+   End
+   Begin VB.ComboBox ComboBuddyProperty 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   5
+      Top             =   840
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboNumberStyle 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   17
+      Top             =   3000
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboBuddyControl 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   3
+      Top             =   480
+      Width           =   2235
+   End
+   Begin VB.CheckBox CheckSyncBuddy 
+      Caption         =   "SyncBuddy"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   18
+      Top             =   480
+      Width           =   1800
+   End
+   Begin VB.ComboBox ComboOrientation 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   15
+      Top             =   2640
+      Width           =   2235
+   End
+   Begin VB.CheckBox CheckThousandsSeparator 
+      Caption         =   "ThousandsSeparator"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   22
+      Top             =   1920
+      Width           =   1800
+   End
+   Begin VB.CheckBox CheckHotTracking 
+      Caption         =   "HotTracking"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   21
+      Top             =   1560
+      Width           =   1800
+   End
+   Begin VB.TextBox TextValue 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   11
+      Top             =   1920
+      Width           =   2235
+   End
+   Begin VB.TextBox TextIncrement 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   13
+      Top             =   2280
+      Width           =   2235
+   End
+   Begin VB.TextBox TextMax 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   9
+      Top             =   1560
+      Width           =   2235
+   End
+   Begin VB.TextBox TextMin 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   7
+      Top             =   1200
+      Width           =   2235
+   End
+   Begin VB.CheckBox CheckWrap 
+      Caption         =   "Wrap"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   20
+      Top             =   1200
+      Width           =   1800
+   End
+   Begin VB.CheckBox CheckEnabled 
+      Caption         =   "Enabled"
+      Height          =   285
+      Left            =   120
+      TabIndex        =   0
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckVisualStyles 
+      Caption         =   "VisualStyles"
+      Height          =   285
+      Left            =   1800
+      TabIndex        =   1
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.Label LabelNumberStyle 
+      Caption         =   "NumberStyle:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   16
+      Top             =   3000
+      Width           =   1620
+   End
+   Begin VB.Label LabelBuddyControl 
+      Caption         =   "BuddyControl:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   2
+      Top             =   480
+      Width           =   1620
+   End
+   Begin VB.Label LabelBuddyProperty 
+      Caption         =   "BuddyProperty:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   4
+      Top             =   840
+      Width           =   1620
+   End
+   Begin VB.Label LabelOrientation 
+      Caption         =   "Orientation:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   14
+      Top             =   2640
+      Width           =   1620
+   End
+   Begin VB.Label LabelValue 
+      Caption         =   "Value:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   10
+      Top             =   1920
+      Width           =   1620
+   End
+   Begin VB.Label LabelIncrement 
+      Caption         =   "Increment:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   12
+      Top             =   2280
+      Width           =   1620
+   End
+   Begin VB.Label LabelMax 
+      Caption         =   "Max:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   8
+      Top             =   1560
+      Width           =   1620
+   End
+   Begin VB.Label LabelMin 
+      Caption         =   "Min:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   6
+      Top             =   1200
+      Width           =   1620
+   End
+End
+Attribute VB_Name = "PPUpDownGeneral"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Option Explicit
+Private Declare Function PostMessage Lib "user32" Alias "PostMessageW" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByRef lParam As Any) As Long
+Private BuddyControlEnumerated As Boolean, BuddyProperties() As String
+Private CurrBuddyControl As String
+Private FreezeChanged As Boolean
+
+Private Sub PropertyPage_Initialize()
+Call ComCtlsShowAllUIStates(PropertyPage.hWnd)
+With ComboBuddyControl
+.AddItem "(None)"
+.ListIndex = 0
+End With
+With ComboOrientation
+.AddItem UdnOrientationVertical & " - Vertical"
+.ItemData(.NewIndex) = UdnOrientationVertical
+.AddItem UdnOrientationHorizontal & " - Horizontal"
+.ItemData(.NewIndex) = UdnOrientationHorizontal
+End With
+With ComboNumberStyle
+.AddItem UdnNumberStyleDecimal & " - Decimal"
+.ItemData(.NewIndex) = UdnNumberStyleDecimal
+.AddItem UdnNumberStyleHexadecimal & " - Hexadecimal"
+.ItemData(.NewIndex) = UdnNumberStyleHexadecimal
+End With
+ReDim BuddyProperties(0) As String
+End Sub
+
+Private Sub PropertyPage_ApplyChanges()
+On Error Resume Next
+PropertyPage.ValidateControls
+If Err.Number = 380 Then Exit Sub
+On Error GoTo 0
+With PropertyPage.SelectedControls(0)
+.Enabled = CBool(CheckEnabled.Value = vbChecked)
+.VisualStyles = CBool(CheckVisualStyles.Value = vbChecked)
+.BuddyControl = ComboBuddyControl.List(ComboBuddyControl.ListIndex)
+.BuddyProperty = ComboBuddyProperty.Text
+FreezeChanged = True
+CheckSyncBuddy.Value = IIf(.SyncBuddy = True, vbChecked, vbUnchecked)
+FreezeChanged = False
+.Min = CLng(TextMin.Text)
+.Max = CLng(TextMax.Text)
+.Value = CLng(TextValue.Text)
+.Increment = CLng(TextIncrement.Text)
+.Orientation = ComboOrientation.ItemData(ComboOrientation.ListIndex)
+.NumberStyle = ComboNumberStyle.ItemData(ComboNumberStyle.ListIndex)
+.MouseTrack = CBool(CheckMouseTrack.Value = vbChecked)
+.Wrap = CBool(CheckWrap.Value = vbChecked)
+.HotTracking = CBool(CheckHotTracking.Value = vbChecked)
+.ThousandsSeparator = CBool(CheckThousandsSeparator.Value = vbChecked)
+End With
+Call PropertyPage_SelectionChanged
+End Sub
+
+Private Sub PropertyPage_SelectionChanged()
+Dim i As Long
+FreezeChanged = True
+With PropertyPage.SelectedControls(0)
+CheckEnabled.Value = IIf(.Enabled = True, vbChecked, vbUnchecked)
+CheckVisualStyles.Value = IIf(.VisualStyles = True, vbChecked, vbUnchecked)
+If BuddyControlEnumerated = False Then
+    Const INVOKE_PROPERTYGET As Long = 2, INVOKE_PROPERTYPUT As Long = 4
+    Dim TLI As Object, ObjInterface As Object, ObjMember As Object
+    Dim LastMemberName As String, PropUBound As Long
+    On Error Resume Next
+    Set TLI = CreateObject("TLI.TLIApplication")
+    If Err.Number <> 0 Then Set TLI = Nothing
+    On Error GoTo 0
+    Dim ControlEnum As Object
+    For Each ControlEnum In .ControlsEnum
+        If ControlIsValid(ControlEnum) = True Then
+            If ControlEnum.Container Is .ControlsContainer Then
+                If Not TLI Is Nothing Then
+                    Set ObjInterface = TLI.InterfaceInfoFromObject(ControlEnum)
+                    PropUBound = UBound(BuddyProperties())
+                    ReDim Preserve BuddyProperties(0 To PropUBound + 1) As String
+                    For Each ObjMember In ObjInterface.Members
+                        With ObjMember
+                        Select Case .InvokeKind
+                            Case INVOKE_PROPERTYGET, INVOKE_PROPERTYPUT
+                                If .Name = LastMemberName Then
+                                    BuddyProperties(PropUBound + 1) = BuddyProperties(PropUBound + 1) & LastMemberName & "|"
+                                Else
+                                    LastMemberName = .Name
+                                End If
+                        End Select
+                        End With
+                    Next ObjMember
+                End If
+                ComboBuddyControl.AddItem ProperControlName(ControlEnum)
+            End If
+        End If
+    Next ControlEnum
+    BuddyControlEnumerated = True
+End If
+For i = 0 To ComboBuddyControl.ListCount - 1
+    If ComboBuddyControl.List(i) = .BuddyControl Then
+        ComboBuddyControl.ListIndex = i
+        CurrBuddyControl = ComboBuddyControl.List(i)
+        Exit For
+    End If
+Next i
+ComboBuddyProperty.Text = .BuddyProperty
+Call FillDropDownProperties
+TextMin.Text = CStr(.Min)
+TextMax.Text = CStr(.Max)
+TextValue.Text = CStr(.Value)
+TextIncrement.Text = CStr(.Increment)
+For i = 0 To ComboOrientation.ListCount - 1
+    If ComboOrientation.ItemData(i) = .Orientation Then
+        ComboOrientation.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboNumberStyle.ListCount - 1
+    If ComboNumberStyle.ItemData(i) = .NumberStyle Then
+        ComboNumberStyle.ListIndex = i
+        Exit For
+    End If
+Next i
+CheckSyncBuddy.Value = IIf(.SyncBuddy = True, vbChecked, vbUnchecked)
+CheckMouseTrack.Value = IIf(.MouseTrack = True, vbChecked, vbUnchecked)
+CheckWrap.Value = IIf(.Wrap = True, vbChecked, vbUnchecked)
+CheckHotTracking.Value = IIf(.HotTracking = True, vbChecked, vbUnchecked)
+CheckThousandsSeparator.Value = IIf(.ThousandsSeparator = True, vbChecked, vbUnchecked)
+End With
+FreezeChanged = False
+End Sub
+
+Private Sub PropertyPage_EditProperty(PropertyName As String)
+If PropertyName = "BuddyProperty" Then
+    If ComboBuddyProperty.ListCount > 0 Then
+        DoEvents
+        ComboBuddyProperty.SetFocus
+        Const CB_SHOWDROPDOWN As Long = &H14F
+        PostMessage ComboBuddyProperty.hWnd, CB_SHOWDROPDOWN, 1, ByVal 0&
+    End If
+End If
+End Sub
+
+Private Sub CheckEnabled_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckVisualStyles_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboBuddyControl_Click()
+If FreezeChanged = True Then Exit Sub
+If CurrBuddyControl <> ComboBuddyControl.Text Then
+    ComboBuddyProperty.Text = vbNullString
+    CheckSyncBuddy.Value = vbUnchecked
+    Call FillDropDownProperties
+End If
+CurrBuddyControl = ComboBuddyControl.Text
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboBuddyProperty_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboBuddyProperty_Change()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextMin_GotFocus()
+If Not TextMin.SelStart = 0 Then Exit Sub
+TextMin.SelLength = Len(TextMin.Text)
+End Sub
+
+Private Sub TextMin_LostFocus()
+TextMin.SelStart = 0
+End Sub
+
+Private Sub TextMin_Change()
+If FreezeChanged = True Then Exit Sub
+If TextMin.Text = vbNullString Then
+    TextMin.Text = PropertyPage.SelectedControls(0).Min
+    TextMin.SelStart = 0
+    TextMin.SelLength = Len(TextMin.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextMin_Validate(Cancel As Boolean)
+If Not IsNumeric(TextMin.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextMin.Text = PropertyPage.SelectedControls(0).Min
+    TextMin.SetFocus
+    Cancel = True
+Else
+    Dim LngValue As Long
+    On Error Resume Next
+    LngValue = CLng(TextMin.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If Cancel = False Then
+        TextMin.Text = LngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextMin.Text = PropertyPage.SelectedControls(0).Min
+        TextMin.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextMax_GotFocus()
+If Not TextMax.SelStart = 0 Then Exit Sub
+TextMax.SelLength = Len(TextMax.Text)
+End Sub
+
+Private Sub TextMax_LostFocus()
+TextMax.SelStart = 0
+End Sub
+
+Private Sub TextMax_Change()
+If FreezeChanged = True Then Exit Sub
+If TextMax.Text = vbNullString Then
+    TextMax.Text = PropertyPage.SelectedControls(0).Max
+    TextMax.SelStart = 0
+    TextMax.SelLength = Len(TextMax.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextMax_Validate(Cancel As Boolean)
+If Not IsNumeric(TextMax.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextMax.Text = PropertyPage.SelectedControls(0).Max
+    TextMax.SetFocus
+    Cancel = True
+Else
+    Dim LngValue As Long
+    On Error Resume Next
+    LngValue = CLng(TextMax.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If Cancel = False Then
+        TextMax.Text = LngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextMax.Text = PropertyPage.SelectedControls(0).Max
+        TextMax.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextValue_GotFocus()
+If Not TextValue.SelStart = 0 Then Exit Sub
+TextValue.SelLength = Len(TextValue.Text)
+End Sub
+
+Private Sub TextValue_LostFocus()
+TextValue.SelStart = 0
+End Sub
+
+Private Sub TextValue_Change()
+If FreezeChanged = True Then Exit Sub
+If TextValue.Text = vbNullString Then
+    TextValue.Text = PropertyPage.SelectedControls(0).Value
+    TextValue.SelStart = 0
+    TextValue.SelLength = Len(TextValue.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextValue_Validate(Cancel As Boolean)
+If Not IsNumeric(TextValue.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextValue.Text = PropertyPage.SelectedControls(0).Value
+    TextValue.SetFocus
+    Cancel = True
+Else
+    Dim LngValue As Long
+    On Error Resume Next
+    LngValue = CLng(TextValue.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If Cancel = False Then
+        TextValue.Text = LngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextValue.Text = PropertyPage.SelectedControls(0).Value
+        TextValue.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextIncrement_GotFocus()
+If Not TextIncrement.SelStart = 0 Then Exit Sub
+TextIncrement.SelLength = Len(TextIncrement.Text)
+End Sub
+
+Private Sub TextIncrement_LostFocus()
+TextIncrement.SelStart = 0
+End Sub
+
+Private Sub TextIncrement_Change()
+If FreezeChanged = True Then Exit Sub
+If TextIncrement.Text = vbNullString Then
+    TextIncrement.Text = PropertyPage.SelectedControls(0).Increment
+    TextIncrement.SelStart = 0
+    TextIncrement.SelLength = Len(TextIncrement.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextIncrement_Validate(Cancel As Boolean)
+If Not IsNumeric(TextIncrement.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextIncrement.Text = PropertyPage.SelectedControls(0).Increment
+    TextIncrement.SetFocus
+    Cancel = True
+Else
+    Dim LngValue As Long
+    On Error Resume Next
+    LngValue = CLng(TextIncrement.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If Cancel = False Then
+        TextIncrement.Text = LngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextIncrement.Text = PropertyPage.SelectedControls(0).Increment
+        TextIncrement.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub ComboOrientation_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboNumberStyle_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckSyncBuddy_Click()
+If FreezeChanged = True Then Exit Sub
+If CheckSyncBuddy.Value = vbChecked Then
+    If ComboBuddyControl.ListIndex = 0 Then
+        MsgBox "BuddyControl property must be set first", vbCritical + vbOKOnly
+        FreezeChanged = True
+        ComboBuddyProperty.Text = vbNullString
+        CheckSyncBuddy.Value = vbUnchecked
+        FreezeChanged = False
+        Exit Sub
+    Else
+        If ComboBuddyProperty.Text = vbNullString Then ComboBuddyProperty.Text = "_Value"
+    End If
+Else
+    ComboBuddyProperty.Text = vbNullString
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckMouseTrack_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckWrap_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckHotTracking_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckThousandsSeparator_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Function ControlIsValid(ByVal Control As Object) As Boolean
+On Error Resume Next
+Dim Container As Object
+Set Container = Control.Container
+ControlIsValid = CBool(Err.Number = 0 And Not Control Is PropertyPage.SelectedControls(0).ControlsExtender)
+On Error GoTo 0
+End Function
+
+Private Sub FillDropDownProperties()
+Dim Text As String
+Text = ComboBuddyProperty.Text
+ComboBuddyProperty.Clear
+If ComboBuddyControl.ListIndex > 0 Then
+    If ComboBuddyControl.ListIndex <= UBound(BuddyProperties()) Then
+        Dim PropertyArray() As String, i As Long
+        PropertyArray() = Split(BuddyProperties(ComboBuddyControl.ListIndex), "|")
+        For i = LBound(PropertyArray()) To UBound(PropertyArray())
+            If Not PropertyArray(i) = vbNullString Then ComboBuddyProperty.AddItem PropertyArray(i)
+        Next i
+    End If
+End If
+ComboBuddyProperty.Text = Text
+End Sub

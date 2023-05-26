@@ -1,0 +1,850 @@
+VERSION 5.00
+Begin VB.PropertyPage PPToolBarGeneral 
+   Caption         =   "General"
+   ClientHeight    =   5625
+   ClientLeft      =   0
+   ClientTop       =   0
+   ClientWidth     =   6225
+   LockControls    =   -1  'True
+   PaletteMode     =   0  'Halftone
+   ScaleHeight     =   5625
+   ScaleWidth      =   6225
+   Begin VBCCR17.TextBoxW TextMaxTextRows 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   28
+      Top             =   4800
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VB.CheckBox CheckAnchorHot 
+      Caption         =   "AnchorHot"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   38
+      Top             =   3720
+      Width           =   1920
+   End
+   Begin VB.CheckBox CheckMouseTrack 
+      Caption         =   "MouseTrack"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   29
+      Top             =   480
+      Width           =   1920
+   End
+   Begin VB.CheckBox CheckHideClippedButtons 
+      Caption         =   "HideClippedButtons"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   37
+      Top             =   3360
+      Width           =   1920
+   End
+   Begin VB.CheckBox CheckHotTracking 
+      Caption         =   "HotTracking"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   36
+      Top             =   3000
+      Width           =   1920
+   End
+   Begin VB.CheckBox CheckTransparent 
+      Caption         =   "Transparent"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   35
+      Top             =   2640
+      Width           =   1920
+   End
+   Begin VB.ComboBox ComboPressedImageList 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   12
+      Top             =   1920
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboOrientation 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   18
+      Top             =   3000
+      Width           =   2235
+   End
+   Begin VBCCR17.TextBoxW TextMaxButtonWidth 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   26
+      Top             =   4440
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VBCCR17.TextBoxW TextMinButtonWidth 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   24
+      Top             =   4080
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VB.CheckBox CheckAltDrag 
+      Caption         =   "AltDrag"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   34
+      Top             =   2280
+      Width           =   1920
+   End
+   Begin VB.CheckBox CheckDoubleBuffer 
+      Caption         =   "DoubleBuffer"
+      Height          =   285
+      Left            =   3480
+      TabIndex        =   2
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.ComboBox ComboDisabledImageList 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   8
+      Top             =   1200
+      Width           =   2235
+   End
+   Begin VB.CheckBox CheckWrappable 
+      Caption         =   "Wrappable"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   31
+      Top             =   1200
+      Width           =   1920
+   End
+   Begin VB.CheckBox CheckDivider 
+      Caption         =   "Divider"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   33
+      Top             =   1920
+      Width           =   1920
+   End
+   Begin VB.ComboBox ComboMousePointer 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   4
+      Top             =   480
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboImageList 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   6
+      Top             =   840
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboStyle 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   14
+      Top             =   2280
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboTextAlignment 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   16
+      Top             =   2640
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboHotImageList 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   10
+      Top             =   1560
+      Width           =   2235
+   End
+   Begin VBCCR17.TextBoxW TextButtonWidth 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   22
+      Top             =   3720
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VBCCR17.TextBoxW TextButtonHeight 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   20
+      Top             =   3360
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VB.CheckBox CheckShowTips 
+      Caption         =   "ShowTips"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   32
+      Top             =   1560
+      Width           =   1920
+   End
+   Begin VB.CheckBox CheckAllowCustomize 
+      Caption         =   "AllowCustomize"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   30
+      Top             =   840
+      Width           =   1920
+   End
+   Begin VB.CheckBox CheckEnabled 
+      Caption         =   "Enabled"
+      Height          =   285
+      Left            =   120
+      TabIndex        =   0
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckVisualStyles 
+      Caption         =   "VisualStyles"
+      Height          =   285
+      Left            =   1800
+      TabIndex        =   1
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.Label LabelMaxTextRows 
+      Caption         =   "MaxTextRows:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   27
+      Top             =   4800
+      Width           =   1620
+   End
+   Begin VB.Label LabelPressedImageList 
+      Caption         =   "PressedImageList:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   11
+      Top             =   1920
+      Width           =   1620
+   End
+   Begin VB.Label LabelOrientation 
+      Caption         =   "Orientation:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   17
+      Top             =   3000
+      Width           =   1620
+   End
+   Begin VB.Label LabelMaxButtonWidth 
+      Caption         =   "MaxButtonWidth:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   25
+      Top             =   4440
+      Width           =   1620
+   End
+   Begin VB.Label LabelMinButtonWidth 
+      Caption         =   "MinButtonWidth:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   23
+      Top             =   4080
+      Width           =   1620
+   End
+   Begin VB.Label LabelDisabledImageList 
+      Caption         =   "DisabledImageList:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   7
+      Top             =   1200
+      Width           =   1620
+   End
+   Begin VB.Label LabelMousePointer 
+      Caption         =   "MousePointer:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   3
+      Top             =   480
+      Width           =   1620
+   End
+   Begin VB.Label LabelImageList 
+      Caption         =   "ImageList:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   5
+      Top             =   840
+      Width           =   1620
+   End
+   Begin VB.Label LabelTextAlignment 
+      Caption         =   "TextAlignment:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   15
+      Top             =   2640
+      Width           =   1620
+   End
+   Begin VB.Label LabelStyle 
+      Caption         =   "Style:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   13
+      Top             =   2280
+      Width           =   1620
+   End
+   Begin VB.Label LabelHotImageList 
+      Caption         =   "HotImageList:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   9
+      Top             =   1560
+      Width           =   1620
+   End
+   Begin VB.Label LabelButtonWidth 
+      Caption         =   "ButtonWidth:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   21
+      Top             =   3720
+      Width           =   1620
+   End
+   Begin VB.Label LabelButtonHeight 
+      Caption         =   "ButtonHeight:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   19
+      Top             =   3360
+      Width           =   1620
+   End
+End
+Attribute VB_Name = "PPToolBarGeneral"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = True
+Option Explicit
+Private ImageListEnumerated(0 To 3) As Boolean
+Private FreezeChanged As Boolean
+
+Private Sub PropertyPage_Initialize()
+Call ComCtlsShowAllUIStates(PropertyPage.hWnd)
+Call ComCtlsPPInitComboMousePointer(ComboMousePointer)
+With ComboImageList
+.AddItem "(None)"
+.ListIndex = 0
+End With
+With ComboDisabledImageList
+.AddItem "(None)"
+.ListIndex = 0
+End With
+With ComboHotImageList
+.AddItem "(None)"
+.ListIndex = 0
+End With
+With ComboPressedImageList
+.AddItem "(None)"
+.ListIndex = 0
+End With
+With ComboStyle
+.AddItem TbrStyleStandard & " - Standard"
+.ItemData(.NewIndex) = TbrStyleStandard
+.AddItem TbrStyleFlat & " - Flat"
+.ItemData(.NewIndex) = TbrStyleFlat
+End With
+With ComboTextAlignment
+.AddItem TbrTextAlignBottom & " - Bottom"
+.ItemData(.NewIndex) = TbrTextAlignBottom
+.AddItem TbrTextAlignRight & " - Right"
+.ItemData(.NewIndex) = TbrTextAlignRight
+End With
+With ComboOrientation
+.AddItem TbrOrientationHorizontal & " - Horizontal"
+.ItemData(.NewIndex) = TbrOrientationHorizontal
+.AddItem TbrOrientationVertical & " - Vertical"
+.ItemData(.NewIndex) = TbrOrientationVertical
+End With
+End Sub
+
+Private Sub PropertyPage_ApplyChanges()
+On Error Resume Next
+PropertyPage.ValidateControls
+If Err.Number = 380 Then Exit Sub
+On Error GoTo 0
+With PropertyPage.SelectedControls(0)
+Select Case .Align
+    Case vbAlignTop, vbAlignBottom
+        If ComboOrientation.ItemData(ComboOrientation.ListIndex) <> TbrOrientationHorizontal Then
+            MsgBox "Orientation must be 0 - Horizontal when Align is 1 - AlignTop or 2 - AlignBottom", vbCritical + vbOKOnly
+            ComboOrientation.SetFocus
+            PropertyPage.Changed = True
+            Exit Sub
+        End If
+    Case vbAlignLeft, vbAlignRight
+        If ComboOrientation.ItemData(ComboOrientation.ListIndex) <> TbrOrientationVertical Then
+            MsgBox "Orientation must be 1 - Vertical when Align is 3 - AlignLeft or 4 - AlignRight", vbCritical + vbOKOnly
+            ComboOrientation.SetFocus
+            PropertyPage.Changed = True
+            Exit Sub
+        End If
+End Select
+.Enabled = CBool(CheckEnabled.Value = vbChecked)
+.VisualStyles = CBool(CheckVisualStyles.Value = vbChecked)
+.DoubleBuffer = CBool(CheckDoubleBuffer.Value = vbChecked)
+.MousePointer = ComboMousePointer.ItemData(ComboMousePointer.ListIndex)
+.ImageList = ComboImageList.List(ComboImageList.ListIndex)
+.DisabledImageList = ComboDisabledImageList.List(ComboDisabledImageList.ListIndex)
+.HotImageList = ComboHotImageList.List(ComboHotImageList.ListIndex)
+.PressedImageList = ComboPressedImageList.List(ComboPressedImageList.ListIndex)
+.Style = ComboStyle.ItemData(ComboStyle.ListIndex)
+.TextAlignment = ComboTextAlignment.ItemData(ComboTextAlignment.ListIndex)
+.Orientation = ComboOrientation.ItemData(ComboOrientation.ListIndex)
+.ButtonHeight = CSng(TextButtonHeight.Text)
+.ButtonWidth = CSng(TextButtonWidth.Text)
+.MinButtonWidth = CSng(TextMinButtonWidth.Text)
+.MaxButtonWidth = CSng(TextMaxButtonWidth.Text)
+.MaxTextRows = CInt(TextMaxTextRows.Text)
+.MouseTrack = CBool(CheckMouseTrack.Value = vbChecked)
+.AllowCustomize = CBool(CheckAllowCustomize.Value = vbChecked)
+.Wrappable = CBool(CheckWrappable.Value = vbChecked)
+.ShowTips = CBool(CheckShowTips.Value = vbChecked)
+.Divider = CBool(CheckDivider.Value = vbChecked)
+.AltDrag = CBool(CheckAltDrag.Value = vbChecked)
+.Transparent = CBool(CheckTransparent.Value = vbChecked)
+.HotTracking = CBool(CheckHotTracking.Value = vbChecked)
+.HideClippedButtons = CBool(CheckHideClippedButtons.Value = vbChecked)
+.AnchorHot = CBool(CheckAnchorHot.Value = vbChecked)
+End With
+Call PropertyPage_SelectionChanged
+End Sub
+
+Private Sub PropertyPage_SelectionChanged()
+Dim i As Long
+FreezeChanged = True
+With PropertyPage.SelectedControls(0)
+CheckEnabled.Value = IIf(.Enabled = True, vbChecked, vbUnchecked)
+CheckVisualStyles.Value = IIf(.VisualStyles = True, vbChecked, vbUnchecked)
+CheckDoubleBuffer.Value = IIf(.DoubleBuffer = True, vbChecked, vbUnchecked)
+For i = 0 To ComboMousePointer.ListCount - 1
+    If ComboMousePointer.ItemData(i) = .MousePointer Then
+        ComboMousePointer.ListIndex = i
+        Exit For
+    End If
+Next i
+Dim ControlEnum As Object
+If ImageListEnumerated(0) = False Then
+    For Each ControlEnum In .ControlsEnum
+        If TypeName(ControlEnum) = "ImageList" Then
+            ComboImageList.AddItem ProperControlName(ControlEnum)
+        End If
+    Next ControlEnum
+    ImageListEnumerated(0) = True
+End If
+For i = 0 To ComboImageList.ListCount - 1
+    If ComboImageList.List(i) = .ImageList Then
+        ComboImageList.ListIndex = i
+        Exit For
+    End If
+Next i
+If ImageListEnumerated(1) = False Then
+    For Each ControlEnum In .ControlsEnum
+        If TypeName(ControlEnum) = "ImageList" Then
+            ComboDisabledImageList.AddItem ProperControlName(ControlEnum)
+        End If
+    Next ControlEnum
+    ImageListEnumerated(1) = True
+End If
+For i = 0 To ComboDisabledImageList.ListCount - 1
+    If ComboDisabledImageList.List(i) = .DisabledImageList Then
+        ComboDisabledImageList.ListIndex = i
+        Exit For
+    End If
+Next i
+If ImageListEnumerated(2) = False Then
+    For Each ControlEnum In .ControlsEnum
+        If TypeName(ControlEnum) = "ImageList" Then
+            ComboHotImageList.AddItem ProperControlName(ControlEnum)
+        End If
+    Next ControlEnum
+    ImageListEnumerated(2) = True
+End If
+For i = 0 To ComboHotImageList.ListCount - 1
+    If ComboHotImageList.List(i) = .HotImageList Then
+        ComboHotImageList.ListIndex = i
+        Exit For
+    End If
+Next i
+If ImageListEnumerated(3) = False Then
+    For Each ControlEnum In .ControlsEnum
+        If TypeName(ControlEnum) = "ImageList" Then
+            ComboPressedImageList.AddItem ProperControlName(ControlEnum)
+        End If
+    Next ControlEnum
+    ImageListEnumerated(3) = True
+End If
+For i = 0 To ComboPressedImageList.ListCount - 1
+    If ComboPressedImageList.List(i) = .PressedImageList Then
+        ComboPressedImageList.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboStyle.ListCount - 1
+    If ComboStyle.ItemData(i) = .Style Then
+        ComboStyle.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboTextAlignment.ListCount - 1
+    If ComboTextAlignment.ItemData(i) = .TextAlignment Then
+        ComboTextAlignment.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboOrientation.ListCount - 1
+    If ComboOrientation.ItemData(i) = .Orientation Then
+        ComboOrientation.ListIndex = i
+        Exit For
+    End If
+Next i
+TextButtonHeight.Text = CStr(.ButtonHeight)
+TextButtonWidth.Text = CStr(.ButtonWidth)
+TextMinButtonWidth.Text = CStr(.MinButtonWidth)
+TextMaxButtonWidth.Text = CStr(.MaxButtonWidth)
+TextMaxTextRows.Text = CStr(.MaxTextRows)
+CheckMouseTrack.Value = IIf(.MouseTrack = True, vbChecked, vbUnchecked)
+CheckAllowCustomize.Value = IIf(.AllowCustomize = True, vbChecked, vbUnchecked)
+CheckWrappable.Value = IIf(.Wrappable = True, vbChecked, vbUnchecked)
+CheckShowTips.Value = IIf(.ShowTips = True, vbChecked, vbUnchecked)
+CheckDivider.Value = IIf(.Divider = True, vbChecked, vbUnchecked)
+CheckAltDrag.Value = IIf(.AltDrag = True, vbChecked, vbUnchecked)
+CheckTransparent.Value = IIf(.Transparent = True, vbChecked, vbUnchecked)
+CheckHotTracking.Value = IIf(.HotTracking = True, vbChecked, vbUnchecked)
+CheckHideClippedButtons.Value = IIf(.HideClippedButtons = True, vbChecked, vbUnchecked)
+CheckAnchorHot.Value = IIf(.AnchorHot = True, vbChecked, vbUnchecked)
+End With
+FreezeChanged = False
+End Sub
+
+Private Sub CheckEnabled_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckVisualStyles_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckDoubleBuffer_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboMousePointer_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboImageList_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboDisabledImageList_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboHotImageList_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboPressedImageList_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboStyle_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboTextAlignment_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboOrientation_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextButtonHeight_GotFocus()
+If Not TextButtonHeight.SelStart = 0 Then Exit Sub
+TextButtonHeight.SelLength = Len(TextButtonHeight.Text)
+End Sub
+
+Private Sub TextButtonHeight_LostFocus()
+TextButtonHeight.SelStart = 0
+End Sub
+
+Private Sub TextButtonHeight_Change()
+If FreezeChanged = True Then Exit Sub
+If TextButtonHeight.Text = vbNullString Then
+    TextButtonHeight.Text = PropertyPage.SelectedControls(0).ButtonHeight
+    TextButtonHeight.SelStart = 0
+    TextButtonHeight.SelLength = Len(TextButtonHeight.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextButtonHeight_Validate(Cancel As Boolean)
+If Not IsNumeric(TextButtonHeight.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextButtonHeight.Text = PropertyPage.SelectedControls(0).ButtonHeight
+    TextButtonHeight.SetFocus
+    Cancel = True
+Else
+    Dim SngValue As Single
+    On Error Resume Next
+    SngValue = CSng(TextButtonHeight.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If SngValue < 0 Then Cancel = True
+    If Cancel = False Then
+        TextButtonHeight.Text = SngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextButtonHeight.Text = PropertyPage.SelectedControls(0).ButtonHeight
+        TextButtonHeight.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextButtonWidth_GotFocus()
+If Not TextButtonWidth.SelStart = 0 Then Exit Sub
+TextButtonWidth.SelLength = Len(TextButtonWidth.Text)
+End Sub
+
+Private Sub TextButtonWidth_LostFocus()
+TextButtonWidth.SelStart = 0
+End Sub
+
+Private Sub TextButtonWidth_Change()
+If FreezeChanged = True Then Exit Sub
+If TextButtonWidth.Text = vbNullString Then
+    TextButtonWidth.Text = PropertyPage.SelectedControls(0).ButtonWidth
+    TextButtonWidth.SelStart = 0
+    TextButtonWidth.SelLength = Len(TextButtonWidth.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextButtonWidth_Validate(Cancel As Boolean)
+If Not IsNumeric(TextButtonWidth.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextButtonWidth.Text = PropertyPage.SelectedControls(0).ButtonWidth
+    TextButtonWidth.SetFocus
+    Cancel = True
+Else
+    Dim SngValue As Single
+    On Error Resume Next
+    SngValue = CSng(TextButtonWidth.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If SngValue < 0 Then Cancel = True
+    If Cancel = False Then
+        TextButtonWidth.Text = SngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextButtonWidth.Text = PropertyPage.SelectedControls(0).ButtonWidth
+        TextButtonWidth.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextMinButtonWidth_GotFocus()
+If Not TextMinButtonWidth.SelStart = 0 Then Exit Sub
+TextMinButtonWidth.SelLength = Len(TextMinButtonWidth.Text)
+End Sub
+
+Private Sub TextMinButtonWidth_LostFocus()
+TextMinButtonWidth.SelStart = 0
+End Sub
+
+Private Sub TextMinButtonWidth_Change()
+If FreezeChanged = True Then Exit Sub
+If TextMinButtonWidth.Text = vbNullString Then
+    TextMinButtonWidth.Text = PropertyPage.SelectedControls(0).MinButtonWidth
+    TextMinButtonWidth.SelStart = 0
+    TextMinButtonWidth.SelLength = Len(TextMinButtonWidth.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextMinButtonWidth_Validate(Cancel As Boolean)
+If Not IsNumeric(TextMinButtonWidth.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextMinButtonWidth.Text = PropertyPage.SelectedControls(0).MinButtonWidth
+    TextMinButtonWidth.SetFocus
+    Cancel = True
+Else
+    Dim SngValue As Single
+    On Error Resume Next
+    SngValue = CSng(TextMinButtonWidth.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If SngValue < 0 Then Cancel = True
+    If Cancel = False Then
+        TextMinButtonWidth.Text = SngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextMinButtonWidth.Text = PropertyPage.SelectedControls(0).MinButtonWidth
+        TextMinButtonWidth.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextMaxButtonWidth_GotFocus()
+If Not TextMaxButtonWidth.SelStart = 0 Then Exit Sub
+TextMaxButtonWidth.SelLength = Len(TextMaxButtonWidth.Text)
+End Sub
+
+Private Sub TextMaxButtonWidth_LostFocus()
+TextMaxButtonWidth.SelStart = 0
+End Sub
+
+Private Sub TextMaxButtonWidth_Change()
+If FreezeChanged = True Then Exit Sub
+If TextMaxButtonWidth.Text = vbNullString Then
+    TextMaxButtonWidth.Text = PropertyPage.SelectedControls(0).MaxButtonWidth
+    TextMaxButtonWidth.SelStart = 0
+    TextMaxButtonWidth.SelLength = Len(TextMaxButtonWidth.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextMaxButtonWidth_Validate(Cancel As Boolean)
+If Not IsNumeric(TextMaxButtonWidth.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextMaxButtonWidth.Text = PropertyPage.SelectedControls(0).MaxButtonWidth
+    TextMaxButtonWidth.SetFocus
+    Cancel = True
+Else
+    Dim SngValue As Single
+    On Error Resume Next
+    SngValue = CSng(TextMaxButtonWidth.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If SngValue < 0 Then Cancel = True
+    If Cancel = False Then
+        TextMaxButtonWidth.Text = SngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextMaxButtonWidth.Text = PropertyPage.SelectedControls(0).MaxButtonWidth
+        TextMaxButtonWidth.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextMaxTextRows_GotFocus()
+If Not TextMaxTextRows.SelStart = 0 Then Exit Sub
+TextMaxTextRows.SelLength = Len(TextMaxTextRows.Text)
+End Sub
+
+Private Sub TextMaxTextRows_LostFocus()
+TextMaxTextRows.SelStart = 0
+End Sub
+
+Private Sub TextMaxTextRows_Change()
+If FreezeChanged = True Then Exit Sub
+If TextMaxTextRows.Text = vbNullString Then
+    TextMaxTextRows.Text = PropertyPage.SelectedControls(0).MaxTextRows
+    TextMaxTextRows.SelStart = 0
+    TextMaxTextRows.SelLength = Len(TextMaxTextRows.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextMaxTextRows_Validate(Cancel As Boolean)
+If Not IsNumeric(TextMaxTextRows.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextMaxTextRows.Text = PropertyPage.SelectedControls(0).MaxTextRows
+    TextMaxTextRows.SetFocus
+    Cancel = True
+Else
+    Dim IntValue As Integer
+    On Error Resume Next
+    IntValue = CInt(TextMaxTextRows.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If IntValue < 1 Then Cancel = True
+    If Cancel = False Then
+        TextMaxTextRows.Text = IntValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextMaxTextRows.Text = PropertyPage.SelectedControls(0).MaxTextRows
+        TextMaxTextRows.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub CheckMouseTrack_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckAllowCustomize_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckWrappable_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckShowTips_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckDivider_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckAltDrag_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckTransparent_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckHotTracking_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckHideClippedButtons_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckAnchorHot_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub

@@ -16,7 +16,7 @@
 ;
 ; (1-29, 1000-1089)
 ;
-0001=Welcome to HiJackThis Fork.
+0001=Welcome to HiJackThis+
      This program will generate a report of unusual items
      (files, registry modifications etc.) in the most vulnerable areas of the operating system,
      commonly manipulated by malware as well as good software.
@@ -107,11 +107,11 @@
 ;
 ; (1090-1099)
 ;
-1090=Welcome to HiJackThis Fork 3
+1090=Welcome to HiJackThis+
 1091=    HiJackThis is a free and open source tool designed to combat malware and unwanted adware. It is provided "AS IS" without warranty of any kind. You may use this software at your own risk.
          This software is not permitted for commercial purposes.
          You must read and accept the license agreement to continue:
-1092=HiJackThis Fork - License Agreement
+1092=HiJackThis - License Agreement
 1093=I Accept
 1094=I DO NOT Accept
 ;
@@ -210,6 +210,7 @@
 1236=Shortcuts
 1237=Verify shortcuts via Check Browsers' LNK
 1238=Fix shortcuts via ClearLNK
+1239=Key Type Analyzer
 ;
 ; ============== Help window: About, Sections, Keys  =============
 ;
@@ -233,6 +234,8 @@
          F1 - Created ini-file parameter (win.ini)
          F2 - Changed registry value that is override ini-file settings (shell, userinit)
          F3 - Created registry parameter that is override ini-file settings (load, run)
+      B - Browser extensions and policies:
+         B - Chrome: for Google Chrome browser
       O - Other sections:
          O1 - Hijack of Hosts and hosts.ics files / DNSApi hijacking
          O2 - Internet Explorer: BHO
@@ -350,9 +353,9 @@
      Description
      -------------
      
-          HiJackThis Fork scans your computer for settings changed by adware, spyware, malware and other unwanted programs.
+          HiJackThis+ scans your computer for settings changed by adware, spyware, malware and other unwanted programs.
           
-          HiJackThis Fork results are not based on blacklists, specific programs or URLs. Instead, they are based on common methods and techniques used by hijackers.
+          HiJackThis+ results are not based on blacklists, specific programs or URLs. Instead, they are based on common methods and techniques used by hijackers.
           Therefore, FALSE POSITIVES ARE LIKELY. If you are ever unsure, you should consult with a knowledgeable expert BEFORE deleting anything.
      
           HiJackThis comes with several useful tools available under the button 'Misc Tools', and the new bar in menu 'Tools':
@@ -363,8 +366,9 @@
        - Alternative Data Spy
        - Uninstall Manager
        - Services removing tool
-       - Locked files removing tool
+       - Files unlocker
        - Registry Key Unlocker
+       - Registry Key Type Analyzer
        - Batch Digital Signatures Checker
        - Check Browsers' LNK & ClearLNK (as downloadable components)
 
@@ -379,7 +383,7 @@
      
      Developers:
      
-     - Polshyn Stanislav { Alex Dragokas } - author of fork (major v3 and all post-v2.0.6 updates), refactoring, additions, tools integration
+     - Alex Dragokas - author of fork (major v3 and all post-v2.0.6 updates), refactoring, additions, tools integration
      - Merijn Bellekom - original author, author of the new StartupList v2 and ADS Spy
      - Trend Micro - owner of the original version (2.0.5)
      
@@ -420,7 +424,7 @@
 
      License
      -------------
-     HiJackThis Fork is a modification of Trend Micro's original HiJackThis program. It is made by Alex Dragokas and the SafeZone.cc team, and distributed as open source under its original GPLv2 license. It also includes several plugins available as freeware tools.
+     HiJackThis+ is a modification of Trend Micro's original HiJackThis program. It is made by Alex Dragokas and the SafeZone.cc team, and distributed as open source under its original GPLv2 license. It also includes several plugins available as freeware tools.
 
      Donation
      -------------
@@ -590,8 +594,8 @@
      Continue with uninstall?
 0154=This will completely remove HiJackThis, including settings and backups. Continue?
 0155=Direct connection
-0156=IE settings
-0157=Proxy
+0156=System proxy
+0157=Custom proxy
 1600=Plugins
 1601=Check Browsers' LNK
 1602=Identify infected shortcuts (.LNK) which cause unwanted advertisement in browsers
@@ -631,12 +635,7 @@
 0189=DLLs loaded by process
 1650=The process list and dll list have been copied to your clipboard.
 1651=The process list has been copied to your clipboard.
-1652=The selected process could not be killed. It may have already closed, or it may be protected by Windows.
 1653=The selected process could not be killed. It may be protected by Windows.
-1654=The selected process could not be killed. It may have already closed, or it may be protected by Windows.
-
-     This process might be a service, which you can stop from the Services applet in Control Panel -> Admin Tools.
-     (To load this window, click 'Win + R' and enter 'services.msc')
 ;
 ; ================= ADS Spy =================
 ;
@@ -742,6 +741,7 @@
 ;
 0230=IE Registry values
 0231=INI file values
+0232=B - Browsers
 0233=O1 - Hosts redirection
 0234=O2 - BHO
 0235=O3 - Toolbar
@@ -825,7 +825,7 @@
 1866=Digital signature is present, but damaged (the file has probably been patched)
 1867=Enumerating files. Please wait...
 1868=Preparing a report. Please wait...
-1869=Cannot open report file. Write access is restricted by another program.
+1869=Unable to write report file. Write access is restricted by another program. Repeat?
 1870=Add file...
 1871=Precaching security catalogues ...
 1872=Add folder...
@@ -863,6 +863,28 @@
 2410=Select
 2411=Folders
 2412=Select Folder
+;
+; ============= Registry Key Type Analyzer =========
+;
+; (2450 - 2499)
+;
+2450=Registry Keys Type Analyzer
+2451=This tool creates report with various information of registry keys specified below:
+2452=Recursively
+2453=Go
+2454=Close
+2456=Once
+2458=Clear list
+2459=
+2460=Extract
+2461=You can paste keys in dirty format, then apply a parser with options below:
+2462=Extract registry keys from complex text/script, where key:
+2463=Starts with:
+2464=Ends with:
+2465=Also replace:
+2466=with
+2467=Query x32 view (additionally)
+2468=Mode
 ;
 ; ============ Delete on reboot ========
 ;
@@ -1247,6 +1269,20 @@
 
      >>> Action taken by HiJackThis:
       - registry value is deleted.
+; [O27]
+0437=
+; [O28]
+0438=
+; [O29]
+0439=
+; [O30]
+0440=
+; [B]
+0441=        Browser section represents suspicious extensions and policies. It's under construction at the moment. Not many definitions and browsers are supported.
+
+     >>> Action taken by HiJackThis:
+      - browser is closed.
+      - files and registry values are modified or deleted.
 0490=Detailed information on sections:
 ;
 ; ========== Delete Service ==========
@@ -1785,5 +1821,5 @@
 ;
 ; ========= Empty ========
 ;
-; (2450 - ...)
-;                        
+; (2500 - ...)
+;                               

@@ -1,0 +1,77 @@
+VERSION 5.00
+Begin VB.PropertyPage PPTextBoxWText 
+   Caption         =   "Text"
+   ClientHeight    =   3450
+   ClientLeft      =   0
+   ClientTop       =   0
+   ClientWidth     =   5925
+   LockControls    =   -1  'True
+   PaletteMode     =   0  'Halftone
+   ScaleHeight     =   3450
+   ScaleWidth      =   5925
+End
+Attribute VB_Name = "PPTextBoxWText"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Option Explicit
+Private FreezeChanged As Boolean
+Private TextObject As Object
+Private WithEvents TextObjectEvents As TextBoxW
+Attribute TextObjectEvents.VB_VarHelpID = -1
+
+Private Sub PropertyPage_Initialize()
+Call ComCtlsShowAllUIStates(PropertyPage.hWnd)
+On Error Resume Next
+Err.Raise 5
+Set TextObject = PropertyPage.Controls.Add(Err.Source & ".TextBoxW", "TextObject", Me)
+On Error GoTo 0
+If Not TextObject Is Nothing Then
+    Set TextObjectEvents = TextObject
+    TextObject.Left = 120
+    TextObject.Top = 120
+    TextObject.Width = 5655
+    TextObject.Height = 315
+    TextObject.Visible = True
+    TextObject.ZOrder vbBringToFront
+End If
+End Sub
+
+Private Sub PropertyPage_ApplyChanges()
+With PropertyPage.SelectedControls(0)
+If Not TextObject Is Nothing Then .Text = TextObject.Text
+End With
+Call PropertyPage_SelectionChanged
+End Sub
+
+Private Sub PropertyPage_SelectionChanged()
+FreezeChanged = True
+With PropertyPage.SelectedControls(0)
+If Not TextObject Is Nothing Then
+    If .MultiLine = True Then
+        TextObject.Height = 3195
+        TextObject.ScrollBars = vbBoth
+    Else
+        TextObject.Height = 315
+        TextObject.ScrollBars = vbSBNone
+    End If
+    TextObject.MultiLine = .MultiLine
+    TextObject.Text = .Text
+End If
+End With
+FreezeChanged = False
+End Sub
+
+Private Sub PropertyPage_EditProperty(PropertyName As String)
+If PropertyName = "Text" Then TextObject.SetFocus
+End Sub
+
+Private Sub TextObjectEvents_Change()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextObjectEvents_KeyPress(KeyChar As Integer)
+If KeyChar = vbKeyReturn Then KeyChar = AscW(vbLf)
+End Sub

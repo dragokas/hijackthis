@@ -245,7 +245,7 @@ Public Function MakeBackup(result As SCAN_RESULT) As Boolean
     
     Dim aFiles() As String
     Dim lRegID As Long
-    Dim i As Long, j As Long, n As Long
+    Dim i As Long, j As Long, N As Long
     Dim ActionMask As Long
     Dim aSubKeys() As String
     Dim MyReg As FIX_REG_KEY
@@ -288,8 +288,8 @@ Public Function MakeBackup(result As SCAN_RESULT) As Boolean
                         'enum all files
                         aFiles = ListFiles(.File(i).Path, , True)
                         If AryItems(aFiles) Then
-                            For n = 0 To UBound(aFiles)
-                                MakeBackup = MakeBackup And BackupFile(result, aFiles(n))
+                            For N = 0 To UBound(aFiles)
+                                MakeBackup = MakeBackup And BackupFile(result, aFiles(N))
                             Next
                         End If
                         ActionMask = ActionMask - REMOVE_FOLDER
@@ -1038,7 +1038,7 @@ Public Function ABR_CreateBackup(bForceIgnoreDays As Boolean) As Boolean
     ' - либо добавить новую секцию с неинициализированнми данными и "добить" ее чтобы SizeOfImage был равен упаковываемому.
     '
     
-    Const sMarker As String = "Backup created via 'HiJackThis Fork' using 'Autobackup registry (ABR)' by D.Kuznetsov"
+    Const sMarker As String = "Backup created via 'HiJackThis+' using 'Autobackup registry (ABR)' by D.Kuznetsov"
     
     If Not OSver.IsElevated Then Exit Function
     
@@ -1965,7 +1965,7 @@ Public Sub ListBackups()
     Dim lFixID As Long
     Dim sName As String
     Dim sDate As String
-    Dim nTotal As Long
+    Dim NTotal As Long
     Dim aBackupDatesHJT() As String
     
     ReDim aBackupDatesHJT(0)
@@ -1998,8 +1998,8 @@ Public Sub ListBackups()
     Dim aBackupDates() As String
     Dim aIsHJT() As Boolean
     Dim bDoInclude As Boolean
-    nTotal = ABR_EnumBackups(aBackupDates, aIsHJT)
-    If nTotal > 0 Then
+    NTotal = ABR_EnumBackups(aBackupDates, aIsHJT)
+    If NTotal > 0 Then
         If AryItems(aBackupDates) Then
             For i = UBound(aBackupDates) To 0 Step -1
                 bDoInclude = False
@@ -2025,9 +2025,9 @@ Public Sub ListBackups()
     
     'List SRP
     If bShowSRP Then
-        nTotal = SRP_Enum(aSeqNum, aDate, aDescr)
-        If nTotal > 0 Then
-            For i = nTotal - 1 To 0 Step -1
+        NTotal = SRP_Enum(aSeqNum, aDate, aDescr)
+        If NTotal > 0 Then
+            For i = NTotal - 1 To 0 Step -1
                 frmMain.lstBackups.AddItem BackupConcatLine(0&, 0&, BackupFormatDate(aDate(i)), SRP_BACKUP_TITLE & " - " & aSeqNum(i) & " - " & aDescr(i))
             Next
         End If

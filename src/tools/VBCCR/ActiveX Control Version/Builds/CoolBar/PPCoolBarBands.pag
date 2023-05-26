@@ -1,0 +1,1599 @@
+VERSION 5.00
+Begin VB.PropertyPage PPCoolBarBands 
+   AutoRedraw      =   -1  'True
+   Caption         =   "Bands"
+   ClientHeight    =   4875
+   ClientLeft      =   0
+   ClientTop       =   0
+   ClientWidth     =   6225
+   LockControls    =   -1  'True
+   PaletteMode     =   0  'Halftone
+   ScaleHeight     =   4875
+   ScaleWidth      =   6225
+   Begin VBCCR17.TextBoxW TextToolTipText 
+      Height          =   315
+      Left            =   1200
+      TabIndex        =   29
+      Top             =   4440
+      Width           =   1815
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BackColor       =   -2147483633
+      Enabled         =   0   'False
+   End
+   Begin VB.CheckBox CheckHideCaption 
+      Caption         =   "&HideCaption"
+      Enabled         =   0   'False
+      Height          =   285
+      Left            =   3360
+      TabIndex        =   48
+      Top             =   3960
+      Width           =   1215
+   End
+   Begin VB.CheckBox CheckUseChevron 
+      Caption         =   "UseC&hevron"
+      Enabled         =   0   'False
+      Height          =   285
+      Left            =   4800
+      TabIndex        =   47
+      Top             =   3600
+      Width           =   1215
+   End
+   Begin VB.ComboBox ComboGripper 
+      BackColor       =   &H8000000F&
+      Enabled         =   0   'False
+      Height          =   315
+      Left            =   1200
+      Style           =   2  'Dropdown List
+      TabIndex        =   27
+      Top             =   4080
+      Width           =   1815
+   End
+   Begin VBCCR17.TextBoxW TextIdealWidth 
+      Height          =   315
+      Left            =   1200
+      TabIndex        =   25
+      Top             =   3720
+      Width           =   1815
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BackColor       =   -2147483633
+      Enabled         =   0   'False
+   End
+   Begin VB.Frame FrameColors 
+      Height          =   1065
+      Left            =   3240
+      TabIndex        =   38
+      Top             =   2040
+      Width           =   2775
+      Begin VB.CommandButton CommandForeColor 
+         BackColor       =   &H80000012&
+         Enabled         =   0   'False
+         Height          =   225
+         Left            =   1200
+         Style           =   1  'Graphical
+         TabIndex        =   43
+         Top             =   720
+         Width           =   495
+      End
+      Begin VB.CommandButton CommandBackColor 
+         Enabled         =   0   'False
+         Height          =   225
+         Left            =   1200
+         Style           =   1  'Graphical
+         TabIndex        =   41
+         Top             =   360
+         Width           =   495
+      End
+      Begin VB.CheckBox CheckUseCoolBarColors 
+         Caption         =   "UseCoolBarCo&lors"
+         Enabled         =   0   'False
+         Height          =   285
+         Left            =   120
+         TabIndex        =   39
+         Top             =   0
+         Width           =   1815
+      End
+      Begin VB.Label LabelBackColor 
+         Caption         =   "&BackColor:"
+         Enabled         =   0   'False
+         Height          =   195
+         Left            =   120
+         TabIndex        =   40
+         Top             =   360
+         Width           =   975
+      End
+      Begin VB.Label LabelForeColor 
+         Caption         =   "&ForeColor:"
+         Enabled         =   0   'False
+         Height          =   195
+         Left            =   120
+         TabIndex        =   42
+         Top             =   720
+         Width           =   975
+      End
+   End
+   Begin VB.Frame FramePicture 
+      Height          =   1065
+      Left            =   3240
+      TabIndex        =   30
+      Top             =   840
+      Width           =   2775
+      Begin VB.PictureBox PictureCommandPictureNo 
+         BorderStyle     =   0  'None
+         Enabled         =   0   'False
+         Height          =   315
+         Left            =   1560
+         ScaleHeight     =   315
+         ScaleWidth      =   1035
+         TabIndex        =   36
+         TabStop         =   0   'False
+         Top             =   600
+         Width           =   1035
+         Begin VB.CommandButton CommandPictureNo 
+            Caption         =   "No &Picture"
+            Enabled         =   0   'False
+            Height          =   315
+            Left            =   0
+            TabIndex        =   37
+            Top             =   0
+            Width           =   1035
+         End
+      End
+      Begin VB.PictureBox PictureCommandPictureBrowse 
+         BorderStyle     =   0  'None
+         Enabled         =   0   'False
+         Height          =   315
+         Left            =   1560
+         ScaleHeight     =   315
+         ScaleWidth      =   1035
+         TabIndex        =   34
+         TabStop         =   0   'False
+         Top             =   240
+         Width           =   1035
+         Begin VB.CommandButton CommandPictureBrowse 
+            Caption         =   "Br&owse..."
+            Enabled         =   0   'False
+            Height          =   315
+            Left            =   0
+            TabIndex        =   35
+            Top             =   0
+            Width           =   1035
+         End
+      End
+      Begin VB.CheckBox CheckUseCoolBarPicture 
+         Caption         =   "&UseCoolBarPicture"
+         Enabled         =   0   'False
+         Height          =   285
+         Left            =   120
+         TabIndex        =   31
+         Top             =   0
+         Width           =   1815
+      End
+      Begin VB.Label LabelPictureType 
+         BorderStyle     =   1  'Fixed Single
+         Caption         =   "(None)"
+         Enabled         =   0   'False
+         Height          =   315
+         Left            =   120
+         TabIndex        =   33
+         Top             =   600
+         Width           =   1335
+      End
+      Begin VB.Label LabelPicture 
+         Caption         =   "Picture:"
+         Enabled         =   0   'False
+         Height          =   195
+         Left            =   120
+         TabIndex        =   32
+         Top             =   360
+         Width           =   975
+      End
+   End
+   Begin VBCCR17.TextBoxW TextMinHeight 
+      Height          =   315
+      Left            =   1200
+      TabIndex        =   23
+      Top             =   3360
+      Width           =   1815
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BackColor       =   -2147483633
+      Enabled         =   0   'False
+   End
+   Begin VBCCR17.TextBoxW TextMinWidth 
+      Height          =   315
+      Left            =   1200
+      TabIndex        =   21
+      Top             =   3000
+      Width           =   1815
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BackColor       =   -2147483633
+      Enabled         =   0   'False
+   End
+   Begin VBCCR17.TextBoxW TextCX 
+      Height          =   315
+      Left            =   1200
+      TabIndex        =   19
+      Top             =   2640
+      Width           =   1815
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BackColor       =   -2147483633
+      Enabled         =   0   'False
+   End
+   Begin VB.ComboBox ComboChild 
+      BackColor       =   &H8000000F&
+      Enabled         =   0   'False
+      Height          =   315
+      Left            =   1200
+      Style           =   2  'Dropdown List
+      TabIndex        =   7
+      Top             =   480
+      Width           =   4815
+   End
+   Begin VB.CheckBox CheckFixedBackground 
+      Caption         =   "Fi&xedBackground"
+      Enabled         =   0   'False
+      Height          =   285
+      Left            =   3360
+      TabIndex        =   49
+      Top             =   4320
+      Width           =   2655
+   End
+   Begin VB.CheckBox CheckChildEdge 
+      Caption         =   "Child&Edge"
+      Enabled         =   0   'False
+      Height          =   285
+      Left            =   3360
+      TabIndex        =   46
+      Top             =   3600
+      Width           =   1215
+   End
+   Begin VB.CheckBox CheckVisible 
+      Caption         =   "&Visible"
+      Enabled         =   0   'False
+      Height          =   285
+      Left            =   4800
+      TabIndex        =   45
+      Top             =   3240
+      Width           =   1215
+   End
+   Begin VB.CheckBox CheckNewRow 
+      Caption         =   "NewR&ow"
+      Enabled         =   0   'False
+      Height          =   285
+      Left            =   3360
+      TabIndex        =   44
+      Top             =   3240
+      Width           =   1215
+   End
+   Begin VB.ComboBox ComboStyle 
+      BackColor       =   &H8000000F&
+      Enabled         =   0   'False
+      Height          =   315
+      Left            =   1200
+      Style           =   2  'Dropdown List
+      TabIndex        =   15
+      Top             =   1920
+      Width           =   1815
+   End
+   Begin VBCCR17.TextBoxW TextTag 
+      Height          =   315
+      Left            =   1200
+      TabIndex        =   13
+      Top             =   1560
+      Width           =   1815
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BackColor       =   -2147483633
+      Enabled         =   0   'False
+   End
+   Begin VBCCR17.TextBoxW TextImage 
+      Height          =   315
+      Left            =   1200
+      TabIndex        =   17
+      Top             =   2280
+      Width           =   1815
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BackColor       =   -2147483633
+      Enabled         =   0   'False
+   End
+   Begin VBCCR17.TextBoxW TextCaption 
+      Height          =   315
+      Left            =   1200
+      TabIndex        =   9
+      Top             =   840
+      Width           =   1815
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BackColor       =   -2147483633
+      Enabled         =   0   'False
+   End
+   Begin VBCCR17.TextBoxW TextKey 
+      Height          =   315
+      Left            =   1200
+      TabIndex        =   11
+      Top             =   1200
+      Width           =   1815
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BackColor       =   -2147483633
+      Enabled         =   0   'False
+   End
+   Begin VB.CommandButton CommandBack 
+      Caption         =   "3"
+      Enabled         =   0   'False
+      BeginProperty Font 
+         Name            =   "Marlett"
+         Size            =   9
+         Charset         =   2
+         Weight          =   500
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   315
+      Left            =   2160
+      TabIndex        =   2
+      ToolTipText     =   "Select Previous Band"
+      Top             =   120
+      Width           =   300
+   End
+   Begin VB.CommandButton CommandNext 
+      Caption         =   "4"
+      Enabled         =   0   'False
+      BeginProperty Font 
+         Name            =   "Marlett"
+         Size            =   9
+         Charset         =   2
+         Weight          =   500
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   315
+      Left            =   2460
+      TabIndex        =   3
+      ToolTipText     =   "Select Next Band"
+      Top             =   120
+      Width           =   300
+   End
+   Begin VBCCR17.TextBoxW TextIndex 
+      Height          =   315
+      Left            =   1200
+      TabIndex        =   1
+      Top             =   120
+      Width           =   870
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BackColor       =   -2147483633
+      Enabled         =   0   'False
+      Locked          =   -1  'True
+   End
+   Begin VB.CommandButton CommandRemove 
+      Caption         =   "&Remove..."
+      Height          =   315
+      Left            =   4980
+      TabIndex        =   5
+      ToolTipText     =   "Remove Selected Band"
+      Top             =   120
+      Width           =   1035
+   End
+   Begin VB.CommandButton CommandInsert 
+      Caption         =   "I&nsert..."
+      Height          =   315
+      Left            =   3840
+      TabIndex        =   4
+      ToolTipText     =   "Insert Band"
+      Top             =   120
+      Width           =   1035
+   End
+   Begin VB.Label LabelToolTipText 
+      Caption         =   "ToolTi&pText:"
+      Height          =   195
+      Left            =   120
+      TabIndex        =   28
+      Top             =   4440
+      Width           =   975
+   End
+   Begin VB.Label LabelGripper 
+      Caption         =   "&Gripper:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   26
+      Top             =   4080
+      Width           =   975
+   End
+   Begin VB.Label LabelIdealWidth 
+      Caption         =   "Ide&alWidth:"
+      Height          =   195
+      Left            =   120
+      TabIndex        =   24
+      Top             =   3720
+      Width           =   975
+   End
+   Begin VB.Label LabelMinHeight 
+      Caption         =   "&MinHeight:"
+      Height          =   195
+      Left            =   120
+      TabIndex        =   22
+      Top             =   3360
+      Width           =   975
+   End
+   Begin VB.Label LabelMinWidth 
+      Caption         =   "Min&Width:"
+      Height          =   195
+      Left            =   120
+      TabIndex        =   20
+      Top             =   3000
+      Width           =   975
+   End
+   Begin VB.Label LabelWidth 
+      Caption         =   "&Width:"
+      Height          =   195
+      Left            =   120
+      TabIndex        =   18
+      Top             =   2640
+      Width           =   975
+   End
+   Begin VB.Label LabelChild 
+      Caption         =   "Chil&d:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   6
+      Top             =   480
+      Width           =   975
+   End
+   Begin VB.Label LabelStyle 
+      Caption         =   "&Style:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   14
+      Top             =   1920
+      Width           =   975
+   End
+   Begin VB.Label LabelTag 
+      Caption         =   "&Tag:"
+      Height          =   195
+      Left            =   120
+      TabIndex        =   12
+      Top             =   1560
+      Width           =   975
+   End
+   Begin VB.Label LabelImage 
+      Caption         =   "Ima&ge:"
+      Height          =   195
+      Left            =   120
+      TabIndex        =   16
+      Top             =   2280
+      Width           =   975
+   End
+   Begin VB.Label LabelCaption 
+      Caption         =   "&Caption:"
+      Height          =   195
+      Left            =   120
+      TabIndex        =   8
+      Top             =   840
+      Width           =   975
+   End
+   Begin VB.Label LabelKey 
+      Caption         =   "&Key:"
+      Height          =   195
+      Left            =   120
+      TabIndex        =   10
+      Top             =   1200
+      Width           =   975
+   End
+   Begin VB.Label LabelIndex 
+      Caption         =   "&Index:"
+      Height          =   195
+      Left            =   120
+      TabIndex        =   0
+      Top             =   120
+      Width           =   975
+   End
+End
+Attribute VB_Name = "PPCoolBarBands"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = True
+Option Explicit
+Private Type ShadowBandStruct
+Caption As String
+Key As String
+Tag As String
+ChildName As String
+Style As CbrBandStyleConstants
+Image As Variant
+Width As Single
+MinWidth As Single
+MinHeight As Single
+IdealWidth As Single
+Gripper As CbrBandGripperConstants
+ToolTipText As String
+UseCoolBarPicture As Boolean
+Picture As IPictureDisp
+UseCoolBarColors As Boolean
+BackColor As OLE_COLOR
+ForeColor As OLE_COLOR
+NewRow As Boolean
+Visible As Boolean
+ChildEdge As Boolean
+UseChevron As Boolean
+HideCaption As Boolean
+FixedBackground As Boolean
+End Type
+Private Declare Function OleCreatePropertyFrame Lib "olepro32" (ByVal hWndOwner As Long, ByVal X As Long, ByVal Y As Long, ByVal lpszCaption As Long, ByVal cObjects As Long, ByRef pUnk As IUnknown, ByVal cPages As Long, ByRef pPageCLSID As Any, ByVal LCID As Long, ByVal dwReserved As Long, ByVal pvReserved As Long) As Long
+Private Declare Function CLSIDFromString Lib "ole32" (ByVal lpszProgID As Long, ByRef pCLSID As Any) As Long
+Private Const CLSID_StandardColorPage As String = "{7EBDAAE1-8120-11CF-899F-00AA00688B10}"
+Private SelectedControl As Object
+Private CurrIndex As Long, CurrPicture As IPictureDisp
+Private PropShadowBands() As ShadowBandStruct
+Private ChildEnumerated As Boolean
+Private FreezeChanged As Boolean
+
+Private Sub PropertyPage_Initialize()
+Call ComCtlsShowAllUIStates(PropertyPage.hWnd)
+CurrIndex = 0
+With ComboChild
+.AddItem "(None)"
+.ListIndex = 0
+End With
+With ComboStyle
+.AddItem CbrBandStyleNormal & " - Normal"
+.ItemData(.NewIndex) = CbrBandStyleNormal
+.AddItem CbrBandStyleFixedSize & " - FixedSize"
+.ItemData(.NewIndex) = CbrBandStyleFixedSize
+End With
+With ComboGripper
+.AddItem CbrBandGripperNormal & " - Normal"
+.ItemData(.NewIndex) = CbrBandGripperNormal
+.AddItem CbrBandGripperAlways & " - Always"
+.ItemData(.NewIndex) = CbrBandGripperAlways
+.AddItem CbrBandGripperNever & " - Never"
+.ItemData(.NewIndex) = CbrBandGripperNever
+End With
+ReDim PropShadowBands(0) As ShadowBandStruct
+End Sub
+
+Private Sub PropertyPage_ApplyChanges()
+On Error Resume Next
+PropertyPage.ValidateControls
+If Err.Number = 380 Then Exit Sub
+On Error GoTo 0
+If CurrIndex > 0 Then
+    With PropShadowBands(CurrIndex)
+    .Caption = TextCaption.Text
+    .Tag = TextTag.Text
+    .ChildName = IIf(ComboChild.ListIndex > 0, ComboChild.List(ComboChild.ListIndex), vbNullString)
+    Dim i As Long
+    For i = 0 To UBound(PropShadowBands())
+        If i > 0 And i <> CurrIndex Then
+            If PropShadowBands(i).ChildName = PropShadowBands(CurrIndex).ChildName Then PropShadowBands(i).ChildName = vbNullString
+        End If
+    Next i
+    .Style = ComboStyle.ItemData(ComboStyle.ListIndex)
+    If IsNumeric(TextImage.Text) Then
+        .Image = CLng(TextImage.Text)
+    Else
+        .Image = TextImage.Text
+    End If
+    If .Style <> CbrBandStyleFixedSize Then .Width = CSng(TextCX.Text)
+    .MinWidth = CSng(TextMinWidth.Text)
+    .MinHeight = CSng(TextMinHeight.Text)
+    .IdealWidth = CSng(TextIdealWidth.Text)
+    .Gripper = ComboGripper.ItemData(ComboGripper.ListIndex)
+    .ToolTipText = TextToolTipText.Text
+    .UseCoolBarPicture = CBool(CheckUseCoolBarPicture.Value = vbChecked)
+    Set .Picture = CurrPicture
+    .UseCoolBarColors = CBool(CheckUseCoolBarColors.Value = vbChecked)
+    .BackColor = CommandBackColor.BackColor
+    .ForeColor = CommandForeColor.BackColor
+    .NewRow = CBool(CheckNewRow.Value = vbChecked)
+    .Visible = CBool(CheckVisible.Value = vbChecked)
+    .ChildEdge = CBool(CheckChildEdge.Value = vbChecked)
+    .UseChevron = CBool(CheckUseChevron.Value = vbChecked)
+    .HideCaption = CBool(CheckHideCaption.Value = vbChecked)
+    .FixedBackground = CBool(CheckFixedBackground.Value = vbChecked)
+    End With
+    With PropertyPage.SelectedControls(0)
+    For i = 1 To .Bands.Count
+        Set .Bands(i).Child = Nothing
+    Next i
+    .Bands.Clear
+    For i = 0 To UBound(PropShadowBands())
+        If i > 0 Then
+            With .Bands.Add(i, IIf(i <> CurrIndex, PropShadowBands(i).Key, vbNullString), PropShadowBands(i).Caption, PropShadowBands(i).Image, PropShadowBands(i).NewRow, PropShadowBands(i).ChildName, PropShadowBands(i).Visible)
+            .Tag = PropShadowBands(i).Tag
+            .Style = PropShadowBands(i).Style
+            If PropShadowBands(i).Style <> CbrBandStyleFixedSize Then .Width = PropShadowBands(i).Width
+            .MinWidth = PropShadowBands(i).MinWidth
+            .MinHeight = PropShadowBands(i).MinHeight
+            .IdealWidth = PropShadowBands(i).IdealWidth
+            .Gripper = PropShadowBands(i).Gripper
+            .ToolTipText = PropShadowBands(i).ToolTipText
+            .UseCoolBarPicture = PropShadowBands(i).UseCoolBarPicture
+            Set .Picture = PropShadowBands(i).Picture
+            .UseCoolBarColors = PropShadowBands(i).UseCoolBarColors
+            .BackColor = PropShadowBands(i).BackColor
+            .ForeColor = PropShadowBands(i).ForeColor
+            .ChildEdge = PropShadowBands(i).ChildEdge
+            .UseChevron = PropShadowBands(i).UseChevron
+            .HideCaption = PropShadowBands(i).HideCaption
+            .FixedBackground = PropShadowBands(i).FixedBackground
+            End With
+        End If
+    Next i
+    With .Bands(CurrIndex)
+    TextCX.Text = CStr(.Width)
+    TextMinWidth.Text = CStr(.MinWidth)
+    TextMinHeight.Text = CStr(.MinHeight)
+    TextIdealWidth.Text = CStr(.IdealWidth)
+    CheckNewRow.Value = IIf(.NewRow = True, vbChecked, vbUnchecked)
+    End With
+    If Not TextKey.Text = vbNullString Then
+        If .Bands.Exists(TextKey.Text) = True Then
+            .Bands(CurrIndex).Key = PropShadowBands(CurrIndex).Key
+            MsgBox "This key is already associated with an element of this collection.", vbCritical + vbOKOnly
+            FreezeChanged = True
+            TextKey.Text = PropShadowBands(CurrIndex).Key
+            FreezeChanged = False
+        Else
+            PropShadowBands(CurrIndex).Key = TextKey.Text
+            .Bands(CurrIndex).Key = PropShadowBands(CurrIndex).Key
+        End If
+    Else
+        PropShadowBands(CurrIndex).Key = vbNullString
+    End If
+    End With
+End If
+Call PropertyPage_SelectionChanged
+End Sub
+
+Private Sub PropertyPage_SelectionChanged()
+If Not SelectedControl Is PropertyPage.SelectedControls(0) Then Set SelectedControl = PropertyPage.SelectedControls(0): CurrIndex = 0
+With PropertyPage.SelectedControls(0)
+If .Bands.Count > 0 And CurrIndex = 0 Then
+    Call FillShadowBands
+    CurrIndex = 1
+    TextIndex.Text = CurrIndex & " of " & .Bands.Count
+    With .Bands(CurrIndex)
+    FreezeChanged = True
+    TextCaption.Text = .Caption
+    TextKey.Text = .Key
+    TextTag.Text = .Tag
+    If ChildEnumerated = False Then
+        Dim ContainedControls As Object, ErrValue As Long
+        On Error Resume Next
+        Set ContainedControls = PropertyPage.SelectedControls(0).ContainedControls
+        ErrValue = Err.Number
+        On Error GoTo 0
+        If ErrValue = 0 Then
+            Dim ControlEnum As Object, Handle As Long
+            For Each ControlEnum In ContainedControls
+                On Error Resume Next
+                Handle = ControlEnum.hWndUserControl
+                If Err.Number <> 0 Then Handle = ControlEnum.hWnd
+                On Error GoTo 0
+                If ControlIsValid(ControlEnum) = True And Handle <> 0 Then ComboChild.AddItem ProperControlName(ControlEnum)
+                Handle = 0
+            Next ControlEnum
+        End If
+        ChildEnumerated = True
+    End If
+    ComboChild.ListIndex = 0
+    Dim i As Long
+    For i = 0 To ComboChild.ListCount - 1
+        If ComboChild.List(i) = ProperControlName(.Child) Then
+            ComboChild.ListIndex = i
+            Exit For
+        End If
+    Next i
+    For i = 0 To ComboStyle.ListCount - 1
+        If ComboStyle.ItemData(i) = .Style Then
+            ComboStyle.ListIndex = i
+            Exit For
+        End If
+    Next i
+    TextImage.Text = CStr(.Image)
+    TextCX.Text = CStr(.Width)
+    TextMinWidth.Text = CStr(.MinWidth)
+    TextMinHeight.Text = CStr(.MinHeight)
+    TextIdealWidth.Text = CStr(.IdealWidth)
+    For i = 0 To ComboGripper.ListCount - 1
+        If ComboGripper.ItemData(i) = .Gripper Then
+            ComboGripper.ListIndex = i
+            Exit For
+        End If
+    Next i
+    TextToolTipText.Text = .ToolTipText
+    CheckUseCoolBarPicture.Value = IIf(.UseCoolBarPicture = True, vbChecked, vbUnchecked)
+    Set CurrPicture = .Picture
+    CheckUseCoolBarColors.Value = IIf(.UseCoolBarColors = True, vbChecked, vbUnchecked)
+    CommandBackColor.BackColor = .BackColor
+    CommandForeColor.BackColor = .ForeColor
+    CheckNewRow.Value = IIf(.NewRow = True, vbChecked, vbUnchecked)
+    CheckVisible.Value = IIf(.Visible = True, vbChecked, vbUnchecked)
+    CheckChildEdge.Value = IIf(.ChildEdge = True, vbChecked, vbUnchecked)
+    CheckUseChevron.Value = IIf(.UseChevron = True, vbChecked, vbUnchecked)
+    CheckHideCaption.Value = IIf(.HideCaption = True, vbChecked, vbUnchecked)
+    CheckFixedBackground.Value = IIf(.FixedBackground = True, vbChecked, vbUnchecked)
+    FreezeChanged = False
+    End With
+ElseIf CurrIndex = 0 Then
+    TextIndex.Text = "0 of 0"
+End If
+Call ApplyControlStates
+End With
+End Sub
+
+Private Sub CommandBack_Click()
+With PropertyPage.SelectedControls(0)
+If CurrIndex > 1 Then
+    If PropertyPage.Changed = True Then Call PropertyPage_ApplyChanges
+    CurrIndex = CurrIndex - 1
+    TextIndex.Text = CurrIndex & " of " & .Bands.Count
+    With .Bands(CurrIndex)
+    FreezeChanged = True
+    TextCaption.Text = .Caption
+    TextKey.Text = .Key
+    TextTag.Text = .Tag
+    ComboChild.ListIndex = 0
+    Dim i As Long
+    For i = 0 To ComboChild.ListCount - 1
+        If ComboChild.List(i) = ProperControlName(.Child) Then
+            ComboChild.ListIndex = i
+            Exit For
+        End If
+    Next i
+    For i = 0 To ComboStyle.ListCount - 1
+        If ComboStyle.ItemData(i) = .Style Then
+            ComboStyle.ListIndex = i
+            Exit For
+        End If
+    Next i
+    TextImage.Text = CStr(.Image)
+    TextCX.Text = CStr(.Width)
+    TextMinWidth.Text = CStr(.MinWidth)
+    TextMinHeight.Text = CStr(.MinHeight)
+    TextIdealWidth.Text = CStr(.IdealWidth)
+    For i = 0 To ComboGripper.ListCount - 1
+        If ComboGripper.ItemData(i) = .Gripper Then
+            ComboGripper.ListIndex = i
+            Exit For
+        End If
+    Next i
+    TextToolTipText.Text = .ToolTipText
+    CheckUseCoolBarPicture.Value = IIf(.UseCoolBarPicture = True, vbChecked, vbUnchecked)
+    Set CurrPicture = .Picture
+    CheckUseCoolBarColors.Value = IIf(.UseCoolBarColors = True, vbChecked, vbUnchecked)
+    CommandBackColor.BackColor = .BackColor
+    CommandForeColor.BackColor = .ForeColor
+    CheckNewRow.Value = IIf(.NewRow = True, vbChecked, vbUnchecked)
+    CheckVisible.Value = IIf(.Visible = True, vbChecked, vbUnchecked)
+    CheckChildEdge.Value = IIf(.ChildEdge = True, vbChecked, vbUnchecked)
+    CheckUseChevron.Value = IIf(.UseChevron = True, vbChecked, vbUnchecked)
+    CheckHideCaption.Value = IIf(.HideCaption = True, vbChecked, vbUnchecked)
+    CheckFixedBackground.Value = IIf(.FixedBackground = True, vbChecked, vbUnchecked)
+    FreezeChanged = False
+    End With
+End If
+End With
+Call ApplyControlStates
+End Sub
+
+Private Sub CommandNext_Click()
+With PropertyPage.SelectedControls(0)
+If CurrIndex < .Bands.Count Then
+    If PropertyPage.Changed = True Then Call PropertyPage_ApplyChanges
+    CurrIndex = CurrIndex + 1
+    TextIndex.Text = CurrIndex & " of " & .Bands.Count
+    With .Bands(CurrIndex)
+    FreezeChanged = True
+    TextCaption.Text = .Caption
+    TextKey.Text = .Key
+    TextTag.Text = .Tag
+    ComboChild.ListIndex = 0
+    Dim i As Long
+    For i = 0 To ComboChild.ListCount - 1
+        If ComboChild.List(i) = ProperControlName(.Child) Then
+            ComboChild.ListIndex = i
+            Exit For
+        End If
+    Next i
+    For i = 0 To ComboStyle.ListCount - 1
+        If ComboStyle.ItemData(i) = .Style Then
+            ComboStyle.ListIndex = i
+            Exit For
+        End If
+    Next i
+    TextImage.Text = CStr(.Image)
+    TextCX.Text = CStr(.Width)
+    TextMinWidth.Text = CStr(.MinWidth)
+    TextMinHeight.Text = CStr(.MinHeight)
+    TextIdealWidth.Text = CStr(.IdealWidth)
+    For i = 0 To ComboGripper.ListCount - 1
+        If ComboGripper.ItemData(i) = .Gripper Then
+            ComboGripper.ListIndex = i
+            Exit For
+        End If
+    Next i
+    TextToolTipText.Text = .ToolTipText
+    CheckUseCoolBarPicture.Value = IIf(.UseCoolBarPicture = True, vbChecked, vbUnchecked)
+    Set CurrPicture = .Picture
+    CheckUseCoolBarColors.Value = IIf(.UseCoolBarColors = True, vbChecked, vbUnchecked)
+    CommandBackColor.BackColor = .BackColor
+    CommandForeColor.BackColor = .ForeColor
+    CheckNewRow.Value = IIf(.NewRow = True, vbChecked, vbUnchecked)
+    CheckVisible.Value = IIf(.Visible = True, vbChecked, vbUnchecked)
+    CheckChildEdge.Value = IIf(.ChildEdge = True, vbChecked, vbUnchecked)
+    CheckUseChevron.Value = IIf(.UseChevron = True, vbChecked, vbUnchecked)
+    CheckHideCaption.Value = IIf(.HideCaption = True, vbChecked, vbUnchecked)
+    CheckFixedBackground.Value = IIf(.FixedBackground = True, vbChecked, vbUnchecked)
+    FreezeChanged = False
+    End With
+End If
+End With
+Call ApplyControlStates
+End Sub
+
+Private Sub CommandInsert_Click()
+If PropertyPage.Changed = True Then Call PropertyPage_ApplyChanges
+CurrIndex = CurrIndex + 1
+With PropertyPage.SelectedControls(0)
+.Bands.Add CurrIndex
+TextIndex.Text = CurrIndex & " of " & .Bands.Count
+With .Bands(CurrIndex)
+FreezeChanged = True
+TextCaption.Text = vbNullString
+TextKey.Text = vbNullString
+TextTag.Text = vbNullString
+ComboChild.ListIndex = 0
+ComboStyle.ListIndex = 0
+TextImage.Text = "0"
+TextCX.Text = "0"
+TextMinWidth.Text = "0"
+TextMinHeight.Text = CStr(.MinHeight)
+TextIdealWidth.Text = "0"
+ComboGripper.ListIndex = 0
+TextToolTipText.Text = vbNullString
+CheckUseCoolBarPicture.Value = vbChecked
+Set CurrPicture = Nothing
+CheckUseCoolBarColors.Value = vbChecked
+CommandBackColor.BackColor = vbButtonFace
+CommandForeColor.BackColor = vbButtonText
+CheckNewRow.Value = vbUnchecked
+CheckVisible.Value = vbChecked
+CheckChildEdge.Value = vbUnchecked
+CheckUseChevron.Value = vbUnchecked
+CheckHideCaption.Value = vbUnchecked
+CheckFixedBackground.Value = vbChecked
+FreezeChanged = False
+End With
+End With
+Call ApplyControlStates
+Call FillShadowBands
+End Sub
+
+Private Sub CommandRemove_Click()
+If CurrIndex > 0 Then
+    With PropertyPage.SelectedControls(0)
+    .Bands.Remove CurrIndex
+    CurrIndex = CurrIndex - 1
+    If .Bands.Count >= 1 Then
+        If CurrIndex = 0 Then CurrIndex = 1
+        With .Bands(CurrIndex)
+        FreezeChanged = True
+        TextCaption.Text = .Caption
+        TextKey.Text = .Key
+        TextTag.Text = .Tag
+        ComboChild.ListIndex = 0
+        Dim i As Long
+        For i = 0 To ComboChild.ListCount - 1
+            If ComboChild.List(i) = ProperControlName(.Child) Then
+                ComboChild.ListIndex = i
+                Exit For
+            End If
+        Next i
+        For i = 0 To ComboStyle.ListCount - 1
+            If ComboStyle.ItemData(i) = .Style Then
+                ComboStyle.ListIndex = i
+                Exit For
+            End If
+        Next i
+        TextImage.Text = CStr(.Image)
+        TextCX.Text = CStr(.Width)
+        TextMinWidth.Text = CStr(.MinWidth)
+        TextMinHeight.Text = CStr(.MinHeight)
+        TextIdealWidth.Text = CStr(.IdealWidth)
+        For i = 0 To ComboGripper.ListCount - 1
+            If ComboGripper.ItemData(i) = .Gripper Then
+                ComboGripper.ListIndex = i
+                Exit For
+            End If
+        Next i
+        TextToolTipText.Text = .ToolTipText
+        CheckUseCoolBarPicture.Value = IIf(.UseCoolBarPicture = True, vbChecked, vbUnchecked)
+        Set CurrPicture = .Picture
+        CheckUseCoolBarColors.Value = IIf(.UseCoolBarColors = True, vbChecked, vbUnchecked)
+        CommandBackColor.BackColor = .BackColor
+        CommandForeColor.BackColor = .ForeColor
+        CheckNewRow.Value = IIf(.NewRow = True, vbChecked, vbUnchecked)
+        CheckVisible.Value = IIf(.Visible = True, vbChecked, vbUnchecked)
+        CheckChildEdge.Value = IIf(.ChildEdge = True, vbChecked, vbUnchecked)
+        CheckUseChevron.Value = IIf(.UseChevron = True, vbChecked, vbUnchecked)
+        CheckHideCaption.Value = IIf(.HideCaption = True, vbChecked, vbUnchecked)
+        CheckFixedBackground.Value = IIf(.FixedBackground = True, vbChecked, vbUnchecked)
+        FreezeChanged = False
+        End With
+    End If
+    TextIndex.Text = CurrIndex & " of " & .Bands.Count
+    End With
+    Call ApplyControlStates
+    Call FillShadowBands
+End If
+End Sub
+
+Private Sub TextCaption_Change()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextKey_Change()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextTag_Change()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboChild_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboStyle_Click()
+If FreezeChanged = True Then Exit Sub
+If ComboStyle.ItemData(ComboStyle.ListIndex) = CbrBandStyleFixedSize Then
+    TextCX.Enabled = False
+    TextCX.BackColor = vbButtonFace
+    TextMinWidth.Text = TextCX.Text
+Else
+    TextCX.Enabled = True
+    TextCX.BackColor = vbWindowBackground
+    TextMinWidth.Text = "0"
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextImage_GotFocus()
+If Not TextImage.SelStart = 0 Then Exit Sub
+TextImage.SelLength = Len(TextImage.Text)
+End Sub
+
+Private Sub TextImage_LostFocus()
+TextImage.SelStart = 0
+End Sub
+
+Private Sub TextImage_Change()
+If FreezeChanged = True Then Exit Sub
+If TextImage.Text = vbNullString Then
+    TextImage.Text = "0"
+    TextImage.SelStart = 0
+    TextImage.SelLength = 1
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextImage_Validate(Cancel As Boolean)
+If TextImage.Text = vbNullString Then Exit Sub
+Dim LngValue As Long
+If Not IsNumeric(TextImage.Text) Then
+    On Error Resume Next
+    Call ComCtlsImlListImageIndex(PropertyPage.SelectedControls(0), PropertyPage.SelectedControls(0).ImageList, TextImage.Text, LngValue)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+Else
+    On Error Resume Next
+    Call ComCtlsImlListImageIndex(PropertyPage.SelectedControls(0), PropertyPage.SelectedControls(0).ImageList, CLng(TextImage.Text), LngValue)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If LngValue < 0 Then Cancel = True
+    If Cancel = False Then TextImage.Text = CStr(LngValue)
+End If
+If Cancel = True Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    If CurrIndex > 0 Then
+        TextImage.Text = PropertyPage.SelectedControls(0).Bands(CurrIndex).Image
+    Else
+        TextImage.Text = "0"
+    End If
+    If TextImage.Enabled = True Then TextImage.SetFocus
+End If
+End Sub
+
+Private Sub TextCX_GotFocus()
+If Not TextCX.SelStart = 0 Then Exit Sub
+TextCX.SelLength = Len(TextCX.Text)
+End Sub
+
+Private Sub TextCX_LostFocus()
+TextCX.SelStart = 0
+End Sub
+
+Private Sub TextCX_Change()
+If FreezeChanged = True Then Exit Sub
+If TextCX.Text = vbNullString Then
+    TextCX.Text = "0"
+    TextCX.SelStart = 0
+    TextCX.SelLength = 1
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextCX_Validate(Cancel As Boolean)
+If TextCX.Text = vbNullString Then Exit Sub
+If Not IsNumeric(TextCX.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    If CurrIndex > 0 Then
+        TextCX.Text = PropertyPage.SelectedControls(0).Bands(CurrIndex).Width
+    Else
+        TextCX.Text = "0"
+    End If
+    If TextCX.Enabled = True Then TextCX.SetFocus
+    Cancel = True
+Else
+    Dim SngValue As Single
+    On Error Resume Next
+    SngValue = CSng(TextCX.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If SngValue < 0 Then Cancel = True
+    If Cancel = False Then
+        TextCX.Text = SngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        If CurrIndex > 0 Then
+            TextCX.Text = PropertyPage.SelectedControls(0).Bands(CurrIndex).Width
+        Else
+            TextCX.Text = "0"
+        End If
+        If TextCX.Enabled = True Then TextCX.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextMinWidth_GotFocus()
+If Not TextMinWidth.SelStart = 0 Then Exit Sub
+TextMinWidth.SelLength = Len(TextMinWidth.Text)
+End Sub
+
+Private Sub TextMinWidth_LostFocus()
+TextMinWidth.SelStart = 0
+End Sub
+
+Private Sub TextMinWidth_Change()
+If FreezeChanged = True Then Exit Sub
+If TextMinWidth.Text = vbNullString Then
+    TextMinWidth.Text = "0"
+    TextMinWidth.SelStart = 0
+    TextMinWidth.SelLength = 1
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextMinWidth_Validate(Cancel As Boolean)
+If TextMinWidth.Text = vbNullString Then Exit Sub
+If Not IsNumeric(TextMinWidth.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    If CurrIndex > 0 Then
+        TextMinWidth.Text = PropertyPage.SelectedControls(0).Bands(CurrIndex).MinWidth
+    Else
+        TextMinWidth.Text = "0"
+    End If
+    If TextMinWidth.Enabled = True Then TextMinWidth.SetFocus
+    Cancel = True
+Else
+    Dim SngValue As Single
+    On Error Resume Next
+    SngValue = CSng(TextMinWidth.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If SngValue < 0 Then Cancel = True
+    If Cancel = False Then
+        TextMinWidth.Text = SngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        If CurrIndex > 0 Then
+            TextMinWidth.Text = PropertyPage.SelectedControls(0).Bands(CurrIndex).MinWidth
+        Else
+            TextMinWidth.Text = "0"
+        End If
+        If TextMinWidth.Enabled = True Then TextMinWidth.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextMinHeight_GotFocus()
+If Not TextMinHeight.SelStart = 0 Then Exit Sub
+TextMinHeight.SelLength = Len(TextMinHeight.Text)
+End Sub
+
+Private Sub TextMinHeight_LostFocus()
+TextMinHeight.SelStart = 0
+End Sub
+
+Private Sub TextMinHeight_Change()
+If FreezeChanged = True Then Exit Sub
+If TextMinHeight.Text = vbNullString Then
+    TextMinHeight.Text = "0"
+    TextMinHeight.SelStart = 0
+    TextMinHeight.SelLength = 1
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextMinHeight_Validate(Cancel As Boolean)
+If TextMinHeight.Text = vbNullString Then Exit Sub
+If Not IsNumeric(TextMinHeight.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    If CurrIndex > 0 Then
+        TextMinHeight.Text = PropertyPage.SelectedControls(0).Bands(CurrIndex).MinHeight
+    Else
+        TextMinHeight.Text = "0"
+    End If
+    If TextMinHeight.Enabled = True Then TextMinHeight.SetFocus
+    Cancel = True
+Else
+    Dim SngValue As Single
+    On Error Resume Next
+    SngValue = CSng(TextMinHeight.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If SngValue < 0 Then Cancel = True
+    If Cancel = False Then
+        TextMinHeight.Text = SngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        If CurrIndex > 0 Then
+            TextMinHeight.Text = PropertyPage.SelectedControls(0).Bands(CurrIndex).MinHeight
+        Else
+            TextMinHeight.Text = "0"
+        End If
+        If TextMinHeight.Enabled = True Then TextMinHeight.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextIdealWidth_GotFocus()
+If Not TextIdealWidth.SelStart = 0 Then Exit Sub
+TextIdealWidth.SelLength = Len(TextIdealWidth.Text)
+End Sub
+
+Private Sub TextIdealWidth_LostFocus()
+TextIdealWidth.SelStart = 0
+End Sub
+
+Private Sub TextIdealWidth_Change()
+If FreezeChanged = True Then Exit Sub
+If TextIdealWidth.Text = vbNullString Then
+    TextIdealWidth.Text = "0"
+    TextIdealWidth.SelStart = 0
+    TextIdealWidth.SelLength = 1
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextIdealWidth_Validate(Cancel As Boolean)
+If TextIdealWidth.Text = vbNullString Then Exit Sub
+If Not IsNumeric(TextIdealWidth.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    If CurrIndex > 0 Then
+        TextIdealWidth.Text = PropertyPage.SelectedControls(0).Bands(CurrIndex).IdealWidth
+    Else
+        TextIdealWidth.Text = "0"
+    End If
+    If TextIdealWidth.Enabled = True Then TextIdealWidth.SetFocus
+    Cancel = True
+Else
+    Dim SngValue As Single
+    On Error Resume Next
+    SngValue = CSng(TextIdealWidth.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If SngValue < 0 Then Cancel = True
+    If Cancel = False Then
+        TextIdealWidth.Text = SngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        If CurrIndex > 0 Then
+            TextIdealWidth.Text = PropertyPage.SelectedControls(0).Bands(CurrIndex).IdealWidth
+        Else
+            TextIdealWidth.Text = "0"
+        End If
+        If TextIdealWidth.Enabled = True Then TextIdealWidth.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub ComboGripper_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextToolTipText_Change()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckUseCoolBarPicture_Click()
+If FreezeChanged = True Then Exit Sub
+If CheckUseCoolBarPicture.Value = vbUnchecked Then
+    LabelPicture.Enabled = True
+    LabelPictureType.Enabled = True
+    PictureCommandPictureBrowse.Enabled = True
+    CommandPictureBrowse.Enabled = True
+    If Not CurrPicture Is Nothing Then
+        If CurrPicture.Handle <> 0 Then
+            PictureCommandPictureNo.Enabled = True
+            CommandPictureNo.Enabled = True
+        Else
+            PictureCommandPictureNo.Enabled = False
+            CommandPictureNo.Enabled = False
+        End If
+    Else
+        PictureCommandPictureNo.Enabled = False
+        CommandPictureNo.Enabled = False
+    End If
+Else
+    LabelPicture.Enabled = False
+    LabelPictureType.Enabled = False
+    PictureCommandPictureBrowse.Enabled = False
+    CommandPictureBrowse.Enabled = False
+    PictureCommandPictureNo.Enabled = False
+    CommandPictureNo.Enabled = False
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub PictureCommandPictureBrowse_GotFocus()
+CommandPictureBrowse.SetFocus
+End Sub
+
+Private Sub CommandPictureBrowse_Click()
+If CurrIndex > 0 Then
+    With New CommonDialog
+    .Flags = CdlOFNExplorer Or CdlOFNPathMustExist Or CdlOFNFileMustExist
+    .Filter = "Bitmap Files (*.BMP;*.DIB)|*.BMP;*.DIB|GIF Files (*.GIF)|*.GIF|JPEG Files (*.JPG)|*.JPG|All Files (*.*)|*.*"
+    .DialogTitle = "Select Picture"
+    If .ShowOpen = True Then
+        Set CurrPicture = PictureFromPath(.FileName)
+        If Not CurrPicture Is Nothing Then
+            If CurrPicture.Handle <> 0 Then
+                If CurrPicture.Type = vbPicTypeBitmap Then
+                    PictureCommandPictureNo.Enabled = True
+                    CommandPictureNo.Enabled = True
+                    LabelPictureType.Caption = "(Bitmap)"
+                Else
+                    Set CurrPicture = Nothing
+                    MsgBox "Invalid picture", vbCritical + vbOKOnly
+                    Exit Sub
+                End If
+            End If
+        End If
+        PropertyPage.Changed = True
+    End If
+    End With
+End If
+End Sub
+
+Private Sub PictureCommandPictureNo_GotFocus()
+CommandPictureNo.SetFocus
+End Sub
+
+Private Sub CommandPictureNo_Click()
+If CurrIndex > 0 Then
+    Set CurrPicture = Nothing
+    CommandPictureBrowse.SetFocus
+    PictureCommandPictureNo.Enabled = False
+    CommandPictureNo.Enabled = False
+    LabelPictureType.Caption = "(None)"
+    PropertyPage.Changed = True
+End If
+End Sub
+
+Private Sub CheckUseCoolBarColors_Click()
+If FreezeChanged = True Then Exit Sub
+If CheckUseCoolBarColors.Value = vbUnchecked Then
+    LabelBackColor.Enabled = True
+    LabelForeColor.Enabled = True
+    CommandBackColor.Enabled = True
+    CommandForeColor.Enabled = True
+Else
+    LabelBackColor.Enabled = False
+    LabelForeColor.Enabled = False
+    CommandBackColor.Enabled = False
+    CommandForeColor.Enabled = False
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CommandBackColor_Click()
+Call ShowBandColorPage
+End Sub
+
+Private Sub CommandForeColor_Click()
+Call ShowBandColorPage
+End Sub
+
+Private Sub ShowBandColorPage()
+If CurrIndex = 0 Then Exit Sub
+Dim CLSID As OLEGuids.OLECLSID, PrevColors(0 To 1) As OLE_COLOR
+CLSIDFromString StrPtr(CLSID_StandardColorPage), CLSID
+PrevColors(0) = CommandBackColor.BackColor
+PrevColors(1) = CommandForeColor.BackColor
+Dim BandProperties As New CbrBandProperties
+BandProperties.FInit CommandBackColor, CommandForeColor, CommandBackColor.BackColor, CommandForeColor.BackColor
+OleCreatePropertyFrame PropertyPage.hWnd, 0, 0, StrPtr("Band"), 1, BandProperties, 1, CLSID, 0, 0, 0
+If PrevColors(0) <> CommandBackColor.BackColor Or PrevColors(1) <> CommandForeColor.BackColor Then PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckNewRow_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckVisible_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckChildEdge_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckUseChevron_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckHideCaption_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckFixedBackground_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ApplyControlStates()
+With PropertyPage.SelectedControls(0)
+FreezeChanged = True
+If .Bands.Count > 0 Then
+    TextIndex.Enabled = True
+    If CurrIndex > 1 Then
+        CommandBack.Enabled = True
+    Else
+        CommandBack.Enabled = False
+    End If
+    If CurrIndex < .Bands.Count Then
+        CommandNext.Enabled = True
+    Else
+        CommandNext.Enabled = False
+    End If
+    CommandRemove.Enabled = True
+    TextCaption.BackColor = vbWindowBackground
+    TextCaption.Enabled = True
+    TextKey.BackColor = vbWindowBackground
+    TextKey.Enabled = True
+    TextTag.BackColor = vbWindowBackground
+    TextTag.Enabled = True
+    ComboChild.BackColor = vbWindowBackground
+    ComboChild.Enabled = True
+    ComboStyle.BackColor = vbWindowBackground
+    ComboStyle.Enabled = True
+    TextImage.BackColor = vbWindowBackground
+    TextImage.Enabled = True
+    If ComboStyle.ItemData(ComboStyle.ListIndex) = CbrBandStyleFixedSize Then
+        TextCX.Enabled = False
+        TextCX.BackColor = vbButtonFace
+    Else
+        TextCX.Enabled = True
+        TextCX.BackColor = vbWindowBackground
+    End If
+    TextMinWidth.Enabled = True
+    TextMinWidth.BackColor = vbWindowBackground
+    TextMinHeight.Enabled = True
+    TextMinHeight.BackColor = vbWindowBackground
+    TextIdealWidth.Enabled = True
+    TextIdealWidth.BackColor = vbWindowBackground
+    ComboGripper.BackColor = vbWindowBackground
+    ComboGripper.Enabled = True
+    TextToolTipText.BackColor = vbWindowBackground
+    TextToolTipText.Enabled = True
+    CheckUseCoolBarPicture.Enabled = True
+    If CheckUseCoolBarPicture.Value = vbUnchecked Then
+        LabelPicture.Enabled = True
+        LabelPictureType.Enabled = True
+        PictureCommandPictureBrowse.Enabled = True
+        CommandPictureBrowse.Enabled = True
+        If Not CurrPicture Is Nothing Then
+            If CurrPicture.Handle <> 0 Then
+                PictureCommandPictureNo.Enabled = True
+                CommandPictureNo.Enabled = True
+                LabelPictureType.Caption = "(Bitmap)"
+            Else
+                PictureCommandPictureNo.Enabled = False
+                CommandPictureNo.Enabled = False
+                LabelPictureType.Caption = "(None)"
+            End If
+        Else
+            PictureCommandPictureNo.Enabled = False
+            CommandPictureNo.Enabled = False
+            LabelPictureType.Caption = "(None)"
+        End If
+    Else
+        LabelPicture.Enabled = False
+        LabelPictureType.Enabled = False
+        If Not CurrPicture Is Nothing Then
+            If CurrPicture.Handle <> 0 Then
+                LabelPictureType.Caption = "(Bitmap)"
+            Else
+                LabelPictureType.Caption = "(None)"
+            End If
+        Else
+            LabelPictureType.Caption = "(None)"
+        End If
+        PictureCommandPictureBrowse.Enabled = False
+        CommandPictureBrowse.Enabled = False
+        PictureCommandPictureNo.Enabled = False
+        CommandPictureNo.Enabled = False
+    End If
+    CheckUseCoolBarColors.Enabled = True
+    If CheckUseCoolBarColors.Value = vbUnchecked Then
+        LabelBackColor.Enabled = True
+        LabelForeColor.Enabled = True
+        CommandBackColor.Enabled = True
+        CommandForeColor.Enabled = True
+    Else
+        LabelBackColor.Enabled = False
+        LabelForeColor.Enabled = False
+        CommandBackColor.Enabled = False
+        CommandForeColor.Enabled = False
+    End If
+    If ComboStyle.ItemData(ComboStyle.ListIndex) = CbrBandStyleFixedSize Or .Bands(CurrIndex).Position = 1 Then
+        CheckNewRow.Enabled = False
+    Else
+        CheckNewRow.Enabled = True
+    End If
+    CheckVisible.Enabled = True
+    CheckChildEdge.Enabled = True
+    CheckUseChevron.Enabled = True
+    CheckHideCaption.Enabled = True
+    CheckFixedBackground.Enabled = True
+Else
+    TextIndex.Enabled = False
+    CommandBack.Enabled = False
+    CommandNext.Enabled = False
+    CommandRemove.Enabled = False
+    TextCaption.Text = vbNullString
+    TextCaption.BackColor = vbButtonFace
+    TextCaption.Enabled = False
+    TextKey.Text = vbNullString
+    TextKey.BackColor = vbButtonFace
+    TextKey.Enabled = False
+    TextTag.Text = vbNullString
+    TextTag.BackColor = vbButtonFace
+    TextTag.Enabled = False
+    ComboChild.ListIndex = 0
+    ComboChild.BackColor = vbButtonFace
+    ComboChild.Enabled = False
+    ComboStyle.ListIndex = 0
+    ComboStyle.BackColor = vbButtonFace
+    ComboStyle.Enabled = False
+    TextImage.Text = vbNullString
+    TextImage.BackColor = vbButtonFace
+    TextImage.Enabled = False
+    TextCX.Text = vbNullString
+    TextCX.BackColor = vbButtonFace
+    TextCX.Enabled = False
+    TextMinWidth.Text = vbNullString
+    TextMinWidth.BackColor = vbButtonFace
+    TextMinWidth.Enabled = False
+    TextMinHeight.Text = vbNullString
+    TextMinHeight.BackColor = vbButtonFace
+    TextMinHeight.Enabled = False
+    TextIdealWidth.Text = vbNullString
+    TextIdealWidth.BackColor = vbButtonFace
+    TextIdealWidth.Enabled = False
+    ComboGripper.ListIndex = 0
+    ComboGripper.BackColor = vbButtonFace
+    ComboGripper.Enabled = False
+    TextToolTipText.Text = vbNullString
+    TextToolTipText.BackColor = vbButtonFace
+    TextToolTipText.Enabled = False
+    CheckUseCoolBarPicture.Value = vbUnchecked
+    CheckUseCoolBarPicture.Enabled = False
+    LabelPicture.Enabled = False
+    LabelPictureType.Enabled = False
+    LabelPictureType.Caption = "(None)"
+    PictureCommandPictureBrowse.Enabled = False
+    CommandPictureBrowse.Enabled = False
+    PictureCommandPictureNo.Enabled = False
+    CommandPictureNo.Enabled = False
+    CheckUseCoolBarColors.Value = vbUnchecked
+    CheckUseCoolBarColors.Enabled = False
+    LabelBackColor.Enabled = False
+    LabelForeColor.Enabled = False
+    CommandBackColor.Enabled = False
+    CommandBackColor.BackColor = vbButtonFace
+    CommandForeColor.Enabled = False
+    CommandForeColor.BackColor = vbButtonText
+    CheckNewRow.Value = vbUnchecked
+    CheckNewRow.Enabled = False
+    CheckVisible.Value = vbUnchecked
+    CheckVisible.Enabled = False
+    CheckChildEdge.Value = vbUnchecked
+    CheckChildEdge.Enabled = False
+    CheckUseChevron.Value = vbUnchecked
+    CheckUseChevron.Enabled = False
+    CheckHideCaption.Value = vbUnchecked
+    CheckHideCaption.Enabled = False
+    CheckFixedBackground.Value = vbUnchecked
+    CheckFixedBackground.Enabled = False
+End If
+FreezeChanged = False
+End With
+End Sub
+
+Private Function ControlIsValid(ByVal Control As Object) As Boolean
+On Error Resume Next
+Dim Container As Object
+Set Container = Control.Container
+ControlIsValid = CBool(Err.Number = 0)
+On Error GoTo 0
+End Function
+
+Private Sub FillShadowBands()
+With PropertyPage.SelectedControls(0)
+ReDim PropShadowBands(.Bands.Count) As ShadowBandStruct
+Dim i As Long
+For i = 0 To .Bands.Count
+    If i > 0 Then
+        With .Bands(i)
+        PropShadowBands(i).Caption = .Caption
+        PropShadowBands(i).Key = .Key
+        PropShadowBands(i).Tag = .Tag
+        PropShadowBands(i).ChildName = ProperControlName(.Child)
+        PropShadowBands(i).Style = .Style
+        PropShadowBands(i).Image = .Image
+        PropShadowBands(i).Width = .Width
+        PropShadowBands(i).MinWidth = .MinWidth
+        PropShadowBands(i).MinHeight = .MinHeight
+        PropShadowBands(i).IdealWidth = .IdealWidth
+        PropShadowBands(i).Gripper = .Gripper
+        PropShadowBands(i).ToolTipText = .ToolTipText
+        PropShadowBands(i).UseCoolBarPicture = .UseCoolBarPicture
+        Set PropShadowBands(i).Picture = .Picture
+        PropShadowBands(i).UseCoolBarColors = .UseCoolBarColors
+        PropShadowBands(i).BackColor = .BackColor
+        PropShadowBands(i).ForeColor = .ForeColor
+        PropShadowBands(i).NewRow = .NewRow
+        PropShadowBands(i).Visible = .Visible
+        PropShadowBands(i).ChildEdge = .ChildEdge
+        PropShadowBands(i).UseChevron = .UseChevron
+        PropShadowBands(i).HideCaption = .HideCaption
+        PropShadowBands(i).FixedBackground = .FixedBackground
+        End With
+    End If
+Next i
+End With
+End Sub

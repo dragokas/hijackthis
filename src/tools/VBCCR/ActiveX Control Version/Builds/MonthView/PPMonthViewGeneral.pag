@@ -1,0 +1,705 @@
+VERSION 5.00
+Begin VB.PropertyPage PPMonthViewGeneral 
+   Caption         =   "General"
+   ClientHeight    =   4200
+   ClientLeft      =   0
+   ClientTop       =   0
+   ClientWidth     =   6225
+   LockControls    =   -1  'True
+   PaletteMode     =   0  'Halftone
+   ScaleHeight     =   4200
+   ScaleWidth      =   6225
+   Begin VB.CheckBox CheckUseShortestDayNames 
+      Caption         =   "UseShortestDayNames"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   29
+      Top             =   3000
+      Width           =   1920
+   End
+   Begin VB.CheckBox CheckMouseTrack 
+      Caption         =   "MouseTrack"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   22
+      Top             =   480
+      Width           =   1920
+   End
+   Begin VB.CheckBox CheckShowTrailingDates 
+      Caption         =   "ShowTrailingDates"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   26
+      Top             =   1920
+      Width           =   1920
+   End
+   Begin VBCCR17.TextBoxW TextMonthRows 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   17
+      Top             =   3000
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VBCCR17.TextBoxW TextMonthColumns 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   15
+      Top             =   2640
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VBCCR17.TextBoxW TextMaxSelCount 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   13
+      Top             =   2280
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VB.ComboBox ComboStartOfWeek 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   19
+      Top             =   3360
+      Width           =   2235
+   End
+   Begin VBCCR17.TextBoxW TextMaxDate 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   9
+      Top             =   1560
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VBCCR17.TextBoxW TextMinDate 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   7
+      Top             =   1200
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VBCCR17.TextBoxW TextValue 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   5
+      Top             =   840
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VB.ComboBox ComboMousePointer 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   3
+      Top             =   480
+      Width           =   2235
+   End
+   Begin VB.CheckBox CheckShowWeekNumbers 
+      Caption         =   "ShowWeekNumbers"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   25
+      Top             =   1560
+      Width           =   1920
+   End
+   Begin VB.CheckBox CheckShowTodayCircle 
+      Caption         =   "ShowTodayCircle"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   24
+      Top             =   1200
+      Width           =   1920
+   End
+   Begin VB.CheckBox CheckShowToday 
+      Caption         =   "ShowToday"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   23
+      Top             =   840
+      Width           =   1920
+   End
+   Begin VBCCR17.TextBoxW TextScrollRate 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   11
+      Top             =   1920
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VB.ComboBox ComboView 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   21
+      Top             =   3720
+      Width           =   2235
+   End
+   Begin VB.CheckBox CheckDayState 
+      Caption         =   "DayState"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   28
+      Top             =   2640
+      Width           =   1920
+   End
+   Begin VB.CheckBox CheckMultiSelect 
+      Caption         =   "MultiSelect"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   27
+      Top             =   2280
+      Width           =   1920
+   End
+   Begin VB.CheckBox CheckEnabled 
+      Caption         =   "Enabled"
+      Height          =   285
+      Left            =   120
+      TabIndex        =   0
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckVisualStyles 
+      Caption         =   "VisualStyles"
+      Height          =   285
+      Left            =   1800
+      TabIndex        =   1
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.Label LabelMonthRows 
+      Caption         =   "MonthRows:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   16
+      Top             =   3000
+      Width           =   1620
+   End
+   Begin VB.Label LabelMonthColumns 
+      Caption         =   "MonthColumns:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   14
+      Top             =   2640
+      Width           =   1620
+   End
+   Begin VB.Label LabelMaxSelCount 
+      Caption         =   "MaxSelCount:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   12
+      Top             =   2280
+      Width           =   1620
+   End
+   Begin VB.Label LabelStartOfWeek 
+      Caption         =   "StartOfWeek:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   18
+      Top             =   3360
+      Width           =   1620
+   End
+   Begin VB.Label LabelMousePointer 
+      Caption         =   "MousePointer:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   2
+      Top             =   480
+      Width           =   1620
+   End
+   Begin VB.Label LabelScrollRate 
+      Caption         =   "ScrollRate:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   10
+      Top             =   1920
+      Width           =   1620
+   End
+   Begin VB.Label LabelView 
+      Caption         =   "View:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   20
+      Top             =   3720
+      Width           =   1620
+   End
+   Begin VB.Label LabelValue 
+      Caption         =   "Value:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   4
+      Top             =   840
+      Width           =   1620
+   End
+   Begin VB.Label LabelMaxDate 
+      Caption         =   "MaxDate:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   8
+      Top             =   1560
+      Width           =   1620
+   End
+   Begin VB.Label LabelMinDate 
+      Caption         =   "MinDate:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   6
+      Top             =   1200
+      Width           =   1620
+   End
+End
+Attribute VB_Name = "PPMonthViewGeneral"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = True
+Option Explicit
+Private FreezeChanged As Boolean
+
+Private Sub PropertyPage_Initialize()
+Call ComCtlsShowAllUIStates(PropertyPage.hWnd)
+Call ComCtlsPPInitComboMousePointer(ComboMousePointer)
+With ComboStartOfWeek
+.AddItem "0 - System"
+.ItemData(.NewIndex) = 0
+.AddItem "1 - Monday"
+.ItemData(.NewIndex) = 1
+.AddItem "2 - Tuesday"
+.ItemData(.NewIndex) = 2
+.AddItem "3 - Wednesday"
+.ItemData(.NewIndex) = 3
+.AddItem "4 - Thursday"
+.ItemData(.NewIndex) = 4
+.AddItem "5 - Friday"
+.ItemData(.NewIndex) = 5
+.AddItem "6 - Saturday"
+.ItemData(.NewIndex) = 6
+.AddItem "7 - Sunday"
+.ItemData(.NewIndex) = 7
+End With
+With ComboView
+.AddItem MvwViewMonth & " - Month"
+.ItemData(.NewIndex) = MvwViewMonth
+.AddItem MvwViewYear & " - Year"
+.ItemData(.NewIndex) = MvwViewYear
+.AddItem MvwViewDecade & " - Decade"
+.ItemData(.NewIndex) = MvwViewDecade
+.AddItem MvwViewCentury & " - Century"
+.ItemData(.NewIndex) = MvwViewCentury
+End With
+End Sub
+
+Private Sub PropertyPage_ApplyChanges()
+On Error Resume Next
+PropertyPage.ValidateControls
+If Err.Number = 380 Then Exit Sub
+On Error GoTo 0
+With PropertyPage.SelectedControls(0)
+.Enabled = CBool(CheckEnabled.Value = vbChecked)
+.VisualStyles = CBool(CheckVisualStyles.Value = vbChecked)
+.MousePointer = ComboMousePointer.ItemData(ComboMousePointer.ListIndex)
+.Value = CDate(TextValue.Text)
+.MinDate = CDate(TextMinDate.Text)
+.MaxDate = CDate(TextMaxDate.Text)
+.ScrollRate = CLng(TextScrollRate.Text)
+.MaxSelCount = CInt(TextMaxSelCount.Text)
+.MonthColumns = CByte(TextMonthColumns.Text)
+.MonthRows = CByte(TextMonthRows.Text)
+.StartOfWeek = ComboStartOfWeek.ItemData(ComboStartOfWeek.ListIndex)
+.View = ComboView.ItemData(ComboView.ListIndex)
+.MouseTrack = CBool(CheckMouseTrack.Value = vbChecked)
+.ShowToday = CBool(CheckShowToday.Value = vbChecked)
+.ShowTodayCircle = CBool(CheckShowTodayCircle.Value = vbChecked)
+.ShowWeekNumbers = CBool(CheckShowWeekNumbers.Value = vbChecked)
+.ShowTrailingDates = CBool(CheckShowTrailingDates.Value = vbChecked)
+.MultiSelect = CBool(CheckMultiSelect.Value = vbChecked)
+.DayState = CBool(CheckDayState.Value = vbChecked)
+.UseShortestDayNames = CBool(CheckUseShortestDayNames.Value = vbChecked)
+End With
+Call PropertyPage_SelectionChanged
+End Sub
+
+Private Sub PropertyPage_SelectionChanged()
+Dim i As Long
+FreezeChanged = True
+With PropertyPage.SelectedControls(0)
+CheckEnabled.Value = IIf(.Enabled = True, vbChecked, vbUnchecked)
+CheckVisualStyles.Value = IIf(.VisualStyles = True, vbChecked, vbUnchecked)
+For i = 0 To ComboMousePointer.ListCount - 1
+    If ComboMousePointer.ItemData(i) = .MousePointer Then
+        ComboMousePointer.ListIndex = i
+        Exit For
+    End If
+Next i
+TextValue.Text = .Value
+TextMinDate.Text = .MinDate
+TextMaxDate.Text = .MaxDate
+TextScrollRate.Text = .ScrollRate
+TextMaxSelCount.Text = .MaxSelCount
+TextMonthColumns.Text = .MonthColumns
+TextMonthRows.Text = .MonthRows
+For i = 0 To ComboStartOfWeek.ListCount - 1
+    If ComboStartOfWeek.ItemData(i) = .StartOfWeek Then
+        ComboStartOfWeek.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboView.ListCount - 1
+    If ComboView.ItemData(i) = .View Then
+        ComboView.ListIndex = i
+        Exit For
+    End If
+Next i
+CheckMouseTrack.Value = IIf(.MouseTrack = True, vbChecked, vbUnchecked)
+CheckShowToday.Value = IIf(.ShowToday = True, vbChecked, vbUnchecked)
+CheckShowTodayCircle.Value = IIf(.ShowTodayCircle = True, vbChecked, vbUnchecked)
+CheckShowWeekNumbers.Value = IIf(.ShowWeekNumbers = True, vbChecked, vbUnchecked)
+CheckShowTrailingDates.Value = IIf(.ShowTrailingDates = True, vbChecked, vbUnchecked)
+CheckMultiSelect.Value = IIf(.MultiSelect = True, vbChecked, vbUnchecked)
+CheckDayState.Value = IIf(.DayState = True, vbChecked, vbUnchecked)
+CheckUseShortestDayNames.Value = IIf(.UseShortestDayNames = True, vbChecked, vbUnchecked)
+End With
+FreezeChanged = False
+End Sub
+
+Private Sub CheckEnabled_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckVisualStyles_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboMousePointer_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextValue_GotFocus()
+If Not TextValue.SelStart = 0 Then Exit Sub
+TextValue.SelLength = Len(TextValue.Text)
+End Sub
+
+Private Sub TextValue_LostFocus()
+TextValue.SelStart = 0
+End Sub
+
+Private Sub TextValue_Change()
+If FreezeChanged = True Then Exit Sub
+If TextValue.Text = vbNullString Then
+    TextValue.Text = PropertyPage.SelectedControls(0).Value
+    TextValue.SelStart = 0
+    TextValue.SelLength = Len(TextValue.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextValue_Validate(Cancel As Boolean)
+If Not IsDate(TextValue.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextValue.Text = PropertyPage.SelectedControls(0).Value
+    TextValue.SetFocus
+    Cancel = True
+End If
+End Sub
+
+Private Sub TextMinDate_GotFocus()
+If Not TextMinDate.SelStart = 0 Then Exit Sub
+TextMinDate.SelLength = Len(TextMinDate.Text)
+End Sub
+
+Private Sub TextMinDate_LostFocus()
+TextMinDate.SelStart = 0
+End Sub
+
+Private Sub TextMinDate_Change()
+If FreezeChanged = True Then Exit Sub
+If TextMinDate.Text = vbNullString Then
+    TextMinDate.Text = PropertyPage.SelectedControls(0).MinDate
+    TextMinDate.SelStart = 0
+    TextMinDate.SelLength = Len(TextMinDate.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextMinDate_Validate(Cancel As Boolean)
+If Not IsDate(TextMinDate.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextMinDate.Text = PropertyPage.SelectedControls(0).MinDate
+    TextMinDate.SetFocus
+    Cancel = True
+End If
+End Sub
+
+Private Sub TextMaxDate_GotFocus()
+If Not TextMaxDate.SelStart = 0 Then Exit Sub
+TextMaxDate.SelLength = Len(TextMaxDate.Text)
+End Sub
+
+Private Sub TextMaxDate_LostFocus()
+TextMaxDate.SelStart = 0
+End Sub
+
+Private Sub TextMaxDate_Change()
+If FreezeChanged = True Then Exit Sub
+If TextMaxDate.Text = vbNullString Then
+    TextMaxDate.Text = PropertyPage.SelectedControls(0).MaxDate
+    TextMaxDate.SelStart = 0
+    TextMaxDate.SelLength = Len(TextMaxDate.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextMaxDate_Validate(Cancel As Boolean)
+If Not IsDate(TextMaxDate.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextMaxDate.Text = PropertyPage.SelectedControls(0).MaxDate
+    TextMaxDate.SetFocus
+    Cancel = True
+End If
+End Sub
+
+Private Sub TextScrollRate_GotFocus()
+If Not TextScrollRate.SelStart = 0 Then Exit Sub
+TextScrollRate.SelLength = Len(TextScrollRate.Text)
+End Sub
+
+Private Sub TextScrollRate_LostFocus()
+TextScrollRate.SelStart = 0
+End Sub
+
+Private Sub TextScrollRate_Change()
+If FreezeChanged = True Then Exit Sub
+If TextScrollRate.Text = vbNullString Then
+    TextScrollRate.Text = PropertyPage.SelectedControls(0).ScrollRate
+    TextScrollRate.SelStart = 0
+    TextScrollRate.SelLength = Len(TextScrollRate.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextScrollRate_KeyPress(KeyAscii As Integer)
+Call ComCtlsPPKeyPressOnlyNumeric(KeyAscii)
+End Sub
+
+Private Sub TextScrollRate_Validate(Cancel As Boolean)
+If Not IsNumeric(TextScrollRate.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextScrollRate.Text = PropertyPage.SelectedControls(0).ScrollRate
+    TextScrollRate.SetFocus
+    Cancel = True
+Else
+    Dim LngValue As Long
+    On Error Resume Next
+    LngValue = CLng(TextScrollRate.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If LngValue < 0 Then Cancel = True
+    If Cancel = False Then
+        TextScrollRate.Text = LngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextScrollRate.Text = PropertyPage.SelectedControls(0).ScrollRate
+        TextScrollRate.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextMaxSelCount_GotFocus()
+If Not TextMaxSelCount.SelStart = 0 Then Exit Sub
+TextMaxSelCount.SelLength = Len(TextMaxSelCount.Text)
+End Sub
+
+Private Sub TextMaxSelCount_LostFocus()
+TextMaxSelCount.SelStart = 0
+End Sub
+
+Private Sub TextMaxSelCount_Change()
+If FreezeChanged = True Then Exit Sub
+If TextMaxSelCount.Text = vbNullString Then
+    TextMaxSelCount.Text = PropertyPage.SelectedControls(0).MaxSelCount
+    TextMaxSelCount.SelStart = 0
+    TextMaxSelCount.SelLength = Len(TextMaxSelCount.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextMaxSelCount_KeyPress(KeyAscii As Integer)
+Call ComCtlsPPKeyPressOnlyNumeric(KeyAscii)
+End Sub
+
+Private Sub TextMaxSelCount_Validate(Cancel As Boolean)
+If Not IsNumeric(TextMaxSelCount.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextMaxSelCount.Text = PropertyPage.SelectedControls(0).MaxSelCount
+    TextMaxSelCount.SetFocus
+    Cancel = True
+Else
+    Dim IntValue As Integer
+    On Error Resume Next
+    IntValue = CInt(TextMaxSelCount.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If IntValue <= 0 Then Cancel = True
+    If Cancel = False Then
+        TextMaxSelCount.Text = IntValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextMaxSelCount.Text = PropertyPage.SelectedControls(0).MaxSelCount
+        TextMaxSelCount.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextMonthColumns_GotFocus()
+If Not TextMonthColumns.SelStart = 0 Then Exit Sub
+TextMonthColumns.SelLength = Len(TextMonthColumns.Text)
+End Sub
+
+Private Sub TextMonthColumns_LostFocus()
+TextMonthColumns.SelStart = 0
+End Sub
+
+Private Sub TextMonthColumns_Change()
+If FreezeChanged = True Then Exit Sub
+If TextMonthColumns.Text = vbNullString Then
+    TextMonthColumns.Text = PropertyPage.SelectedControls(0).MonthColumns
+    TextMonthColumns.SelStart = 0
+    TextMonthColumns.SelLength = Len(TextMonthColumns.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextMonthColumns_KeyPress(KeyAscii As Integer)
+Call ComCtlsPPKeyPressOnlyNumeric(KeyAscii)
+End Sub
+
+Private Sub TextMonthColumns_Validate(Cancel As Boolean)
+If Not IsNumeric(TextMonthColumns.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextMonthColumns.Text = PropertyPage.SelectedControls(0).MonthColumns
+    TextMonthColumns.SetFocus
+    Cancel = True
+Else
+    Dim ByteValue As Byte
+    On Error Resume Next
+    ByteValue = CByte(TextMonthColumns.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If ByteValue <= 0 Then Cancel = True
+    If Cancel = False Then
+        TextMonthColumns.Text = ByteValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextMonthColumns.Text = PropertyPage.SelectedControls(0).MonthColumns
+        TextMonthColumns.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextMonthRows_GotFocus()
+If Not TextMonthRows.SelStart = 0 Then Exit Sub
+TextMonthRows.SelLength = Len(TextMonthRows.Text)
+End Sub
+
+Private Sub TextMonthRows_LostFocus()
+TextMonthRows.SelStart = 0
+End Sub
+
+Private Sub TextMonthRows_Change()
+If FreezeChanged = True Then Exit Sub
+If TextMonthRows.Text = vbNullString Then
+    TextMonthRows.Text = PropertyPage.SelectedControls(0).MonthRows
+    TextMonthRows.SelStart = 0
+    TextMonthRows.SelLength = Len(TextMonthRows.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextMonthRows_KeyPress(KeyAscii As Integer)
+Call ComCtlsPPKeyPressOnlyNumeric(KeyAscii)
+End Sub
+
+Private Sub TextMonthRows_Validate(Cancel As Boolean)
+If Not IsNumeric(TextMonthRows.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextMonthRows.Text = PropertyPage.SelectedControls(0).MonthRows
+    TextMonthRows.SetFocus
+    Cancel = True
+Else
+    Dim ByteValue As Byte
+    On Error Resume Next
+    ByteValue = CByte(TextMonthRows.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If ByteValue <= 0 Then Cancel = True
+    If Cancel = False Then
+        TextMonthRows.Text = ByteValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextMonthRows.Text = PropertyPage.SelectedControls(0).MonthRows
+        TextMonthRows.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub ComboStartOfWeek_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboView_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckMouseTrack_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckShowToday_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckShowTodayCircle_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckShowWeekNumbers_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckShowTrailingDates_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckMultiSelect_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckDayState_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckUseShortestDayNames_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub

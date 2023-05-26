@@ -1,0 +1,96 @@
+VERSION 5.00
+Begin VB.PropertyPage PPTextBoxWText 
+   Caption         =   "Text"
+   ClientHeight    =   3450
+   ClientLeft      =   0
+   ClientTop       =   0
+   ClientWidth     =   5925
+   LockControls    =   -1  'True
+   PaletteMode     =   0  'Halftone
+   ScaleHeight     =   3450
+   ScaleWidth      =   5925
+   Begin VBCCR17.TextBoxW TextSingleLine 
+      Height          =   315
+      Left            =   120
+      TabIndex        =   0
+      Top             =   120
+      Visible         =   0   'False
+      Width           =   5655
+      _ExtentX        =   9975
+      _ExtentY        =   556
+   End
+   Begin VBCCR17.TextBoxW TextMultiLine 
+      Height          =   3195
+      Left            =   120
+      TabIndex        =   1
+      Top             =   120
+      Visible         =   0   'False
+      Width           =   5655
+      _ExtentX        =   9975
+      _ExtentY        =   5636
+      MultiLine       =   -1  'True
+      ScrollBars      =   3
+   End
+End
+Attribute VB_Name = "PPTextBoxWText"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = True
+Option Explicit
+Private FreezeChanged As Boolean
+
+Private Sub PropertyPage_Initialize()
+Call ComCtlsShowAllUIStates(PropertyPage.hWnd)
+End Sub
+
+Private Sub PropertyPage_ApplyChanges()
+With PropertyPage.SelectedControls(0)
+If .MultiLine = True Then
+    .Text = TextMultiLine.Text
+Else
+    .Text = TextSingleLine.Text
+End If
+End With
+Call PropertyPage_SelectionChanged
+End Sub
+
+Private Sub PropertyPage_SelectionChanged()
+FreezeChanged = True
+With PropertyPage.SelectedControls(0)
+If .MultiLine = True Then
+    TextSingleLine.Visible = False
+    TextMultiLine.Visible = True
+    TextMultiLine.Text = .Text
+Else
+    TextMultiLine.Visible = False
+    TextSingleLine.Visible = True
+    TextSingleLine.Text = .Text
+End If
+End With
+FreezeChanged = False
+End Sub
+
+Private Sub PropertyPage_EditProperty(PropertyName As String)
+If PropertyName = "Text" Then
+    If TextSingleLine.Visible = True Then
+        TextSingleLine.SetFocus
+    ElseIf TextMultiLine.Visible = True Then
+        TextMultiLine.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextSingleLine_Change()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextMultiLine_Change()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextMultiLine_KeyPress(KeyChar As Integer)
+If KeyChar = vbKeyReturn Then KeyChar = AscW(vbLf)
+End Sub

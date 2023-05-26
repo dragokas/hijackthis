@@ -1,0 +1,659 @@
+VERSION 5.00
+Begin VB.PropertyPage PPTabStripGeneral 
+   Caption         =   "General"
+   ClientHeight    =   4875
+   ClientLeft      =   0
+   ClientTop       =   0
+   ClientWidth     =   6075
+   LockControls    =   -1  'True
+   PaletteMode     =   0  'Halftone
+   ScaleHeight     =   4875
+   ScaleWidth      =   6075
+   Begin VB.ComboBox ComboDrawMode 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   24
+      Top             =   4080
+      Width           =   2235
+   End
+   Begin VB.CheckBox CheckDoubleBuffer 
+      Caption         =   "DoubleBuffer"
+      Height          =   285
+      Left            =   3480
+      TabIndex        =   2
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckMouseTrack 
+      Caption         =   "MouseTrack"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   25
+      Top             =   480
+      Width           =   1770
+   End
+   Begin VB.CheckBox CheckTabScrollWheel 
+      Caption         =   "TabScrollWheel"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   31
+      Top             =   2640
+      Width           =   1770
+   End
+   Begin VB.ComboBox ComboTabAlignment 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   22
+      Top             =   3720
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboPlacement 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   8
+      Top             =   1200
+      Width           =   2235
+   End
+   Begin VBCCR17.TextBoxW TextTabMinWidth 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   20
+      Top             =   3360
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VB.CheckBox CheckShowTips 
+      Caption         =   "ShowTips"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   30
+      Top             =   2280
+      Width           =   1770
+   End
+   Begin VB.CheckBox CheckMultiSelect 
+      Caption         =   "MultiSelect"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   27
+      Top             =   1200
+      Width           =   1770
+   End
+   Begin VB.CheckBox CheckSeparators 
+      Caption         =   "Separators"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   29
+      Top             =   1920
+      Width           =   1770
+   End
+   Begin VB.ComboBox ComboMousePointer 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   4
+      Top             =   480
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboImageList 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   6
+      Top             =   840
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboTabStyle 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   12
+      Top             =   1920
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboTabWidthStyle 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   14
+      Top             =   2280
+      Width           =   2235
+   End
+   Begin VB.ComboBox ComboStyle 
+      Height          =   315
+      Left            =   1800
+      Style           =   2  'Dropdown List
+      TabIndex        =   10
+      Top             =   1560
+      Width           =   2235
+   End
+   Begin VBCCR17.TextBoxW TextTabFixedHeight 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   18
+      Top             =   3000
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VBCCR17.TextBoxW TextTabFixedWidth 
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   16
+      Top             =   2640
+      Width           =   2235
+      _ExtentX        =   0
+      _ExtentY        =   0
+   End
+   Begin VB.CheckBox CheckHotTracking 
+      Caption         =   "HotTracking"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   28
+      Top             =   1560
+      Width           =   1770
+   End
+   Begin VB.CheckBox CheckMultiRow 
+      Caption         =   "MultiRow"
+      Height          =   285
+      Left            =   4200
+      TabIndex        =   26
+      Top             =   840
+      Width           =   1770
+   End
+   Begin VB.CheckBox CheckEnabled 
+      Caption         =   "Enabled"
+      Height          =   285
+      Left            =   120
+      TabIndex        =   0
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.CheckBox CheckVisualStyles 
+      Caption         =   "VisualStyles"
+      Height          =   285
+      Left            =   1800
+      TabIndex        =   1
+      Top             =   120
+      Width           =   1620
+   End
+   Begin VB.Label LabelDrawMode 
+      Caption         =   "DrawMode:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   23
+      Top             =   4080
+      Width           =   1620
+   End
+   Begin VB.Label LabelTabAlignment 
+      Caption         =   "TabAlignment:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   21
+      Top             =   3720
+      Width           =   1620
+   End
+   Begin VB.Label LabelPlacement 
+      Caption         =   "Placement:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   7
+      Top             =   1200
+      Width           =   1620
+   End
+   Begin VB.Label LabelTabMinWidth 
+      Caption         =   "TabMinWidth:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   19
+      Top             =   3360
+      Width           =   1620
+   End
+   Begin VB.Label LabelMousePointer 
+      Caption         =   "MousePointer:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   3
+      Top             =   480
+      Width           =   1620
+   End
+   Begin VB.Label LabelImageList 
+      Caption         =   "ImageList:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   5
+      Top             =   840
+      Width           =   1620
+   End
+   Begin VB.Label LabelTabWidthStyle 
+      Caption         =   "TabWidthStyle:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   13
+      Top             =   2280
+      Width           =   1620
+   End
+   Begin VB.Label LabelTabStyle 
+      Caption         =   "TabStyle:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   11
+      Top             =   1920
+      Width           =   1620
+   End
+   Begin VB.Label LabelStyle 
+      Caption         =   "Style:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   9
+      Top             =   1560
+      Width           =   1620
+   End
+   Begin VB.Label LabelTabFixedHeight 
+      Caption         =   "TabFixedHeight:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   17
+      Top             =   3000
+      Width           =   1620
+   End
+   Begin VB.Label LabelTabFixedWidth 
+      Caption         =   "TabFixedWidth:"
+      Height          =   240
+      Left            =   120
+      TabIndex        =   15
+      Top             =   2640
+      Width           =   1620
+   End
+End
+Attribute VB_Name = "PPTabStripGeneral"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = True
+Option Explicit
+Private ImageListEnumerated As Boolean
+Private FreezeChanged As Boolean
+
+Private Sub PropertyPage_Initialize()
+Call ComCtlsShowAllUIStates(PropertyPage.hWnd)
+Call ComCtlsPPInitComboMousePointer(ComboMousePointer)
+With ComboImageList
+.AddItem "(None)"
+.ListIndex = 0
+End With
+With ComboPlacement
+.AddItem TbsPlacementTop & " - Top"
+.ItemData(.NewIndex) = TbsPlacementTop
+.AddItem TbsPlacementBottom & " - Bottom"
+.ItemData(.NewIndex) = TbsPlacementBottom
+.AddItem TbsPlacementLeft & " - Left"
+.ItemData(.NewIndex) = TbsPlacementLeft
+.AddItem TbsPlacementRight & " - Right"
+.ItemData(.NewIndex) = TbsPlacementRight
+End With
+With ComboStyle
+.AddItem TbsStyleTabs & " - Tabs"
+.ItemData(.NewIndex) = TbsStyleTabs
+.AddItem TbsStyleButtons & " - Buttons"
+.ItemData(.NewIndex) = TbsStyleButtons
+.AddItem TbsStyleFlatButtons & " - FlatButtons"
+.ItemData(.NewIndex) = TbsStyleFlatButtons
+End With
+With ComboTabStyle
+.AddItem TbsTabStyleStandard & " - Standard"
+.ItemData(.NewIndex) = TbsTabStyleStandard
+.AddItem TbsTabStyleOpposite & " - Opposite"
+.ItemData(.NewIndex) = TbsTabStyleOpposite
+End With
+With ComboTabWidthStyle
+.AddItem TbsTabWidthStyleJustified & " - Justified"
+.ItemData(.NewIndex) = TbsTabWidthStyleJustified
+.AddItem TbsTabWidthStyleNonJustified & " - NonJustified"
+.ItemData(.NewIndex) = TbsTabWidthStyleNonJustified
+.AddItem TbsTabWidthStyleFixed & " - Fixed"
+.ItemData(.NewIndex) = TbsTabWidthStyleFixed
+End With
+With ComboTabAlignment
+.AddItem TbsTabAlignmentStandard & " - Standard"
+.ItemData(.NewIndex) = TbsTabAlignmentStandard
+.AddItem TbsTabAlignmentImageLeft & " - ImageLeft"
+.ItemData(.NewIndex) = TbsTabAlignmentImageLeft
+.AddItem TbsTabAlignmentImageCaptionLeft & " - ImageCaptionLeft"
+.ItemData(.NewIndex) = TbsTabAlignmentImageCaptionLeft
+End With
+With ComboDrawMode
+.AddItem TbsDrawModeNormal & " - Normal"
+.ItemData(.NewIndex) = TbsDrawModeNormal
+.AddItem TbsDrawModeOwnerDrawFixed & " - OwnerDrawFixed"
+.ItemData(.NewIndex) = TbsDrawModeOwnerDrawFixed
+End With
+End Sub
+
+Private Sub PropertyPage_ApplyChanges()
+On Error Resume Next
+PropertyPage.ValidateControls
+If Err.Number = 380 Then Exit Sub
+On Error GoTo 0
+With PropertyPage.SelectedControls(0)
+.Enabled = CBool(CheckEnabled.Value = vbChecked)
+.VisualStyles = CBool(CheckVisualStyles.Value = vbChecked)
+.DoubleBuffer = CBool(CheckDoubleBuffer.Value = vbChecked)
+.MousePointer = ComboMousePointer.ItemData(ComboMousePointer.ListIndex)
+.ImageList = ComboImageList.List(ComboImageList.ListIndex)
+.Placement = ComboPlacement.ItemData(ComboPlacement.ListIndex)
+.Style = ComboStyle.ItemData(ComboStyle.ListIndex)
+.TabStyle = ComboTabStyle.ItemData(ComboTabStyle.ListIndex)
+.TabWidthStyle = ComboTabWidthStyle.ItemData(ComboTabWidthStyle.ListIndex)
+.TabFixedWidth = CSng(TextTabFixedWidth.Text)
+.TabFixedHeight = CSng(TextTabFixedHeight.Text)
+.TabMinWidth = CSng(TextTabMinWidth.Text)
+.TabAlignment = ComboTabAlignment.ItemData(ComboTabAlignment.ListIndex)
+.DrawMode = ComboDrawMode.ItemData(ComboDrawMode.ListIndex)
+.MouseTrack = CBool(CheckMouseTrack.Value = vbChecked)
+.MultiRow = CBool(CheckMultiRow.Value = vbChecked)
+.MultiSelect = CBool(CheckMultiSelect.Value = vbChecked)
+.HotTracking = CBool(CheckHotTracking.Value = vbChecked)
+.Separators = CBool(CheckSeparators.Value = vbChecked)
+.ShowTips = CBool(CheckShowTips.Value = vbChecked)
+.TabScrollWheel = CBool(CheckTabScrollWheel.Value = vbChecked)
+End With
+Call PropertyPage_SelectionChanged
+End Sub
+
+Private Sub PropertyPage_SelectionChanged()
+Dim i As Long
+FreezeChanged = True
+With PropertyPage.SelectedControls(0)
+CheckEnabled.Value = IIf(.Enabled = True, vbChecked, vbUnchecked)
+CheckVisualStyles.Value = IIf(.VisualStyles = True, vbChecked, vbUnchecked)
+CheckDoubleBuffer.Value = IIf(.DoubleBuffer = True, vbChecked, vbUnchecked)
+For i = 0 To ComboMousePointer.ListCount - 1
+    If ComboMousePointer.ItemData(i) = .MousePointer Then
+        ComboMousePointer.ListIndex = i
+        Exit For
+    End If
+Next i
+If ImageListEnumerated = False Then
+    Dim ControlEnum As Object
+    For Each ControlEnum In .ControlsEnum
+        If TypeName(ControlEnum) = "ImageList" Then
+            ComboImageList.AddItem ProperControlName(ControlEnum)
+        End If
+    Next ControlEnum
+    ImageListEnumerated = True
+End If
+For i = 0 To ComboImageList.ListCount - 1
+    If ComboImageList.List(i) = .ImageList Then
+        ComboImageList.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboPlacement.ListCount - 1
+    If ComboPlacement.ItemData(i) = .Placement Then
+        ComboPlacement.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboStyle.ListCount - 1
+    If ComboStyle.ItemData(i) = .Style Then
+        ComboStyle.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboTabStyle.ListCount - 1
+    If ComboTabStyle.ItemData(i) = .TabStyle Then
+        ComboTabStyle.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboTabWidthStyle.ListCount - 1
+    If ComboTabWidthStyle.ItemData(i) = .TabWidthStyle Then
+        ComboTabWidthStyle.ListIndex = i
+        Exit For
+    End If
+Next i
+TextTabFixedWidth.Text = CStr(.TabFixedWidth)
+TextTabFixedHeight.Text = CStr(.TabFixedHeight)
+TextTabMinWidth.Text = CStr(.TabMinWidth)
+For i = 0 To ComboTabAlignment.ListCount - 1
+    If ComboTabAlignment.ItemData(i) = .TabAlignment Then
+        ComboTabAlignment.ListIndex = i
+        Exit For
+    End If
+Next i
+For i = 0 To ComboDrawMode.ListCount - 1
+    If ComboDrawMode.ItemData(i) = .DrawMode Then
+        ComboDrawMode.ListIndex = i
+        Exit For
+    End If
+Next i
+CheckMouseTrack.Value = IIf(.MouseTrack = True, vbChecked, vbUnchecked)
+CheckMultiRow.Value = IIf(.MultiRow = True, vbChecked, vbUnchecked)
+CheckMultiSelect.Value = IIf(.MultiSelect = True, vbChecked, vbUnchecked)
+CheckHotTracking.Value = IIf(.HotTracking = True, vbChecked, vbUnchecked)
+CheckSeparators.Value = IIf(.Separators = True, vbChecked, vbUnchecked)
+CheckShowTips.Value = IIf(.ShowTips = True, vbChecked, vbUnchecked)
+CheckTabScrollWheel.Value = IIf(.TabScrollWheel = True, vbChecked, vbUnchecked)
+End With
+FreezeChanged = False
+End Sub
+
+Private Sub CheckEnabled_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckVisualStyles_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckDoubleBuffer_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboMousePointer_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboImageList_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboPlacement_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboStyle_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboTabStyle_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboTabWidthStyle_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextTabFixedWidth_GotFocus()
+If Not TextTabFixedWidth.SelStart = 0 Then Exit Sub
+TextTabFixedWidth.SelLength = Len(TextTabFixedWidth.Text)
+End Sub
+
+Private Sub TextTabFixedWidth_LostFocus()
+TextTabFixedWidth.SelStart = 0
+End Sub
+
+Private Sub TextTabFixedWidth_Change()
+If FreezeChanged = True Then Exit Sub
+If TextTabFixedWidth.Text = vbNullString Then
+    TextTabFixedWidth.Text = PropertyPage.SelectedControls(0).TabFixedWidth
+    TextTabFixedWidth.SelStart = 0
+    TextTabFixedWidth.SelLength = Len(TextTabFixedWidth.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextTabFixedWidth_Validate(Cancel As Boolean)
+If Not IsNumeric(TextTabFixedWidth.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextTabFixedWidth.Text = PropertyPage.SelectedControls(0).TabFixedWidth
+    TextTabFixedWidth.SetFocus
+    Cancel = True
+Else
+    Dim SngValue As Single
+    On Error Resume Next
+    SngValue = CSng(TextTabFixedWidth.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If SngValue < 0 Then Cancel = True
+    If Cancel = False Then
+        TextTabFixedWidth.Text = SngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextTabFixedWidth.Text = PropertyPage.SelectedControls(0).TabFixedWidth
+        TextTabFixedWidth.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextTabFixedHeight_GotFocus()
+If Not TextTabFixedHeight.SelStart = 0 Then Exit Sub
+TextTabFixedHeight.SelLength = Len(TextTabFixedHeight.Text)
+End Sub
+
+Private Sub TextTabFixedHeight_LostFocus()
+TextTabFixedHeight.SelStart = 0
+End Sub
+
+Private Sub TextTabFixedHeight_Change()
+If FreezeChanged = True Then Exit Sub
+If TextTabFixedHeight.Text = vbNullString Then
+    TextTabFixedHeight.Text = PropertyPage.SelectedControls(0).TabFixedHeight
+    TextTabFixedHeight.SelStart = 0
+    TextTabFixedHeight.SelLength = Len(TextTabFixedHeight.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextTabFixedHeight_Validate(Cancel As Boolean)
+If Not IsNumeric(TextTabFixedHeight.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextTabFixedHeight.Text = PropertyPage.SelectedControls(0).TabFixedHeight
+    TextTabFixedHeight.SetFocus
+    Cancel = True
+Else
+    Dim SngValue As Single
+    On Error Resume Next
+    SngValue = CSng(TextTabFixedHeight.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If SngValue < 0 Then Cancel = True
+    If Cancel = False Then
+        TextTabFixedHeight.Text = SngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextTabFixedHeight.Text = PropertyPage.SelectedControls(0).TabFixedHeight
+        TextTabFixedHeight.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub TextTabMinWidth_GotFocus()
+If Not TextTabMinWidth.SelStart = 0 Then Exit Sub
+TextTabMinWidth.SelLength = Len(TextTabMinWidth.Text)
+End Sub
+
+Private Sub TextTabMinWidth_LostFocus()
+TextTabMinWidth.SelStart = 0
+End Sub
+
+Private Sub TextTabMinWidth_Change()
+If FreezeChanged = True Then Exit Sub
+If TextTabMinWidth.Text = vbNullString Then
+    TextTabMinWidth.Text = PropertyPage.SelectedControls(0).TabMinWidth
+    TextTabMinWidth.SelStart = 0
+    TextTabMinWidth.SelLength = Len(TextTabMinWidth.Text)
+End If
+PropertyPage.Changed = True
+End Sub
+
+Private Sub TextTabMinWidth_Validate(Cancel As Boolean)
+If Not IsNumeric(TextTabMinWidth.Text) Then
+    MsgBox "Invalid property value", vbCritical + vbOKOnly
+    TextTabMinWidth.Text = PropertyPage.SelectedControls(0).TabMinWidth
+    TextTabMinWidth.SetFocus
+    Cancel = True
+Else
+    Dim SngValue As Single
+    On Error Resume Next
+    SngValue = CSng(TextTabMinWidth.Text)
+    Cancel = CBool(Err.Number <> 0)
+    On Error GoTo 0
+    If SngValue < 0 And Not SngValue = -1 Then Cancel = True
+    If Cancel = False Then
+        TextTabMinWidth.Text = SngValue
+    Else
+        MsgBox "Invalid property value", vbCritical + vbOKOnly
+        TextTabMinWidth.Text = PropertyPage.SelectedControls(0).TabMinWidth
+        TextTabMinWidth.SetFocus
+    End If
+End If
+End Sub
+
+Private Sub ComboTabAlignment_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub ComboDrawMode_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckMouseTrack_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckMultiRow_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckMultiSelect_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckHotTracking_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckSeparators_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckShowTips_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub
+
+Private Sub CheckTabScrollWheel_Click()
+If FreezeChanged = True Then Exit Sub
+PropertyPage.Changed = True
+End Sub

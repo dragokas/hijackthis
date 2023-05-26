@@ -166,15 +166,15 @@ Begin VB.Form frmMain
       BackColor       =   &H80000005&
       BorderStyle     =   0  'None
       ForeColor       =   &H80000008&
-      Height          =   975
-      Left            =   7440
+      Height          =   492
+      Left            =   6720
       Picture         =   "frmMain.frx":4B2A
-      ScaleHeight     =   972
-      ScaleWidth      =   1332
+      ScaleHeight     =   492
+      ScaleWidth      =   1932
       TabIndex        =   90
       TabStop         =   0   'False
-      Top             =   -20
-      Width           =   1335
+      Top             =   120
+      Width           =   1932
    End
    Begin VB.CommandButton cmdHidden 
       Default         =   -1  'True
@@ -302,544 +302,6 @@ Begin VB.Form frmMain
       End
       Begin VB.Frame fraConfigTabs 
          BorderStyle     =   0  'None
-         Caption         =   "fraConfigMain"
-         BeginProperty Font 
-            Name            =   "Tahoma"
-            Size            =   8.4
-            Charset         =   204
-            Weight          =   700
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   4250
-         Index           =   0
-         Left            =   120
-         TabIndex        =   34
-         Top             =   1200
-         Width           =   8440
-         Begin VB.Frame fraConfigTabsNested 
-            BorderStyle     =   0  'None
-            Height          =   7815
-            Left            =   0
-            TabIndex        =   66
-            Top             =   -120
-            Width           =   8055
-            Begin VB.Frame FraInterface 
-               Caption         =   "Interface"
-               BeginProperty Font 
-                  Name            =   "Tahoma"
-                  Size            =   8.4
-                  Charset         =   204
-                  Weight          =   700
-                  Underline       =   0   'False
-                  Italic          =   0   'False
-                  Strikethrough   =   0   'False
-               EndProperty
-               Height          =   1800
-               Left            =   0
-               TabIndex        =   67
-               Top             =   3120
-               Width           =   7935
-               Begin VB.CheckBox chkFontBold 
-                  Caption         =   "B"
-                  BeginProperty Font 
-                     Name            =   "Tahoma"
-                     Size            =   7.8
-                     Charset         =   204
-                     Weight          =   700
-                     Underline       =   0   'False
-                     Italic          =   0   'False
-                     Strikethrough   =   0   'False
-                  EndProperty
-                  Height          =   280
-                  Left            =   3050
-                  Style           =   1  'Graphical
-                  TabIndex        =   145
-                  Top             =   1380
-                  Width           =   280
-               End
-               Begin VB.CheckBox chkFontWholeInterface 
-                  Caption         =   "Apply selected font on whole interface"
-                  Height          =   255
-                  Left            =   3480
-                  TabIndex        =   141
-                  Top             =   1400
-                  Width           =   4332
-               End
-               Begin VB.ComboBox cmbFontSize 
-                  Height          =   315
-                  Left            =   2280
-                  Style           =   2  'Dropdown List
-                  TabIndex        =   140
-                  Top             =   1380
-                  Width           =   735
-               End
-               Begin VB.ComboBox cmbFont 
-                  Height          =   315
-                  Left            =   120
-                  Style           =   2  'Dropdown List
-                  TabIndex        =   137
-                  Top             =   1380
-                  Width           =   2055
-               End
-               Begin VB.CheckBox chkConfigMinimizeToTray 
-                  Caption         =   "Minimize program to system tray when clicking _ button"
-                  Height          =   255
-                  Left            =   120
-                  TabIndex        =   85
-                  Top             =   840
-                  Width           =   6015
-               End
-               Begin VB.CheckBox chkSkipErrorMsg 
-                  Caption         =   "Do not show error messages"
-                  Height          =   255
-                  Left            =   120
-                  TabIndex        =   84
-                  Top             =   600
-                  Width           =   4695
-               End
-               Begin VB.CheckBox chkSkipIntroFrameSettings 
-                  Caption         =   "Do not show main menu at startup"
-                  Height          =   255
-                  Left            =   120
-                  TabIndex        =   64
-                  Top             =   360
-                  Width           =   4575
-               End
-               Begin VB.Label lblFontSize 
-                  Caption         =   "Size"
-                  Height          =   255
-                  Left            =   2280
-                  TabIndex        =   139
-                  Top             =   1140
-                  Width           =   975
-               End
-               Begin VB.Label lblFont 
-                  Caption         =   "Font"
-                  Height          =   255
-                  Left            =   120
-                  TabIndex        =   138
-                  Top             =   1140
-                  Width           =   1935
-               End
-            End
-            Begin VB.Frame FraIncludeSections 
-               Caption         =   "Scan area"
-               BeginProperty Font 
-                  Name            =   "Tahoma"
-                  Size            =   8.4
-                  Charset         =   204
-                  Weight          =   700
-                  Underline       =   0   'False
-                  Italic          =   0   'False
-                  Strikethrough   =   0   'False
-               EndProperty
-               Height          =   1575
-               Left            =   0
-               TabIndex        =   94
-               Top             =   120
-               Width           =   3372
-               Begin VB.CheckBox chkAdditionalScan 
-                  Caption         =   "Additional scan"
-                  Height          =   255
-                  Left            =   120
-                  TabIndex        =   98
-                  ToolTipText     =   "Include specific sections, like O4 - RenameOperations, O21 - Column Hanlders / Context menu, O23 - Drivers e.t.c."
-                  Top             =   1080
-                  Width           =   3015
-               End
-               Begin VB.CheckBox chkAdvLogEnvVars 
-                  Caption         =   "Environment variables"
-                  Height          =   255
-                  Left            =   120
-                  TabIndex        =   97
-                  ToolTipText     =   "Include environment variables in logfile"
-                  Top             =   720
-                  Width           =   3015
-               End
-               Begin VB.CheckBox chkLogProcesses 
-                  Caption         =   "Processes"
-                  Height          =   255
-                  Left            =   120
-                  TabIndex        =   96
-                  ToolTipText     =   "Include list of running processes in logfiles"
-                  Top             =   360
-                  Value           =   1  'Checked
-                  Width           =   3015
-               End
-            End
-            Begin VB.Frame FraFixing 
-               Caption         =   "Fix && Backup"
-               BeginProperty Font 
-                  Name            =   "Tahoma"
-                  Size            =   8.4
-                  Charset         =   204
-                  Weight          =   700
-                  Underline       =   0   'False
-                  Italic          =   0   'False
-                  Strikethrough   =   0   'False
-               EndProperty
-               Height          =   1215
-               Left            =   0
-               TabIndex        =   68
-               Top             =   1800
-               Width           =   7935
-               Begin VB.TextBox txtDefStartPage 
-                  Height          =   285
-                  Left            =   2040
-                  TabIndex        =   15
-                  Top             =   1560
-                  Width           =   5175
-               End
-               Begin VB.TextBox txtDefSearchPage 
-                  Height          =   285
-                  Left            =   2040
-                  TabIndex        =   16
-                  Top             =   1920
-                  Width           =   5175
-               End
-               Begin VB.TextBox txtDefSearchAss 
-                  Height          =   285
-                  Left            =   2040
-                  TabIndex        =   17
-                  Top             =   2280
-                  Width           =   5175
-               End
-               Begin VB.TextBox txtDefSearchCust 
-                  Height          =   285
-                  Left            =   2040
-                  TabIndex        =   18
-                  Top             =   2640
-                  Width           =   5175
-               End
-               Begin VB.CheckBox chkConfirm 
-                  Caption         =   "Confirm fixing && ignoring of items (safe mode)"
-                  Height          =   255
-                  Left            =   120
-                  TabIndex        =   14
-                  Top             =   600
-                  Value           =   1  'Checked
-                  Width           =   7455
-               End
-               Begin VB.CheckBox chkBackup 
-                  Caption         =   "Make backups before fixing items"
-                  Height          =   255
-                  Left            =   120
-                  TabIndex        =   13
-                  Top             =   360
-                  Value           =   1  'Checked
-                  Width           =   7335
-               End
-               Begin VB.CheckBox chkAutoMark 
-                  Caption         =   "Mark everything found for fixing after scan (DANGEROUS !!!)"
-                  Height          =   255
-                  Left            =   120
-                  TabIndex        =   12
-                  Top             =   840
-                  Width           =   7335
-               End
-            End
-            Begin VB.Frame fraScanOpt 
-               Caption         =   "Scan options"
-               BeginProperty Font 
-                  Name            =   "Tahoma"
-                  Size            =   8.4
-                  Charset         =   204
-                  Weight          =   700
-                  Underline       =   0   'False
-                  Italic          =   0   'False
-                  Strikethrough   =   0   'False
-               EndProperty
-               Height          =   1575
-               Left            =   3480
-               TabIndex        =   95
-               Top             =   120
-               Width           =   4452
-               Begin VB.ComboBox cmbHashType 
-                  Height          =   300
-                  ItemData        =   "frmMain.frx":9180
-                  Left            =   3120
-                  List            =   "frmMain.frx":9182
-                  Style           =   2  'Dropdown List
-                  TabIndex        =   40
-                  TabStop         =   0   'False
-                  Top             =   840
-                  Width           =   1212
-               End
-               Begin VB.CheckBox chkConfigStartupScan 
-                  Caption         =   "Add HiJackThis to startup"
-                  Height          =   270
-                  Left            =   120
-                  TabIndex        =   78
-                  ToolTipText     =   "Run HiJackThis scan at Windows startup and show results (if only items are found)"
-                  Top             =   1120
-                  Width           =   3972
-               End
-               Begin VB.CheckBox chkDoCheckSum 
-                  Caption         =   "Calculate Checksum"
-                  Height          =   195
-                  Left            =   120
-                  TabIndex        =   101
-                  ToolTipText     =   "Calculate checksum of files if possible"
-                  Top             =   900
-                  Width           =   2892
-               End
-               Begin VB.CheckBox chkIgnoreAll 
-                  Caption         =   "Ignore ALL Whitelists"
-                  Height          =   255
-                  Left            =   120
-                  TabIndex        =   100
-                  ToolTipText     =   "Include in log any entries regardless whitelist"
-                  Top             =   610
-                  Width           =   3972
-               End
-               Begin VB.CheckBox chkIgnoreMicrosoft 
-                  Caption         =   "Hide Microsoft entries"
-                  Height          =   255
-                  Left            =   120
-                  TabIndex        =   99
-                  ToolTipText     =   "Do not include in log files and registry related to Microsoft"
-                  Top             =   360
-                  Value           =   1  'Checked
-                  Width           =   3972
-               End
-            End
-         End
-         Begin VB.VScrollBar vscSettings 
-            Height          =   4160
-            LargeChange     =   20
-            Left            =   8040
-            Max             =   100
-            TabIndex        =   65
-            Top             =   120
-            Visible         =   0   'False
-            Width           =   255
-         End
-      End
-      Begin VB.Frame fraConfigTabs 
-         BorderStyle     =   0  'None
-         Caption         =   "fraConfigBackup"
-         BeginProperty Font 
-            Name            =   "Tahoma"
-            Size            =   8.4
-            Charset         =   204
-            Weight          =   700
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   4215
-         Index           =   2
-         Left            =   120
-         TabIndex        =   35
-         Top             =   720
-         Visible         =   0   'False
-         Width           =   8415
-         Begin VB.CheckBox chkShowSRP 
-            Caption         =   "Show System Restore Points"
-            Height          =   255
-            Left            =   120
-            TabIndex        =   93
-            Top             =   3960
-            Width           =   6375
-         End
-         Begin VB.CommandButton cmdConfigBackupCreateSRP 
-            Caption         =   "Create restore point"
-            Height          =   720
-            Left            =   7440
-            TabIndex        =   92
-            Top             =   3600
-            Width           =   990
-         End
-         Begin VB.CommandButton cmdConfigBackupCreateRegBackup 
-            Caption         =   "Create registry backup"
-            Height          =   720
-            Left            =   7440
-            TabIndex        =   91
-            Top             =   2760
-            Width           =   990
-         End
-         Begin VB.CommandButton cmdConfigBackupDeleteAll 
-            Caption         =   "Delete all"
-            Height          =   495
-            Left            =   7440
-            TabIndex        =   25
-            Top             =   1920
-            Width           =   975
-         End
-         Begin VB.CommandButton cmdConfigBackupDelete 
-            Caption         =   "Delete"
-            Height          =   495
-            Left            =   7440
-            TabIndex        =   24
-            Top             =   1320
-            Width           =   975
-         End
-         Begin VB.CommandButton cmdConfigBackupRestore 
-            Caption         =   "Restore"
-            Height          =   495
-            Left            =   7440
-            TabIndex        =   20
-            Top             =   720
-            Width           =   975
-         End
-         Begin VB.ListBox lstBackups 
-            Height          =   2385
-            IntegralHeight  =   0   'False
-            Left            =   120
-            Style           =   1  'Checkbox
-            TabIndex        =   19
-            Top             =   720
-            Width           =   7215
-         End
-         Begin VB.Label lblBackupTip 
-            Caption         =   $"frmMain.frx":9184
-            Height          =   612
-            Left            =   120
-            TabIndex        =   36
-            Top             =   0
-            Width           =   8250
-         End
-         Begin VB.Line linSeperator 
-            BorderColor     =   &H80000010&
-            Index           =   1
-            X1              =   -720
-            X2              =   6480
-            Y1              =   3120
-            Y2              =   3120
-         End
-      End
-      Begin VB.Frame fraHostsMan 
-         Caption         =   "Hosts file manager"
-         BeginProperty Font 
-            Name            =   "Tahoma"
-            Size            =   8.4
-            Charset         =   204
-            Weight          =   700
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   3735
-         Left            =   120
-         TabIndex        =   44
-         Top             =   840
-         Visible         =   0   'False
-         Width           =   8415
-         Begin VB.CommandButton cmdHostsManOpen 
-            Caption         =   "Open in Notepad"
-            Height          =   425
-            Left            =   3600
-            TabIndex        =   49
-            Top             =   3240
-            Width           =   1455
-         End
-         Begin VB.CommandButton cmdHostsManBack 
-            Caption         =   "Back"
-            Height          =   425
-            Left            =   5160
-            TabIndex        =   48
-            Top             =   3240
-            Width           =   1215
-         End
-         Begin VB.CommandButton cmdHostsManToggle 
-            Caption         =   "Toggle line(s)"
-            Height          =   425
-            Left            =   1800
-            TabIndex        =   47
-            Top             =   3240
-            Width           =   1695
-         End
-         Begin VB.CommandButton cmdHostsManDel 
-            Caption         =   "Delete line(s)"
-            Height          =   425
-            Left            =   120
-            TabIndex        =   46
-            Top             =   3240
-            Width           =   1575
-         End
-         Begin VB.ListBox lstHostsMan 
-            Height          =   2340
-            IntegralHeight  =   0   'False
-            Left            =   120
-            MultiSelect     =   2  'Extended
-            TabIndex        =   45
-            Top             =   600
-            Width           =   8175
-         End
-         Begin VB.Label lblHostsTip2 
-            Caption         =   "Note: changes to the hosts file take effect when you restart your browser."
-            Height          =   252
-            Left            =   120
-            TabIndex        =   37
-            Top             =   3000
-            Width           =   8052
-         End
-         Begin VB.Label lblHostsTip1 
-            Caption         =   "Hosts file is located at: C:\ ..."
-            Height          =   252
-            Left            =   120
-            TabIndex        =   38
-            Top             =   360
-            Width           =   8052
-         End
-      End
-      Begin VB.Frame fraConfigTabs 
-         BorderStyle     =   0  'None
-         Caption         =   "fraConfigIgnorelist"
-         BeginProperty Font 
-            Name            =   "Tahoma"
-            Size            =   8.4
-            Charset         =   204
-            Weight          =   700
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   3135
-         Index           =   1
-         Left            =   120
-         TabIndex        =   33
-         Top             =   840
-         Visible         =   0   'False
-         Width           =   8415
-         Begin VB.CommandButton cmdConfigIgnoreDelSel 
-            Caption         =   "Remove"
-            Height          =   495
-            Left            =   7440
-            TabIndex        =   22
-            Top             =   480
-            Width           =   975
-         End
-         Begin VB.CommandButton cmdConfigIgnoreDelAll 
-            Caption         =   "Clear all"
-            Height          =   495
-            Left            =   7440
-            TabIndex        =   23
-            Top             =   1080
-            Width           =   975
-         End
-         Begin VB.ListBox lstIgnore 
-            Height          =   2625
-            IntegralHeight  =   0   'False
-            Left            =   120
-            Style           =   1  'Checkbox
-            TabIndex        =   21
-            Top             =   480
-            Width           =   7215
-         End
-         Begin VB.Label lblIgnoreTip 
-            Caption         =   "The following items will be ignored when scanning: "
-            Height          =   252
-            Left            =   120
-            TabIndex        =   39
-            Top             =   120
-            Width           =   7212
-         End
-      End
-      Begin VB.Frame fraConfigTabs 
-         BorderStyle     =   0  'None
          Height          =   9120
          Index           =   3
          Left            =   120
@@ -880,7 +342,7 @@ Begin VB.Form frmMain
                Height          =   855
                Left            =   120
                TabIndex        =   135
-               Top             =   10200
+               Top             =   10440
                Width           =   7335
                Begin VB.CommandButton cmdUninstall 
                   Caption         =   "Uninstall HiJackThis"
@@ -1155,7 +617,7 @@ Begin VB.Form frmMain
                Begin VB.Label lblStartupListAbout 
                   AutoSize        =   -1  'True
                   BackStyle       =   0  'Transparent
-                  Caption         =   $"frmMain.frx":9269
+                  Caption         =   $"frmMain.frx":87C0
                   Height          =   1032
                   Left            =   2520
                   TabIndex        =   110
@@ -1176,7 +638,7 @@ Begin VB.Form frmMain
                   Strikethrough   =   0   'False
                EndProperty
                ForeColor       =   &H00FF0000&
-               Height          =   2295
+               Height          =   2532
                Left            =   120
                TabIndex        =   104
                Top             =   7800
@@ -1217,9 +679,9 @@ Begin VB.Form frmMain
                   Caption         =   "Socks4"
                   Enabled         =   0   'False
                   Height          =   195
-                  Left            =   1440
+                  Left            =   240
                   TabIndex        =   71
-                  Top             =   1480
+                  Top             =   2160
                   Width           =   855
                End
                Begin VB.OptionButton optProxyManual 
@@ -1228,16 +690,17 @@ Begin VB.Form frmMain
                   Left            =   240
                   TabIndex        =   72
                   Top             =   1440
-                  Width           =   1095
+                  Width           =   2172
                End
                Begin VB.OptionButton optProxyIE 
                   Caption         =   "IE settings"
                   Height          =   255
                   Left            =   240
                   TabIndex        =   73
+                  ToolTipText     =   "(inetcpl.cpl)"
                   Top             =   1200
                   Value           =   -1  'True
-                  Width           =   2055
+                  Width           =   2172
                End
                Begin VB.TextBox txtUpdateProxyPass 
                   Enabled         =   0   'False
@@ -1263,7 +726,7 @@ Begin VB.Form frmMain
                   Left            =   240
                   TabIndex        =   76
                   Top             =   1800
-                  Width           =   2175
+                  Width           =   2172
                End
                Begin VB.TextBox txtUpdateProxyPort 
                   Enabled         =   0   'False
@@ -1294,38 +757,38 @@ Begin VB.Form frmMain
                Begin VB.Label lblUpdatePass 
                   Caption         =   "Password"
                   Enabled         =   0   'False
-                  Height          =   255
+                  Height          =   252
                   Left            =   4800
                   TabIndex        =   7
-                  Top             =   1820
-                  Width           =   855
+                  Top             =   1824
+                  Width           =   852
                End
                Begin VB.Label lblUpdateLogin 
                   Caption         =   "Login"
                   Enabled         =   0   'False
-                  Height          =   255
+                  Height          =   252
                   Left            =   2520
                   TabIndex        =   106
-                  Top             =   1820
-                  Width           =   615
+                  Top             =   1800
+                  Width           =   612
                End
                Begin VB.Label lblUpdatePort 
                   Caption         =   "Port"
                   Enabled         =   0   'False
-                  Height          =   255
+                  Height          =   252
                   Left            =   4800
                   TabIndex        =   107
-                  Top             =   1480
-                  Width           =   615
+                  Top             =   1476
+                  Width           =   612
                End
                Begin VB.Label lblUpdateServer 
                   Caption         =   "Server"
                   Enabled         =   0   'False
-                  Height          =   255
+                  Height          =   252
                   Left            =   2520
                   TabIndex        =   133
-                  Top             =   1480
-                  Width           =   615
+                  Top             =   1476
+                  Width           =   612
                End
             End
             Begin VB.Frame FraTestStaff 
@@ -1342,7 +805,7 @@ Begin VB.Form frmMain
                Height          =   855
                Left            =   120
                TabIndex        =   102
-               Top             =   11160
+               Top             =   11280
                Visible         =   0   'False
                Width           =   7335
                Begin VB.CommandButton cmdTaskScheduler 
@@ -1354,6 +817,544 @@ Begin VB.Form frmMain
                   Width           =   2055
                End
             End
+         End
+      End
+      Begin VB.Frame fraConfigTabs 
+         BorderStyle     =   0  'None
+         Caption         =   "fraConfigMain"
+         BeginProperty Font 
+            Name            =   "Tahoma"
+            Size            =   8.4
+            Charset         =   204
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   4250
+         Index           =   0
+         Left            =   120
+         TabIndex        =   34
+         Top             =   1200
+         Width           =   8440
+         Begin VB.Frame fraConfigTabsNested 
+            BorderStyle     =   0  'None
+            Height          =   7815
+            Left            =   0
+            TabIndex        =   66
+            Top             =   -120
+            Width           =   8055
+            Begin VB.Frame FraInterface 
+               Caption         =   "Interface"
+               BeginProperty Font 
+                  Name            =   "Tahoma"
+                  Size            =   8.4
+                  Charset         =   204
+                  Weight          =   700
+                  Underline       =   0   'False
+                  Italic          =   0   'False
+                  Strikethrough   =   0   'False
+               EndProperty
+               Height          =   1800
+               Left            =   0
+               TabIndex        =   67
+               Top             =   3120
+               Width           =   7935
+               Begin VB.CheckBox chkFontBold 
+                  Caption         =   "B"
+                  BeginProperty Font 
+                     Name            =   "Tahoma"
+                     Size            =   7.8
+                     Charset         =   204
+                     Weight          =   700
+                     Underline       =   0   'False
+                     Italic          =   0   'False
+                     Strikethrough   =   0   'False
+                  EndProperty
+                  Height          =   280
+                  Left            =   3050
+                  Style           =   1  'Graphical
+                  TabIndex        =   145
+                  Top             =   1380
+                  Width           =   280
+               End
+               Begin VB.CheckBox chkFontWholeInterface 
+                  Caption         =   "Apply selected font on whole interface"
+                  Height          =   255
+                  Left            =   3480
+                  TabIndex        =   141
+                  Top             =   1400
+                  Width           =   4332
+               End
+               Begin VB.ComboBox cmbFontSize 
+                  Height          =   315
+                  Left            =   2280
+                  Style           =   2  'Dropdown List
+                  TabIndex        =   140
+                  Top             =   1380
+                  Width           =   735
+               End
+               Begin VB.ComboBox cmbFont 
+                  Height          =   315
+                  Left            =   120
+                  Style           =   2  'Dropdown List
+                  TabIndex        =   137
+                  Top             =   1380
+                  Width           =   2055
+               End
+               Begin VB.CheckBox chkConfigMinimizeToTray 
+                  Caption         =   "Minimize program to system tray when clicking _ button"
+                  Height          =   255
+                  Left            =   120
+                  TabIndex        =   85
+                  Top             =   840
+                  Width           =   6015
+               End
+               Begin VB.CheckBox chkSkipErrorMsg 
+                  Caption         =   "Do not show error messages"
+                  Height          =   255
+                  Left            =   120
+                  TabIndex        =   84
+                  Top             =   600
+                  Width           =   4695
+               End
+               Begin VB.CheckBox chkSkipIntroFrameSettings 
+                  Caption         =   "Do not show main menu at startup"
+                  Height          =   255
+                  Left            =   120
+                  TabIndex        =   64
+                  Top             =   360
+                  Width           =   4575
+               End
+               Begin VB.Label lblFontSize 
+                  Caption         =   "Size"
+                  Height          =   255
+                  Left            =   2280
+                  TabIndex        =   139
+                  Top             =   1140
+                  Width           =   975
+               End
+               Begin VB.Label lblFont 
+                  Caption         =   "Font"
+                  Height          =   255
+                  Left            =   120
+                  TabIndex        =   138
+                  Top             =   1140
+                  Width           =   1935
+               End
+            End
+            Begin VB.Frame FraIncludeSections 
+               Caption         =   "Scan area"
+               BeginProperty Font 
+                  Name            =   "Tahoma"
+                  Size            =   8.4
+                  Charset         =   204
+                  Weight          =   700
+                  Underline       =   0   'False
+                  Italic          =   0   'False
+                  Strikethrough   =   0   'False
+               EndProperty
+               Height          =   1575
+               Left            =   0
+               TabIndex        =   94
+               Top             =   120
+               Width           =   3372
+               Begin VB.CheckBox chkAdditionalScan 
+                  Caption         =   "Additional scan"
+                  Height          =   255
+                  Left            =   120
+                  TabIndex        =   98
+                  ToolTipText     =   "Include specific sections, like O4 - RenameOperations, O21 - Column Hanlders / Context menu, O23 - Drivers e.t.c."
+                  Top             =   1080
+                  Width           =   3015
+               End
+               Begin VB.CheckBox chkAdvLogEnvVars 
+                  Caption         =   "Environment variables"
+                  Height          =   255
+                  Left            =   120
+                  TabIndex        =   97
+                  ToolTipText     =   "Include environment variables in logfile"
+                  Top             =   720
+                  Width           =   3015
+               End
+               Begin VB.CheckBox chkLogProcesses 
+                  Caption         =   "Processes"
+                  Height          =   255
+                  Left            =   120
+                  TabIndex        =   96
+                  ToolTipText     =   "Include list of running processes in logfiles"
+                  Top             =   360
+                  Value           =   1  'Checked
+                  Width           =   3015
+               End
+            End
+            Begin VB.Frame FraFixing 
+               Caption         =   "Fix && Backup"
+               BeginProperty Font 
+                  Name            =   "Tahoma"
+                  Size            =   8.4
+                  Charset         =   204
+                  Weight          =   700
+                  Underline       =   0   'False
+                  Italic          =   0   'False
+                  Strikethrough   =   0   'False
+               EndProperty
+               Height          =   1215
+               Left            =   0
+               TabIndex        =   68
+               Top             =   1800
+               Width           =   7935
+               Begin VB.TextBox txtDefStartPage 
+                  Height          =   285
+                  Left            =   2040
+                  TabIndex        =   15
+                  Top             =   1560
+                  Width           =   5175
+               End
+               Begin VB.TextBox txtDefSearchPage 
+                  Height          =   285
+                  Left            =   2040
+                  TabIndex        =   16
+                  Top             =   1920
+                  Width           =   5175
+               End
+               Begin VB.TextBox txtDefSearchAss 
+                  Height          =   285
+                  Left            =   2040
+                  TabIndex        =   17
+                  Top             =   2280
+                  Width           =   5175
+               End
+               Begin VB.TextBox txtDefSearchCust 
+                  Height          =   285
+                  Left            =   2040
+                  TabIndex        =   18
+                  Top             =   2640
+                  Width           =   5175
+               End
+               Begin VB.CheckBox chkConfirm 
+                  Caption         =   "Confirm fixing && ignoring of items (safe mode)"
+                  Height          =   255
+                  Left            =   120
+                  TabIndex        =   14
+                  Top             =   600
+                  Value           =   1  'Checked
+                  Width           =   7455
+               End
+               Begin VB.CheckBox chkBackup 
+                  Caption         =   "Make backups before fixing items"
+                  Height          =   255
+                  Left            =   120
+                  TabIndex        =   13
+                  Top             =   360
+                  Value           =   1  'Checked
+                  Width           =   7335
+               End
+               Begin VB.CheckBox chkAutoMark 
+                  Caption         =   "Mark everything found for fixing after scan (DANGEROUS !!!)"
+                  Height          =   255
+                  Left            =   120
+                  TabIndex        =   12
+                  Top             =   840
+                  Width           =   7335
+               End
+            End
+            Begin VB.Frame fraScanOpt 
+               Caption         =   "Scan options"
+               BeginProperty Font 
+                  Name            =   "Tahoma"
+                  Size            =   8.4
+                  Charset         =   204
+                  Weight          =   700
+                  Underline       =   0   'False
+                  Italic          =   0   'False
+                  Strikethrough   =   0   'False
+               EndProperty
+               Height          =   1575
+               Left            =   3480
+               TabIndex        =   95
+               Top             =   120
+               Width           =   4452
+               Begin VB.ComboBox cmbHashType 
+                  Height          =   300
+                  ItemData        =   "frmMain.frx":8888
+                  Left            =   3120
+                  List            =   "frmMain.frx":888A
+                  Style           =   2  'Dropdown List
+                  TabIndex        =   40
+                  TabStop         =   0   'False
+                  Top             =   840
+                  Width           =   1212
+               End
+               Begin VB.CheckBox chkConfigStartupScan 
+                  Caption         =   "Add HiJackThis to startup"
+                  Height          =   270
+                  Left            =   120
+                  TabIndex        =   78
+                  ToolTipText     =   "Run HiJackThis scan at Windows startup and show results (if only items are found)"
+                  Top             =   1120
+                  Width           =   3972
+               End
+               Begin VB.CheckBox chkDoCheckSum 
+                  Caption         =   "Calculate Checksum"
+                  Height          =   195
+                  Left            =   120
+                  TabIndex        =   101
+                  ToolTipText     =   "Calculate checksum of files if possible"
+                  Top             =   900
+                  Width           =   2892
+               End
+               Begin VB.CheckBox chkIgnoreAll 
+                  Caption         =   "Ignore ALL Whitelists"
+                  Height          =   255
+                  Left            =   120
+                  TabIndex        =   100
+                  ToolTipText     =   "Include in log any entries regardless whitelist"
+                  Top             =   610
+                  Width           =   3972
+               End
+               Begin VB.CheckBox chkIgnoreMicrosoft 
+                  Caption         =   "Hide Microsoft entries"
+                  Height          =   255
+                  Left            =   120
+                  TabIndex        =   99
+                  ToolTipText     =   "Do not include in log files and registry related to Microsoft"
+                  Top             =   360
+                  Value           =   1  'Checked
+                  Width           =   3972
+               End
+            End
+         End
+         Begin VB.VScrollBar vscSettings 
+            Height          =   4160
+            LargeChange     =   20
+            Left            =   8040
+            Max             =   100
+            TabIndex        =   65
+            Top             =   120
+            Visible         =   0   'False
+            Width           =   255
+         End
+      End
+      Begin VB.Frame fraConfigTabs 
+         BorderStyle     =   0  'None
+         Caption         =   "fraConfigBackup"
+         BeginProperty Font 
+            Name            =   "Tahoma"
+            Size            =   8.4
+            Charset         =   204
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   4215
+         Index           =   2
+         Left            =   120
+         TabIndex        =   35
+         Top             =   720
+         Visible         =   0   'False
+         Width           =   8415
+         Begin VB.CheckBox chkShowSRP 
+            Caption         =   "Show System Restore Points"
+            Height          =   255
+            Left            =   120
+            TabIndex        =   93
+            Top             =   3960
+            Width           =   6375
+         End
+         Begin VB.CommandButton cmdConfigBackupCreateSRP 
+            Caption         =   "Create restore point"
+            Height          =   720
+            Left            =   7440
+            TabIndex        =   92
+            Top             =   3600
+            Width           =   990
+         End
+         Begin VB.CommandButton cmdConfigBackupCreateRegBackup 
+            Caption         =   "Create registry backup"
+            Height          =   720
+            Left            =   7440
+            TabIndex        =   91
+            Top             =   2760
+            Width           =   990
+         End
+         Begin VB.CommandButton cmdConfigBackupDeleteAll 
+            Caption         =   "Delete all"
+            Height          =   495
+            Left            =   7440
+            TabIndex        =   25
+            Top             =   1920
+            Width           =   975
+         End
+         Begin VB.CommandButton cmdConfigBackupDelete 
+            Caption         =   "Delete"
+            Height          =   495
+            Left            =   7440
+            TabIndex        =   24
+            Top             =   1320
+            Width           =   975
+         End
+         Begin VB.CommandButton cmdConfigBackupRestore 
+            Caption         =   "Restore"
+            Height          =   495
+            Left            =   7440
+            TabIndex        =   20
+            Top             =   720
+            Width           =   975
+         End
+         Begin VB.ListBox lstBackups 
+            Height          =   2385
+            IntegralHeight  =   0   'False
+            Left            =   120
+            Style           =   1  'Checkbox
+            TabIndex        =   19
+            Top             =   720
+            Width           =   7215
+         End
+         Begin VB.Label lblBackupTip 
+            Caption         =   $"frmMain.frx":888C
+            Height          =   612
+            Left            =   120
+            TabIndex        =   36
+            Top             =   0
+            Width           =   8250
+         End
+         Begin VB.Line linSeperator 
+            BorderColor     =   &H80000010&
+            Index           =   1
+            X1              =   -720
+            X2              =   6480
+            Y1              =   3120
+            Y2              =   3120
+         End
+      End
+      Begin VB.Frame fraHostsMan 
+         Caption         =   "Hosts file manager"
+         BeginProperty Font 
+            Name            =   "Tahoma"
+            Size            =   8.4
+            Charset         =   204
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   3735
+         Left            =   120
+         TabIndex        =   44
+         Top             =   840
+         Visible         =   0   'False
+         Width           =   8415
+         Begin VB.CommandButton cmdHostsManOpen 
+            Caption         =   "Open in Notepad"
+            Height          =   425
+            Left            =   3600
+            TabIndex        =   49
+            Top             =   3240
+            Width           =   1455
+         End
+         Begin VB.CommandButton cmdHostsManBack 
+            Caption         =   "Back"
+            Height          =   425
+            Left            =   5160
+            TabIndex        =   48
+            Top             =   3240
+            Width           =   1215
+         End
+         Begin VB.CommandButton cmdHostsManToggle 
+            Caption         =   "Toggle line(s)"
+            Height          =   425
+            Left            =   1800
+            TabIndex        =   47
+            Top             =   3240
+            Width           =   1695
+         End
+         Begin VB.CommandButton cmdHostsManDel 
+            Caption         =   "Delete line(s)"
+            Height          =   425
+            Left            =   120
+            TabIndex        =   46
+            Top             =   3240
+            Width           =   1575
+         End
+         Begin VB.ListBox lstHostsMan 
+            Height          =   2340
+            IntegralHeight  =   0   'False
+            Left            =   120
+            MultiSelect     =   2  'Extended
+            TabIndex        =   45
+            Top             =   600
+            Width           =   8175
+         End
+         Begin VB.Label lblHostsTip2 
+            Caption         =   "Note: changes to the hosts file take effect when you restart your browser."
+            Height          =   252
+            Left            =   120
+            TabIndex        =   37
+            Top             =   3000
+            Width           =   8052
+         End
+         Begin VB.Label lblHostsTip1 
+            Caption         =   "Hosts file is located at: C:\ ..."
+            Height          =   252
+            Left            =   120
+            TabIndex        =   38
+            Top             =   360
+            Width           =   8052
+         End
+      End
+      Begin VB.Frame fraConfigTabs 
+         BorderStyle     =   0  'None
+         Caption         =   "fraConfigIgnorelist"
+         BeginProperty Font 
+            Name            =   "Tahoma"
+            Size            =   8.4
+            Charset         =   204
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   3135
+         Index           =   1
+         Left            =   120
+         TabIndex        =   33
+         Top             =   840
+         Visible         =   0   'False
+         Width           =   8415
+         Begin VB.CommandButton cmdConfigIgnoreDelSel 
+            Caption         =   "Remove"
+            Height          =   495
+            Left            =   7440
+            TabIndex        =   22
+            Top             =   480
+            Width           =   975
+         End
+         Begin VB.CommandButton cmdConfigIgnoreDelAll 
+            Caption         =   "Clear all"
+            Height          =   495
+            Left            =   7440
+            TabIndex        =   23
+            Top             =   1080
+            Width           =   975
+         End
+         Begin VB.ListBox lstIgnore 
+            Height          =   2625
+            IntegralHeight  =   0   'False
+            Left            =   120
+            Style           =   1  'Checkbox
+            TabIndex        =   21
+            Top             =   480
+            Width           =   7215
+         End
+         Begin VB.Label lblIgnoreTip 
+            Caption         =   "The following items will be ignored when scanning: "
+            Height          =   252
+            Left            =   120
+            TabIndex        =   39
+            Top             =   120
+            Width           =   7212
          End
       End
    End
@@ -1685,7 +1686,7 @@ Begin VB.Form frmMain
       Width           =   8275
    End
    Begin VB.Label lblInfo 
-      Caption         =   $"frmMain.frx":9331
+      Caption         =   $"frmMain.frx":8971
       Height          =   975
       Index           =   1
       Left            =   120
@@ -1695,7 +1696,7 @@ Begin VB.Form frmMain
       Width           =   8500
    End
    Begin VB.Label lblInfo 
-      Caption         =   $"frmMain.frx":9409
+      Caption         =   $"frmMain.frx":8A49
       Height          =   855
       Index           =   0
       Left            =   120
@@ -1724,6 +1725,9 @@ Begin VB.Form frmMain
          Caption         =   "Registry"
          Begin VB.Menu mnuToolsRegUnlockKey 
             Caption         =   "Key Unlocker"
+         End
+         Begin VB.Menu mnuToolsRegTypeChecker 
+            Caption         =   "Key Type Analyzer"
          End
       End
       Begin VB.Menu mnuToolsFiles 
@@ -2004,7 +2008,7 @@ Attribute VB_Exposed = False
 
 Option Explicit
 
-Private Const HJT_ALPHA             As Boolean = False
+Private Const HJT_ALPHA             As Boolean = True
 Private Const HJT_BETA              As Boolean = False
 
 Private Const ADS_SPY_VERSION       As String = "1.14"
@@ -2033,9 +2037,16 @@ Public Sub Test()
 
     'If you need something to test after program started and initialized all required variables, please use this sub.
 
+    'Dim hToken As Long
+    'Debug.Print LogonUser(StrPtr("test"), StrPtr("Alex-PC"), StrPtr(""), LOGON32_LOGON_INTERACTIVE, 0, hToken)
+    '1327 - On Empty password (policy restricted)
+    '1326 - When the password is wrong
+    'Debug.Print "hToken = " & hToken & ". Err = " & Err.LastDllError
+    'If hToken <> 0 Then CloseHandle hToken
+    
+    'Debug.Print Reg.GetPhysicalNameWin32(HKLM, "Software\7-Zip222", True)
+
 End Sub
-
-
 
 ' Tips on functions:
 
@@ -2044,7 +2055,7 @@ End Sub
 Private Sub Form_Load()
     Static bInit As Boolean
     
-    g_HwndMain = Me.hwnd
+    g_HwndMain = Me.hWnd
     
     pvSetFormIcon Me
     
@@ -2056,6 +2067,7 @@ Private Sub Form_Load()
     If Not OSver.IsElevated Then
         mnuFileInstallHJT.Enabled = False
         mnuToolsRegUnlockKey.Enabled = False
+        mnuToolsRegTypeChecker.Enabled = False
         mnuToolsUnlockFiles.Enabled = False
         cmdHostsManDel.Enabled = False
         cmdHostsManToggle.Enabled = False
@@ -2173,7 +2185,7 @@ Private Sub FormStart_Stage1()
     ProcManVer = PROC_MAN_VERSION
     UninstManVer = UNINST_MAN_VERSION
     
-    g_HJT_Items_Count = 36 'R + F + O1-...-O26 + Subsections (for progressbar)
+    g_HJT_Items_Count = 37 'R + F + B + O1-...-O26 + Subsections (for progressbar)
 
     If inIDE Then DisableSubclassing = True
     
@@ -2193,7 +2205,7 @@ Private Sub FormStart_Stage1()
     ' Result -> sWinVersion (global)
     sWinVersion = GetWindowsVersion()   'to get bIsWin64 and so...
           
-    AppVerPlusName = "HiJackThis Fork " & IIf(bIsAlpha, "(Alpha) ", IIf(bIsBeta, "(Beta) ", vbNullString)) & _
+    AppVerPlusName = "HiJackThis+ " & IIf(bIsAlpha, "(Alpha version) ", IIf(bIsBeta, "(Beta version) ", vbNullString)) & _
         "by Alex Dragokas v." & AppVerString
 
     If Not bAutoLogSilent Then
@@ -2202,12 +2214,8 @@ Private Sub FormStart_Stage1()
     
     InitVariables   'sWinDir, classes init. and so.
     
-    SetCurrentDirectory StrPtr(AppPath())
-    
     'FixLog = BuildPath(AppPath(), "\HiJack_Fix.log")           'not used yet
     'If FileExists(FixLog) Then DeleteFilePtr StrPtr(FixLog)
-    
-    bPolymorph = (InStr(1, AppExeName(), "_poly", 1) <> 0) Or (StrComp(GetExtensionName(AppExeName(True)), ".pif", 1) = 0)
     
     If Not bPolymorph Then
         Me.Caption = AppVerPlusName
@@ -2244,13 +2252,13 @@ Private Sub FormStart_Stage1()
         For Each Ctl In Me.Controls
             If TypeName(Ctl) = "CommandButton" Then
                 Set Btn = Ctl
-                SetWindowTheme Btn.hwnd, StrPtr(" "), StrPtr(" ")
+                SetWindowTheme Btn.hWnd, StrPtr(" "), StrPtr(" ")
             ElseIf TypeName(Ctl) = "CheckBox" Then
                 Set ChkB = Ctl
-                SetWindowTheme ChkB.hwnd, StrPtr(" "), StrPtr(" ")
+                SetWindowTheme ChkB.hWnd, StrPtr(" "), StrPtr(" ")
             ElseIf TypeName(Ctl) = "OptionButton" Then
                 Set OptB = Ctl
-                SetWindowTheme OptB.hwnd, StrPtr(" "), StrPtr(" ")
+                SetWindowTheme OptB.hWnd, StrPtr(" "), StrPtr(" ")
             End If
         Next
         Set OptB = Nothing
@@ -2264,7 +2272,7 @@ Private Sub FormStart_Stage1()
             If TypeName(Ctl) = "Frame" Then
                 Set Fra = Ctl
                 'If Fra.Name = "fraHostsMan" Or Fra.Name = "fraUninstMan" Then
-                    SetWindowTheme Fra.hwnd, StrPtr(" "), StrPtr(" ")
+                    SetWindowTheme Fra.hWnd, StrPtr(" "), StrPtr(" ")
                 'End If
             End If
         Next
@@ -2280,6 +2288,7 @@ Private Sub FormStart_Stage1()
         'block some tools to prevent damage to system or output of inaccurate data
         mnuFileInstallHJT.Enabled = False
         mnuToolsRegUnlockKey.Enabled = False
+        mnuToolsRegTypeChecker.Enabled = False
         mnuToolsUninst.Enabled = False
         mnuToolsStartupList.Enabled = False
     End If
@@ -2322,7 +2331,7 @@ Private Sub FormStart_Stage1()
     End If
     
     'header of tracing log
-    AppendErrorLogCustom vbCrLf & vbCrLf & "Logfile ( tracing ) of HiJackThis Fork v." & AppVerString & vbCrLf & vbCrLf & _
+    AppendErrorLogCustom vbCrLf & vbCrLf & "Logfile ( tracing ) of HiJackThis+ v." & AppVerString & vbCrLf & vbCrLf & _
         "Command line: " & AppPath(True) & " " & g_sCommandLine & vbCrLf & vbCrLf & MakeLogHeader()
     
     LoadStuff 'regvals, filevals, safelspfiles, safeprotocols
@@ -2479,7 +2488,7 @@ Private Sub FormStart_Stage1()
     If Not bIsWinNT Then cmdDeleteService.Enabled = False
     
     If Not bAutoLogSilent Then
-        SetMenuIcons Me.hwnd
+        SetMenuIcons Me.hWnd
     End If
     
     AppendErrorLogCustom "FormStart_Stage1 - End"
@@ -2652,6 +2661,10 @@ Private Sub FormStart_Stage2()
     End If
     If bRunToolRegUnlocker Then
         frmUnlockRegKey.Show vbModal
+        Unload Me: Exit Sub
+    End If
+    If bRunToolRegTypeChecker Then
+        frmRegTypeChecker.Show vbModal
         Unload Me: Exit Sub
     End If
     If bRunToolADSSpy Then
@@ -3894,7 +3907,7 @@ Private Sub cmdLnkCleaner_Click() 'Misc Tools -> ClearLNK
     mnuToolsShortcutsFixer_Click
 End Sub
 
-Private Sub cmdRegKeyUnlocker_Click() 'Mic Tools -> Registry Keys unlocker
+Private Sub cmdRegKeyUnlocker_Click() 'Misc Tools -> Registry Keys unlocker
     frmUnlockRegKey.Show
 End Sub
 
@@ -3988,7 +4001,7 @@ Private Sub cmdDelOnReboot_Click() 'Misc Tools -> Delete on reboot ...
     
     'Delete on Reboot
     sFilename = OpenFileDialog(Translate(1951), Desktop, _
-        Translate(1003) & " (*.*)|*.*|" & Translate(1956) & " (*.dll)|*.dll|" & Translate(1957) & " (*.exe)|*.exe", Me.hwnd)
+        Translate(1003) & " (*.*)|*.*|" & Translate(1956) & " (*.dll)|*.dll|" & Translate(1957) & " (*.exe)|*.exe", Me.hWnd)
     If Len(sFilename) = 0 Then Exit Sub
     
     DeleteFileOnReboot sFilename, True, True
@@ -4723,6 +4736,7 @@ Private Sub cmdFix_Click()
                 Case "F0", "F1":       FixFileItem sItem, result
                 Case "F2", "F3":       FixFileItem sItem, result
                 'Case "N1", "N2", "N3", "N4": FixNetscapeMozilla sItem,Result
+                Case "B":              FixBrowserItem sItem, result
                 Case "O1":             FixO1Item sItem, result: bFlushDNS = True
                 Case "O2":             FixO2Item sItem, result
                 Case "O3":             FixO3Item sItem, result
@@ -5004,7 +5018,7 @@ Private Sub cmdScan_Click()
         
         'pre-adding horizontal scrollbar
         If Not bAutoLogSilent Then
-            SendMessage frmMain.lstResults.hwnd, LB_SETHORIZONTALEXTENT, 1500&, ByVal 0&
+            SendMessage frmMain.lstResults.hWnd, LB_SETHORIZONTALEXTENT, 1500&, ByVal 0&
         End If
         
         ' *******************************************************************
@@ -5634,6 +5648,10 @@ Private Sub mnuToolsRegUnlockKey_Click()    'Tools -> Registry -> Key unlocker
     frmUnlockRegKey.Show vbModeless
 End Sub
 
+Private Sub mnuToolsRegTypeChecker_Click()  'Tools -> Registry -> Key Type Checker
+    frmRegTypeChecker.Show vbModeless
+End Sub
+
 Private Sub mnuToolsStartupList_Click()     'Tools -> StartupList
     cmdStartupList_Click
 End Sub
@@ -5859,33 +5877,33 @@ End Sub
 
 Private Sub mnuHelpManualEnglish_Click()
     Dim szQSUrl$: szQSUrl = "https://dragokas.com/tools/help/hjt_tutorial.html"
-    ShellExecute Me.hwnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
+    ShellExecute Me.hWnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
 End Sub
 Private Sub mnuHelpManualRussian_Click()
     Dim szQSUrl$
     'szQSUrl = "https://safezone.cc/threads/25184/"
     szQSUrl = "https://regist.safezone.cc/hijackthis_help/hijackthis.html"
-    ShellExecute Me.hwnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
+    ShellExecute Me.hWnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
 End Sub
 Private Sub mnuHelpManualFrench_Click()
     Dim szQSUrl$: szQSUrl = "https://www.bleepingcomputer.com/tutorials/comment-utiliser-hijackthis/"
-    ShellExecute Me.hwnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
+    ShellExecute Me.hWnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
 End Sub
 Private Sub mnuHelpManualGerman_Click()
     Dim szQSUrl$: szQSUrl = "https://www.bleepingcomputer.com/tutorials/wie-hijackthis-genutzt-wird-um/"
-    ShellExecute Me.hwnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
+    ShellExecute Me.hWnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
 End Sub
 Private Sub mnuHelpManualSpanish_Click()
     Dim szQSUrl$: szQSUrl = "https://www.bleepingcomputer.com/tutorials/como-usar-hijackthis/"
-    ShellExecute Me.hwnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
+    ShellExecute Me.hWnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
 End Sub
 Private Sub mnuHelpManualPortuguese_Click()
     Dim szQSUrl$: szQSUrl = "https://www.linhadefensiva.org/2005/06/hijackthis-completo/"
-    ShellExecute Me.hwnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
+    ShellExecute Me.hWnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
 End Sub
 Private Sub mnuHelpManualDutch_Click()
     Dim szQSUrl$: szQSUrl = "https://www.bleepingcomputer.com/tutorials/hoe-gebruik-je-hijackthis/"
-    ShellExecute Me.hwnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
+    ShellExecute Me.hWnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
 End Sub
 
 Private Sub mnuHelpUpdate_Click()       'Help -> Download new version
@@ -6020,7 +6038,7 @@ Private Sub lstResults_MouseUp(Button As Integer, Shift As Integer, X As Single,
         XPix = X / Screen.TwipsPerPixelX
         YPix = Y / Screen.TwipsPerPixelY
         XY = YPix * 65536 + XPix
-        idx = SendMessage(lstResults.hwnd, LB_ITEMFROMPOINT, 0&, ByVal XY)
+        idx = SendMessage(lstResults.hWnd, LB_ITEMFROMPOINT, 0&, ByVal XY)
         If idx >= 0 And idx <= (lstResults.ListCount - 1) Then
             lstResults.ListIndex = idx
         End If
@@ -6226,10 +6244,11 @@ Private Sub JumpListExtractRegistry(aFixReg() As FIX_REG_KEY, FileItems As Long,
                         Else
                             bNoValue = Not Reg.ValueExists(.Hive, .Key, .Param, .Redirected)
                         End If
+                          
                         mnuResultJumpReg(RegItems - 1).Caption = _
-                          Reg.GetShortHiveName(Reg.GetHiveNameByHandle(.Hive)) & "\" & .Key & ", " & .Param & _
+                          Reg.GetPhysicalNameWin32(.Hive, .Key, .Redirected) & ", " & .Param & _
                           IIf(.Redirected, " (x32)", vbNullString) & IIf(bExists, vbNullString, " (no key)") & IIf(bNoValue, " (no value)", vbNullString)
-                    
+                        
                         If AryPtr(JumpRegCache) Then
                             ReDim Preserve JumpRegCache(UBound(JumpRegCache) + 1)
                         Else
@@ -6624,50 +6643,14 @@ Private Sub chkHelp_Click(Index As Integer)
     Case 0: 'Sections
         NotifyChangeFrame FRAME_ALIAS_HELP_SECTIONS
     
-        aSect = Array("R0", "R1", "R2", "R3", "R4", "F0", "F1", "F2", "F3", "O1", "O2", "O3", "O4", "O5", "O6", "O7", "O8", "O9", "O10", _
+        aSect = Array("R0", "R1", "R2", "R3", "R4", "F0", "F1", "F2", "F3", "B", "O1", "O2", "O3", "O4", "O5", "O6", "O7", "O8", "O9", "O10", _
             "O11", "O12", "O13", "O14", "O15", "O16", "O17", "O18", "O19", "O20", "O21", "O22", "O23", "O24", "O25", "O26")
         
         sText = Translate(31) & vbCrLf & vbCrLf & Translate(490)
         sSeparator = String$(100, "-")
         
         For i = 0 To UBound(aSect)
-            Select Case aSect(i)
-                Case "R0": j = 401
-                Case "R1": j = 402
-                Case "R2": j = 403
-                Case "R3": j = 404
-                Case "R4": j = 434
-                Case "F0": j = 405
-                Case "F1": j = 406
-                Case "F2": j = 407
-                Case "F3": j = 408
-                Case "O1": j = 409
-                Case "O2": j = 410
-                Case "O3": j = 411
-                Case "O4": j = 412
-                Case "O5": j = 413
-                Case "O6": j = 414
-                Case "O7": j = 415
-                Case "O8": j = 416
-                Case "O9": j = 417
-                Case "O10": j = 418
-                Case "O11": j = 419
-                Case "O12": j = 420
-                Case "O13": j = 421
-                Case "O14": j = 422
-                Case "O15": j = 423
-                Case "O16": j = 424
-                Case "O17": j = 425
-                Case "O18": j = 426
-                Case "O19": j = 427
-                Case "O20": j = 428
-                Case "O21": j = 429
-                Case "O22": j = 430
-                Case "O23": j = 431
-                Case "O24": j = 432
-                Case "O25": j = 433
-                Case "O26": j = 435
-            End Select
+            j = GetTranslationIndex_HelpSection(CStr(aSect(i)))
 
             sText = sText & vbCrLf & sSeparator & vbCrLf & FindLine(aSect(i) & " -", Translate(31)) & vbCrLf & sSeparator & vbCrLf & _
                 Replace$(Translate(j), "\\p", vbNullString) & vbCrLf
@@ -6675,7 +6658,7 @@ Private Sub chkHelp_Click(Index As Integer)
         
         TextBox_SetUnlimitSize txtHelp, Len(sText)
         'txtHelp.Text = sText
-        SendMessage txtHelp.hwnd, WM_SETTEXT, 0&, ByVal StrPtr(sText)
+        SendMessage txtHelp.hWnd, WM_SETTEXT, 0&, ByVal StrPtr(sText)
         
     Case 1: 'Keys
         NotifyChangeFrame FRAME_ALIAS_HELP_KEYS
@@ -6689,7 +6672,7 @@ Private Sub chkHelp_Click(Index As Integer)
         NotifyChangeFrame FRAME_ALIAS_HELP_HISTORY
         TextBox_SetUnlimitSize txtHelp, Len(g_VersionHistory)
         'txtHelp.Text = g_VersionHistory 'VB6's .Text property doesn't support over limit!
-        SendMessage txtHelp.hwnd, WM_SETTEXT, 0&, ByVal StrPtr(g_VersionHistory)
+        SendMessage txtHelp.hWnd, WM_SETTEXT, 0&, ByVal StrPtr(g_VersionHistory)
     End Select
     
     bSwitchingTabs = False
@@ -6702,12 +6685,12 @@ Private Sub TextBox_SetUnlimitSize(txt As TextBox, Optional iMaxSize As Long)
     
     If iMaxSize <> 0 Then iSize = iMaxSize + 2
     
-    SendMessage txt.hwnd, EM_LIMITTEXT, iSize, ByVal 0&
+    SendMessage txt.hWnd, EM_LIMITTEXT, iSize, ByVal 0&
 End Sub
 
 Private Sub TextBox_SetMargin(txt As TextBox, left_margin As Long, right_margin As Long)
     
-    SendMessage txt.hwnd, EM_SETMARGINS, EC_LEFTMARGIN Or EC_RIGHTMARGIN, ByVal (right_margin * &H10000 + left_margin)
+    SendMessage txt.hWnd, EM_SETMARGINS, EC_LEFTMARGIN Or EC_RIGHTMARGIN, ByVal (right_margin * &H10000 + left_margin)
     
     ' Reset the text to make the right margin work
     Dim s As String

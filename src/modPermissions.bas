@@ -1570,6 +1570,53 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
+'Win7+ only
+Public Function RegGetKeyFlags(hHive As ENUM_REG_HIVE, ByVal sKey As String, Optional bUseWow64 As Boolean) As KEY_FLAGS_INFORMATION
+    On Error GoTo ErrorHandler:
+    Dim lret As Long
+    Dim hKey As Long
+    
+    Call Reg.NormalizeKeyNameAndHiveHandle(hHive, sKey)
+    
+    lret = Reg.WrapNtOpenKeyEx(hHive, sKey, WRITE_OWNER, hKey, , bUseWow64)
+    
+    If STATUS_SUCCESS = lret Then
+
+        Dim reqSize As Long
+        lret = NtQueryKey(hKey, KeyFlagsInformation, ByVal VarPtr(RegGetKeyFlags), LenB(RegGetKeyFlags), reqSize)
+
+        NtClose hKey
+    End If
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetKeyFlags", "hHive:", hHive, "Key:", sKey, "Wow64:", bUseWow64
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function RegGetKeyVirtualizationInfo(hHive As ENUM_REG_HIVE, ByVal sKey As String, Optional bUseWow64 As Boolean) As KEY_VIRTUALIZATION_INFORMATION
+    On Error GoTo ErrorHandler:
+    Dim lret As Long
+    Dim hKey As Long
+    
+    Call Reg.NormalizeKeyNameAndHiveHandle(hHive, sKey)
+    
+    lret = Reg.WrapNtOpenKeyEx(hHive, sKey, WRITE_OWNER, hKey, , bUseWow64)
+    
+    If STATUS_SUCCESS = lret Then
+
+        Dim reqSize As Long
+        lret = NtQueryKey(hKey, KeyVirtualizationInformation, ByVal VarPtr(RegGetKeyVirtualizationInfo), LenB(RegGetKeyVirtualizationInfo), reqSize)
+
+        NtClose hKey
+    End If
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetKeyFlags", "hHive:", hHive, "Key:", sKey, "Wow64:", bUseWow64
+    If inIDE Then Stop: Resume Next
+End Function
+
 Public Sub LockAutorunPoints()
     On Error GoTo ErrorHandler:
     
