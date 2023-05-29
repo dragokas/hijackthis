@@ -3715,12 +3715,12 @@ Public Sub FixO1Item(sItem$, result As SCAN_RESULT)
     
     'parse to server name
     ' Example: 127.0.0.1 my.dragokas.com -> var. 'sHijacker' = "my.dragokas.com"
-    sHijacker = Mid$(sItem, InStr(sItem, ":") + 2)
+    sHijacker = mid$(sItem, InStr(sItem, ":") + 2)
     sHijacker = Trim$(sHijacker)
     If Not isICS Then
         If InStr(sHijacker, " ") > 0 Then
             Dim sTemp$
-            sTemp = Mid$(sHijacker, InStr(sHijacker, " ") + 1)
+            sTemp = mid$(sHijacker, InStr(sHijacker, " ") + 1)
             If 0 <> Len(sTemp) Then sHijacker = sTemp
         End If
     End If
@@ -4519,7 +4519,7 @@ Sub CheckO4_RegRuns()
             If StrComp(sParam, "BootExecute", 1) = 0 Then
                 If i = 0 Then
                     If StrBeginWith(sData, "autocheck ") Then 'remove autocheck, because it is not a real filename
-                        sData = Mid$(sData, Len("autocheck ") + 1)
+                        sData = mid$(sData, Len("autocheck ") + 1)
                     End If
                 End If
                 
@@ -4799,7 +4799,7 @@ Sub CheckO4_RegRuns()
                     pos = InStr(sData, "|")
                     If pos <> 0 Then
                         sFile = Left$(sData, pos - 1)
-                        sArgs = Mid$(sData, pos)
+                        sArgs = mid$(sData, pos)
                     Else
                         sFile = sData
                         sArgs = vbNullString
@@ -6171,7 +6171,7 @@ Public Sub CheckKnownFoldersHKCU()
                     Else
                         pos = InStr(gHivesUser(k), "\")
                         If pos <> 0 Then
-                            sSid = Mid$(gHivesUser(k), pos + 1)
+                            sSid = mid$(gHivesUser(k), pos + 1)
                             sProfile = GetProfileDirBySID(sSid)
                             sDefValue = EnvironW(aValue(i), , sProfile)
                         End If
@@ -6333,7 +6333,7 @@ Public Sub CheckEnvVarTemp()
                     bComply = True
                 Else
                     'these keys are access restricted for Limited users
-                    If Not (HE.Hive = HKU And (HE.SID = "S-1-5-19" Or HE.SID = "S-1-5-20")) Then
+                    If Not (HE.Hive = HKU And (HE.sid = "S-1-5-19" Or HE.sid = "S-1-5-20")) Then
                         bComply = True
                     End If
                 End If
@@ -6861,7 +6861,7 @@ Private Function HexStringToArray(sHexStr As String) As Byte()
     ReDim b(Len(sHexStr) \ 2 - 1)
     
     For i = 1 To Len(sHexStr) Step 2
-        b((i - 1) \ 2) = CLng("&H" & Mid$(sHexStr, i, 2))
+        b((i - 1) \ 2) = CLng("&H" & mid$(sHexStr, i, 2))
     Next
     
     HexStringToArray = b
@@ -7032,8 +7032,8 @@ Sub CheckPolicyScripts()
                                 
                                 Else ' vType = "Logon" Or vType = "Logoff" Then
                                     'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\State\S-1-5-21-4161311594-4244952198-1204953518-1000\Scripts\Logon\0\0
-                                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\State\" & HE.SID & "\Scripts\" & vType & "\" & aKeyX(X) & "\" & aKeyY(Y), , , HE.Redirected
-                                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Group Policy\State\" & HE.SID & "\Scripts\" & vType & "\" & aKeyX(X) & "\" & aKeyY(Y), , , HE.Redirected
+                                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\State\" & HE.sid & "\Scripts\" & vType & "\" & aKeyX(X) & "\" & aKeyY(Y), , , HE.Redirected
+                                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Group Policy\State\" & HE.sid & "\Scripts\" & vType & "\" & aKeyX(X) & "\" & aKeyY(Y), , , HE.Redirected
                                 End If
                                 AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile, sArgs
                                 .CureType = FILE_BASED Or REGISTRY_BASED
@@ -7288,7 +7288,7 @@ Public Sub PolicyScripts_RebuildChain()
                 
                 For X = 0 To UBoundSafe(aParam)
                     
-                    sName = Mid$(aParam(X), 2)
+                    sName = mid$(aParam(X), 2)
                     
                     If StrComp(sName, "CmdLine", 1) = 0 Then
                         
@@ -7372,8 +7372,9 @@ Public Sub CheckPolicies()
     HE.Init HE_HIVE_ALL, , HE_REDIR_NO_WOW
     HE.AddKey "SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"
     
-    aValue = Split("NoSetTaskbar|TaskbarLockAll|LockTaskbar|NoTrayItemsDisplay|NoChangeStartMenu|NoStartMenuMorePrograms|NoRun" & _
-        "NoSMConfigurePrograms|NoViewOnDrive|RestrictRun|DisallowRun|NoControlPanel|NoDispCpl|SettingsPageVisibility", "|")
+    aValue = Split("NoSetTaskbar|TaskbarLockAll|LockTaskbar|NoTrayItemsDisplay|NoChangeStartMenu|NoStartMenuMorePrograms|NoRun|" & _
+        "NoSMConfigurePrograms|NoViewOnDrive|RestrictRun|DisallowRun|NoControlPanel|NoDispCpl|SettingsPageVisibility|NoViewContextMenu|" & _
+        "NoSecurityTab", "|")
     
     Do While HE.MoveNext
         For i = 0 To UBound(aValue)
@@ -8222,7 +8223,7 @@ Public Sub CheckIPSec()
         bMirror = False
         RuleAction = vbNullString
         
-        IPSecID = Mid$(KeyPolicy(i), InStrRev(KeyPolicy(i), "{"))
+        IPSecID = mid$(KeyPolicy(i), InStrRev(KeyPolicy(i), "{"))
         
         IPSecName = Reg.GetString(0&, KeyPolicy(i), "ipsecName")
         
@@ -8578,7 +8579,7 @@ Public Function DeSerializeToByteArray(s As String, Optional Delimiter As String
     ArSize = (Len(s) + Len(Delimiter)) \ (2 + Len(Delimiter)) '2 chars on byte + add final delimiter
     ReDim b(ArSize - 1) As Byte
     For i = 1 To Len(s) Step 2 + Len(Delimiter)
-        b(N) = CLng("&H" & Mid$(s, i, 2))
+        b(N) = CLng("&H" & mid$(s, i, 2))
         N = N + 1
     Next
     DeSerializeToByteArray = b
@@ -8753,11 +8754,11 @@ Public Sub CheckO8Item()
                     sFile = STR_NO_FILE
                 Else
                     If InStr(1, sFile, "res://", vbTextCompare) = 1 Then
-                        sFile = Mid$(sFile, 7)
+                        sFile = mid$(sFile, 7)
                     End If
             
                     If InStr(1, sFile, "file://", vbTextCompare) = 1 Then
-                        sFile = Mid$(sFile, 8)
+                        sFile = mid$(sFile, 8)
                     End If
                     
                     pos = InStrRev(sFile, "/")
@@ -8885,12 +8886,12 @@ Public Sub CheckO9Item()
                 'strip stuff from res://[dll]/page.htm to just [dll]
                 If InStr(1, sFile, "res://", vbTextCompare) = 1 Then
                     'And (LCase$(Right$(sFile, 4)) = ".htm" Or LCase$(Right$(sFile, 4)) = "html") Then
-                    sFile = Mid$(sFile, 7)
+                    sFile = mid$(sFile, 7)
                 End If
                 
                 'remove other stupid prefixes
                 If InStr(1, sFile, "file://", vbTextCompare) = 1 Then
-                    sFile = Mid$(sFile, 8)
+                    sFile = mid$(sFile, 8)
                 End If
                 
                 pos = InStrRev(sFile, "/")
@@ -9297,24 +9298,24 @@ Public Sub CheckO14Item()
         sLine = aLogStrings(i)
         
             If InStr(sLine, "SearchAssistant") > 0 Then
-                sSearchAssis = Mid$(sLine, InStr(sLine, "http://"))
+                sSearchAssis = mid$(sLine, InStr(sLine, "http://"))
                 sSearchAssis = Left$(sSearchAssis, Len(sSearchAssis) - 1)
             End If
             If InStr(sLine, "CustomizeSearch") > 0 Then
-                sCustSearch = Mid$(sLine, InStr(sLine, "http://"))
+                sCustSearch = mid$(sLine, InStr(sLine, "http://"))
                 sCustSearch = Left$(sCustSearch, Len(sCustSearch) - 1)
             End If
             If InStr(sLine, "START_PAGE_URL=") = 1 And _
                InStr(sLine, "MS_START_PAGE_URL") = 0 Then
-                sStartPage = Mid$(sLine, InStr(sLine, "=") + 1)
+                sStartPage = mid$(sLine, InStr(sLine, "=") + 1)
                 sStartPage = UnQuote(sStartPage)
             End If
             If InStr(sLine, "SEARCH_PAGE_URL=") = 1 Then
-                sSearchPage = Mid$(sLine, InStr(sLine, "=") + 1)
+                sSearchPage = mid$(sLine, InStr(sLine, "=") + 1)
                 sSearchPage = UnQuote(sSearchPage)
             End If
             If InStr(sLine, "MS_START_PAGE_URL=") = 1 Then
-                sMsStartPage = Mid$(sLine, InStr(sLine, "=") + 1)
+                sMsStartPage = mid$(sLine, InStr(sLine, "=") + 1)
                 sMsStartPage = UnQuote(sMsStartPage)
             End If
     Next
@@ -9707,7 +9708,7 @@ Public Sub CheckO15Item()
                     ElseIf InStr(1, HE.UserName, "Acronis Agent User", 1) <> 0 Then
                         bSafe = True
                         '// TODO: improve it (logon as service)
-                    ElseIf Reg.GetDword(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\" & HE.SID, "State") = 0 Then
+                    ElseIf Reg.GetDword(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\" & HE.sid, "State") = 0 Then
                         bSafe = True
                     End If
                 End If
@@ -9808,7 +9809,7 @@ Public Sub CheckO16Item()
                     End If
                     
                     'not http ?
-                    If Mid$(sCodebase, 2, 1) = ":" Then
+                    If mid$(sCodebase, 2, 1) = ":" Then
                         sCodebase = FormatFileMissing(PathNormalize(sCodebase))
                     End If
                     
@@ -9819,7 +9820,7 @@ Public Sub CheckO16Item()
                     
                     If g_bCheckSum Then
                         'if file
-                        If Mid$(sCodebase, 2, 1) = ":" Then sHit = sHit & GetFileCheckSum(sCodebase)
+                        If mid$(sCodebase, 2, 1) = ":" Then sHit = sHit & GetFileCheckSum(sCodebase)
                     End If
                     
                     If Not IsOnIgnoreList(sHit) Then
@@ -11128,8 +11129,8 @@ Public Sub CheckO23Item()
                 If argc > 1 Then
                     pos = InStr(sImagePath, argv(1))
                     If pos <> 0 Then
-                        sArgument = Mid$(sImagePath, pos + Len(argv(1)))
-                        If Left$(sArgument, 1) = """" Then sArgument = Mid$(sArgument, 2)
+                        sArgument = mid$(sImagePath, pos + Len(argv(1)))
+                        If Left$(sArgument, 1) = """" Then sArgument = mid$(sArgument, 2)
                         sArgument = LTrim$(sArgument)
                     End If
                 End If
@@ -12299,10 +12300,10 @@ Public Sub CheckO24Item()
                 'Example: <Windows folder>\screen.html
                 sSource = Replace$(sSource, "<Windows folder>", sWinDir, , , 1)
                 sSource = Replace$(sSource, "<System>", sWinSysDir, , , 1)
-                If Left$(sSource, 8) = "file:///" Then sSource = Mid$(sSource, 9)
+                If Left$(sSource, 8) = "file:///" Then sSource = mid$(sSource, 9)
                 
                 'If file system object
-                If Mid$(sSource, 2, 1) = ":" Then
+                If mid$(sSource, 2, 1) = ":" Then
                     sSource = FormatFileMissing(sSource)
                 End If
                 
@@ -12793,17 +12794,17 @@ Public Function UnEscape(ByVal StringToDecode As String) As String
          Exit Function
     End If
     For i = Len(UnEscape) To 1 Step -1
-        acode = Asc(Mid$(UnEscape, i, 1))
+        acode = Asc(mid$(UnEscape, i, 1))
         Select Case acode
             Case 48 To 57, 65 To 90, 97 To 122
                 ' don't touch alphanumeric chars
 
             Case 37
                 ' Decode % value
-                HexChar = UCase$(Mid$(UnEscape, i + 1, 2))
+                HexChar = UCase$(mid$(UnEscape, i + 1, 2))
                 If HexChar Like "[0123456789ABCDEF][0123456789ABCDEF]" Then
                     lTmp = CLng("&H" & HexChar)
-                    UnEscape = Left$(UnEscape, i - 1) & Chr$(lTmp) & Mid$(UnEscape, i + 3)
+                    UnEscape = Left$(UnEscape, i - 1) & Chr$(lTmp) & mid$(UnEscape, i + 3)
                 End If
         End Select
     Next
@@ -13456,22 +13457,22 @@ Public Function MapSIDToUsername(ByVal sSid As String) As String
                 Call AllocateAndInitializeSid(tpSidAuth, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_BACKUP_OPS, 0, 0, 0, 0, 0, 0, pSid(3))
 
                 ' Create a logon SID.
-                Call AllocateAndInitializeSid(tpSidAuth, 2, 5, 0, 0, 0, 0, 0, 0, 0, psidLogonSid)
-    
+                Call AllocateAndInitializeSid(tpSidAuth, 2, SECURITY_LOGON_IDS_RID, 0, 0, 0, 0, 0, 0, 0, psidLogonSid)
+                
                 '*psnu =  SidTypeAlias;
-
+                
                 If EqualPrefixSid(psidCheck, psidLogonSid) Then
                     MapSIDToUsername = "LOGON SID"
                 Else
-                    For i = 0 To 3
+                    For i = 0 To UBound(pSid)
                         If EqualSid(psidCheck, pSid(i)) Then
                             MapSIDToUsername = vOtherName(i)
                             Exit For
                         End If
                     Next
                 End If
-
-                For i = 0 To 3
+                
+                For i = 0 To UBound(pSid)
                     FreeSid pSid(i)
                 Next
                 FreeSid psidLogonSid
@@ -13493,10 +13494,10 @@ Public Sub SilentDeleteOnReboot(sCmd$)
     '/param1 /deleteonreboot "c:\program files\bla\bla.exe" /param3
     
     '/deleteonreboot
-    sDummy = Mid$(sCmd, InStr(sCmd, "deleteonreboot") + Len("deleteonreboot") + 1)
+    sDummy = mid$(sCmd, InStr(sCmd, "deleteonreboot") + Len("deleteonreboot") + 1)
     If InStr(sDummy, """") = 1 Then
         'enclosed in quotes, chop off at next quote
-        sFilename = Mid$(sDummy, 2)
+        sFilename = mid$(sDummy, 2)
         sFilename = Left$(sFilename, InStr(sFilename, """") - 1)
     Else
         'no quotes, chop off at next space if present
@@ -13528,7 +13529,7 @@ Public Function MsgBoxW(Prompt As String, Optional Buttons As VbMsgBoxStyle, Opt
     Else
         hActiveWnd = GetForegroundWindow()
         For Each Frm In Forms
-            If Frm.hWnd = hActiveWnd Then hMyWnd = hActiveWnd: Exit For
+            If Frm.hwnd = hActiveWnd Then hMyWnd = hActiveWnd: Exit For
         Next
         MsgBoxW = MessageBox(IIf(hMyWnd <> 0, hMyWnd, g_HwndMain), StrPtr(Prompt), StrPtr(Title), ByVal Buttons)
     End If
@@ -13541,7 +13542,7 @@ End Function
 Public Function UnQuote(stri As String) As String   ' Trim quotes
     If Len(stri) = 0 Then Exit Function
     If Left$(stri, 1) = """" And Right$(stri, 1) = """" Then
-        UnQuote = Mid$(stri, 2, Len(stri) - 2)
+        UnQuote = mid$(stri, 2, Len(stri) - 2)
     Else
         UnQuote = stri
     End If
@@ -13915,7 +13916,7 @@ Public Function PathSubstituteProfile(Path As String, Optional ByVal sUserProfil
             End If
             
             'substitute
-            PathSubstituteProfile = BuildPath(sUserProfileDir, Mid$(Path, Len(sCurUserProfile) + 2))
+            PathSubstituteProfile = BuildPath(sUserProfileDir, mid$(Path, Len(sCurUserProfile) + 2))
             Exit Function
         End If
     'End If
@@ -14435,7 +14436,7 @@ Public Function MidFromCharRev(sText As String, Delimiter As String) As String
     If 0 <> Len(sText) Then
         iPos = InStrRev(sText, Delimiter)
         If iPos <> 0 Then
-            MidFromCharRev = Mid$(sText, iPos + 1)
+            MidFromCharRev = mid$(sText, iPos + 1)
         Else
             MidFromCharRev = vbNullString
         End If
@@ -14633,7 +14634,7 @@ Public Sub AddHorizontalScrollBarToResults(lstControl As ListBox)
         If X <> 0 Then
             If frmMain.ScaleMode = vbTwips Then X = X / Screen.TwipsPerPixelX + 50  ' if twips change to pixels (+50 to account for the width of the vertical scrollbar
         End If
-        SendMessage .hWnd, LB_SETHORIZONTALEXTENT, X, ByVal 0&
+        SendMessage .hwnd, LB_SETHORIZONTALEXTENT, X, ByVal 0&
     End With
 End Sub
 
@@ -14674,7 +14675,7 @@ Public Function UBoundSafe(vArray As Variant) As Long
     If AryItems(vArray) Then
         UBoundSafe = UBound(vArray)
     Else
-        UBoundSafe = -2147483648#
+        UBoundSafe = -1
     End If
 End Function
 
@@ -14826,7 +14827,7 @@ Public Sub ParseKeysURL(ByVal sURL As String, aKey() As String, aVal() As String
     
     pos = InStr(sURL, "?")
     If pos = 0 Or pos = Len(sURL) Then Exit Sub 'no '?' or last '?'
-    sURL = Mid$(sURL, pos + 1)
+    sURL = mid$(sURL, pos + 1)
     
     aKeyPara = Split(sURL, "&")
     
@@ -14839,7 +14840,7 @@ Public Sub ParseKeysURL(ByVal sURL As String, aKey() As String, aVal() As String
             aKey(i) = aTmp(0)
             If StrBeginWith(aKey(i), "amp;") Then 'remove some strange amp; in key that happen sometimes
                 If aKey(i) <> "amp;q" And aKey(i) <> "amp;query" Then 'restrict this rule for 'q' and 'query' important keys
-                    aKey(i) = Mid$(aKey(i), 5)
+                    aKey(i) = mid$(aKey(i), 5)
                 End If
             End If
         End If
@@ -14915,7 +14916,7 @@ Public Function TrimEx(ByVal sStr As String, sDelimiter As String) As String
     iLenDelim = Len(sDelimiter)
     If iLenDelim = 0 Then Exit Function
     Do While Left$(sStr, iLenDelim) = sDelimiter And Len(sStr) <> 0
-        sStr = Mid$(sStr, iLenDelim + 1)
+        sStr = mid$(sStr, iLenDelim + 1)
     Loop
     Do While Right$(sStr, iLenDelim) = sDelimiter And Len(sStr) <> 0
         sStr = Left$(sStr, Len(sStr) - iLenDelim)
@@ -15380,7 +15381,7 @@ MakeLog:
    
     sLog.Append vbCrLf & "Boot mode: " & OSver.SafeBootMode & vbCrLf
     
-    If (Not bLogProcesses) Or bLogModules Or bAdditional Or bLogEnvVars Or (Not bHideMicrosoft) Or bIgnoreAllWhitelists Then
+    If (Not bLogProcesses) Or bLogModules Or bLogEnvVars Or (Not bHideMicrosoft) Or bIgnoreAllWhitelists Then
         If bAdditional Then
             sScanMode = "Additional"
         End If
@@ -15399,7 +15400,7 @@ MakeLog:
         If bIgnoreAllWhitelists Then
             sScanMode = sScanMode & "; Ignore ALL Whitelists"
         End If
-        If Left$(sScanMode, 2) = "; " Then sScanMode = Mid$(sScanMode, 3)
+        If Left$(sScanMode, 2) = "; " Then sScanMode = mid$(sScanMode, 3)
         
         sLog.Append "Scan mode: " & sScanMode & vbCrLf
     End If
@@ -15464,7 +15465,7 @@ MakeLog:
                     If pos = 0 Then pos = InStr(1, strEnv, "=")
                     If pos <> 0 Then
                         sEnvName = Left$(strEnv, pos - 1)
-                        sEnvValue = Mid$(strEnv, pos + 1)
+                        sEnvValue = mid$(strEnv, pos + 1)
                         'bAddEV = True
                         'If varDict.Exists(sEnvName) Then
                         '    If varDict(sEnvName) = sEnvValue Then bAddEV = False
@@ -15606,10 +15607,10 @@ MakeLog:
     Dim CorrBytes$: CorrBytes = RecoverCRC(ForwCRC, &HFFFFFFFF)         'считаем байты корректировки
     
     ReDim Preserve b(UBound(b) + 4)                                     'добавляем их в конец массива
-    b(UBound(b) - 3) = Asc(Mid$(CorrBytes, 1, 1))
-    b(UBound(b) - 2) = Asc(Mid$(CorrBytes, 2, 1))
-    b(UBound(b) - 1) = Asc(Mid$(CorrBytes, 3, 1))
-    b(UBound(b) - 0) = Asc(Mid$(CorrBytes, 4, 1))
+    b(UBound(b) - 3) = Asc(mid$(CorrBytes, 1, 1))
+    b(UBound(b) - 2) = Asc(mid$(CorrBytes, 2, 1))
+    b(UBound(b) - 1) = Asc(mid$(CorrBytes, 3, 1))
+    b(UBound(b) - 0) = Asc(mid$(CorrBytes, 4, 1))
     
     CreateLogFile = b()
     
@@ -15717,7 +15718,13 @@ Public Function MakeLogHeader() As String
         sText = sText & "Elevated:  " & IIf(OSver.IsElevated, "Yes", "No") & vbCrLf  '& vbTab & "IL: " & OSver.GetIntegrityLevel & vbCrLf
     End If
     
-    sText = sText & "Ran by:    " & OSver.UserName & vbTab & "(group: " & OSver.UserType & ") on " & OSver.ComputerName & _
+    Dim sAccType As String
+    If OSver.IsWindows8OrGreater Then
+        sAccType = GetSidAccountTypeString()
+        If Len(sAccType) <> 0 Then sAccType = ", type: " & sAccType
+    End If
+    
+    sText = sText & "Ran by:    " & OSver.UserName & vbTab & "(group: " & OSver.UserType & sAccType & ") on " & OSver.ComputerName & _
         ", " & IIf(bDebugMode, "(SID: " & OSver.SID_CurrentProcess & ") ", vbNullString) & "FirstRun: " & IIf(bFirstRebootScan, "yes", "no") & _
         IIf(OSver.IsLocalSystemContext, " <=== Attention! ('Local System' account)", vbNullString) & vbCrLf & vbCrLf
         
@@ -17244,7 +17251,7 @@ Public Function SetTaskBarProgressValue(Frm As Form, ByVal Value As Single) As B
         If Value = 0 Then
             TaskBar.SetProgressState g_HwndMain, TBPF_NOPROGRESS
         Else
-            TaskBar.SetProgressValue Frm.hWnd, CCur(Value * 10000), CCur(10000)
+            TaskBar.SetProgressValue Frm.hwnd, CCur(Value * 10000), CCur(10000)
         End If
     End If
 End Function
@@ -17424,7 +17431,7 @@ Public Function InstallAutorunHJT(Optional bSilent As Boolean, Optional lDelay A
     If pos = 0 Then
         sArguments = "/startupscan"
     Else
-        sArguments = Mid$(g_sCommandLine, pos + 3)
+        sArguments = mid$(g_sCommandLine, pos + 3)
     End If
     
     If InstallHJT(, HasCommandLineKey("noGUI")) Then
@@ -17840,22 +17847,22 @@ Public Function ParseSubCmdLine(sCMDLine As String, sBaseKey As String, aKey() A
         Do
             ReDim Preserve aKey(cnt)
             ReDim Preserve aValue(cnt)
-            ch = Mid$(sCMDLine, pos, 1)
+            ch = mid$(sCMDLine, pos, 1)
             If (ch = "-" Or ch = "/") Then Exit Do
             pd = InStr(pos, sCMDLine, ":")
             If pd = 0 Then Exit Do
-            aKey(cnt) = LTrim$(Mid$(sCMDLine, pos, pd - pos))
-            If (Mid$(sCMDLine, pd + 1, 1) = """") Then
+            aKey(cnt) = LTrim$(mid$(sCMDLine, pos, pd - pos))
+            If (mid$(sCMDLine, pd + 1, 1) = """") Then
                 pos = InStr(pd + 2, sCMDLine, """")
             Else
                 pos = InStr(pd + 1, sCMDLine, " ")
             End If
             If (pos = 0) Then
-                aValue(cnt) = Mid$(sCMDLine, pd + 1)
+                aValue(cnt) = mid$(sCMDLine, pd + 1)
             Else
-                aValue(cnt) = Mid$(sCMDLine, pd + 1, pos - pd - 1)
+                aValue(cnt) = mid$(sCMDLine, pd + 1, pos - pd - 1)
                 pos = pos + 1
-                Do While Mid$(sCMDLine, pos, 1) = " "
+                Do While mid$(sCMDLine, pos, 1) = " "
                     pos = pos + 1
                 Loop
             End If
@@ -17891,12 +17898,12 @@ Public Function ParseCmdLineKey(ByVal sCMDLine As String, sKey As String, sValue
 
     pos = InStr(1, sCMDLine, sKey, 1)
     If pos <> 0 Then
-        sCMDLine = Mid$(sCMDLine, pos + Len(sKey) + 1)
+        sCMDLine = mid$(sCMDLine, pos + Len(sKey) + 1)
         ch = Left$(sCMDLine, 1)
         If ch = """" Then
             pos = InStr(2, sCMDLine, """")
             If pos <> 0 Then
-                sValue = Mid$(sCMDLine, 2, pos - 2)
+                sValue = mid$(sCMDLine, 2, pos - 2)
             End If
         Else
             pos = InStr(1, sCMDLine, " ")

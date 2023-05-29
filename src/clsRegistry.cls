@@ -398,7 +398,7 @@ Public Function GetShortHiveName(ByVal FullHiveName As String, Optional bInclude
     If bIncludeSID Then
         If GetShortHiveName = HKEY_USERS_SHORT_STR Then
             If pos <> 0 Then
-                sSidPart = Mid$(FullHiveName, pos + 1)
+                sSidPart = mid$(FullHiveName, pos + 1)
                 If Len(sSidPart) <> 0 Then
                     pos = InStr(sSidPart, "\")
                     If pos <> 0 Then
@@ -524,7 +524,7 @@ Public Sub NormalizeKeyNameAndHiveHandle(ByRef hHive As ENUM_REG_HIVE, ByRef in_
     If hHive = 0 Then
         hHive = GetHKey(in_out_KeyName)
         iPos = InStr(in_out_KeyName, "\")
-        If (iPos <> 0&) Then in_out_KeyName = Mid$(in_out_KeyName, iPos + 1&) Else in_out_KeyName = vbNullString
+        If (iPos <> 0&) Then in_out_KeyName = mid$(in_out_KeyName, iPos + 1&) Else in_out_KeyName = vbNullString
     End If
 End Sub
 
@@ -1367,18 +1367,19 @@ End Function
 
 Public Function DelKey(hHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 As Boolean) As Boolean
     On Error GoTo ErrorHandler:
-    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    '''   Function   ''  Can recursively    ''  Support flag    '' Must close  ''   Minimum    ''
-    '''     name     '' delete all subkeys  '' KEY_WOW64_64KEY  '' all handles ''  OS support  ''
-    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    ' SHDeleteKey              Yes             Partially (Win7+)        ?         Win 2000
-    ' RegDeleteKey             No                   No                Yes !       Win 2000
-    ' RegDeleteKeyEx           No                   Yes               Yes !       Win XP x64+
-    ' RegDeleteTree            Yes                  Yes                 ?         Win Vista !
-    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    '''   Function   ''  Can recursively    ''  Support flag    '' Able to kill'' Must close  ''   Minimum    ''
+    '''     name     '' delete all subkeys  '' KEY_WOW64_64KEY  ''   symlink   '' all handles ''  OS support  ''
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ' SHDeleteKey              Yes             Partially (Win7+)        No             ?         Win 2000
+    ' RegDeleteKey             No                   No                  No           Yes !       Win 2000
+    ' RegDeleteKeyEx           No                   Yes                 No           Yes !       Win XP x64+
+    ' RegDeleteTree            Yes                  Yes                 No             ?         Win Vista !
+    ' NtDeleteKey              No                   Yes                 Yes          Yes         Win 2000
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
     ' So, thank you, M$ ^_^ ):. We should write recursive function on one's own.
     
-    Dim lret&
+    Dim lret&, hKey&
     AppendErrorLogCustom "DelKey - Begin", sKey
     
     Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
@@ -1405,8 +1406,15 @@ Public Function DelKey(hHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 A
         End If
         
     End If
+    
+    'ensure we deleted a symlink source
+    lret = WrapNtOpenKeyEx(hHive, sKey, KEY_DELETE, hKey, , bUseWow64)
+    If hKey <> 0 Then
+        NtDeleteKey hKey: hKey = 0
+    End If
+    
     DelKey = Not KeyExists(hHive, sKey, bUseWow64)
-    m_StatusCode = lret
+    'm_StatusCode = lret
     AppendErrorLogCustom "DelKey - End"
     Exit Function
 ErrorHandler:
@@ -1418,7 +1426,7 @@ End Function
 Public Function DeleteAllSubKeys(hHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 As Boolean) As Boolean
     'del subkeys without root
     On Error GoTo ErrorHandler:
-    Dim i&, sSubKey$, aSubKeys() As String, Flag As Boolean, lret&
+    Dim i&, sSubKey$, aSubKeys() As String, Flag As Boolean, lret&, hKey&
     AppendErrorLogCustom "DeleteAllSubKeys - Begin", sKey
     
     Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
@@ -1435,7 +1443,15 @@ Public Function DeleteAllSubKeys(hHive As ENUM_REG_HIVE, ByVal sKey$, Optional b
                 lret = RegDeleteKeyEx(hHive, StrPtr(sSubKey), bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64, 0&)
             End If
         End If
-        If lret <> ERROR_SUCCESS Then Flag = False
+        
+        'ensure we deleted a symlink source
+        lret = WrapNtOpenKeyEx(hHive, sSubKey, KEY_DELETE, hKey, , bUseWow64)
+        If hKey <> 0 Then
+            lret = NtDeleteKey(hKey): hKey = 0
+            If lret <> STATUS_SUCCESS Then Flag = False
+        Else
+            If lret <> STATUS_OBJECT_NAME_NOT_FOUND Then Flag = False
+        End If
     Next i
     DeleteAllSubKeys = Flag
     m_StatusCode = lret
@@ -2127,7 +2143,7 @@ Public Function ExportKeyToVariable( _
                 If Not SaveHeader Then
                     pos = InStr(sData, vbCrLf)
                     If pos <> 0 Then
-                        sData = Mid$(sData, pos + 2)
+                        sData = mid$(sData, pos + 2)
                     End If
                 End If
 
@@ -2399,9 +2415,9 @@ Public Sub Jump(hHive As ENUM_REG_HIVE, ByVal sKey As String, Optional sValue As
           Not StrBeginWith(sKey, "SOFTWARE\Classes\Wow6432Node") And _
           Not StrBeginWith(sKey, "SOFTWARE\Wow6432Node") Then
             If StrBeginWith(sKey, "SOFTWARE\Classes\") Or StrComp(sKey, "SOFTWARE\Classes", 1) = 0 Then
-                sKey = "SOFTWARE\Classes\Wow6432Node" & Mid$(sKey, Len("SOFTWARE\Classes\"))
+                sKey = "SOFTWARE\Classes\Wow6432Node" & mid$(sKey, Len("SOFTWARE\Classes\"))
             ElseIf StrBeginWith(sKey, "SOFTWARE\") Or StrComp(sKey, "SOFTWARE", 1) = 0 Then
-                sKey = "SOFTWARE\Wow6432Node" & Mid$(sKey, Len("SOFTWARE\"))
+                sKey = "SOFTWARE\Wow6432Node" & mid$(sKey, Len("SOFTWARE\"))
             ElseIf hHive = HKCR Then
                 sKey = "Wow6432Node\" & sKey
             End If
@@ -2591,9 +2607,9 @@ Public Sub Jump(hHive As ENUM_REG_HIVE, ByVal sKey As String, Optional sValue As
             If bVista Then
                 'type out the key we want to jump to
                 For i = 1 To Len(sFullKey)
-                    Select Case Mid$(sFullKey, i, 1)
+                    Select Case mid$(sFullKey, i, 1)
                         Case "\": SendMessage hwndTreeView, WM_KEYDOWN, VK_RIGHT, ByVal 0
-                        Case Else: SendMessage hwndTreeView, WM_CHAR, Asc(Mid$(sFullKey, i, 1)), ByVal 0
+                        Case Else: SendMessage hwndTreeView, WM_CHAR, Asc(mid$(sFullKey, i, 1)), ByVal 0
                     End Select
                     DoEvents
                     Sleep 50
@@ -2602,7 +2618,7 @@ Public Sub Jump(hHive As ENUM_REG_HIVE, ByVal sKey As String, Optional sValue As
             End If
             'type out the value we want to jump to
             For i = 1 To Len(sValue)
-                SendMessage hwndListView, WM_CHAR, Asc(Mid$(sValue, i, 1)), ByVal 0
+                SendMessage hwndListView, WM_CHAR, Asc(mid$(sValue, i, 1)), ByVal 0
                 DoEvents
                 Sleep 50
             Next i
@@ -2913,7 +2929,7 @@ Public Function GetKeyRedirectionType( _
                         bHKU_Class = True
                         pos = InStr(1, sNtName1, "_CLASSES\", 1)
                         If pos <> 0 Then
-                            sKeyWOW = Mid$(sNtName1, Len("\REGISTRY\USER\") + 1)
+                            sKeyWOW = mid$(sNtName1, Len("\REGISTRY\USER\") + 1)
                             sKeyWOW = Replace$(sKeyWOW, "_CLASSES\", "_CLASSES\Wow6432Node\", 1, 1, 1)
                         Else
                             'unknown error. <SID>_CLASSES should always be there. Possible, an unknown symlink (?)
@@ -2925,7 +2941,7 @@ Public Function GetKeyRedirectionType( _
                 If Not bHKU_Class Then
                     pos = InStr(1, sNtName1, "SOFTWARE", 1)
                     If pos <> 0 Then
-                        sKeyWOW = "SOFTWARE\Wow6432Node\" & Mid$(sNtName1, pos + Len("SOFTWARE\"))
+                        sKeyWOW = "SOFTWARE\Wow6432Node\" & mid$(sNtName1, pos + Len("SOFTWARE\"))
                     Else
                         'unknown error. SOFTWARE should always be there. Possible, an unknown symlink (?)
                         Debug.Print "No SOFTWARE node in phisical registry path after quering by RegGetKeyInfoNameEx. Key: " & sKey
@@ -3092,7 +3108,7 @@ Public Function NtGetKeyRedirectionType( _
                         bHKU_Class = True
                         pos = InStr(1, sNtName1, "_CLASSES\", 1)
                         If pos <> 0 Then
-                            sKeyWOW = Mid$(sNtName1, Len("\REGISTRY\USER\") + 1)
+                            sKeyWOW = mid$(sNtName1, Len("\REGISTRY\USER\") + 1)
                             sKeyWOW = Replace$(sKeyWOW, "_CLASSES\", "_CLASSES\Wow6432Node\", 1, 1, 1)
                         Else
                             'unknown error. <SID>_CLASSES should always be there. Possible, an unknown symlink (?)
@@ -3104,7 +3120,7 @@ Public Function NtGetKeyRedirectionType( _
                 If Not bHKU_Class Then
                     pos = InStr(1, sNtName1, "SOFTWARE", 1)
                     If pos <> 0 Then
-                        sKeyWOW = "SOFTWARE\Wow6432Node\" & Mid$(sNtName1, pos + Len("SOFTWARE\"))
+                        sKeyWOW = "SOFTWARE\Wow6432Node\" & mid$(sNtName1, pos + Len("SOFTWARE\"))
                     Else
                         'unknown error. SOFTWARE should always be there. Possible, an unknown symlink (?)
                         Debug.Print "No SOFTWARE node in phisical registry path after quering by RegGetKeyInfoNameEx. Key: " & sKey
@@ -3316,19 +3332,19 @@ Public Function MapNtNameToWin32Name(sNtKey As String, Optional out_Hive As ENUM
     '=> should check in this way: HKCC => HKLM => HKCR => HKCU => HKU
     
     If StrBeginWith(sNtKey, NTKEY_CURRENT_CONFIG_STR) Then
-        MapNtNameToWin32Name = HKEY_CURRENT_CONFIG_STR & Mid$(sNtKey, Len(NTKEY_CURRENT_CONFIG_STR) + 1): out_Hive = HKEY_CURRENT_CONFIG
+        MapNtNameToWin32Name = HKEY_CURRENT_CONFIG_STR & mid$(sNtKey, Len(NTKEY_CURRENT_CONFIG_STR) + 1): out_Hive = HKEY_CURRENT_CONFIG
     
     ElseIf StrBeginWith(sNtKey, NTKEY_LOCAL_MACHINE_STR) Then
-        MapNtNameToWin32Name = HKEY_LOCAL_MACHINE_STR & Mid$(sNtKey, Len(NTKEY_LOCAL_MACHINE_STR) + 1): out_Hive = HKEY_LOCAL_MACHINE
+        MapNtNameToWin32Name = HKEY_LOCAL_MACHINE_STR & mid$(sNtKey, Len(NTKEY_LOCAL_MACHINE_STR) + 1): out_Hive = HKEY_LOCAL_MACHINE
     
     ElseIf StrBeginWith(sNtKey, NTKEY_CLASSES_ROOT_STR) Then
-        MapNtNameToWin32Name = HKEY_CLASSES_ROOT_STR & Mid$(sNtKey, Len(NTKEY_CLASSES_ROOT_STR) + 1): out_Hive = HKEY_CLASSES_ROOT
+        MapNtNameToWin32Name = HKEY_CLASSES_ROOT_STR & mid$(sNtKey, Len(NTKEY_CLASSES_ROOT_STR) + 1): out_Hive = HKEY_CLASSES_ROOT
     
     ElseIf StrBeginWith(sNtKey, NTKEY_CURRENT_USER_STR) Then
-        MapNtNameToWin32Name = HKEY_CURRENT_USER_STR & Mid$(sNtKey, Len(NTKEY_CURRENT_USER_STR) + 1): out_Hive = HKEY_CURRENT_USER
+        MapNtNameToWin32Name = HKEY_CURRENT_USER_STR & mid$(sNtKey, Len(NTKEY_CURRENT_USER_STR) + 1): out_Hive = HKEY_CURRENT_USER
     
     ElseIf StrBeginWith(sNtKey, NTKEY_USERS_STR) Then
-        MapNtNameToWin32Name = HKEY_USERS_STR & Mid$(sNtKey, Len(NTKEY_USERS_STR) + 1): out_Hive = HKEY_USERS
+        MapNtNameToWin32Name = HKEY_USERS_STR & mid$(sNtKey, Len(NTKEY_USERS_STR) + 1): out_Hive = HKEY_USERS
     
     End If
     
@@ -3352,19 +3368,19 @@ Public Function MapNtNameToWin32NameShort(sNtKey As String, Optional out_Hive As
     '=> should check in this way: HKCC => HKLM => HKCR => HKCU => HKU
     
     If StrBeginWith(sNtKey, NTKEY_CURRENT_CONFIG_STR) Then
-        MapNtNameToWin32NameShort = HKEY_CURRENT_CONFIG_SHORT_STR & Mid$(sNtKey, Len(NTKEY_CURRENT_CONFIG_STR) + 1): out_Hive = HKEY_CURRENT_CONFIG
+        MapNtNameToWin32NameShort = HKEY_CURRENT_CONFIG_SHORT_STR & mid$(sNtKey, Len(NTKEY_CURRENT_CONFIG_STR) + 1): out_Hive = HKEY_CURRENT_CONFIG
     
     ElseIf StrBeginWith(sNtKey, NTKEY_LOCAL_MACHINE_STR) Then
-        MapNtNameToWin32NameShort = HKEY_LOCAL_MACHINE_SHORT_STR & Mid$(sNtKey, Len(NTKEY_LOCAL_MACHINE_STR) + 1): out_Hive = HKEY_LOCAL_MACHINE
+        MapNtNameToWin32NameShort = HKEY_LOCAL_MACHINE_SHORT_STR & mid$(sNtKey, Len(NTKEY_LOCAL_MACHINE_STR) + 1): out_Hive = HKEY_LOCAL_MACHINE
     
     ElseIf StrBeginWith(sNtKey, NTKEY_CLASSES_ROOT_STR) Then
-        MapNtNameToWin32NameShort = HKEY_CLASSES_ROOT_SHORT_STR & Mid$(sNtKey, Len(NTKEY_CLASSES_ROOT_STR) + 1): out_Hive = HKEY_CLASSES_ROOT
+        MapNtNameToWin32NameShort = HKEY_CLASSES_ROOT_SHORT_STR & mid$(sNtKey, Len(NTKEY_CLASSES_ROOT_STR) + 1): out_Hive = HKEY_CLASSES_ROOT
     
     ElseIf StrBeginWith(sNtKey, NTKEY_CURRENT_USER_STR) Then
-        MapNtNameToWin32NameShort = HKEY_CURRENT_USER_SHORT_STR & Mid$(sNtKey, Len(NTKEY_CURRENT_USER_STR) + 1): out_Hive = HKEY_CURRENT_USER
+        MapNtNameToWin32NameShort = HKEY_CURRENT_USER_SHORT_STR & mid$(sNtKey, Len(NTKEY_CURRENT_USER_STR) + 1): out_Hive = HKEY_CURRENT_USER
     
     ElseIf StrBeginWith(sNtKey, NTKEY_USERS_STR) Then
-        MapNtNameToWin32NameShort = HKEY_USERS_SHORT_STR & Mid$(sNtKey, Len(NTKEY_USERS_STR) + 1): out_Hive = HKEY_USERS
+        MapNtNameToWin32NameShort = HKEY_USERS_SHORT_STR & mid$(sNtKey, Len(NTKEY_USERS_STR) + 1): out_Hive = HKEY_USERS
     
     End If
     
@@ -3468,3 +3484,9 @@ Private Sub Class_Initialize()
     NTKEY_USERS_STR = MapHiveToNtName_Direct(HKEY_USERS)
     NTKEY_CURRENT_CONFIG_STR = MapHiveToNtName_Direct(HKEY_CURRENT_CONFIG)
 End Sub
+
+Public Property Get CurrentUserSID() As String
+    Dim sSid As String
+    sSid = mid$(NTKEY_CURRENT_USER_STR, 16) '\REGISTRY\USER\S-1-5-21-xxx
+    If StrBeginWith(sSid, "S-") Then CurrentUserSID = sSid
+End Property

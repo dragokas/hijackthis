@@ -162,19 +162,20 @@ Begin VB.Form frmMain
    End
    Begin VB.PictureBox pictLogo 
       Appearance      =   0  'Flat
-      AutoRedraw      =   -1  'True
+      AutoSize        =   -1  'True
       BackColor       =   &H80000005&
       BorderStyle     =   0  'None
       ForeColor       =   &H80000008&
-      Height          =   492
-      Left            =   6720
+      Height          =   396
+      Left            =   6480
       Picture         =   "frmMain.frx":4B2A
-      ScaleHeight     =   492
-      ScaleWidth      =   1932
+      ScaleHeight     =   33
+      ScaleMode       =   3  'Pixel
+      ScaleWidth      =   156
       TabIndex        =   90
       TabStop         =   0   'False
       Top             =   120
-      Width           =   1932
+      Width           =   1872
    End
    Begin VB.CommandButton cmdHidden 
       Default         =   -1  'True
@@ -1625,6 +1626,15 @@ Begin VB.Form frmMain
       Top             =   960
       Width           =   6135
    End
+   Begin VB.Label lblInfo 
+      Caption         =   $"frmMain.frx":8971
+      Height          =   852
+      Index           =   0
+      Left            =   120
+      TabIndex        =   26
+      Top             =   36
+      Width           =   6492
+   End
    Begin VB.Label lblMD5 
       Alignment       =   2  'Center
       BackStyle       =   0  'Transparent
@@ -1686,7 +1696,7 @@ Begin VB.Form frmMain
       Width           =   8275
    End
    Begin VB.Label lblInfo 
-      Caption         =   $"frmMain.frx":8971
+      Caption         =   $"frmMain.frx":8A63
       Height          =   975
       Index           =   1
       Left            =   120
@@ -1694,15 +1704,6 @@ Begin VB.Form frmMain
       Top             =   45
       Visible         =   0   'False
       Width           =   8500
-   End
-   Begin VB.Label lblInfo 
-      Caption         =   $"frmMain.frx":8A49
-      Height          =   855
-      Index           =   0
-      Left            =   120
-      TabIndex        =   26
-      Top             =   40
-      Width           =   7455
    End
    Begin VB.Menu mnuFile 
       Caption         =   "File"
@@ -1774,7 +1775,7 @@ Begin VB.Form frmMain
       End
    End
    Begin VB.Menu mnuBasicManual 
-      Caption         =   "Basic manual"
+      Caption         =   "Basic manual 2"
       Visible         =   0   'False
       Begin VB.Menu mnuHelpManualRussian 
          Caption         =   "Russian"
@@ -2044,8 +2045,6 @@ Public Sub Test()
     'Debug.Print "hToken = " & hToken & ". Err = " & Err.LastDllError
     'If hToken <> 0 Then CloseHandle hToken
     
-    'Debug.Print Reg.GetPhysicalNameWin32(HKLM, "Software\7-Zip222", True)
-
 End Sub
 
 ' Tips on functions:
@@ -2055,10 +2054,11 @@ End Sub
 Private Sub Form_Load()
     Static bInit As Boolean
     
-    g_HwndMain = Me.hWnd
+    g_HwndMain = Me.hwnd
     
     pvSetFormIcon Me
-    
+    If modWindow.GetSystemDPI() < 120 Then Me.pictLogo.Left = 6480
+
     If Not (OSver.IsElevated Or OSver.IsLocalSystemContext) Then
         cmdDelOnReboot.Enabled = False
         mnuToolsDelFileOnReboot.Enabled = False
@@ -2241,6 +2241,7 @@ Private Sub FormStart_Stage1()
         lToolsHeight = 850 - (FraTestStaff.Top - 10560)
     End If
     
+    MenuIcons_Initialize Me
     LoadLanguageList
     LoadResources
     
@@ -2252,13 +2253,13 @@ Private Sub FormStart_Stage1()
         For Each Ctl In Me.Controls
             If TypeName(Ctl) = "CommandButton" Then
                 Set Btn = Ctl
-                SetWindowTheme Btn.hWnd, StrPtr(" "), StrPtr(" ")
+                SetWindowTheme Btn.hwnd, StrPtr(" "), StrPtr(" ")
             ElseIf TypeName(Ctl) = "CheckBox" Then
                 Set ChkB = Ctl
-                SetWindowTheme ChkB.hWnd, StrPtr(" "), StrPtr(" ")
+                SetWindowTheme ChkB.hwnd, StrPtr(" "), StrPtr(" ")
             ElseIf TypeName(Ctl) = "OptionButton" Then
                 Set OptB = Ctl
-                SetWindowTheme OptB.hWnd, StrPtr(" "), StrPtr(" ")
+                SetWindowTheme OptB.hwnd, StrPtr(" "), StrPtr(" ")
             End If
         Next
         Set OptB = Nothing
@@ -2272,7 +2273,7 @@ Private Sub FormStart_Stage1()
             If TypeName(Ctl) = "Frame" Then
                 Set Fra = Ctl
                 'If Fra.Name = "fraHostsMan" Or Fra.Name = "fraUninstMan" Then
-                    SetWindowTheme Fra.hWnd, StrPtr(" "), StrPtr(" ")
+                    SetWindowTheme Fra.hwnd, StrPtr(" "), StrPtr(" ")
                 'End If
             End If
         Next
@@ -2388,7 +2389,7 @@ Private Sub FormStart_Stage1()
         bLogProcesses = True
         bLogModules = False
         bLogEnvVars = False
-        bAdditional = False
+        bAdditional = True
         bSkipErrorMsg = False
         bMinToTray = False
         bCheckForUpdates = False
@@ -2488,7 +2489,7 @@ Private Sub FormStart_Stage1()
     If Not bIsWinNT Then cmdDeleteService.Enabled = False
     
     If Not bAutoLogSilent Then
-        SetMenuIcons Me.hWnd
+        SetMenuIcons Me
     End If
     
     AppendErrorLogCustom "FormStart_Stage1 - End"
@@ -3410,14 +3411,14 @@ Function ParseVTResult(sLog As String, sFile As String, nDetects As Long, sURL A
             sLine = aLine(i)
             
             If (StrBeginWith(sLine, "<imagepath>")) Then
-                sLine = Mid$(sLine, Len("<imagepath>") + 1)
+                sLine = mid$(sLine, Len("<imagepath>") + 1)
                 pos = InStr(1, sLine, "</imagepath>", 1)
                 If pos <> 0 Then
                     sFile = Left$(sLine, pos - 1)
                     sFile = Replace(sFile, "&#34;", """")
                 End If
             ElseIf (StrBeginWith(sLine, "<vt-detection>")) Then
-                sLine = Mid$(sLine, Len("<vt-detection>") + 1)
+                sLine = mid$(sLine, Len("<vt-detection>") + 1)
                 pos = InStr(1, sLine, "</vt-detection>", 1)
                 If pos <> 0 Then
                     sLine = Left$(sLine, pos - 1)
@@ -3436,7 +3437,7 @@ Function ParseVTResult(sLog As String, sFile As String, nDetects As Long, sURL A
                     End If
                 End If
             ElseIf (StrBeginWith(sLine, "<vt-permalink>")) Then
-                sLine = Mid$(sLine, Len("<vt-permalink>") + 1)
+                sLine = mid$(sLine, Len("<vt-permalink>") + 1)
                 pos = InStr(1, sLine, "</vt-permalink>", 1)
                 If pos <> 0 Then
                     sURL = Left$(sLine, pos - 1)
@@ -3549,13 +3550,13 @@ Sub ParseFilesXML(dRunFiles As clsTrickHashTable, sLog As String)
         
             sFile = vbNullString
             If (StrBeginWith(sLine, "<imagepath>")) Then
-                sLine = Mid$(sLine, Len("<imagepath>") + 1)
+                sLine = mid$(sLine, Len("<imagepath>") + 1)
                 pos = InStr(1, sLine, "</imagepath>", 1)
                 If pos <> 0 Then
                     sFile = Left$(sLine, pos - 1)
                 End If
             ElseIf (StrBeginWith(sLine, "<launchstring>")) Then
-                sLine = Mid$(sLine, Len("<launchstring>") + 1)
+                sLine = mid$(sLine, Len("<launchstring>") + 1)
                 pos = InStr(1, sLine, "</launchstring>", 1)
                 If pos <> 0 Then
                     sFile = Left$(sLine, pos - 1)
@@ -3826,7 +3827,6 @@ End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
     Dim s$
-    pvDestroyFormIcon Me
     ReleaseMutex
     ISL_Dispatch
     Close
@@ -4001,7 +4001,7 @@ Private Sub cmdDelOnReboot_Click() 'Misc Tools -> Delete on reboot ...
     
     'Delete on Reboot
     sFilename = OpenFileDialog(Translate(1951), Desktop, _
-        Translate(1003) & " (*.*)|*.*|" & Translate(1956) & " (*.dll)|*.dll|" & Translate(1957) & " (*.exe)|*.exe", Me.hWnd)
+        Translate(1003) & " (*.*)|*.*|" & Translate(1956) & " (*.dll)|*.dll|" & Translate(1957) & " (*.exe)|*.exe", Me.hwnd)
     If Len(sFilename) = 0 Then Exit Sub
     
     DeleteFileOnReboot sFilename, True, True
@@ -4575,7 +4575,7 @@ Private Sub IncreaseNumberOfFixes()
     
     If Len(sTime) <> 0 Then
         If StrBeginWith(sTime, "HJT:") Then
-            sTime = Mid$(sTime, 6)
+            sTime = mid$(sTime, 6)
             dLastFix = CDateEx(sTime, 1, 6, 9, 12, 15, 18)
         Else 'backward support
             If IsDate(sTime) Then
@@ -4709,7 +4709,7 @@ Private Sub cmdFix_Click()
             pos = InStr(sItem, "-")
             If pos <> 0 Then
                 sPrefix = Trim$(Left$(sItem, pos - 1))
-                sSubSection = Trim$(Mid$(sItem, pos + 1))
+                sSubSection = Trim$(mid$(sItem, pos + 1))
             End If
             
             If j = 0 Then
@@ -5018,7 +5018,7 @@ Private Sub cmdScan_Click()
         
         'pre-adding horizontal scrollbar
         If Not bAutoLogSilent Then
-            SendMessage frmMain.lstResults.hWnd, LB_SETHORIZONTALEXTENT, 1500&, ByVal 0&
+            SendMessage frmMain.lstResults.hwnd, LB_SETHORIZONTALEXTENT, 1500&, ByVal 0&
         End If
         
         ' *******************************************************************
@@ -5380,7 +5380,7 @@ Private Sub LoadSettings(Optional nRun As Long)
     
     chkLogProcesses.Value = CInt(RegReadHJT("LogProcesses", "1", bUseOldKey))
     chkAdvLogEnvVars.Value = CInt(RegReadHJT("LogEnvVars", "0", bUseOldKey))
-    chkAdditionalScan.Value = CInt(RegReadHJT("LogAdditional", "0", bUseOldKey))
+    chkAdditionalScan.Value = CInt(RegReadHJT("LogAdditional", "1", bUseOldKey))
     
     bLogProcesses = chkLogProcesses.Value
     bLogEnvVars = chkAdvLogEnvVars.Value
@@ -5877,33 +5877,33 @@ End Sub
 
 Private Sub mnuHelpManualEnglish_Click()
     Dim szQSUrl$: szQSUrl = "https://dragokas.com/tools/help/hjt_tutorial.html"
-    ShellExecute Me.hWnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
+    ShellExecute Me.hwnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
 End Sub
 Private Sub mnuHelpManualRussian_Click()
     Dim szQSUrl$
     'szQSUrl = "https://safezone.cc/threads/25184/"
     szQSUrl = "https://regist.safezone.cc/hijackthis_help/hijackthis.html"
-    ShellExecute Me.hWnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
+    ShellExecute Me.hwnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
 End Sub
 Private Sub mnuHelpManualFrench_Click()
     Dim szQSUrl$: szQSUrl = "https://www.bleepingcomputer.com/tutorials/comment-utiliser-hijackthis/"
-    ShellExecute Me.hWnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
+    ShellExecute Me.hwnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
 End Sub
 Private Sub mnuHelpManualGerman_Click()
     Dim szQSUrl$: szQSUrl = "https://www.bleepingcomputer.com/tutorials/wie-hijackthis-genutzt-wird-um/"
-    ShellExecute Me.hWnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
+    ShellExecute Me.hwnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
 End Sub
 Private Sub mnuHelpManualSpanish_Click()
     Dim szQSUrl$: szQSUrl = "https://www.bleepingcomputer.com/tutorials/como-usar-hijackthis/"
-    ShellExecute Me.hWnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
+    ShellExecute Me.hwnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
 End Sub
 Private Sub mnuHelpManualPortuguese_Click()
     Dim szQSUrl$: szQSUrl = "https://www.linhadefensiva.org/2005/06/hijackthis-completo/"
-    ShellExecute Me.hWnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
+    ShellExecute Me.hwnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
 End Sub
 Private Sub mnuHelpManualDutch_Click()
     Dim szQSUrl$: szQSUrl = "https://www.bleepingcomputer.com/tutorials/hoe-gebruik-je-hijackthis/"
-    ShellExecute Me.hWnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
+    ShellExecute Me.hwnd, StrPtr("open"), StrPtr(szQSUrl), 0&, 0&, 1
 End Sub
 
 Private Sub mnuHelpUpdate_Click()       'Help -> Download new version
@@ -6038,7 +6038,7 @@ Private Sub lstResults_MouseUp(Button As Integer, Shift As Integer, X As Single,
         XPix = X / Screen.TwipsPerPixelX
         YPix = Y / Screen.TwipsPerPixelY
         XY = YPix * 65536 + XPix
-        idx = SendMessage(lstResults.hWnd, LB_ITEMFROMPOINT, 0&, ByVal XY)
+        idx = SendMessage(lstResults.hwnd, LB_ITEMFROMPOINT, 0&, ByVal XY)
         If idx >= 0 And idx <= (lstResults.ListCount - 1) Then
             lstResults.ListIndex = idx
         End If
@@ -6099,9 +6099,9 @@ Private Sub lstResults_MouseUp(Button As Integer, Shift As Integer, X As Single,
                     mnuResultDisable.Visible = True
                     
                     If result.State = ITEM_STATE_ENABLED Then
-                        mnuResultDisable.Caption = Translate(1168) ' "Disable"
+                        SetMenuCaptionByMenu mnuResultDisable, Translate(1168) ' "Disable"
                     Else
-                        mnuResultDisable.Caption = Translate(1169) ' "Enable"
+                        SetMenuCaptionByMenu mnuResultDisable, Translate(1169) ' "Enable"
                     End If
                     
                     If result.Section = "O22" Then
@@ -6507,15 +6507,15 @@ Private Sub mnuResultCopyValue_Click() ' Context menu => Copy => Value
     result = GetSelected_OrCheckedItemResult()
     pos = InStr(1, result.HitLineW, "=")
     If pos <> 0 Then
-        ClipboardSetText LTrim$(Mid$(result.HitLineW, pos + 1))
+        ClipboardSetText LTrim$(mid$(result.HitLineW, pos + 1))
     Else
         pos = InStr(1, result.HitLineW, ":\")
         If pos <> 0 Then
-            ClipboardSetText Mid$(result.HitLineW, pos - 1)
+            ClipboardSetText mid$(result.HitLineW, pos - 1)
         Else
             pos = InStrRev(result.HitLineW, "-")
             If pos <> 0 Then
-                ClipboardSetText LTrim$(Mid$(result.HitLineW, pos + 1))
+                ClipboardSetText LTrim$(mid$(result.HitLineW, pos + 1))
             End If
         End If
     End If
@@ -6580,7 +6580,7 @@ Private Sub mnuResultSearch_Click()       'Context menu => Search on Google
     sItem = lstResults.List(lstResults.ListIndex)
     pos = InStr(sItem, ":")
     If pos > 0 Then
-        sItem = Mid$(sItem, pos + 1)
+        sItem = mid$(sItem, pos + 1)
     End If
     pos = InStr(sItem, " (size: ")
     If pos > 0 Then
@@ -6658,7 +6658,7 @@ Private Sub chkHelp_Click(Index As Integer)
         
         TextBox_SetUnlimitSize txtHelp, Len(sText)
         'txtHelp.Text = sText
-        SendMessage txtHelp.hWnd, WM_SETTEXT, 0&, ByVal StrPtr(sText)
+        SendMessage txtHelp.hwnd, WM_SETTEXT, 0&, ByVal StrPtr(sText)
         
     Case 1: 'Keys
         NotifyChangeFrame FRAME_ALIAS_HELP_KEYS
@@ -6672,7 +6672,7 @@ Private Sub chkHelp_Click(Index As Integer)
         NotifyChangeFrame FRAME_ALIAS_HELP_HISTORY
         TextBox_SetUnlimitSize txtHelp, Len(g_VersionHistory)
         'txtHelp.Text = g_VersionHistory 'VB6's .Text property doesn't support over limit!
-        SendMessage txtHelp.hWnd, WM_SETTEXT, 0&, ByVal StrPtr(g_VersionHistory)
+        SendMessage txtHelp.hwnd, WM_SETTEXT, 0&, ByVal StrPtr(g_VersionHistory)
     End Select
     
     bSwitchingTabs = False
@@ -6685,12 +6685,12 @@ Private Sub TextBox_SetUnlimitSize(txt As TextBox, Optional iMaxSize As Long)
     
     If iMaxSize <> 0 Then iSize = iMaxSize + 2
     
-    SendMessage txt.hWnd, EM_LIMITTEXT, iSize, ByVal 0&
+    SendMessage txt.hwnd, EM_LIMITTEXT, iSize, ByVal 0&
 End Sub
 
 Private Sub TextBox_SetMargin(txt As TextBox, left_margin As Long, right_margin As Long)
     
-    SendMessage txt.hWnd, EM_SETMARGINS, EC_LEFTMARGIN Or EC_RIGHTMARGIN, ByVal (right_margin * &H10000 + left_margin)
+    SendMessage txt.hwnd, EM_SETMARGINS, EC_LEFTMARGIN Or EC_RIGHTMARGIN, ByVal (right_margin * &H10000 + left_margin)
     
     ' Reset the text to make the right margin work
     Dim s As String

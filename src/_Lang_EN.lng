@@ -108,7 +108,7 @@
 ; (1090-1099)
 ;
 1090=Welcome to HiJackThis+
-1091=    HiJackThis is a free and open source tool designed to combat malware and unwanted adware. It is provided "AS IS" without warranty of any kind. You may use this software at your own risk.
+1091=    HiJackThis+ is a free and open source tool designed to combat malware and unwanted adware. It is provided "AS IS" without warranty of any kind. You may use this software at your own risk.
          This software is not permitted for commercial purposes.
          You must read and accept the license agreement to continue:
 1092=HiJackThis - License Agreement
@@ -174,7 +174,7 @@
 ;
 1200=File
 1201=Settings
-1202=Uninstall HiJackThis
+1202=Uninstall HiJackThis+
 1203=Exit
 1204=Tools
 1205=Process Manager
@@ -206,7 +206,7 @@
 1231=Services
 1232=StartupList
 1233=Basic manual
-1235=Install HiJackThis
+1235=Install HiJackThis+
 1236=Shortcuts
 1237=Verify shortcuts via Check Browsers' LNK
 1238=Fix shortcuts via ClearLNK
@@ -268,13 +268,13 @@
      Command-line keys:
      --------------------------------
 
-     1. HiJackThis
+     1. HiJackThis+
      2. StartupList
      3. How to use?
 
      
      
-     1. HiJackThis
+     1. HiJackThis+
      ---------------
      
        /accepteula 	- accept the agreement. It will not be displayed when program start.
@@ -432,8 +432,8 @@
      for creative inspiration and further active development of the project, I'll be always glad:
 
 0034=
-     BTC: 17hkU3eKPngHrG3P9uqXwMLE3ztmtfGDZ4
-     Ethereum: 0xc6B421AeeC879F6603f86117a792e0bb1c67C7A5
+     BTC: bc1q64nfkruds9mx0pfxflwlamua39purrw6smnjy6
+     Ethereum: 0xDe296f6d8d8031AB729c6085E464047242E4cB78
      Patreon: https://www.patreon.com/dragokas
 
 0035=Sections
@@ -885,6 +885,19 @@
 2466=with
 2467=Query x32 view (additionally)
 2468=Mode
+2469=Area
+2470=Select all
+2471=Native (physical) name
+2472=Date of modification
+2473=Keys count
+2474=Key/Values max length
+2475=Redirection
+2476=Virtualization
+2477=Flags
+2478=Volatility
+2479=Symlink
+2480=Security descriptor
+2481=Class name
 ;
 ; ============ Delete on reboot ========
 ;
@@ -1822,4 +1835,4 @@
 ; ========= Empty ========
 ;
 ; (2500 - ...)
-;                               
+;                                

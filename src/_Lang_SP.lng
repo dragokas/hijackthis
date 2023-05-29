@@ -18,8 +18,7 @@
 ;
 0001=Bienvenido a HiJackThis+
      Este programa generará un reporte de elementos inusuales
-     (archivos, modificacones en registros, etc.) en las areas mas vulnerables del sistema operativo,
-     comúnmente manipulado por malware, así como por buen software.
+     (archivos, modificacones en registros, etc.) en las areas mas vulnerables del sistema operativo, comúnmente manipulado por malware, así como por buen software.
 0002=HiJackThis ya se está ejecutando.
      ¿Estás seguro de que deseas lanzar otra copia?
 0004=A continuación se muestran los resultados del escaneo HiJackThis.
@@ -108,7 +107,7 @@
 ; (1090-1099)
 ;
 1090=Bienvenido a HiJackThis+
-1091=    HiJack Esta es una herramienta gratuita y de código abierto diseñada para combatir el malware y el adware no deseado. Se proporciona "COMO ES" sin garantía de ningún tipo. Ustede debe utilizar este software bajo su propia responsabilidad.
+1091=    HiJackThis+ Esta es una herramienta gratuita y de código abierto diseñada para combatir el malware y el adware no deseado. Se proporciona "COMO ES" sin garantía de ningún tipo. Ustede debe utilizar este software bajo su propia responsabilidad.
          Este software no está permitido para fines comerciales.
          Debe leer y aceptar el acuerdo de licencia para continuar:
 1092=HiJackThis - Acuerdo de licencia
@@ -174,7 +173,7 @@
 ;
 1200=Archivo
 1201=Configuraciones
-1202=Desinstalar HiJackThis
+1202=Desinstalar HiJackThis+
 1203=Salir
 1204=Herramientas
 1205=Administrador de procesos
@@ -206,7 +205,7 @@
 1231=Servicios
 1232=StartupList
 1233=Manual básico
-1235=Instalar HiJackThis
+1235=Instalar HiJackThis+
 1236=Atajos
 1237=Verifique los accesos directos a través de Check Browsers' LNK
 1238=Corregir accesos directos a través de ClearLNK
@@ -268,13 +267,13 @@
      Teclas de línea de comandos:
      --------------------------------
 
-     1. HiJackThis
+     1. HiJackThis+
      2. StartupList
      3. ¿Cómo usar?
 
      
      
-     1. HiJackThis
+     1. HiJackThis+
      ---------------
      
        /accepteula 	- acepta el acuerdo. No se mostrará cuando se inicie el programa.
@@ -432,8 +431,8 @@
      en busca de inspiración creativa y un mayor desarrollo activo del proyecto, siempre estaremos contentos:
 
 0034=
-     BTC: 17hkU3eKPngHrG3P9uqXwMLE3ztmtfGDZ4
-     Ethereum: 0xc6B421AeeC879F6603f86117a792e0bb1c67C7A5
+     BTC: bc1q64nfkruds9mx0pfxflwlamua39purrw6smnjy6
+     Ethereum: 0xDe296f6d8d8031AB729c6085E464047242E4cB78
      Patreon: https://www.patreon.com/dragokas
 0035=Secciones
 0036=Llaves
@@ -887,6 +886,19 @@
 2466=con
 2467=Consulta vista x32 (adicionalmente)
 2468=Modo
+2469=Área
+2470=Seleccionar todo
+2471=Nombre nativo (físico)
+2472=Fecha de modificación
+2473=Recuento de llaves
+2474=Clave longitud máxima
+2475=Redirección
+2476=Virtualización
+2477=Banderas
+2478=Volatilidad
+2479=Enlace simbólico
+2480=Descriptor de seguridad
+2481=Nombre de la clase
 ;
 ; ============ Delete on reboot
 ;

@@ -85,7 +85,7 @@ Sub ExtractLanguage(sLangFileContents As String, Optional sFilename As String) '
         If Left$(Lines(i), 1) <> ";" Then 'comment char
             ch = Left$(Lines(i), 4)
             If Not IsNumeric(ch) Then
-                If Left$(Lines(i), 5) = "     " Then Lines(i) = Mid$(Lines(i), 6)
+                If Left$(Lines(i), 5) = "     " Then Lines(i) = mid$(Lines(i), 6)
                 gLines(idx) = gLines(idx) & vbCrLf & Lines(i) ' continuance of last line
             Else
                 idx = CLng(ch)
@@ -101,7 +101,7 @@ Sub ExtractLanguage(sLangFileContents As String, Optional sFilename As String) '
                     Exit Sub
                 Else
                     pos = InStr(Lines(i), "=")
-                    gLines(idx) = Mid$(Lines(i), pos + 1)
+                    gLines(idx) = mid$(Lines(i), pos + 1)
                 End If
             End If
         End If
@@ -321,7 +321,7 @@ Function LoadResFile(sFilename As String, Optional ResID As Long, Optional UseRe
     LoadResFile = ConvertCodePage(StrPtr(sText), CP_UTF8)
     
     If AscW(Left$(LoadResFile, 1)) = -257 Then
-        LoadResFile = Mid$(LoadResFile, 2)
+        LoadResFile = mid$(LoadResFile, 2)
     End If
     
     AppendErrorLogCustom "LoadResFile - End"
@@ -358,6 +358,11 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
     
     Translate() = gLines()
     
+'    If IsFormInit(frmMain) Then
+'        frmMain.mnuBasicManual.Visible = True
+'        frmMain.mnuResultList.Visible = True
+'    End If
+     
     With frmMain
         For i = 0 To UBound(Translate)
             If Len(Translate(i)) <> 0 Then
@@ -436,25 +441,39 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     
                     '; =========== Menu (main form) ===========
                     
-                    Case "1200": .mnuFile.Caption = Translation
-                    Case "1201": .mnuFileSettings.Caption = Translation
-                    Case "1202": .mnuFileUninstHJT.Caption = Translation
-                    Case "1203": .mnuFileExit.Caption = Translation
-                    Case "1204": .mnuTools.Caption = Translation
-                    Case "1205": .mnuToolsProcMan.Caption = Translation
-                    Case "1206": .mnuToolsHosts.Caption = Translation
-                    'Case "1207": .mnuToolsDelFile.Caption = Translation
-                    Case "1208": .mnuToolsUnlockFiles.Caption = Translation
-                    Case "1209": .mnuToolsDelFileOnReboot.Caption = Translation
-                    Case "1210": .mnuToolsDelServ.Caption = Translation
-                    Case "1211": .mnuToolsRegUnlockKey.Caption = Translation
-                    Case "1212": .mnuToolsADSSpy.Caption = Translation
-                    Case "1213": .mnuToolsDigiSign.Caption = Translation
+                    Case "1200":
+                        .mnuFile.Caption = Translation 'to update length
+                        SetMenuCaptionByMenu .mnuFile, Translation
+                    Case "1201": SetMenuCaptionByMenu .mnuFileSettings, Translation
+                    Case "1202": SetMenuCaptionByMenu .mnuFileUninstHJT, Translation
+                    Case "1203": SetMenuCaptionByMenu .mnuFileExit, Translation
+                    Case "1204":
+                        .mnuTools.Caption = Translation 'to update length
+                        SetMenuCaptionByMenu .mnuTools, Translation
+                    Case "1205": SetMenuCaptionByMenu .mnuToolsProcMan, Translation
+                    Case "1206": SetMenuCaptionByMenu .mnuToolsHosts, Translation
+                    'Case "1207": SetMenuCaptionByMenu .mnuToolsDelFile, Translation
+                    Case "1208": SetMenuCaptionByMenu .mnuToolsUnlockFiles, Translation
+                    Case "1209": SetMenuCaptionByMenu .mnuToolsDelFileOnReboot, Translation
+                    Case "1210": SetMenuCaptionByMenu .mnuToolsDelServ, Translation
+                    Case "1211": SetMenuCaptionByMenu .mnuToolsRegUnlockKey, Translation
+                    Case "1212": SetMenuCaptionByMenu .mnuToolsADSSpy, Translation
+                    Case "1213": SetMenuCaptionByMenu .mnuToolsDigiSign, Translation
                     Case "1214":
-                        .mnuToolsUninst.Caption = Translation
+                        SetMenuCaptionByMenu .mnuToolsUninst, Translation
                         .cmdARSMan.Caption = Translation
-                    Case "1215": .mnuHelp.Caption = Translation
-                    Case "1216": .mnuHelpManual.Caption = Translation
+                    Case "1215":
+                        .mnuHelp.Caption = Translation 'to update length
+                        SetMenuCaptionByMenu .mnuHelp, Translation
+                    Case "1216": SetMenuCaptionByMenu .mnuHelpManual, Translation
+'                    Case "1217":
+'                        SetMenuCaptionByMenu .mnuHelpManualEnglish, Translation
+'                    Case "1218": SetMenuCaptionByMenu .mnuHelpManualRussian, Translation
+'                    Case "1219": SetMenuCaptionByMenu .mnuHelpManualFrench, Translation
+'                    Case "1220": SetMenuCaptionByMenu .mnuHelpManualGerman, Translation
+'                    Case "1221": SetMenuCaptionByMenu .mnuHelpManualSpanish, Translation
+'                    Case "1222": SetMenuCaptionByMenu .mnuHelpManualPortuguese, Translation
+'                    Case "1223": SetMenuCaptionByMenu .mnuHelpManualDutch, Translation
                     Case "1217": .mnuHelpManualEnglish.Caption = Translation
                     Case "1218": .mnuHelpManualRussian.Caption = Translation
                     Case "1219": .mnuHelpManualFrench.Caption = Translation
@@ -462,23 +481,45 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     Case "1221": .mnuHelpManualSpanish.Caption = Translation
                     Case "1222": .mnuHelpManualPortuguese.Caption = Translation
                     Case "1223": .mnuHelpManualDutch.Caption = Translation
-                    Case "1224": .mnuHelpUpdate.Caption = Translation
-                    Case "1225": .mnuHelpAbout.Caption = Translation
-                    Case "1226": .mnuHelpSupport.Caption = Translation
-                    Case "1227": .mnuHelpManualSections.Caption = Translation
-                    Case "1228": .mnuHelpManualCmdKeys.Caption = Translation
-                    Case "1229": .mnuToolsReg.Caption = Translation
-                    Case "1230": .mnuToolsFiles.Caption = Translation
-                    Case "1231": .mnuToolsService.Caption = Translation
-                    Case "1232": .mnuToolsStartupList.Caption = Translation
-                    Case "1233": .mnuHelpManualBasic.Caption = Translation
-                    Case "1235": .mnuFileInstallHJT.Caption = Translation
-                    Case "1236": .mnuToolsShortcuts.Caption = Translation
-                    Case "1237": .mnuToolsShortcutsChecker.Caption = Translation
-                    Case "1238": .mnuToolsShortcutsFixer.Caption = Translation
                     
+                    Case "1224": SetMenuCaptionByMenu .mnuHelpUpdate, Translation
+                    Case "1225": SetMenuCaptionByMenu .mnuHelpAbout, Translation
+                    Case "1226": SetMenuCaptionByMenu .mnuHelpSupport, Translation
+                    Case "1227": SetMenuCaptionByMenu .mnuHelpManualSections, Translation
+                    Case "1228": SetMenuCaptionByMenu .mnuHelpManualCmdKeys, Translation
+                    Case "1229": SetMenuCaptionByMenu .mnuToolsReg, Translation
+                    Case "1230": SetMenuCaptionByMenu .mnuToolsFiles, Translation
+                    Case "1231": SetMenuCaptionByMenu .mnuToolsService, Translation
+                    Case "1232": SetMenuCaptionByMenu .mnuToolsStartupList, Translation
+                    Case "1233": SetMenuCaptionByMenu .mnuHelpManualBasic, Translation
+                    Case "1235": SetMenuCaptionByMenu .mnuFileInstallHJT, Translation
+                    Case "1236": SetMenuCaptionByMenu .mnuToolsShortcuts, Translation
+                    Case "1237": SetMenuCaptionByMenu .mnuToolsShortcutsChecker, Translation
+                    Case "1238": SetMenuCaptionByMenu .mnuToolsShortcutsFixer, Translation
+                    Case "1239": SetMenuCaptionByMenu .mnuToolsRegTypeChecker, Translation
+
                     '; ========= Context menu (result window) ==========
-                    
+
+'                    Case "1160": SetMenuCaptionByMenu .mnuResultFix, Translation
+'                    Case "1161": SetMenuCaptionByMenu .mnuResultAddToIgnore, Translation
+'                    Case "1162": SetMenuCaptionByMenu .mnuResultInfo, Translation
+'                    Case "1163": SetMenuCaptionByMenu .mnuResultSearch, Translation
+'                    Case "1164": SetMenuCaptionByMenu .mnuResultReScan, Translation
+'                    Case "1165": SetMenuCaptionByMenu .mnuResultAddALLToIgnore, Translation
+'                    Case "1166": SetMenuCaptionByMenu .mnuResultJump, Translation
+'                    Case "1167": SetMenuCaptionByMenu .mnuSaveReport, Translation
+'                    Case "1170": SetMenuCaptionByMenu .mnuResultCopy, Translation
+'                    Case "1171": SetMenuCaptionByMenu .mnuResultCopyLine, Translation
+'                    Case "1172": SetMenuCaptionByMenu .mnuResultCopyRegKey, Translation
+'                    Case "1173": SetMenuCaptionByMenu .mnuResultCopyRegParam, Translation
+'                    Case "1174": SetMenuCaptionByMenu .mnuResultCopyFilePath, Translation
+'                    Case "1175": SetMenuCaptionByMenu .mnuResultCopyFileName, Translation
+'                    Case "2360": SetMenuCaptionByMenu .mnuResultCopyFileArguments, Translation
+'                    Case "1176": SetMenuCaptionByMenu .mnuResultCopyFileObject, Translation
+'                    Case "1177": SetMenuCaptionByMenu .mnuResultCopyValue, Translation
+'                    Case "1178": SetMenuCaptionByMenu .mnuResultVTHash, Translation
+'                    Case "1179": SetMenuCaptionByMenu .mnuResultVTSubmit, Translation
+
                     Case "1160": .mnuResultFix.Caption = Translation
                     Case "1161": .mnuResultAddToIgnore.Caption = Translation
                     Case "1162": .mnuResultInfo.Caption = Translation
@@ -498,7 +539,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     Case "1177": .mnuResultCopyValue.Caption = Translation
                     Case "1178": .mnuResultVTHash.Caption = Translation
                     Case "1179": .mnuResultVTSubmit.Caption = Translation
-                    
+
                     '; =========== Misc Tools (tab) ===========
                     Case "0044": .chkConfigTabs(3).Caption = Translation
                     
@@ -954,6 +995,9 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                         If IsFormInit(frmRegTypeChecker) Then
                             With frmRegTypeChecker
                                 Select Case id
+                                    Case "1854": .fraReportFormat.Caption = Translation
+                                    Case "1855": .optPlainText.Caption = Translation
+                                    Case "1856": .OptCSV.Caption = Translation
                                     Case "2450": .Caption = Translation
                                     Case "2451": .lblThisTool.Caption = Translation
                                     Case "2452": .chkRecurse.Caption = Translation
@@ -971,9 +1015,19 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                                     Case "2466": .lblWith.Caption = Translation
                                     Case "2467": .chkQueryX32.Caption = Translation
                                     Case "2468": .fraMode.Caption = Translation
-                                    Case "1854": .fraReportFormat.Caption = Translation
-                                    Case "1855": .optPlainText.Caption = Translation
-                                    Case "1856": .OptCSV.Caption = Translation
+                                    Case "2469": .fraArea.Caption = Translation
+                                    Case "2470": .chkSelectAll.Caption = Translation
+                                    Case "2471": .chkNativeName.Caption = Translation
+                                    Case "2472": .chkDateModif.Caption = Translation
+                                    Case "2473": .chkKeysCount.Caption = Translation
+                                    Case "2474": .chkKeyLength.Caption = Translation
+                                    Case "2475": .chkRedirection.Caption = Translation
+                                    Case "2476": .chkVirtualization.Caption = Translation
+                                    Case "2477": .chkFlags.Caption = Translation
+                                    Case "2478": .chkVolatility.Caption = Translation
+                                    Case "2479": .chkSymlink.Caption = Translation
+                                    Case "2480": .chkSecurityDescriptor.Caption = Translation
+                                    Case "2481": .chkClass.Caption = Translation
                                 End Select
                             End With
                         End If
@@ -1002,6 +1056,20 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
     End With
     SecondChance = False
     
+    Dim frm As Form
+    For Each frm In Forms
+        frm.Refresh
+    Next
+    
+    'EnableMenuItem m_RootMenu, 4, MF_DISABLED Or MF_BYPOSITION
+    
+    'for some reason menu item text has reset to default text as soon as .Visible property = false
+    
+'    If IsFormInit(frmMain) Then
+'        frmMain.mnuBasicManual.Visible = False
+'        frmMain.mnuResultList.Visible = False
+'    End If
+    
     AppendErrorLogCustom "ReloadLanguage - End"
     Exit Sub
 ErrorHandler:
@@ -1020,18 +1088,18 @@ ErrorHandler:
     End If
 End Sub
 
-Public Function IsFormForeground(Frm As Form) As Boolean
+Public Function IsFormForeground(frm As Form) As Boolean
     Dim hActiveWnd As Long
-    If IsFormInit(Frm) Then
+    If IsFormInit(frm) Then
         hActiveWnd = GetForegroundWindow()
-        If hActiveWnd = Frm.hwnd Then IsFormForeground = True
+        If hActiveWnd = frm.hwnd Then IsFormForeground = True
     End If
 End Function
 
-Public Function IsFormInit(Frm As Form) As Boolean
+Public Function IsFormInit(frm As Form) As Boolean
     Dim cForm As Form
     For Each cForm In Forms
-        If cForm Is Frm Then
+        If cForm Is frm Then
             IsFormInit = True
             Exit For
         End If
@@ -1301,7 +1369,7 @@ Public Function GetSectionFromKey$(sName$)
                 GetSectionFromKey = Translate(676) & " '" & MapSIDToUsername(sUsernames(i)) & "'"
                 Exit Function
             Else
-                sName = Mid$(sName, Len(sUsernames(i)) + 1)
+                sName = mid$(sName, Len(sUsernames(i)) + 1)
             End If
         End If
     Next i
@@ -1313,7 +1381,7 @@ Public Function GetSectionFromKey$(sName$)
                 GetSectionFromKey = Translate(677) & " '" & MapControlSetToHardwareCfg(sHardwareCfgs(i)) & "'"
                 Exit Function
             Else
-                sName = Mid$(sName, Len(sHardwareCfgs(i)) + 1)
+                sName = mid$(sName, Len(sHardwareCfgs(i)) + 1)
             End If
         End If
     Next i

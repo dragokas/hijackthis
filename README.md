@@ -1,4 +1,4 @@
-_(this is alpha-version of source code without f\*cking release; allowing me to see own errors; well, you can still download test release but don't cry; the plus+ in the name is not a pharmacy, it means smooth introduction of detection of modern malware and step-by-step moving to replace some modules on C++ to access 64-bit processes in normal way and multi-threading; it is also a differentiation among other possible forks around)_
+_(this is alpha-version - major changes is in progress; some functions may work unstable; the plus+ means smooth introduction of detection of modern malware and step-by-step moving to replace some modules on C++ to access 64-bit processes in normal way and multi-threading; it is also a differentiation among other possible forks around)_
 
 # HiJackThis+
 
@@ -124,8 +124,8 @@ HiJackThis+ is distributed under the initial [GPLv2 license](https://github.com/
 I have maintained this project in my free time for more than seven years.
 If you find it useful, you can support me for further inspiration by donating any amount to:
  * [Patreon](https://www.patreon.com/dragokas)
- * BTC: [17hkU3eKPngHrG3P9uqXwMLE3ztmtfGDZ4](https://dragokas.com/tools/img/BTC_QR.png)
- * Ethereum: 0xc6B421AeeC879F6603f86117a792e0bb1c67C7A5
+ * BTC: bc1q64nfkruds9mx0pfxflwlamua39purrw6smnjy6
+ * Ethereum: 0xDe296f6d8d8031AB729c6085E464047242E4cB78
 
 ## Other projects
 

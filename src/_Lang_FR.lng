@@ -106,7 +106,7 @@
 ; (1090-1099)
 ;
 1090=Bienvenue dans HiJackThis+
-1091=     HiJackThis est un outil gratuit et Open source conçu pour lutter contre les logiciels malveillants et les logiciels publicitaires indésirables. Il est fourni "TEL QUEL"
+1091=     HiJackThis+ est un outil gratuit et Open source conçu pour lutter contre les logiciels malveillants et les logiciels publicitaires indésirables. Il est fourni "TEL QUEL"
           sans garantie d'aucune sorte. Vous pouvez utiliser ce logiciel à vos risques et périls.
           Ce logiciel n'est pas autorisé à des fins commerciales.
           Vous devez lire et accepter le contrat de licence pour continuer:
@@ -174,7 +174,7 @@ et enregistrer un rapport
 ;
 1200=Fichier
 1201=Paramètres
-1202=Désinstaller HiJackThis
+1202=Désinstaller HiJackThis+
 1203=Quitter
 1204=Outils
 1205=Gestionnaire de processus
@@ -206,7 +206,7 @@ et enregistrer un rapport
 1231=Services
 1232=Liste de démarrage
 1233=Manuel de base
-1235=Installer HiJackThis
+1235=Installer HiJackThis+
 1236=Raccourcis
 1237=Vérifier les raccourcis via Check Browsers' LNK
 1238=Corriger les raccourcis via ClearLNK
@@ -268,13 +268,13 @@ et enregistrer un rapport
      Clés de ligne de commande:
      --------------------------------
 
-     1. HiJackThis
+     1. HiJackThis+
      2. StartupList
      3. Comment l'utiliser?
 
      
      
-     1. HiJackThis
+     1. HiJackThis+
      ---------------
      
        /accepteula 	- accepte le contrat. Il ne sera pas affiché au démarrage du programme.
@@ -352,12 +352,12 @@ et enregistrer un rapport
      Description
      -------------
      
-HiJackThis+ analyse votre ordinateur à la recherche de paramètres modifiés par les logiciels publicitaires, espions, malveillants ou autres programmes indésirables.
+          HiJackThis+ analyse votre ordinateur à la recherche de paramètres modifiés par les logiciels publicitaires, espions, malveillants ou autres programmes indésirables.
 
-Les résultats de HiJackThis+ ne sont pas basés sur des listes noires, des programmes spécifiques ou des URL. En fait, ils sont basés sur des méthodes et techniques couramment utilisées par les pirates.
-Se SONT donc probablement de FAUX POSITIFS. En cas de doute, consultez un expert AVANT de supprimer quoi que ce soit.
+          Les résultats de HiJackThis+ ne sont pas basés sur des listes noires, des programmes spécifiques ou des URL. En fait, ils sont basés sur des méthodes et techniques couramment utilisées par les pirates.
+          Se SONT donc probablement de FAUX POSITIFS. En cas de doute, consultez un expert AVANT de supprimer quoi que ce soit.
      
-HiJackThis est livré avec plusieurs outils, disponibles sous le bouton "Outils divers" et la nouvelle barre du menu "Outils":
+          HiJackThis est livré avec plusieurs outils, disponibles sous le bouton "Outils divers" et la nouvelle barre du menu "Outils":
      
         - StartupList 2
         - Gestionnaire de processus
@@ -431,8 +431,8 @@ HiJackThis+ est une modification du programme HiJackThis original de Trend Micro
      pour que je garde une créativité et m'aider à poursuivre un développement actif du projet, j'en serai très content:
 
 0034=
-     BTC: 17hkU3eKPngHrG3P9uqXwMLE3ztmtfGDZ4
-     Ethereum: 0xc6B421AeeC879F6603f86117a792e0bb1c67C7A5
+     BTC: bc1q64nfkruds9mx0pfxflwlamua39purrw6smnjy6
+     Ethereum: 0xDe296f6d8d8031AB729c6085E464047242E4cB78
      Patreon: https://www.patreon.com/dragokas
 
 0035=Sections
@@ -884,6 +884,19 @@ HiJackThis+ est une modification du programme HiJackThis original de Trend Micro
 2466=par du
 2467=Interroger la vue x32 (en plus)
 2468=Mode
+2469=Zone
+2470=Tout sélectionner
+2471=Nom natif (physique)
+2472=Date de modification
+2473=Les clés comptent
+2474=Longueur maximale des clés
+2475=Redirection
+2476=Virtualisation
+2477=Drapeaux
+2478=Volatilité
+2479=Lien symbolique
+2480=Descripteur de sécurité
+2481=Nom du cours
 ;
 ; ============ Delete on reboot ========
 ;
@@ -1822,4 +1835,4 @@ HiJackThis+ est une modification du programme HiJackThis original de Trend Micro
 ; ========= Empty ========
 ;
 ; (2500 - ...)
-;                                                    
+;                                                     

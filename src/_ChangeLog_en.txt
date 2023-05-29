@@ -11,7 +11,17 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
-[3.0.0.1 Alpha]
+[3.0.0.2 Alpha] - May 29, 2023
+ - The situation in Ukraine: sirens, sirens, sirens == insomnia.
+ - "Additional scan" is included in the "default" settings.
+ - O7 - Taskbar policy: added NoViewContextMenu, NoSecurityTab
+ - Added display of current user account type: Local/Microsoft/ActiveDirectory/AzureAD/Internet (Windows 8 and above).
+ - Remove symlink keys (source).
+ - Better quality of taskbar icon.
+ - Fixed missing menu icons when selecting a language with unicode characters.
+ - Support Unicode text for the system menu (no context menu yet).
+
+[3.0.0.1 Alpha] - May 26, 2023
  - F*ck them all, manifest is on github: https://github.com/dragokas/hijackthis
  - No f*cking release
 General:
@@ -29,8 +39,8 @@ New:
 Functionality:
  - Added new marks:
  * "(missing)" - displayed for a missing registry entry (parameter or key).
- * "(access denied)" - displayed if there are no access rights to the object.
- * these marks are planned to be extended to work in all sections, but at the moment it only works in O7 [TamperProtection].
+ * "(access denied)" - displayed if there are no access permissions to the object.
+ * these marks are planned to be extended to work in all sections, however at the moment it only works in O7 [TamperProtection].
  - x32 keys ("-32" sections) are displayed with normalized name now (\Wow6432Node\ is specified whenewer the section log record isn't shortened). Can be viewed fully through context menu "Jump".
 Bugs:
  - Fixed Digital Signature Checker: could give incorrect (pre-cached) data for some fields due to faster processing.
@@ -1703,4 +1713,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                                                                                                            
+                                                                                                                 

@@ -1,25 +1,26 @@
 VERSION 5.00
 Begin VB.Form frmEULA 
    BorderStyle     =   4  'Fixed ToolWindow
-   ClientHeight    =   7200
+   ClientHeight    =   3240
    ClientLeft      =   4788
    ClientTop       =   4836
-   ClientWidth     =   6744
+   ClientWidth     =   6708
    Icon            =   "frmEULA.frx":0000
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   7200
-   ScaleWidth      =   6744
+   ScaleHeight     =   3240
+   ScaleWidth      =   6708
    StartUpPosition =   2  'CenterScreen
    Begin VB.TextBox txtEULA 
-      Height          =   4695
+      Height          =   732
       Left            =   120
+      Locked          =   -1  'True
       MultiLine       =   -1  'True
       ScrollBars      =   2  'Vertical
       TabIndex        =   2
       Top             =   1920
-      Width           =   6615
+      Width           =   6492
    End
    Begin VB.CommandButton cmdNotAgree 
       Caption         =   "I Do Not Accept"
@@ -33,9 +34,9 @@ Begin VB.Form frmEULA
          Strikethrough   =   0   'False
       EndProperty
       Height          =   375
-      Left            =   3480
+      Left            =   3240
       TabIndex        =   1
-      Top             =   6720
+      Top             =   2760
       Width           =   1575
    End
    Begin VB.CommandButton cmdAgree 
@@ -50,9 +51,9 @@ Begin VB.Form frmEULA
          Strikethrough   =   0   'False
       EndProperty
       Height          =   375
-      Left            =   5160
+      Left            =   5040
       TabIndex        =   0
-      Top             =   6720
+      Top             =   2760
       Width           =   1575
    End
    Begin VB.Label lblAware 
@@ -194,7 +195,7 @@ Private Sub Form_Initialize()
     '/timeout
     pos = InStr(1, g_sCommandLine, "timeout", 1)
     If pos <> 0 Then
-        sTime = Mid$(g_sCommandLine, pos + Len("timeout") + 1)
+        sTime = mid$(g_sCommandLine, pos + Len("timeout") + 1)
         pos = InStr(sTime, " ")
         If pos <> 0 Then
             sTime = Left$(sTime, pos - 1)
@@ -290,10 +291,10 @@ Private Sub Form_Initialize()
     '/saveLog "c:\LogPath\LogName.log"
     If InStr(1, Command$, "saveLog", vbTextCompare) > 0 Then
         'path to save logfile to
-        sPath = Mid$(Command$, InStr(1, Command$, "saveLog", 1) + 8)
+        sPath = mid$(Command$, InStr(1, Command$, "saveLog", 1) + 8)
         If Left$(sPath, 1) = """" Then
             'path enclosed in quotes, get what's between
-            sPath = Mid$(sPath, 2)
+            sPath = mid$(sPath, 2)
             If InStr(sPath, """") > 0 Then
                 sPath = Left$(sPath, InStr(sPath, """") - 1)
             Else
@@ -443,7 +444,7 @@ Sub WatchForProcess()   'waiting for process completion to release unpacked reso
     sPathComCtl1 = BuildPath(AppPath(), "MSComCtl.ocx")
     sPathComCtl2 = BuildPath(AppPath(), "MSComCtl.oca")
     
-    ProcessID = Val(Mid$(g_sCommandLine, InStr(1, g_sCommandLine, "/release:", 1) + Len("/release:")))
+    ProcessID = Val(mid$(g_sCommandLine, InStr(1, g_sCommandLine, "/release:", 1) + Len("/release:")))
     
     If ProcessID <> 0 Then
         
