@@ -19,14 +19,14 @@ End Enum
 
 Public Declare Function LsaLookupUserAccountType Lib "sechost.dll" (ByVal pSid As Long, accountType As LSA_USER_ACCOUNT_TYPE) As Long
 
-Public Function GetSidAccountType(pSid As Long, out_AccountType As LSA_USER_ACCOUNT_TYPE) As Long
+Private Function Wrap_LsaLookupUserAccountType(pSid As Long, out_AccountType As LSA_USER_ACCOUNT_TYPE) As Long
     On Error GoTo ErrorHandler:
     
     Dim status As Long
     Dim accountType As LSA_USER_ACCOUNT_TYPE
     
     If Not IsProcedureAvail("LsaLookupUserAccountType", "sechost.dll") Then
-        GetSidAccountType = STATUS_UNSUCCESSFUL
+        Wrap_LsaLookupUserAccountType = STATUS_UNSUCCESSFUL
         Exit Function
     End If
     
@@ -36,31 +36,22 @@ Public Function GetSidAccountType(pSid As Long, out_AccountType As LSA_USER_ACCO
         out_AccountType = accountType
     End If
 
-    GetSidAccountType = status
+    Wrap_LsaLookupUserAccountType = status
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "GetSidAccountType"
+    ErrorMsg Err, "Wrap_LsaLookupUserAccountType"
     If inIDE Then Stop: Resume Next
 End Function
 
 
 'thanks to dmex
-Public Function GetSidAccountTypeString() As String
+Private Function GetUserAccountTypeBySidPtr(pSid As Long) As String
     
     Dim accountType As LSA_USER_ACCOUNT_TYPE
     Dim accountTypeStr As String
     
-    Dim bufSid() As Byte
-    Dim pSid As Long
-    Dim sSid As String
-    sSid = Reg.CurrentUserSID
-    If Len(sSid) = 0 Then Exit Function
-    bufSid = CreateBufferedSID(sSid)
-    If AryPtr(bufSid) = 0 Then Exit Function
-    pSid = VarPtr(bufSid(0))
-    
-    If (NT_SUCCESS(GetSidAccountType(pSid, accountType))) Then
+    If (NT_SUCCESS(Wrap_LsaLookupUserAccountType(pSid, accountType))) Then
         Select Case (accountType)
         Case LocalUserAccountType: accountTypeStr = "Local"
         Case PrimaryDomainUserAccountType: accountTypeStr = "ActiveDirectory"
@@ -85,6 +76,45 @@ Public Function GetSidAccountTypeString() As String
         End Select
     End If
     
-    GetSidAccountTypeString = accountTypeStr
+    GetUserAccountTypeBySidPtr = accountTypeStr
     
+End Function
+
+Private Function GetUserAccountTypeBySidString(sSid As String) As String
+    Dim bufSid() As Byte
+    Dim pSid As Long
+    bufSid = CreateBufferedSID(sSid)
+    If AryPtr(bufSid) <> 0 Then
+        pSid = VarPtr(bufSid(0))
+        GetUserAccountTypeBySidString = GetUserAccountTypeBySidPtr(pSid)
+    End If
+End Function
+
+Public Function GetCurrentUserAccountType() As String
+    If OSver.IsWindows8OrGreater Then
+        GetCurrentUserAccountType = GetUserAccountTypeBySidString(Reg.CurrentUserSID)
+    End If
+End Function
+
+Public Function GetUserAccountType(sUser As String) As String
+    If OSver.IsWindows8OrGreater Then
+        Dim sSid As String
+        sSid = GetUserSid(sUser)
+        If Len(sSid) <> 0 Then GetUserAccountType = GetUserAccountTypeBySidString(sSid)
+    End If
+End Function
+
+Public Function GetUserSid(sUser As String) As String
+    Dim sThisUser As String
+    Dim aSubKeys() As String
+    Dim i As Long
+    For i = 1 To Reg.EnumSubKeysToArray(HKEY_USERS, "", aSubKeys())
+        If aSubKeys(i) Like "S-#-#-#*" And Not StrEndWith(aSubKeys(i), "_Classes") Then
+            sThisUser = MapSIDToUsername(aSubKeys(i))
+            If StrComp(sUser, sThisUser, vbTextCompare) = 0 Then
+                GetUserSid = aSubKeys(i)
+                Exit For
+            End If
+        End If
+    Next i
 End Function

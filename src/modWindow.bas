@@ -7,6 +7,18 @@ Attribute VB_Name = "modWindow"
 
 Option Explicit
 
+Public Enum CONTROL_ALIGNMENT_HOTIZONTAL
+    CONTROL_ALIGNMENT_HORIZONTAL_LEFT = 0
+    CONTROL_ALIGNMENT_HORIZONTAL_CENTER = 1
+    CONTROL_ALIGNMENT_HORIZONTAL_RIGHT = 2
+End Enum
+
+Public Enum CONTROL_ALIGNMENT_VERTICAL
+    CONTROL_ALIGNMENT_VERTICAL_TOP = 0
+    CONTROL_ALIGNMENT_VERTICAL_CENTER = 1
+    CONTROL_ALIGNMENT_VERTICAL_BOTTOM = 2
+End Enum
+
 Private Declare Function FindWindow Lib "user32.dll" Alias "FindWindowW" (ByVal lpClassName As Long, ByVal lpWindowName As Long) As Long
 Private Declare Function FindWindowEx Lib "user32" Alias "FindWindowExW" (ByVal hWndParent As Long, ByVal hWndChildAfter As Long, ByVal lpszClass As Long, ByVal lpszWindow As Long) As Long
 Private Declare Function GetDlgCtrlID Lib "user32" (ByVal hwnd As Long) As Long
@@ -300,3 +312,22 @@ Public Function GetSystemDPI() As Long
     GetSystemDPI = GetDeviceCaps(dDC, LOGPIXELSX)
     ReleaseDC 0, dDC
 End Function
+
+Public Sub ScalePictureDPI(pict As PictureBox)
+    Const HALFTONE As Long = 4
+    Const DEV_DPI As Long = 120
+    
+    Dim stretchMode As Long
+    Dim dpiMult As Double: dpiMult = GetSystemDPI() / DEV_DPI
+    
+    With pict
+        .AutoRedraw = True
+        .ScaleMode = vbPixels
+        .Cls
+        stretchMode = SetStretchBltMode(.hdc, HALFTONE)
+        StretchBlt .hdc, 0, 0, .ScaleWidth * dpiMult, .ScaleHeight * dpiMult, .hdc, 0, 0, .ScaleWidth, .ScaleHeight, vbSrcCopy
+        SetStretchBltMode .hdc, stretchMode
+        .Width = .Width * dpiMult
+        .Height = .Height * dpiMult
+    End With
+End Sub

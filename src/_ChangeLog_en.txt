@@ -11,6 +11,23 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[3.0.0.3 Alpha] - June 01, 2023
+  - Added definition of O7 - Account: UAC
+  - Added O7 - Policy: *\..\Policies\Explorer\DisallowRun: Fix all - fixes all DisallowRun lines at once and sets the DisallowRun parameter to 0.
+  - Displaying account type in AutoLogon.
+  - Fixed: SFC wasn't performed for missing system files.
+  - Fixed: The file name wasn't copied via the context menu if "File missing".
+  - Fixed: DisallowRun displayed wrong state.
+  - Improved Regexp in Registry Key Type Checker; fixed bug with field selection.
+  - Fixed false positives of Additional subsections.
+  - Fixed mark Boot mode: Safe Boot ("with" or "without network support" is always written).
+  - Added the DataChecker class, which makes it easier to create definition rules.
+  - Design change:
+	* text format changes
+	* Button "None of above, just start the program" renamed to "Settings"
+	* Removed the checkbox "Do not show the main menu after starting the program"
+	* DPI support for logo
+
 [3.0.0.2 Alpha] - May 29, 2023
  - The situation in Ukraine: sirens, sirens, sirens == insomnia.
  - "Additional scan" is included in the "default" settings.
@@ -1713,4 +1730,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                                                                                                                 
+                                                                                                                  

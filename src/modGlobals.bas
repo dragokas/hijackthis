@@ -30,7 +30,7 @@ Public Const STR_NOT_SIGNED As String = "(not signed)"
 Public Const STR_ACCESS_DENIED As String = "(access denied)"
 
 #If False Then 'for common var. names character case fixation
-    Public X, Y, Length, Index, sFilename, i, j, k, N, State, Frm, ret, VT, isInit, hwnd, pv, Reg, pid, File, msg, VT, InArray, Self, status, FileName
+    Public x, y, Length, Index, sFilename, i, j, k, N, State, Frm, ret, VT, isInit, hwnd, pv, Reg, pid, File, msg, VT, InArray, Self, status, FileName
 #End If
 
 Public Enum HE_HIVE
@@ -211,6 +211,9 @@ Public Declare Function SendMessageW Lib "user32.dll" (ByVal hwnd As Long, ByVal
 Public Declare Function SfcIsFileProtected Lib "Sfc.dll" (ByVal RpcHandle As Long, ByVal ProtFileName As Long) As Long
 Public Declare Function GetScrollInfo Lib "user32.dll" (ByVal hwnd As Long, ByVal nBar As Long, ByVal lpsi As Long) As Long
 Public Declare Function SetScrollInfo Lib "user32.dll" (ByVal hwnd As Long, ByVal nBar As Long, ByVal lpsi As Long, redraw As Long) As Long
+Public Declare Function SetLayeredWindowAttributes Lib "user32.dll" (ByVal hwnd As Long, ByVal crKey As Long, ByVal bAlpha As Byte, ByVal dwFlags As Long) As Long
+Public Declare Function SetStretchBltMode Lib "gdi32.dll" (ByVal hdc As Long, ByVal nStretchMode As Long) As Long
+Public Declare Function StretchBlt Lib "gdi32.dll" (ByVal hdc As Long, ByVal x As Long, ByVal y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hSrcDC As Long, ByVal xSrc As Long, ByVal ySrc As Long, ByVal nSrcWidth As Long, ByVal nSrcHeight As Long, ByVal dwRop As Long) As Long
 
 Public Const IMAGE_ICON        As Long = 1
 Public Const ICON_SMALL        As Long = 0
@@ -234,6 +237,7 @@ Public Const SIF_POS           As Long = 4&
 Public Const SIF_RANGE         As Long = 1&
 Public Const SIF_TRACKPOS      As Long = &H10&
 Public Const SIF_ALL           As Long = 1 Or 2 Or 4 Or &H10&
+Public Const LWA_COLORKEY      As Long = &H1&
 
 'Public HE           As clsHiveEnum
 Public Reg          As clsRegistry
@@ -1247,7 +1251,7 @@ Public Type SID_IDENTIFIER_AUTHORITY
 End Type
 
 Public Type SID_AND_ATTRIBUTES
-    sid         As Long
+    SID         As Long
     Attributes  As Long
 End Type
 
@@ -1540,7 +1544,7 @@ Public Type ACL_SIZE_INFORMATION
     AclBytesFree As Long
 End Type
 
-Public Type sid
+Public Type SID
     Revision As Byte
     SubAuthorityCount As Byte
     IdentifierAuthority(5) As Byte
@@ -2247,8 +2251,8 @@ Public Type RECT
 End Type
 
 Public Type POINTAPI
-    X As Long
-    Y As Long
+    x As Long
+    y As Long
 End Type
 
 Public Type OSVERSIONINFOEX
@@ -2282,7 +2286,7 @@ Public Declare Function ScreenToClient Lib "user32.dll" (ByVal hwnd As Long, lpP
 Public Declare Function CallWindowProc Lib "user32.dll" Alias "CallWindowProcW" (ByVal lpPrevWndFunc As Long, ByVal hwnd As Long, ByVal msg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
 Public Declare Function GetCursorPos Lib "user32.dll" (lpPoint As POINTAPI) As Long
 Public Declare Function GetWindowRect Lib "user32.dll" (ByVal hwnd As Long, lpRect As RECT) As Long
-Public Declare Function PtInRect Lib "user32.dll" (lpRect As RECT, ByVal X As Long, ByVal Y As Long) As Long
+Public Declare Function PtInRect Lib "user32.dll" (lpRect As RECT, ByVal x As Long, ByVal y As Long) As Long
 Public Declare Sub SHChangeNotify Lib "shell32.dll" (ByVal wEventId As Long, ByVal uFlags As Long, ByVal dwItem1 As Long, ByVal dwItem2 As Long)
 Public Declare Function LoadLibraryEx Lib "kernel32.dll" Alias "LoadLibraryExW" (ByVal lpFileName As Long, ByVal hFile As Long, ByVal dwFlags As Long) As Long
 'Public Declare Function LoadString Lib "user32.dll" Alias "LoadStringW" (ByVal hInstance As Long, ByVal uID As Long, ByVal lpBuffer As Long, ByVal nBufferMax As Long) As Long
@@ -2294,7 +2298,7 @@ Public Declare Function LocalFileTimeToFileTime Lib "kernel32.dll" (lpLocalFileT
 Public Declare Function GetTimeZoneInformation Lib "kernel32.dll" (ByVal lpTimeZoneInformation As Long) As Long
 Public Declare Function IsWow64Process Lib "kernel32.dll" (ByVal hProcess As Long, ByRef Wow64Process As Long) As Long
 Public Declare Function DeleteObject Lib "gdi32.dll" (ByVal hObject As Long) As Long
-Public Declare Function GetPixel Lib "gdi32.dll" (ByVal hdc As Long, ByVal X As Long, ByVal Y As Long) As Long
+Public Declare Function GetPixel Lib "gdi32.dll" (ByVal hdc As Long, ByVal x As Long, ByVal y As Long) As Long
 Public Declare Function SetWindowRgn Lib "user32.dll" (ByVal hwnd As Long, ByVal hRgn As Long, ByVal bRedraw As Long) As Long
 Public Declare Function CreateRectRgn Lib "gdi32.dll" (ByVal X1 As Long, ByVal Y1 As Long, ByVal X2 As Long, ByVal Y2 As Long) As Long
 Public Declare Function CombineRgn Lib "gdi32.dll" (ByVal hDestRgn As Long, ByVal hSrcRgn1 As Long, ByVal hSrcRgn2 As Long, ByVal nCombineMode As Long) As Long
@@ -2391,7 +2395,7 @@ Public Declare Function FindWindow Lib "user32.dll" Alias "FindWindowW" (ByVal l
 Public Declare Function FindWindowEx Lib "user32.dll" Alias "FindWindowExW" (ByVal hWndParent As Long, ByVal hWndChildAfter As Long, ByVal lpszClass As Long, ByVal lpszWindow As Long) As Long
 Public Declare Function SetForegroundWindow Lib "user32.dll" (ByVal hwnd As Long) As Long
 Public Declare Function SetActiveWindow Lib "user32.dll" (ByVal hwnd As Long) As Long
-Public Declare Function SetWindowPos Lib "user32.dll" (ByVal hwnd As Long, ByVal hWndInsertAfter As Long, ByVal X As Long, ByVal Y As Long, ByVal cx As Long, ByVal cy As Long, ByVal uFlags As Long) As Long
+Public Declare Function SetWindowPos Lib "user32.dll" (ByVal hwnd As Long, ByVal hWndInsertAfter As Long, ByVal x As Long, ByVal y As Long, ByVal cx As Long, ByVal cy As Long, ByVal uFlags As Long) As Long
 Public Declare Function GetWindowThreadProcessId Lib "user32" (ByVal hwnd As Long, lpdwProcessId As Long) As Long
 Public Declare Function VirtualAllocEx Lib "kernel32" (ByVal hProcess As Long, ByVal lpAddress As Long, ByVal dwSize As Long, ByVal flAllocationType As Long, ByVal flProtect As Long) As Long
 Public Declare Function WriteProcessMemory Lib "kernel32" (ByVal hProcess As Long, ByVal lpBaseAddress As Long, ByRef lpBuffer As Any, ByVal nSize As Long, lpNumberOfBytesWritten As Long) As Long

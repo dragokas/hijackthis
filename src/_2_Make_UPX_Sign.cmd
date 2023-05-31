@@ -304,7 +304,7 @@ copy /y "%cd%\%AppName%" "HJT_poly.pif"
 :: Apps dependency
 echo.
 md "%cd%\apps\" 2>NUL
-copy /y "%cd%\%ExeName%.pdb" "%cd%\apps\"
+::copy /y "%cd%\%ExeName%.pdb" "%cd%\apps\"
 copy /y "%cd%\tools\VBCCR\ActiveX Control Version\Bin\VBCCR17.OCX" "%cd%\apps\"
 :: copy /y api.exe ... "%cd%\apps\"
 :: copy /y "%cd%\tools\ABR\abr.exe" "%cd%\apps\"

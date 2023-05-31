@@ -2378,8 +2378,7 @@ Public Function SetData(hHive As ENUM_REG_HIVE, ByVal KeyName As String, ValueNa
             SetData = SetQwordVal(hHive, KeyName, ValueName, vData, bUseWow64)
         
         Case Else
-            MsgBoxW "This registry value type is not supported: " & ValueType, vbExclamation
-            SetData = False
+            Err.Raise vbObjectError, "clsRegistry", "Registry value type is not supported: " & ValueType
     End Select
     AppendErrorLogCustom "SetData - End"
     Exit Function
@@ -2492,7 +2491,6 @@ Public Sub Jump(hHive As ENUM_REG_HIVE, ByVal sKey As String, Optional sValue As
     hwndListView = FindWindowEx(hwndRegedit, 0, StrPtr("SysListView32"), 0)
     If hwndTreeView = 0 Or hwndListView = 0 Then
         'Unable to start Regedit.
-        'MsgBoxW Translate(2100)
         MsgBoxW "Cannot select regedit value. hRegedit = " & hwndRegedit & ", hTreeView = " & hwndTreeView & ", hListView = " & hwndListView
         Exit Sub
     End If
@@ -3464,6 +3462,12 @@ Public Property Get StatusCode() As Long
     StatusCode = m_StatusCode
 End Property
 
+'returns true if the last operation were success
+'
+Public Property Get StatusSuccess() As Boolean
+    StatusSuccess = (m_StatusCode = ERROR_SUCCESS)
+End Property
+
 'returns text description suitable for HJT logs of Win API Status code of the last operation requested in this class
 '
 Public Property Get StatusCodeDesc() As String
@@ -3474,6 +3478,22 @@ Public Property Get StatusCodeDesc() As String
             StatusCodeDesc = STR_ACCESS_DENIED
         Case Else
             StatusCodeDesc = "(Error code: " & m_StatusCode & ")"
+    End Select
+End Property
+
+'if the last operation success, just returns the value passed in,
+'if the last operation failed, returns the string description of the status code, similar to StatusCodeDesc() func
+'
+Public Property Get StatusCodeDescOnFail(iSuccesValue As Variant) As String
+    Select Case m_StatusCode
+        Case ERROR_SUCCESS
+             StatusCodeDescOnFail = CStr(iSuccesValue)
+        Case ERROR_FILE_NOT_FOUND
+            StatusCodeDescOnFail = STR_MISSING
+        Case ERROR_ACCESS_DENIED
+            StatusCodeDescOnFail = STR_ACCESS_DENIED
+        Case Else
+            StatusCodeDescOnFail = "(Error code: " & m_StatusCode & ")"
     End Select
 End Property
 

@@ -306,8 +306,7 @@ End Sub
 
 Public Sub AddKeys(aKeys() As String)
     If Not cell.lb_Class_Init Then
-        MsgBoxW "Class should be initialized first with .Init !!!"
-        Exit Sub
+        Err.Raise vbObjectError, "clsHiveEnum", "Class should be initialized"
     End If
     If AryItems(aKeys) Then
         cell.la_Keys = aKeys
@@ -326,8 +325,7 @@ End Sub
 'Specify Hive_Apply to apply key to specific hive only
 Public Sub AddKey(sKey As String, Optional sAppendPlaceholder As String)
     If Not cell.lb_Class_Init Then
-        MsgBoxW "Class should be initialized first with .Init !!!"
-        Exit Sub
+        Err.Raise vbObjectError, "clsHiveEnum", "Class should be initialized"
     End If
     If Not cell.lb_HaveKeys Then
         ReDim cell.la_Keys(0)
@@ -361,7 +359,7 @@ Private Sub FillPredefinedKeys()
             la_predefHive(i) = Reg.GetHKey(Left$(cell.la_Keys(i), pos - 1))
             If la_predefHive(i) <> 0 Then
                 'trim to key part only
-                cell.la_Keys(i) = Mid$(cell.la_Keys(i), pos + 1)
+                cell.la_Keys(i) = mid$(cell.la_Keys(i), pos + 1)
             End If
         End If
     Next
@@ -650,7 +648,7 @@ Private Function NextHive() As Boolean
     End If
     If cell.lb_HaveKeys Then 'append Key from array
         If bControlSet Then
-            cell.ls_Key = cell.aControlSet(cell.state_CS) & Mid$(cell.la_Keys(cell.ll_KeyIndex), 25&)
+            cell.ls_Key = cell.aControlSet(cell.state_CS) & mid$(cell.la_Keys(cell.ll_KeyIndex), 25&)
             cell.state_CS = cell.state_CS + 1
         Else
             'add SID subkey if supplied
@@ -731,7 +729,7 @@ End Function
 
 Private Function PathBeginWith(sPath As String, sBeginPart As String) As Boolean
     If StrComp(Left$(sPath, Len(sBeginPart)), sBeginPart, 1) = 0 Then
-        If Len(sPath) = Len(sBeginPart) Or Mid$(sPath, Len(sBeginPart) + 1, 1) = "\" Then PathBeginWith = True
+        If Len(sPath) = Len(sBeginPart) Or mid$(sPath, Len(sBeginPart) + 1, 1) = "\" Then PathBeginWith = True
     End If
 End Function
 

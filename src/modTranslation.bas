@@ -406,7 +406,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     Case "1114": .cmdN00bBackups.Caption = Translation
                     Case "1115": .cmdN00bTools.Caption = Translation
                     Case "1116": .cmdN00bHJTQuickStart.Caption = Translation
-                    Case "1117": .cmdN00bClose.Caption = Translation
+                    'Case "1117": .cmdN00bClose.Caption = Translation
                     Case "1118": .chkSkipIntroFrame.Caption = Translation
                     Case "1119": .lblInfo(9).Caption = Translation
                     
@@ -424,7 +424,9 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     Case "0015": .fraOther.Caption = Translation
                     Case "0016": If .cmdHelp.Tag = "0" Then .cmdHelp.Caption = Translation 'Help
                     Case "0017": If .cmdHelp.Tag = "1" Then .cmdHelp.Caption = Translation 'Back
-                    Case "0018": If .cmdConfig.Tag = "0" Then .cmdConfig.Caption = Translation 'Settings
+                    Case "0018":
+                        If .cmdConfig.Tag = "0" Then .cmdConfig.Caption = Translation 'Settings
+                        .cmdSettings.Caption = Translation
                     Case "0019": If .cmdConfig.Tag = "1" Then .cmdConfig.Caption = Translation 'Report
                     Case "0020": .cmdSaveDef.Caption = Translation
                     Case "1000": .cmdAnalyze.Caption = Translation
@@ -998,6 +1000,8 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                                     Case "1854": .fraReportFormat.Caption = Translation
                                     Case "1855": .optPlainText.Caption = Translation
                                     Case "1856": .OptCSV.Caption = Translation
+                                    Case "2302": .chkMatchCase.Caption = Translation
+                                    Case "2304": .chkRegExp.Caption = Translation
                                     Case "2450": .Caption = Translation
                                     Case "2451": .lblThisTool.Caption = Translation
                                     Case "2452": .chkRecurse.Caption = Translation
@@ -1028,6 +1032,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                                     Case "2479": .chkSymlink.Caption = Translation
                                     Case "2480": .chkSecurityDescriptor.Caption = Translation
                                     Case "2481": .chkClass.Caption = Translation
+                                    Case "2482": .chkNullKey.Caption = Translation
                                 End Select
                             End With
                         End If
@@ -1056,9 +1061,9 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
     End With
     SecondChance = False
     
-    Dim frm As Form
-    For Each frm In Forms
-        frm.Refresh
+    Dim Frm As Form
+    For Each Frm In Forms
+        Frm.Refresh
     Next
     
     'EnableMenuItem m_RootMenu, 4, MF_DISABLED Or MF_BYPOSITION
@@ -1088,18 +1093,18 @@ ErrorHandler:
     End If
 End Sub
 
-Public Function IsFormForeground(frm As Form) As Boolean
+Public Function IsFormForeground(Frm As Form) As Boolean
     Dim hActiveWnd As Long
-    If IsFormInit(frm) Then
+    If IsFormInit(Frm) Then
         hActiveWnd = GetForegroundWindow()
-        If hActiveWnd = frm.hwnd Then IsFormForeground = True
+        If hActiveWnd = Frm.hwnd Then IsFormForeground = True
     End If
 End Function
 
-Public Function IsFormInit(frm As Form) As Boolean
+Public Function IsFormInit(Frm As Form) As Boolean
     Dim cForm As Form
     For Each cForm In Forms
-        If cForm Is frm Then
+        If cForm Is Frm Then
             IsFormInit = True
             Exit For
         End If

@@ -2,7 +2,7 @@ VERSION 5.00
 Begin VB.Form frmRegTypeChecker 
    AutoRedraw      =   -1  'True
    Caption         =   "Registry Key Type Checker"
-   ClientHeight    =   6324
+   ClientHeight    =   6588
    ClientLeft      =   120
    ClientTop       =   468
    ClientWidth     =   12480
@@ -18,7 +18,7 @@ Begin VB.Form frmRegTypeChecker
    Icon            =   "frmRegKeyChecker.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   ScaleHeight     =   6324
+   ScaleHeight     =   6588
    ScaleWidth      =   12480
    Begin VB.Frame fraArea 
       Caption         =   "Area"
@@ -31,11 +31,21 @@ Begin VB.Form frmRegTypeChecker
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   3372
+      Height          =   3612
       Left            =   5400
       TabIndex        =   26
       Top             =   2880
       Width           =   3132
+      Begin VB.CheckBox chkNullKey 
+         Caption         =   "Hidden keys (Null)"
+         Height          =   204
+         Left            =   240
+         TabIndex        =   40
+         Top             =   3240
+         Value           =   1  'Checked
+         Visible         =   0   'False
+         Width           =   1692
+      End
       Begin VB.CheckBox chkClass 
          Caption         =   "Class name"
          Height          =   252
@@ -191,7 +201,7 @@ Begin VB.Form frmRegTypeChecker
       Height          =   492
       Left            =   11040
       TabIndex        =   10
-      Top             =   5760
+      Top             =   6000
       Width           =   1332
    End
    Begin VB.Frame fraReportFormat 
@@ -238,18 +248,26 @@ Begin VB.Form frmRegTypeChecker
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   3372
+      Height          =   3612
       Left            =   240
       TabIndex        =   3
       Top             =   2880
       Width           =   5055
-      Begin VB.CheckBox chkRegex 
-         Caption         =   "Regex"
+      Begin VB.CheckBox chkMatchCase 
+         Caption         =   "Match case"
+         Height          =   204
+         Left            =   1920
+         TabIndex        =   39
+         Top             =   2640
+         Width           =   2172
+      End
+      Begin VB.CheckBox chkRegExp 
+         Caption         =   "Regular expressions"
          Height          =   204
          Left            =   360
          TabIndex        =   25
          Top             =   3000
-         Width           =   972
+         Width           =   2652
       End
       Begin VB.CheckBox chkOnce 
          Caption         =   "Once"
@@ -258,15 +276,15 @@ Begin VB.Form frmRegTypeChecker
          TabIndex        =   24
          Top             =   2640
          Value           =   1  'Checked
-         Width           =   1692
+         Width           =   1572
       End
       Begin VB.CommandButton cmdBeauty 
          Caption         =   "Extract"
          Height          =   492
-         Left            =   3120
+         Left            =   3360
          TabIndex        =   18
-         Top             =   2760
-         Width           =   1692
+         Top             =   3000
+         Width           =   1452
       End
       Begin VB.TextBox txtReplaceInto 
          Height          =   285
@@ -357,7 +375,7 @@ Begin VB.Form frmRegTypeChecker
       Height          =   480
       Left            =   8640
       TabIndex        =   2
-      Top             =   5760
+      Top             =   6000
       Width           =   1452
    End
    Begin VB.TextBox txtKeys 
@@ -385,7 +403,7 @@ Begin VB.Form frmRegTypeChecker
       Height          =   252
       Left            =   10200
       TabIndex        =   23
-      Top             =   5880
+      Top             =   6120
       Width           =   732
    End
    Begin VB.Label lblThisTool 
@@ -440,17 +458,17 @@ Private Const TXT_DELIM As String = " | "
 Private Const FLAGS_DELIM As String = "*"
 
 Private Enum LOG_LEVEL
-    LOG_LEVEL_NATIVE_KEY_NAME = 1 ^ 0
-    LOG_LEVEL_DATE_MODIFIED = 1 ^ 1
-    LOG_LEVEL_CLASSNAME = 1 ^ 2
-    LOG_LEVEL_KEYS_COUNT = 1 ^ 3
-    LOG_LEVEL_KEYVALUES_MAX_LENGTH = 1 ^ 4
-    LOG_LEVEL_REDIRECTION = 1 ^ 5
-    LOG_LEVEL_VIRTUALIZATION = 1 ^ 6
-    LOG_LEVEL_FLAGS = 1 ^ 7
-    LOG_LEVEL_VOLATILITY = 1 ^ 8
-    LOG_LEVEL_SYMLINK = 1 ^ 9
-    LOG_LEVEL_SECURITY_DESCRIPTOR = 1 ^ 10
+    LOG_LEVEL_NATIVE_KEY_NAME = 2 ^ 0
+    LOG_LEVEL_DATE_MODIFIED = 2 ^ 1
+    LOG_LEVEL_CLASSNAME = 2 ^ 2
+    LOG_LEVEL_KEYS_COUNT = 2 ^ 3
+    LOG_LEVEL_KEYVALUES_MAX_LENGTH = 2 ^ 4
+    LOG_LEVEL_REDIRECTION = 2 ^ 5
+    LOG_LEVEL_VIRTUALIZATION = 2 ^ 6
+    LOG_LEVEL_FLAGS = 2 ^ 7
+    LOG_LEVEL_VOLATILITY = 2 ^ 8
+    LOG_LEVEL_SYMLINK = 2 ^ 9
+    LOG_LEVEL_SECURITY_DESCRIPTOR = 2 ^ 10
 End Enum
 
 Private Type REG_KEY_INFO
@@ -458,7 +476,7 @@ Private Type REG_KEY_INFO
     View32 As Boolean
     NativeKeyName As String
     DateModified As Date
-    Classname As String
+    className As String
     numSubkeys As Long
     numValues As Long       'parameter
     maxSubkeyLen As Long
@@ -481,8 +499,10 @@ Private Enum REDIR_PRESENCE
     REDIR_PRESENCE_X32 = 2
 End Enum
 
-Private isRan As Boolean
-Private m_LogLevel As Long
+Private isRan           As Boolean
+Private m_LogLevel      As Long
+Private m_bRegExpInit   As Boolean
+Private m_oRegexp       As IRegExp
 
 Private Sub EraseKeyInfo(KeyInfo As REG_KEY_INFO)
     Dim ki As REG_KEY_INFO
@@ -505,8 +525,8 @@ Private Sub GetKeyInfo(KeyInfo As REG_KEY_INFO, ByVal sKey As String, bView32 As
     
     If ERROR_SUCCESS = lret Then
         
-        KeyInfo.Classname = String$(cchClassLen, 0)
-        cchClassLen = Len(KeyInfo.Classname)
+        KeyInfo.className = String$(cchClassLen, 0)
+        cchClassLen = Len(KeyInfo.className)
         
         lret = RegQueryInfoKey( _
             hKey, _
@@ -528,9 +548,9 @@ Private Sub GetKeyInfo(KeyInfo As REG_KEY_INFO, ByVal sKey As String, bView32 As
             End If
         End If
         
-        If ERROR_MORE_DATA = RegQueryInfoKey(hKey, StrPtr(KeyInfo.Classname), cchClassLen, 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&) Then
-            KeyInfo.Classname = String$(cchClassLen, 0)
-            Call RegQueryInfoKey(hKey, StrPtr(KeyInfo.Classname), cchClassLen, 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&)
+        If ERROR_MORE_DATA = RegQueryInfoKey(hKey, StrPtr(KeyInfo.className), cchClassLen, 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&) Then
+            KeyInfo.className = String$(cchClassLen, 0)
+            Call RegQueryInfoKey(hKey, StrPtr(KeyInfo.className), cchClassLen, 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&, ByVal 0&)
         End If
         
         KeyInfo.StatusText = STATUS_OK
@@ -627,57 +647,57 @@ Private Function KeyRedirectionTypeToString(RedirType As KEY_REDIRECTION_INFO) A
 End Function
 
 Private Sub AppendKeyToLog(sb As clsStringBuilder, bCSV As Boolean, KeyInfo As REG_KEY_INFO, sKey As String, bRedir As Boolean)
-    Dim DELIM As String: DELIM = IIf(bCSV, CSV_DELIM, TXT_DELIM)
+    Dim delim As String: delim = IIf(bCSV, CSV_DELIM, TXT_DELIM)
     
     sb.Append KeyInfo.StatusText
-    sb.Append DELIM & sKey
-    sb.Append DELIM & IIf(OSver.IsWin32, "x32", IIf(bRedir, "x32", "x64"))
+    sb.Append delim & sKey
+    sb.Append delim & IIf(OSver.IsWin32, "x32", IIf(bRedir, "x32", "x64"))
     
-    If m_LogLevel And LOG_LEVEL_NATIVE_KEY_NAME Then sb.Append DELIM & KeyInfo.NativeKeyName
-    If m_LogLevel And LOG_LEVEL_DATE_MODIFIED Then sb.Append DELIM & DateTimeToStringUS(KeyInfo.DateModified)
+    If m_LogLevel And LOG_LEVEL_NATIVE_KEY_NAME Then sb.Append delim & KeyInfo.NativeKeyName
+    If m_LogLevel And LOG_LEVEL_DATE_MODIFIED Then sb.Append delim & DateTimeToStringUS(KeyInfo.DateModified)
     If m_LogLevel And LOG_LEVEL_KEYS_COUNT Then
-        sb.Append DELIM & KeyInfo.numSubkeys
-        sb.Append DELIM & KeyInfo.numValues
+        sb.Append delim & KeyInfo.numSubkeys
+        sb.Append delim & KeyInfo.numValues
     End If
     If m_LogLevel And LOG_LEVEL_KEYVALUES_MAX_LENGTH Then
-        sb.Append DELIM & KeyInfo.maxSubkeyLen
-        sb.Append DELIM & KeyInfo.maxValueLen
-        sb.Append DELIM & KeyInfo.maxValueDataLen
+        sb.Append delim & KeyInfo.maxSubkeyLen
+        sb.Append delim & KeyInfo.maxValueLen
+        sb.Append delim & KeyInfo.maxValueDataLen
     End If
-    If m_LogLevel And LOG_LEVEL_REDIRECTION Then sb.Append DELIM & KeyInfo.RedirectionText
-    If m_LogLevel And LOG_LEVEL_VIRTUALIZATION Then sb.Append DELIM & KeyInfo.VirtualizationText
-    If m_LogLevel And LOG_LEVEL_FLAGS Then sb.Append DELIM & KeyInfo.FlagsControl2Text
-    If m_LogLevel And LOG_LEVEL_VOLATILITY Then sb.Append DELIM & IIf(KeyInfo.IsVolatile, "Volatile", "No")
-    If m_LogLevel And LOG_LEVEL_SYMLINK Then sb.Append DELIM & KeyInfo.SymlinkTarget
-    If m_LogLevel And LOG_LEVEL_SECURITY_DESCRIPTOR Then sb.Append DELIM & """" & KeyInfo.SecurityDescriptor & """"
-    If m_LogLevel And LOG_LEVEL_CLASSNAME Then sb.Append DELIM & KeyInfo.Classname
+    If m_LogLevel And LOG_LEVEL_REDIRECTION Then sb.Append delim & KeyInfo.RedirectionText
+    If m_LogLevel And LOG_LEVEL_VIRTUALIZATION Then sb.Append delim & KeyInfo.VirtualizationText
+    If m_LogLevel And LOG_LEVEL_FLAGS Then sb.Append delim & KeyInfo.FlagsControl2Text
+    If m_LogLevel And LOG_LEVEL_VOLATILITY Then sb.Append delim & IIf(KeyInfo.IsVolatile, "Volatile", "No")
+    If m_LogLevel And LOG_LEVEL_SYMLINK Then sb.Append delim & KeyInfo.SymlinkTarget
+    If m_LogLevel And LOG_LEVEL_SECURITY_DESCRIPTOR Then sb.Append delim & """" & KeyInfo.SecurityDescriptor & """"
+    If m_LogLevel And LOG_LEVEL_CLASSNAME Then sb.Append delim & KeyInfo.className
     sb.AppendLine ""
 End Sub
 
 Private Sub AddLogHeader(sb As clsStringBuilder, bCSV As Boolean)
     Dim s$
-    Dim DELIM As String: DELIM = IIf(bCSV, CSV_DELIM, TXT_DELIM)
+    Dim delim As String: delim = IIf(bCSV, CSV_DELIM, TXT_DELIM)
     s = "Status"
-    s = s & DELIM & "Key"
-    s = s & DELIM & "View"
-    If m_LogLevel And LOG_LEVEL_NATIVE_KEY_NAME Then s = s & DELIM & "NT name"
-    If m_LogLevel And LOG_LEVEL_DATE_MODIFIED Then s = s & DELIM & "Date modified"
+    s = s & delim & "Key"
+    s = s & delim & "View"
+    If m_LogLevel And LOG_LEVEL_NATIVE_KEY_NAME Then s = s & delim & "NT name"
+    If m_LogLevel And LOG_LEVEL_DATE_MODIFIED Then s = s & delim & "Date modified"
     If m_LogLevel And LOG_LEVEL_KEYS_COUNT Then
-        s = s & DELIM & "Subkeys Count"
-        s = s & DELIM & "Values Count"
+        s = s & delim & "Subkeys Count"
+        s = s & delim & "Values Count"
     End If
     If m_LogLevel And LOG_LEVEL_KEYVALUES_MAX_LENGTH Then
-        s = s & DELIM & "Subkey Max Length"
-        s = s & DELIM & "Value Max Length"
-        s = s & DELIM & "Data Max Length"
+        s = s & delim & "Subkey Max Length"
+        s = s & delim & "Value Max Length"
+        s = s & delim & "Data Max Length"
     End If
-    If m_LogLevel And LOG_LEVEL_REDIRECTION Then s = s & DELIM & "Redirection"
-    If m_LogLevel And LOG_LEVEL_VIRTUALIZATION Then s = s & DELIM & "Virtualization"
-    If m_LogLevel And LOG_LEVEL_FLAGS Then s = s & DELIM & "Flags"
-    If m_LogLevel And LOG_LEVEL_VOLATILITY Then s = s & DELIM & "Volatility"
-    If m_LogLevel And LOG_LEVEL_SYMLINK Then s = s & DELIM & "Symlink"
-    If m_LogLevel And LOG_LEVEL_SECURITY_DESCRIPTOR Then s = s & DELIM & "Security Descriptor"
-    If m_LogLevel And LOG_LEVEL_CLASSNAME Then s = s & DELIM & "Class"
+    If m_LogLevel And LOG_LEVEL_REDIRECTION Then s = s & delim & "Redirection"
+    If m_LogLevel And LOG_LEVEL_VIRTUALIZATION Then s = s & delim & "Virtualization"
+    If m_LogLevel And LOG_LEVEL_FLAGS Then s = s & delim & "Flags"
+    If m_LogLevel And LOG_LEVEL_VOLATILITY Then s = s & delim & "Volatility"
+    If m_LogLevel And LOG_LEVEL_SYMLINK Then s = s & delim & "Symlink"
+    If m_LogLevel And LOG_LEVEL_SECURITY_DESCRIPTOR Then s = s & delim & "Security Descriptor"
+    If m_LogLevel And LOG_LEVEL_CLASSNAME Then s = s & delim & "Class"
     If bCSV Then
         sb.AppendLine s
     Else
@@ -688,7 +708,13 @@ Private Sub AddLogHeader(sb As clsStringBuilder, bCSV As Boolean)
 End Sub
 
 Private Sub chkReplace_Click()
-    chkOnce.Enabled = (chkReplace.Value = vbChecked)
+    Dim bEnabled As Boolean
+    bEnabled = (chkReplace.Value = vbChecked)
+    chkOnce.Enabled = bEnabled
+    txtReplaceWhat.Enabled = bEnabled
+    txtReplaceInto.Enabled = bEnabled
+    chkRegExp.Enabled = bEnabled
+    chkMatchCase.Enabled = bEnabled
 End Sub
 
 Private Sub SelAll(bValue As Boolean)
@@ -739,7 +765,8 @@ Private Sub cmdGo_Click()
     Dim hFile&, i&, k&, iRedir&
     Dim sb              As clsStringBuilder
     Dim oDictKeys       As clsTrickHashTable
-    Dim DELIM           As String
+    Dim delim           As String
+    Dim bLogWritten     As Boolean
     
     RefreshLogLevel
     
@@ -754,7 +781,7 @@ Private Sub cmdGo_Click()
     
     'Get options
     bCSV = OptCSV.Value               'CSV (in ANSI)
-    DELIM = IIf(bCSV, ";", " | ")
+    delim = IIf(bCSV, ";", " | ")
     bPlainText = optPlainText.Value   'Plain (in Unicode)
     bRecursively = chkRecurse.Value
     bQueryX32 = chkQueryX32.Value
@@ -799,13 +826,15 @@ Private Sub cmdGo_Click()
                 End If
             Else 'not exist or access denied
                 sb.Append IIf(Reg.StatusCode = ERROR_ACCESS_DENIED, STATUS_ACCESS_DENIED, STATUS_NO_KEY)
-                sb.Append DELIM & aPathes(i)
-                sb.AppendLine DELIM & IIf(OSver.IsWin32, "x32", IIf(CBool(iRedir), "x32", "x64"))
+                sb.Append delim & aPathes(i)
+                sb.AppendLine delim & IIf(OSver.IsWin32, "x32", IIf(CBool(iRedir), "x32", "x64"))
+                bLogWritten = True
             End If
         Next
     Next
     
     If oDictKeys.Count = 0 Then
+        If bLogWritten Then GoTo label_Report
         'You should enter at least one key!
         MsgBoxW Translate(1905), vbExclamation
         LockUI False
@@ -852,6 +881,7 @@ Private Sub cmdGo_Click()
     
     DoEvents
 
+label_Report:
     Dim bData() As Byte
     If bCSV Then
         bData() = StrConv(sb.ToString, vbFromUnicode)
@@ -915,7 +945,7 @@ Private Sub Form_Load()
         For Each Ctl In Me.Controls
             If TypeName(Ctl) = "OptionButton" Then
                 Set OptB = Ctl
-                SetWindowTheme OptB.hWnd, StrPtr(" "), StrPtr(" ")
+                SetWindowTheme OptB.hwnd, StrPtr(" "), StrPtr(" ")
             End If
         Next
         Set OptB = Nothing
@@ -954,7 +984,7 @@ Private Sub Form_Resize()
     If Me.Height < 5208 Then Me.Height = 5208
 
     txtKeys.Width = Me.Width - 550
-    txtKeys.Height = Me.Height - 4700
+    txtKeys.Height = Me.Height - 4950
 
     TopLevel1 = txtKeys.Top + txtKeys.Height
     TopLevel2 = TopLevel1 + 1380
@@ -963,12 +993,11 @@ Private Sub Form_Resize()
     fraBeauty.Top = TopLevel1
     fraReportFormat.Top = TopLevel1
     fraMode.Top = TopLevel2
-
-    Dim offset As Long: offset = fraMode.Height + 50
-    cmdGo.Top = TopLevel2 + offset
-    cmdExit.Top = TopLevel2 + offset
-    lblProgress.Top = TopLevel2 + offset + cmdGo.Height \ 2 - lblProgress.Height \ 2
-
+    
+    cmdGo.Top = TopLevel1 + fraArea.Height - cmdGo.Height - 25
+    cmdExit.Top = TopLevel1 + fraArea.Height - cmdExit.Height - 25
+    lblProgress.Top = cmdGo.Top + cmdGo.Height \ 2 - lblProgress.Height \ 2
+    
     cmdClear.Left = txtKeys.Width - cmdClear.Width + 200
 End Sub
 
@@ -986,9 +1015,9 @@ Private Function RegPathNormalize(sPath As String) As String
     If Left$(sPath, 1) = """" Then
         pos = InStr(2, sPath, """")
         If pos <> 0 Then
-            sPath = Mid$(sPath, 2, pos - 2)
+            sPath = mid$(sPath, 2, pos - 2)
         Else
-            sPath = Mid$(sPath, 2)
+            sPath = mid$(sPath, 2)
         End If
     End If
     If InStr(sPath, "/") <> 0 Then
@@ -1011,12 +1040,13 @@ Private Function RegPathBeauty(sPath As String) As String
     Dim bOnce As Boolean: bOnce = (chkOnce.Value = vbChecked)
 
     If chkReplace.Value Then
-        sPath = Replace$(sPath, txtReplaceWhat.Text, txtReplaceInto.Text, 1, IIf(bOnce, 1, -1), vbTextCompare)
+        sPath = Replace$(sPath, txtReplaceWhat.Text, txtReplaceInto.Text, 1, IIf(bOnce, 1, -1), _
+            IIf(chkMatchCase.Value = vbChecked, vbBinaryCompare, vbTextCompare))
     End If
     If chkBeautyBegin.Value Then
         pos = InStr(1, sPath, txtBeautyBegin.Text, vbTextCompare)
         If pos <> 0 Then
-            sPath = Mid$(sPath, pos + Len(txtBeautyBegin.Text))
+            sPath = mid$(sPath, pos + Len(txtBeautyBegin.Text))
         End If
     End If
     If chkBeautyEnd.Value Then
@@ -1038,8 +1068,13 @@ Private Sub cmdBeauty_Click()
     Dim sPathes As String
     Dim aPathes() As String
     Dim i As Long
-
+    
     sPathes = txtKeys.Text
+    
+    If chkRegExp.Value = vbChecked Then
+        sPathes = ReplaceRegex(sPathes, txtReplaceWhat.Text, txtReplaceInto.Text)
+    End If
+    
     sPathes = Replace$(sPathes, vbCr, vbNullString)
     aPathes = Split(sPathes, vbLf)
 
@@ -1059,3 +1094,40 @@ Private Sub LockUI(bLock As Boolean)
     cmdGo.Enabled = Not bLock
     txtKeys.Enabled = Not bLock
 End Sub
+
+Private Sub InitRegexp()
+    If Not m_bRegExpInit Then
+        Set m_oRegexp = New cRegExp
+        m_bRegExpInit = True
+        m_oRegexp.MultiLine = True
+    End If
+    m_oRegexp.IgnoreCase = (IIf(chkMatchCase.Value = vbChecked, vbBinaryCompare, vbTextCompare))
+    m_oRegexp.Global = Not (chkOnce.Value = vbChecked)
+End Sub
+
+Private Function CheckRegexpSyntax() As Boolean
+    On Error Resume Next
+    Call m_oRegexp.Test(vbNullString)
+    If Err.Number = 0 Then
+        CheckRegexpSyntax = True
+    Else
+        MsgSyntaxError
+    End If
+End Function
+
+Private Sub MsgSyntaxError()
+    MsgBoxW Translate(2312), vbExclamation, Translate(2300)
+End Sub
+
+Private Function ReplaceRegex(sText As String, sWhat As String, sInto As String) As String
+    On Error GoTo ErrorHandler:
+    InitRegexp
+    m_oRegexp.Pattern = sWhat
+    If CheckRegexpSyntax() Then
+        ReplaceRegex = m_oRegexp.Replace(sText, sInto)
+    End If
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "frmRegTypeChecker.ReplaceRegex"
+    If inIDE Then Stop: Resume Next
+End Function

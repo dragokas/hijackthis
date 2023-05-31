@@ -174,10 +174,10 @@ End Enum
 Public Enum ENUM_REG_ACTION_BASED
     REMOVE_KEY = 1&
     REMOVE_VALUE = 2&
-    RESTORE_VALUE = 4&
+    RESTORE_VALUE = 4&      ' just overwrites the value with provided one
     RESTORE_VALUE_INI = 8&
     REMOVE_VALUE_INI = &H10&
-    REPLACE_VALUE = &H20&
+    REPLACE_VALUE = &H20&   ' doing a replace of existing value if it is match the template defined
     APPEND_VALUE_NO_DOUBLE = &H40&
     REMOVE_VALUE_IF_EMPTY = &H80&
     REMOVE_KEY_IF_NO_VALUES = &H100&
@@ -605,6 +605,7 @@ Public Sub AddToScanResults( _
             'LockWindowUpdate 0&
             'Unicode to ANSI mapping (dirty hack)
             result.HitLineA = frmMain.lstResults.List(frmMain.lstResults.ListCount - 1)
+            
             'select the last added line
             If SelLastAdded Then
                 frmMain.lstResults.ListIndex = frmMain.lstResults.ListCount - 1
@@ -1885,61 +1886,59 @@ Public Sub StartScan()
     UpdateProgressBar "B"
     CheckBrowsersItem
     UpdateProgressBar "O1"
-    CheckO1Item
+    CheckO1Item 'Hosts
     CheckO1Item_ICS
     CheckO1Item_DNSApi
     UpdateProgressBar "O2"
-    CheckO2Item
+    CheckO2Item 'BHO
     UpdateProgressBar "O3"
-    CheckO3Item
+    CheckO3Item 'toolbars
     UpdateProgressBar "O4"
-    CheckO4Item
+    CheckO4Item 'Autorun
     UpdateProgressBar "O5"
-    CheckO5Item
+    CheckO5Item 'Control panel
     UpdateProgressBar "O6"
-    CheckO6Item
+    CheckO6Item 'IE Policy
     UpdateProgressBar "O7"
-    CheckO7Item
+    CheckO7Item 'OS Policy
     UpdateProgressBar "O8"
-    CheckO8Item
+    CheckO8Item 'IE: Context menu
     UpdateProgressBar "O9"
-    CheckO9Item
+    CheckO9Item 'IE: Services & Buttons
     UpdateProgressBar "O10"
-    CheckO10Item
+    CheckO10Item 'LSP
     UpdateProgressBar "O11"
-    CheckO11Item
+    CheckO11Item 'IE: 'Advanced' tab
     UpdateProgressBar "O12"
-    CheckO12Item
+    CheckO12Item 'IE: plugins of file ext./MIME types
     UpdateProgressBar "O13"
-    CheckO13Item
+    CheckO13Item 'URL Prefixes
     UpdateProgressBar "O14"
-    CheckO14Item
+    CheckO14Item 'IE: IERESET.INF
     UpdateProgressBar "O15"
-    CheckO15Item
+    CheckO15Item 'Trusted Zone
     UpdateProgressBar "O16"
-    CheckO16Item
+    CheckO16Item 'Downloaded Program Files
     UpdateProgressBar "O17"
-    CheckO17Item
+    CheckO17Item 'DNS/DHCP
     UpdateProgressBar "O18"
-    CheckO18Item
+    CheckO18Item 'Protocols, filters
     UpdateProgressBar "O19"
-    CheckO19Item
+    CheckO19Item 'User stylesheet
     UpdateProgressBar "O20"
-    CheckO20Item
+    CheckO20Item 'AppInit_DLLs, Winlogon Notify
     UpdateProgressBar "O21"
-    CheckO21Item
+    CheckO21Item 'Shell Service Object Delay Load (SSODL), Shell Icon Overlay (SIOI), ShellExecuteHooks (SEH)
     UpdateProgressBar "O22"
-    CheckO22Item
+    CheckO22Item 'Tasks, BITS Admin
     UpdateProgressBar "O23"
-    CheckO23Item
-    'added in HJT 1.99.2: Desktop Components
+    CheckO23Item 'Services
     UpdateProgressBar "O24"
-    CheckO24Item
-    '2.0.7 - WMI Events
+    CheckO24Item 'ActiveX Desktop
     UpdateProgressBar "O25"
-    CheckO25Item
+    CheckO25Item 'WMI
     UpdateProgressBar "O26"
-    CheckO26Item
+    CheckO26Item 'Debuggers, Tools hijack
     EnumBITS_Stage2
     UpdateProgressBar "ProcList"
     
@@ -6333,7 +6332,7 @@ Public Sub CheckEnvVarTemp()
                     bComply = True
                 Else
                     'these keys are access restricted for Limited users
-                    If Not (HE.Hive = HKU And (HE.sid = "S-1-5-19" Or HE.sid = "S-1-5-20")) Then
+                    If Not (HE.Hive = HKU And (HE.SID = "S-1-5-19" Or HE.SID = "S-1-5-20")) Then
                         bComply = True
                     End If
                 End If
@@ -6773,7 +6772,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Private Sub ParseCertBlob(Blob() As Byte, out_CertHash As String, out_FriendlyName As String, out_IssuedTo As String)
+Public Sub ParseCertBlob(Blob() As Byte, out_CertHash As String, out_FriendlyName As String, out_IssuedTo As String)
     On Error GoTo ErrorHandler:
     
     'Thanks to Willem Jan Hengeveld
@@ -7032,8 +7031,8 @@ Sub CheckPolicyScripts()
                                 
                                 Else ' vType = "Logon" Or vType = "Logoff" Then
                                     'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\State\S-1-5-21-4161311594-4244952198-1204953518-1000\Scripts\Logon\0\0
-                                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\State\" & HE.sid & "\Scripts\" & vType & "\" & aKeyX(X) & "\" & aKeyY(Y), , , HE.Redirected
-                                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Group Policy\State\" & HE.sid & "\Scripts\" & vType & "\" & aKeyX(X) & "\" & aKeyY(Y), , , HE.Redirected
+                                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\State\" & HE.SID & "\Scripts\" & vType & "\" & aKeyX(X) & "\" & aKeyY(Y), , , HE.Redirected
+                                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Group Policy\State\" & HE.SID & "\Scripts\" & vType & "\" & aKeyX(X) & "\" & aKeyY(Y), , , HE.Redirected
                                 End If
                                 AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile, sArgs
                                 .CureType = FILE_BASED Or REGISTRY_BASED
@@ -7330,8 +7329,6 @@ Public Sub CheckPolicies()
     '//TODO:
     'HKEY_CURRENT_USER\Software\Policies\Microsoft
     
-    'UAC (EnableLUA, PromptOnSecureDesktop ...) - http://www.oszone.net/11424
-    
     Dim sDrv As String, aValue() As String, i&, lData&, bData() As Byte
     Dim sHit$, result As SCAN_RESULT
     Dim sKey As String, sValue As String
@@ -7339,25 +7336,24 @@ Public Sub CheckPolicies()
     Dim HE As clsHiveEnum
     Set HE = New clsHiveEnum
     
-    HE.Init HE_HIVE_ALL, , HE_REDIR_NO_WOW
-    HE.AddKey "Software\Microsoft\Windows\CurrentVersion\Policies\System"
-    HE.AddKey "Software\Microsoft\Windows\CurrentVersion\Group Policy Objects\LocalUser\Software\Microsoft\Windows\CurrentVersion\Policies\System"
-    HE.AddKey "Software\Microsoft\Windows NT\CurrentVersion\Winlogon"
+    HE.Init HE_HIVE_ALL
+    HE.AddKey "Software\Microsoft\Windows\CurrentVersion\Policies\System" 'Shared
+    HE.AddKey "Software\Microsoft\Windows\CurrentVersion\Group Policy Objects\LocalUser\Software\Microsoft\Windows\CurrentVersion\Policies\System" 'Shared
+    HE.AddKey "Software\Microsoft\Windows NT\CurrentVersion\Winlogon" 'WOW
     
     aValue = Split("DisableRegistryTools|DisableTaskMgr", "|")
     
     Do While HE.MoveNext
-        'key - x64 Shared
         For i = 0 To UBound(aValue)
-            lData = Reg.GetDword(HE.Hive, HE.Key, aValue(i))
+            lData = Reg.GetDword(HE.Hive, HE.Key, aValue(i), HE.Redirected)
             If lData <> 0 Then
-                sHit = "O7 - Policy: " & HE.KeyAndHivePhysical & ": " & "[" & aValue(i) & "] = " & lData
+                sHit = BitPrefix("07", HE) & " - Policy: " & HE.KeyAndHivePhysical & ": " & "[" & aValue(i) & "] = " & lData
                 
                 If Not IsOnIgnoreList(sHit) Then
                     With result
                         .Section = "O7"
                         .HitLineW = sHit
-                        AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key, aValue(i)
+                        AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key, aValue(i), , HE.Redirected
                         .CureType = REGISTRY_BASED
                     End With
                     AddToScanResults result
@@ -7370,7 +7366,7 @@ Public Sub CheckPolicies()
     'см. Клименко Р. Тонкости реестра Windows Vista. Трюки и эффекты.
     
     HE.Init HE_HIVE_ALL, , HE_REDIR_NO_WOW
-    HE.AddKey "SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"
+    HE.AddKey "SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" 'Shared
     
     aValue = Split("NoSetTaskbar|TaskbarLockAll|LockTaskbar|NoTrayItemsDisplay|NoChangeStartMenu|NoStartMenuMorePrograms|NoRun|" & _
         "NoSMConfigurePrograms|NoViewOnDrive|RestrictRun|DisallowRun|NoControlPanel|NoDispCpl|SettingsPageVisibility|NoViewContextMenu|" & _
@@ -7394,6 +7390,7 @@ Public Sub CheckPolicies()
             End If
         Next
     Loop
+    
     
     'hide drives in My PC window
     'https://support.microsoft.com/en-us/help/555438
@@ -7429,43 +7426,41 @@ Public Sub CheckPolicies()
     Loop
     
     
-    HE.Init HE_HIVE_ALL, , HE_REDIR_NO_WOW
-    HE.AddKey "SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+    HE.Init HE_HIVE_ALL
+    HE.AddKey "SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" 'WOW
     
     aValue = Split("Start_ShowRun", "|")
     
     Do While HE.MoveNext
         For i = 0 To UBound(aValue)
-            If Reg.ValueExists(HE.Hive, HE.Key, aValue(i)) Then
-                lData = Reg.GetDword(HE.Hive, HE.Key, aValue(i))
-                If lData = 0 Then
-                    sHit = "O7 - Taskbar policy: " & HE.HiveNameAndSID & "\..\Explorer\Advanced: [" & aValue(i) & "] = " & lData
-                
-                    If Not IsOnIgnoreList(sHit) Then
-                        With result
-                            .Section = "O7"
-                            .HitLineW = sHit
-                            AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key, aValue(i)
-                            .CureType = REGISTRY_BASED
-                        End With
-                        AddToScanResults result
-                    End If
+            lData = Reg.GetDword(HE.Hive, HE.Key, aValue(i), HE.Redirected)
+            If lData = 0 And Reg.StatusSuccess Then
+                sHit = BitPrefix("07", HE) & " - Taskbar policy: " & HE.HiveNameAndSID & "\..\Explorer\Advanced: [" & aValue(i) & "] = " & lData
+            
+                If Not IsOnIgnoreList(sHit) Then
+                    With result
+                        .Section = "O7"
+                        .HitLineW = sHit
+                        AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key, aValue(i), , HE.Redirected
+                        .CureType = REGISTRY_BASED
+                    End With
+                    AddToScanResults result
                 End If
             End If
         Next
     Loop
     
     'https://blog.malwarebytes.com/detections/pum-optional-disallowrun/
-    '"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer"
     Dim iEnabled As Long
     Dim sData As String
+    Dim resultAll As SCAN_RESULT
     
     HE.Init HE_HIVE_ALL, , HE_REDIR_NO_WOW
-    HE.AddKey "Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun"
+    HE.AddKey "Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun" 'Shared
     
     Do While HE.MoveNext
     
-        iEnabled = Reg.GetDword(HE.Hive, "Software\Microsoft\Windows\CurrentVersion\Policies\Explorer", "DisallowRun", HE.Redirected)
+        iEnabled = Reg.GetDword(0, HE.HiveNameAndSID & "\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer", "DisallowRun", HE.Redirected)
         
         For i = 1 To Reg.EnumValuesToArray(HE.Hive, HE.Key, aValue(), HE.Redirected)
    
@@ -7478,13 +7473,26 @@ Public Sub CheckPolicies()
                 With result
                     .Section = "O7"
                     .HitLineW = sHit
-                    AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key, aValue(i)
+                    AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key, aValue(i), , HE.Redirected
                     .CureType = REGISTRY_BASED
                 End With
+                ConcatScanResults resultAll, result
                 AddToScanResults result
             End If
         Next
+        If iEnabled <> 0 Then 'for fix all
+            AddRegToFix resultAll.Reg, RESTORE_VALUE, 0, HE.HiveNameAndSID & "\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer", "DisallowRun", 0, HE.Redirected, REG_RESTORE_SAME
+        End If
     Loop
+    If resultAll.CureType <> 0 Then
+        resultAll.HitLineW = "O7 - Policy: *\..\Policies\Explorer\DisallowRun: Fix all"
+        resultAll.FixAll = True
+        resultAll.CureType = resultAll.CureType Or CUSTOM_BASED
+        AddRegToFix resultAll.Reg, REMOVE_KEY, HKLM, "SOFTWARE\Policies\Microsoft\Windows\SrpV2"
+        AddRegToFix resultAll.Reg, REMOVE_KEY, HKCU, "SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy Objects"
+        AddCustomToFix resultAll.Custom, CUSTOM_ACTION_APPLOCKER
+        AddToScanResults resultAll
+    End If
     
     'Check Windows Defender policies
     HE.Init HE_HIVE_ALL, , HE_REDIR_NO_WOW
@@ -7569,6 +7577,65 @@ Public Sub CheckPolicies()
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "CheckPolicies"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+
+Public Sub CheckPolicyUAC()
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "CheckPolicyUAC - Begin"
+
+    'http://www.oszone.net/11424
+    
+    If Not OSver.IsWindowsVistaOrGreater Then Exit Sub
+
+    Dim aValue() As String, i&, lData&, bData() As Byte
+    Dim sHit$, result As SCAN_RESULT
+    Dim sKey As String, sValue As String
+    Dim HE As clsHiveEnum:      Set HE = New clsHiveEnum
+    Dim DC As clsDataChecker:   Set DC = New clsDataChecker
+    
+    HE.Init HE_HIVE_HKLM, , HE_REDIR_NO_WOW
+    HE.AddKey "SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" 'key - x64 Shared
+    
+    DC.AddValueData "ConsentPromptBehaviorAdmin", Array(2, 5)
+    DC.AddValueData "ConsentPromptBehaviorUser", 3
+    DC.AddValueData "EnableLUA", 1
+    DC.AddValueData "PromptOnSecureDesktop", 1
+    DC.AddValueData "EnableUIADesktopToggle", 0
+    
+    'Allow to be user defined:
+    '
+    'EnableInstallerDetection
+    'EnableSecureUIAPaths
+    'ValidateAdminCodeSignatures
+    'EnableVirtualization
+    'FilterAdministratorToken
+    
+    Do While HE.MoveNext
+        Do While DC.MoveNext
+            lData = Reg.GetDword(HE.Hive, HE.Key, DC.ValueName, HE.Redirected)
+            
+            If Not DC.ContainsData(lData) Then
+                sHit = "O7 - Policy: (UAC) " & HE.KeyAndHivePhysical & ": " & "[" & DC.ValueName & "] = " & Reg.StatusCodeDescOnFail(lData)
+                
+                If Not IsOnIgnoreList(sHit) Then
+                    With result
+                        .Section = "O7"
+                        .HitLineW = sHit
+                        AddRegToFix .Reg, RESTORE_VALUE, HE.Hive, HE.Key, DC.ValueName, DC.DataLong, HE.Redirected, REG_RESTORE_DWORD
+                        .CureType = REGISTRY_BASED
+                    End With
+                    AddToScanResults result
+                End If
+            End If
+        Loop
+    Loop
+    
+    AppendErrorLogCustom "CheckPolicyUAC - End"
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "CheckPolicyUAC"
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -8050,6 +8117,7 @@ Public Function EnableApplocker()
     StartService "appid"
 End Function
 
+
 Public Sub CheckO7Item()
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "CheckO7Item - Begin"
@@ -8059,6 +8127,8 @@ Public Sub CheckO7Item()
     
     'Policy - Logon scripts
     CheckPolicyScripts
+    
+    CheckPolicyUAC
     
     'Untrusted certificates
     UpdateProgressBar "O7-Cert"
@@ -8097,6 +8167,7 @@ Public Sub CheckAutoLogon()
     AppendErrorLogCustom "CheckAutoLogon - Begin"
     
     Dim sHit As String, sKey As String, sUser As String, sDomain As String, bEnabled As Boolean, result As SCAN_RESULT
+    Dim sAccType As String
     
     sKey = "Software\Microsoft\Windows NT\CurrentVersion\Winlogon"
     sUser = Reg.GetString(HKEY_LOCAL_MACHINE, sKey, "DefaultUserName")
@@ -8108,8 +8179,10 @@ Public Sub CheckAutoLogon()
         If bEnabled Or bIgnoreAllWhitelists Then
         
             sDomain = Reg.GetString(HKEY_LOCAL_MACHINE, sKey, "DefaultDomainName")
+            sAccType = GetUserAccountType(sUser)
+            If Len(sAccType) <> 0 Then sAccType = " (type: " & sAccType & ")"
             
-            sHit = "O7 - AutoLogon: HKLM\..\Winlogon: " & sDomain & "\" & sUser & IIf(bEnabled, "", " (disabled)")
+            sHit = "O7 - AutoLogon: HKLM\..\Winlogon: " & sDomain & "\" & sUser & sAccType & IIf(bEnabled, "", " (disabled)")
             
             If Not IsOnIgnoreList(sHit) Then
                 With result
@@ -9708,7 +9781,7 @@ Public Sub CheckO15Item()
                     ElseIf InStr(1, HE.UserName, "Acronis Agent User", 1) <> 0 Then
                         bSafe = True
                         '// TODO: improve it (logon as service)
-                    ElseIf Reg.GetDword(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\" & HE.sid, "State") = 0 Then
+                    ElseIf Reg.GetDword(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\" & HE.SID, "State") = 0 Then
                         bSafe = True
                     End If
                 End If
@@ -10455,6 +10528,13 @@ Public Function FileMissing(sFile$) As Boolean
     If sFile = STR_NO_FILE Then FileMissing = True: Exit Function
     If StrEndWith(sFile, STR_FILE_MISSING) Then FileMissing = True: Exit Function
 End Function
+
+Public Sub RemoveFileMissingStr(sFile$)
+    If Len(sFile) = 0 Then Exit Sub
+    Dim i As Long
+    i = InStr(sFile, " " & STR_FILE_MISSING)
+    If i <> 0 Then sFile = Left$(sFile, Len(sFile) - Len(STR_FILE_MISSING) - 1)
+End Sub
 
 Public Sub FixO18Item(sItem$, result As SCAN_RESULT)
     'O18 - Protocol: cn
@@ -11375,17 +11455,18 @@ Public Sub CheckO23Item_Dependency(sServices() As String, dLegitService As clsTr
             If AryItems(aDepend) Then
                 For k = 0 To UBound(aDepend)
                     
-                    If Not dLegitService.Exists(aDepend(k)) Then
+                    bSafe = dLegitService.Exists(aDepend(k))
+                    
+                    If Not bSafe Then
                         
                         bMissing = Not Reg.KeyExists(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\" & aDepend(k))
                         
-                        bSafe = False
-                        
-                        'Win10 bug fix
+                        'Win10 "feature"
                         'See: https://answers.microsoft.com/en-us/windows/forum/windows_10-other_settings/dependonservice-refers-to-a-non-existent-service/f63265d1-70ee-4561-b473-e54085cdeaf2
-                        If bMissing And OSver.MajorMinor = 10 And Not bIgnoreAllWhitelists Then
-                            If StrComp(aDepend(k), "UcmCx", 1) = 0 Then bSafe = True
-                            If StrComp(aDepend(k), "GPIOClx", 1) = 0 Then bSafe = True
+                        If bMissing And OSver.IsWindows10OrGreater Then
+                            If StrEndWith(aDepend(k), "x") Then 'UcmCx, UcmUcsiCx, GPIOClx
+                                bSafe = dLegitService.Exists(aDepend(k) & "0101")
+                            End If
                         End If
                         
                         If Not bSafe Then
@@ -11609,6 +11690,8 @@ Public Sub CheckO23Item_Drivers(sServices() As String, dLegitService As clsTrick
     dMapped.Add BuildPath(sWinSysDir, "Drivers\dump_LSI_SAS.sys"), 0&  'Win10
     dMapped.Add BuildPath(sWinSysDir, "Drivers\dump_WMILIB.SYS"), 0&  'WinXP
     dMapped.Add BuildPath(sWinSysDir, "Drivers\DUMP_FTOIIS.SYS"), 0&
+    dMapped.Add BuildPath(sWinSysDir, "Drivers\dump_dumpstorport.sys"), 0& 'Win10
+    dMapped.Add BuildPath(sWinSysDir, "Drivers\dump_stornvme.sys"), 0& 'Win10
     
     'Enum Drivers via NtQuerySystemInformation:
     
@@ -14907,7 +14990,9 @@ Public Sub LockInterfaceMain(bDoUnlock As Boolean)
         .cmdN00bBackups.Enabled = bDoUnlock
         .cmdN00bTools.Enabled = bDoUnlock
         .cmdN00bHJTQuickStart.Enabled = bDoUnlock
-        .cmdN00bClose.Enabled = bDoUnlock
+        .FraIncludeSections.Enabled = bDoUnlock
+        .fraScanOpt.Enabled = bDoUnlock
+        '.cmdN00bClose.Enabled = bDoUnlock
     End With
 End Sub
 
@@ -15720,7 +15805,7 @@ Public Function MakeLogHeader() As String
     
     Dim sAccType As String
     If OSver.IsWindows8OrGreater Then
-        sAccType = GetSidAccountTypeString()
+        sAccType = GetCurrentUserAccountType()
         If Len(sAccType) <> 0 Then sAccType = ", type: " & sAccType
     End If
     
@@ -16194,7 +16279,7 @@ Public Function AddJumpFile( _
     
     Dim FileFix() As FIX_FILE
     AddFileToFix FileFix, ActionType, sFilePath, sArguments
-    
+
     If AryPtr(FileFix) Then
         AddJumpFile = True
     
@@ -16241,11 +16326,20 @@ Public Sub AddFileToFix( _
     
     On Error GoTo ErrorHandler
     
+    Dim bMissing As Boolean
+    
     'speed hack
     If bAutoLogSilent Then Exit Sub
     
     If Len(sFilePath) = 0 Then Exit Sub
-    If FileMissing(sFilePath) Then Exit Sub
+    'If FileMissing(sFilePath) Then Exit Sub '!!! disabled because of 'RESTORE_FILE'
+    bMissing = FileMissing(sFilePath)
+    
+    If Not bMissing Then
+        bMissing = Not FileExists(sFilePath)
+    Else
+        RemoveFileMissingStr sFilePath
+    End If
     
     Dim i As Long
     
@@ -16262,41 +16356,43 @@ Public Sub AddFileToFix( _
     
     'if restoring is not required
     If Not CBool(ActionType And RESTORE_FILE) And Not CBool(ActionType And RESTORE_FILE_SFC) Then
-    
+        
         'if no file to remove
         If ActionType And REMOVE_FILE Then
-            If Not FileExists(sFilePath) Then Exit Sub
+            If bMissing Then ActionType = ActionType And Not REMOVE_FILE
         End If
     
         'if nothing to backup
         If ActionType And BACKUP_FILE Then
-            If Not FileExists(sFilePath) Then Exit Sub
+            If bMissing Then ActionType = ActionType And Not BACKUP_FILE
         End If
-    
+        
         'if nothing to unreg.
         If ActionType And UNREG_DLL Then
-            If Not FileExists(sFilePath) Then Exit Sub
+            If bMissing Then ActionType = ActionType And Not UNREG_DLL
         End If
-    
+        
         'if no file to jump
-        If ActionType And JUMP_FILE Then
-            If Not FileExists(sFilePath) Then Exit Sub
-        End If
-    
+        'If ActionType And JUMP_FILE Then
+        '    If bMissing Then Exit Sub
+        'End If
+        
         'if no folder to remove
         If ActionType And REMOVE_FOLDER Then
-            If Not FolderExists(sFilePath) Then Exit Sub
+            If Not FolderExists(sFilePath) Then ActionType = ActionType And Not REMOVE_FOLDER
         End If
         
         'if no folder to jump
-        If ActionType And JUMP_FOLDER Then
-            If Not FolderExists(sFilePath) Then Exit Sub
-        End If
+        'If ActionType And JUMP_FOLDER Then
+        '    If Not FolderExists(sFilePath) Then Exit Sub
+        'End If
         
         'if folder is already exist
         If ActionType And CREATE_FOLDER Then
-            If FolderExists(sFilePath) Then Exit Sub
+            If FolderExists(sFilePath) Then ActionType = ActionType And Not CREATE_FOLDER
         End If
+        
+        If ActionType = 0 Then ActionType = JUMP_FILE
         
     End If
     
@@ -17953,3 +18049,12 @@ Public Sub NotifyChangeFrame(NewFrame As FRAME_ALIAS)
         End If
     End If
 End Sub
+
+Public Function BitPrefix(sPrefix As String, HE As clsHiveEnum) As String
+    If HE.Redirected Then
+        BitPrefix = sPrefix & "-32"
+    Else
+        BitPrefix = sPrefix
+    End If
+End Function
+

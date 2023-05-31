@@ -418,9 +418,9 @@ Private Sub Class_Initialize()
     IsSafeBoot_ = (lret > 0)
     Select Case lret
         Case 1
-            SafeBootMode_ = "Safe mode"
+            SafeBootMode_ = "Safe mode (no Networking)"
         Case 2
-            SafeBootMode_ = "Safe mode with network support"
+            SafeBootMode_ = "Safe mode with Networking"
         Case Else
             SafeBootMode_ = "Normal"
     End Select
@@ -682,7 +682,7 @@ Private Sub Class_Initialize()
     If osi.wSuiteMask And VER_SUITE_TERMINAL Then SuiteMask_ = SuiteMask_ & " + " & "Terminal"
     If osi.wSuiteMask And VER_SUITE_WH_SERVER Then SuiteMask_ = SuiteMask_ & " + " & "WH Server"
     
-    If 0 <> Len(SuiteMask_) Then SuiteMask_ = Mid$(SuiteMask_, 4)
+    If 0 <> Len(SuiteMask_) Then SuiteMask_ = mid$(SuiteMask_, 4)
     
     ' wProductType
     Select Case osi.wProductType

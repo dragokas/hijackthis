@@ -328,8 +328,8 @@ Public Function FileExists(ByVal sFile As String, Optional bUseWow64 As Boolean,
     AppendErrorLogCustom "FileExists - Begin", "File: " & sFile
     
     '\\?\ \\.\
-    If Left$(sFile, 4) = "\\?\" Then sFile = Mid$(sFile, 5)
-    If Left$(sFile, 4) = "\\.\" Then sFile = Mid$(sFile, 5)
+    If Left$(sFile, 4) = "\\?\" Then sFile = mid$(sFile, 5)
+    If Left$(sFile, 4) = "\\.\" Then sFile = mid$(sFile, 5)
     
     'ADS?
     pos = InStr(4, sFile, ":")
@@ -638,7 +638,7 @@ Public Function GetW(hFile As Long, Optional vPos As Variant, Optional vOut As V
         
         If lBytesRead <> 0 Then
             If AscW(Left$(vOut, 1)) = -257 Then
-                vOut = Mid$(vOut, 2, Len(vOut) \ 2 - 1)
+                vOut = mid$(vOut, 2, Len(vOut) \ 2 - 1)
             Else
                 vOut = StrConv(Left$(vOut, RoundUp(Len(vOut) / 2)), vbUnicode)
                 If AscW(Right$(vOut, 1)) = 0 Then vOut = Left$(vOut, Len(vOut) - 1)
@@ -855,7 +855,7 @@ End Function
 Public Function GetExtensionName(Path As String) As String  'вернет .ext
     Dim pos As Long
     pos = InStrRev(Path, ".")
-    If pos <> 0 Then GetExtensionName = Mid$(Path, pos)
+    If pos <> 0 Then GetExtensionName = mid$(Path, pos)
 End Function
 
 '' явл€етс€ ли файл форматом PE EXE
@@ -1204,7 +1204,7 @@ Public Function EnumFiles$(sFolder$)    'returns list of files divided by |
             End If
         Loop Until FindNextFile(hFind, uWFD) = 0
         FindClose hFind
-        If sList <> vbNullString Then EnumFiles = Mid$(sList, 2)
+        If sList <> vbNullString Then EnumFiles = mid$(sList, 2)
     End If
     
 Finalize:
@@ -1696,7 +1696,7 @@ Public Function BuildPath(ParamArray Paths()) As String
     For i = 0 To UBound(Paths)
         BuildPath = BuildPath & IIf(Right$(BuildPath, 1) = "\" Or Left$(Paths(i), 1) = "\", vbNullString, "\") & Paths(i)
     Next
-    BuildPath = Mid$(BuildPath, 2)
+    BuildPath = mid$(BuildPath, 2)
 End Function
 
 'To stop on the first NULL char occurrence
@@ -1709,7 +1709,7 @@ Public Function RTrimNull(s$) As String
     If Len(s) = 0 Then Exit Function
     Dim i As Long
     For i = Len(s) To 1 Step -1
-        If Mid$(s, i, 1) <> vbNullChar Then
+        If mid$(s, i, 1) <> vbNullChar Then
             RTrimNull = Left$(s, i)
             Exit Function
         End If
@@ -1747,7 +1747,7 @@ Public Function GetFileName(ByVal Path As String, Optional bWithExtension As Boo
     posColon = InStr(4, Path, ":")
     If posColon Then
         'not URL ?
-        If Mid$(Path, posColon, 3) <> ":\\" Then
+        If mid$(Path, posColon, 3) <> ":\\" Then
             Path = Left$(Path, posColon - 1)
         End If
     End If
@@ -1763,7 +1763,7 @@ Public Function GetFileName(ByVal Path As String, Optional bWithExtension As Boo
     End If
     If posDot = 0 Then posDot = Len(Path) + 1
     
-    GetFileName = Mid$(Path, posSl + 1, posDot - posSl - 1)
+    GetFileName = mid$(Path, posSl + 1, posDot - posSl - 1)
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "Parser.GetFileName", "Path: ", Path
@@ -1940,9 +1940,9 @@ Public Function ExtractFilename(sLine$) As String
     If Left$(s, 1) = """" Then
         pos = InStr(2, s, """")
         If pos > 0 Then
-            ExtractFilename = Mid$(s, 2, pos - 2) ' remove first and last quote
+            ExtractFilename = mid$(s, 2, pos - 2) ' remove first and last quote
         Else
-            ExtractFilename = Mid$(s, 2) 'no close quote... lol
+            ExtractFilename = mid$(s, 2) 'no close quote... lol
         End If
     ' if there are no quote
     Else
@@ -1972,14 +1972,14 @@ Public Function ExtractArguments(sLine$) As String
     If Left$(s, 1) = """" Then
         pos = InStr(2, s, """")
         If pos > 0 Then
-            ExtractArguments = Trim$(Mid$(s, pos + 1))
+            ExtractArguments = Trim$(mid$(s, pos + 1))
         Else
             ExtractArguments = vbNullString 'no close quote... lol
         End If
     Else
         pos = InStr(s, " ")
         If pos > 0 Then
-            ExtractArguments = Trim$(Mid$(s, pos + 1))
+            ExtractArguments = Trim$(mid$(s, pos + 1))
         Else
             ExtractArguments = vbNullString
         End If
@@ -2034,13 +2034,13 @@ Public Function ReadFileContents(sFile As String, isUnicode As Boolean) As Strin
     If isUnicode Then
         ReadFileContents = b()
         If UBound(b) >= 1 Then
-            If b(0) = &HFF& And b(1) = &HFE& Then ReadFileContents = Mid$(ReadFileContents, 2)  ' - BOM UTF16-LE
+            If b(0) = &HFF& And b(1) = &HFE& Then ReadFileContents = mid$(ReadFileContents, 2)  ' - BOM UTF16-LE
         End If
     Else
         ReadFileContents = StrConv(b(), vbUnicode, OSver.LangNonUnicodeCode)
         If UBound(b) >= 2 Then
             If b(0) = &HEF& And b(1) = &HBB& And b(2) = &HBF& Then      ' - BOM UTF-8
-                ReadFileContents = Mid$(ReadFileContents, 4)
+                ReadFileContents = mid$(ReadFileContents, 4)
             End If
         End If
     End If
@@ -2110,12 +2110,12 @@ Public Function IniGetString( _
         'if string begin with our parameter
         If InStr(1, aContents(i), sParameter, vbTextCompare) = 1 Then
             'if next char is =, excluding space characters after parameter's name
-            If Left$(LTrim$(Mid$(aContents(i), Len(sParameter) + 1)), 1) = "=" Then
+            If Left$(LTrim$(mid$(aContents(i), Len(sParameter) + 1)), 1) = "=" Then
                 'appending sData with value
                 If bMultiple Then
-                    sData = sData & "|" & Mid$(aContents(i), InStr(aContents(i), "=") + 1)
+                    sData = sData & "|" & mid$(aContents(i), InStr(aContents(i), "=") + 1)
                 Else
-                    IniGetString = Mid$(aContents(i), InStr(aContents(i), "=") + 1)
+                    IniGetString = mid$(aContents(i), InStr(aContents(i), "=") + 1)
                     Exit Function
                 End If
             End If
@@ -2128,7 +2128,7 @@ Public Function IniGetString( _
     End If
     
     If Len(sData) <> 0 Then
-        IniGetString = Mid$(sData, 2)
+        IniGetString = mid$(sData, 2)
     End If
     
     AppendErrorLogCustom "IniGetString - End"
@@ -2236,7 +2236,7 @@ Public Function IniSetString( _
         If InStr(1, aContents(i), sParameter, vbTextCompare) = 1 Then
             
             'if next char is =, excluding space characters after parameter's name
-            If Left$(LTrim$(Mid$(aContents(i), Len(sParameter) + 1)), 1) = "=" Then
+            If Left$(LTrim$(mid$(aContents(i), Len(sParameter) + 1)), 1) = "=" Then
             
                 aContents(i) = sNewData
                 'input new data, replace file
@@ -2338,7 +2338,7 @@ Public Function IniRemoveString( _
         If InStr(1, aContents(i), sParameter, vbTextCompare) = 1 Then
             
             'if next char is =, excluding space characters after parameter's name
-            If Left$(LTrim$(Mid$(aContents(i), Len(sParameter) + 1)), 1) = "=" Then
+            If Left$(LTrim$(mid$(aContents(i), Len(sParameter) + 1)), 1) = "=" Then
                 'erase parameter
                 aContents(i) = vbNullString
                 'replace file
@@ -2459,7 +2459,7 @@ Public Function GetFileNameAndExt(ByVal Path As String) As String ' вернет тольк
     
     pos = InStrRev(Path, "\")
     If pos <> 0 Then
-        GetFileNameAndExt = Mid$(Path, pos + 1)
+        GetFileNameAndExt = mid$(Path, pos + 1)
     Else
         GetFileNameAndExt = Path
     End If
@@ -2542,7 +2542,7 @@ Public Function FindOnPath(ByVal sAppName As String, Optional bUseSourceValueOnF
 
     If Not isInit Then
         isInit = True
-        Exts = Split(EnvironW("%PathExt%"), ";")
+        Exts = Split(EnvironW("%PathExt%") & ";PIF", ";")
         For i = 0 To UBound(Exts)
             Exts(i) = LCase$(Exts(i))
         Next
@@ -2556,7 +2556,7 @@ Public Function FindOnPath(ByVal sAppName As String, Optional bUseSourceValueOnF
         End If
     End If
 
-    If Mid$(sAppName, 2, 1) = ":" Then bFullPath = True
+    If mid$(sAppName, 2, 1) = ":" Then bFullPath = True
 
     If bFullPath Then
         If FileExists(sAppName) Then
@@ -2577,7 +2577,7 @@ Public Function FindOnPath(ByVal sAppName As String, Optional bUseSourceValueOnF
 
     If bFullPath And pos <> 0 Then
         sFolder = Left$(sAppName, pos - 1)
-        sFile = Mid$(sAppName, pos + 1)
+        sFile = mid$(sAppName, pos + 1)
 
         For i = 0 To UBound(Exts)
             sFileTry = sFolder & "\" & sFile & Exts(i)
@@ -2673,9 +2673,9 @@ Public Function RemoveArguments(ByVal InLine As String) As String
     If Left$(InLine, 1) = """" Then
         pos = InStr(2, InLine, """")
         If pos <> 0 Then
-            result = Mid$(InLine, 2, pos - 2)
+            result = mid$(InLine, 2, pos - 2)
         Else
-            result = Mid$(InLine, 2)
+            result = mid$(InLine, 2)
         End If
     Else
         pos = InStr(InLine, " ")
@@ -2708,10 +2708,10 @@ Public Sub SplitIntoPathAndArgs(ByVal InLine As String, Path As String, Optional
     If Left$(InLine, 1) = """" Then
         pos = InStr(2, InLine, """")
         If pos <> 0 Then
-            Path = Mid$(InLine, 2, pos - 2)
-            Args = Trim$(Mid$(InLine, pos + 1))
+            Path = mid$(InLine, 2, pos - 2)
+            Args = Trim$(mid$(InLine, pos + 1))
         Else
-            Path = Mid$(InLine, 2)
+            Path = mid$(InLine, 2)
         End If
     Else
         '//TODO: Check correct system behaviour: maybe it uses number of 'space' characters, like, if more than 1 'space', exec bIsRegistryData routine.
@@ -2725,10 +2725,10 @@ Public Sub SplitIntoPathAndArgs(ByVal InLine As String, Path As String, Optional
             If Not StrEndWith(InLine, ".exe") Then
                 pos = InStrRev(InLine, ".exe", -1, 1)
                 If pos <> 0 Then
-                    sTmp = Mid$(InLine, pos + 4, 1)
+                    sTmp = mid$(InLine, pos + 4, 1)
                     If sTmp = " " Or sTmp = "/" Then
                         Path = Left$(InLine, pos + 3)
-                        Args = LTrim$(Mid$(InLine, pos + 4))
+                        Args = LTrim$(mid$(InLine, pos + 4))
                         If Not FileExists(Path) Then bFail = True
                     End If
                 End If
@@ -2741,7 +2741,7 @@ Public Sub SplitIntoPathAndArgs(ByVal InLine As String, Path As String, Optional
             pos = InStr(InLine, " ")
             If pos <> 0 Then
                 Path = Left$(InLine, pos - 1)
-                Args = Mid$(InLine, pos + 1)
+                Args = mid$(InLine, pos + 1)
             Else
                 Path = InLine
             End If
@@ -2752,6 +2752,9 @@ Public Sub SplitIntoPathAndArgs(ByVal InLine As String, Path As String, Optional
             sTmp = FindOnPath(Path)
             If Len(sTmp) <> 0 Then
                 Path = sTmp
+            Else
+                Path = InLine
+                Args = vbNullString
             End If
         End If
     End If
@@ -2919,7 +2922,7 @@ Public Function GetLongPath(sFile As String) As String '8.3 -> to Full name
                 If InStr(sFolder, "~") = 0 Then Exit Do
                 
                 If FolderExists(sFolder) Then
-                    GetLongPath = GetLongPath(sFolder) & "\" & Mid$(sFile, pos + 1)
+                    GetLongPath = GetLongPath(sFolder) & "\" & mid$(sFile, pos + 1)
                     Exit Do
                 End If
                 
@@ -3179,7 +3182,7 @@ ErrorHandler:
 End Function
 
 Function ReplaceEV(p_Path As String, p_What As String, p_Into As String) As Boolean
-  If StrBeginWith(p_Path, p_What) Then p_Path = p_Into & Mid$(p_Path, Len(p_What) + 1): ReplaceEV = True
+  If StrBeginWith(p_Path, p_What) Then p_Path = p_Into & mid$(p_Path, Len(p_What) + 1): ReplaceEV = True
 End Function
 
 Public Function GetFreeDiscSpace(sRoot As String, bForCurrentUser As Boolean) As Currency ' result = Int64
@@ -3269,7 +3272,7 @@ Public Function GetEmptyDriveNames() As String()
             ReDim EmptyDrive(Len(Letters) - 1) As String
         
             For i = 0 To Len(Letters) - 1
-                EmptyDrive(i) = Mid$(Letters, i + 1, 1) & ":"
+                EmptyDrive(i) = mid$(Letters, i + 1, 1) & ":"
             Next
             GetEmptyDriveNames = EmptyDrive
         End If
