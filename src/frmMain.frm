@@ -1866,6 +1866,18 @@ Begin VB.Form frmMain
          Begin VB.Menu mnuResultCopyFileObject 
             Caption         =   "File (as Object)"
          End
+         Begin VB.Menu mnuResultCopyFileHash 
+            Caption         =   "File Hash"
+            Begin VB.Menu mnuResultCopyFileHashMD5 
+               Caption         =   "MD5"
+            End
+            Begin VB.Menu mnuResultCopyFileHashSHA1 
+               Caption         =   "SHA1"
+            End
+            Begin VB.Menu mnuResultCopyFileHashSHA256 
+               Caption         =   "SHA256"
+            End
+         End
          Begin VB.Menu mnuResultCopyValue 
             Caption         =   "Value"
          End
@@ -2011,6 +2023,8 @@ Attribute VB_Exposed = False
 ' App key: HKLM\Software\TrendMicro\HiJackThisFork
 
 Option Explicit
+
+#Const AUTOLOGGER_DEBUG_TO_FILE = True
 
 Private Const HJT_ALPHA             As Boolean = True
 Private Const HJT_BETA              As Boolean = False
@@ -2339,6 +2353,12 @@ Private Sub FormStart_Stage1()
         bDebugToFile = True ' /debug also initiate /bDebugToFile
         OpenDebugLogHandle
     End If
+    
+#If AUTOLOGGER_DEBUG_TO_FILE Then
+    If InStr(1, AppPath(), "\AutoLogger\", 1) <> 0 Then
+        bDebugToFile = True
+    End If
+#End If
     
     'header of tracing log
     AppendErrorLogCustom vbCrLf & vbCrLf & "Logfile ( tracing ) of HiJackThis+ v." & AppVerString & vbCrLf & vbCrLf & _
@@ -6439,11 +6459,11 @@ Private Sub mnuResultDisable_Click() 'Context menu => Disable (Tasks & Services)
     
 End Sub
 
-Private Sub mnuResultCopyLine_Click() ' Context menu => Copy => Whole Line
+Private Sub mnuResultCopyLine_Click() ' Context menu => Copy Whole Line
     ClipboardSetText GetSelected_OrCheckedItemResult().HitLineW
 End Sub
 
-Private Sub mnuResultCopyRegKey_Click() ' Context menu => Copy => Registry Key
+Private Sub mnuResultCopyRegKey_Click() ' Context menu => Copy Registry Key
     Dim result As SCAN_RESULT
     result = GetSelected_OrCheckedItemResult()
     If AryPtr(result.Reg) Then
@@ -6455,7 +6475,7 @@ Private Sub mnuResultCopyRegKey_Click() ' Context menu => Copy => Registry Key
     End If
 End Sub
 
-Private Sub mnuResultCopyRegParam_Click() ' Context menu => Copy => Registry Parameter
+Private Sub mnuResultCopyRegParam_Click() ' Context menu => Copy Registry Parameter
     Dim result As SCAN_RESULT
     result = GetSelected_OrCheckedItemResult()
     If AryPtr(result.Reg) Then
@@ -6467,19 +6487,24 @@ Private Sub mnuResultCopyRegParam_Click() ' Context menu => Copy => Registry Par
     End If
 End Sub
 
-Private Sub mnuResultCopyFilePath_Click() ' Context menu => Copy => File Path
+Private Function GetSelectedFilePath() As String
     Dim result As SCAN_RESULT
+    Dim sFile As String
     result = GetSelected_OrCheckedItemResult()
     If AryPtr(result.File) Then
-        ClipboardSetText result.File(0).Path
+        GetSelectedFilePath = result.File(0).Path
     ElseIf AryPtr(result.Jump) Then
         If AryPtr(result.Jump(0).File) Then
-            ClipboardSetText result.Jump(0).File(0).Path
+            GetSelectedFilePath = result.Jump(0).File(0).Path
         End If
     End If
+End Function
+
+Private Sub mnuResultCopyFilePath_Click() ' Context menu => Copy File Path
+    ClipboardSetText GetSelectedFilePath()
 End Sub
 
-Private Sub mnuResultCopyFileArguments_Click() ' Context menu => Copy => File Argument
+Private Sub mnuResultCopyFileArguments_Click() ' Context menu => Copy File Argument
     Dim result As SCAN_RESULT
     result = GetSelected_OrCheckedItemResult()
     If AryPtr(result.File) Then
@@ -6491,33 +6516,37 @@ Private Sub mnuResultCopyFileArguments_Click() ' Context menu => Copy => File Ar
     End If
 End Sub
 
-Private Sub mnuResultCopyFileName_Click() ' Context menu => Copy => File Name
-    Dim result As SCAN_RESULT
-    result = GetSelected_OrCheckedItemResult()
-    If AryPtr(result.File) Then
-        ClipboardSetText GetFileName(result.File(0).Path, True)
-    ElseIf AryPtr(result.Jump) Then
-        If AryPtr(result.Jump(0).File) Then
-            ClipboardSetText GetFileName(result.Jump(0).File(0).Path, True)
+Private Sub mnuResultCopyFileName_Click() ' Context menu => Copy File Name
+    ClipboardSetText GetFileName(GetSelectedFilePath(), True)
+End Sub
+
+Private Sub mnuResultCopyFileObject_Click() ' Context menu => Copy File (as Object)
+    Dim sFile As String: sFile = GetSelectedFilePath()
+    If Len(sFile) <> 0 Then
+        If FileExists(sFile) Then
+            Call ShellExecute(g_HwndMain, StrPtr("copy"), StrPtr(sFile), 0&, 0&, 1)
         End If
     End If
 End Sub
 
-Private Sub mnuResultCopyFileObject_Click() ' Context menu => Copy => File (as Object)
-    Dim result As SCAN_RESULT
-    Dim sFile As String
-    result = GetSelected_OrCheckedItemResult()
-    If AryPtr(result.File) Then
-        sFile = result.File(0).Path
-    ElseIf AryPtr(result.Jump) Then
-        If AryPtr(result.Jump(0).File) Then
-            sFile = result.Jump(0).File(0).Path
-        End If
+Private Sub mnuResultCopyFileHashMD5_Click() ' Context menu => Copy Hash MD5
+    Dim sFile As String: sFile = GetSelectedFilePath()
+    If Len(sFile) <> 0 Then
+        If FileExists(sFile) Then ClipboardSetText GetFileMD5(sFile, , True, False)
     End If
-    If sFile <> "" Then
-        If FileExists(sFile) Then
-            Call ShellExecute(g_HwndMain, StrPtr("copy"), StrPtr(sFile), 0&, 0&, 1)
-        End If
+End Sub
+
+Private Sub mnuResultCopyFileHashSHA1_Click() ' Context menu => Copy Hash SHA1
+    Dim sFile As String: sFile = GetSelectedFilePath()
+    If Len(sFile) <> 0 Then
+        If FileExists(sFile) Then ClipboardSetText GetFileSHA1(sFile, , True, False)
+    End If
+End Sub
+
+Private Sub mnuResultCopyFileHashSHA256_Click() ' Context menu => Copy Hash SHA256
+    Dim sFile As String: sFile = GetSelectedFilePath()
+    If Len(sFile) <> 0 Then
+        If FileExists(sFile) Then ClipboardSetText GetFileSHA256(sFile, , True, False)
     End If
 End Sub
 

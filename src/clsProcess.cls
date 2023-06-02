@@ -100,12 +100,12 @@ End Type
 Private Declare Function CreateToolhelp32Snapshot Lib "kernel32.dll" (ByVal lFlags As Long, ByVal lProcessID As Long) As Long
 Private Declare Function Process32First Lib "kernel32.dll" Alias "Process32FirstW" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
 Private Declare Function Process32Next Lib "kernel32.dll" Alias "Process32NextW" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
-Private Declare Function GetWindowThreadProcessId Lib "user32.dll" (ByVal hWnd As Long, lpdwProcessId As Long) As Long
+Private Declare Function GetWindowThreadProcessId Lib "user32.dll" (ByVal hwnd As Long, lpdwProcessId As Long) As Long
 Private Declare Function OpenProcess Lib "kernel32.dll" (ByVal dwDesiredAccess As Long, ByVal bInheritHandle As Long, ByVal dwProcessId As Long) As Long
 Private Declare Function WaitForSingleObject Lib "kernel32.dll" (ByVal hHandle As Long, ByVal dwMilliseconds As Long) As Long
 Private Declare Function GetExitCodeProcess Lib "kernel32.dll" (ByVal hProcess As Long, lpExitCode As Long) As Long
 Private Declare Function CloseHandle Lib "kernel32.dll" (ByVal hObject As Long) As Long
-Private Declare Function PostMessage Lib "user32.dll" Alias "PostMessageA" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Declare Function PostMessage Lib "user32.dll" Alias "PostMessageA" (ByVal hwnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
 Private Declare Function CreateProcess Lib "kernel32.dll" Alias "CreateProcessW" (ByVal lpApplicationName As Long, ByVal lpCommandLine As Long, lpProcessAttributes As Any, lpThreadAttributes As Any, ByVal bInheritHandles As Long, ByVal dwCreationFlags As Long, lpEnvironment As Any, ByVal lpCurrentDirectory As Long, lpStartupInfo As STARTUPINFO, lpProcessInformation As PROCESS_INFORMATION) As Long
 Private Declare Function TerminateProcess Lib "kernel32.dll" (ByVal hProcess As Long, ByVal uExitCode As Long) As Long
 Private Declare Function CommandLineToArgvW Lib "shell32.dll" (ByVal lpCmdLine As Long, pNumArgs As Long) As Long
@@ -123,7 +123,7 @@ Private Declare Function DuplicateTokenEx Lib "Advapi32.dll" (ByVal hExistingTok
 Private Declare Function GetShellWindow Lib "user32.dll" () As Long
 Private Declare Function CreateProcessWithTokenW Lib "Advapi32.dll" (ByVal hToken As Long, ByVal dwLogonFlags As Long, ByVal lpApplicationName As Long, ByVal lpCommandLine As Long, ByVal dwCreationFlags As Long, ByVal lpEnvironment As Long, ByVal lpCurrentDirectory As Long, lpStartupInfo As STARTUPINFO, lpProcessInfo As PROCESS_INFORMATION) As Long
 Private Declare Function IUnknown_QueryService Lib "Shlwapi.dll" (ByVal pUnk As IUnknown, ByRef guidService As Any, ByRef riid As Any, ByRef ppvOut As Any) As Long
-Private Declare Function EndTask Lib "user32.dll" (ByVal hWnd As Long, ByVal fShutDown As Long, ByVal fForce As Long) As Long
+Private Declare Function EndTask Lib "user32.dll" (ByVal hwnd As Long, ByVal fShutDown As Long, ByVal fForce As Long) As Long
 Private Declare Function CreatePipe Lib "kernel32" (phReadPipe As Long, phWritePipe As Long, lpPipeAttributes As SECURITY_ATTRIBUTES, ByVal nSize As Long) As Long
 Private Declare Function PeekNamedPipe Lib "kernel32" (ByVal hNamedPipe As Long, lpBuffer As Any, ByVal nBufferSize As Long, lpBytesRead As Long, lpTotalBytesAvail As Long, lpBytesLeftThisMessage As Any) As Long
 Private Declare Function ReadFile Lib "kernel32" (ByVal hFile As Long, lpBuffer As Any, ByVal nNumberOfBytesToRead As Long, lpNumberOfBytesRead As Long, lpOverlapped As Any) As Long
@@ -791,7 +791,7 @@ Public Function ProcessRunUnelevated2( _
 
     Dim IShellBrowser As IUnknown, IShellView As IUnknown, Obj As Object, ShellFolderView As Object
     Dim IID_IDispatch(3&) As Long, IID_IShellBrowser(3&) As Long, SID_STopLevelBrowser(3&) As Long
-    Dim hWnd As Long, RV As Variant, v(2&) As Variant, VT(2&) As Integer, pv(2&) As Long
+    Dim hwnd As Long, RV As Variant, v(2&) As Variant, VT(2&) As Integer, pv(2&) As Long
     
     Dim vOperation As Variant:          vOperation = vbNullString 'by default - open
     Dim vCommandLine As Variant:        vCommandLine = CommandLine
@@ -799,7 +799,7 @@ Public Function ProcessRunUnelevated2( _
     Dim vWindowStyle As Variant:        vWindowStyle = WindowStyle
     
     On Error Resume Next
-    Set Obj = CreateObject("Shell.Application").Windows.FindWindowSW(Empty, Empty, SWC_DESKTOP, hWnd, SWFO_NEEDDISPATCH)
+    Set Obj = CreateObject("Shell.Application").Windows.FindWindowSW(Empty, Empty, SWC_DESKTOP, hwnd, SWFO_NEEDDISPATCH)
     On Error GoTo 0
     If Not (Obj Is Nothing) Then
       If CLSIDFromString(StrPtr("{4C96BE40-915C-11CF-99D3-00AA004AE837}"), SID_STopLevelBrowser(0&)) = NOERROR Then

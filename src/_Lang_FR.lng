@@ -161,6 +161,7 @@ et enregistrer un rapport
 2351=Cliquez ici pour obtenir les résultats VT
 2352=Téléchargement du fichier ...
 2360=Arguments du fichier
+2361=Hachage de fichier
 ;
 ; =============== System Tray ================
 ;
@@ -1836,4 +1837,4 @@ HiJackThis+ est une modification du programme HiJackThis original de Trend Micro
 ; ========= Empty ========
 ;
 ; (2500 - ...)
-;                                                     
+;                                                        

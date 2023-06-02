@@ -386,12 +386,14 @@ if %errorlevel% neq 0 (pause & exit /B)
 
 :: For debug purposes
 copy /y "%cd%\%ExeName%.exe" "%ExeName%_dbg.exe"
+2>NUL del "%ExeName%_dbg.zip"
 Tools\7zip\7za.exe a -mx9 -y -o"%cd%" "%ExeName%_dbg.zip" "%ExeName%_dbg.exe" "%cd%\apps"
 copy /y "%ExeName%_dbg.zip" "%ExeName%_dbg_test.zip"
 
 :: remove signature
 ::Tools\RemoveSign\RemSign.exe "%cd%\HJT_poly.pif"
 :: pack
+2>NUL del "%ExeName%_poly.zip"
 Tools\7zip\7za.exe a -mx9 -y -o"%cd%" "%ExeName%_poly.zip" "HJT_poly.pif" "%cd%\apps"
 
 :: For Vir Labs

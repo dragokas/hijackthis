@@ -160,6 +160,7 @@
 2351=Haga clic aquí para obtener los resultados de VT
 2352=Subiendo el archivo ...
 2360=Argumentos de archivo
+2361=Hash de archivo
 ;
 ; =============== System Tray ================
 ;
@@ -1842,4 +1843,4 @@
 ; ========= Empty ========
 ;
 ; (2500 - ...)
-;                                       
+;                                         

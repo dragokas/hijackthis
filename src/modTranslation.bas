@@ -518,6 +518,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
 '                    Case "1175": SetMenuCaptionByMenu .mnuResultCopyFileName, Translation
 '                    Case "2360": SetMenuCaptionByMenu .mnuResultCopyFileArguments, Translation
 '                    Case "1176": SetMenuCaptionByMenu .mnuResultCopyFileObject, Translation
+'                    Case "2361": SetMenuCaptionByMenu .mnuResultCopyFileHash, Translation
 '                    Case "1177": SetMenuCaptionByMenu .mnuResultCopyValue, Translation
 '                    Case "1178": SetMenuCaptionByMenu .mnuResultVTHash, Translation
 '                    Case "1179": SetMenuCaptionByMenu .mnuResultVTSubmit, Translation
@@ -538,9 +539,11 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     Case "1175": .mnuResultCopyFileName.Caption = Translation
                     Case "2360": .mnuResultCopyFileArguments.Caption = Translation
                     Case "1176": .mnuResultCopyFileObject.Caption = Translation
+                    Case "2361": .mnuResultCopyFileHash.Caption = Translation
                     Case "1177": .mnuResultCopyValue.Caption = Translation
                     Case "1178": .mnuResultVTHash.Caption = Translation
                     Case "1179": .mnuResultVTSubmit.Caption = Translation
+                    
 
                     '; =========== Misc Tools (tab) ===========
                     Case "0044": .chkConfigTabs(3).Caption = Translation

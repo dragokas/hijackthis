@@ -73,7 +73,7 @@ Private Type JOB_HEADER
     Priority As JOB_PRIORITY_CLASS
     MaxRunTime As Long
     ExitCode As Long
-    Status As JOB_SCHED_STATUS
+    status As JOB_SCHED_STATUS
     Flags As Long
     LastRunTime As SYSTEMTIME
 End Type
@@ -771,12 +771,12 @@ Public Function PathNormalize(ByVal sPath As String) As String
     
     sPath = UnQuote(sPath)
     
-    If StrBeginWith(sPath, "!\??\") Then sPath = Mid$(sPath, 6)
-    If StrBeginWith(sPath, "\??\") Then sPath = Mid$(sPath, 5)
-    If StrBeginWith(sPath, "\\?\") Then sPath = Mid$(sPath, 5)
-    If StrBeginWith(sPath, "\\.\") Then sPath = Mid$(sPath, 5)
-    If StrBeginWith(sPath, "file:///") Then sPath = Mid$(sPath, 9)
-    If StrBeginWith(sPath, "\SystemRoot\") Then sPath = sWinDir & Mid$(sPath, 12)
+    If StrBeginWith(sPath, "!\??\") Then sPath = mid$(sPath, 6)
+    If StrBeginWith(sPath, "\??\") Then sPath = mid$(sPath, 5)
+    If StrBeginWith(sPath, "\\?\") Then sPath = mid$(sPath, 5)
+    If StrBeginWith(sPath, "\\.\") Then sPath = mid$(sPath, 5)
+    If StrBeginWith(sPath, "file:///") Then sPath = mid$(sPath, 9)
+    If StrBeginWith(sPath, "\SystemRoot\") Then sPath = sWinDir & mid$(sPath, 12)
     
     If StrBeginWith(sPath, "\\") Then
         PathNormalize = sPath
@@ -788,7 +788,7 @@ Public Function PathNormalize(ByVal sPath As String) As String
     '???
     'sPath = Replace(sPath, "/", "\")
     
-    If Mid$(sPath, 2, 1) <> ":" Then
+    If mid$(sPath, 2, 1) <> ":" Then
         bShouldSeek = True  'relative or on the %PATH%
     Else
         If Not FileExists(sPath) Then bShouldSeek = True 'e.g. no extension
@@ -1083,7 +1083,7 @@ Function SetTaskState(TaskFullPath As String, bEnable As Boolean) As Boolean
     If pos <> 0 Then
         TaskPath = Left$(TaskFullPath, pos)
         If Len(TaskPath) > 1 Then TaskPath = Left$(TaskPath, Len(TaskPath) - 1) 'trim last backslash
-        TaskName = Mid$(TaskFullPath, pos + 1)
+        TaskName = mid$(TaskFullPath, pos + 1)
     Else
         Exit Function
     End If
@@ -1237,7 +1237,7 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
         
         numTasks = AnalyzeTask(aFiles(i), te())
         
-        DirXml = Mid$(aFiles(i), Len(sWinTasksFolder) + 1)
+        DirXml = mid$(aFiles(i), Len(sWinTasksFolder) + 1)
         
         If Not IsMigrated Then
             'cache xml path
@@ -1797,7 +1797,7 @@ Sub EnumTaskOther(dXmlPathFromDisk As clsTrickHashTable)
     
     For i = 1 To Reg.EnumSubKeysToArray(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree", aSubKeys(), , , True)
         
-        DirXml = Mid$(aSubKeys(i), Len("SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree") + 1)
+        DirXml = mid$(aSubKeys(i), Len("SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree") + 1)
 
         If Not StrBeginWith(DirXml, "\Microsoft") Then ' just in case
         
@@ -1847,7 +1847,7 @@ Sub EnumTaskOther(dXmlPathFromDisk As clsTrickHashTable)
             
                 If Not FolderHasFile(aFolders(i)) Then 'no tasks?
                     
-                    DirXml = Mid$(aFolders(i), Len(BuildPath(sWinSysDir, "Tasks")) + 1)
+                    DirXml = mid$(aFolders(i), Len(BuildPath(sWinSysDir, "Tasks")) + 1)
                     
                     If Not dTasksEmpty.Exists(DirXml) Then 'filter the record that is already in results list
                         
@@ -1912,7 +1912,7 @@ Public Function GetRundllFile(ByVal sArg As String) As String
         pos = InStr(sArg, " ")
         If pos = 0 Then Exit Function
         
-        sArg = Mid$(sArg, pos + 1)
+        sArg = mid$(sArg, pos + 1)
     End If
     
     pos = InStr(sArg, ",") ' skip the verb
@@ -1935,7 +1935,7 @@ Public Function GetWScriptFile(ByVal sArguments As String) As String
     
     For i = 1 To argc
         argv(i) = UnQuote(argv(i))
-        If Mid$(argv(i), 2, 2) = ":\" Then
+        If mid$(argv(i), 2, 2) = ":\" Then
             GetWScriptFile = argv(i)
             Exit For
         End If
@@ -2005,7 +2005,7 @@ Private Function AnalyzeTask(sFilename As String, te() As TASK_ENTRY) As Long
                     If Len(te(j).RunObjExpanded) = 0 Then
                         te(j).FileMissing = True
                     Else
-                        If Mid$(te(j).RunObjExpanded, 2, 1) <> ":" Then
+                        If mid$(te(j).RunObjExpanded, 2, 1) <> ":" Then
                             If Len(te(j).WorkDir) <> 0 Then
                                 sTmp = BuildPath(te(j).WorkDir, te(j).RunObjExpanded)
                                 If FileExists(sTmp) Then te(j).RunObjExpanded = sTmp 'if only file exists in this work. folder
@@ -2139,7 +2139,7 @@ Public Sub EnumJobs()
             
             Job.prop.AppName.Data = EnvironW(PathNormalize(Job.prop.AppName.Data))
             
-            If Mid$(Job.prop.AppName.Data, 2, 1) <> ":" Then
+            If mid$(Job.prop.AppName.Data, 2, 1) <> ":" Then
                 If Len(Job.prop.WorkDir.Data) <> 0 Then
                     sTmp = BuildPath(Job.prop.WorkDir.Data, Job.prop.AppName.Data)
                     If FileExists(sTmp) Then Job.prop.AppName.Data = sTmp 'if only file exists in this work. folder
@@ -2154,7 +2154,7 @@ Public Sub EnumJobs()
             Next
             
             sRunState = vbNullString
-            Select Case Job.head.Status
+            Select Case Job.head.status
                 Case SCHED_S_TASK_READY
                     sRunState = "Ready"
                 Case SCHED_S_TASK_RUNNING
@@ -2375,9 +2375,7 @@ Public Sub EnumBITS_Stage1()
     
     If Not OSver.IsWindowsVistaOrGreater Then Exit Sub
     
-    If GetServiceStartMode("bits") = SERVICE_MODE_DISABLED Then
-        If GetServiceRunState("bits") <> SERVICE_RUNNING Then Exit Sub
-    End If
+    If GetServiceRunState("bits") <> SERVICE_RUNNING Then Exit Sub
     
     BitsAdmin = PathX64(BuildPath(sWinSysDir, "bitsadmin.exe"))
     
@@ -2393,6 +2391,8 @@ End Sub
 Public Sub EnumBITS_Stage2()
     On Error GoTo ErrorHandler:
     
+    AppendErrorLogCustom "EnumBITS_Stage2 - Start"
+    
     Dim sLog As String, aLog() As String, sGUID As String, aURL() As String, sNotify As String, sName As String
     Dim bSectFile As Boolean, bSafe As Boolean, sHit As String, result As SCAN_RESULT, resultAll As SCAN_RESULT
     Dim sType As String, sURL As String, sDestination As String, pos As Long, sHost As String
@@ -2401,8 +2401,10 @@ Public Sub EnumBITS_Stage2()
     
     BitsAdminExecuted = False
     
-    sLog = cProcBitsAdmin.ConsoleReadUntilDeath()
+    sLog = cProcBitsAdmin.ConsoleReadUntilDeath(7000)
     Set cProcBitsAdmin = Nothing
+    
+    AppendErrorLogCustom "BitsAdmin wait finished"
     
     Dim N As Long, i As Long
     
@@ -2420,7 +2422,7 @@ Public Sub EnumBITS_Stage2()
                     sGUID = GetStringToken(aLog(N), 2)
                     sName = GetStringToken(aLog(N), 4, -1)
                     If Len(sName) <> 0 Then
-                        If Left$(sName, 1) = "'" Then sName = Mid$(sName, 2)
+                        If Left$(sName, 1) = "'" Then sName = mid$(sName, 2)
                         If Right$(sName, 1) = "'" And Len(sName) > 1 Then sName = Left$(sName, Len(sName) - 1)
                     End If
                     
@@ -2471,7 +2473,7 @@ Public Sub EnumBITS_Stage2()
                             pos = InStr(aURL(i), "->")
                             If pos <> 0 Then
                                 sURL = Trim$(Left$(aURL(i), pos - 1))
-                                sDestination = Trim$(Mid$(aURL(i), pos + 2))
+                                sDestination = Trim$(mid$(aURL(i), pos + 2))
                             End If
                             
                             If Not IsOnIgnoreList(sHit) Then
@@ -2503,6 +2505,8 @@ Public Sub EnumBITS_Stage2()
         AddToScanResults resultAll
     End If
     
+    AppendErrorLogCustom "EnumBITS_Stage2 - End"
+    
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "EnumBITS_Stage2", sLog
@@ -2517,7 +2521,7 @@ Public Function ExtractHost(ByVal sURL As String) As String
     pos = InStr(sURL, "//")
     If pos <> 0 Then
         If StrBeginWith(sURL, "http://") Or StrBeginWith(sURL, "https://") Then
-            sURL = Mid$(sURL, pos + 2)
+            sURL = mid$(sURL, pos + 2)
             pos = InStr(sURL, "/")
             If pos <> 0 Then
                 ExtractHost = Left$(sURL, pos - 1)
@@ -2525,7 +2529,7 @@ Public Function ExtractHost(ByVal sURL As String) As String
                 If pos <> 0 Then
                     pos = InStrRev(ExtractHost, ".", pos - 1)
                     If pos <> 0 Then
-                        ExtractHost = Mid$(ExtractHost, pos + 1)
+                        ExtractHost = mid$(ExtractHost, pos + 1)
                     End If
                 End If
             End If
@@ -2565,7 +2569,7 @@ Public Function GetStringToken( _
         Do
             N = N + 1
             If N > Len(str) Then Exit Function
-            ch = Asc(Mid$(str, N, 1))
+            ch = Asc(mid$(str, N, 1))
         Loop While ch = 32 'skip leading spaces
         
         Do 'remove double delims
@@ -2576,7 +2580,7 @@ Public Function GetStringToken( _
         If N = 1 Then
             Tok = Split(str, delim)
         Else
-            Tok = Split(Mid$(str, N), delim)
+            Tok = Split(mid$(str, N), delim)
         End If
         
         If tokEnd = 0 Then
@@ -2649,7 +2653,7 @@ Public Function RestoreBitsJob(sName As String, sURL As String, sDestination As 
         If Len(sLog) <> 0 Then
             pos = InStr(1, sLog, "Created job", 1)
             If pos <> 0 Then
-                sGUID = Trim$(GetStringToken(Mid$(sLog, pos), 3))
+                sGUID = Trim$(GetStringToken(mid$(sLog, pos), 3))
                 pos = InStr(sGUID, ".")
                 If pos <> 0 Then sGUID = Left$(sGUID, pos - 1)
                 

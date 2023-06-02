@@ -162,6 +162,16 @@ Private Type PDH_FMT_COUNTERVALUE
     Data(7) As Byte
 End Type
 
+Private Type SECURE_BOOT_STATUS
+    fEnabled As Byte
+    fCapable As Byte
+End Type
+
+Private Type SYSTEM_CODEINTEGRITY_INFORMATION
+    Length As Long
+    CodeIntegrityOptions As Long
+End Type
+
 Private Declare Function GetLocaleInfo Lib "kernel32.dll" Alias "GetLocaleInfoW" (ByVal lcid As Long, ByVal LCTYPE As Long, ByVal lpLCData As Long, ByVal cchData As Long) As Long
 Private Declare Function GetUserDefaultUILanguage Lib "kernel32.dll" () As Long
 Private Declare Function GetSystemDefaultUILanguage Lib "kernel32.dll" () As Long
@@ -217,7 +227,9 @@ Private Declare Function PdhOpenQuery Lib "Pdh.dll" Alias "PdhOpenQueryW" (ByVal
 Private Declare Function PdhAddEnglishCounter Lib "Pdh.dll" Alias "PdhAddEnglishCounterW" (ByVal hQuery As Long, ByVal szFullCounterPath As Long, dwUserData As Long, phCounter As Long) As Long
 Private Declare Function PdhCollectQueryData Lib "Pdh.dll" (ByVal hQuery As Long) As Long
 Private Declare Function PdhGetFormattedCounterValue Lib "Pdh.dll" (ByVal hCounter As Long, ByVal dwFormat As Long, lpdwType As Long, pValue As PDH_FMT_COUNTERVALUE) As Long
-
+Private Declare Function GetCurrentProcessId Lib "kernel32.dll" () As Long
+Private Declare Function GetMem8 Lib "msvbvm60.dll" (Src As Any, Dst As Any) As Long
+Private Declare Function NtQuerySystemInformation Lib "ntdll.dll" (ByVal infoClass As Long, Buffer As Any, ByVal BufferSize As Long, ret As Long) As Long
 
 Private Const MAX_PATH                  As Long = 260&
 Private Const SM_SERVERR2               As Long = 89&
@@ -248,6 +260,15 @@ Private Const LOCALE_SENGLANGUAGE       As Long = &H1001&
 Private Const HKEY_LOCAL_MACHINE        As Long = &H80000002
 Private Const KEY_WOW64_64KEY           As Long = &H100&
 Private Const DIRECTORY_QUERY           As Long = 1&
+Private Const CODEINTEGRITY_OPTION_TESTSIGN As Long = 2&
+Private Const CODEINTEGRITY_OPTION_DEBUGMODE_ENABLED As Long = &H80&
+Private Const CODEINTEGRITY_OPTION_HVCI_KMCI_ENABLED As Long = &H400&
+Private Const CODEINTEGRITY_OPTION_HVCI_KMCI_AUDITMODE_ENABLED As Long = &H800&
+Private Const CODEINTEGRITY_OPTION_HVCI_KMCI_STRICTMODE_ENABLED As Long = &H1000&
+Private Const CODEINTEGRITY_OPTION_HVCI_IUM_ENABLED As Long = &H2000&
+
+Private Const SystemSecureBootInformation  As Long = &H91&
+Private Const SystemCodeIntegrityInformation As Long = &H67&
 
 Private Const STATUS_SUCCESS            As Long = 0&
 Private Const ERROR_SUCCESS             As Long = 0&
@@ -258,6 +279,7 @@ Private Const TokenElevation            As Long = 20&
 'Private Const SE_PRIVILEGE_ENABLED      As Long = 2&
 'Private Const STATUS_ACCESS_DENIED      As Long = &HC0000022
 Private Const STATUS_OBJECT_NAME_NOT_FOUND As Long = &HC0000034
+Private Const STATUS_INVALID_INFO_CLASS As Long = &HC0000003
 
 Private Const PDH_FMT_LONG              As Long = &H100&
 Private Const PDH_FMT_DOUBLE            As Long = &H200&
@@ -311,6 +333,10 @@ Dim inIDE                   As Boolean
 Dim IsWin64_                As Boolean
 Dim IsWin32_                As Boolean
 Dim SecureBoot_             As Boolean
+Dim SecureBootSupported_    As Boolean
+Dim TestSigning_            As Boolean
+Dim DebugMode_              As Boolean
+Dim CodeIntegrity_          As Boolean
 Dim PlatformID_             As Long
 Dim IsLocalSystemContext_   As Boolean
 Dim IsAdminGroup_           As Boolean
@@ -698,7 +724,15 @@ Private Sub Class_Initialize()
     
     IsLocalSystemContext_ = (SID_CurrentProcess_ = "S-1-5-18")
     
-    SecureBoot_ = SecureBootState()
+    Call GetSecureBootState(SecureBootSupported_, SecureBoot_)
+    
+    Dim codeIntegrityFlags As Long
+    codeIntegrityFlags = GetCodeIntegrityFlags()
+    TestSigning_ = codeIntegrityFlags And CODEINTEGRITY_OPTION_TESTSIGN
+    DebugMode_ = codeIntegrityFlags And CODEINTEGRITY_OPTION_DEBUGMODE_ENABLED
+    CodeIntegrity_ = codeIntegrityFlags And _
+        (CODEINTEGRITY_OPTION_HVCI_KMCI_ENABLED Or CODEINTEGRITY_OPTION_HVCI_KMCI_AUDITMODE_ENABLED Or _
+        CODEINTEGRITY_OPTION_HVCI_KMCI_STRICTMODE_ENABLED Or CODEINTEGRITY_OPTION_HVCI_IUM_ENABLED)
     
     'http://www.nicklowe.org/2012/02/understanding-case-sensitivity-in-windows-obcaseinsensitive-file_case_sensitive_search/
     Dim hDir    As Long
@@ -1575,14 +1609,31 @@ Public Function IsWow64() As Boolean   ' Разрядность ОС
     End If
 End Function
 
-Private Function SecureBootState() As Boolean
+Private Function GetSecureBootState(out_Supported As Boolean, out_State As Boolean) As Boolean 'thanks to ISergey & Убежденный
+    If Not IsWindows7OrGreater_ Then Exit Function
     Dim lState As Long
-    '// TODO:
-    'improvement - https://www.cyberforum.ru/win-api/thread2046367.html#post10789948
-    '++
-    If MajorMinor_ >= 6.2 Then ' Win8+
+    Dim iStatus As Long
+    Dim secboot As SECURE_BOOT_STATUS
+    Dim dwRetSize As Long
+    iStatus = NtQuerySystemInformation(SystemSecureBootInformation, ByVal VarPtr(secboot), LenB(secboot), dwRetSize)
+    If iStatus = STATUS_SUCCESS Then
+        out_Supported = secboot.fCapable
+        out_State = secboot.fEnabled
+    ElseIf iStatus = STATUS_INVALID_INFO_CLASS Then
         lState = RegRead_REG_DWORD("SYSTEM\CurrentControlSet\Control\SecureBoot\State", "UEFISecureBootEnabled")
-        If lState = 1 Then SecureBootState = True
+        If lState = 1 Then out_State = True: out_Supported = True
+    End If
+End Function
+
+Private Function GetCodeIntegrityFlags() As Long
+    If Not IsWindowsVistaOrGreater_ Then Exit Function
+    Dim iStatus As Long
+    Dim CodeIntegrity As SYSTEM_CODEINTEGRITY_INFORMATION
+    Dim dwRetSize As Long
+    CodeIntegrity.Length = LenB(CodeIntegrity)
+    iStatus = NtQuerySystemInformation(SystemCodeIntegrityInformation, ByVal VarPtr(CodeIntegrity), LenB(CodeIntegrity), dwRetSize)
+    If iStatus = STATUS_SUCCESS Then
+        GetCodeIntegrityFlags = CodeIntegrity.CodeIntegrityOptions
     End If
 End Function
 
@@ -1810,6 +1861,22 @@ End Property
 
 Public Property Get SecureBoot() As Boolean
     SecureBoot = SecureBoot_
+End Property
+
+Public Property Get SecureBootSupported() As Boolean
+    SecureBootSupported = SecureBootSupported_
+End Property
+
+Public Property Get TestSigning() As Boolean
+    TestSigning = TestSigning_
+End Property
+
+Public Property Get DebugMode() As Boolean
+    DebugMode = DebugMode_
+End Property
+
+Public Property Get CodeIntegrity() As Boolean 'HVCI
+    CodeIntegrity = CodeIntegrity_
 End Property
 
 Public Property Get IsLocalSystemContext() As Boolean

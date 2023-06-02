@@ -11,6 +11,17 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[3.0.0.4 Alpha] - June 03, 2023
+  - Added BitsAdmin wait timeout (thanks Sandor)
+  - Improved compatibility with AutoLogger software (thanks to regist)
+  - Added new keys to O7 - Policy
+  - Improved Boot Mode output (displayed only if enabled and supported by hardware and OS):
+	* Added Secure Boot state (thanks Kazakevich O.)
+	* added Test Signing state
+	* added Debug Mode state
+	* added Hypervisor enforced Code Integrity (HVCI) state
+  - Added context menu Copy => File Hash
+
 [3.0.0.3 Alpha] - June 01, 2023
   - Added definition of O7 - Account: UAC
   - Added O7 - Policy: *\..\Policies\Explorer\DisallowRun: Fix all - fixes all DisallowRun lines at once and sets the DisallowRun parameter to 0.

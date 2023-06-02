@@ -516,6 +516,7 @@ Public Proc     As clsProcess
 Public cMath    As clsMath
 
 Private oDictSRV As clsTrickHashTable
+Private oDictProcAvail As clsTrickHashTable
 
 Private Declare Function SysAllocStringByteLen Lib "oleaut32.dll" (ByVal pszStrPtr As Long, ByVal Length As Long) As String
 
@@ -7347,7 +7348,7 @@ Public Sub CheckPolicies()
         For i = 0 To UBound(aValue)
             lData = Reg.GetDword(HE.Hive, HE.Key, aValue(i), HE.Redirected)
             If lData <> 0 Then
-                sHit = BitPrefix("07", HE) & " - Policy: " & HE.KeyAndHivePhysical & ": " & "[" & aValue(i) & "] = " & lData
+                sHit = BitPrefix("O7", HE) & " - Policy: " & HE.KeyAndHivePhysical & ": " & "[" & aValue(i) & "] = " & lData
                 
                 If Not IsOnIgnoreList(sHit) Then
                     With result
@@ -7435,7 +7436,7 @@ Public Sub CheckPolicies()
         For i = 0 To UBound(aValue)
             lData = Reg.GetDword(HE.Hive, HE.Key, aValue(i), HE.Redirected)
             If lData = 0 And Reg.StatusSuccess Then
-                sHit = BitPrefix("07", HE) & " - Taskbar policy: " & HE.HiveNameAndSID & "\..\Explorer\Advanced: [" & aValue(i) & "] = " & lData
+                sHit = BitPrefix("O7", HE) & " - Taskbar policy: " & HE.HiveNameAndSID & "\..\Explorer\Advanced: [" & aValue(i) & "] = " & lData
             
                 If Not IsOnIgnoreList(sHit) Then
                     With result
@@ -7493,6 +7494,31 @@ Public Sub CheckPolicies()
         AddCustomToFix resultAll.Custom, CUSTOM_ACTION_APPLOCKER
         AddToScanResults resultAll
     End If
+    
+    
+    HE.Init HE_HIVE_ALL
+    HE.AddKey "SOFTWARE\Policies\Microsoft\Windows\Explorer"
+    
+    Do While HE.MoveNext
+        For i = 1 To Reg.EnumValuesToArray(HE.Hive, HE.Key, aValue(), HE.Redirected)
+   
+            lData = Reg.GetDword(HE.Hive, HE.Key, aValue(i), HE.Redirected)
+            If lData <> 0 Then
+                sHit = BitPrefix("O7", HE) & " - Policy: " & HE.HiveNameAndSID & "\..\Windows\Explorer: [" & aValue(i) & "] = " & lData
+                
+                If Not IsOnIgnoreList(sHit) Then
+                    With result
+                        .Section = "O7"
+                        .HitLineW = sHit
+                        AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key, aValue(i), , HE.Redirected
+                        .CureType = REGISTRY_BASED
+                    End With
+                    AddToScanResults result
+                End If
+            End If
+        Next
+    Loop
+    
     
     'Check Windows Defender policies
     HE.Init HE_HIVE_ALL, , HE_REDIR_NO_WOW
@@ -7589,9 +7615,8 @@ Public Sub CheckPolicyUAC()
     
     If Not OSver.IsWindowsVistaOrGreater Then Exit Sub
 
-    Dim aValue() As String, i&, lData&, bData() As Byte
+    Dim lData&
     Dim sHit$, result As SCAN_RESULT
-    Dim sKey As String, sValue As String
     Dim HE As clsHiveEnum:      Set HE = New clsHiveEnum
     Dim DC As clsDataChecker:   Set DC = New clsDataChecker
     
@@ -13595,13 +13620,23 @@ End Sub
 
 Public Function IsProcedureAvail(ByVal ProcedureName As String, ByVal DllFilename As String) As Boolean
     AppendErrorLogCustom "IsProcedureAvail - Begin", "Function: " & ProcedureName, "Dll: " & DllFilename
+    Static bInit As Boolean
     Dim hModule As Long, procAddr As Long
+    If Not bInit Then
+        bInit = True
+        Set oDictProcAvail = New clsTrickHashTable
+    End If
+    If oDictProcAvail.Exists(ProcedureName) Then
+        IsProcedureAvail = oDictProcAvail(ProcedureName)
+        Exit Function
+    End If
     hModule = LoadLibrary(StrPtr(DllFilename))
     If hModule Then
         procAddr = GetProcAddress(hModule, StrPtr(StrConv(ProcedureName, vbFromUnicode)))
         FreeLibrary hModule
     End If
     IsProcedureAvail = (procAddr <> 0)
+    oDictProcAvail.Add ProcedureName, IsProcedureAvail
     AppendErrorLogCustom "IsProcedureAvail - End"
 End Function
 
@@ -14844,7 +14879,7 @@ Public Sub OpenLogHandle()
     Dim ov As OVERLAPPED
     
     If Len(g_sLogFile) = 0 Then
-        g_sLogFile = BuildPath(AppPath(), "HiJackThis.log")
+        g_sLogFile = BuildPath(AppPath(), "HiJackThis_.log")
     End If
     
     If FileExists(g_sLogFile, , True) Then DeleteFilePtr StrPtr(g_sLogFile), , True
@@ -14864,7 +14899,7 @@ Public Sub OpenLogHandle()
         If lret Then
             g_LogLocked = True
         Else
-            Debug.Print "Can't lock file. Err = " & Err.LastDllError
+            AppendErrorLogCustom "Can't lock file. Err = " & Err.LastDllError
         End If
     Else
         g_sLogFile = Left$(g_sLogFile, Len(g_sLogFile) - 4) & "_2.log"
@@ -15295,12 +15330,12 @@ Public Function CreateLogFile() As String
     'sProcessList = "Running processes:" & vbCrLf
     sProcessList = Translate(29) & ":" & vbCrLf
     
-    'sProcessList = sProcessList & "Number | Path" & vbCrLf
-    If bAdditional Then
-        sProcessList = sProcessList & "  PID | " & Translate(1021) & vbCrLf
-    Else
+    'If bAdditional Then
+    '    sProcessList = sProcessList & "  PID | " & Translate(1021) & vbCrLf
+    'Else
+        'Number | Path
         sProcessList = sProcessList & Translate(1020) & " | " & Translate(1021) & vbCrLf
-    End If
+    'End If
     
     If bLogModules Then
         'Additional mode => PID | Process Name
@@ -15463,24 +15498,41 @@ MakeLog:
         If Len(tmp) Then sLog.Append "Internet Explorer: " & tmp & vbCrLf
                          sLog.Append "Default: " & .Default & vbCrLf
     End With
-   
-    sLog.Append vbCrLf & "Boot mode: " & OSver.SafeBootMode & vbCrLf
     
-    If (Not bLogProcesses) Or bLogModules Or bLogEnvVars Or (Not bHideMicrosoft) Or bIgnoreAllWhitelists Then
-        If bAdditional Then
-            sScanMode = "Additional"
+    sLog.AppendLine ""
+    
+    Dim sBootMode As String
+    sBootMode = "Boot mode: " & OSver.SafeBootMode
+    If OSver.SecureBootSupported Then
+        sBootMode = sBootMode & " (Secure Boot: " & IIf(OSver.SecureBoot, "On", "Off") & ")"
+    End If
+    If OSver.TestSigning Then
+        sBootMode = sBootMode & " (Test Signing: On)"
+    End If
+    If OSver.DebugMode Then
+        sBootMode = sBootMode & " (Debug Mode: On)"
+    End If
+    If OSver.CodeIntegrity Then
+        sBootMode = sBootMode & " (Code Integrity: On)"
+    End If
+    
+    sLog.AppendLine sBootMode
+    
+    If (Not bLogProcesses) Or (Not bAdditional) Or bLogModules Or bLogEnvVars Or (Not bHideMicrosoft) Or bIgnoreAllWhitelists Then
+        If Not bAdditional Then
+            sScanMode = "Skip Additional"
         End If
         If Not bLogProcesses Then
-            sScanMode = sScanMode & "; Do not log Processes"
+            sScanMode = sScanMode & "; Skip Processes"
         End If
         If bLogModules Then
-            sScanMode = sScanMode & "; Log Loaded Modules"
+            sScanMode = sScanMode & "; Loaded Modules"
         End If
         If bLogEnvVars Then
             sScanMode = sScanMode & "; Environment variables"
         End If
         If Not bHideMicrosoft Then
-            sScanMode = sScanMode & "; Do not Hide Microsoft"
+            sScanMode = sScanMode & "; Don't hide Microsoft"
         End If
         If bIgnoreAllWhitelists Then
             sScanMode = sScanMode & "; Ignore ALL Whitelists"
@@ -15806,7 +15858,7 @@ Public Function MakeLogHeader() As String
     Dim sAccType As String
     If OSver.IsWindows8OrGreater Then
         sAccType = GetCurrentUserAccountType()
-        If Len(sAccType) <> 0 Then sAccType = ", type: " & sAccType
+        If Len(sAccType) <> 0 Then sAccType = "; type: " & sAccType
     End If
     
     sText = sText & "Ran by:    " & OSver.UserName & vbTab & "(group: " & OSver.UserType & sAccType & ") on " & OSver.ComputerName & _
@@ -17678,19 +17730,19 @@ Public Sub HJT_SaveReport(Optional nTry As Long)
             
                 If bAutoLog Then ' if user clicked 1-st button (and HJT on ReadOnly media) => try another folder
                 
+                  Do
                     bGlobalDontFocusListBox = True
                     'sLogFile = SaveFileDialog("Save logfile...", "Log files (*.log)|*.log|All files (*.*)|*.*", "HiJackThis.log")
                     g_sLogFile = SaveFileDialog(Translate(1001), AppPath(), "HiJackThis.log", Translate(1002) & " (*.log)|*.log|" & Translate(1003) & " (*.*)|*.*")
                     bGlobalDontFocusListBox = False
                     
-                    If 0 <> Len(g_sLogFile) Then
-                        If Not OpenW(g_sLogFile, FOR_OVERWRITE_CREATE, g_hLog) Then    '2-nd try
-                            MsgBoxW Translate(26), vbExclamation
-                            Exit Sub
-                        End If
-                    Else
-                        Exit Sub
+                    If Len(g_sLogFile) = 0 Then Exit Sub
+                    
+                    If Not OpenW(g_sLogFile, FOR_OVERWRITE_CREATE, g_hLog) Then    '2-nd try
+                        MsgBoxW Translate(26), vbExclamation
                     End If
+                  
+                  Loop While (g_hLog <= 0)
                     
                 Else 'if user already clicked button "Save report"
                 
@@ -17717,10 +17769,11 @@ Public Sub HJT_SaveReport(Optional nTry As Long)
             If lret Then
                 g_LogLocked = False
             Else
-                Debug.Print "UnlockFileEx is failed with err = " & Err.LastDllError
+                AppendErrorLogCustom "UnlockFileEx is failed with err = " & Err.LastDllError
             End If
         End If
         
+        FlushFileBuffers g_hLog
         CloseW g_hLog, True: g_hLog = 0
         
         'Check the size of the log
@@ -17731,6 +17784,17 @@ Public Sub HJT_SaveReport(Optional nTry As Long)
                 SleepNoLock 400
                 HJT_SaveReport 2
                 Exit Sub
+            End If
+        Else 'success
+            'We doing it to be able detect reliably by external applications if logfile created successfully,
+            'without requirement to check for zero size.
+            'So, the usual logfile is appearing at the very last moment instantly with non-zero size.
+            If StrEndWith(g_sLogFile, "HiJackThis_.log") Then
+                Dim sNewFile As String
+                sNewFile = BuildPath(GetParentDir(g_sLogFile), "HiJackThis.log")
+                If RenameFile(g_sLogFile, sNewFile, bOverwrite:=True) Then
+                    g_sLogFile = sNewFile
+                End If
             End If
         End If
         

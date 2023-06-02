@@ -321,14 +321,14 @@ Private Sub Form_Initialize()
             g_sLogFile = sPath
             g_sDebugLogFile = BuildPath(GetParentDir(sPath), "HiJackThis_debug.log")
         Else
-            g_sLogFile = BuildPath(sPath, "HiJackThis.log")
+            g_sLogFile = BuildPath(sPath, "HiJackThis_.log")
             g_sDebugLogFile = BuildPath(sPath, "HiJackThis_debug.log")
         End If
         'check write access
         If Not CheckAccessWrite(g_sLogFile, True) Then sPath = vbNullString
     End If
     If Len(sPath) = 0 Then
-        g_sLogFile = BuildPath(AppPath(), "HiJackThis.log")
+        g_sLogFile = BuildPath(AppPath(), "HiJackThis_.log")
         g_sDebugLogFile = BuildPath(AppPath(), "HiJackThis_debug.log")
     End If
     

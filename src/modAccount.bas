@@ -22,6 +22,7 @@ Public Declare Function LsaLookupUserAccountType Lib "sechost.dll" (ByVal pSid A
 Private Function Wrap_LsaLookupUserAccountType(pSid As Long, out_AccountType As LSA_USER_ACCOUNT_TYPE) As Long
     On Error GoTo ErrorHandler:
     
+    Static bInit As Boolean
     Dim status As Long
     Dim accountType As LSA_USER_ACCOUNT_TYPE
     

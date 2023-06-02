@@ -3400,3 +3400,10 @@ Public Function CreateFileStream(sPath As String, sStreamName As String, binData
     RtlFreeUnicodeString NtName
 End Function
 
+Public Function RenameFile(sOriginalPath As String, sNewPath As String, bOverwrite As Boolean) As Boolean
+    If bOverwrite Then
+        DeleteFileW StrPtr(sNewPath)
+    End If
+    RenameFile = MoveFile(StrPtr(sOriginalPath), StrPtr(sNewPath))
+End Function
+
