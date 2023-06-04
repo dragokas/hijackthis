@@ -23,8 +23,8 @@ HiJackThis+ is not a replacement of a classical antivirus. It doesn't provide a 
  * Next time when user logged in, HiJackThis will silently scan your OS and display UI if only new records in your system has been found.
 
 ## Download
-[![](https://dragokas.com/tools/img/hjt/Icon_mini.png)](https://dragokas.com/tools/HiJackThis.zip)
-[Pre-built binary (release version) for Windows](https://dragokas.com/tools/HiJackThis.zip)
+[![](https://dragokas.com/tools/img/hjt/Icon_mini.png)](https://dragokas.com/tools/HiJackThis_stable.zip)
+[Pre-built binary (release version) for Windows](https://dragokas.com/tools/HiJackThis_stable.zip)
 
 [Nightly build (private test version) for Windows](https://dragokas.com/tools/HiJackThis_test.zip)
 

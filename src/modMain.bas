@@ -7522,8 +7522,8 @@ Public Sub CheckPolicies()
     
     'Check Windows Defender policies
     HE.Init HE_HIVE_ALL, , HE_REDIR_NO_WOW
-    HE.AddKey "Software\Microsoft\Windows Defender\Real-Time Protection"
-    aValue = Split("DpaDisabled|DisableRealtimeMonitoring", "|")
+    HE.AddKey Caesar_Decode("TrkAFlEtm`DzQPVTM]GDX_Wdnl AdghsknCiavtG-mJPJ s]\cVVi`hi") ' "Software\Microsoft\Windows Defender\Real-Time Protection"
+    aValue = Split(Caesar_Decode("EsfKrDnqCxy|]JVFIUPyTR_i`f`JnolyvAtAv"), "|") '"DpaDisabled|DisableRealtimeMonitoring"
     Do While HE.MoveNext
         For i = 0 To UBound(aValue)
             lData = Reg.GetDword(HE.Hive, HE.Key, aValue(i))
@@ -7549,9 +7549,9 @@ Public Sub CheckPolicies()
         Next
     Loop
     HE.Init HE_HIVE_ALL, , HE_REDIR_NO_WOW
-    HE.AddKey "Software\Microsoft\Windows Defender"
-    HE.AddKey "Software\Policies\Microsoft\Windows Defender"
-    aValue = Split("DisableAntiSpyware|DisableAntiVirus", "|")
+    HE.AddKey Caesar_Decode("TrkAFlEtm`DzQPVTM]GDX_Wdnl AdghsknC") '"Software\Microsoft\Windows Defender"
+    HE.AddKey Caesar_Decode("TrkAFlEtmcJIHDLJZErVRcbhf_oYVjqivFD SvyzKCFU") '"Software\Policies\Microsoft\Windows Defender"
+    aValue = Split(Caesar_Decode("ElxhkwrPEMDjOZZFYN|kXdTWc^vksjYnyDD"), "|") '"DisableAntiSpyware|DisableAntiVirus"
     Do While HE.MoveNext
         For i = 0 To UBound(aValue)
             lData = Reg.GetDword(HE.Hive, HE.Key, aValue(i))
@@ -7578,8 +7578,8 @@ Public Sub CheckPolicies()
     Loop
     If OSver.IsWindows10OrGreater And OSver.Build >= 18362 Then
         sHit = vbNullString
-        sKey = "HKLM\Software\Microsoft\Windows Defender\Features"
-        sValue = "TamperProtection"
+        sKey = Caesar_Decode("INQTe^BuKPvODwjNJ[Z`^WgQNbianxv KnqrCuxMs_FDY\[P`") '"HKLM\Software\Microsoft\Windows Defender\Features"
+        sValue = Caesar_Decode("UdrwnC]GFMzzSJRS") '"TamperProtection"
         lData = Reg.GetDword(HKEY_ANY, sKey, sValue)
         If Reg.StatusCode <> ERROR_SUCCESS Then
             sHit = "O7 - Policy: " & sKey & ": [" & sValue & "] = " & Reg.StatusCodeDesc()

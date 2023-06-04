@@ -67,7 +67,7 @@ set Manifest=
 ::.\ManifestByTheTrick\manifest_asInvoker.txt
 
 :: Location of script(s) for adding digital signature
-set SignScript_1=h:\_AVZ\Наши разработки\_Dragokas\DigiSign\SignME_self.cmd
+set SignScript_1=h:\_AVZ\Наши разработки\_Dragokas\DigiSign\SignME.cmd
 set SignScript_2=c:\DigiSign\SignME.cmd
 
 :: Version Patcher EXE (support for 'build' field of PE EXE version)
@@ -99,7 +99,7 @@ echo.
 echo Searching forgotten 'stop' statements ...
 
 :: Searching for non-screened STOP statements
-call _5_Check_Stop_Statements.cmd && echo OK.
+if not defined bFast call _5_Check_Stop_Statements.cmd && echo OK.
 
 :: Checking for non-default conditional constant set and forgot
 < frmEULA.frm find /i "#Const" | find /i "= True" && (echo.& echo Non-default constant has been detected !!!& echo.& pause)
@@ -397,16 +397,19 @@ copy /y "%ExeName%_dbg.zip" "%ExeName%_dbg_test.zip"
 Tools\7zip\7za.exe a -mx9 -y -o"%cd%" "%ExeName%_poly.zip" "HJT_poly.pif" "%cd%\apps"
 
 :: For Vir Labs
-copy /y "%cd%\%ExeName%.exe" %ExeName%.ex_
+set safe_ext=bak
+copy /y "%cd%\%ExeName%.exe" %ExeName%.%safe_ext%
 
 if exist "_%ExeName%_pass_infected.zip" del /f "_%ExeName%_pass_infected.zip"
+if exist "_%ExeName%_pass_infected.rar" del /f "_%ExeName%_pass_infected.rar"
 if exist "_%ExeName%_pass_virus.zip" del /f "_%ExeName%_pass_virus.zip"
 if exist "_%ExeName%_pass_clean.zip" del /f "_%ExeName%_pass_clean.zip"
 :: Pack
-Tools\7zip\7za.exe a -mx1 -pinfected -y -o"%cd%" "_%ExeName%_pass_infected.zip" "%cd%\%ExeName%.ex_"
-Tools\7zip\7za.exe a -mx1 -pvirus -y -o"%cd%" "_%ExeName%_pass_virus.zip" "%cd%\%ExeName%.ex_"
-Tools\7zip\7za.exe a -mx1 -pclean -y -o"%cd%" "_%ExeName%_pass_clean.zip" "%cd%\%ExeName%.ex_"
-del "%cd%\%ExeName%.ex_"
+Tools\7zip\7za.exe a -mx1 -pinfected -y -o"%cd%" "_%ExeName%_pass_infected.zip" "%cd%\%ExeName%.%safe_ext%"
+Tools\7zip\7za.exe a -mx1 -pvirus -y -o"%cd%" "_%ExeName%_pass_virus.zip" "%cd%\%ExeName%.%safe_ext%"
+Tools\7zip\7za.exe a -mx1 -pclean -y -o"%cd%" "_%ExeName%_pass_clean.zip" "%cd%\%ExeName%.%safe_ext%"
+"%ProgramFiles%\WinRAR\rar.exe" a -y -m5 -pinfected "_%ExeName%_pass_infected.rar" "%cd%\%ExeName%.%safe_ext%"
+del "%cd%\%ExeName%.%safe_ext%"
 :: Test
 Tools\7zip\7za.exe t -pinfected "%cd%\_%ExeName%_pass_infected.zip"
 if %errorlevel% neq 0 (pause & exit /B)
@@ -414,6 +417,9 @@ Tools\7zip\7za.exe t -pvirus "%cd%\_%ExeName%_pass_virus.zip"
 if %errorlevel% neq 0 (pause & exit /B)
 Tools\7zip\7za.exe t -pclean "%cd%\_%ExeName%_pass_clean.zip"
 if %errorlevel% neq 0 (pause & exit /B)
+"%ProgramFiles%\WinRAR\rar.exe" t -pinfected "%cd%\_%ExeName%_pass_infected.rar"
+if %errorlevel% neq 0 (pause & exit /B)
+
 
 :skipBackup
 

@@ -11,6 +11,13 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[3.0.0.6 Alpha] - June 04, 2023
+- Fight against false antivirus detections:
+	* Encrypted strings with Windows Defender keys
+	* Rollback of CopyBytes optimization because Avira doesn't like this function :(
+	* Temporarily moved to legit certificate which almost out-of-date
+ - GitHub release link is replaced by static to a stable version 2.x, which will not be updated.
+
 [3.0.0.4 Alpha] - June 03, 2023
   - Added BitsAdmin wait timeout (thanks Sandor)
   - Improved compatibility with AutoLogger software (thanks to regist)
@@ -1741,4 +1748,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                                                                                                                  
+                                                                                                                        
