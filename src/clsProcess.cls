@@ -716,7 +716,7 @@ Public Function ProcessRunUnelevated( _
     End If
     
     If Not ProcessExist("explorer.exe", True) Then
-        Debug.Print "ProcessRunUnelevated. No explorer process found."
+        If inIDE Then Debug.Print "ProcessRunUnelevated. No explorer process found."
         Exit Function
     End If
     
@@ -910,7 +910,7 @@ Private Function TrimNull(s$) As String
 End Function
 
 Private Sub Class_Initialize()
-    inIDE = (App.LogMode = 0)
+    Debug.Assert MakeTrue(inIDE)
 End Sub
 
 Public Function IsArrDimmed(vArray As Variant) As Boolean
@@ -968,3 +968,8 @@ End Function
 Public Property Get StatusCode() As Long
     StatusCode = m_StatusCode
 End Property
+
+Private Function MakeTrue(ByRef bValue As Boolean) As Boolean
+    MakeTrue = True
+    bValue = True
+End Function

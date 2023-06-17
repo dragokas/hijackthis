@@ -214,7 +214,7 @@ Public Sub EnumWindowsChilds(hwnd As Long)
 End Sub
 
 Function EnumWindowProc(ByVal lhWnd As Long, ByVal lParam As Long) As Long
-    Debug.Print "Child: 0x" & Hex(lhWnd) & _
+    If inIDE Then Debug.Print "Child: 0x" & Hex$(lhWnd) & _
         ", class: " & GetClassNameByWindow(lhWnd) & _
         ", title: " & GetWindowTitle(lhWnd)
     EnumWindowProc = True

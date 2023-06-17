@@ -1147,22 +1147,23 @@ End Sub
 '// test staff
 Public Sub PrintAll()
     
-    If Not cell.lb_Class_Init Then Debug.Print "Class is not initialized with .Init()": Exit Sub
-    
-    Do While Me.MoveNext
-        Debug.Print " --------- "
-        Debug.Print "Hive handle: " & Me.Hive
-        Debug.Print "Hive name:   " & Me.HiveName
-        Debug.Print "Hive + key:  " & Me.KeyAndHive
-        Debug.Print "Key:         " & Me.Key
-        Debug.Print "Redirected:  " & Me.Redirected
-        Debug.Print "Array index: " & Me.KeyIndex
-        Debug.Print "User name:   " & Me.UserName
-        Debug.Print "Sid system?  " & Me.IsSidService
-        Debug.Print "Sid user?    " & Me.IsSidUser
-        Debug.Print "Shared key?  " & Me.SharedKey
+    If inIDE Then
+        If Not cell.lb_Class_Init Then Debug.Print "Class is not initialized with .Init()": Exit Sub
         
-        'Stop
-    Loop
-    
+        Do While Me.MoveNext
+            Debug.Print " --------- "
+            Debug.Print "Hive handle: " & Me.Hive
+            Debug.Print "Hive name:   " & Me.HiveName
+            Debug.Print "Hive + key:  " & Me.KeyAndHive
+            Debug.Print "Key:         " & Me.Key
+            Debug.Print "Redirected:  " & Me.Redirected
+            Debug.Print "Array index: " & Me.KeyIndex
+            Debug.Print "User name:   " & Me.UserName
+            Debug.Print "Sid system?  " & Me.IsSidService
+            Debug.Print "Sid user?    " & Me.IsSidUser
+            Debug.Print "Shared key?  " & Me.SharedKey
+            
+            'Stop
+        Loop
+    End If
 End Sub

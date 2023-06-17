@@ -389,7 +389,7 @@ Public Function MakeBackup(result As SCAN_RESULT) As Boolean
                 For i = 0 To UBound(.Service)
                     With .Service(i)
                         If ((.ActionType And DELETE_SERVICE) Or (.ActionType And DISABLE_SERVICE)) Then
-                            BackupServiceState result, .ServiceName
+                            BackupServiceState result, .serviceName
                         End If
                     End With
                 Next
@@ -814,18 +814,18 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Private Sub BackupServiceState(result As SCAN_RESULT, ServiceName As String)
+Private Sub BackupServiceState(result As SCAN_RESULT, serviceName As String)
     On Error GoTo ErrorHandler
     
-    If Len(ServiceName) = 0 Then Exit Sub
+    If Len(serviceName) = 0 Then Exit Sub
     
     UpdateBackupEntry result
     
-    BackupAddCommand SERVICE_BASED, VERB_SERVICE_STATE, OBJ_SERVICE, ServiceName
+    BackupAddCommand SERVICE_BASED, VERB_SERVICE_STATE, OBJ_SERVICE, serviceName
     
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "BackupServiceState", ServiceName
+    ErrorMsg Err, "BackupServiceState", serviceName
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -1072,7 +1072,7 @@ Public Function ABR_CreateBackup(bForceIgnoreDays As Boolean) As Boolean
             aDate_Folder(i) = GetFileName(aDate_Folder(i))
             If aDate_Folder(i) Like "####-##-##" Then
                 On Error Resume Next
-                dBackup = DateSerial(CLng(Mid$(aDate_Folder(i), 1, 4)), CLng(Mid$(aDate_Folder(i), 6, 2)), CLng(Mid$(aDate_Folder(i), 9, 2)))
+                dBackup = DateSerial(CLng(mid$(aDate_Folder(i), 1, 4)), CLng(mid$(aDate_Folder(i), 6, 2)), CLng(mid$(aDate_Folder(i), 9, 2)))
                 If Err.Number = 0 Then
                     On Error GoTo ErrorHandler:
                     If dLastBackup < dBackup Then dLastBackup = dBackup
@@ -1605,7 +1605,7 @@ Public Function SRP_Create_API() As Long
     
     If (0 = SRSetRestorePoint(rpi, sms)) Then
         If sms.nStatus = ERROR_SERVICE_DISABLED Then
-            Debug.Print "System Restore is turned off."
+            If inIDE Then Debug.Print "System Restore is turned off."
         End If
         'Debug.Print "Failure to create the restore point. Error = " & Err.LastDllError
         MsgBoxW Translate(1556) & " Error = " & Err.LastDllError, vbExclamation
@@ -1616,7 +1616,7 @@ Public Function SRP_Create_API() As Long
     rpi.llSequenceNumber = sms.llSequenceNumber
     
     If (0 = SRSetRestorePoint(rpi, sms)) Then
-        Debug.Print "Failure to end the restore point. Error = " & Err.LastDllError
+        If inIDE Then Debug.Print "Failure to end the restore point. Error = " & Err.LastDllError
     End If
     
     SRP_Create_API = cMath.Int64ToInt(sms.llSequenceNumber)
@@ -2012,7 +2012,7 @@ Public Sub ListBackups()
                 End If
                 If bDoInclude Then
                     frmMain.lstBackups.AddItem BackupConcatLine(0&, 0&, _
-                        DateSerial(CLng(Mid$(aBackupDates(i), 1, 4)), CLng(Mid$(aBackupDates(i), 6, 2)), CLng(Mid$(aBackupDates(i), 9, 2))), _
+                        DateSerial(CLng(mid$(aBackupDates(i), 1, 4)), CLng(mid$(aBackupDates(i), 6, 2)), CLng(mid$(aBackupDates(i), 9, 2))), _
                         ABR_BACKUP_TITLE)
                 End If
             Next
@@ -2121,7 +2121,7 @@ Public Function RestoreBackup(sItem As String) As Boolean
     Dim lCustomID As Long
     Dim lstIdx As Long
     Dim FixReg As FIX_REG_KEY
-    Dim ServiceName As String
+    Dim serviceName As String
     Dim bRestoreRequired As Boolean
     Dim O25 As O25_ENTRY
     Dim lattrib As Long
@@ -2365,7 +2365,7 @@ Public Function RestoreBackup(sItem As String) As Boolean
         
             If Cmd.Verb = VERB_SERVICE_STATE Then
                 If Cmd.ObjType = OBJ_SERVICE Then
-                    ServiceName = Cmd.Args
+                    serviceName = Cmd.Args
 '                    ServiceState = GetServiceRunState(ServiceName)
 '                    If ServiceState <> SERVICE_RUNNING And ServiceState <> SERVICE_START_PENDING Then
 '                        StartService ServiceName, , False
@@ -2532,7 +2532,7 @@ Private Function BackupValidateFileHash(lBackupID As Long, lFileID As Long) As B
     sBackupFile = EnvironW(tBackupList.cLastCMD.ReadParam(lFileID, "name"))
     
     'Local file ?
-    If Mid$(sBackupFile, 2, 1) = ":" Then
+    If mid$(sBackupFile, 2, 1) = ":" Then
         If Not FileExists(sBackupFile) Then
             'Error! Cannot find the local file to apply repair settings:
             MsgBoxW Translate(1576) & " " & sBackupFile, vbCritical
@@ -2780,7 +2780,7 @@ Public Function HexStringW(sStr As Variant) As String 'used to serialize and sto
         HexStringW = sStr
     #Else
         For i = 1 To Len(sStr)
-            sOut = sOut & "\u" & Right$("000" & Hex$(AscW(Mid$(sStr, i, 1))), 4)
+            sOut = sOut & "\u" & Right$("000" & Hex$(AscW(mid$(sStr, i, 1))), 4)
         Next
         HexStringW = sOut
     #End If
@@ -2793,7 +2793,7 @@ Public Function UnHexStringW(sStr As Variant) As String 'used to deserialize str
         UnHexStringW = sStr
     #Else
         For i = 1 To Len(sStr) Step 6
-            sOut = sOut & ChrW$(CLng("&H" & Mid$(sStr, i + 2, 4)))
+            sOut = sOut & ChrW$(CLng("&H" & mid$(sStr, i + 2, 4)))
         Next
         UnHexStringW = sOut
     #End If
@@ -2812,13 +2812,13 @@ Public Function CDateEx(sDate$, _
         If posMM = 0 Then posMM = 6
         If posDD = 0 Then posDD = 9
         
-        CDateEx = DateSerial(CLng(Mid$(sDate, posYYYY, 4)), CLng(Mid$(sDate, posMM, 2)), CLng(Mid$(sDate, posDD, 2)))
+        CDateEx = DateSerial(CLng(mid$(sDate, posYYYY, 4)), CLng(mid$(sDate, posMM, 2)), CLng(mid$(sDate, posDD, 2)))
         
         If posHH <> 0 Then
             If posSec <> 0 Then
-                CDateEx = CDateEx + TimeSerial(CLng(Mid$(sDate, posHH, 2)), CLng(Mid$(sDate, posMin, 2)), CLng(Mid$(sDate, posSec, 2)))
+                CDateEx = CDateEx + TimeSerial(CLng(mid$(sDate, posHH, 2)), CLng(mid$(sDate, posMin, 2)), CLng(mid$(sDate, posSec, 2)))
             Else
-                CDateEx = CDateEx + TimeSerial(CLng(Mid$(sDate, posHH, 2)), CLng(Mid$(sDate, posMin, 2)), 0&)
+                CDateEx = CDateEx + TimeSerial(CLng(mid$(sDate, posHH, 2)), CLng(mid$(sDate, posMin, 2)), 0&)
             End If
         End If
     End If

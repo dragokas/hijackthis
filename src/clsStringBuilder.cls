@@ -15,7 +15,7 @@ Attribute VB_Exposed = False
 
 Option Explicit
 
-#Const UseUndo = True 'adds .Undo method. If you disable #UseUndo it can slightly increase speed in methods .Overwrite / .Remove.
+#Const UseUndo = False 'adds .Undo method. If you disable #UseUndo it can slightly increase speed in methods .Overwrite / .Remove.
 
 ' ****************************************************
 '
@@ -164,7 +164,7 @@ Private Sub Class_Initialize()
     GetSystemInfo si
     
     If si.dwPageSize = 0 Then
-        Debug.Print "Error in retrieving page size. GetSystemInfo failed with 0x" & Hex$(Err.LastDllError)
+        If inIDE Then Debug.Print "Error in retrieving page size. GetSystemInfo failed with 0x" & Hex$(Err.LastDllError)
         Err.Raise 5, , "Cannot obtain page size"
         Exit Sub
     End If
@@ -179,7 +179,7 @@ Private Sub Class_Initialize()
     
     m_hHeap = HeapCreate(HEAP_NO_SERIALIZE, m_Chunk_Size_Aligned, 0&)
     If m_hHeap = 0 Then
-        Debug.Print "HeapCreate failed with 0x" & Hex$(Err.LastDllError)
+        If inIDE Then Debug.Print "HeapCreate failed with 0x" & Hex$(Err.LastDllError)
         Err.Raise 5, , "Cannot create new heap"
         Exit Sub
     End If

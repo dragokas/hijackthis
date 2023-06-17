@@ -93,7 +93,7 @@ Public Sub CheckO25Item()
     Dim cmdExecute As String, cmdWorkDir As String, cmdArguments As String, bRunInteractively As Boolean
     
     Dim result As SCAN_RESULT
-    Dim Stady As Single, ComeBack As Boolean, NoConsumer As Boolean, NoFilter As Boolean, bOtherConsumerClass As Boolean
+    Dim ComeBack As Boolean, NoConsumer As Boolean, NoFilter As Boolean, bOtherConsumerClass As Boolean
     Dim bDangerScript As Boolean
     
     If GetServiceRunState("winmgmt") <> SERVICE_RUNNING Then
@@ -111,18 +111,15 @@ Public Sub CheckO25Item()
     
     'connecting to namespace 'root\subscription' for future use
     On Error Resume Next
-    Stady = 0
     Set objTimerNamespace = CreateObject("winmgmts:{impersonationLevel=Impersonate, (Security, Backup)}!\\.\root\subscription")
     If Err.Number <> 0 Then
         On Error GoTo ErrorHandler:
-        Stady = 1
         Set objTimerNamespace = GetObject("winmgmts:{impersonationLevel=Impersonate, (Security, Backup)}!\\.\root\subscription")
     End If
     On Error GoTo ErrorHandler:
     
     'get all namespaces for current machine
     
-    Stady = 2
     'Call WMI_GetNamespaces("Root", aNameSpaces)
     'let's concentrate on actual malware method
     ReDim aNameSpaces(1)
@@ -132,13 +129,11 @@ Public Sub CheckO25Item()
 
         'connecting to namespace
 
-        Stady = 3
         Set objService = GetObject("winmgmts:{impersonationLevel=Impersonate, (Security, Backup)}!\\.\" & aNameSpaces(i))
 
         If Not bAutoLogSilent Then DoEvents
     
         'get binding info ( Filter <-> Consumer )
-        Stady = 4
         Set colBindings = objService.ExecQuery("SELECT * FROM __FilterToConsumerBinding", "WQL", 16 + 32)
         
         For Each objBinding In colBindings
@@ -163,7 +158,6 @@ Public Sub CheckO25Item()
             If 0 <> Len(FilterName) And 0 <> Len(ConsumerName) Then
             
                 'connecting to consumer's own namespace
-                Stady = 5
                 If StrComp(ConsumerNameSpace, aNameSpaces(i), 1) = 0 Then
                     'if consumer's namespace is a same
                     Set objServiceConsumer = objService
@@ -172,7 +166,6 @@ Public Sub CheckO25Item()
                     Set objServiceConsumer = GetObject("winmgmts:{impersonationLevel=Impersonate, (Security, Backup)}!\\.\" & ConsumerNameSpace)
                 End If
                 
-                Stady = 6
                 On Error Resume Next
                 Set objConsumer = objServiceConsumer.Get(ConsumerPath)
                 On Error GoTo ErrorHandler:
@@ -196,7 +189,6 @@ Public Sub CheckO25Item()
                     
                     bOtherConsumerClass = False
                     
-                    Stady = 7
                     If StrComp(ConsumerClassName, "ActiveScriptEventConsumer", 1) = 0 Then
                     
                         result.O25.Consumer.Type = O25_CONSUMER_ACTIVE_SCRIPT
@@ -204,7 +196,6 @@ Public Sub CheckO25Item()
                         'Debug.Print objConsumer.ScriptingEngine    'language (engine)
                         'Debug.Print objConsumer.ScriptFileName     'external file
                         'Debug.Print objConsumer.ScriptText         'embedded script code
-                        Stady = 8
                         If Not IsNull(objConsumer.ScriptFilename) Then sScriptFile = objConsumer.ScriptFilename
                         If Not IsNull(objConsumer.ScriptText) Then sScriptText = objConsumer.ScriptText
                         If Not IsNull(objConsumer.ScriptingEngine) Then sScriptEngine = objConsumer.ScriptingEngine
@@ -223,8 +214,7 @@ Public Sub CheckO25Item()
                         End If
 
                     ElseIf StrComp(ConsumerClassName, "CommandLineEventConsumer", 1) = 0 Then
-                        Stady = 9
-                        
+                    
                         result.O25.Consumer.Type = O25_CONSUMER_COMMAND_LINE
                         
                         'Example:
@@ -236,11 +226,8 @@ Public Sub CheckO25Item()
                         'debug.print objConsumer.WorkingDirectory       'Work Dir.
                         ComeBack = True
                         If Not IsNull(objConsumer.ExecutablePath) Then cmdExecute = objConsumer.ExecutablePath
-                        Stady = 9.1
                         If Not IsNull(objConsumer.WorkingDirectory) Then cmdWorkDir = objConsumer.WorkingDirectory
-                        Stady = 9.2
                         If Not IsNull(objConsumer.CommandLineTemplate) Then cmdArguments = objConsumer.CommandLineTemplate
-                        Stady = 9.3
                         If Not IsNull(objConsumer.RunInteractively) Then bRunInteractively = objConsumer.RunInteractively
                         If Not IsNull(objConsumer.KillTimeout) Then lKillTimeout = CLng(Val(objConsumer.KillTimeout))
                         
@@ -253,7 +240,6 @@ Public Sub CheckO25Item()
                         ComeBack = False
                         
 '                    ElseIf StrComp(ConsumerClassName, "LogFileEventConsumer", 1) = 0 Then
-'                        Stady = 10
 '                        'Debug.Print objConsumer.FileName    'Where information logged
 '                        'Debug.Print objConsumer.Text        'What kind of information logged
 '
@@ -264,7 +250,6 @@ Public Sub CheckO25Item()
 '                            ", InfoType=" & """" & sConsumerText & """"
 '
 '                    ElseIf StrComp(ConsumerClassName, "NTEventLogEventConsumer", 1) = 0 Then
-'                        Stady = 11
 '                        'Debug.Print objConsumer.SourceName
 '                        If Not IsNull(objConsumer.SourceName) Then
 '                            sAdditionalInfo = "LogSourceName=" & """" & objConsumer.SourceName & """"
@@ -285,7 +270,6 @@ Public Sub CheckO25Item()
 '                        'Debug.Print objConsumer.Subject
 '                        'Debug.Print objConsumer.ToLine
 '                    Else
-'                        Stady = 12
 '                        'other consumers -> Show Namespace + ClassName
 '                        sAdditionalInfo = "ClassName=" & """" & ConsumerNameSpace & ":" & ConsumerClassName & """"
                     Else
@@ -298,7 +282,6 @@ Public Sub CheckO25Item()
                 
                 'connecting to filter's own namespace
                 
-                Stady = 13
                 If StrComp(FilterNameSpace, aNameSpaces(i), 1) = 0 Then
                     'if consumer's namespace is a same
                     Set objServiceFilter = objService
@@ -307,14 +290,12 @@ Public Sub CheckO25Item()
                     Set objServiceFilter = GetObject("winmgmts:{impersonationLevel=Impersonate, (Security, Backup)}!\\.\" & FilterNameSpace)
                 End If
                 
-                Stady = 14
                 On Error Resume Next
                 Set objFilter = objServiceFilter.Get(FilterPath)
                 On Error GoTo ErrorHandler:
                 
                 If Not (objFilter Is Nothing) Then
                 
-                    Stady = 15
                     If Not IsNull(objFilter.Query) Then sFilterQuery = objFilter.Query
                 
                     'receives events from timer ?
@@ -328,7 +309,6 @@ Public Sub CheckO25Item()
                             
                             Set objTimer = Nothing
                             
-                            Stady = 16
                             On Error Resume Next
                             sTimerClassName = "__IntervalTimerInstruction"
                             Set objTimer = objTimerNamespace.Get(sTimerClassName & ".TimerId=" & """" & sTimerName & """")
@@ -361,7 +341,6 @@ Public Sub CheckO25Item()
                         End If
                     
                     Else
-                        Stady = 17
                         'if another event source -> print its name
                         sEventName = ExtractEventName(sFilterQuery)
                         If 0 <> Len(sEventName) Then
@@ -372,7 +351,6 @@ Public Sub CheckO25Item()
                 End If
             
                 'WhiteList
-                Stady = 18
                 'If Not (StrComp(ConsumerClassName, "NTEventLogEventConsumer", 1) = 0 And StrComp(FilterName, "SCM Event Log Filter", 1) = 0) Then
                 
                 bDangerScript = True
@@ -416,7 +394,14 @@ Public Sub CheckO25Item()
                             IIf(NoFilter, " (no filter)", FilterName) & " - " & _
                             sAdditionalInfo
                         
-                    If g_bCheckSum And 0 <> Len(sScriptFile) Then sHit = sHit & GetFileCheckSum(sScriptFile)
+                    If 0 <> Len(sScriptFile) Then
+                    
+                        SignVerifyJack sScriptFile, result.SignResult
+                        
+                        sHit = sHit & FormatSign(result.SignResult)
+                        
+                        If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sScriptFile)
+                    End If
                         
                     If Not IsOnIgnoreList(sHit) Then
                         With result
@@ -481,9 +466,9 @@ Public Sub CheckO25Item()
     Exit Sub
 ErrorHandler:
     If i >= 1 And i <= UBound(aNameSpaces) Then
-        ErrorMsg Err, "modMain2_CheckO25Item", "Namespace: " & aNameSpaces(i), "Stady: " & Stady
+        ErrorMsg Err, "modMain2_CheckO25Item", "Namespace: " & aNameSpaces(i)
     Else
-        ErrorMsg Err, "modMain2_CheckO25Item", "Stady: " & Stady
+        ErrorMsg Err, "modMain2_CheckO25Item"
     End If
     If inIDE Then Stop: Resume Next
     If ComeBack Then Resume Next
@@ -495,7 +480,7 @@ Function ExtractEventName(sQuery As String) As String
     Dim pos As Long
     pos = InStr(1, sQuery, "from", 1)
     If pos <> 0 Then
-        ExtractEventName = Mid$(sQuery, pos + 5)
+        ExtractEventName = mid$(sQuery, pos + 5)
     End If
 End Function
 
@@ -505,7 +490,7 @@ Private Sub ShutdownScriptEngine()
     
     For Each vProc In Array("cmd.exe", "wscript.exe", "cscript.exe", "mshta.exe", "powershell.exe")
         If ProcessExist(vProc, True) Then
-            Proc.ProcessClose ProcessName:=CStr(vProc), Async:=False, TimeOutMs:=1000, SendCloseMsg:=True
+            Proc.ProcessClose ProcessName:=CStr(vProc), Async:=False, TimeoutMs:=1000, SendCloseMsg:=True
         End If
     Next
 End Sub
@@ -752,10 +737,10 @@ Sub ExtractNameSpaceAndClassNameFromString(sComplexString As String, out_NameSpa
         If pos <> 0 Then
             pos2 = InStr(pos, sComplexString, ":")
             If pos2 <> 0 Then
-                out_NameSpace = Mid$(sComplexString, pos + 1, pos2 - pos - 1)
+                out_NameSpace = mid$(sComplexString, pos + 1, pos2 - pos - 1)
                 pos3 = InStr(pos2, sComplexString, ".Name", 1)
                 If pos3 <> 0 Then
-                    out_ClassName = Mid$(sComplexString, pos2 + 1, pos3 - pos2 - 1)
+                    out_ClassName = mid$(sComplexString, pos2 + 1, pos3 - pos2 - 1)
                 End If
             End If
         End If
@@ -780,9 +765,9 @@ Function GetStringInsideQt(sStr As String) As String
     If pos <> 0 Then
         pos2 = InStr(pos + 1, sStr, """")
         If pos = 0 Then
-            GetStringInsideQt = Mid$(sStr, pos + 1)
+            GetStringInsideQt = mid$(sStr, pos + 1)
         Else
-            GetStringInsideQt = Mid$(sStr, pos + 1, pos2 - pos - 1)
+            GetStringInsideQt = mid$(sStr, pos + 1, pos2 - pos - 1)
         End If
     End If
     Exit Function
@@ -813,7 +798,7 @@ Public Sub CheckO26Item()
     Dim sKeys$(), sSubkeys$(), i&, j&, sFile$, sArgs$, sHit$, sData$, result As SCAN_RESULT
     Dim bDisabled As Boolean, sGFlag As String
     Dim bPerUser As Boolean, aTmp() As String, sAlias As String
-    Dim bSafe As Boolean, bMicrosoft As Boolean, sOrigLine As String
+    Dim bSafe As Boolean, sOrigLine As String
     
     If bIsWinVistaAndNewer Then
         If IsProcedureAvail("VerifierIsPerUserSettingsEnabled", "Verifier.dll") Then
@@ -837,7 +822,7 @@ Public Sub CheckO26Item()
     
     Do While HE.MoveNext
             
-        sAlias = IIf(bIsWin32, "O26", IIf(HE.Redirected, "O26-32", "O26"))
+        sAlias = BitPrefix("O26", HE)
         
         sKeys = Split(Reg.EnumSubKeys(HE.Hive, HE.Key, HE.Redirected), "|")    'for each image
         
@@ -851,13 +836,13 @@ Public Sub CheckO26Item()
                 sFile = FormatFileMissing(sFile, sArgs)
                 
                 bSafe = False
-                bMicrosoft = IsMicrosoftFile(sFile)
+                SignVerifyJack sFile, result.SignResult
                 
                 'check by safe list
                 If bHideMicrosoft Then
                     If StrComp(sKeys(i), "taskmgr.exe", 1) = 0 Then
                         If InStr(1, GetFileProperty(sFile, "FileDescription"), "Process Explorer", 1) <> 0 Then
-                            If bMicrosoft Then
+                            If result.SignResult.isMicrosoftSign Then
                                 bSafe = True
                             End If
                         End If
@@ -877,7 +862,7 @@ Public Sub CheckO26Item()
                 If (Not bSafe) Or bIgnoreAllWhitelists Then
                     
                     sHit = sAlias & " - Debugger: " & HE.HiveNameAndSID & "\..\" & sKeys(i) & ": [Debugger] = " & _
-                        ConcatFileArg(sFile, sArgs) & IIf(bMicrosoft, " (Microsoft)", vbNullString)
+                        ConcatFileArg(sFile, sArgs)
                     
                     If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                     
@@ -909,10 +894,10 @@ Public Sub CheckO26Item()
                 SplitIntoPathAndArgs sData, sFile, sArgs, bIsRegistryData:=True
                 sFile = FormatFileMissing(sFile, sArgs)
                 
-                bMicrosoft = IsMicrosoftFile(sFile)
+                SignVerifyJack sFile, result.SignResult
                 
                 sHit = sAlias & " - Debugger: " & HE.HiveNameAndSID & "\..\" & _
-                    sKeys(i) & ": [VerifierDlls] = " & ConcatFileArg(sFile, sArgs) & IIf(bMicrosoft, " (Microsoft)", vbNullString) & _
+                    sKeys(i) & ": [VerifierDlls] = " & ConcatFileArg(sFile, sArgs) & FormatSign(result.SignResult) & _
                     IIf(bDisabled, " (disabled)", vbNullString)
                 
                 If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
@@ -952,7 +937,9 @@ Public Sub CheckO26Item()
                     
                     sFile = FormatFileMissing(sFile)
                     
-                    sHit = sAlias & " - Debugger Global hook: [VerifierProviders] = " & sFile
+                    SignVerifyJack sFile, result.SignResult
+                    
+                    sHit = sAlias & " - Debugger Global hook: [VerifierProviders] = " & sFile & FormatSign(result.SignResult)
                     
                     If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                     
@@ -989,8 +976,10 @@ Public Sub CheckO26Item()
             sFile = Reg.GetString(HKCU, "Software\Microsoft\Windows\CurrentVersion\PackagedAppXDebug\" & sKeys(i), vbNullString)
             
             sFile = FormatFileMissing(sFile)
-                    
-            sHit = sAlias & " - UWP Debugger: " & sKeys(i) & " (default) = " & sFile
+            
+            SignVerifyJack sFile, result.SignResult
+            
+            sHit = sAlias & " - UWP Debugger: " & sKeys(i) & " (default) = " & sFile & FormatSign(result.SignResult)
             
             If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
             
@@ -1013,8 +1002,10 @@ Public Sub CheckO26Item()
                 sFile = Reg.GetString(HKCU, "Software\Classes\ActivatableClasses\Package\" & sKeys(i) & "\DebugInformation\" & sSubkeys(j), "DebugPath")
                 
                 sFile = FormatFileMissing(sFile)
-                        
-                sHit = sAlias & " - UWP Debugger: " & sKeys(i) & " [DebugPath] = " & sFile
+                
+                SignVerifyJack sFile, result.SignResult
+                
+                sHit = sAlias & " - UWP Debugger: " & sKeys(i) & " [DebugPath] = " & sFile & FormatSign(result.SignResult)
                 
                 If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                 
@@ -1122,7 +1113,7 @@ Public Sub CheckO26ToolsHiJack()
                 Else
                     bUseSFC = True
                     
-                    If IsMicrosoftFile(sFile) Then
+                    If SignVerifyJack(sFile, result.SignResult) And result.SignResult.isMicrosoftSign Then
                         bSafe = True
                     End If
                 End If
@@ -1137,7 +1128,7 @@ Public Sub CheckO26ToolsHiJack()
             Else
                 bUseSFC = True
                 
-                If IsMicrosoftFile(sFile) Then
+                If SignVerifyJack(sFile, result.SignResult) And result.SignResult.isMicrosoftSign Then
             
                     bSafe = True
                 End If
@@ -1149,7 +1140,7 @@ Public Sub CheckO26ToolsHiJack()
             sFile = FormatFileMissing(sFile)
             
             sHit = "O26 - Tools: " & "HKLM\" & "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Accessibility\ATs\" & aKey(i) & _
-                " [StartExe] = " & sFile
+                " [StartExe] = " & sFile & FormatSign(result.SignResult)
             
             If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
             
@@ -1175,7 +1166,6 @@ Public Sub CheckO26ToolsHiJack()
     Dim sBackupPath As String
     Dim sCleanupPath As String
     Dim sDefragPath As String
-    Dim sSigner As String
     
     If OSver.IsWindows10OrGreater Then
         sBackupPath = vbNullString
@@ -1222,8 +1212,8 @@ Public Sub CheckO26ToolsHiJack()
         SplitIntoPathAndArgs sData, sFile, sArgs, bIsRegistryData:=True
         sFile = FormatFileMissing(sFile, sArgs)
         
+        WipeSignResult result.SignResult
         bSafe = True
-        sSigner = vbNullString
         
         If StrComp(EnvironW(sData), EnvironW(dSafe.Items(i)), 1) <> 0 Then bSafe = False
         
@@ -1232,16 +1222,15 @@ Public Sub CheckO26ToolsHiJack()
                 bSafe = False
             Else
                 If StrEndWith(sFile, ".exe") Then
-                    If Not IsMicrosoftFileEx(sFile, sSigner) Then bSafe = False
+                    SignVerifyJack sFile, result.SignResult
+                    If Not result.SignResult.isMicrosoftSign Then bSafe = False
                 End If
             End If
         End If
         
         If Not bSafe Then
             
-            sHit = "O26 - Tools: " & "HKLM\" & sKey & " (default) = " & ConcatFileArg(sFile, sArgs)
-            
-            If Len(sSigner) <> 0 Then sHit = sHit & " " & sSigner
+            sHit = "O26 - Tools: " & "HKLM\" & sKey & " (default) = " & ConcatFileArg(sFile, sArgs) & FormatSign(result.SignResult)
             
             If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
             

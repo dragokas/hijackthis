@@ -50,7 +50,8 @@ set AppName=
 set NoUPX=true
 
 :: List of file extensions and additional folders in project's directory to include in zip-backup
-set arcList=*.vbp *.vbw *.rc *.res *.exe *.frm *.frx *.lvw *.cmd *.csi *.csv *.txt *.log *.PDM *.SCC *.lng *.pdb *.tlb *.ocx *.dll *.md *.gitignore *.bak *.odl *.idl Tools Ico apps
+:: //TODO: + apps ?
+set arcList=*.vbp *.vbw *.rc *.res *.exe *.frm *.frx *.lvw *.cmd *.csi *.csv *.txt *.log *.PDM *.SCC *.lng *.pdb *.tlb *.ocx *.dll *.md *.gitignore *.bak *.odl *.idl Tools Ico
 
 :: Folder for backup of archive
 set ArcFolder=Archive
@@ -427,14 +428,6 @@ if %errorlevel% neq 0 (pause & exit /B)
 copy /y HiJackThis.zip HiJackThis_test.zip
 del /f /a /q *.tmp 2>NUL
 
-if defined bFast goto skipVT
-
-echo.
-echo "%cd%\%AppName%" | clip
-echo Path to HiJackThis.exe has been copied to clipboard (for VT check).
-echo.
-
-:skipVT
 if defined bFast goto skipAskHotUpdate
 
 echo.
@@ -449,6 +442,12 @@ if /i "%ch%" neq "n" (
 
 :: test running HJT scan from Autologger (2 logs should be created - HiJackThis.log and HiJackThis_debug.log)
 if not defined bFast call _10_Scan_Execution_Test.cmd Ask
+
+if defined bFast goto skipVT
+echo.
+set /p "ch=Check on VirusTotal? Y/n: "
+if /i "%ch%"=="Y" call _3_AV_Check.cmd "%ExeName%.exe"
+:skipVT
 
 exit /B
 

@@ -39,9 +39,10 @@ Public hLibPcre2        As Long
 Public oRegexp          As IRegExp
 Public g_bRegexpInit    As Boolean
 
-Private lSubclassedTools As Long
-Private lSubclassedScan As Long
-Private hGetMsgHook As Long
+Private lSubclassedTools    As Long
+Private lSubclassedScan     As Long
+Private hGetMsgHook         As Long
+Private m_hColTextbox       As New clsCollectionEx
 
 Public Sub SubClassScroll(SwitchON As Boolean)
     
@@ -71,6 +72,29 @@ Public Sub SubClassScroll_ScanResults(SwitchON As Boolean)
         End If
     Else
         If lSubclassedScan Then RemoveWindowSubclass h_HwndScanResults, AddressOf WndProcScan, 0&: lSubclassedScan = 0
+    End If
+End Sub
+
+Public Sub SubClassTextbox(hTextbox As Long, SwitchON As Boolean)
+    'If DisableSubclassing Then Exit Sub
+    If SwitchON Then
+        If Not m_hColTextbox.ItemExists(hTextbox) Then
+            SetWindowSubclass hTextbox, AddressOf Callback_WndTextbox, 0&
+            m_hColTextbox.Add hTextbox
+        End If
+    Else
+        If hTextbox = -1 Then
+            Dim i As Long
+            For i = 1 To m_hColTextbox.Count
+                RemoveWindowSubclass m_hColTextbox(i), AddressOf Callback_WndTextbox, 0&
+            Next
+            m_hColTextbox.RemoveAll
+        Else
+            If m_hColTextbox.ItemExists(hTextbox) Then
+                RemoveWindowSubclass hTextbox, AddressOf Callback_WndTextbox, 0&
+                m_hColTextbox.RemoveByItem hTextbox
+            End If
+        End If
     End If
 End Sub
 
@@ -213,6 +237,56 @@ Private Function WndProcScan(ByVal hwnd As Long, ByVal uMsg As Long, ByVal wPara
     
 End Function
 
+Private Function Callback_WndTextbox(ByVal hwnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal uIdSubclass As Long, ByVal dwRefData As Long) As Long
+    On Error Resume Next
+    
+    Select Case uMsg
+    
+    Case WM_NCDESTROY
+        SubClassTextbox -1, False
+        
+    Case WM_UAHDESTROYWINDOW 'dilettante's trick
+        SubClassTextbox -1, False
+        
+    Case WM_KEYDOWN
+        If wParam = Asc("A") And GetKeyState(VK_CONTROL) < 0 Then
+            SendMessage hwnd, EM_SETSEL, ByVal 0&, ByVal -1&
+            Exit Function
+        End If
+        
+    Case WM_PASTE
+        Dim txt As String
+        txt = ClipboardGetText()
+        If Len(txt) <> 0 Then
+            SendMessage hwnd, EM_REPLACESEL, True, ByVal StrPtr(txt)
+            Exit Function
+        End If
+    
+    Case WM_COPY
+        Callback_WndTextbox = DefSubclassProc(hwnd, uMsg, wParam, lParam)
+        If OpenClipboard(hwnd) Then
+            Dim hMem As Long
+            Dim ptr As Long
+            hMem = GlobalAlloc(GMEM_MOVEABLE, 4)
+            If hMem <> 0 Then
+                ptr = GlobalLock(hMem)
+                If ptr <> 0 Then
+                    GetMem4 OSver.LangNonUnicodeCode, ByVal ptr
+                    GlobalUnlock hMem
+                    SetClipboardData CF_LOCALE, hMem
+                End If
+                'GlobalFree hMem
+            End If
+            CloseClipboard
+        End If
+        Exit Function
+    
+    End Select
+    
+    Callback_WndTextbox = DefSubclassProc(hwnd, uMsg, wParam, lParam)
+    
+End Function
+
 Private Sub SetFontSizeDelta(delta As Long)
     On Error GoTo ErrorHandler:
     
@@ -263,7 +337,7 @@ Public Function GetStringFromBinary(Optional ByVal sFile As String, Optional ByV
     
     If 0 <> Len(FileAndIDHybrid) Then
     
-        If Left$(FileAndIDHybrid, 1) = "@" Then FileAndIDHybrid = Mid$(FileAndIDHybrid, 2)
+        If Left$(FileAndIDHybrid, 1) = "@" Then FileAndIDHybrid = mid$(FileAndIDHybrid, 2)
         If InStr(FileAndIDHybrid, "%") <> 0 Then
             If InStr(1, FileAndIDHybrid, ".inf", 1) = 0 Then
                 FileAndIDHybrid = EnvironW(FileAndIDHybrid)
@@ -272,7 +346,7 @@ Public Function GetStringFromBinary(Optional ByVal sFile As String, Optional ByV
         pos = InStrRev(FileAndIDHybrid, ",")
         If 0 <> pos Then
             sFile = Left$(FileAndIDHybrid, pos - 1)
-            sBuf = Mid$(FileAndIDHybrid, pos + 1)
+            sBuf = mid$(FileAndIDHybrid, pos + 1)
             
             If StrComp(GetExtensionName(sFile), ".inf", 1) = 0 Then
                 bIsInf = True
@@ -284,7 +358,7 @@ Public Function GetStringFromBinary(Optional ByVal sFile As String, Optional ByV
                 End If
                 sResVar = Trim$(sBuf)
                 If Left$(sResVar, 1) = "%" And Right$(sResVar, 1) = "%" Then
-                    sResVar = Mid$(sResVar, 2, Len(sResVar) - 2)
+                    sResVar = mid$(sResVar, 2, Len(sResVar) - 2)
                 End If
             ElseIf IsNumeric(sBuf) And 0 <> Len(sBuf) Then
                 nid = Val(sBuf)
@@ -557,14 +631,16 @@ Public Function DeleteFileForce(File As String, Optional bForceMicrosoft As Bool
     Redirect = ToggleWow64FSRedirection(False, File, bOldStatus)
 
     Attrib = GetFileAttributes(StrPtr(File))
-
-    If Attrib And FILE_ATTRIBUTE_READONLY Then
-        SetFileAttributes StrPtr(File), Attrib And Not FILE_ATTRIBUTE_READONLY
+    
+    If Attrib <> INVALID_FILE_ATTRIBUTES Then
+        If Attrib And FILE_ATTRIBUTE_READONLY Then
+            SetFileAttributes StrPtr(File), Attrib And Not FILE_ATTRIBUTE_READONLY
+        End If
     End If
     
     lr = DeleteFileW(StrPtr(File))  'not 0 - success
     If lr = 0 Then
-        Debug.Print "Error " & Err.LastDllError & " when deleting file: " & File
+        If inIDE Then Debug.Print "Error " & Err.LastDllError & " when deleting file: " & File
     End If
 
     ' -> в случае неудачи, попытка получения прав NTFS + смена владельца на локальную группу "Администраторы"
@@ -672,8 +748,8 @@ Public Function AppPath(Optional bGetFullPath As Boolean) As String
         ProcPath = App.Path
     Else
         ProcPath = Left$(ProcPath, cnt)
-        If StrComp("\SystemRoot\", Left$(ProcPath, 12), 1) = 0 Then ProcPath = sWinDir & Mid$(ProcPath, 12)
-        If "\??\" = Left$(ProcPath, 4) Then ProcPath = Mid$(ProcPath, 5)
+        If StrComp("\SystemRoot\", Left$(ProcPath, 12), 1) = 0 Then ProcPath = sWinDir & mid$(ProcPath, 12)
+        If "\??\" = Left$(ProcPath, 4) Then ProcPath = mid$(ProcPath, 5)
         
         If Not bGetFullPath Then
             ' trim to path
@@ -742,7 +818,7 @@ Public Function AppExeName(Optional WithExtension As Boolean) As String
         ProcPath = Left$(ProcPath, cnt)
         
         pos = InStrRev(ProcPath, "\")
-        If pos <> 0 Then ProcPath = Mid$(ProcPath, pos + 1)
+        If pos <> 0 Then ProcPath = mid$(ProcPath, pos + 1)
         
         If Not WithExtension Then
             ProcPath = GetFileName(ProcPath)
@@ -802,14 +878,14 @@ ErrorHandler:
   If inIDE Then Stop: Resume Next
 End Function
 
-Function ExtractFilesFromCommandLine(sCMDLine As String) As String()
+Function ExtractFilesFromCommandLine(sCmdLine As String) As String()
     Dim argc As Long
     Dim argv() As String
     Dim i As Long
     Dim N As Long
     Dim aPath() As String
     
-    If ParseCommandLine(sCMDLine, argc, argv) Then
+    If ParseCommandLine(sCmdLine, argc, argv) Then
         For i = 1 To argc
             argv(i) = PathNormalize(argv(i))
             If FileExists(argv(i)) Then
@@ -864,9 +940,11 @@ Public Function DeleteFilePtr(lpSTR As Long, Optional ForceDeleteMicrosoft As Bo
     Redirect = ToggleWow64FSRedirection(False, FileName, bOldStatus)
     
     iAttr = GetFileAttributes(lpSTR)
-    If (iAttr And FILE_ATTRIBUTE_COMPRESSED) Then iAttr = iAttr - FILE_ATTRIBUTE_COMPRESSED
+    If iAttr <> INVALID_FILE_ATTRIBUTES Then
+        If (iAttr And FILE_ATTRIBUTE_COMPRESSED) Then iAttr = iAttr - FILE_ATTRIBUTE_COMPRESSED
+        If iAttr And FILE_ATTRIBUTE_READONLY Then SetFileAttributes lpSTR, iAttr And Not FILE_ATTRIBUTE_READONLY
+    End If
     
-    If iAttr And FILE_ATTRIBUTE_READONLY Then SetFileAttributes lpSTR, iAttr And Not FILE_ATTRIBUTE_READONLY
     lr = DeleteFileW(lpSTR)
     
     If lr <> 0 Then 'success
@@ -1211,7 +1289,7 @@ Public Function ScanAfterReboot(Optional bSaveState As Boolean = True) As Boolea
     
     If Len(sTime) <> 0 Then
         If StrBeginWith(sTime, "HJT:") Then
-            sTime = Mid$(sTime, 6)
+            sTime = mid$(sTime, 6)
             dLastScan = CDateEx(sTime, 1, 6, 9, 12, 15, 18)
         Else 'backward support
             If IsDate(sTime) Then
@@ -1483,11 +1561,12 @@ ErrorHandler:
 End Sub
 
 '// Expand env. variable, unquote, normalize 8.3 path, search file on %PATH$ and append postfix "(no file)" or "(file missing)" if need.
+'// Pass "sArgs" in case you want to check if argument missing for rundll32.exe process
 Public Function FormatFileMissing(ByVal sFile As String, Optional sArgs As String) As String
     On Error GoTo ErrorHandler:
     
     Dim pos As Long
-
+    
     sFile = UnQuote(EnvironW(sFile))
     
     If Len(sFile) = 0 Then
@@ -1516,10 +1595,10 @@ Public Function FormatFileMissing(ByVal sFile As String, Optional sArgs As Strin
                 FormatFileMissing = sFile & " " & STR_FILE_MISSING
                 
             Else 'relative path?
-        
-                sFile = FindOnPath(sFile, True)
+                Dim bFound As Boolean
+                sFile = FindOnPath(sFile, True, , bFound)
                 
-                If FileExists(sFile) Then
+                If bFound Then
                     FormatFileMissing = sFile
                 Else
                     FormatFileMissing = sFile & " " & STR_FILE_MISSING
@@ -1528,16 +1607,16 @@ Public Function FormatFileMissing(ByVal sFile As String, Optional sArgs As Strin
         End If
     End If
     
-    'checking if file missing within argument in case host is "rundll32"
+    'checking if argument file is missing, in case host is "rundll32"
     'e.g. C:\Windows\system32\Rundll32.exe C:\Windows\system32\iernonce.dll,RunOnceExProcess
     If Len(sArgs) <> 0 Then
-        If StrComp(FormatFileMissing, sWinSysDir & "\rundll32.exe", 1) = 0 Then
-            sFile = sArgs
-            pos = InStr(sFile, ",")
-            If pos <> 0 Then
-                sFile = Left$(sFile, pos - 1)
+        'If StrEndWith(sFile, "\rundll32.exe", 1) Then
+        If StrComp(sFile, sWinSysDir & "\rundll32.exe", 1) = 0 Then
+            Dim sDll As String
+            sDll = GetRundllFile(sArgs)
+            If Not FileExists(sDll) Then
+                FormatFileMissing = sDll & " " & STR_FILE_MISSING
             End If
-            FormatFileMissing = FormatFileMissing(sFile)
         End If
     End If
     
@@ -1705,6 +1784,13 @@ Public Sub CreateUninstallKey(bCreate As Boolean, Optional EXE_Location As Strin
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "CreateUninstallKey - Begin"
     Dim Setup_Key$:   Setup_Key = "Software\Microsoft\Windows\CurrentVersion\Uninstall\HiJackThis Fork"
+    Dim sHelpURL$
+    
+    If IsRussianLangCode(OSver.LangSystemCode) Or IsRussianLangCode(OSver.LangDisplayCode) Then
+        sHelpURL = "https://regist.safezone.cc/hijackthis_help/hijackthis.html"
+    Else
+        sHelpURL = "https://github.com/dragokas/hijackthis/wiki/HJT:-Tutorial"
+    End If
     
     If bCreate Then
         If Len(EXE_Location) = 0 Then EXE_Location = AppPath(True)
@@ -1719,7 +1805,7 @@ Public Sub CreateUninstallKey(bCreate As Boolean, Optional EXE_Location As Strin
         'Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "URLInfoAbout", "http://www.spywareinfo.com/~merijn/"
         'Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "URLInfoAbout", "https://sourceforge.net/projects/hjt/"
         Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "URLInfoAbout", "https://github.com/dragokas/hijackthis"
-        Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "HelpLink", "https://github.com/dragokas/hijackthis/wiki/HJT:-Tutorial"
+        Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "HelpLink", sHelpURL
         Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "InstallLocation", GetParentDir(EXE_Location)
         Reg.SetDwordVal HKEY_LOCAL_MACHINE, Setup_Key, "NoModify", 1
         Reg.SetDwordVal HKEY_LOCAL_MACHINE, Setup_Key, "NoRepair", 1
@@ -1854,11 +1940,11 @@ Public Function isURL(ByVal sText As String) As Boolean
     sLastURL = sText
     bLastResult = False
 
-    If Mid$(sText, 2, 1) = ":" Then
+    If mid$(sText, 2, 1) = ":" Then
         If FileExists(sText) Then Exit Function
         If FolderExists(sText) Then Exit Function
     End If
-    If Mid$(sText, 3, 1) = ":" Then
+    If mid$(sText, 3, 1) = ":" Then
         If Left$(sText, 1) = """" Then
             Dim sFile As String
             sFile = UnQuote(sText)
@@ -1880,17 +1966,17 @@ Public Function isURL(ByVal sText As String) As Boolean
 End Function
 
 Public Function GetHandleType(Handle As Long) As String
-    Dim Status As Long
+    Dim status As Long
     Dim returnedLength As Long
     Dim oti As OBJECT_TYPE_INFORMATION
     
     '//TODO: check it
     
-    Status = NtQueryObject(Handle, ObjectTypeInformation, oti, LenB(oti), returnedLength)
+    status = NtQueryObject(Handle, ObjectTypeInformation, oti, LenB(oti), returnedLength)
     
     'STATUS_INFO_LENGTH_MISMATCH (&HC0000004)
     
-    If NT_SUCCESS(Status) And returnedLength > 0 Then
+    If NT_SUCCESS(status) And returnedLength > 0 Then
         If oti.TypeName.Length > 0 Then
             GetHandleType = StringFromPtrW(oti.TypeName.Buffer)
         End If
@@ -2047,7 +2133,7 @@ Public Function SaveFileDialog( _
         .lpstrTitle = StrPtr(sTitle)
         .nMaxFile = Len(sFile)
         .lpstrInitialDir = StrPtr(InitDir)
-        .lpstrDefExt = StrPtr(Mid$(GetExtensionName(sDefFile), 2))
+        .lpstrDefExt = StrPtr(mid$(GetExtensionName(sDefFile), 2))
         .Flags = OFN_HIDEREADONLY Or OFN_NONETWORKBUTTON Or OFN_OVERWRITEPROMPT Or OFN_ENABLESIZING
     End With
     If GetSaveFileName(uOFN) = 0 Then Exit Function
@@ -2162,7 +2248,7 @@ Private Function OpenFileDialogVista_Multi( _
                 nItem = nItem + 1
                 isiRes.GetDisplayName SIGDN_FILESYSPATH, lPtr
                 aPath(nItem) = BStrFromLPWStr(lPtr, True)
-                If PathBeginWith(aPath(nItem), sSysNativeDir) Then aPath(nItem) = sWinSysDir & Mid$(aPath(nItem), Len(sSysNativeDir) + 1)
+                If PathBeginWith(aPath(nItem), sSysNativeDir) Then aPath(nItem) = sWinSysDir & mid$(aPath(nItem), Len(sSysNativeDir) + 1)
                 Set isiRes = Nothing
             Loop
         End If
@@ -2251,7 +2337,7 @@ Private Function OpenFileDialogVista_Simple( _
             .GetResult isiRes
             isiRes.GetDisplayName SIGDN_FILESYSPATH, lPtr
             sPath = BStrFromLPWStr(lPtr, True)
-            If PathBeginWith(sPath, sSysNativeDir) Then sPath = sWinSysDir & Mid$(sPath, Len(sSysNativeDir) + 1)
+            If PathBeginWith(sPath, sSysNativeDir) Then sPath = sWinSysDir & mid$(sPath, Len(sSysNativeDir) + 1)
             OpenFileDialogVista_Simple = sPath
         End If
         On Error GoTo ErrorHandler:
@@ -2327,7 +2413,7 @@ Private Function SaveFileDialogVista( _
         If Not (isiDef Is Nothing) Then .SetFolder isiDef
         
         pos = InStr(DefSaveFile, ".")
-        If pos <> 0 Then .SetDefaultExtension Mid$(DefSaveFile, pos + 1)
+        If pos <> 0 Then .SetDefaultExtension mid$(DefSaveFile, pos + 1)
         .SetFileName DefSaveFile
         
         On Error Resume Next
@@ -2337,7 +2423,7 @@ Private Function SaveFileDialogVista( _
             .GetResult isiRes
             isiRes.GetDisplayName SIGDN_FILESYSPATH, lPtr
             sPath = BStrFromLPWStr(lPtr, True)
-            If PathBeginWith(sPath, sSysNativeDir) Then sPath = sWinSysDir & Mid$(sPath, Len(sSysNativeDir) + 1)
+            If PathBeginWith(sPath, sSysNativeDir) Then sPath = sWinSysDir & mid$(sPath, Len(sSysNativeDir) + 1)
             SaveFileDialogVista = sPath
         End If
         On Error GoTo ErrorHandler:
@@ -2356,7 +2442,7 @@ End Function
 
 Public Function PathBeginWith(sPath As String, sBeginPart As String) As Boolean
     If StrComp(Left$(sPath, Len(sBeginPart)), sBeginPart, 1) = 0 Then
-        If Len(sPath) = Len(sBeginPart) Or Mid$(sPath, Len(sBeginPart) + 1, 1) = "\" Then PathBeginWith = True
+        If Len(sPath) = Len(sBeginPart) Or mid$(sPath, Len(sBeginPart) + 1, 1) = "\" Then PathBeginWith = True
     End If
 End Function
 
@@ -2370,25 +2456,25 @@ Public Function BStrFromLPWStr(lpWStr As Long, Optional ByVal CleanupLPWStr As B
     If CleanupLPWStr Then CoTaskMemFree lpWStr
 End Function
 
-Public Sub ProcessHotkey(KeyCode As Integer, Frm As Form)
+Public Sub ProcessHotkey(KeyCode As Integer, frm As Form)
     If KeyCode = Asc("F") Then                    'Ctrl + F
         If Not (cMath Is Nothing) Then
-            If cMath.HIWORD(GetKeyState(VK_CONTROL)) Then LoadSearchEngine Frm
+            If cMath.HIWORD(GetKeyState(VK_CONTROL)) Then LoadSearchEngine frm
         End If
     End If
     If KeyCode = Asc("A") Then                    'Ctrl + A
         If Not (cMath Is Nothing) Then
-            If cMath.HIWORD(GetKeyState(VK_CONTROL)) Then ControlSelectAll Frm
+            If cMath.HIWORD(GetKeyState(VK_CONTROL)) Then ControlSelectAll frm
         End If
     End If
 End Sub
 
-Public Sub LoadSearchEngine(Frm As Form)
+Public Sub LoadSearchEngine(frm As Form)
     If IsFormInit(frmSearch) Then
-        frmSearch.Display Frm
+        frmSearch.Display frm
     Else
         Load frmSearch
-        frmSearch.Display Frm
+        frmSearch.Display frm
     End If
 End Sub
 
@@ -2494,7 +2580,7 @@ Public Function HasCommandLineKey(ByVal sKey As String) As Boolean
             
             If bHasKey Then
                 If Right$(sKey, 1) = ":" Then offset = -1
-                ch = Mid$(g_sCommandLineArg(i), Len(sKey) + 2 + offset, 1)
+                ch = mid$(g_sCommandLineArg(i), Len(sKey) + 2 + offset, 1)
                 If (Len(ch) = 0 Or ch = ":") Then
                     HasCommandLineKey = True
                     Exit Function
@@ -2818,7 +2904,7 @@ Public Function IsValidTaskUserId(ByVal sUserId As String) As Boolean
             IsValidTaskUserId = True
             Exit Function
         End If
-        sUserId = Mid$(sUserId, pos + 1)
+        sUserId = mid$(sUserId, pos + 1)
     End If
     If Len(sUserId) = 0 Then Exit Function
     If InArray(sUserId, g_LocalUserNames, , , vbTextCompare) Then
@@ -2853,7 +2939,7 @@ Public Function IsValidTaskGroupId(ByVal sGroupId As String) As Boolean
             Exit Function
         End If
         
-        sGroupId = Mid$(sComputer, pos + 1)
+        sGroupId = mid$(sComputer, pos + 1)
     End If
     If Len(sGroupId) = 0 Then Exit Function
     IsValidTaskGroupId = InArray(sGroupId, g_LocalGroupNames, , , vbTextCompare)
@@ -2889,7 +2975,7 @@ Public Function HexStringToNumber(str As String) As Long
         HexStringToNumber = CLng(str)
     Else
         If StrBeginWith(str, "0x") Then
-            If IsNumeric(Mid$(str, 3)) Then HexStringToNumber = CLng("&H" & Mid$(str, 3))
+            If IsNumeric(mid$(str, 3)) Then HexStringToNumber = CLng("&H" & mid$(str, 3))
         End If
     End If
 End Function

@@ -522,7 +522,7 @@ Private Sub Form_Load()
         Dim i%, s$()
         Me.Show
         'Listing drives...
-        Status Translate(197), "1"
+        status Translate(197), "1"
         s = Split(GetDrives, "|")
         lstADSFound.Clear
         'Enumerating system drives:
@@ -549,7 +549,7 @@ Private Sub Form_Load()
     sSafeStreams(7) = ":favicon:$DATA"
     sSafeStreams(8) = ":OECustomProperty:$DATA"
     'Ready.
-    Status Translate(209), "2"
+    status Translate(209), "2"
     
     Dim OptB As OptionButton
     Dim Btn As CommandButton
@@ -570,18 +570,20 @@ Private Sub Form_Load()
         Next
         Set OptB = Nothing
     End If
+    
+    SubClassTextbox Me.txtScanFolder.hwnd, True
 End Sub
 
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
     bAbortScanNow = True
     DoEvents
     SaveWindowPos Me, SETTINGS_SECTION_ADSSPY
-    'Unload Me
     Me.Hide
     If UnloadMode = 0 Then
         Cancel = True 'user click -> don't unload
     Else
         bQueryUnload = True
+        SubClassTextbox Me.txtScanFolder.hwnd, False
     End If
 End Sub
 
@@ -613,13 +615,13 @@ Private Sub cmdViewBack_Click()
     lstADSFound.Visible = True
     cmdRemove.Enabled = True
     'Ready.
-    Status Translate(209), "2"
+    status Translate(209), "2"
 End Sub
 
 Private Sub cmdViewCopy_Click()
     ClipboardSetText txtADSContent.Text
     'The contents of the currently displayed ADS have been copied to the clipboard.
-    Status Translate(2200), "3"
+    status Translate(2200), "3"
 End Sub
 
 Private Sub cmdViewEdit_Click()
@@ -645,7 +647,7 @@ Private Sub cmdViewEdit_Click()
     sStream = Left$(sStream, InStr(sStream, "  (") - 1)
     ShellExecute Me.hwnd, "open", sWordpadPath, """" & PathX64(sStream) & """", vbNullString, 1
     'Ready.
-    Status Translate(209), "2"
+    status Translate(209), "2"
 End Sub
 
 Private Sub cmdViewSave_Click()
@@ -675,10 +677,10 @@ Private Sub cmdViewSave_Click()
         
         If FileExists(sFilename) Then
             'Stream contents saved to
-            Status Translate(2206) & " " & sFilename & " (" & FileLen(sFilename) & " bytes).", "4"
+            status Translate(2206) & " " & sFilename & " (" & FileLen(sFilename) & " bytes).", "4"
         Else
             'An error occurred saving the stream to disk.
-            Status Translate(2207), "5"
+            status Translate(2207), "5"
         End If
     End If
 End Sub
@@ -687,7 +689,7 @@ Private Function GetStreamName(sPath As String) As String
     Dim pos As Long
     pos = InStr(4, sPath, ":")
     If pos Then
-        GetStreamName = Mid$(sPath, pos + 1)
+        GetStreamName = mid$(sPath, pos + 1)
     End If
 End Function
 
@@ -770,18 +772,18 @@ Private Sub cmdScan_Click()
     If IsRunningInIDE() Then
         If bAbortScanNow Then
             'Scan ABORTED, found [] alternate data streams (ADS's) in [*] sec.
-            Status Replace$(Replace$(Translate(2212), "[]", lstADSFound.ListCount), "[*]", Format$(lTicks / 1000, "##0.00#")), "6"
+            status Replace$(Replace$(Translate(2212), "[]", lstADSFound.ListCount), "[*]", Format$(lTicks / 1000, "##0.00#")), "6"
         Else
             'Scan complete, found [] alternate data streams (ADS's) in [*] sec.
-            Status Replace$(Replace$(Translate(2211), "[]", lstADSFound.ListCount), "[*]", Format$(lTicks / 1000, "##0.00#")), "7"
+            status Replace$(Replace$(Translate(2211), "[]", lstADSFound.ListCount), "[*]", Format$(lTicks / 1000, "##0.00#")), "7"
         End If
     Else
         If bAbortScanNow Then
             'Scan ABORTED, found [] alternate data streams (ADS's).
-            Status Replace$(Translate(2214), "[]", lstADSFound.ListCount), "8"
+            status Replace$(Translate(2214), "[]", lstADSFound.ListCount), "8"
         Else
             'Scan complete, found [] alternate data streams (ADS's).
-            Status Replace$(Translate(2213), "[]", lstADSFound.ListCount), "9"
+            status Replace$(Translate(2213), "[]", lstADSFound.ListCount), "9"
         End If
     End If
     bAbortScanNow = False
@@ -797,7 +799,7 @@ Private Sub cmdRemove_Click()
     If MsgBoxW(Replace$(Translate(2215), "[]", k), vbQuestion + vbYesNo) = vbNo Then Exit Sub
     'go from bottom of list to prevent .RemoveItem messing up the For loop
     'Removing selected streams...
-    Status Translate(2216), "10"
+    status Translate(2216), "10"
     
     ToggleWow64FSRedirection False
     
@@ -814,7 +816,7 @@ Private Sub cmdRemove_Click()
             j = j + 1
         End If
         'Removing selected streams...
-        Status Translate(2216) & " " & Int(CLng(j) / k * 100) & " %"
+        status Translate(2216) & " " & Int(CLng(j) / k * 100) & " %"
     Next i
     
     ToggleWow64FSRedirection True
@@ -825,7 +827,7 @@ Private Sub cmdRemove_Click()
         MsgBoxW Translate(2217) & _
                vbCrLf & vbCrLf & Left$(sLockedStreams, Len(sLockedStreams) - 2), vbExclamation
     End If
-    Status Translate(209), "2"
+    status Translate(209), "2"
 End Sub
 
 Private Function GetDrives$()
@@ -858,7 +860,7 @@ Private Function GetDrives$()
             sDrives = sDrives & "|" & sDrive
         End If
     Next i
-    If sDrives <> vbNullString Then GetDrives = Mid$(sDrives, 2)
+    If sDrives <> vbNullString Then GetDrives = mid$(sDrives, 2)
 End Function
 
 Private Function GetNTFSDrives$()
@@ -883,7 +885,7 @@ Private Function GetNTFSDrives$()
             End If
         End If
     Next i
-    If sNTFSDrives <> vbNullString Then GetNTFSDrives = Mid$(sNTFSDrives, 2)
+    If sNTFSDrives <> vbNullString Then GetNTFSDrives = mid$(sNTFSDrives, 2)
 End Function
 
 Private Sub CheckIfSystemIsNTFS()
@@ -900,7 +902,7 @@ Private Sub EnumADSInAllFiles(sFolder$)
     
     hFind = FindFirstFile(StrPtr(BuildPath(sFolder, "*.*")), uWFD)
     If hFind = INVALID_HANDLE_VALUE Then
-        Status "FindFirstFile() failed", vbNullString
+        status "FindFirstFile() failed", vbNullString
         Exit Sub
     End If
     
@@ -914,7 +916,7 @@ Private Sub EnumADSInAllFiles(sFolder$)
     
           If Not ((uWFD.dwFileAttributes And FILE_ATTRIBUTE_DIRECTORY) = 16) Then
             sPath = BuildPath(sFolder, sFilename)
-            Status sPath
+            status sPath
             EnumADSInFile sPath
           Else
             If sFilename <> "." And sFilename <> ".." And Not bQuickScan Then
@@ -955,7 +957,7 @@ Private Sub EnumADSInFile(sFilePath$, Optional bIsFolder As Boolean = False)
            sStreamName <> "::$DATA" Then
            If InStr(Join(sSafeStreams, "|"), sStreamName) = 0 _
                Or Not bIgnoreEncryptable Then
-                sStreamName = Mid$(sStreamName, 2)
+                sStreamName = mid$(sStreamName, 2)
                 sStreamName = Left$(sStreamName, InStr(sStreamName, ":") - 1)
                 If bCalcHash Then
                     lstADSFound.AddItem sFilePath & " : " & sStreamName & "  (" & uFSI.StreamSize & " bytes, CheckSum: " & GetFileCheckSum(sFilePath & ":" & sStreamName, uFSI.StreamSize, True) & ")"
@@ -979,7 +981,7 @@ End Sub
 '    FileExists = CBool(SHFileExists(StrConv(sFile, vbUnicode)))
 'End Function
 
-Private Sub Status(s$, Optional sTag As String)
+Private Sub status(s$, Optional sTag As String)
     If Not (bQueryUnload) Then
         picStatus.Cls
         picStatus.Print " " & s
@@ -1042,7 +1044,7 @@ Private Sub mnuPopupSave_Click()
     End If
         
     'Scan results saved to
-    Status Translate(2226) & " " & sFilename & ".", "11"
+    status Translate(2226) & " " & sFilename & ".", "11"
     
     OpenLogFile sFilename
     
@@ -1088,11 +1090,11 @@ Private Sub mnuPopupView_Click()
     
     Dim sStream$, lSize&, sStreamContents$, ff%, hFile As Long
     'Reading stream...
-    Status Translate(2227), "12"
+    status Translate(2227), "12"
     txtADSContent.Text = vbNullString
     sStream = lstADSFound.List(lstADSFound.ListIndex)
     sStream = Replace$(sStream, " : ", ":")
-    lSize = Val(Mid$(sStream, InStr(sStream, "  (") + 3))
+    lSize = Val(mid$(sStream, InStr(sStream, "  (") + 3))
     sStream = Left$(sStream, InStr(sStream, "  (") - 1)
     
     If FileExists(sStream) Then
@@ -1114,7 +1116,7 @@ Private Sub mnuPopupView_Click()
         txtADSContent.Text = sStreamContents
     End If
     'Contents of [].
-    Status Replace$(Translate(2229), "[]", sStream), "13"
+    status Replace$(Translate(2229), "[]", sStream), "13"
     
     Exit Sub
 ErrorHandler:

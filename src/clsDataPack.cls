@@ -73,7 +73,7 @@ Public Sub Push(vData As Variant)
         Case vbDate: .Size = 8
         Case Else
             g_iPos = g_iPos - 1
-            Debug.Print "DataPack: Unknown type of data is pushed"
+            If inIDE Then Debug.Print "DataPack: Unknown type of data is pushed"
             Err.Raise 5
             Exit Sub
         End Select
@@ -93,13 +93,13 @@ Public Function Fetch() As Variant
     On Error GoTo ErrorHandler:
     
     If 0 = AryItems(g_Array) Then
-        Debug.Print "DataPack: Array is not specified before deserialization"
+        If inIDE Then Debug.Print "DataPack: Array is not specified before deserialization"
         Err.Raise 5
         Exit Function
     End If
     
     If g_BytePos > UBound(g_Array) Then
-        Debug.Print "DataPack: EOF during deserialization"
+        If inIDE Then Debug.Print "DataPack: EOF during deserialization"
         Err.Raise 5
         Exit Function
     End If
@@ -121,7 +121,7 @@ Public Function Fetch() As Variant
         Case vbDouble: v = CDbl(0)
         Case vbDate: v = #12:00:00 AM#
         Case Else:
-            Debug.Print "DataPack: Unknown type of data is fetched"
+            If inIDE Then Debug.Print "DataPack: Unknown type of data is fetched"
             Err.Raise 5
             Exit Function
     End Select
@@ -183,7 +183,7 @@ Public Property Get SerializeToArray() As Byte()
     On Error GoTo ErrorHandler:
     
     If g_iPos = 0 Then
-        Debug.Print "DataPack: Cannot serialize - array is empty"
+        If inIDE Then Debug.Print "DataPack: Cannot serialize - array is empty"
         Err.Raise 5
         Exit Property
     End If
@@ -220,7 +220,7 @@ Public Property Let DeSerializeArray(bData() As Byte)
     On Error GoTo ErrorHandler:
 
     If 0 = AryItems(bData) Then
-        Debug.Print "DataPack: Cannot deserialize - array is empty"
+        If inIDE Then Debug.Print "DataPack: Cannot deserialize - array is empty"
         Err.Raise 5
         Exit Property
     End If
@@ -241,7 +241,7 @@ Public Property Let DeSerializeHexString(sData As String)
     Dim i As Long
     
     If Len(sData) = 0 Then
-        Debug.Print "DataPack: Cannot deserialize - string is empty"
+        If inIDE Then Debug.Print "DataPack: Cannot deserialize - string is empty"
         Err.Raise 5
         Exit Property
     End If
@@ -249,7 +249,7 @@ Public Property Let DeSerializeHexString(sData As String)
     ReDim b(Len(sData) \ 2 - 1)
     
     For i = 1 To Len(sData) Step 2
-        b((i - 1) \ 2) = CLng("&H" & Mid$(sData, i, 2))
+        b((i - 1) \ 2) = CLng("&H" & mid$(sData, i, 2))
     Next
     
     DeSerializeArray = b

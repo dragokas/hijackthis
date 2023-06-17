@@ -1339,7 +1339,7 @@ HiJackThis+ est une modification du programme HiJackThis original de Trend Micro
 0570=Le fichier de langue '[]' n'est pas valide (numéros d'identification ambigus).
 0572=Le fichier de langue n'est pas valide. Réinitialiser aux valeurs par défaut (Anglais) ?
 0580=HiJackThis ne peut réparer les entrées O10 Winsock LSP.
-     Utiliser le programme WinsockReset de https://www.foolishit.com/vb6-projects/winsockreset/
+     Utiliser le programme {1} de {2}
      
      Voulez-vous visiter ce site ?
 0590=Une erreur inattendue s'est produite !
@@ -1837,4 +1837,4 @@ HiJackThis+ est une modification du programme HiJackThis original de Trend Micro
 ; ========= Empty ========
 ;
 ; (2500 - ...)
-;                                                        
+;                                                          

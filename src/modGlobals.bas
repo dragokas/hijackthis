@@ -20,17 +20,18 @@ Public Const MAX_MODULE_NAME32 As Long = 255&
 
 Public TaskBar As ITaskbarList3
 
-Public Const STR_NO_FILE As String = "(no file)"
-Public Const STR_NO_NAME As String = "(no name)"
-Public Const STR_NO_CLSID As String = "(no CLSID)"
-Public Const STR_FILE_MISSING As String = "(file missing)"
+Public Const STR_NO_FILE        As String = "(no file)"
+Public Const STR_NO_NAME        As String = "(no name)"
+Public Const STR_NO_CLSID       As String = "(no CLSID)"
+Public Const STR_FILE_MISSING   As String = "(file missing)"
 Public Const STR_FOLDER_MISSING As String = "(folder missing)"
-Public Const STR_MISSING As String = "(missing)"
-Public Const STR_NOT_SIGNED As String = "(not signed)"
-Public Const STR_ACCESS_DENIED As String = "(access denied)"
+Public Const STR_MISSING        As String = "(missing)"
+Public Const STR_ACCESS_DENIED  As String = "(access denied)"
+Public Const STR_NOT_SIGNED     As String = "(not signed)"
+Public Const STR_INVALID_SIGN   As String = "(invalid sign)"
 
 #If False Then 'for common var. names character case fixation
-    Public X, Y, Length, Index, sFilename, i, j, k, N, State, Frm, ret, VT, isInit, hwnd, pv, Reg, pid, File, msg, VT, InArray, Self, Status, FileName
+    Public X, Y, Length, Index, sFilename, i, j, k, N, State, frm, ret, VT, isInit, hwnd, pv, Reg, pid, File, msg, VT, InArray, Self, status, FileName
     Public mid, SID
 #End If
 
@@ -229,6 +230,8 @@ Public Const EM_SETMARGINS     As Long = &HD3&
 Public Const EC_LEFTMARGIN     As Long = &H1&
 Public Const EC_RIGHTMARGIN    As Long = &H2&
 Public Const EM_LIMITTEXT      As Long = &HC5&
+Public Const EM_SETSEL         As Long = &HB1
+Public Const EM_REPLACESEL     As Long = &HC2&
 Public Const SB_CTL            As Long = 2&
 Public Const SB_HORZ           As Long = 0&
 Public Const SB_VERT           As Long = 1&
@@ -240,7 +243,6 @@ Public Const SIF_TRACKPOS      As Long = &H10&
 Public Const SIF_ALL           As Long = 1 Or 2 Or 4 Or &H10&
 Public Const LWA_COLORKEY      As Long = &H1&
 
-'Public HE           As clsHiveEnum
 Public Reg          As clsRegistry
 
 Public colSafeDNS   As New Collection
@@ -253,7 +255,6 @@ Public g_sCommandLine   As String
 Public g_sCommandLineArg() As String
 Public g_bFixArg        As Boolean
 Public g_bNoGUI         As Boolean
-'Public g_bBackupMade    As Boolean
 Public bAutoSelect      As Boolean
 Public bConfirm         As Boolean
 Public bMakeBackup      As Boolean
@@ -409,7 +410,6 @@ Public bShownBHOWarning     As Boolean
 Public bShownToolbarWarning As Boolean
 
 Public g_bCheckSum          As Boolean
-'Public g_bUseMD5            As Boolean
 Public g_eUseHashType       As HASH_TYPE
 Public bIgnoreAllWhitelists As Boolean
 Public bHideMicrosoft       As Boolean
@@ -989,6 +989,7 @@ Public Const KEY_QUERY_VALUE           As Long = &H1&
 Public Const RegType_DWord             As Long = 4&
 
 Public Const MOVEFILE_DELAY_UNTIL_REBOOT As Long = &H4&
+Public Const MOVEFILE_REPLACE_EXISTING As Long = 1
 
 Public Const IOCTL_STORAGE_CHECK_VERIFY2   As Long = &H2D0800
 Public Const IOCTL_STORAGE_CHECK_VERIFY    As Long = &H2D4800
@@ -1330,6 +1331,7 @@ Public Declare Function PathRemoveFileSpec Lib "Shlwapi.dll" Alias "PathRemoveFi
 Public Declare Function MoveFile Lib "kernel32.dll" Alias "MoveFileW" (ByVal lpExistingFileName As Long, ByVal lpNewFileName As Long) As Long
 Public Declare Function OpenClipboard Lib "user32.dll" (ByVal hwnd As Long) As Long
 Public Declare Function SetClipboardData Lib "user32.dll" (ByVal wFormat As Long, ByVal hMem As Long) As Long
+Public Declare Function GetClipboardData Lib "user32.dll" (ByVal wFormat As Long) As Long
 Public Declare Function EmptyClipboard Lib "user32.dll" () As Long
 Public Declare Function CloseClipboard Lib "user32.dll" () As Long
 Public Declare Function OleSetClipboard Lib "ole32.dll" (ByVal pDataObj As IDataObject) As Long
@@ -2280,6 +2282,7 @@ Public Type msg
     lPrivate    As Long
 End Type
 
+Public Declare Sub DisableProcessWindowsGhosting Lib "user32.dll" ()
 Public Declare Function GetWindowLong Lib "user32.dll" Alias "GetWindowLongW" (ByVal hwnd As Long, ByVal nIndex As Long) As Long
 Public Declare Function SetWindowLong Lib "user32.dll" Alias "SetWindowLongW" (ByVal hwnd As Long, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
 Public Declare Function SetParent Lib "user32.dll" (ByVal hWndChild As Long, ByVal hWndNewParent As Long) As Long
@@ -2337,6 +2340,7 @@ Public Const SHCNE_RENAMEITEM   As Long = 1&
 Public Const SHCNE_ATTRIBUTES   As Long = &H800&
 
 Public Const ERROR_FILE_NOT_FOUND      As Long = 2&
+Public Const ERROR_PATH_NOT_FOUND      As Long = 3&
 
 Public Const RGN_OR            As Long = 2
 
@@ -2367,6 +2371,8 @@ Public Declare Function GetProcessHeap Lib "kernel32.dll" () As Long
 Public Declare Function ArrPtr Lib "msvbvm60.dll" Alias "VarPtr" (arr() As Any) As Long
 Public Declare Function GetMem1 Lib "msvbvm60.dll" (pSrc As Any, pDst As Any) As Long
 Public Declare Function lstrcpynA Lib "kernel32.dll" (ByVal lpDst As Long, ByVal lpSrc As Long, ByVal iMaxLength As Long) As Long
+
+Public Const CERT_NAME_SIMPLE_DISPLAY_TYPE As Long = 4&
 
 'modWFP
 

@@ -246,9 +246,9 @@ Public bShowLargeHosts As Boolean, bShowLargeZones As Boolean
 
 Private Const NUM_OF_SECTIONS As Long = 58
 
-Public Function StartupList_UpdateCaption(Frm As Form) As Long
+Public Function StartupList_UpdateCaption(frm As Form) As Long
 
-    Frm.Caption = "StartupList v." & StartupListVer & " fork" & _
+    frm.Caption = "StartupList v." & StartupListVer & " fork" & _
         Replace$(" - " & Translate(906), "[]", NUM_OF_SECTIONS)
     
     StartupList_UpdateCaption = NUM_OF_SECTIONS
@@ -1656,12 +1656,9 @@ Public Sub RegEnumPolicies(tvwMain As TreeView)
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "RegEnumPoliciesError - Begin"
     
-    Dim Stady As Long
-    
     If bSL_Abort Then Exit Sub
     'policies - EVERYTHING
     
-    Stady = 1
     tvwMain.Nodes.Add "System", tvwChild, "Policies", SEC_POLICIES, "policy"
     tvwMain.Nodes.Add "Policies", tvwChild, "PoliciesUser", "This user", "user"
     tvwMain.Nodes.Add "Policies", tvwChild, "PoliciesSystem", "All users", "users"
@@ -1671,7 +1668,6 @@ Public Sub RegEnumPolicies(tvwMain As TreeView)
     ' SOFTWARE\Microsoft\Security Center
     'and then enum all values (REG_SZ, REG_DWORD) in there
 
-    Stady = 2
     Dim sPolicyKeys$(), sPolicyNames$(), k&
     ReDim sPolicyNames(1)
     sPolicyNames(0) = "Primary policies"
@@ -1684,42 +1680,29 @@ Public Sub RegEnumPolicies(tvwMain As TreeView)
 
     Dim sRegKeysUser$(), sRegKeysSystem$(), sValues$(), i&, j&
 
-
-    Stady = 3
     For k = 0 To UBound(sPolicyKeys)
-        Stady = 4
+
         tvwMain.Nodes.Add "PoliciesUser", tvwChild, "Policies" & k & "User", sPolicyNames(k), "winlogon"
         tvwMain.Nodes.Add "PoliciesSystem", tvwChild, "Policies" & k & "System", sPolicyNames(k), "winlogon"
-        
-        Stady = 5
+
         tvwMain.Nodes("Policies" & k & "User").Tag = "HKEY_CURRENT_USER\" & sPolicyKeys(k)
         tvwMain.Nodes("Policies" & k & "System").Tag = "HKEY_LOCAL_MACHINE\" & sPolicyKeys(k)
-    
-        Stady = 6
+
         sValues = Split(RegEnumValues(HKEY_CURRENT_USER, sPolicyKeys(k), , , False), "|")
         For j = 0 To UBound(sValues)
-            Stady = 7
             tvwMain.Nodes.Add "Policies" & k & "User", tvwChild, "Policies" & k & "User" & j & "Root", sValues(j), "reg"
         Next j
 
-        Stady = 10
         sRegKeysUser = Split(EnumSubKeysTree(HKEY_CURRENT_USER, sPolicyKeys(k)), "|")
         
-        Stady = 11
         For i = 0 To UBound(sRegKeysUser)
-            Stady = 12
             sValues = Split(RegEnumValues(HKEY_CURRENT_USER, sRegKeysUser(i), , , False), "|")
             If UBound(sValues) > -1 Then
-                Stady = 13
                 tvwMain.Nodes.Add "Policies" & k & "User", tvwChild, "Policies" & k & "User" & i, sRegKeysUser(i), "registry"
-                Stady = 14
                 tvwMain.Nodes("Policies" & k & "User" & i).Tag = "HKEY_CURRENT_USER\" & sRegKeysUser(i)
-                Stady = 15
                 For j = 0 To UBound(sValues)
-                    Stady = 16
                     tvwMain.Nodes.Add "Policies" & k & "User" & i, tvwChild, "Policies" & k & "User" & i & "." & j, sValues(j), "reg"
                 Next j
-                Stady = 17
                 tvwMain.Nodes("Policies" & k & "User" & i).Text = tvwMain.Nodes("Policies" & k & "User" & i).Text & " (" & tvwMain.Nodes("Policies" & k & "User" & i).Children & ")"
             End If
             If bSL_Abort Then Exit Sub
@@ -1727,50 +1710,39 @@ Public Sub RegEnumPolicies(tvwMain As TreeView)
         
         sValues = Split(RegEnumValues(HKEY_LOCAL_MACHINE, sPolicyKeys(k), , , False), "|")
         For j = 0 To UBound(sValues)
-            Stady = 9
             tvwMain.Nodes.Add "Policies" & k & "System", tvwChild, "Policies" & k & "System" & j & "Root", sValues(j), "reg"
         Next j
         
         sRegKeysSystem = Split(EnumSubKeysTree(HKEY_LOCAL_MACHINE, sPolicyKeys(k)), "|")
         
         For i = 0 To UBound(sRegKeysSystem)
-            Stady = 18
             sValues = Split(RegEnumValues(HKEY_LOCAL_MACHINE, sRegKeysSystem(i), , , False), "|")
             If UBound(sValues) > -1 Then
-                Stady = 19
                 tvwMain.Nodes.Add "Policies" & k & "System", tvwChild, "Policies" & k & "System" & i, sRegKeysSystem(i), "registry"
-                Stady = 20
                 tvwMain.Nodes("Policies" & k & "System" & i).Tag = "HKEY_LOCAL_MACHINE\" & sRegKeysSystem(i)
                 For j = 0 To UBound(sValues)
-                    Stady = 21
                     tvwMain.Nodes.Add "Policies" & k & "System" & i, tvwChild, "Policies" & k & "System" & i & "." & j, sValues(j), "reg"
                 Next j
-                Stady = 22
                 tvwMain.Nodes("Policies" & k & "System" & i).Text = tvwMain.Nodes("Policies" & k & "System" & i).Text & " (" & tvwMain.Nodes("Policies" & k & "System" & i).Children & ")"
             End If
             If bSL_Abort Then Exit Sub
         Next i
 
-        Stady = 23
         If tvwMain.Nodes("Policies" & k & "User").Children = 0 And Not bShowEmpty Then
             tvwMain.Nodes.Remove "Policies" & k & "User"
         End If
-        Stady = 24
         If tvwMain.Nodes("Policies" & k & "System").Children = 0 And Not bShowEmpty Then
             tvwMain.Nodes.Remove "Policies" & k & "System"
         End If
         If bSL_Abort Then Exit Sub
     Next k
 
-    Stady = 25
     If tvwMain.Nodes("PoliciesUser").Children = 0 And Not bShowEmpty Then
         tvwMain.Nodes.Remove "PoliciesUser"
     End If
-    Stady = 26
     If tvwMain.Nodes("PoliciesSystem").Children = 0 And Not bShowEmpty Then
         tvwMain.Nodes.Remove "PoliciesSystem"
     End If
-    Stady = 27
     If tvwMain.Nodes("Policies").Children = 0 And Not bShowEmpty Then
         tvwMain.Nodes.Remove "Policies"
     End If
@@ -1779,57 +1751,40 @@ Public Sub RegEnumPolicies(tvwMain As TreeView)
     '-----------------------------------------------------------------------
     Dim sUsername$, L&
     For L = 0 To UBound(sUsernames)
-        Stady = 28
         sUsername = MapSIDToUsername(sUsernames(L))
         If sUsername <> OSver.UserName And sUsername <> vbNullString Then
-            Stady = 29
             tvwMain.Nodes.Add "Users" & sUsernames(L), tvwChild, sUsernames(L) & "PoliciesUser", SEC_POLICIES, "policy"
 
-            Stady = 30
             For k = 0 To UBound(sPolicyKeys)
-                Stady = 31
                 tvwMain.Nodes.Add sUsernames(L) & "PoliciesUser", tvwChild, sUsernames(L) & "Policies" & k & "User", sPolicyNames(k), "winlogon"
-                Stady = 32
                 tvwMain.Nodes(sUsernames(L) & "Policies" & k & "User").Tag = "HKEY_USERS\" & sUsernames(L) & "\" & sPolicyKeys(k)
 
-                Stady = 33
                 sValues = Split(RegEnumValues(HKEY_USERS, sUsernames(L) & "\" & sPolicyKeys(k), , , False), "|")
                 For j = 0 To UBound(sValues)
-                    Stady = 34
                     tvwMain.Nodes.Add sUsernames(L) & "Policies" & k & "User", tvwChild, sUsernames(L) & "Policies" & k & "User" & j & "Root", sValues(j), "reg"
                 Next j
     
-                Stady = 35
                 sRegKeysUser = Split(EnumSubKeysTree(HKEY_USERS, sUsernames(L) & "\" & sPolicyKeys(k)), "|")
 
                 For i = 0 To UBound(sRegKeysUser)
-                    Stady = 36
                     sValues = Split(RegEnumValues(HKEY_USERS, sRegKeysUser(i), , , False), "|")
                     If UBound(sValues) > -1 Then
-                        Stady = 37
-                        tvwMain.Nodes.Add sUsernames(L) & "Policies" & k & "User", tvwChild, sUsernames(L) & "Policies" & k & "User" & i, Mid$(sRegKeysUser(i), Len(sUsernames(L)) + 2), "registry"
-                        Stady = 38
+                        tvwMain.Nodes.Add sUsernames(L) & "Policies" & k & "User", tvwChild, sUsernames(L) & "Policies" & k & "User" & i, mid$(sRegKeysUser(i), Len(sUsernames(L)) + 2), "registry"
                         tvwMain.Nodes(sUsernames(L) & "Policies" & k & "User" & i).Tag = "HKEY_USERS\" & sRegKeysUser(i)
                         For j = 0 To UBound(sValues)
-                            Stady = 39
                             tvwMain.Nodes.Add sUsernames(L) & "Policies" & k & "User" & i, tvwChild, sUsernames(L) & "Policies" & k & "User" & i & "." & j, sValues(j), "reg"
                         Next j
-                        Stady = 40
                         tvwMain.Nodes(sUsernames(L) & "Policies" & k & "User" & i).Text = tvwMain.Nodes(sUsernames(L) & "Policies" & k & "User" & i).Text & " (" & tvwMain.Nodes(sUsernames(L) & "Policies" & k & "User" & i).Children & ")"
                     End If
                     If bSL_Abort Then Exit Sub
                 Next i
 
-                Stady = 41
                 If tvwMain.Nodes(sUsernames(L) & "Policies" & k & "User").Children = 0 And Not bShowEmpty Then
-                    Stady = 42
                     tvwMain.Nodes.Remove sUsernames(L) & "Policies" & k & "User"
                 End If
             Next k
             
-            Stady = 43
             If tvwMain.Nodes(sUsernames(L) & "PoliciesUser").Children = 0 And Not bShowEmpty Then
-                Stady = 44
                 tvwMain.Nodes.Remove sUsernames(L) & "PoliciesUser"
             End If
         End If
@@ -1839,7 +1794,7 @@ Public Sub RegEnumPolicies(tvwMain As TreeView)
     AppendErrorLogCustom "RegEnumPoliciesError - End"
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "RegEnumPolicies", "Stady: " & Stady & ", Iteration: [K] = " & k, " [J] = " & j & " [i] = " & i & " [L] = " & L
+    ErrorMsg Err, "RegEnumPolicies", "Iteration: [K] = " & k, " [J] = " & j & " [i] = " & i & " [L] = " & L
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -1857,7 +1812,7 @@ Public Sub RegEnumDrivers32(tvwMain As TreeView)
     sDriverKeys = Split(RegEnumValues(HKEY_LOCAL_MACHINE, sDrivers), "|")
     For i = 0 To UBound(sDriverKeys)
         tvwMain.Nodes.Add "Drivers32", tvwChild, "Drivers32" & i, sDriverKeys(i), "dll", "dll"
-        tvwMain.Nodes("Drivers32" & i).Tag = GuessFullpathFromAutorun(Mid$(sDriverKeys(i), InStrRev(sDriverKeys(i), " = ") + 3))
+        tvwMain.Nodes("Drivers32" & i).Tag = GuessFullpathFromAutorun(mid$(sDriverKeys(i), InStrRev(sDriverKeys(i), " = ") + 3))
         If bSL_Abort Then Exit Sub
     Next i
     
@@ -1867,7 +1822,7 @@ Public Sub RegEnumDrivers32(tvwMain As TreeView)
     sDriverKeys = Split(RegEnumValues(HKEY_LOCAL_MACHINE, sDrivers & "\Terminal Server\RDP"), "|")
     For i = 0 To UBound(sDriverKeys)
         tvwMain.Nodes.Add "Drivers32RDP", tvwChild, "Drivers32RDP" & i, sDriverKeys(i), "dll", "dll"
-        tvwMain.Nodes("Drivers32RDP" & i).Tag = GuessFullpathFromAutorun(Mid$(sDriverKeys(i), InStrRev(sDriverKeys(i), " = ") + 3))
+        tvwMain.Nodes("Drivers32RDP" & i).Tag = GuessFullpathFromAutorun(mid$(sDriverKeys(i), InStrRev(sDriverKeys(i), " = ") + 3))
     Next i
     
     If tvwMain.Nodes("Drivers32RDP").Children > 0 Then
@@ -1911,7 +1866,7 @@ Private Function EnumSubKeysTree$(lHive&, sRootKey$)
         Loop
         RegCloseKey hKey
     End If
-    If sList <> vbNullString Then EnumSubKeysTree = Mid$(Replace$(sList, "||", "|"), 2)
+    If sList <> vbNullString Then EnumSubKeysTree = mid$(Replace$(sList, "||", "|"), 2)
     
     AppendErrorLogCustom "EnumSubKeysTree - End"
     Exit Function
@@ -2010,7 +1965,7 @@ Private Function EnumSubKeys$(lHive&, sKey$)
         Loop
         RegCloseKey hKey
     End If
-    If sList <> vbNullString Then EnumSubKeys = Mid$(sList, 2)
+    If sList <> vbNullString Then EnumSubKeys = mid$(sList, 2)
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "EnumSubKeys"
@@ -2063,7 +2018,7 @@ Private Function RegEnumValues$(lHive&, sKey$, Optional bNullSep As Boolean = Fa
         Loop
         RegCloseKey hKey
     End If
-    If sList <> vbNullString Then RegEnumValues = Mid$(sList, 2)
+    If sList <> vbNullString Then RegEnumValues = mid$(sList, 2)
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "RegEnumValues"
@@ -2098,7 +2053,7 @@ Private Function RegEnumDwordValues$(lHive&, sKey$)
         Loop
         RegCloseKey hKey
     End If
-    If sList <> vbNullString Then RegEnumDwordValues = Mid$(sList, 2)
+    If sList <> vbNullString Then RegEnumDwordValues = mid$(sList, 2)
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "RegEnumDwordValues"

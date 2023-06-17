@@ -311,7 +311,6 @@ Const ch_DotDot                 As String = ".."
 Const ch_SlashAsterisk          As String = "\*"
 
 Private lWow64Old               As Long
-'Private DriveTypeName           As New Collection
 Private arrPathFolders()        As String
 Private arrPathFiles()          As String
 Private Total_Files             As Long
@@ -321,8 +320,6 @@ Private Total_Folders           As Long
 Public Function FileExists(ByVal sFile As String, Optional bUseWow64 As Boolean, Optional bAllowNetwork As Boolean) As Boolean
     On Error GoTo ErrorHandler:
     
-    Static bLastFile(2) As String, bLastStatus(2) As Boolean
-    Dim bIsWinSysDir As Boolean
     Dim pos As Long
     
     AppendErrorLogCustom "FileExists - Begin", "File: " & sFile
@@ -334,7 +331,6 @@ Public Function FileExists(ByVal sFile As String, Optional bUseWow64 As Boolean,
     'ADS?
     pos = InStr(4, sFile, ":")
     If pos Then sFile = Left$(sFile, pos - 1)
-    '// TODO add checking if stream exists
     
     sFile = EnvironW(Trim$(sFile))
     If Len(sFile) = 0 Then GoTo ExitFunc
@@ -344,66 +340,30 @@ Public Function FileExists(ByVal sFile As String, Optional bUseWow64 As Boolean,
         End If
     End If
     
-    'little cache stack :)
+    'cache
     If bScanMode Then ' used only in HJT Checking mode. This flag has set in "StartScan" function
-        If StrComp(sFile, bLastFile(2), 1) = 0 Then FileExists = bLastStatus(2): GoTo ExitFunc
-        If StrComp(sFile, bLastFile(1), 1) = 0 Then FileExists = bLastStatus(1): GoTo ExitFunc
-        If StrComp(sFile, bLastFile(0), 1) = 0 Then FileExists = bLastStatus(0): GoTo ExitFunc
-        
-        'advanced cache - to minimize future numbers of file system redirector calls
-
-        If StrComp(Left$(sFile, Len(sWinSysDir)), sWinSysDir, vbTextCompare) = 0 Then
-            bIsWinSysDir = True
-            If oDictFileExist.Exists(sFile) Then
-                FileExists = oDictFileExist(sFile)
-                GoTo Finalize
-            End If
+        If oDictFileExist.Exists(sFile) Then
+            FileExists = oDictFileExist(sFile)
+            GoTo ExitFunc
         End If
     End If
     
-    ' use 2 methods for reliability reason (both supported unicode pathes)
-    Dim Ex(1) As Boolean
     Dim ret As Long
     Dim Redirect As Boolean, bOldStatus As Boolean
-    Dim WFD     As WIN32_FIND_DATA
-    Dim hFile   As Long
     
     If Not bUseWow64 Then Redirect = ToggleWow64FSRedirection(False, sFile, bOldStatus)
     
     ret = GetFileAttributes(StrPtr(sFile))
     If Err.LastDllError = 5 Or (ret <> INVALID_FILE_ATTRIBUTES And (0 = (ret And FILE_ATTRIBUTE_DIRECTORY))) Then
-        Ex(0) = True
+        FileExists = True
     End If
     
-    If Not bAutoLogSilent Then
-        hFile = FindFirstFile(StrPtr(sFile), WFD)
-        
-        If hFile <> INVALID_HANDLE_VALUE Then
-            If Not CBool(WFD.dwFileAttributes And vbDirectory) And WFD.dwFileAttributes <> INVALID_FILE_ATTRIBUTES Then Ex(1) = True
-            FindClose hFile
-        End If
-    End If
-    
-    '// FS redirection reverting if need
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     
-    FileExists = Ex(0) Or Ex(1)
-
-    If bIsWinSysDir Then
+    If bScanMode Then
         oDictFileExist.Add sFile, FileExists
     End If
 
-Finalize:
-
-    'shift cache stack
-    bLastFile(0) = bLastFile(1)
-    bLastFile(1) = bLastFile(2)
-    bLastFile(2) = sFile
-    
-    bLastStatus(0) = bLastStatus(1)
-    bLastStatus(1) = bLastStatus(2)
-    bLastStatus(2) = FileExists
-    
 ExitFunc:
     AppendErrorLogCustom "FileExists - End", "File: " & sFile, "bUseWow64: " & bUseWow64, "Exists: " & FileExists
     Exit Function
@@ -1346,7 +1306,7 @@ End Function
 Public Function GetFilePropCompany(sFilename As String) As String
     On Error GoTo ErrorHandler:
     Dim hData&, lDataLen&, uBuf() As Byte, uCodePage(0 To 3) As Byte
-    Dim sCodePage$, sCompanyName$, Stady&, Redirect As Boolean, bOldStatus As Boolean
+    Dim sCodePage$, sCompanyName$, Redirect As Boolean, bOldStatus As Boolean
     
     If Not FileExists(sFilename) Then Exit Function
     
@@ -1383,7 +1343,7 @@ Finalize:
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "GetFilePropCompany", sFilename, "DataLen: ", lDataLen, "hData: ", hData, "sCodePage: ", sCodePage, _
-        "Buf: ", uCodePage(0), uCodePage(1), uCodePage(2), uCodePage(3), "Stady: ", Stady
+        "Buf: ", uCodePage(0), uCodePage(1), uCodePage(2), uCodePage(3)
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     If inIDE Then Stop: Resume Next
 End Function
@@ -1519,7 +1479,7 @@ Public Function DirW( _
     
     Exit Function
 ErrorHandler:
-    Debug.Print Err; Err.Description; "DirW"
+    If inIDE Then Debug.Print Err; Err.Description; "DirW"
 End Function
 
 Public Function GetEmptyName(ByVal sFullPath As String) As String
@@ -1875,7 +1835,7 @@ Public Function GetDrives(Optional DriveTypeBit As DRIVE_TYPE_BIT = DRIVE_BIT_AN
     
     Exit Function
 ErrorHandler:
-    Debug.Print Now, Err, "modFile.GetDrives"
+    If inIDE Then Debug.Print Now, Err, "modFile.GetDrives"
 End Function
 
 
@@ -2366,7 +2326,11 @@ Public Function WriteDataToFile(sFile As String, sContents As String, Optional i
     Redirect = ToggleWow64FSRedirection(False, sFile, bOldStatus)
     
     iAttr = GetFileAttributes(StrPtr(sFile))
-    If (iAttr And FILE_ATTRIBUTE_COMPRESSED) Then iAttr = iAttr And Not FILE_ATTRIBUTE_COMPRESSED
+    If iAttr = INVALID_FILE_ATTRIBUTES Then
+        iAttr = FILE_ATTRIBUTE_ARCHIVE
+    Else
+        If (iAttr And FILE_ATTRIBUTE_COMPRESSED) Then iAttr = iAttr And Not FILE_ATTRIBUTE_COMPRESSED
+    End If
     
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     
@@ -2520,8 +2484,58 @@ ErrorHandler:
 End Function
 
 
+Public Function CopyFolderContents(ByVal sFolder$, ByVal sTo$, Optional Recursive As Boolean = True) As Boolean
+    On Error GoTo ErrorHandler
+    
+    Dim SubPathName     As String
+    Dim PathName        As String
+    Dim hFind           As Long
+    Dim L               As Long
+    Dim lpSTR           As Long
+    Dim fd              As WIN32_FIND_DATA
+    
+    MkDirW sTo
+    
+    Do
+        If hFind <> 0& Then
+            If FindNextFile(hFind, fd) = 0& Then FindClose hFind: Exit Do
+        Else
+            hFind = FindFirstFile(StrPtr(sFolder & "\*"), fd)
+            If hFind = INVALID_HANDLE_VALUE Then Exit Do
+        End If
+        
+        If hFind <> 0& Then
+            lpSTR = VarPtr(fd.dwReserved1) + 4&
+            PathName = Space$(lstrlen(lpSTR))
+            lstrcpy StrPtr(PathName), lpSTR
+            
+            If fd.dwFileAttributes And vbDirectory Then
+                If Recursive Then
+                    If PathName <> "." And PathName <> ".." Then
+                        SubPathName = sFolder & "\" & PathName
+                        Call CopyFolderContents(SubPathName, sTo & "\" & PathName, True)
+                    End If
+                End If
+            Else
+                FileCopyW sFolder & "\" & PathName, sTo & "\" & PathName
+            End If
+        End If
+        
+    Loop While hFind
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "CopyFolderContents", sFolder, " => ", sTo, ", recursive? " & Recursive
+    If inIDE Then Stop: Resume Next
+End Function
 
-Public Function FindOnPath(ByVal sAppName As String, Optional bUseSourceValueOnFailure As Boolean, Optional sAdditionalDir As String) As String
+
+Public Function FindOnPath( _
+    ByVal sAppName As String, _
+    Optional bUseSourceValueOnFailure As Boolean, _
+    Optional sAdditionalDir As String, _
+    Optional out_bFound As Boolean) As String
+    
     On Error GoTo ErrorHandler:
     
     '// TODO:
@@ -2561,6 +2575,7 @@ Public Function FindOnPath(ByVal sAppName As String, Optional bUseSourceValueOnF
     If bFullPath Then
         If FileExists(sAppName) Then
             FindOnPath = sAppName
+            out_bFound = True
             Exit Function
         End If
     Else
@@ -2568,6 +2583,7 @@ Public Function FindOnPath(ByVal sAppName As String, Optional bUseSourceValueOnF
             sFileTry = BuildPath(sAdditionalDir, sAppName)
             If FileExists(sFileTry) Then
                 FindOnPath = sFileTry
+                out_bFound = True
                 Exit Function
             End If
         End If
@@ -2584,6 +2600,7 @@ Public Function FindOnPath(ByVal sAppName As String, Optional bUseSourceValueOnF
 
             If FileExists(sFileTry) Then
                 FindOnPath = sFileTry
+                out_bFound = True
                 Exit Function
             End If
         Next
@@ -2591,13 +2608,14 @@ Public Function FindOnPath(ByVal sAppName As String, Optional bUseSourceValueOnF
         ToggleWow64FSRedirection False
 
         If InStr(sAppName, ".") <> 0 Then
-            ProcPath = Space$(MAX_PATH)
+            ProcPath = String$(MAX_PATH, 0&)
             LSet ProcPath = sAppName & vbNullChar
         
             If CBool(PathFindOnPath(StrPtr(ProcPath), 0&)) Then
                 FindOnPath = TrimNull(ProcPath)
                 If FileExists(FindOnPath) Then 'if not a folder
                     bSuccess = True
+                    out_bFound = True
                 End If
             End If
         End If
@@ -2613,6 +2631,9 @@ Public Function FindOnPath(ByVal sAppName As String, Optional bUseSourceValueOnF
 
                 If CBool(PathFindOnPath(StrPtr(ProcPath), 0&)) Then
                     FindOnPath = TrimNull(ProcPath)
+                    If FileExists(FindOnPath) Then
+                        out_bFound = True
+                    End If
                     Exit For
                 End If
                 
@@ -2630,6 +2651,7 @@ Public Function FindOnPath(ByVal sAppName As String, Optional bUseSourceValueOnF
         If 0 <> Len(sFile) Then
             If FileExists(sFile) Then
                 FindOnPath = sFile
+                out_bFound = True
             End If
         End If
     End If
@@ -2639,13 +2661,14 @@ Public Function FindOnPath(ByVal sAppName As String, Optional bUseSourceValueOnF
         If StrBeginWith(sAppName, "\systemroot") Then
             sFile = Replace$(sAppName, "\systemroot", sWinDir, , 1, vbTextCompare)
         ElseIf StrBeginWith(sAppName, "system32\") Then
-            sFile = sWinDir & "\" & sAppName
+            sFile = sWinDir & "\" & sAppName 'not mistake
         ElseIf StrBeginWith(sAppName, "SysWOW64\") Then
-            sFile = sWinDir & "\" & sAppName
+            sFile = sWinDir & "\" & sAppName 'not mistake
         End If
         
         If FileExists(sFile) Then
             FindOnPath = sFile
+            out_bFound = True
         End If
     End If
 
@@ -2654,7 +2677,7 @@ Public Function FindOnPath(ByVal sAppName As String, Optional bUseSourceValueOnF
     End If
     
     AppendErrorLogCustom "FindOnPath - End"
-
+    
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "FindOnPath", "AppName: ", sAppName
@@ -2712,6 +2735,7 @@ Public Sub SplitIntoPathAndArgs(ByVal InLine As String, Path As String, Optional
             Args = Trim$(mid$(InLine, pos + 1))
         Else
             Path = mid$(InLine, 2)
+            Args = vbNullString
         End If
     Else
         '//TODO: Check correct system behaviour: maybe it uses number of 'space' characters, like, if more than 1 'space', exec bIsRegistryData routine.
@@ -2719,6 +2743,7 @@ Public Sub SplitIntoPathAndArgs(ByVal InLine As String, Path As String, Optional
         If bIsRegistryData Then
             If FileExists(InLine) Then
                 Path = InLine
+                Args = vbNullString
                 Exit Sub
             End If
             'Expanding paths like: C:\Program Files (x86)\Download Master\dmaster.exe -autorun
@@ -2744,6 +2769,7 @@ Public Sub SplitIntoPathAndArgs(ByVal InLine As String, Path As String, Optional
                 Args = mid$(InLine, pos + 1)
             Else
                 Path = InLine
+                Args = vbNullString
             End If
         End If
     End If
@@ -2755,15 +2781,6 @@ Public Sub SplitIntoPathAndArgs(ByVal InLine As String, Path As String, Optional
             Else
                 Path = InLine
                 Args = vbNullString
-            End If
-        End If
-    End If
-    
-    'Anti-HJT-hijack :)
-    If Len(Args) <> 0 Then
-        If InStr(1, Args, "(Microsoft)", 1) <> 0 Then
-            If Not IsMicrosoftFile(Path) Then
-                Args = Args & " <== not a Microsoft !!!"
             End If
         End If
     End If
@@ -2815,8 +2832,16 @@ Public Function DeleteFolderForce(sFolder As String, Optional bForceDeleteMicros
         DeleteFolderForce = True
         bRedirect = ToggleWow64FSRedirection(False, sFolder, bOldStatus)
         iAttr = GetFileAttributes(StrPtr(sFolder))
-        If (iAttr And FILE_ATTRIBUTE_COMPRESSED) Then iAttr = iAttr - FILE_ATTRIBUTE_COMPRESSED
-        If iAttr And FILE_ATTRIBUTE_READONLY Then SetFileAttributes StrPtr(sFolder), iAttr And Not FILE_ATTRIBUTE_READONLY
+        If iAttr <> INVALID_FILE_ATTRIBUTES Then
+            If (iAttr And FILE_ATTRIBUTE_COMPRESSED) Then
+                iAttr = iAttr - FILE_ATTRIBUTE_COMPRESSED
+                SetFileAttributes StrPtr(sFolder), iAttr
+            End If
+            If iAttr And FILE_ATTRIBUTE_READONLY Then
+                iAttr = iAttr - FILE_ATTRIBUTE_READONLY
+                SetFileAttributes StrPtr(sFolder), iAttr
+            End If
+        End If
         If Not DeleteFolder(sFolder) Then
             TryUnlock sFolder, True
             SetFileAttributes StrPtr(sFolder), iAttr And Not FILE_ATTRIBUTE_READONLY
@@ -3209,7 +3234,7 @@ Public Function GetFileSymlinkTarget(sPath As String) As String
     
     Dim hFile           As Long
     Dim returnedLength  As Long
-    Dim Status          As Long
+    Dim status          As Long
     Dim DeviceObjName   As String
     Dim objName(1000)   As Integer
     
@@ -3223,9 +3248,9 @@ Public Function GetFileSymlinkTarget(sPath As String) As String
         '    WCHAR                   NameBuffer[0];
         '}
         
-        Status = NtQueryObject(hFile, ObjectNameInformation, objName(0), UBound(objName) * 2, returnedLength)
+        status = NtQueryObject(hFile, ObjectNameInformation, objName(0), UBound(objName) * 2, returnedLength)
         
-        If NT_SUCCESS(Status) And objName(0) > 0 Then
+        If NT_SUCCESS(status) And objName(0) > 0 Then
             DeviceObjName = StringFromPtrW(VarPtr(objName(4)))
             GetFileSymlinkTarget = GetDOSFilename(ConvertDosDeviceToDriveName(DeviceObjName), True)
         End If
@@ -3359,7 +3384,7 @@ Public Function CreateFileStream(sPath As String, sStreamName As String, binData
     Dim OA As OBJECT_ATTRIBUTES
     Dim NtName As UNICODE_STRING
     Dim iosb As IO_STATUS_BLOCK
-    Dim Status As Long
+    Dim status As Long
     Dim fp As Long, rn As Long
     
     If RtlDosPathNameToNtPathName_U(StrPtr("\??\" & sPath & ":" & sStreamName), NtName, fp, rn) = 0 Then Exit Function
@@ -3370,7 +3395,7 @@ Public Function CreateFileStream(sPath As String, sStreamName As String, binData
         .Attributes = OBJ_CASE_INSENSITIVE
     End With
     
-    Status = NtCreateFile(hFile, _
+    status = NtCreateFile(hFile, _
         GENERIC_READ Or GENERIC_WRITE Or SYNCHRONIZE, _
         OA, _
         iosb, _
@@ -3382,19 +3407,15 @@ Public Function CreateFileStream(sPath As String, sStreamName As String, binData
         0&, _
         0&)
     
-    If Status = STATUS_SUCCESS And hFile <> -1 Then
+    If status = STATUS_SUCCESS And hFile <> -1 Then
 
-        Status = NtWriteFile(hFile, ByVal 0, ByVal 0, ByVal 0, iosb, VarPtr(binData(0)), UBound(binData) + 1, ByVal 0, ByVal 0)
+        status = NtWriteFile(hFile, ByVal 0, ByVal 0, ByVal 0, iosb, VarPtr(binData(0)), UBound(binData) + 1, ByVal 0, ByVal 0)
         
-        If Status = STATUS_SUCCESS Then
+        If status = STATUS_SUCCESS Then
             CreateFileStream = True
-        Else
-            Debug.Print "NtWriteFile failed. Status: 0x" & Hex(Status)
         End If
         
         NtClose hFile
-    Else
-        Debug.Print "NtCreateFile failed. Status: 0x" & Hex(Status)
     End If
     
     RtlFreeUnicodeString NtName
@@ -3407,3 +3428,10 @@ Public Function RenameFile(sOriginalPath As String, sNewPath As String, bOverwri
     RenameFile = MoveFile(StrPtr(sOriginalPath), StrPtr(sNewPath))
 End Function
 
+Public Function GetPathFromIconString(sIconStr As String) As String
+    Dim pos As Long
+    pos = InStrRev(sIconStr, ",")
+    If pos > 1 Then
+        GetPathFromIconString = UnQuote(Left$(sIconStr, pos - 1))
+    End If
+End Function

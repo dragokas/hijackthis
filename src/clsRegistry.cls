@@ -2881,7 +2881,7 @@ Public Function GetKeyRedirectionType( _
     If Len(sNtName1) = 0 Then
         'unknown error
         GetKeyRedirectionType = GetKeyRedirectionType Or KEY_REDIRECTION_NOT_APPLIED
-        Debug.Print "Error in GetKeyRedirectionType when open hKey1"
+        If inIDE Then Debug.Print "Error in GetKeyRedirectionType when open hKey1"
         Exit Function
     End If
     
@@ -2931,7 +2931,7 @@ Public Function GetKeyRedirectionType( _
                             sKeyWOW = Replace$(sKeyWOW, "_CLASSES\", "_CLASSES\Wow6432Node\", 1, 1, 1)
                         Else
                             'unknown error. <SID>_CLASSES should always be there. Possible, an unknown symlink (?)
-                            Debug.Print "No <SID>_CLASSES node in phisical registry path after quering by RegGetKeyInfoNameEx. Key: " & sKey
+                            If inIDE Then Debug.Print "No <SID>_CLASSES node in phisical registry path after quering by RegGetKeyInfoNameEx. Key: " & sKey
                         End If
                     End If
                 End If
@@ -2942,7 +2942,7 @@ Public Function GetKeyRedirectionType( _
                         sKeyWOW = "SOFTWARE\Wow6432Node\" & mid$(sNtName1, pos + Len("SOFTWARE\"))
                     Else
                         'unknown error. SOFTWARE should always be there. Possible, an unknown symlink (?)
-                        Debug.Print "No SOFTWARE node in phisical registry path after quering by RegGetKeyInfoNameEx. Key: " & sKey
+                        If inIDE Then Debug.Print "No SOFTWARE node in phisical registry path after quering by RegGetKeyInfoNameEx. Key: " & sKey
                     End If
                 End If
                 
@@ -3060,7 +3060,7 @@ Public Function NtGetKeyRedirectionType( _
     If Len(sNtName1) = 0 Then
         'unknown error
         NtGetKeyRedirectionType = NtGetKeyRedirectionType Or KEY_REDIRECTION_NOT_APPLIED
-        Debug.Print "Error in NtGetKeyRedirectionType when open hKey1"
+        If inIDE Then Debug.Print "Error in NtGetKeyRedirectionType when open hKey1"
         Exit Function
     End If
     
@@ -3110,7 +3110,7 @@ Public Function NtGetKeyRedirectionType( _
                             sKeyWOW = Replace$(sKeyWOW, "_CLASSES\", "_CLASSES\Wow6432Node\", 1, 1, 1)
                         Else
                             'unknown error. <SID>_CLASSES should always be there. Possible, an unknown symlink (?)
-                            Debug.Print "No <SID>_CLASSES node in phisical registry path after quering by RegGetKeyInfoNameEx. Key: " & sKey
+                            If inIDE Then Debug.Print "No <SID>_CLASSES node in phisical registry path after quering by RegGetKeyInfoNameEx. Key: " & sKey
                         End If
                     End If
                 End If
@@ -3121,7 +3121,7 @@ Public Function NtGetKeyRedirectionType( _
                         sKeyWOW = "SOFTWARE\Wow6432Node\" & mid$(sNtName1, pos + Len("SOFTWARE\"))
                     Else
                         'unknown error. SOFTWARE should always be there. Possible, an unknown symlink (?)
-                        Debug.Print "No SOFTWARE node in phisical registry path after quering by RegGetKeyInfoNameEx. Key: " & sKey
+                        If inIDE Then Debug.Print "No SOFTWARE node in phisical registry path after quering by RegGetKeyInfoNameEx. Key: " & sKey
                     End If
                 End If
                 
@@ -3453,7 +3453,7 @@ Private Sub KeyShowInfo(hHive As ENUM_REG_HIVE, sSubKey As String, hFile As Long
     sLog = "HKLM\" & sSubKey & " => " & IIf(bExist, " (exist, handle = " & hKey & ")", "(not exist, handle = " & hKey & ")") & _
         IIf(Len(sSymTarget) <> 0, " => (symlink) " & sSymTarget, vbNullString)
 
-    Debug.Print sLog
+    If inIDE Then Debug.Print sLog
 End Sub
 
 'returns Win API Status code of the last operation requested in this class

@@ -363,7 +363,7 @@ Private Sub Class_Initialize()
     Dim dwMinor         As Long
     Dim dwBuild         As Long
     
-    inIDE = (App.LogMode = 0)
+    Debug.Assert MakeTrue(inIDE)
     
     m_Pid = GetCurrentProcessId()
     
@@ -1134,7 +1134,7 @@ Private Function GetIntegrityLevel(Optional hProcess As Long) As String
                                     ElseIf dwIntegrityLevel And SECURITY_MANDATORY_SECURE_PROCESS_RID Then
                                         sLevel = "Secure Process"
                                     Else
-                                        sLevel = "Unknown (Level: 0x" & Hex(dwIntegrityLevel) & ")"
+                                        sLevel = "Unknown (Level: 0x" & Hex$(dwIntegrityLevel) & ")"
                                     End If
                             End Select
                         End If
@@ -1939,3 +1939,8 @@ End Property
 Public Property Get CurrentProcessId() As Long
     CurrentProcessId = m_Pid
 End Property
+
+Private Function MakeTrue(ByRef bValue As Boolean) As Boolean
+    MakeTrue = True
+    bValue = True
+End Function

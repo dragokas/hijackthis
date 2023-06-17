@@ -310,17 +310,17 @@ Private Sub cmdGo_Click()
         If Left$(vPath, 1) = """" Then
             pos = InStr(2, vPath, """")
             If pos <> 0 Then
-                vPath = Mid$(vPath, 2, pos - 2)
+                vPath = mid$(vPath, 2, pos - 2)
             Else
-                vPath = Mid$(vPath, 2)
+                vPath = mid$(vPath, 2)
             End If
         End If
         vPath = Replace$(vPath, "\\", "\")
-        If Mid$(vPath, 2, 1) <> ":" Then
+        If mid$(vPath, 2, 1) <> ":" Then
             'try to remove some remnants from beginning of line
             pos = InStr(vPath, ":\")
             If pos > 1 Then
-                vPath = Mid$(vPath, pos - 1)
+                vPath = mid$(vPath, pos - 1)
             End If
         End If
         
@@ -389,7 +389,7 @@ Private Sub cmdGo_Click()
     
     AddFlags = SV_DisableLazyCatCheck
     
-    If oDictFiles.Count > 100 Then
+    If oDictFiles.Count > 1000 Then
         AddFlags = AddFlags Or SV_EnableHashPrecache
         
         DoEvents
@@ -529,7 +529,9 @@ Private Sub cmdGo_Click()
                 sb.Append ";" & IIf(.isMicrosoftSign, "Microsoft", "no")   'IsMicrosoft
                 sb.Append ";" & IIf(bWPF, "protected", "no")   'WPF / SFC
                 sb.Append ";" & IIf(bPE_File, "PE", "no")  'PE
+                sb.Append ";" & .IssuerRoot
                 sb.Append ";" & .Issuer
+                sb.Append ";" & .SubjectNameFriendly
                 sb.Append ";" & .SubjectName
                 sb.Append ";" & .SubjectEmail
                 sb.Append ";" & IIf(.ReturnCode = TRUST_E_NOSIGNATURE, vbNullString, IIf(.isSignedByCert, "Certificate", "Internal"))  'Embedded Sign?
@@ -539,7 +541,8 @@ Private Sub cmdGo_Click()
                 sb.Append ";" & .HashFileCode
                 sb.Append ";" & .AlgorithmCertHash
                 sb.Append ";" & .AlgorithmSignDigest
-                sb.Append ";" & .ReturnCode
+                sb.Append ";0x" & Hex$(.ReturnCode)
+                sb.Append ";0x" & Hex$(.ApiErrorCode)
                 sb.Append ";" & .ShortMessage
                 sb.Append ";" & .FullMessage
                 sb.Append ";" & IIf(.DateTimeStamp = #12:00:00 AM#, vbNullString, Format$(.DateTimeStamp, "yyyy\/MM\/dd HH:nn:ss"))
@@ -569,17 +572,20 @@ Private Sub cmdGo_Click()
         sb.Append ";" & "Microsoft signature?"
         sb.Append ";" & "WPF / SFC"
         sb.Append ";" & "is PE"
+        sb.Append ";" & "Root Issuer"
         sb.Append ";" & "Issuer"
+        sb.Append ";" & "Signer name (friendly)"
         sb.Append ";" & "Signer name"
         sb.Append ";" & "Signer email"
         sb.Append ";" & "Signature location"
         sb.Append ";" & "Has internal signature?"
         sb.Append ";" & "Catalog path"
-        sb.Append ";" & "Hash of root certificate"
+        sb.Append ";" & "Hash of root certificate (fingerprint)"
         sb.Append ";" & "PE hash"
         sb.Append ";" & "Algorithm of certificate hash"
         sb.Append ";" & "Algorithm of signature digest"
         sb.Append ";" & "Result code"
+        sb.Append ";" & "API error code"
         sb.Append ";" & "Result message (short)"
         sb.Append ";" & "Result message (full)"
         sb.Append ";" & "Time Stamp"
@@ -702,6 +708,8 @@ Private Sub Form_Load()
         Next
         Set OptB = Nothing
     End If
+    
+    SubClassTextbox Me.txtPaths.hwnd, True
 End Sub
 
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
@@ -718,6 +726,8 @@ Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
             Cancel = True
             Me.Hide
         End If
+    Else
+        SubClassTextbox Me.txtPaths.hwnd, False
     End If
 End Sub
 

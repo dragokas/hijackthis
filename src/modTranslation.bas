@@ -837,7 +837,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                                     Case "0173": .cmdProcManKill.Caption = Translation
                                     Case "0174": .cmdProcManRefresh.Caption = Translation
                                     Case "0175": .cmdProcManRun.Caption = Translation
-                                    Case "0176": .cmdProcManBack.Caption = Translation
+                                    Case "0176": .cmdProcManExit.Caption = Translation
                                     Case "0177": .lblProcManDblClick.Caption = Translation
                                 End Select
                             End With
@@ -1064,9 +1064,9 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
     End With
     SecondChance = False
     
-    Dim Frm As Form
-    For Each Frm In Forms
-        Frm.Refresh
+    Dim frm As Form
+    For Each frm In Forms
+        frm.Refresh
     Next
     
     'EnableMenuItem m_RootMenu, 4, MF_DISABLED Or MF_BYPOSITION
@@ -1096,18 +1096,18 @@ ErrorHandler:
     End If
 End Sub
 
-Public Function IsFormForeground(Frm As Form) As Boolean
+Public Function IsFormForeground(frm As Form) As Boolean
     Dim hActiveWnd As Long
-    If IsFormInit(Frm) Then
+    If IsFormInit(frm) Then
         hActiveWnd = GetForegroundWindow()
-        If hActiveWnd = Frm.hwnd Then IsFormForeground = True
+        If hActiveWnd = frm.hwnd Then IsFormForeground = True
     End If
 End Function
 
-Public Function IsFormInit(Frm As Form) As Boolean
+Public Function IsFormInit(frm As Form) As Boolean
     Dim cForm As Form
     For Each cForm In Forms
-        If cForm Is Frm Then
+        If cForm Is frm Then
             IsFormInit = True
             Exit For
         End If

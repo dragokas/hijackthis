@@ -567,7 +567,7 @@ Public Function CreateBufferedSID(SidString As String) As Byte()
     
     If 0 = ConvertStringSidToSid(StrPtr(SidString), pSid) Then  ' * -> *
         If Not StrBeginWith(SidString, "Sandbox_") Then
-            Debug.Print "ErrorHandler: ConvertStringSidToSidW failed with code: " & Err.LastDllError & ". Input buffer: " & SidString
+            If inIDE Then Debug.Print "ErrorHandler: ConvertStringSidToSidW failed with code: " & Err.LastDllError & ". Input buffer: " & SidString
         End If
     Else
         If IsValidSid(pSid) Then
@@ -662,11 +662,11 @@ Public Function RegKeySetOwnerShip(lHive&, ByVal KeyName$, SidString As String, 
         If lret = ERROR_SUCCESS Then
             
             RegKeySetOwnerShip = True
-            Debug.Print KeyName & " - OwnerShip granted successfully."
+            If inIDE Then Debug.Print KeyName & " - OwnerShip granted successfully."
         
         Else
 
-            Debug.Print KeyName & " - Error in SetSecurityInfo: " & lret
+            If inIDE Then Debug.Print KeyName & " - Error in SetSecurityInfo: " & lret
             
         End If
         
@@ -675,7 +675,7 @@ Public Function RegKeySetOwnerShip(lHive&, ByVal KeyName$, SidString As String, 
     
     Exit Function
 ErrorHandler:
-    Debug.Print "Error in RegSetOwnerShip", Err, Err.Description
+    If inIDE Then Debug.Print "Error in RegSetOwnerShip", Err, Err.Description
 End Function
 
 
@@ -905,7 +905,7 @@ Public Function RegKeyResetDACL(lHive&, ByVal KeyName$, Optional bUseWow64 As Bo
                                 0&, 0&, pNewDacl, 0&) Then
                                 
                                 RegKeyResetDACL = True
-                                Debug.Print KeyName & " - Permissions granted successfully."
+                                If inIDE Then Debug.Print KeyName & " - Permissions granted successfully."
                                 
                                 If Recursive Then
                                 
@@ -968,11 +968,13 @@ Public Function RegKeyResetDACL(lHive&, ByVal KeyName$, Optional bUseWow64 As Bo
     
     End If
     
-    If Not RegKeyResetDACL Then Debug.Print KeyName & " - Failed to grant permissions!"
+    If Not RegKeyResetDACL Then
+        If inIDE Then Debug.Print KeyName & " - Failed to grant permissions!"
+    End If
 
     Exit Function
 ErrorHandler:
-    Debug.Print "Error in SetDACL", Err, Err.Description
+    If inIDE Then Debug.Print "Error in SetDACL", Err, Err.Description
 End Function
 
 'returns ptr to new ACL
@@ -1035,7 +1037,7 @@ Private Function GetHKey(ByVal HKeyName As String) As Long 'Get handle of main h
     End Select
     Exit Function
 ErrorHandler:
-    Debug.Print "Error in GetHKey"; Err; Err.Description
+    If inIDE Then Debug.Print "Error in GetHKey"; Err; Err.Description
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -1366,9 +1368,11 @@ Public Function SetFileStringSD(sObject As String, StrSD As String, Optional bRe
         
         iAttr = GetFileAttributes(StrPtr(sObject))
         
-        If (iAttr And FILE_ATTRIBUTE_READONLY) Then
-            iAttr = iAttr - FILE_ATTRIBUTE_READONLY
-            SetFileAttributes StrPtr(sObject), iAttr
+        If (iAttr <> INVALID_FILE_ATTRIBUTES) Then
+            If (iAttr And FILE_ATTRIBUTE_READONLY) Then
+                iAttr = iAttr - FILE_ATTRIBUTE_READONLY
+                SetFileAttributes StrPtr(sObject), iAttr
+            End If
         End If
         
         ToggleWow64FSRedirection bOldRedir

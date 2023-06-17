@@ -1,12 +1,22 @@
-﻿
-$packageName = 'hijackthis'
-$installerType = 'exe'
-$url = 'https://github.com/dragokas/hijackthis/raw/devel/binary/HiJackThis.exe'
-$silentArgs = '/accepteula /install /autostart'
-$validExitCodes = @(0)
+﻿$ErrorActionPreference = 'Stop'
 
-Install-ChocolateyPackage -PackageName "$packageName" `
-                          -FileType "$installerType" `
-                          -Url "$url" `
-                          -SilentArgs "$silentArgs" `
-                          -ValidExitCodes $validExitCodes
+$packageName= 'hijackthis'
+$toolsDir   = "$(Split-Path -parent $MyInvocation.MyCommand.Definition)"
+$url        = 'https://dragokas.com/tools/HiJackThis.zip'
+$setupName  = 'HiJackThis.exe'
+
+$packageArgs = @{
+  packageName   = $packageName
+  unzipLocation = $toolsDir
+  fileType      = 'EXE'
+  url           = $url
+
+  softwareName  = 'HiJackThis+'
+  silentArgs    = '/accepteula /install /autostart'
+  validExitCodes= @(0)
+}
+
+Install-ChocolateyZipPackage @packageArgs
+
+$packageArgs.file = Join-Path -Path $toolsDir -ChildPath $setupName
+Install-ChocolateyInstallPackage @packageArgs

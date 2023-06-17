@@ -956,6 +956,8 @@ Private Sub Form_Load()
         chkQueryX32.Enabled = False
     End If
     lblProgress.Caption = vbNullString
+    
+    SubClassTextbox Me.txtKeys.hwnd, True
 End Sub
 
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
@@ -971,6 +973,8 @@ Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
             Cancel = True
             Me.Hide
         End If
+    Else
+        SubClassTextbox Me.txtKeys.hwnd, False
     End If
 End Sub
 

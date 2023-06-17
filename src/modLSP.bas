@@ -124,7 +124,7 @@ Public Function EnumWinsockProtocol$()
     
     WSACleanup
     
-    If sEnumProt <> vbNullString Then EnumWinsockProtocol = Mid$(sEnumProt, 2)
+    If sEnumProt <> vbNullString Then EnumWinsockProtocol = mid$(sEnumProt, 2)
     
     Exit Function
 ErrorHandler:
@@ -165,7 +165,7 @@ Public Function EnumWinsockNameSpace$()
 
     WSACleanup
     
-    If sEnumNamespace <> vbNullString Then EnumWinsockNameSpace = Mid$(sEnumNamespace, 2)
+    If sEnumNamespace <> vbNullString Then EnumWinsockNameSpace = mid$(sEnumNamespace, 2)
 
     Exit Function
 ErrorHandler:
@@ -234,7 +234,6 @@ Public Sub CheckLSP()
     Dim oUnknFile As clsTrickHashTable
     Dim oMissingFile As clsTrickHashTable
     Dim bSafe As Boolean, result As SCAN_RESULT
-    Dim bIsMicrosoftFile As Boolean
     
     Set oUnknFile = New clsTrickHashTable    'for removing duplicate records
     Set oMissingFile = New clsTrickHashTable
@@ -282,7 +281,7 @@ Public Sub CheckLSP()
                     sHit = "O10 - Hijacked Internet access by CommonName"
                     If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O10", sHit
                 Else
-                    sDummy = Mid$(sFile, InStrRev(sFile, "\") + 1)
+                    sDummy = mid$(sFile, InStrRev(sFile, "\") + 1)
                     
                     bSafe = False
                     If InStr(1, sSafeLSPFiles, "*" & sDummy & "*", vbTextCompare) <> 0 Then
@@ -291,9 +290,9 @@ Public Sub CheckLSP()
                     
                     If Not bSafe Or Not bHideMicrosoft Then
                         If Not oUnknFile.Exists(sFile) Then
-                            bIsMicrosoftFile = IsMicrosoftFile(sFile)
                             oUnknFile.Add sFile, 0
-                            sHit = "O10 - Unknown file in Winsock LSP: " & sFile & IIf(bIsMicrosoftFile, " (Microsoft)", vbNullString)
+                            SignVerifyJack sFile, result.SignResult
+                            sHit = "O10 - Unknown file in Winsock LSP: " & sFile & FormatSign(result.SignResult)
                             If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                             If Not IsOnIgnoreList(sHit) Then
                                 With result
@@ -340,7 +339,7 @@ Public Sub CheckLSP()
                     sHit = "O10 - Hijacked Internet access by CommonName"
                     If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O10", sHit
                 Else
-                    sDummy = LCase$(Mid$(sFile, InStrRev(sFile, "\") + 1))
+                    sDummy = LCase$(mid$(sFile, InStrRev(sFile, "\") + 1))
                     
                     bSafe = False
                     If InStr(1, sSafeLSPFiles, "*" & sDummy & "*", vbTextCompare) <> 0 Then
@@ -349,9 +348,9 @@ Public Sub CheckLSP()
                     
                     If Not bSafe Or Not bHideMicrosoft Then
                         If Not oUnknFile.Exists(sFile) Then
-                            bIsMicrosoftFile = IsMicrosoftFile(sFile)
                             oUnknFile.Add sFile, 0
-                            sHit = "O10 - Unknown file in Winsock LSP: " & sFile & IIf(bIsMicrosoftFile, " (Microsoft)", vbNullString)
+                            SignVerifyJack sFile, result.SignResult
+                            sHit = "O10 - Unknown file in Winsock LSP: " & sFile & FormatSign(result.SignResult)
                             If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                             If Not IsOnIgnoreList(sHit) Then
                                 With result
@@ -396,8 +395,20 @@ Public Sub FixLSP()
         '       "from https://www.foolishit.com/vb6-projects/winsockreset/" & vbCrLf & vbCrLf & _
         '       "Would you like to visit that site?"
         
-        If vbYes = MsgBoxW(Translate(580), vbExclamation Or vbYesNo) Then
-            ShellExecute 0&, StrPtr("open"), StrPtr("https://www.d7xtech.com/vb6-projects/winsockreset/"), 0&, 0&, 1
+        Dim sTool As String
+        Dim sSite As String
+        Dim sMsg As String
+        If OSver.IsWindows8OrGreater Then
+            sTool = "NetFix"
+            sSite = "https://www.d7xtech.com/uncle-careys-windows-10-netfix/"
+        Else
+            sTool = "WinsockReset"
+            sSite = "https://www.d7xtech.com/vb6-projects/winsockreset/"
+        End If
+        sMsg = Replace$(Translate(580), "{1}", sTool)
+        sMsg = Replace$(sMsg, "{2}", sSite)
+        If vbYes = MsgBoxW(sMsg, vbExclamation Or vbYesNo) Then
+            ShellExecute 0&, StrPtr("open"), StrPtr(sSite), 0&, 0&, 1
         End If
         bSeenLSPWarning = True
     End If

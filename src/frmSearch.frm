@@ -953,9 +953,9 @@ Private Function EscSeqToString(sStr As String) As String
             pos = InStr(pos, sStr, "\")
             If pos <> 0 And pos <> Len(sStr) Then
                 If pos > pprev Then
-                    rtn = rtn & Mid$(sStr, pprev, pos - pprev)
+                    rtn = rtn & mid$(sStr, pprev, pos - pprev)
                 End If
-                ch = Mid$(sStr, pos + 1, 1)
+                ch = mid$(sStr, pos + 1, 1)
                 Select Case ch
                 Case "["
                     pos2 = InStr(pos + 1, sStr, "]")
@@ -963,7 +963,7 @@ Private Function EscSeqToString(sStr As String) As String
                         MsgSyntaxError
                         Exit Function
                     Else
-                        sHex = Mid$(sStr, pos + 2, 4)
+                        sHex = mid$(sStr, pos + 2, 4)
                         If Not IsHex(sHex) Then
                             MsgSyntaxError
                             Exit Function
@@ -977,7 +977,7 @@ Private Function EscSeqToString(sStr As String) As String
                 Case Else: MsgSyntaxError: Exit Function
                 End Select
             Else
-                rtn = rtn & Mid$(sStr, pprev)
+                rtn = rtn & mid$(sStr, pprev)
             End If
         Loop While pos
         EscSeqToString = rtn
@@ -993,7 +993,7 @@ Private Function IsHex(sStr As String) As Boolean
     Dim Code As Long
     If Len(sStr) > 0 Then IsHex = True
     For i = 1 To Len(UCase$(sStr))
-        Code = Asc(Mid$(sStr, i, 1))
+        Code = Asc(mid$(sStr, i, 1))
         If Not ((Code >= 48 And Code <= 57) Or (Code >= 65 And Code <= 70)) Then
             IsHex = False
             Exit For
@@ -1006,7 +1006,7 @@ Private Function RegexScreen(sStr As String) As String
     Dim rtn As String
     Dim ch As String
     For i = 1 To Len(sStr)
-        ch = Mid$(sStr, i, 1)
+        ch = mid$(sStr, i, 1)
         Select Case ch
         Case "\", "^", "$", ".", "[", "]", "|", "(", ")", "?", "*", "+", "{", "}"
             rtn = rtn & "\"
@@ -1063,21 +1063,21 @@ Function GetActiveFormName(Optional frmExplicit As Form) As String
 
     Dim hActiveWnd As Long
     Dim sActiveFrm As String
-    Dim Frm As Form
+    Dim frm As Form
 
     If Not (frmExplicit Is Nothing) Then
         sActiveFrm = frmExplicit.Name
     Else
         hActiveWnd = GetForegroundWindow()
         
-        For Each Frm In Forms
-            If Frm.hwnd = hActiveWnd Then sActiveFrm = Frm.Name: Exit For
+        For Each frm In Forms
+            If frm.hwnd = hActiveWnd Then sActiveFrm = frm.Name: Exit For
         Next
         
         If sActiveFrm = "frmSearch" Then ' if search windows is already on top, get owner
             hActiveWnd = GetWindow(hActiveWnd, GW_OWNER)
-            For Each Frm In Forms
-                If Frm.hwnd = hActiveWnd Then sActiveFrm = Frm.Name: Exit For
+            For Each frm In Forms
+                If frm.hwnd = hActiveWnd Then sActiveFrm = frm.Name: Exit For
             Next
         End If
     End If
@@ -1150,4 +1150,3 @@ Function SearchAllowed(Optional frmExplicit As Form, Optional out_Control As Con
     
     SearchAllowed = bCanSearch
 End Function
-

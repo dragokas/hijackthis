@@ -1342,7 +1342,7 @@
 0570=El archivo de idioma '[]' no es válido (números de identificación ambiguos).
 0572=Archivo de idioma no válido. ¿Restablecer a los valores predeterminados (inglés)?
 0580=HiJackThis no puede reparar las entradas de LSP de O10 Winsock.
-     Use el programa WinsockReset de https://www.foolishit.com/vb6-projects/winsockreset/
+     Use el programa {1} de {2}
      
      ¿Te gustaría visitar ese sitio?
 0590=¡Ha ocurrido un error inesperado!
@@ -1843,4 +1843,4 @@
 ; ========= Empty ========
 ;
 ; (2500 - ...)
-;                                         
+;                                           

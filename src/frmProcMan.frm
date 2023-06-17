@@ -43,7 +43,7 @@ Begin VB.Form frmProcMan
          Top             =   3360
          Width           =   1215
       End
-      Begin VB.CommandButton cmdProcManBack 
+      Begin VB.CommandButton cmdProcManExit 
          Cancel          =   -1  'True
          Caption         =   "E&xit"
          Height          =   495
@@ -315,8 +315,8 @@ Public Sub SaveProcessList(objProcess As ListBox, objDLL As ListBox, Optional bD
     For i = 0 To objProcess.ListCount - 1
         sProcess = objProcess.List(i)
         sList.AppendLine sProcess & vbTab & vbTab & _
-                  GetFilePropVersion(Mid$(sProcess, InStr(sProcess, vbTab) + 1)) & vbTab & _
-                  GetFilePropCompany(Mid$(sProcess, InStr(sProcess, vbTab) + 1))
+                  GetFilePropVersion(mid$(sProcess, InStr(sProcess, vbTab) + 1)) & vbTab & _
+                  GetFilePropCompany(mid$(sProcess, InStr(sProcess, vbTab) + 1))
     Next i
     
     If bDoDLLs Then
@@ -325,7 +325,7 @@ Public Sub SaveProcessList(objProcess As ListBox, objDLL As ListBox, Optional bD
         For i = 0 To objProcess.ListCount - 1
             sProcess = objProcess.List(i)
             lPID = CLng(Left$(sProcess, InStr(sProcess, vbTab) - 1))
-            sProcess = Mid$(sProcess, InStr(sProcess, vbTab) + 1)
+            sProcess = mid$(sProcess, InStr(sProcess, vbTab) + 1)
             arList = EnumModules64(lPID)
             'DLLs loaded by process
             sList.AppendLine vbCrLf & vbCrLf & Translate(189) & " [" & lPID & "] " & sProcess & ":" & vbCrLf
@@ -370,13 +370,13 @@ Public Sub CopyProcessList(objProcess As ListBox, objDLL As ListBox, Optional bD
     For i = 0 To objProcess.ListCount - 1
         sProcess = objProcess.List(i)
         sList = sList & sProcess & vbTab & vbTab & _
-                GetFilePropVersion(Mid$(sProcess, InStr(sProcess, vbTab) + 1)) & vbTab & _
-                GetFilePropCompany(Mid$(sProcess, InStr(sProcess, vbTab) + 1)) & vbCrLf
+                GetFilePropVersion(mid$(sProcess, InStr(sProcess, vbTab) + 1)) & vbTab & _
+                GetFilePropCompany(mid$(sProcess, InStr(sProcess, vbTab) + 1)) & vbCrLf
     Next i
     
     If bDoDLLs Then
         sProcess = objProcess.List(objProcess.ListIndex)
-        sProcess = Mid$(sProcess, InStr(sProcess, vbTab) + 1)
+        sProcess = mid$(sProcess, InStr(sProcess, vbTab) + 1)
         'DLLs loaded by process
         '[full path to filename]
         '[file version]
@@ -419,7 +419,7 @@ Private Sub chkProcManShowDLLs_Click()
     Form_Resize
 End Sub
 
-Private Sub cmdProcManBack_Click()
+Private Sub cmdProcManExit_Click()
     Unload Me
 End Sub
 
@@ -429,7 +429,7 @@ Private Sub cmdProcManKill_Click()
     'sMsg = "Are you sure you want to close the selected processes?" & vbCrLf
     For i = 0 To lstProcessManager.ListCount - 1
         If lstProcessManager.Selected(i) Then
-            sMsg = Replace$(sMsg, "[]", vbCrLf & Mid$(lstProcessManager.List(i), InStr(lstProcessManager.List(i), vbTab) + 1))
+            sMsg = Replace$(sMsg, "[]", vbCrLf & mid$(lstProcessManager.List(i), InStr(lstProcessManager.List(i), vbTab) + 1))
             HasSelectedProcess = True
         End If
     Next i
@@ -556,7 +556,7 @@ Private Sub Form_Resize()
     cmdProcManKill.Top = Me.ScaleHeight - 720
     cmdProcManRefresh.Top = Me.ScaleHeight - 720
     cmdProcManRun.Top = Me.ScaleHeight - 720
-    cmdProcManBack.Top = Me.ScaleHeight - 720
+    cmdProcManExit.Top = Me.ScaleHeight - 720
     lblProcManDblClick.Top = Me.ScaleHeight - 720
 End Sub
 
@@ -607,7 +607,7 @@ Private Sub lstProcessManager_DblClick()
     Else
         s = lstProcessManager.List(lstProcessManager.ListIndex)
     End If
-    s = Mid$(s, InStr(s, vbTab) + 1)
+    s = mid$(s, InStr(s, vbTab) + 1)
     ShowFileProperties s, Me.hwnd
 End Sub
 
@@ -618,7 +618,7 @@ Private Sub lstProcManDLLs_DblClick()
     Else
         s = lstProcManDLLs.List(lstProcManDLLs.ListIndex)
     End If
-    s = Mid$(s, InStr(s, vbTab) + 1)
+    s = mid$(s, InStr(s, vbTab) + 1)
     ShowFileProperties s, Me.hwnd
 End Sub
 

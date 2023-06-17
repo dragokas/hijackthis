@@ -19,7 +19,7 @@ Attribute VB_Exposed = False
 '
 ' Version 1.4
 '
-' (c) Made by Polshyn Stanislav (Dragokas)
+' (c) Made by Alex Dragokas
 '
 ' (c) Based on PCRE2 wrapper by Jason Peter Brown (jpbro) <jason@bitspaces.com> - https://github.com/jpbro/VbPcre2
 '
@@ -729,7 +729,7 @@ Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_Regex
             End If
             
             l_SearchChunk = Left$(p_TextToSearch, l_MatchStart + l_MatchLen)
-            l_MatchText = Mid$(l_SearchChunk, l_MatchStart + 1)
+            l_MatchText = mid$(l_SearchChunk, l_MatchStart + 1)
             l_OriginalMatchText = l_MatchText
             
             If IPcre_Options.match.MatchedEventEnabled Then
@@ -797,14 +797,14 @@ Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_Regex
             If l_Delta > 0 Then
                p_TextToSearch = p_TextToSearch & Space$(l_Delta)
                
-               Mid$(p_TextToSearch, l_MatchStart + l_MatchLen + l_Delta + 1) = Mid$(p_TextToSearch, l_MatchStart + l_MatchLen + 1)
+               Mid$(p_TextToSearch, l_MatchStart + l_MatchLen + l_Delta + 1) = mid$(p_TextToSearch, l_MatchStart + l_MatchLen + 1)
                
             End If
             
             Mid$(p_TextToSearch, l_MatchStart + 1) = l_MatchText
          
             If l_Delta < 0 Then
-               Mid$(p_TextToSearch, l_MatchStart + l_MatchLen + l_Delta + 1) = Mid$(p_TextToSearch, l_MatchStart + l_MatchLen + 1)
+               Mid$(p_TextToSearch, l_MatchStart + l_MatchLen + l_Delta + 1) = mid$(p_TextToSearch, l_MatchStart + l_MatchLen + 1)
                p_TextToSearch = Left$(p_TextToSearch, Len(p_TextToSearch) + l_Delta)
             End If
          
@@ -814,7 +814,7 @@ Private Function Execute2(ByVal p_TextToSearch As String, Optional ByVal p_Regex
             l_MatchOffset = l_MatchOffset + l_MatchStart + l_MatchLen
          
             If l_GlobalSearch Then
-               p_TextToSearch = Mid$(p_TextToSearch, l_MatchStart + l_MatchLen + 1)
+               p_TextToSearch = mid$(p_TextToSearch, l_MatchStart + l_MatchLen + 1)
             End If
          
          End If
@@ -990,7 +990,7 @@ Public Property Get IPcreMatch_SubMatchValue(ByVal p_ZeroBasedSubMatchIndex As L
    l_Len = ma_Ovector(p_ZeroBasedSubMatchIndex + 1) - ma_Ovector(p_ZeroBasedSubMatchIndex)
  
    If l_Len > 0 Then
-      IPcreMatch_SubMatchValue = Mid$(m_SearchedText, ma_Ovector(p_ZeroBasedSubMatchIndex) + 1, l_Len)
+      IPcreMatch_SubMatchValue = mid$(m_SearchedText, ma_Ovector(p_ZeroBasedSubMatchIndex) + 1, l_Len)
    End If
 End Property
 
@@ -1676,7 +1676,7 @@ Private Function UnpackResource(ResourceID As Long, DestinationPath As String) A
     End If
     Exit Function
 ErrorHandler:
-    Debug.Print Err.Description, "UnpackResource", "ResID: " & ResourceID
+    If inIDE Then Debug.Print Err.Description, "UnpackResource", "ResID: " & ResourceID
 End Function
 
 Private Function FileExists(sFile As String) As Boolean
@@ -1721,8 +1721,8 @@ Private Function AppPathW(Optional bGetFullPath As Boolean) As String
         ProcPath = App.Path
     Else
         ProcPath = Left$(ProcPath, cnt)
-        If StrComp("\SystemRoot\", Left$(ProcPath, 12), 1) = 0 Then ProcPath = GetWindowsDir() & Mid$(ProcPath, 12)
-        If "\??\" = Left$(ProcPath, 4) Then ProcPath = Mid$(ProcPath, 5)
+        If StrComp("\SystemRoot\", Left$(ProcPath, 12), 1) = 0 Then ProcPath = GetWindowsDir() & mid$(ProcPath, 12)
+        If "\??\" = Left$(ProcPath, 4) Then ProcPath = mid$(ProcPath, 5)
         
         If Not bGetFullPath Then    ' trim to path
             pos = InStrRev(ProcPath, "\")

@@ -134,7 +134,7 @@ Public Function GetToolsDir() As String
     Dim sToolsParentDir As String
     
     If IsInstalledHJT() Then
-        sToolsParentDir = GetInstDir()
+        sToolsParentDir = GetDirForInstallationHJT()
     Else
         sToolsParentDir = AppPath()
     End If

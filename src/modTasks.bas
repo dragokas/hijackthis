@@ -263,506 +263,6 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-'Public Sub EnumTasks(Optional MakeCSV As Boolean)
-'    On Error GoTo ErrorHandler
-'    AppendErrorLogCustom "EnumTasks - Begin"
-'
-'    Dim Stady As Long
-'    Dim sLogFile As String
-'
-'    If GetServiceRunState("Schedule") <> SERVICE_RUNNING Then
-'        Err.Raise 33333, , "Task scheduler service is not running!"
-'        Exit Sub
-'    End If
-'
-'    'Compatibility: Vista+
-'
-'    ' Create the TaskService object.
-'    Dim Service As Object
-'    Set Service = CreateObject("Schedule.Service")
-'    Stady = 1
-'    Service.Connect
-'    Stady = 2
-'
-'    ' Get the root task folder that contains the tasks.
-'    Dim rootFolder As ITaskFolder
-'    Set rootFolder = Service.GetFolder("\")
-'
-'    bCreateLogFile = MakeCSV
-'
-'    If MakeCSV Then
-'        LogHandle = FreeFile()
-'        sLogFile = BuildPath(AppPath(), "Tasks.csv")
-'        Open sLogFile For Output As #LogHandle
-'        Print #LogHandle, "OSver" & ";" & "State" & ";" & "Name" & ";" & "Dir" & ";" & "RunObj" & ";" & "Args" & ";" & "Note" & ";" & "Error"
-'    End If
-'
-'    Stady = 3
-'    ' Recursively call for enumeration of current folder and all subfolders
-'    EnumTasksInITaskFolder rootFolder
-'
-'    Set rootFolder = Nothing
-'    Set Service = Nothing
-'
-'    If MakeCSV Then
-'        Close #LogHandle
-'        Shell "rundll32.exe shell32.dll,ShellExec_RunDLL " & """" & sLogFile & """", vbNormalFocus
-'    End If
-'
-'    AppendErrorLogCustom "EnumTasks - End"
-'    Exit Sub
-'
-'ErrorHandler:
-'    ErrorMsg Err, "EnumTasks. Stady: " & Stady
-'    If inIDE Then Stop: Resume Next
-'End Sub
-'
-'Sub EnumTasksInITaskFolder(rootFolder As ITaskFolder)
-'    On Error GoTo ErrorHandler:
-'    AppendErrorLogCustom "EnumTasksInITaskFolder - Begin"
-'
-'    Dim Result      As SCAN_RESULT
-'    Dim taskState   As String
-'    Dim RunObj      As String
-'    Dim RunObjExpanded As String
-'    Dim RunArgs     As String
-'    Dim DirParent   As String
-'    Dim DirFull     As String
-'    Dim sHit        As String
-'    Dim NoFile      As Boolean
-'    Dim isSafe      As Boolean
-'    Dim ActionType  As Long
-'    Dim taskFolder  As ITaskFolder
-'    Dim SignResult  As SignResult_TYPE
-'    Dim bIsMicrosoftFile As Boolean
-'    Dim sWorkDir    As String
-'
-'    Dim nTask           As Long
-'    Dim RunObjLast      As String
-'    Dim RunArgsLast     As String
-'    Dim taskStateLast   As String
-'    'Dim DirParentLast   As String
-'    Dim DirFullLast     As String
-'    Dim lTaskState      As Long
-'    Dim bTaskEnabled    As Boolean
-'    '------------------------------
-'    'Dim ComeBack        As Boolean
-'    Dim Stady           As Single
-'    Dim HRESULT         As String
-'    Dim errN            As Long
-'    Dim StadyLast       As Single
-'    Dim RunObjCom       As String
-'
-'
-'    'Debug.Print "Folder Name: " & rootFolder.Name
-'    'Debug.Print "Folder Path: " & rootFolder.Path
-'
-'    Dim taskCollection As Object
-'    Set taskCollection = rootFolder.GetTasks(TASK_ENUM_HIDDEN)
-'    Stady = 1
-'    AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
-'
-'    Dim numberOfTasks As Long
-'    numberOfTasks = taskCollection.Count
-'    Stady = 2
-'    AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
-'
-'    Dim registeredTask  As IRegisteredTask
-'    Dim taskDefinition  As ITaskDefinition
-'    Dim taskAction      As IAction
-'    Dim taskActionExec  As IExecAction
-'    Dim taskActionEmail As IEmailAction
-'    Dim taskActionMsg   As IShowMessageAction
-'    Dim taskActionCOM   As IComHandlerAction
-'    Dim taskActions     As IActionCollection
-'
-'    'Dim taskSettings3   As ITaskSettings3  'Win8+
-'
-'    On Error Resume Next
-'
-'    If numberOfTasks = 0 Then
-'        'Debug.Print "No tasks are registered."
-'        Stady = 3
-'    Else
-'        'Debug.Print "Number of tasks registered: " & numberOfTasks
-'        Stady = 4
-'
-'        nTask = nTask + 1
-'        For Each registeredTask In taskCollection
-'
-'            If Not bAutoLogSilent Then DoEvents
-'
-'            Err.Clear
-'            Call LogError(Err, Stady, ClearAll:=True)
-'
-'            NoFile = False
-'            isSafe = False
-'
-'            RunObjLast = RunObj
-'            RunArgsLast = RunArgs
-'            taskStateLast = taskState
-'            'DirParentLast = DirParent
-'            DirFullLast = DirFull
-'            RunObj = ""
-'            RunObjExpanded = ""
-'            RunArgs = ""
-'            taskState = "Unknown"
-'            DirParent = ""
-'            Stady = 5
-'            lTaskState = 0
-'            bTaskEnabled = False
-'            RunObjCom = ""
-'            sWorkDir = ""
-'
-'
-'            DirFull = registeredTask.Path
-'            Call LogError(Err, Stady)
-'
-'            'If DirFull = "\klcp_update" Then Stop
-'
-'            DirParent = GetParentDir(DirFull)
-'            If 0 = Len(DirParent) Then DirParent = "{root}"
-'
-'            With registeredTask
-'                'Debug.Print "Task Name: " & .Name
-'                'Debug.Print "Task Path: " & .Path
-'                Stady = 6
-'                AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
-'
-'                Err.Clear
-'                Set taskDefinition = .Definition
-'                Call LogError(Err, Stady)
-'
-'                If Err.Number = 0 Then
-'
-'                  Stady = 7
-'                  AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
-'
-'                  Set taskActions = taskDefinition.Actions
-'                  Call LogError(Err, Stady)
-'
-'                  For Each taskAction In taskActions
-'
-'                    Stady = 8
-'                    AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
-'
-'                    ActionType = taskAction.type
-'                    Call LogError(Err, Stady)
-'
-'                    Select Case ActionType
-'
-'                        Case TASK_ACTION_EXEC
-'                            Stady = 9
-'                            Set taskActionExec = taskAction
-'                            'Debug.Print " Type: Executable"
-'                            'Debug.Print "  Exec Path: " & taskActionExec.Path
-'                            'Debug.Print "  Exec Args: " & taskActionExec.Arguments
-'                            'Debug.Print "  Exec Type: " & taskActionExec.Type
-'                            Stady = 10
-'                            RunObj = taskActionExec.Path
-'                            sWorkDir = EnvironW(taskActionExec.WorkingDirectory)
-'                            Call LogError(Err, Stady)
-'
-'                            'RunObj = EnvironW(RunObj)
-'                            RunObjExpanded = UnQuote(EnvironW(RunObj))
-'
-'                            If Mid$(RunObjExpanded, 2, 1) <> ":" Then
-'                                If sWorkDir <> "" Then
-'                                    RunObjExpanded = BuildPath(sWorkDir, RunObjExpanded)
-'                                End If
-'                            End If
-'
-'                            Stady = 11
-'                            RunArgs = taskActionExec.Arguments
-'                            Call LogError(Err, Stady)
-'
-'                            NoFile = (0 = Len(FindOnPath(RunObjExpanded)))
-'
-'                        Case TASK_ACTION_SEND_EMAIL
-'                            Stady = 12
-'                            'Debug.Print " Type: Email"
-'                            Set taskActionEmail = taskAction
-'                            'Debug.Print "  Recepient: " & taskActionEmail.To
-'                            'Debug.Print "  Subject:   " & taskActionEmail.Subject
-'                            RunObj = taskActionEmail.To & ", " & taskActionEmail.Subject
-'                            Call LogError(Err, Stady)
-'
-'                        Case TASK_ACTION_SHOW_MESSAGE
-'                            Stady = 13
-'                            'Debug.Print " Type: Message Box"
-'                            Set taskActionMsg = taskAction
-'                            'Debug.Print "  Title: " & taskActionMsg.Title
-'                            RunObj = taskActionMsg.Title
-'                            Call LogError(Err, Stady)
-'
-'                        Case TASK_ACTION_COM_HANDLER
-'                            Stady = 14
-'                            'Debug.Print " Type: COM Handler"
-'                            Set taskActionCOM = taskAction
-'                            'Debug.Print "  ClassID: " & taskActionCOM.ClassId
-'                            'Debug.Print "  Data:    " & taskActionCOM.Data
-'                            RunObj = taskActionCOM.ClassID & IIf(Len(taskActionCOM.Data) <> 0, "," & taskActionCOM.Data, "")
-'                            Call LogError(Err, Stady)
-'
-'                            'If InStr(taskActionCOM.ClassId, "{DE434264-8FE9-4C0B-A83B-89EBEEBFF78E}") <> 0 Then Stop
-'
-'                            RunObjCom = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & taskActionCOM.ClassID & "\InprocServer32", vbNullString)
-'
-'                            If RunObjCom = "" Then
-'                                RunObjCom = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & taskActionCOM.ClassID & "\InprocServer32", vbNullString, True)
-'                            End If
-'
-'                            If RunObjCom <> "" Then
-'                                RunObjCom = FindOnPath(UnQuote(EnvironW(RunObjCom)), True)
-'                            End If
-'                    End Select
-'
-'                  Next
-'                End If
-'
-'            End With
-'
-'            'BrokenTask will be under error ignor mode until log line on this cycle
-'
-'            Stady = 15
-'            AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
-'
-'            Select Case registeredTask.state
-'                Case "0"
-'                    taskState = "Unknown"
-'                Case "1"
-'                    taskState = "Disabled"
-'                Case "2"
-'                    taskState = "Queued"
-'                Case "3"
-'                    taskState = "Ready"
-'                Case "4"
-'                    taskState = "Running"
-'            End Select
-'            Call LogError(Err, Stady)
-'
-'            Err.Clear
-'            Stady = 16
-'            lTaskState = registeredTask.state
-'            Call LogError(Err, Stady)
-'
-'            AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
-'
-'            Stady = 17
-'            bTaskEnabled = registeredTask.Enabled
-'            Call LogError(Err, Stady)
-'
-'            AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
-'
-'            If Err.Number <> 0 Then
-'                If taskState <> "Unknown" Then
-'                    taskState = taskState & ", Unknown"
-'                End If
-'            Else
-'                If lTaskState <> TASK_STATE_DISABLED _
-'                    And bTaskEnabled = False Then
-'                        taskState = taskState & ", Disabled"
-'                End If
-'            End If
-'
-'            Stady = 18
-'            AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
-'
-'            'get last saved error
-'            Call LogError(Err, StadyLast, errN, False)
-'
-'            HRESULT = ""
-'            If errN <> 0 Then HRESULT = ErrMessageText(errN)
-'
-'            If bCreateLogFile Then
-'                'taskState
-'                Print #LogHandle, OSver.MajorMinor & ";" & "" & ";" & ScreenChar(registeredTask.Name) & ";" & ScreenChar(DirParent) & ";" & _
-'                    ScreenChar(RunObj) & ";" & ScreenChar(RunArgs) & ";" & _
-'                    IIf(NoFile, "(file missing)", "") & ";" & _
-'                    IIf(0 <> Len(HRESULT), "(" & HRESULT & ", idx: " & StadyLast & ")", "") '& _
-'                    'IIf(NoFile Or 0 <> Len(HRESULT), " <==== ATTENTION", "")
-'            End If
-'
-'            Stady = 19
-'            AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
-'
-'            If Len(RunObjExpanded) <> 0 Then RunObj = RunObjExpanded
-'            RunObj = Replace$(RunObj, "\\", "\")
-'
-'            AppendErrorLogCustom "EnumTasksInITaskFolder: Checking - " & DirParent & "\" & registeredTask.Name
-'
-'            isSafe = isInTasksWhiteList(DirParent & "\" & registeredTask.Name, RunObj, RunArgs)
-'
-'            Stady = 19.1
-'            AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
-'
-'            If ActionType = TASK_ACTION_EXEC Then
-'                RunObj = PathNormalize(RunObj)
-'                If isSafe Then
-'                    SignVerify RunObj, SV_LightCheck Or SV_PreferInternalSign, SignResult
-'                End If
-'            Else
-'                WipeSignResult SignResult
-'            End If
-'
-'            Stady = 19.2
-'            AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
-'
-'            ' Digital signature checking
-'            If isSafe Then
-'                AppendErrorLogCustom "[OK] EnumTasksInITaskFolder: WhiteListed."
-'
-'                'If Left$(RunObj, 1) <> "{" Then 'not CLSID-based task
-'                If ActionType = TASK_ACTION_EXEC Then
-'
-'                    bIsMicrosoftFile = (SignResult.isMicrosoftSign And SignResult.isLegit)
-'
-'                    isSafe = (bIsMicrosoftFile And bHideMicrosoft And Not bIgnoreAllWhitelists)
-'
-'                    If Not isSafe Then
-'                        If Not bIsMicrosoftFile Then
-'                            AppendErrorLogCustom "[Failed] EnumTasksInITaskFolder: File - " & RunObj & " => is not Microsoft EDS !!! <======"
-'                            Debug.Print "Task MS file has wrong EDS: " & RunObj
-'                        End If
-'
-'                        Stady = 19.3
-'                        AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
-'
-'                        If FileExists(RunObj) Then NoFile = False
-'
-'                    End If
-'                ElseIf ActionType = TASK_ACTION_COM_HANDLER And Len(RunObjCom) <> 0 Then
-'
-'                    SignVerify RunObjCom, SV_LightCheck Or SV_PreferInternalSign, SignResult
-'
-'                    bIsMicrosoftFile = (SignResult.isMicrosoftSign And SignResult.isLegit)
-'
-'                    isSafe = (bIsMicrosoftFile And bHideMicrosoft And Not bIgnoreAllWhitelists)
-'
-'                    If Not isSafe Then
-'                        If Not bIsMicrosoftFile Then
-'                            AppendErrorLogCustom "[Failed] EnumTasksInITaskFolder: File - " & RunObjCom & " => is not Microsoft EDS !!! <======"
-'                            Debug.Print "Task MS file has wrong EDS: " & RunObjCom
-'                        End If
-'                    End If
-'                End If
-'            Else
-'                AppendErrorLogCustom "[Failed] EnumTasksInITaskFolder: NOT WhiteListed !!! <======"
-'            End If
-'
-'            If ActionType = TASK_ACTION_COM_HANDLER Then
-'                If Len(RunObjCom) = 0 Then
-'                    RunObj = RunObj & " - (no file)"
-'                Else
-'                    RunObj = RunObj & " - " & RunObjCom
-'                    NoFile = Not FileExists(RunObjCom)
-'                End If
-'            End If
-'
-'            Stady = 19.4
-'            AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
-'
-'            If Not isSafe Then
-'
-'              'sHit = "O22 - ScheduledTask: " & "(" & taskState & ") " & registeredTask.Name & " - " & DirParent & " - " & RunObj & _
-'              '  IIf(Len(RunArgs) <> 0, " " & RunArgs, "") & _
-'              '  IIf(NoFile, " " & STR_FILE_MISSING, "") & _
-'              '  IIf(0 <> Len(SignResult.SubjectName) And SignResult.isLegit, " (" & SignResult.SubjectName & ")", "") & _
-'              '  IIf(0 <> Len(HRESULT), " (" & HRESULT & ", idx: " & StadyLast & ")", "") '& _
-'              '  'IIf(NoFile Or 0 <> Len(HRESULT), " <==== ATTENTION", "")
-'
-'              sHit = "O22 - Task " & "(" & taskState & "): " & _
-'                IIf(DirParent = "{root}", registeredTask.Name, DirParent & "\" & registeredTask.Name)
-'
-''I temporarily remove EDS name in log
-''              sHit = sHit & " - " & RunObj & _
-''                IIf(Len(RunArgs) <> 0, " " & RunArgs, "") & _
-''                IIf(NoFile, " " & STR_FILE_MISSING, "") & _
-''                IIf(0 <> Len(SignResult.SubjectName) And SignResult.isLegit, " (" & SignResult.SubjectName & ")", "") & _
-''                IIf(0 <> Len(HRESULT), " (" & HRESULT & ", idx: " & StadyLast & ")", "")
-'
-'              sHit = sHit & " - " & RunObj & _
-'                IIf(Len(RunArgs) <> 0, " " & RunArgs, "") & _
-'                IIf(NoFile, " " & STR_FILE_MISSING, "") & _
-'                IIf(0 <> Len(HRESULT), " (" & HRESULT & ", idx: " & StadyLast & ")", "")
-'
-'              If Not IsOnIgnoreList(sHit) Then
-'
-'                Stady = 19.5
-'                AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
-'
-'                If g_bCheckSum Then
-'                    If FileExists(RunObj) Then
-'                        sHit = sHit & GetFileCheckSum(RunObj)
-'                    End If
-'                End If
-'
-'                Stady = 19.6
-'                AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
-'
-'                With Result
-'                    .Section = "O22"
-'                    .HitLineW = sHit
-'                    '.RunObject = RunObj
-'                    '.RunObjectArgs = RunArgs
-'                    '.AutoRunObject = DirFull
-'                    AddFileToFix .File, REMOVE_TASK, DirFull
-'                    .CureType = CUSTOM_BASED
-'                End With
-'                AddToScanResults Result
-'              End If
-'            End If
-'
-'            Stady = 19.7
-'            AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
-'        Next
-'    End If
-'
-'    On Error GoTo ErrorHandler:
-'
-'    Stady = 20
-'    AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
-'
-'    Set taskActionExec = Nothing
-'    Set taskActionEmail = Nothing
-'    Set taskActionMsg = Nothing
-'    Set taskActionCOM = Nothing
-'    Set taskAction = Nothing
-'    Set taskDefinition = Nothing
-'    Set registeredTask = Nothing
-'    Set taskCollection = Nothing
-'
-'    Stady = 21
-'    AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
-'
-'    Dim taskFolderCollection As ITaskFolderCollection
-'    Set taskFolderCollection = rootFolder.GetFolders(0&)
-'
-'    Stady = 22
-'    AppendErrorLogCustom "EnumTasksInITaskFolder", "Stady: " & Stady
-'
-'    For Each taskFolder In taskFolderCollection 'deep to subfolders
-'        EnumTasksInITaskFolder taskFolder
-'    Next
-'
-'    Set taskFolder = Nothing
-'    Set taskFolderCollection = Nothing
-'
-'    AppendErrorLogCustom "EnumTasksInITaskFolder - End"
-'    Exit Sub
-'ErrorHandler:
-'    ErrorMsg Err, "EnumTasksInITaskFolder. Stady: " & Stady & ". Number of tasks: " & numberOfTasks & ". Curr. task # " & nTask & ": " & DirFull & ", " & _
-'        "RunObj = " & RunObj & ", RunArgs = " & RunArgs & ", taskState = " & taskState
-'        '& ". ____Last task Data:___ " & DirFullLast & ", " & _
-'        '"RunObjLast = " & RunObjLast & ", RunArgsLast = " & RunArgsLast & ", taskStateLast = " & taskStateLast
-''    If ComeBack Then
-''        ComeBack = False
-''        If inIDE Then Stop
-''        Return
-''    End If
-'    If inIDE Then Stop: Resume Next
-'End Sub
-
 Public Function PathNormalize(ByVal sPath As String) As String
     
     AppendErrorLogCustom "PathNormalize - Begin", "File: " & sPath
@@ -881,184 +381,6 @@ End Function
 Function ScreenChar(sText As String) As String
     ScreenChar = " " & Replace$(sText, ";", "\;")
 End Function
-
-'Sub LogError(objError As ErrObject, in_out_Stady As Single, Optional out_LastLoggedErrorNumber As Long, Optional in_ActionPut As Boolean = True, Optional ClearAll As Boolean)
-'    '
-'    'in_ActionPut - if false, this function fill _out_ parameters with last saved error number and Stady position
-'
-'    'Purpose of function:
-'    'Log first error and do not overwrite it until 'ClearAll' parameter become true
-'
-'    Static Stady As Long, ErrNum As Long
-'
-'    If ClearAll = True Then
-'        Stady = 0
-'        ErrNum = 0
-'        Exit Sub
-'    End If
-'
-'    If in_ActionPut = False Then
-'        'get
-'        in_out_Stady = Stady
-'        out_LastLoggedErrorNumber = ErrNum
-'    Else
-'        'put
-'        If ErrNum = 0 Then
-'            ErrNum = objError.Number
-'            Stady = in_out_Stady
-'        End If
-'    End If
-'End Sub
-
-'Public Function KillTask(TaskFullPath As String) As Boolean
-'
-'    '// TODO: Replace KillProcess by FreezeProcess
-'
-'    On Error GoTo ErrorHandler
-'    Dim TaskPath As String
-'    Dim TaskName As String
-'    Dim pos As Long
-'    Dim Stady As Long
-'    'Dim ComeBack As Boolean
-'    Dim lTaskState As Long
-'    Dim BrokenTask As Boolean
-'
-'    'Compatibility: Vista+
-'
-'    pos = InStrRev(TaskFullPath, "\")
-'    If pos <> 0 Then
-'        Stady = 1
-'        TaskPath = Left$(TaskFullPath, pos)
-'        If Len(TaskPath) > 1 Then TaskPath = Left$(TaskPath, Len(TaskPath) - 1) 'trim last backslash
-'        TaskName = Mid$(TaskFullPath, pos + 1)
-'    Else
-'        Exit Function
-'    End If
-'
-'    On Error Resume Next
-'    Stady = 2
-'    ' Create the TaskService object.
-'    Dim Service As Object
-'    Set Service = CreateObject("Schedule.Service")
-'    If Err.Number <> 0 Then Exit Function
-'
-'    Stady = 3
-'    Service.Connect
-'    If Err.Number <> 0 Then Exit Function
-'
-'    Stady = 4
-'    ' Get the root task folder that contains the tasks.
-'    Dim rootFolder As ITaskFolder
-'    Set rootFolder = Service.GetFolder(TaskPath)
-'    If Err.Number <> 0 Then Exit Function
-'
-'    Stady = 5
-'    Dim registeredTask  As IRegisteredTask
-'    Set registeredTask = rootFolder.GetTask(TaskName)
-'    If Err.Number <> 0 Then Exit Function
-'
-'    'Dim taskCollection As Object
-'    'Set taskCollection = rootFolder.GetTasks(TASK_ENUM_HIDDEN)
-'    '
-'    '    For Each registeredTask In taskCollection
-'    '        With registeredTask
-'    '          If InStr(1, .Path, TaskName, 1) <> 0 Then
-'    '            Debug.Print "Task Name: " & .Name
-'    '            Debug.Print "Task Path: " & .Path
-'    '          End If
-'    '
-'    '        End With
-'    '    Next
-'    'Stop
-'
-'    ' Stop the task
-'
-'    'I should insert here this strange error handling routines because ITask Schedule interfaces with different
-'    'kinds of possible errors in XML structures and unsufficient access rights caused by malware is a very poor stuff for developers,
-'    'because it can produce so many unexpected errors. So, we are full of trubles.
-'
-'    'Maybe, later I rewrite it into manual parsing.
-'
-'    On Error Resume Next
-'    Stady = 6
-'    lTaskState = registeredTask.state
-'    If Err.Number <> 0 Then
-'        'ErrorMsg err, "KillTask. Stady: " & Stady
-'        BrokenTask = True
-'    End If
-'
-''    If err.Number <> 0 Then
-''        ComeBack = True
-''        GoSub ErrorHandler
-''        registeredTask.Stop 0&
-''        Sleep 2000&
-''        BrokenTask = True
-''    ElseIf lTaskState = TASK_STATE_RUNNING Or lTaskState = TASK_STATE_QUEUED Then
-''        registeredTask.Stop 0&
-''        Sleep 2000&
-''    End If
-'
-''    If BrokenTask Or lTaskState = TASK_STATE_RUNNING Or lTaskState = TASK_STATE_QUEUED Then
-''        registeredTask.Stop 0&
-''        Sleep 2000&
-''    End If
-'
-'    Stady = 7
-'    If registeredTask.Enabled Then registeredTask.Enabled = False
-'
-'    Dim taskDefinition  As ITaskDefinition
-'    Dim taskAction      As IAction
-'    Dim taskActionExec  As IExecAction
-'
-'    Stady = 8
-'
-'    ' Kill process
-'    Err.Clear
-'    Set taskDefinition = registeredTask.Definition
-'
-'    If Err.Number <> 0 Then
-'        If Not BrokenTask Then
-'            'ErrorMsg err, "KillTask. Stady: " & Stady
-'        End If
-'    Else
-'      Stady = 9
-'      For Each taskAction In taskDefinition.Actions
-'        Stady = 10
-'        If TASK_ACTION_EXEC = taskAction.type Then
-'            Stady = 11
-'            Set taskActionExec = taskAction
-'            'Debug.Print taskActionExec.Path
-'            If FileExists(taskActionExec.Path) Then
-'                KillProcessByFile taskActionExec.Path
-'            End If
-'        End If
-'      Next
-'    End If
-'
-'    'On Error GoTo ErrorHandler
-'    On Error Resume Next
-'    Err.Clear
-'    Stady = 12
-'    ' Remove the Job
-'    rootFolder.DeleteTask TaskName, 0&
-'    If Err.Number = 0 Then
-'        Sleep 1000&
-'        KillTask = True
-'    End If
-'
-'    Stady = 13
-'    Set taskActionExec = Nothing
-'    Set taskAction = Nothing
-'    Set taskDefinition = Nothing
-'    Set registeredTask = Nothing
-'    Set rootFolder = Nothing
-'    Set Service = Nothing
-'    Exit Function
-'ErrorHandler:
-'    ErrorMsg Err, "KillTask. Stady: " & Stady
-'    If inIDE Then Stop: Resume Next
-'End Function
-
 
 Public Function DisableTask(TaskFullPath As String) As Boolean
     
@@ -1212,8 +534,6 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
     Dim sHit            As String
     Dim NoFile          As Boolean
     Dim isSafe          As Boolean
-    'Dim SignResult      As SignResult_TYPE
-    Dim bIsMicrosoftFile As Boolean
     Dim aFiles()        As String
     Dim te()            As TASK_ENTRY
     Dim numTasks        As Long
@@ -1253,7 +573,7 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
         
         For j = 0 To numTasks - 1
             
-            bIsMicrosoftFile = False
+            WipeSignResult result.SignResult
             
             If LogHandle Then
                 'taskState
@@ -1284,12 +604,12 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
                 If te(j).ActionType = TASK_ACTION_EXEC Then
                 
                     te(j).RunObj = PathNormalize(te(j).RunObj)
-                    bIsMicrosoftFile = IsMicrosoftFile(te(j).RunObj)
+                    SignVerifyJack te(j).RunObj, result.SignResult
                     
                 ElseIf te(j).ActionType = TASK_ACTION_COM_HANDLER Then
                 
                     te(j).RunObjCom = PathNormalize(te(j).RunObjCom)
-                    bIsMicrosoftFile = IsMicrosoftFile(te(j).RunObjCom)
+                    SignVerifyJack te(j).RunObjCom, result.SignResult
                 End If
             End If
             
@@ -1299,24 +619,24 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
                 
                 If te(j).ActionType = TASK_ACTION_EXEC Then
                     
-                    isSafe = (bIsMicrosoftFile And bHideMicrosoft And Not bIgnoreAllWhitelists)
+                    isSafe = (result.SignResult.isMicrosoftSign And bHideMicrosoft And Not bIgnoreAllWhitelists)
                     
-                    If Not bIsMicrosoftFile Then
+                    If Not result.SignResult.isMicrosoftSign Then
                         AppendErrorLogCustom "[Failed] EnumTasksInITaskFolder: File - " & te(j).RunObj & " => is not Microsoft EDS !!! <======"
-                        Debug.Print "Task MS file has wrong EDS: " & te(j).RunObj
+                        If inIDE Then Debug.Print "Task MS file has wrong EDS: " & te(j).RunObj
                     End If
                 ElseIf te(j).ActionType = TASK_ACTION_COM_HANDLER And Len(te(j).RunObjCom) <> 0 Then
                 
                   'for some reason, part of CLSID records on Win10 is not registered
                   If te(j).RunObjCom <> STR_NO_FILE Then
-                
-                    bIsMicrosoftFile = IsMicrosoftFile(te(j).RunObjCom)
                     
-                    isSafe = (bIsMicrosoftFile And bHideMicrosoft And Not bIgnoreAllWhitelists)
+                    SignVerifyJack te(j).RunObjCom, result.SignResult
                     
-                    If Not bIsMicrosoftFile Then
+                    isSafe = (result.SignResult.isMicrosoftSign And bHideMicrosoft And Not bIgnoreAllWhitelists)
+                    
+                    If Not result.SignResult.isMicrosoftSign Then
                         AppendErrorLogCustom "[Failed] EnumTasksInITaskFolder: File - " & te(j).RunObjCom & " => is not Microsoft EDS !!! <======"
-                        Debug.Print "Task MS file has wrong EDS: " & te(j).RunObjCom
+                        If inIDE Then Debug.Print "Task MS file has wrong EDS: " & te(j).RunObjCom
                     End If
                   End If
                 End If
@@ -1341,7 +661,12 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
             ' Stady 1. Task is impersonated with missing user/group
             '
             If Not IsValidTaskUserId(te(j).UserId) And Not IsValidTaskGroupId(te(j).GroupId) Then
-            
+                
+                'not yet verified
+                If Len(result.SignResult.FilePathVerified) = 0 Then
+                    SignVerifyJack te(j).RunObj, result.SignResult
+                End If
+                
                 sAlias = IIf(IsX64, "O22", "O22-32")
                 
                 sHit = sAlias & " - " & TaskAlias & ": (damaged) " & IIf(te(j).Enabled, vbNullString, "(disabled) ") & _
@@ -1350,8 +675,8 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
                 sHit = sHit & " - " & te(j).RunObj & _
                     IIf(Len(te(j).RunArgs) <> 0, " " & te(j).RunArgs, vbNullString) & _
                     IIf(te(j).FileMissing And Not bNoFile, " " & STR_FILE_MISSING, vbNullString) & _
-                    IIf(bIsMicrosoftFile, " (Microsoft)", vbNullString) & _
-                    " (user missing)"
+                    " (user missing)" & _
+                    FormatSign(result.SignResult)
                   
                   If g_bCheckSum Then
                     If FileExists(te(j).RunObj) Then
@@ -1419,7 +744,7 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
                     bTelemetry = True
                 End If
                 
-                If bIsMicrosoftFile Then
+                If result.SignResult.isMicrosoftSign Then
                 
                     If InStr(1, DirParent, "Activation", 1) <> 0 Then
     
@@ -1491,16 +816,16 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
                     
                     If StrBeginWith(DirXml, "\MicrosoftEdgeUpdateTaskMachine") Then
                         If StrComp(te(j).RunObj, PF_32 & "\Microsoft\EdgeUpdate\MicrosoftEdgeUpdate.exe", 1) = 0 Then
-                            If IsMicrosoftFile(te(j).RunObj) Then
+                            If SignVerifyJack(te(j).RunObj, result.SignResult) And result.SignResult.isMicrosoftSign Then
                                 isSafe = True
-                                bIsMicrosoftFile = True
+                                result.SignResult.isMicrosoftSign = True
                             End If
                         End If
                     ElseIf StrComp(DirXml, "\Microsoft\Windows\Windows Defender\Windows Defender Scheduled Scan", 1) = 0 Then
                         If StrComp(sRunFilename, "MpCmdRun.exe", 1) = 0 Then
-                            If IsMicrosoftFile(te(j).RunObj) Then
+                            If SignVerifyJack(te(j).RunObj, result.SignResult) And result.SignResult.isMicrosoftSign Then
                                 isSafe = True
-                                bIsMicrosoftFile = True
+                                result.SignResult.isMicrosoftSign = True
                             End If
                         End If
                     End If
@@ -1514,11 +839,11 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
                 
                 If (Not isSafe) Or (Not bHideMicrosoft) Or bTelemetry Then
                   'skip signature mark for LoLBin processes
-                  If bIsMicrosoftFile Then
+                  If result.SignResult.isMicrosoftSign Then
                   
                       If IsLoLBin(sRunFilename) Then
                       
-                        bIsMicrosoftFile = False
+                        result.SignResult.isMicrosoftSign = False
                       
                         If StrComp(sRunFilename, "rundll32.exe", 1) = 0 Then
                             
@@ -1526,7 +851,7 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
                             
                             If Len(sDllFile) = 0 Then te(j).FileMissing = True
                             
-                            bIsMicrosoftFile = IsMicrosoftFile(sDllFile)
+                            SignVerifyJack sDllFile, result.SignResult
                             
                         ElseIf StrComp(sRunFilename, "cmd.exe", 1) = 0 Then
                             
@@ -1534,35 +859,40 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
                             
                             If StrComp(sDllFile, sWinSysDir & "\silcollector.cmd", 1) = 0 Then
                                 
-                                If GetFileSHA1(sDllFile, , True) = "22E925EBDAD83C6B1D1928DBB7369DA5E80A4DEB" Then bIsMicrosoftFile = True
+                                If GetFileSHA1(sDllFile, , True) = "22E925EBDAD83C6B1D1928DBB7369DA5E80A4DEB" Then result.SignResult.isMicrosoftSign = True
                             End If
                             
                         ElseIf StrComp(sRunFilename, "cscript.exe", 1) = 0 Then
                             
                             If StrComp(sDllFile, sWinSysDir & "\calluxxprovider.vbs", 1) = 0 Then
                             
-                                If GetFileSHA1(sDllFile, , True) = "5FFF9BFB3C918BC04D9BFAAB63989198FE57BDDA" Then bIsMicrosoftFile = True
+                                If GetFileSHA1(sDllFile, , True) = "5FFF9BFB3C918BC04D9BFAAB63989198FE57BDDA" Then result.SignResult.isMicrosoftSign = True
                             End If
                             
                         End If
                       End If
                       
                       'If SignResult.isMicrosoftSign And Len(te(j).RunArgs) <> 0 Then
-                      If bIsMicrosoftFile And Len(te(j).RunArgs) <> 0 Then
+                      If result.SignResult.isMicrosoftSign And Len(te(j).RunArgs) <> 0 Then
                           If InStr(1, te(j).RunArgs, "http", 1) <> 0 Then
                               'SignResult.isMicrosoftSign = False
-                              bIsMicrosoftFile = False
+                              result.SignResult.isMicrosoftSign = False
                           ElseIf InStr(1, te(j).RunArgs, "ftp", 1) <> 0 Then
                               'SignResult.isMicrosoftSign = False
-                              bIsMicrosoftFile = False
+                              result.SignResult.isMicrosoftSign = False
                           ElseIf InStr(1, EnvironW(te(j).RunArgs), "http", 1) <> 0 Then
                               'SignResult.isMicrosoftSign = False
-                              bIsMicrosoftFile = False
+                              result.SignResult.isMicrosoftSign = False
                           ElseIf InStr(1, EnvironW(te(j).RunArgs), "ftp", 1) <> 0 Then
                               'SignResult.isMicrosoftSign = False
-                              bIsMicrosoftFile = False
+                              result.SignResult.isMicrosoftSign = False
                           End If
                       End If
+                  End If
+                  
+                  'not yet verified
+                  If Len(result.SignResult.FilePathVerified) = 0 Then
+                      SignVerifyJack te(j).RunObj, result.SignResult
                   End If
                   
                   sAlias = IIf(IsX64, "O22", "O22-32")
@@ -1576,13 +906,15 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
                   sHit = sHit & " - " & te(j).RunObj & _
                     IIf(Len(te(j).RunArgs) <> 0, " " & te(j).RunArgs, vbNullString) & _
                     IIf(te(j).FileMissing And Not bNoFile, " " & STR_FILE_MISSING, vbNullString) & _
-                    IIf(bIsMicrosoftFile, " (Microsoft)", vbNullString)
+                    FormatSign(result.SignResult)
                   
                   If g_bCheckSum Then
                     If FileExists(te(j).RunObj) Then
                         sHit = sHit & GetFileCheckSum(te(j).RunObj)
                     End If
                   End If
+                  
+                  'If InStr(1, sHit, "Adobe Acrobat Update Task", 1) <> 0 Then Stop
                   
                   If Not IsOnIgnoreList(sHit) Then
                       With result
@@ -1903,7 +1235,36 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Public Function GetRundllFile(ByVal sArg As String) As String
+Public Function GetRundllFileFromCmd(ByVal sCmdLine As String, Optional out_sFunc As String) As String
+    Dim pos&
+    Dim sArg As String
+    
+    pos = InStr(1, sCmdLine, "rundll", 1)
+    If pos = 0 Then Exit Function
+    
+    pos = InStr(pos, sCmdLine, " ")
+    If pos = 0 Then Exit Function
+    
+    sArg = mid$(sCmdLine, pos + 1)
+    
+    If Left$(sArg, 1) = "/" Then 'begin with switch?
+    
+        pos = InStr(sArg, " ")
+        If pos = 0 Then Exit Function
+        
+        sArg = mid$(sArg, pos + 1)
+    End If
+    
+    pos = InStr(sArg, ",") ' skip the verb
+    If pos <> 0 Then
+        out_sFunc = mid$(sArg, pos + 1)
+        sArg = Left$(sArg, pos - 1)
+    End If
+    
+    GetRundllFileFromCmd = FindOnPath(sArg)
+End Function
+
+Public Function GetRundllFile(ByVal sArg As String, Optional out_sFunc As String) As String
 
     Dim pos&
     
@@ -1916,7 +1277,10 @@ Public Function GetRundllFile(ByVal sArg As String) As String
     End If
     
     pos = InStr(sArg, ",") ' skip the verb
-    If pos <> 0 Then sArg = Left$(sArg, pos - 1)
+    If pos <> 0 Then
+        out_sFunc = mid$(sArg, pos + 1)
+        sArg = Left$(sArg, pos - 1)
+    End If
     
     GetRundllFile = FindOnPath(sArg)
 
@@ -2125,6 +1489,7 @@ Public Sub EnumJobs()
     Dim sRunState As String
     Dim bUpdate As Boolean
     Dim bActivation As Boolean
+    Dim sFile As String
     
     TaskFolder = BuildPath(sWinDir, "Tasks")
     
@@ -2137,12 +1502,12 @@ Public Sub EnumJobs()
             
             sJobName = GetFileName(aFiles(i), True)
             
-            Job.prop.AppName.Data = EnvironW(PathNormalize(Job.prop.AppName.Data))
+            sFile = EnvironW(PathNormalize(Job.prop.AppName.Data))
             
-            If mid$(Job.prop.AppName.Data, 2, 1) <> ":" Then
+            If mid$(sFile, 2, 1) <> ":" Then
                 If Len(Job.prop.WorkDir.Data) <> 0 Then
-                    sTmp = BuildPath(Job.prop.WorkDir.Data, Job.prop.AppName.Data)
-                    If FileExists(sTmp) Then Job.prop.AppName.Data = sTmp 'if only file exists in this work. folder
+                    sTmp = BuildPath(Job.prop.WorkDir.Data, sFile)
+                    If FileExists(sTmp) Then sFile = sTmp 'if only file exists in this work. folder
                 End If
             End If
             
@@ -2166,21 +1531,23 @@ Public Sub EnumJobs()
             
             bUpdate = False
             bActivation = False
-            If StrEndWith(Job.prop.AppName.Data, "xp_eos.exe") Then 'End of Windows XP support
-                If IsMicrosoftFile(Job.prop.AppName.Data) Then bUpdate = True
-            ElseIf StrEndWith(Job.prop.AppName.Data, "wgasetup.exe") Then
-                If IsMicrosoftFile(Job.prop.AppName.Data) Then bActivation = True
+            If StrEndWith(sFile, "xp_eos.exe") Then 'End of Windows XP support
+                If IsMicrosoftFile(sFile) Then bUpdate = True
+            ElseIf StrEndWith(sFile, "wgasetup.exe") Then
+                If IsMicrosoftFile(sFile) Then bActivation = True
             End If
             
-            Job.prop.AppName.Data = FormatFileMissing(Job.prop.AppName.Data, Job.prop.Parameters.Data)
+            sFile = FormatFileMissing(sFile, Job.prop.Parameters.Data)
+            
+            SignVerifyJack sFile, result.SignResult
             
             sHit = "O22 - Task (.job): " & IIf(bEnabled, vbNullString, "(disabled) ") & IIf(Len(sRunState) <> 0, "(" & sRunState & ") ", vbNullString) & _
                 IIf(bUpdate, "(update) ", vbNullString) & _
                 IIf(bActivation, "(activation) ", vbNullString) & _
                 sJobName & " - " & _
-                Job.prop.AppName.Data
-
-            If g_bCheckSum Then sHit = sHit & GetFileCheckSum(Job.prop.AppName.Data)
+                sFile & FormatSign(result.SignResult)
+            
+            If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
 
             If Not IsOnIgnoreList(sHit) Then
                 With result
@@ -2188,7 +1555,7 @@ Public Sub EnumJobs()
                     .HitLineW = sHit
                     .State = IIf(bEnabled, ITEM_STATE_ENABLED, ITEM_STATE_DISABLED)
                     .Name = aFiles(i)
-                    AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, Job.prop.AppName.Data 'should go first! Uses by VT.
+                    AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile 'should go first! Uses by VT.
                     AddFileToFix .File, REMOVE_FILE, aFiles(i)
                     AddRegToFix .Reg, REMOVE_VALUE, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\CompatibilityAdapter\Signatures", sJobName
                     AddRegToFix .Reg, REMOVE_VALUE, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\CompatibilityAdapter\Signatures", sJobName & ".fp"
@@ -2332,7 +1699,10 @@ Sub EnumTasksXP() 'Win XP / Server 2003
         isSafe = isInTasksWhiteList(sCLSID & "\" & sName, sFile)
         
         If Not isSafe Then
-            sHit = "O22 - ScheduledTask: " & sName & " - " & sCLSID & " - " & sFile
+            
+            SignVerifyJack sFile, result.SignResult
+            
+            sHit = "O22 - ScheduledTask: " & sName & " - " & sCLSID & " - " & sFile & FormatSign(result.SignResult)
             
             If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
             

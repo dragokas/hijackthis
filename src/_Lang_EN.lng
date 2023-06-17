@@ -1339,7 +1339,7 @@
 0570=The language file '[]' is invalid (ambiguous id numbers).
 0572=Invalid language file. Reset to default (English)?
 0580=HiJackThis cannot repair O10 Winsock LSP entries.
-     Use the program WinsockReset from https://www.foolishit.com/vb6-projects/winsockreset/
+     Use the program {1} from {2}
      
      Would you like to visit that site?
 0590=An unexpected error has occurred !
@@ -1837,4 +1837,4 @@
 ; ========= Empty ========
 ;
 ; (2500 - ...)
-;                                   
+;                                     

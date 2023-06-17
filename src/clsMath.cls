@@ -42,7 +42,7 @@ Private Const HEAP_NO_SERIALIZE = &H1
 Dim Code() As Long, hHeap As Long, lpFunc As Long, lpOldPt As Long, lpSA As Long, inIDE As Boolean, isInit As Boolean
  
 Private Sub Class_Initialize()
-    inIDE = (App.LogMode = 0)
+    Debug.Assert MakeTrue(inIDE)
     If Not inIDE Then
         InitSh
     End If
@@ -144,3 +144,8 @@ Public Sub SwapNumbers(vNum1, vNum2)
     vNum1 = vNum2
     vNum2 = vTmp
 End Sub
+
+Private Function MakeTrue(ByRef bValue As Boolean) As Boolean
+    MakeTrue = True
+    bValue = True
+End Function

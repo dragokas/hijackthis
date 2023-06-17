@@ -707,8 +707,8 @@ Public Function KillProcess9xByFile(sPath$) As Boolean
                 GetModuleFileNameExA hProc, lModules(1), sProcessName, Len(sProcessName)
                 sProcessName = TrimNull(sProcessName)
                 If sProcessName <> vbNullString Then
-                    If Left$(sProcessName, 1) = "\" Then sProcessName = Mid$(sProcessName, 2)
-                    If Left$(sProcessName, 3) = "??\" Then sProcessName = Mid$(sProcessName, 4)
+                    If Left$(sProcessName, 1) = "\" Then sProcessName = mid$(sProcessName, 2)
+                    If Left$(sProcessName, 3) = "??\" Then sProcessName = mid$(sProcessName, 4)
                     If InStr(1, sProcessName, "%Systemroot%", vbTextCompare) > 0 Then sProcessName = Replace$(sProcessName, "%Systemroot%", sWinDir, , , vbTextCompare)
                     If InStr(1, sProcessName, "Systemroot", vbTextCompare) > 0 Then sProcessName = Replace$(sProcessName, "Systemroot", sWinDir, , , vbTextCompare)
 
@@ -1028,7 +1028,7 @@ Function GetFilePathByPID(pid As Long) As String
                     If pos <> 0 Then
                         FullPath = ConvertDosDeviceToDriveName(Left$(ProcPath, pos - 1))
                         If Len(FullPath) <> 0 Then
-                            ProcPath = FullPath & Mid$(ProcPath, pos + 1)
+                            ProcPath = FullPath & mid$(ProcPath, pos + 1)
                         End If
                     End If
                 End If
@@ -1124,7 +1124,7 @@ GetFromCollection:
             sDrivePart = inDosDeviceName
         Else
             sDrivePart = Left$(inDosDeviceName, pos - 1)
-            sOtherPart = Mid$(inDosDeviceName, pos + 1)
+            sOtherPart = mid$(inDosDeviceName, pos + 1)
         End If
         If isCollectionKeyExists(sDrivePart, DosDevices) Then
             ConvertDosDeviceToDriveName = BuildPath(DosDevices(sDrivePart), sOtherPart)
@@ -1172,7 +1172,7 @@ Public Function GetRunningProcesses$()
                 End If
             End With
         Next
-        GetRunningProcesses = Mid$(sProc, 2)
+        GetRunningProcesses = mid$(sProc, 2)
     End If
 End Function
 
@@ -1289,7 +1289,7 @@ Public Function GetProcessThreadIDs(Optional hProcess As Long, Optional pid As L
     Exit Function
     
 ErrorHandler:
-    Debug.Print "GetProcessThreadIDs", "Error = " & Err.Number, "LastDllError = " & Err.LastDllError
+    If inIDE Then Debug.Print "GetProcessThreadIDs", "Error = " & Err.Number, "LastDllError = " & Err.LastDllError
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -1394,13 +1394,13 @@ Public Sub SystemPriorityDowngrade(bState As Boolean)
                                 'save old state
                                 dPrior.Add hProc, CLng(Priority)
                             Else
-                                Debug.Print "Can't set priority: " & gProcess(i).Path
+                                If inIDE Then Debug.Print "Can't set priority: " & gProcess(i).Path
                             
                                 'on failure
                                 CloseHandle hProc
                             End If
                         Else
-                            Debug.Print "Can't open: " & gProcess(i).Path & " (PID = " & gProcess(i).pid & ")"
+                            If inIDE Then Debug.Print "Can't open: " & gProcess(i).Path & " (PID = " & gProcess(i).pid & ")"
                         End If
                         
                     End If
@@ -1422,7 +1422,7 @@ Public Sub SystemPriorityDowngrade(bState As Boolean)
             End If
             
             If Not SetPriorityProcess(hProc, Priority) Then
-                Debug.Print "Can't restore priority: " & gProcess(i).Path
+                If inIDE Then Debug.Print "Can't restore priority: " & gProcess(i).Path
             End If
             
             CloseHandle hProc
@@ -1434,7 +1434,7 @@ Public Sub SystemPriorityDowngrade(bState As Boolean)
 
     Exit Sub
 ErrorHandler:
-    Debug.Print "GetProcessThreadIDs", "Error = " & Err.Number, "LastDllError = " & Err.LastDllError
+    If inIDE Then Debug.Print "GetProcessThreadIDs", "Error = " & Err.Number, "LastDllError = " & Err.LastDllError
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -1565,8 +1565,6 @@ Private Function read_mem64(Handle As Long, address As Currency, Length As Long,
     
     If NT_SUCCESS(HRes) Then
         read_mem64 = True
-    Else
-        Debug.Print "NtWow64ReadVirtualMemory64 failed with code: 0x" & Hex$(HRes)
     End If
 End Function
 
@@ -1578,8 +1576,6 @@ Private Function read_pbi(Handle As Long, PBI As PROCESS_BASIC_INFORMATION64) As
     
     If NT_SUCCESS(HRes) Then
         read_pbi = True
-    Else
-        Debug.Print "NtWow64QueryInformationProcess64 failed with code: 0x" & Hex$(HRes)
     End If
 End Function
 
@@ -1677,14 +1673,12 @@ Public Function GetProcessIOPriority(lPID As Long) As IO_PRIORITY_INFORMATION
         lret = NtQueryInformationProcess(hProc, ProcessIoPriority, VarPtr(dwPrio), 4&, 0&)
         If 0 = lret Then
             GetProcessIOPriority = dwPrio
-        Else
-            Debug.Print "Failed in NtQueryInformationProcess (ProcessIoPriority) with error = 0x" & Hex$(lret) & ", PID = " & lPID
         End If
         CloseHandle hProc
     End If
 End Function
 
-Public Function SetProcessIOPriority(lPID As Long, dwPriority As IO_PRIORITY_INFORMATION) 'required SeIncreaseBasePriorityPrivilege 'Vista+
+Public Function SetProcessIOPriority(lPID As Long, dwPriority As IO_PRIORITY_INFORMATION) As Boolean 'required SeIncreaseBasePriorityPrivilege 'Vista+
     Dim hProc&, lret&
     If lPID = 0 Or lPID = 4 Then Exit Function
     
@@ -1694,12 +1688,8 @@ Public Function SetProcessIOPriority(lPID As Long, dwPriority As IO_PRIORITY_INF
             lret = NtSetInformationProcess(hProc, ProcessIoPriority, VarPtr(dwPriority), 4&)
             If 0 = lret Then
                 SetProcessIOPriority = True
-            Else
-                Debug.Print "Failed in NtSetInformationProcess (ProcessIoPriority) with error = 0x" & Hex$(lret)
             End If
             CloseHandle hProc
-        Else
-            Debug.Print "Failed in OpenProcess with error = 0x" & Hex$(Err.LastDllError) & ", PID = " & lPID
         End If
     End If
 End Function
@@ -1717,13 +1707,13 @@ Public Function GetProcessPagePriority(lPID As Long) As Long
         If 0 = lret Then
             GetProcessPagePriority = dwPrio
         Else
-            Debug.Print "Failed in NtQueryInformationProcess (ProcessPagePriority) with error = 0x" & Hex$(lret) & ", PID = " & lPID
+            If inIDE Then Debug.Print "Failed in NtQueryInformationProcess (ProcessPagePriority) with error = 0x" & Hex$(lret) & ", PID = " & lPID
         End If
         CloseHandle hProc
     End If
 End Function
 
-Public Function SetProcessPagePriority(lPID As Long, dwPriority As MEMORY_PRIORITY_INFORMATION)
+Public Function SetProcessPagePriority(lPID As Long, dwPriority As MEMORY_PRIORITY_INFORMATION) As Boolean
     Dim hProc&, lret&
     If lPID = 0 Or lPID = 4 Then Exit Function
     
@@ -1735,12 +1725,8 @@ Public Function SetProcessPagePriority(lPID As Long, dwPriority As MEMORY_PRIORI
         lret = NtSetInformationProcess(hProc, ProcessPagePriority, VarPtr(dwPriority), 4&)
         If 0 = lret Then
             SetProcessPagePriority = True
-        Else
-            Debug.Print "Failed in NtSetInformationProcess (ProcessPagePriority) with error = 0x" & Hex$(lret)
         End If
         CloseHandle hProc
-    Else
-        Debug.Print "Failed in OpenProcess with error = 0x" & Hex$(Err.LastDllError) & ", PID = " & lPID
     End If
 End Function
 
@@ -1755,7 +1741,7 @@ Public Function GetParentPID(lPID As Long) As Long
         If 0 = lret Then
             GetParentPID = PBI.InheritedFromUniqueProcessId
         Else
-            Debug.Print "Failed in NtQueryInformationProcess (ProcessBasicInformation) with error = 0x" & Hex$(lret) & ", PID = " & lPID
+            If inIDE Then Debug.Print "Failed in NtQueryInformationProcess (ProcessBasicInformation) with error = 0x" & Hex$(lret) & ", PID = " & lPID
         End If
         CloseHandle hProc
     End If
@@ -1817,11 +1803,11 @@ Public Function GetProcessCriticalFlag(lPID&, l_OutFlag As Long) As Boolean
             l_OutFlag = Flag
             GetProcessCriticalFlag = True
         Else
-            Debug.Print "Failed in NtQueryInformationProcess (ProcessBreakOnTermination) with error = 0x" & Hex$(lret) & ", PID = " & lPID
+            If inIDE Then Debug.Print "Failed in NtQueryInformationProcess (ProcessBreakOnTermination) with error = 0x" & Hex$(lret) & ", PID = " & lPID
         End If
         CloseHandle hProc
     Else
-        Debug.Print "Failed in OpenProcess with error = 0x" & Hex$(Err.LastDllError) & ", PID = " & lPID
+        If inIDE Then Debug.Print "Failed in OpenProcess with error = 0x" & Hex$(Err.LastDllError) & ", PID = " & lPID
     End If
 End Function
 
@@ -1834,12 +1820,8 @@ Public Function SetProcessCriticalFlag(lPID&, bEnable As Boolean) As Boolean 're
         lret = NtSetInformationProcess(hProc, ProcessBreakOnTermination, IIf(bEnable, VarPtr(1&), VarPtr(0&)), 4&)
         If 0 = lret Then
             SetProcessCriticalFlag = True
-        Else
-            Debug.Print "Failed in NtSetInformationProcess (ProcessBreakOnTermination) with error = 0x" & Hex$(lret)
         End If
         CloseHandle hProc
-    Else
-        Debug.Print "Failed in OpenProcess with error = 0x" & Hex$(Err.LastDllError) & ", PID = " & lPID
     End If
 End Function
 

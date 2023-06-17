@@ -24,9 +24,9 @@ HiJackThis+ is not a replacement of a classical antivirus. It doesn't provide a 
 
 ## Download
 [![](https://dragokas.com/tools/img/hjt/Icon_mini.png)](https://dragokas.com/tools/HiJackThis_stable.zip)
-[Pre-built binary (release version) for Windows](https://dragokas.com/tools/HiJackThis_stable.zip)
+[Pre-built binary (release version) for Windows](https://dragokas.com/tools/HiJackThis_stable.zip) (outdated v2.x)
 
-[Nightly build (private test version) for Windows](https://dragokas.com/tools/HiJackThis_test.zip)
+[Nightly build (private test version) for Windows](https://dragokas.com/tools/HiJackThis_test.zip) (new v3.x Alpha)
 
 Files are digitally signed.
 Certificate's thumbprint (SHA256) should be: 05F1F2D5BA84CDD6866B37AB342969515E3D912E

@@ -298,6 +298,8 @@ Private Sub Form_Load()
     ReloadLanguage True
     LoadWindowPos Me, SETTINGS_SECTION_UNINSTMAN
     cmdRefresh_Click
+    SubClassTextbox Me.txtName.hwnd, True
+    SubClassTextbox Me.txtUninstCmd.hwnd, True
 End Sub
 
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
@@ -307,6 +309,9 @@ Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
     If UnloadMode = 0 Then 'initiated by user (clicking 'X')
         Cancel = True
         Me.Hide
+    Else
+        SubClassTextbox Me.txtName.hwnd, False
+        SubClassTextbox Me.txtUninstCmd.hwnd, False
     End If
 End Sub
 
@@ -366,7 +371,7 @@ Private Sub lstUninstMan_Click()
                 If isURL(.WebSite) Then
                     Blink = True
                 ElseIf StrBeginWith(.WebSite, "file:///") Then
-                    If FileExists(Replace$(Mid$(.WebSite, 9), "/", "\")) Then
+                    If FileExists(Replace$(mid$(.WebSite, 9), "/", "\")) Then
                         Blink = True
                     End If
                 ElseIf FileExists(.WebSite) Or FolderExists(.WebSite) Then
@@ -463,14 +468,14 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Sub ProcessRunAsX64(sCMDLine As String)
+Sub ProcessRunAsX64(sCmdLine As String)
     
     Dim sFileX64 As String
     Dim sFile As String
     Dim sApp As String
     Dim sArgs As String
     
-    SplitIntoPathAndArgs sCMDLine, sApp, sArgs, bIsRegistryData:=True
+    SplitIntoPathAndArgs sCmdLine, sApp, sArgs, bIsRegistryData:=True
     
     sFile = FindOnPath(sApp)
     sFileX64 = PathX64(sFile)
@@ -478,7 +483,7 @@ Sub ProcessRunAsX64(sCMDLine As String)
     If sFile <> sFileX64 Then
         Proc.ProcessRun vbNullString, """" & sFileX64 & """" & " " & sArgs
     Else
-        Proc.ProcessRun vbNullString, sCMDLine
+        Proc.ProcessRun vbNullString, sCmdLine
     End If
 End Sub
 
@@ -578,7 +583,7 @@ Private Sub cmdWebSiteOpen_Click()
         If isURL(sURL) Then
             OpenURL sURL
         ElseIf StrBeginWith(sURL, "file:///") Then
-            sFile = Replace$(Mid$(sURL, 9), "/", "\")
+            sFile = Replace$(mid$(sURL, 9), "/", "\")
             If FileExists(sFile) Then
                 OpenAndSelectFile sFile
             End If
@@ -787,22 +792,16 @@ End Function
 Private Sub cmdSave_Click()
     On Error GoTo ErrorHandler:
     
-    Dim i&, sFile$, hFile&, id&, bShowHeader As Boolean, Stady&, HE As clsHiveEnum
+    Dim i&, sFile$, hFile&, id&, bShowHeader As Boolean, HE As clsHiveEnum
     Dim sList As clsStringBuilder
     
     Set HE = New clsHiveEnum
     Set sList = New clsStringBuilder
     
-    Stady = 1
-    
     If lstUninstMan.ListCount = 0 Then Exit Sub
-    
-    Stady = 2
     
     'sFile = SaveFileDialog("Save "Intalled Software list" to disk...", "Text files (*.txt)|*.txt|All files (*.*)|*.*", "uninstall_list.txt")
     sFile = SaveFileDialog(Translate(1711), AppPath(), "uninstall_list.txt", Translate(1712) & " (*.txt)|*.txt|" & Translate(1003) & " (*.*)|*.*")
-    
-    Stady = 3
     
     If Len(sFile) = 0 Then Exit Sub
     
@@ -810,8 +809,6 @@ Private Sub cmdSave_Click()
     sList.AppendLine "Logfile of Uninstall manager v." & UninstManVer & " (HiJackThis+ v." & AppVerString & ")"
     sList.AppendLine
     sList.Append MakeLogHeader()
-    
-    Stady = 4
     
     'Log filters used
     If chkFilterCommon.Value = vbChecked And _
@@ -840,8 +837,6 @@ Private Sub cmdSave_Click()
     sList.AppendLine String$(55, "-")
     sList.AppendLine
     
-    Stady = 5
-    
     For i = 0 To lstUninstMan.ListCount - 1
         id = lstUninstMan.ItemData(i)
         sList.AppendLine FormatLogString(id)
@@ -854,23 +849,16 @@ Private Sub cmdSave_Click()
     sList.AppendLine String$(55, "-")
     sList.AppendLine
     
-    Stady = 6
-    
     ' Make positions array of sorting by .KeyTime property (registry key date).
     Dim cnt&: cnt = lstUninstMan.ListCount - 1
     Dim pos() As Variant, names() As String: ReDim pos(cnt), names(cnt)
     For i = 0 To cnt: pos(i) = i: names(i) = UninstData(i).KeyTime: Next
     
-    Stady = 7
     QuickSortSpecial names, pos, 0, cnt
-    
-    Stady = 8
     
     For i = cnt To 0 Step -1 'descending order
         sList.AppendLine UninstData(pos(i)).KeyTime & vbTab & FormatLogString(CLng(pos(i)))
     Next
-    
-    Stady = 9
     
     sList.AppendLine
     sList.AppendLine
@@ -878,8 +866,6 @@ Private Sub cmdSave_Click()
     sList.AppendLine Space$(11) & "Uninstall Key Registry Snapshot"
     sList.AppendLine String$(55, "-")
     sList.AppendLine
-    
-    Stady = 10
     
     Dim HiveFilter As HE_HIVE
     If chkFilterHKLM.Value = vbChecked Then HiveFilter = HiveFilter Or HE_HIVE_HKLM
@@ -904,18 +890,12 @@ Private Sub cmdSave_Click()
     
     sList.Append "--" & vbCrLf & "End of file"
     
-    Stady = 11
-    
     If FileExists(sFile) Then DeleteFilePtr (StrPtr(sFile))
-    
-    Stady = 12
     
     If OpenW(sFile, FOR_OVERWRITE_CREATE, hFile, g_FileBackupFlag) Then
         PutW hFile, 1, StrPtr(sList.ToString), sList.Length * 2
         CloseW hFile, True
     End If
-    
-    Stady = 13
     
     OpenLogFile sFile
     
@@ -924,7 +904,7 @@ Private Sub cmdSave_Click()
     
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "frmMain.cmdUninstManSave_Click", "Stady: " & Stady
+    ErrorMsg Err, "frmMain.cmdUninstManSave_Click"
     If inIDE Then Stop: Resume Next
 End Sub
 

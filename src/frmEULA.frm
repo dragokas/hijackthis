@@ -144,7 +144,7 @@ Private Sub Form_Initialize()
     Dim hModShell   As Long
     Dim pos         As Long
     Dim sTime       As String
-    Dim sCMDLine    As String
+    Dim sCmdLine    As String
     Dim sPath       As String
     Dim ExeName     As String
     
@@ -248,6 +248,8 @@ Private Sub Form_Initialize()
     Set oDictFileExist = New clsTrickHashTable  'file exists cache
     oDictFileExist.CompareMode = 1
     
+    InitVerifyDigiSign
+    
     '/nogui /StartupScan /install
     If HasCommandLineKey("nogui") _
       Or HasCommandLineKey("StartupScan") _
@@ -255,25 +257,25 @@ Private Sub Form_Initialize()
         gNoGUI = True
     End If
     
-    sCMDLine = Replace$(g_sCommandLine, ":", "+")
+    sCmdLine = Replace$(g_sCommandLine, ":", "+")
     
     '/Tool:xxx
-    If Len(sCMDLine) <> 0 Then
-        If InStr(1, sCMDLine, "tool+StartupList", 1) <> 0 Then bRunToolStartupList = True: gNoGUI = True
-        If InStr(1, sCMDLine, "tool+UninstMan", 1) <> 0 Then bRunToolUninstMan = True: gNoGUI = True
-        If InStr(1, sCMDLine, "tool+DigiSign", 1) <> 0 Then bRunToolEDS = True: gNoGUI = True
-        If InStr(1, sCMDLine, "tool+RegUnlocker", 1) <> 0 Then bRunToolRegUnlocker = True: gNoGUI = True
-        If InStr(1, sCMDLine, "tool+RegTypeChecker", 1) <> 0 Then bRunToolRegTypeChecker = True: gNoGUI = True
-        If InStr(1, sCMDLine, "tool+ADSSpy", 1) <> 0 Then bRunToolADSSpy = True: gNoGUI = True
-        If InStr(1, sCMDLine, "tool+Hosts", 1) <> 0 Then bRunToolHosts = True: gNoGUI = True
-        If InStr(1, sCMDLine, "tool+ProcMan", 1) <> 0 Then bRunToolProcMan = True: gNoGUI = True
-        If InStr(1, sCMDLine, "tool+CheckLNK", 1) <> 0 Then bRunToolCBL = True: gNoGUI = True
-        If InStr(1, sCMDLine, "tool+ClearLNK", 1) <> 0 Then bRunToolClearLNK = True: gNoGUI = True
-        If InStr(1, sCMDLine, "tool+Autoruns", 1) <> 0 Then bRunToolAutoruns = True: gNoGUI = True
-        If InStr(1, sCMDLine, "tool+Executed", 1) <> 0 Then bRunToolExecuted = True: gNoGUI = True
-        If InStr(1, sCMDLine, "tool+LastActivity", 1) <> 0 Then bRunToolLastActivity = True: gNoGUI = True
-        If InStr(1, sCMDLine, "tool+ServiWin", 1) <> 0 Then bRunToolServiWin = True: gNoGUI = True
-        If InStr(1, sCMDLine, "tool+TaskScheduler", 1) <> 0 Then bRunToolTaskScheduler = True: gNoGUI = True
+    If Len(sCmdLine) <> 0 Then
+        If InStr(1, sCmdLine, "tool+StartupList", 1) <> 0 Then bRunToolStartupList = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+UninstMan", 1) <> 0 Then bRunToolUninstMan = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+DigiSign", 1) <> 0 Then bRunToolEDS = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+RegUnlocker", 1) <> 0 Then bRunToolRegUnlocker = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+RegTypeChecker", 1) <> 0 Then bRunToolRegTypeChecker = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+ADSSpy", 1) <> 0 Then bRunToolADSSpy = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+Hosts", 1) <> 0 Then bRunToolHosts = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+ProcMan", 1) <> 0 Then bRunToolProcMan = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+CheckLNK", 1) <> 0 Then bRunToolCBL = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+ClearLNK", 1) <> 0 Then bRunToolClearLNK = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+Autoruns", 1) <> 0 Then bRunToolAutoruns = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+Executed", 1) <> 0 Then bRunToolExecuted = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+LastActivity", 1) <> 0 Then bRunToolLastActivity = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+ServiWin", 1) <> 0 Then bRunToolServiWin = True: gNoGUI = True
+        If InStr(1, sCmdLine, "tool+TaskScheduler", 1) <> 0 Then bRunToolTaskScheduler = True: gNoGUI = True
     End If
     
     ExeName = GetFileName(AppPath(True))
@@ -343,7 +345,7 @@ Private Sub Form_Initialize()
     If bDebugMode Then
         OpenDebugLogHandle
     End If
-
+    
     Exit Sub
 ErrorHandler:
     If InStr(1, g_sCommandLine, "silentautolog", 1) = 0 Then

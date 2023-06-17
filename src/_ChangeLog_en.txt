@@ -11,6 +11,33 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[3.1.0.1 Alpha] - June 17, 2023
+ - Added detection of O4 - Active Setup (thanks to regist).
+ - Added flag (+safe mode) for services and drivers that starts in safe mode.
+ - Added file signer to the logfile (in all sections where it makes sense):
+	* for all Microsoft files the mark will look like this: (Sign: 'Microsoft')
+	* unsigned files: (no sign)
+	* files with signature verification error: (invalid sign)
+	* files with a successfully verified signature, however without trust of the root certificate: (sign: '<Signer>', but untrusted root: '<Root Issuer>' with fingerprint: <hash>)
+	* the signature is specified for the main file, not the argument. The exceptions are: O22 (based on Rundll32 and CLSID) and O23 host services, which displays the name of the dll signer.
+	* other details can be found in additional help (RU only): https://www.safezone.cc/threads/dopolnenie-v-rukovodstvo-po-hijackthis.27470/post-333487
+ - EDS verification tool:
+	* added field "Root Issuer" - name of the issuer of the root certificate.
+	* added field "API error code" - GetLastError verification functions. Do not rely on this code as a validation result.
+	* added field "Signer name (friendly)" - name of the signer, as it appears in the explorer properties window.
+ 	* fixed lot of bugs.
+ - Optimization of the file existence check code.
+ - Support for Ctrl + A to select all text in input fields.
+ - Fixed: Data corruption while copying/pasting text into input fields with a different keyboard layout.
+ - Fixed: in O23 - Drivers some paths were specified with wrong redirector.
+ - Fixed: missing -32 prefixes for some sections.
+ - For O10 LSP Fix under Windows 8+ it is recommended to use Uncle Carey's NetFix utility.
+ - Updated the list of well-known DNS address substitutions for O17.
+ - Blocked possible closing of the window by the user in case of lag (thanks to The Trick).
+ - Installer: Added shortcut "Registry Key Type Analyzer".
+ - Auto-update: Improved installation of HiJackThis when it is shipped with multiple files.
+ - Auto-update: Fixed several bugs when HJT is installed to another folder via /instDir key (thanks to de-served).
+
 [3.0.0.6 Alpha] - June 04, 2023
 - Fight against false antivirus detections:
 	* Encrypted strings with Windows Defender keys
@@ -1748,4 +1775,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                                                                                                                        
+                                                                                                                          

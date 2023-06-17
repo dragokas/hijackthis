@@ -2055,13 +2055,24 @@ Public Sub Test()
     On Error GoTo ErrorHandler:
     
     'If you need something to test after program started and initialized all required variables, please use this sub.
-
+    
     'Dim hToken As Long
     'Debug.Print LogonUser(StrPtr("test"), StrPtr("Alex-PC"), StrPtr(""), LOGON32_LOGON_INTERACTIVE, 0, hToken)
     '1327 - On Empty password (policy restricted)
     '1326 - When the password is wrong
     'Debug.Print "hToken = " & hToken & ". Err = " & Err.LastDllError
     'If hToken <> 0 Then CloseHandle hToken
+    
+    'Dim SignResult As SignResult_TYPE
+    'Debug.Print SignVerify("C:\Windows\system32\DRIVERS\klgse.sys", 0, SignResult)
+    'Debug.Print SignVerifyJack("C:\Windows\system32\DRIVERS\klgse.sys", SignResult)
+    'Debug.Print IsMicrosoftDriverFileEx("C:\Windows\system32\DRIVERS\klgse.sys", SignResult)
+    'Debug.Print "Api err code: " & SignResult.ApiErrorCode
+    'Debug.Print "Signer: " & SignResult.SubjectName
+    'Debug.Print "Email: " & SignResult.SubjectEmail
+    
+    'DownloadAndUpdateSelf "https://dragokas.com/tools/HiJackThis.zip", False
+    'UnpackZIP = make recursive
     
     Exit Sub
 ErrorHandler:
@@ -2200,7 +2211,7 @@ Private Sub FormStart_Stage1()
     Dim OptB  As OptionButton
     Dim Fra   As Frame
     Dim i     As Long
-    Dim sCMDLine As String
+    Dim sCmdLine As String
     
     AppendErrorLogCustom "FormStart_Stage1 - Begin"
     
@@ -2223,10 +2234,8 @@ Private Sub FormStart_Stage1()
         End If
     End If
     
-    If Not DisableSubclassing And Not bAutoLogSilent Then
+    If (Not DisableSubclassing) And (Not bAutoLogSilent) Then
         SubClassScroll True
-        'RegisterHotKey Me.hwnd, HOTKEY_ID_CTRL_A, MOD_CONTROL Or MOD_NOREPEAT, vbKeyF
-        'RegisterHotKey Me.hwnd, HOTKEY_ID_CTRL_F, MOD_CONTROL Or MOD_NOREPEAT, vbKeyF
     End If
     
     ' Result -> sWinVersion (global)
@@ -2439,20 +2448,20 @@ Private Sub FormStart_Stage1()
     If HasCommandLineKey("delmode:disable") Then g_bDelmodeDisabling = True
     
     '/Area:xxx
-    sCMDLine = Replace$(g_sCommandLine, ":", "+")
+    sCmdLine = Replace$(g_sCommandLine, ":", "+")
     
     '/Area:Processes
-    If InStr(1, sCMDLine, "Area+Process", 1) > 0 Then bLogProcesses = True
-    If InStr(1, sCMDLine, "Area-Process", 1) > 0 Then bLogProcesses = False
+    If InStr(1, sCmdLine, "Area+Process", 1) > 0 Then bLogProcesses = True
+    If InStr(1, sCmdLine, "Area-Process", 1) > 0 Then bLogProcesses = False
     '/Area:Modules
-    If InStr(1, sCMDLine, "Area+Modules", 1) > 0 Then bLogModules = True
-    If InStr(1, sCMDLine, "Area-Modules", 1) > 0 Then bLogModules = False
+    If InStr(1, sCmdLine, "Area+Modules", 1) > 0 Then bLogModules = True
+    If InStr(1, sCmdLine, "Area-Modules", 1) > 0 Then bLogModules = False
     '/Area:Environment
-    If InStr(1, sCMDLine, "Area+Environment", 1) > 0 Then bLogEnvVars = True
-    If InStr(1, sCMDLine, "Area-Environment", 1) > 0 Then bLogEnvVars = False
+    If InStr(1, sCmdLine, "Area+Environment", 1) > 0 Then bLogEnvVars = True
+    If InStr(1, sCmdLine, "Area-Environment", 1) > 0 Then bLogEnvVars = False
     '/Area:Additional
-    If InStr(1, sCMDLine, "Area+Additional", 1) > 0 Then bAdditional = True
-    If InStr(1, sCMDLine, "Area-Additional", 1) > 0 Then bAdditional = False
+    If InStr(1, sCmdLine, "Area+Additional", 1) > 0 Then bAdditional = True
+    If InStr(1, sCmdLine, "Area-Additional", 1) > 0 Then bAdditional = False
     
     fraConfig.Left = 120
     fraHelp.Left = 120
@@ -2467,6 +2476,9 @@ Private Sub FormStart_Stage1()
     
     If bAutoLogSilent Then
         Me.Height = 1800
+        Me.Enabled = False 'Decrease message queue
+        DisableProcessWindowsGhosting 'Disable queue
+        'Revert (Core only): NtUserCallOneParam(1, ONEPARAM_ROUTINE_ENABLEPROCWNDGHSTING)
     Else
         bLockResize = True
         
@@ -2589,8 +2601,8 @@ Private Sub FormStart_Stage2()
         End If
     End If
     
-    Dim sCMDLine$
-    sCMDLine = g_sCommandLine
+    Dim sCmdLine$
+    sCmdLine = g_sCommandLine
     
     '/install
     If HasCommandLineKey("install") Then
@@ -2603,7 +2615,7 @@ Private Sub FormStart_Stage2()
             Dim bSetDelay As Boolean
             Dim lDelay As Long
             
-            lTotal = ParseSubCmdLine(sCMDLine, "autostart", aKey(), aValue())
+            lTotal = ParseSubCmdLine(sCmdLine, "autostart", aKey(), aValue())
             For i = 0 To lTotal - 1
                 Select Case UCase$(aKey(i))
                 Case "D"
@@ -2615,12 +2627,12 @@ Private Sub FormStart_Stage2()
             Next
             
             If (bSetDelay) Then
-                InstallAutorunHJT True, lDelay
+                InstallAutorunHJT True, lDelay, True
             Else
-                InstallAutorunHJT True
+                InstallAutorunHJT True, , True
             End If
         Else
-            InstallHJT True, HasCommandLineKey("noGUI") '/noGUI
+            InstallHJT True, HasCommandLineKey("noGUI")   '/noGUI
         End If
         Unload Me
         Exit Sub
@@ -2636,14 +2648,15 @@ Private Sub FormStart_Stage2()
     
         'check sign. of core dll
         SignVerify BuildPath(sWinDir, "system32\ntdll.dll"), SV_LightCheck Or SV_SelfTest, SignResult
-        Dbg "Fingerprint should be: CDD4EEAE6000AC7F40C3802C171E30148030C072"
-        If StrComp(SignResult.HashRootCert, "CDD4EEAE6000AC7F40C3802C171E30148030C072", 1) = 0 Then
-            Dbg "Fingerprint is mathed (OK)."
+        Dbg "Fingerprint should be: CDD4EEAE6000AC7F40C3802C171E30148030C072 or 3B1EFD3A66EA28B16697394703A72CA340A05BD5"
+        If StrComp(SignResult.HashRootCert, "CDD4EEAE6000AC7F40C3802C171E30148030C072", 1) = 0 Or _
+          StrComp(SignResult.HashRootCert, "3B1EFD3A66EA28B16697394703A72CA340A05BD5", 1) = 0 Then
+            Dbg "Fingerprint is matched (OK)."
         Else
-            Dbg "Fingerprint is NOT mathed (FAILED)."
+            Dbg "Fingerprint is NOT matched (FAILED)."
         End If
         'check sign of self
-        SignVerify AppPath(True), SV_SelfTest Or SV_PreferInternalSign, SignResult
+        SignVerify AppPath(True), SV_SelfTest Or SV_PreferInternalSign Or SV_AllowExpired, SignResult
         
         If Not IsDragokasSign(SignResult) Then
             Dbg "HJT internal signature is INVALID."
@@ -2976,7 +2989,7 @@ Private Sub FormStart_Stage3()
     
     If bRunToolAutoruns Then
     
-        Debug.Print "Making Autoruns log ..."
+        If inIDE Then Debug.Print "Making Autoruns log ..."
     
         MkDirW sLogDir
         SetCurrentDirectory StrPtr(sLogDir)
@@ -3078,7 +3091,7 @@ Private Sub FormStart_Stage3()
     dRunFiles.CompareMode = vbTextCompare
 
     If bRunToolAutoruns Then
-        Debug.Print "Parsing Autoruns log ..."
+        If inIDE Then Debug.Print "Parsing Autoruns log ..."
         ParseFilesXML dRunFiles, BuildPath(sLogDir, "results.xml")
     End If
     If bRunToolExecuted Then
@@ -3118,7 +3131,7 @@ Private Sub FormStart_Stage3()
             DoEvents
             If Not IsMicrosoftFile(sFile, Not bSigSystemOK, True) Then
                 dTemp.Add sFile, 0
-                Debug.Print sFile
+                If inIDE Then Debug.Print sFile
             End If
         Next
         Set dRunFiles = dTemp
@@ -3142,7 +3155,7 @@ Private Sub FormStart_Stage3()
 
     ' VIRUSTOTAL check
 
-    Debug.Print "Run VT check ..."
+    If inIDE Then Debug.Print "Run VT check ..."
 
     DeleteFile StrPtr(sLogClear)
     DeleteFile StrPtr(sLogSuspicious)
@@ -3205,7 +3218,7 @@ Private Sub FormStart_Stage3()
                         sLog = BuildPath(sLogDir, "vt_result_" & CStr(i) & ".xml")
                         DeleteFile StrPtr(sLog)
                     End If
-                    Debug.Print "[Thread:" & i & "] - TIMEOUT !"
+                    If inIDE Then Debug.Print "[Thread:" & i & "] - TIMEOUT !"
                 End If
             End If
             
@@ -3247,7 +3260,7 @@ Private Sub FormStart_Stage3()
                         dRunFiles.Remove sCheckedFile
                     End If
 
-                    Debug.Print "[Thread:" & i & "] - Result: Detects - " & nDetects & " - " & sCheckedFile & " - " & sURL
+                    If inIDE Then Debug.Print "[Thread:" & i & "] - Result: Detects - " & nDetects & " - " & sCheckedFile & " - " & sURL
 
                 End If
 
@@ -3302,8 +3315,8 @@ Private Sub FormStart_Stage3()
 
                             dRunFiles(sFile) = dRunFiles(sFile) + 1
 
-                            Debug.Print "[Thread:" & i & "] Attempt #" & dRunFiles(sFile) & ". VT Checking file: " & sFile
-                            Debug.Print "Files left: " & dRunFiles.Count
+                            If inIDE Then Debug.Print "[Thread:" & i & "] Attempt #" & dRunFiles(sFile) & ". VT Checking file: " & sFile
+                            If inIDE Then Debug.Print "Files left: " & dRunFiles.Count
                             
                             GetProcesses eProc1
                             
@@ -3399,7 +3412,8 @@ Private Sub FormStart_Stage3()
     End If
     
     If bAutoLogSilent Then
-        Unload Me
+        ExitProcess 0
+        'Unload Me
         Exit Sub
     End If
     
@@ -3766,6 +3780,11 @@ End Sub
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
     On Error Resume Next
     
+    If bAutoLogSilent And UnloadMode <> 1 Then
+        Cancel = True
+        Exit Sub
+    End If
+    
     Dim sReason As String
     
     Select Case UnloadMode
@@ -3801,7 +3820,7 @@ Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
     BackupFlush
     If g_WER_Disabled Then DisableWER bRevert:=True
     
-    Dim Frm As Form
+    Dim frm As Form
     ToggleWow64FSRedirection True
     If Not g_UninstallState Then
         SaveSettings
@@ -3812,10 +3831,10 @@ Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
     SubClassScroll False
     'UnregisterHotKey Me.hwnd, HOTKEY_ID_CTRL_A
     'UnregisterHotKey Me.hwnd, HOTKEY_ID_CTRL_F
-    For Each Frm In Forms
-        If Not (Frm Is Me) And Not (Frm.Name = "frmEULA") Then
-            Unload Frm
-            Set Frm = Nothing
+    For Each frm In Forms
+        If Not (frm Is Me) And Not (frm.Name = "frmEULA") Then
+            Unload frm
+            Set frm = Nothing
         End If
     Next
     
@@ -6958,7 +6977,7 @@ Private Sub SetFontByUserSettings()
     
     If bAutoLogSilent Then Exit Sub 'speed optimization
     
-    Dim Frm As Form
+    Dim frm As Form
     If cmbFont.ListIndex <> -1 Then
         g_FontName = cmbFont.List(cmbFont.ListIndex)
         If Len(g_FontName) = 0 Then
@@ -6971,8 +6990,8 @@ Private Sub SetFontByUserSettings()
     If g_FontSize = "0" Then g_FontSize = "8"
     g_bFontBold = (chkFontBold.Value = vbChecked)
     
-    For Each Frm In Forms
-        SetAllFontCharset Frm, g_FontName, g_FontSize, g_bFontBold
+    For Each frm In Forms
+        SetAllFontCharset frm, g_FontName, g_FontSize, g_bFontBold
         'SetMenuFont Frm.hwnd, g_FontName, g_FontSize
     Next
     

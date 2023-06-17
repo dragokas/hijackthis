@@ -11,6 +11,16 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
+'[clsDataChecker.cls]
+
+'
+' Data Checker by Dragokas
+'
+' ver. 1.0
+'
+' Purpose: Key-Value-like iterator, intended to simplify checking value > data and value > data-array pairs in registry
+'
+
 Option Explicit
 
 Private Type VALUE_CONTAINER

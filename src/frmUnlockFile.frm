@@ -300,6 +300,7 @@ Private Sub Form_Load()
     SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold
     ReloadLanguage True
     LoadWindowPos Me, SETTINGS_SECTION_FILEUNLOCKER
+    SubClassTextbox Me.txtInput.hwnd, True
 End Sub
 
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
@@ -309,6 +310,8 @@ Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
     If UnloadMode = 0 Then 'initiated by user (clicking 'X')
         Cancel = True
         Me.Hide
+    Else
+        SubClassTextbox Me.txtInput.hwnd, False
     End If
 End Sub
 

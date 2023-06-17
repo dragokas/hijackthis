@@ -79,12 +79,18 @@ Public Function SFCList_XP() As String()
     Dim i                       As Long
     
     hSfc_Lib = LoadLibrary(StrPtr("sfc.dll"))
-    If hSfc_Lib = 0 Then Debug.Print "Error! Cannot get sfc.dll library handle.": Exit Function
+    If hSfc_Lib = 0 Then
+        If inIDE Then Debug.Print "Error! Cannot get sfc.dll library handle."
+        Exit Function
+    End If
     
     PatchFunc "SfcGetNextProtectedFile", AddressOf SfcGetNextProtectedFile
     
     SfcGetNextProtFileAddr = GetProcAddress(hSfc_Lib, "SfcGetNextProtectedFile")
-    If SfcGetNextProtFileAddr = 0 Then Debug.Print "Error: cannot get SfcGetNextProtectedFile function address!": Exit Function
+    If SfcGetNextProtFileAddr = 0 Then
+        If inIDE Then Debug.Print "Error: cannot get SfcGetNextProtectedFile function address!"
+        Exit Function
+    End If
     
     ReDim SFCList(300)
     
@@ -134,12 +140,18 @@ Public Function SFCList_XP_0() As String()  ' with SFCFILES.dll
     InitVars
     
     hSfcFil_Lib = LoadLibrary(StrPtr("sfcfiles.dll"))
-    If hSfcFil_Lib = 0 Then Debug.Print "Error! Cannot get sfcfiles.dll library handle.": Exit Function
+    If hSfcFil_Lib = 0 Then
+        If inIDE Then Debug.Print "Error! Cannot get sfcfiles.dll library handle."
+        Exit Function
+    End If
     
     PatchFunc "SfcGetFiles", AddressOf SfcGetFiles
     
     SfcGetFilesAddr = GetProcAddress(hSfcFil_Lib, "SfcGetFiles")
-    If SfcGetFilesAddr = 0 Then Debug.Print "Error: cannot get SfcGetFiles function address!": Exit Function
+    If SfcGetFilesAddr = 0 Then
+        If inIDE Then Debug.Print "Error: cannot get SfcGetFiles function address!"
+        Exit Function
+    End If
     
     FileCount = 0
     ret = SfcGetFiles(SfcGetFilesAddr, pfe, FileCount)
@@ -148,7 +160,10 @@ Public Function SFCList_XP_0() As String()  ' with SFCFILES.dll
     'Debug.Print "InfName=" & pfe.InfName
     'Debug.Print "SourceFileName=" & pfe.SourceFileName
         
-    If pfe.SourceFileName = 0 Then Debug.Print "Error! Can't get a pointer to FileNames with SfcGetFiles function !": Exit Function
+    If pfe.SourceFileName = 0 Then
+        If inIDE Then Debug.Print "Error! Can't get a pointer to FileNames with SfcGetFiles function !"
+        Exit Function
+    End If
             
     ReDim SFCList(FileCount - 1)
     
@@ -194,17 +209,26 @@ Public Function SFCList_Vista() As String()
     InitVars
     
     hSfc_os_Lib = LoadLibrary(StrPtr("sfc_os.dll"))
-    If hSfc_os_Lib = 0 Then Debug.Print "Error! Cannot get sfc_os.dll library handle.": Exit Function
+    If hSfc_os_Lib = 0 Then
+        If inIDE Then Debug.Print "Error! Cannot get sfc_os.dll library handle."
+        Exit Function
+    End If
     
     PatchFunc "BeginFileMapEnumeration", AddressOf BeginFileMapEnumeration
     PatchFunc "CloseFileMapEnumeration", AddressOf CloseFileMapEnumeration
     PatchFunc "GetNextFileMapContent", AddressOf GetNextFileMapContent
 
     BeginFileMapAddr = GetProcAddress(hSfc_os_Lib, "BeginFileMapEnumeration")
-    If BeginFileMapAddr = 0 Then Debug.Print "Error: cannot get BeginFileMapEnumeration function address!": Exit Function
+    If BeginFileMapAddr = 0 Then
+        If inIDE Then Debug.Print "Error: cannot get BeginFileMapEnumeration function address!"
+        Exit Function
+    End If
     
     ret = BeginFileMapEnumeration(BeginFileMapAddr, 0&, 0&, hSFC)
-    If hSFC = 0 Then Debug.Print "Error! Cannot get handle of first element of BeginFileMapEnumeration."
+    If hSFC = 0 Then
+        If inIDE Then Debug.Print "Error! Cannot get handle of first element of BeginFileMapEnumeration."
+        Exit Function
+    End If
     
     dwBufferSize = Len(pData)
     
@@ -226,7 +250,7 @@ Public Function SFCList_Vista() As String()
                 Exit Do
         
             Case ERROR_INSUFFICIENT_BUFFER Or (dwNeeded > dwBufferSize)
-                Debug.Print "ERROR_INSUFFICIENT_BUFFER"
+                If inIDE Then Debug.Print "ERROR_INSUFFICIENT_BUFFER"
     
         End Select
 
@@ -235,7 +259,10 @@ Public Function SFCList_Vista() As String()
     Loop
     
     CloseFileMapAddr = GetProcAddress(hSfc_os_Lib, "CloseFileMapEnumeration")
-    If CloseFileMapAddr = 0 Then Debug.Print "Error: cannot get CloseFileMapEnumeration function address!": Exit Function
+    If CloseFileMapAddr = 0 Then
+        If inIDE Then Debug.Print "Error: cannot get CloseFileMapEnumeration function address!"
+        Exit Function
+    End If
     
     CloseFileMapEnumeration CloseFileMapAddr, hSFC
     
