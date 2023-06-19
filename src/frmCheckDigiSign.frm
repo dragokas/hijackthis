@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin VB.Form frmCheckDigiSign 
    Caption         =   "Digital signature checker"
-   ClientHeight    =   4920
+   ClientHeight    =   6588
    ClientLeft      =   120
    ClientTop       =   468
    ClientWidth     =   9252
@@ -17,8 +17,85 @@ Begin VB.Form frmCheckDigiSign
    Icon            =   "frmCheckDigiSign.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   ScaleHeight     =   4920
+   ScaleHeight     =   6588
    ScaleWidth      =   9252
+   Begin VB.Frame fraMode 
+      Caption         =   "Mode (for experts)"
+      BeginProperty Font 
+         Name            =   "Tahoma"
+         Size            =   7.8
+         Charset         =   204
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   3252
+      Left            =   5400
+      TabIndex        =   17
+      Top             =   2640
+      Width           =   3732
+      Begin VB.CheckBox chkSkipCheckSameCatalogue 
+         Caption         =   "Skip files of already verified security catalogs"
+         Height          =   492
+         Left            =   120
+         TabIndex        =   24
+         Top             =   2520
+         Width           =   3492
+      End
+      Begin VB.CheckBox chkPreferEmbedded 
+         Caption         =   "Prefer embedded signature"
+         Height          =   252
+         Left            =   120
+         TabIndex        =   23
+         Top             =   1440
+         Value           =   1  'Checked
+         Width           =   3372
+      End
+      Begin VB.CheckBox chkNoSizeLimit 
+         Caption         =   "No file size limit"
+         Height          =   156
+         Left            =   120
+         TabIndex        =   22
+         Top             =   1080
+         Value           =   1  'Checked
+         Width           =   3492
+      End
+      Begin VB.CheckBox chkAllowExpired 
+         Caption         =   "Allow expired"
+         Height          =   252
+         Left            =   120
+         TabIndex        =   21
+         Top             =   720
+         Value           =   1  'Checked
+         Width           =   3492
+      End
+      Begin VB.CheckBox chkDisableCatalogue 
+         Caption         =   "Disable verify by catalog"
+         Height          =   204
+         Left            =   120
+         TabIndex        =   20
+         Top             =   1800
+         Width           =   3492
+      End
+      Begin VB.CheckBox chkRevocation 
+         Caption         =   "Check for revocation (internet required)"
+         Height          =   444
+         Left            =   120
+         TabIndex        =   19
+         Top             =   240
+         Width           =   3492
+      End
+      Begin VB.CheckBox chkPrecacheAllCatalogues 
+         Caption         =   "Precache tags of all catalogs"
+         Height          =   204
+         Left            =   120
+         TabIndex        =   18
+         Top             =   2160
+         Value           =   1  'Checked
+         Width           =   3492
+      End
+   End
    Begin VB.CommandButton cmdClear 
       Caption         =   "Clear list"
       Height          =   492
@@ -40,7 +117,7 @@ Begin VB.Form frmCheckDigiSign
       Height          =   492
       Left            =   2400
       TabIndex        =   14
-      Top             =   4320
+      Top             =   6000
       Width           =   1452
    End
    Begin VB.CommandButton cmdSelectFile 
@@ -63,10 +140,10 @@ Begin VB.Form frmCheckDigiSign
          Strikethrough   =   0   'False
       EndProperty
       Height          =   1572
-      Left            =   5400
+      Left            =   240
       TabIndex        =   8
-      Top             =   2640
-      Width           =   3735
+      Top             =   4320
+      Width           =   5052
       Begin VB.OptionButton OptCSV 
          Caption         =   "CSV (Full log in ANSI)"
          Height          =   432
@@ -101,6 +178,14 @@ Begin VB.Form frmCheckDigiSign
       TabIndex        =   4
       Top             =   2640
       Width           =   5055
+      Begin VB.CheckBox chkPeExe 
+         Caption         =   "PE EXE"
+         Height          =   204
+         Left            =   4080
+         TabIndex        =   25
+         Top             =   520
+         Width           =   852
+      End
       Begin VB.OptionButton OptExtension 
          Caption         =   "by extension"
          Height          =   255
@@ -149,7 +234,7 @@ Begin VB.Form frmCheckDigiSign
       Height          =   480
       Left            =   480
       TabIndex        =   2
-      Top             =   4320
+      Top             =   6000
       Width           =   1575
    End
    Begin VB.TextBox txtPaths 
@@ -167,9 +252,9 @@ Begin VB.Form frmCheckDigiSign
       Caption         =   "1 / 1 - File - (in folder)"
       ForeColor       =   &H0000FFFF&
       Height          =   192
-      Left            =   4560
+      Left            =   4680
       TabIndex        =   3
-      Top             =   4404
+      Top             =   6200
       Visible         =   0   'False
       Width           =   4452
    End
@@ -178,7 +263,7 @@ Begin VB.Form frmCheckDigiSign
       BackStyle       =   1  'Opaque
       Height          =   372
       Left            =   4320
-      Top             =   4320
+      Top             =   6120
       Visible         =   0   'False
       Width           =   252
    End
@@ -187,7 +272,7 @@ Begin VB.Form frmCheckDigiSign
       BackStyle       =   1  'Opaque
       Height          =   372
       Left            =   4320
-      Top             =   4320
+      Top             =   6120
       Visible         =   0   'False
       Width           =   4812
    End
@@ -220,7 +305,7 @@ Private Declare Function DeleteFileW Lib "kernel32.dll" (ByVal lpFileName As Lon
 Private Declare Function SfcIsFileProtected Lib "Sfc.dll" (ByVal RpcHandle As Long, ByVal ProtFileName As Long) As Long
 Private Declare Function SetWindowTheme Lib "UxTheme.dll" (ByVal hwnd As Long, ByVal pszSubAppName As Long, ByVal pszSubIdList As Long) As Long
 
-'Private Const CERT_E_UNTRUSTEDROOT          As Long = &H800B0109
+Private Const CERT_E_UNTRUSTEDROOT          As Long = &H800B0109
 Private Const TRUST_E_NOSIGNATURE           As Long = &H800B0100
 Private Const CRYPT_E_BAD_MSG               As Long = &H8009200D
 
@@ -234,6 +319,7 @@ Private Sub cmdGo_Click()
     Dim vPath, vKey
     Dim bRecursively    As Boolean
     Dim bListSystemPath As Boolean
+    Dim bIncludePeExe   As Boolean
     Dim ReportPath      As String
     Dim arrTmp()        As String
     Dim i               As Long
@@ -254,21 +340,21 @@ Private Sub cmdGo_Click()
     Static isInit       As Boolean
     Static oDictSFC     As Object
     
-    '// TODO: add checkbox 'Revocation checking' (warn. about: require internet connection)
     'Add date certificate added to store (look at CERT_DATE_STAMP_PROP_ID flag of CertGetCertificateContextProperty)
     
     If isRan Then Exit Sub
     
-    Set oDictFiles = New clsTrickHashTable  'CreateObject("Scripting.Dictionary")
-    Set oDictSFC = New clsTrickHashTable  'CreateObject("Scripting.Dictionary")
+    Set oDictFiles = New clsTrickHashTable
+    Set oDictSFC = New clsTrickHashTable
     oDictFiles.CompareMode = vbTextCompare
     oDictSFC.CompareMode = vbTextCompare
     
     'Get options
     bRecursively = (chkRecur.Value = 1)
-    bListSystemPath = (chkIncludeSys.Value = 1) 'System32 / SysWow64
-    bCSV = OptCSV.Value               'CSV (in ANSI)
-    bPlainText = optPlainText.Value   'Plain (in Unicode)
+    bListSystemPath = (chkIncludeSys.Value = 1)     'System32 / SysWow64
+    bCSV = OptCSV.Value                             'CSV (in ANSI)
+    bPlainText = optPlainText.Value                 'Plain (in Unicode)
+    bIncludePeExe = (chkPeExe.Value = vbChecked)    'Portable Executable (include in filter)
     
     sPathes = txtPaths.Text
     
@@ -327,7 +413,7 @@ Private Sub cmdGo_Click()
         If FileExists(CStr(vPath)) Then
             If Not oDictFiles.Exists(vPath) Then oDictFiles.Add vPath, 0
         ElseIf FolderExists(CStr(vPath)) Then
-            arrTmp = ListFiles(CStr(vPath), IIf(OptAllFiles.Value, vbNullString, sExtensions), bRecursively)
+            arrTmp = ListFiles(CStr(vPath), IIf(OptAllFiles.Value, vbNullString, sExtensions), bRecursively, bIncludePeExe)
             CopyArrayToDictionary arrTmp, oDictFiles
             DoEvents
         Else
@@ -387,10 +473,36 @@ Private Sub cmdGo_Click()
     
     Set sb = New clsStringBuilder
     
-    AddFlags = SV_DisableLazyCatCheck
+    If chkRevocation.Value = vbChecked Then
+        AddFlags = AddFlags Or SV_CheckRevocation
+    End If
+    If chkAllowExpired.Value = vbChecked Then
+        AddFlags = AddFlags Or SV_AllowExpired
+    End If
+    If chkNoSizeLimit.Value = vbChecked Then
+        AddFlags = AddFlags Or SV_NoFileSizeLimit
+    End If
+    If chkPreferEmbedded.Value = vbChecked Then
+        AddFlags = AddFlags Or SV_PreferInternalSign
+    End If
+    If chkDisableCatalogue.Value = vbChecked Then
+        AddFlags = AddFlags Or SV_DisableCatalogVerify
+    End If
+    If chkSkipCheckSameCatalogue.Value <> vbChecked Then
+        AddFlags = AddFlags Or SV_DisableCatCache
+    End If
+    
+    AddFlags = AddFlags Or SV_CheckEmbeddedPresence
+    
+    If (OSver.IsWindows8OrGreater) Then
+        AddFlags = AddFlags Or SV_DisableOutdatedAlgo
+    End If
     
     If oDictFiles.Count > 1000 Then
-        AddFlags = AddFlags Or SV_EnableHashPrecache
+    
+        If chkPrecacheAllCatalogues.Value = vbChecked Then
+            AddFlags = AddFlags Or SV_EnableAllTagsPrecache
+        End If
         
         DoEvents
         'Precaching security catalogues ...
@@ -398,7 +510,7 @@ Private Sub cmdGo_Click()
         lblStatus.Visible = True
         lblStatus.Caption = Translate(1871)
         Me.Refresh
-        SignVerify vbNullString, SV_EnableHashPrecache, SignResult
+        SignVerify vbNullString, SV_EnableAllTagsPrecache, SignResult
         lblStatus.ForeColor = vbYellow
     End If
     
@@ -454,7 +566,6 @@ Private Sub cmdGo_Click()
             shpFore.Width = CLng((shpBack.Width / oDictFiles.Count) * i)
         End If
         
-        'bWPF = inArray(arrFiles(i), SFCFiles, , , vbTextCompare)
         bWPF = oDictSFC.Exists(sFile)
         If Not bWPF Then bWPF = SfcIsFileProtected(0&, StrPtr(sFile))
         
@@ -462,51 +573,34 @@ Private Sub cmdGo_Click()
         
         'If bPE_File Then
             If StrComp(GetExtensionName(sFile), ".sys", 1) = 0 Then
-            
+                
+                bIsDriver = True
+                
                 'Signature of driver can consist of both:
                 ' - signature in catalogue (3-d party + MS)
-                ' - internal signature (3-d party + MS)
+                ' - internal signature (3-d party + MS or just single MS even for 3rd part driver)
                 
                 'So to check for WHQL and for legit 3d-party signature, you need to:
                 '1) check by catalogue first by passing SV_isDriver flag, so SignVerify will use DRIVER_ACTION_VERIFY provider and return result in .IsWHQL,
                 '   if found legit Microsoft signature
-            
-                'check WHQL mainly by the catalog
-                SignVerify sFile, SV_isDriver Or SV_CheckEmbeddedPresence Or AddFlags, SignResult
-                'save the state
-                bWHQL = SignResult.isWHQL
-'                bWHQL = SignResult.isLegit
-
-                bIsDriver = True
-
                 '2) check 3d-party signature with forcing WINTRUST_ACTION_GENERIC_VERIFY_V2 policy because in case driver has no corresponding
                 '   Microsoft signature, WinVerifyTrust + DRIVER_ACTION_VERIFY will return CERT_E_UNTRUSTEDROOT
 
-                'Since Microsoft SignTool also using WINTRUST_ACTION_GENERIC_VERIFY_V2, I commented this code and revoked SV_DefaultVerifyPolicy flag
-'                'next we are checking for legit in usual way
-'                SignVerify sFile, SV_isDriver Or SV_PreferInternalSign Or SV_DefaultVerifyPolicy Or SV_CacheDoNotLoad Or AddFlags, SignResult
-'                If bWHQL Then
-'                    SignResult.isWHQL = True
-'                End If
-
-                'If previous check identified Microsoft signature and internal signature is not verified yet, we need to check it for 3d-party publisher
-                If SignResult.isMicrosoftSign And SignResult.isSignedByCert And SignResult.IsEmbedded Then
-                    LastSignResult = SignResult
-                    hResult = SignVerify(sFile, SV_isDriver Or SV_PreferInternalSign Or SV_CacheDoNotLoad Or AddFlags, SignResult)
-                    SignResult.isWHQL = True
-                    'For some reason "termdd.sys" has broken internal signature in XP
-                    If hResult = CRYPT_E_BAD_MSG Then
-                        SignResult = LastSignResult
-                    End If
-                End If
+                'However, we don't want explicitly check by catalog here, giving ability user to select desired settings from menu
+                Call SignVerify(sFile, SV_isDriver Or AddFlags, SignResult)
+                bWHQL = SignResult.isWHQL
                 
-                'SignVerify returns CERT_E_UNTRUSTEDROOT if we check 3d-party signature that has no corresponding Microsoft signature
-'                If CERT_E_UNTRUSTEDROOT = SignResult.ReturnCode Then
-'                    bWHQL = False
-'                    SignVerify sFile, SV_isDriver Or SV_CacheDoNotLoad Or AddFlags, SignResult
-'                End If
+                'For some reason "termdd.sys" has broken internal signature in XP
+                If SignResult.ReturnCode = CRYPT_E_BAD_MSG Then
+                    Call SignVerify(sFile, (SV_isDriver Or AddFlags Or SV_CacheDoNotLoad) And Not SV_PreferInternalSign, SignResult)
+                'Some drivers signed with own timestamp root server can throw CERT_E_UNTRUSTEDROOT
+                'Also, some drivers have additional self-signed signature (example: klgse.sys)
+                ElseIf SignResult.ReturnCode = CERT_E_UNTRUSTEDROOT Then
+                    Call SignVerify(sFile, (SV_isDriver Or AddFlags Or SV_CacheDoNotLoad) And Not SV_PreferInternalSign, SignResult)
+                End If
+                If SignResult.isWHQL Then bWHQL = True
             Else
-                SignVerify sFile, SV_CheckEmbeddedPresence Or AddFlags, SignResult
+                SignVerify sFile, AddFlags, SignResult
             End If
         'End If
         
@@ -735,25 +829,25 @@ Private Sub Form_Resize()
 
     If Me.WindowState = vbMinimized Then Exit Sub
     
-    Dim TopLevel1&, TopLevel2&
+    Dim TopLevel3&, TopLevel2&
     
     If Me.Width < 9396 Then Me.Width = 9396
-    If Me.Height < 5208 Then Me.Height = 5208
+    If Me.Height < 5724 Then Me.Height = 5724
     
     txtPaths.Width = Me.Width - 2430
-    txtPaths.Height = Me.Height - 3500
+    txtPaths.Height = Me.Height - 5200
     
-    TopLevel1 = Me.Height - 1300
-    TopLevel2 = TopLevel1 - 1440
+    TopLevel2 = txtPaths.Top + txtPaths.Height + 100
+    TopLevel3 = TopLevel2 + fraMode.Height + 100
     
-    Dim offset As Long: offset = 220
+    Dim offset As Long: offset = 100
     
-    cmdGo.Top = TopLevel1 + offset
-    cmdExit.Top = TopLevel1 + offset
+    cmdGo.Top = TopLevel3
+    cmdExit.Top = TopLevel3
     
-    shpBack.Top = TopLevel1 + 120 + offset
-    shpFore.Top = TopLevel1 + 120 + offset
-    lblStatus.Top = TopLevel1 + 210 + offset
+    shpBack.Top = TopLevel3 + offset
+    shpFore.Top = TopLevel3 + offset
+    lblStatus.Top = TopLevel3 + 90 + offset
     shpBack.Width = Me.Width - 4680
     
     cmdSelectFile.Left = txtPaths.Left + txtPaths.Width + 70
@@ -761,7 +855,8 @@ Private Sub Form_Resize()
     cmdClear.Left = txtPaths.Left + txtPaths.Width + 70
     
     fraFilter.Top = TopLevel2
-    fraReportFormat.Top = TopLevel2
+    fraMode.Top = TopLevel2
+    fraReportFormat.Top = fraFilter.Top + fraFilter.Height + 100
 End Sub
 
 Private Sub txtPaths_KeyDown(KeyCode As Integer, Shift As Integer)

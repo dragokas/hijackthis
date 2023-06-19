@@ -379,7 +379,8 @@ Tools\7zip\7za.exe a -mx9 -y -o"%ArcFolder%" "%ArcFolder%\%ProjTitle%_%newVersio
 :: Delete old
 if exist "%ExeName%.zip" del /f "%ExeName%.zip"
 :: Pack
-Tools\7zip\7za.exe a -mx9 -y -o"%cd%" "%ExeName%.zip" "%cd%\%ExeName%.exe" "%cd%\apps"
+:: //TODO: + "%cd%\apps"
+Tools\7zip\7za.exe a -mx9 -y -o"%cd%" "%ExeName%.zip" "%cd%\%ExeName%.exe"
 :: Test
 Tools\7zip\7za.exe t "%cd%\%ExeName%.zip"
 :: If there was errors
@@ -388,14 +389,16 @@ if %errorlevel% neq 0 (pause & exit /B)
 :: For debug purposes
 copy /y "%cd%\%ExeName%.exe" "%ExeName%_dbg.exe"
 2>NUL del "%ExeName%_dbg.zip"
-Tools\7zip\7za.exe a -mx9 -y -o"%cd%" "%ExeName%_dbg.zip" "%ExeName%_dbg.exe" "%cd%\apps"
+:: //TODO: + "%cd%\apps"
+Tools\7zip\7za.exe a -mx9 -y -o"%cd%" "%ExeName%_dbg.zip" "%ExeName%_dbg.exe"
 copy /y "%ExeName%_dbg.zip" "%ExeName%_dbg_test.zip"
 
 :: remove signature
 ::Tools\RemoveSign\RemSign.exe "%cd%\HJT_poly.pif"
 :: pack
 2>NUL del "%ExeName%_poly.zip"
-Tools\7zip\7za.exe a -mx9 -y -o"%cd%" "%ExeName%_poly.zip" "HJT_poly.pif" "%cd%\apps"
+:: //TODO: + "%cd%\apps"
+Tools\7zip\7za.exe a -mx9 -y -o"%cd%" "%ExeName%_poly.zip" "HJT_poly.pif"
 
 :: For Vir Labs
 set safe_ext=bak

@@ -1913,7 +1913,7 @@ Public Sub StartScan()
     'Loading security catalogue to cache
     'UpdateProgressBar "SecCat"
     'Dim SignResult As SignResult_TYPE
-    'SignVerify vbNullString, SV_EnableHashPrecache, SignResult
+    'SignVerify vbNullString, SV_EnableAllTagsPrecache, SignResult
     
     'Registry
     
@@ -1995,6 +1995,8 @@ Public Sub StartScan()
     CheckO25Item 'WMI
     UpdateProgressBar "O26"
     CheckO26Item 'Debuggers, Tools hijack
+    'UpdateProgressBar "O27"
+    'CheckO27Item 'Account
     EnumBITS_Stage2
     UpdateProgressBar "ProcList"
     
@@ -11379,13 +11381,6 @@ Public Sub CheckO23Item()
             End If
             GoTo Continue
         End If
-        
-        sGroup = Reg.GetString(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\" & sName, "Group")
-        If Len(sGroup) <> 0 Then
-            Debug.Print sGroup
-        End If
-        
-        
         
         lStart = Reg.GetDword(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\" & sName, "Start")
         

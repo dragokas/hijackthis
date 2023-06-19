@@ -2063,13 +2063,17 @@ Public Sub Test()
     'Debug.Print "hToken = " & hToken & ". Err = " & Err.LastDllError
     'If hToken <> 0 Then CloseHandle hToken
     
-    'Dim SignResult As SignResult_TYPE
-    'Debug.Print SignVerify("C:\Windows\system32\DRIVERS\klgse.sys", 0, SignResult)
-    'Debug.Print SignVerifyJack("C:\Windows\system32\DRIVERS\klgse.sys", SignResult)
-    'Debug.Print IsMicrosoftDriverFileEx("C:\Windows\system32\DRIVERS\klgse.sys", SignResult)
-    'Debug.Print "Api err code: " & SignResult.ApiErrorCode
-    'Debug.Print "Signer: " & SignResult.SubjectName
-    'Debug.Print "Email: " & SignResult.SubjectEmail
+    'Exit Sub
+    
+'    If inIDE Then
+'        Dim SignResult As SignResult_TYPE, sFile As String: sFile = "C:\Windows\system32\DRIVERS\klgse.sys"
+'        'Debug.Print SignVerify(sFile, 0, SignResult)
+'        'Debug.Print SignVerifyJack(sFile, SignResult)
+'        Debug.Print IsMicrosoftDriverFileEx(sFile, SignResult)
+'        Debug.Print "Api err code: 0x" & Hex(SignResult.ApiErrorCode) & " - " & ErrMessageText(SignResult.ApiErrorCode)
+'        Debug.Print "Signer: " & SignResult.SubjectName
+'        Debug.Print "Email: " & SignResult.SubjectEmail
+'    End If
     
     'DownloadAndUpdateSelf "https://dragokas.com/tools/HiJackThis.zip", False
     'UnpackZIP = make recursive
@@ -5568,6 +5572,13 @@ Private Sub LoadSettings(Optional nRun As Long)
     
     LastVerLaunched = RegReadHJT("Version", vbNullString, bUseOldKey)
     If ConvertVersionToNumber(LastVerLaunched) < ConvertVersionToNumber("2.6.1.21") Then isEncodedVer = True
+    If Len(LastVerLaunched) <> 0 Then
+        'force "additional" log as default if previous version was launch before
+        If ConvertVersionToNumber(LastVerLaunched) <= ConvertVersionToNumber("3.1.0.1") Then
+            chkAdditionalScan.Value = vbChecked
+            RegSaveHJT "LogAdditional", "1"
+        End If
+    End If
     
     Dim iIgnoreNum As Long, i As Long
     

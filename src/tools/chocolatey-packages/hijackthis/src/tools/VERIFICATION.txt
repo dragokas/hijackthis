@@ -1,5 +1,5 @@
-==================== HiJackThis Fork ====================
+==================== HiJackThis+ ====================
 
-This HiJackThis Fork Chocolatey package was uploaded by the author, Stanislav Polshyn aka Dragokas.
+This HiJackThis+ Chocolatey package was uploaded by the author, Alex Dragokas.
 
-==================== HiJackThis Fork ====================
+==================== HiJackThis+ ====================

@@ -795,6 +795,14 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                                     Case "1870": .cmdSelectFile.Caption = Translation
                                     Case "1872": .cmdSelectFolder.Caption = Translation
                                     Case "1873": .cmdClear.Caption = Translation
+                                    Case "1874": .fraMode.Caption = Translation
+                                    Case "1875": .chkRevocation.Caption = Translation
+                                    Case "1876": .chkAllowExpired.Caption = Translation
+                                    Case "1877": .chkNoSizeLimit.Caption = Translation
+                                    Case "1878": .chkPreferEmbedded.Caption = Translation
+                                    Case "1879": .chkDisableCatalogue.Caption = Translation
+                                    Case "1880": .chkPrecacheAllCatalogues.Caption = Translation
+                                    Case "1881": .chkSkipCheckSameCatalogue.Caption = Translation
                                 End Select
                             End With
                         End If

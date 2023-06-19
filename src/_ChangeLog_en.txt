@@ -11,6 +11,14 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[3.1.0.2 Alpha] - June 19, 2023
+ - EDS verification tool:
+	* added expert options
+	* added PE EXE filter (search for all files corresponding to the Portable Executable format)
+  - O23 - Driver: Fixed skipping 3rd party drivers signed with single signature (by Microsoft).
+  - O23 - Driver: If the third party driver is only signed by Microsoft, the "CompanyName" field from the file properties will be added to the mark.
+  - Forced launch in "Additional Scan" mode if HJT v3.1.0.1 or lower was in use before.
+
 [3.1.0.1 Alpha] - June 17, 2023
  - Added detection of O4 - Active Setup (thanks to regist).
  - Added flag (+safe mode) for services and drivers that starts in safe mode.
@@ -1775,4 +1783,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                                                                                                                          
+                                                                                                                            

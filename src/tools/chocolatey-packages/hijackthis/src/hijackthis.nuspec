@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
-    <version>3.1.0.1</version>
+    <version>3.1.0.2</version>
     <id>hijackthis</id>
-    <title>HiJackThis Fork</title>
-    <authors>Stanislav Polshyn &amp; Trend Micro</authors>
-    <copyright>Stanislav Polshyn &amp; Trend Micro</copyright>
+    <title>HiJackThis+</title>
+    <authors>Alex Dragokas &amp; Trend Micro</authors>
+    <copyright>Alex Dragokas &amp; Trend Micro</copyright>
     <owners>Dragokas</owners>
     <licenseUrl>http://www.gnu.org/licenses/gpl-2.0.html</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>

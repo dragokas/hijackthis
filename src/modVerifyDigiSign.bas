@@ -5,17 +5,21 @@ Option Explicit
 
 '
 ' Authenticode digital signature verifier / Driver's WHQL signature verifier
-' revision 3.0
+' revision 3.1
 '
 ' Copyrights: Alex Dragokas
 '
+
+' 19.06.2023
+' Added isThirdPartyDriver member
+' Renamed some flags
 
 ' 13.06.2023
 ' Added IssuerRoot member - root certificate's issuer name
 ' Added ApiErrorCode member - GetLastError code of WinVerifyTrust
 ' Added SV_LightCheckOther flag - skip filling non-essential fields if it is not Microsoft signature (speed optimization)
 ' Auto-fix catroot2 vulnerability
-' Little speed hack when SV_EnableHashPrecache flag set
+' Little speed hack when SV_EnableAllTagsPrecache flag set
 ' Fixed: SV_CacheFree broke dictionary
 ' Fixed: tag cache cannot hold more than 100 entries
 ' Added InitVerifyDigiSign() - should be called first, before using this module
@@ -29,7 +33,7 @@ Option Explicit
 ' Fixed: verification can fail due to additional self-signed signature
 
 ' 20.05.2023
-' Added SV_DisableLazyCatCheck flag - to disable UseSimpleCatCheck, giving ability to fill all fields of SignResult_TYPE reliably
+' Added SV_DisableCatCache flag - to disable UseSimpleCatCheck, giving ability to fill all fields of SignResult_TYPE reliably
 
 ' 29.03.2023
 ' Added SV_DisableOutdatedAlgo flag - consider MD4 and MD2 hashing algorithms as invalid
@@ -61,7 +65,7 @@ Option Explicit
 
 ' 22.07.2018
 ' added support of catalogue path prediction for common system files (not fully implemented yet, need database) - set flag SV_NoCatPrediction to disable
-' added support of reading all catalogue hashes in advance to increase speed when you check huge number of files - flag SV_EnableHashPrecache
+' added support of reading all catalogue hashes in advance to increase speed when you check huge number of files - flag SV_EnableAllTagsPrecache
 ' fixed "access denied" for some files due to DACL restrictions
 
 ' 01.02.2018
@@ -106,6 +110,7 @@ Public Type SignResult_TYPE ' out. Digital signature data
     isLegit           As Boolean ' is signature legitimate ?
     isSignedByCert    As Boolean ' is signed by Windows security catalogue ?
     isWHQL            As Boolean ' is Driver signed by Microsoft Hardware Dev Portal ?
+    isThirdPartyDriver As Boolean 'is Driver signed by Microsoft, however the certificate chain looks like it is issued to a third party
     CatalogPath       As String  ' path to catalogue file
     isMicrosoftSign   As Boolean ' is signed by Microsoft ? (checked by root certificate)
     IsEmbedded        As Boolean ' is signed by internal (embedded) signature? (SV_CheckEmbeddedPresence flag should be specified)
@@ -149,12 +154,13 @@ Public Enum FLAGS_SignVerify
     SV_SelfTest = &H2000&               ' more debugging info
     SV_PreferInternalSign = &H4000&     ' check internal signature first, if present (.exe, .sys, .dll, .ocx files only)
     SV_NoCatPrediction = &H8000&        ' do not use catalogue path prediction
-    SV_EnableHashPrecache = &H10000     ' read in advance all tags from security catalogues (it can win speed when you scan a huge number of files)
+    SV_EnableAllTagsPrecache = &H10000  ' read in advance all tags from security catalogues (it can win speed when you scan a huge number of files)
     SV_DisableOutdatedAlgo = &H20000    ' consider MD4 and MD2 hashing algo as invalid
-    SV_DisableLazyCatCheck = &H40000    ' if enabled, always gives reliable info in all fields of SignResult_TYPE struct,
+    SV_DisableCatCache = &H40000        ' if enabled, always gives reliable info in all fields of SignResult_TYPE struct,
                                         ' otherwise: info can be retrieved from the cache if the file located at the same security catalogue
                                         ' ignoring WinVerifyTrust and other checks for speed up purposes
     SV_LightCheckOther = &H80000        ' skip filling non-essential fields if it is not Microsoft signature (speed optimization)
+    SV_EnablePartialTagsPrecache = &H100000 '// TODO
 End Enum
 
 Private Type GUID
@@ -652,6 +658,30 @@ Private m_bEDS_Work As Boolean
 Private m_eJackFlags As FLAGS_SignVerify
 Private m_eJackDriverFlags As FLAGS_SignVerify
 
+'Optimization algo (memo):
+'
+'When signature verification is called without SV_PreferInternalSign (or if the file doesn't contain embedded signature)
+'the following happen while attempt to check sig by catalogue (in case flag SV_DisableCatalogVerify is omitted):
+'
+'If SV_EnableAllTagsPrecache flag is passed: on first call, we read all tags from security catalogues in advance,
+'so the next time some hash calculations are skipped if the calculated file PE tag match with one found previously in one of security catalogues.
+'
+'If SV_DisableCatCache flag is omitted: when verification found that the file signed by catalogue,
+'we automatically enumerate all tags in that specific catalogue,
+'so the next time when any other file match the hash of that specific catalogue, we entirelly skip the signature verification,
+'and return the verification result of the first file found in that catalogue.
+'Of course, you cannot count on that result as reliable. You can only be sure about the validity of such signature,
+'most of other fields may be wrong, like 'Microsoft' subject name instead of 3-rd party in real.
+'Generally, such method of optimization is not applicable, because we want a reliable 'Subject name' in HiJackThis logs.
+'Such a way, there is a walkaround:
+'
+'A new optimization algo (made specially for HiJackThis logs), where the most common system files (catalogue-based) are written in database,
+'so we can surely apply catalogue optimization for them, without a risk to miss 3rd-party publisher.
+'
+'Separately, with SV_EnableAllTagsPrecache in Win8+ there are too many security catalogue files, so the full precache for them is too time consuming.
+'We're using a trick here having the list of names of the most commonly used catalogues, so precaching for limited list is very fast.
+
+
 'This sub must be called first, before doing any SignVerify() or SignVerifyJack() stuff
 '
 Public Sub InitVerifyDigiSign()
@@ -666,10 +696,10 @@ Public Sub InitVerifyDigiSign()
     'Need a way to separate 3rd-party files signed via catalogue from real Microsoft files, without losing time efficiency
     #If UseFullCache Then
         'Experimental
-        m_eJackFlags = m_eJackFlags Or SV_EnableHashPrecache
+        m_eJackFlags = m_eJackFlags Or SV_EnableAllTagsPrecache
     #Else
         m_eJackFlags = m_eJackFlags Or SV_PreferInternalSign
-        m_eJackFlags = m_eJackFlags Or SV_DisableLazyCatCheck
+        m_eJackFlags = m_eJackFlags Or SV_DisableCatCache
     #End If
     
     If (bDebugMode) Then
@@ -681,7 +711,7 @@ Public Sub InitVerifyDigiSign()
     End If
     
     'For drivers
-    m_eJackDriverFlags = m_eJackFlags Or SV_isDriver Or SV_PreferInternalSign
+    m_eJackDriverFlags = (m_eJackFlags Or SV_isDriver Or SV_PreferInternalSign) And Not SV_LightCheckMS
     
     #If UseHashtable Then
         Set oMsHash = New clsTrickHashTable
@@ -718,7 +748,11 @@ Public Function FormatSign(SignResult As SignResult_TYPE) As String
             If SignResult.isLegit Then
             
                 If .isMicrosoftSign Then
-                    FormatSign = "(sign: 'Microsoft')"
+                    If .isThirdPartyDriver Then
+                        FormatSign = "(sign: 'Microsoft' - " & GetFilePropCompany(SignResult.FilePathVerified) & ")"
+                    Else
+                        FormatSign = "(sign: 'Microsoft')"
+                    End If
                 Else
                     FormatSign = "(sign: '" & .SubjectName & "')"
                 End If
@@ -838,6 +872,8 @@ Public Function SignVerify( _
     Dim IdxFirstVerified As Long
     Dim LastSignResult  As SignResult_TYPE
     Dim bSignIndexMissing As Boolean
+    Dim NumSigners      As Long
+    Dim ReturnValPrev   As Long
     
     #If UseSimpleCatCheck Then
         Dim sTag            As String
@@ -892,7 +928,7 @@ Public Function SignVerify( _
     
     If Flags And SV_SelfTest Then Dbg "Stage 1"
     
-    If CBool(Flags And SV_EnableHashPrecache) Then
+    If CBool(Flags And SV_EnableAllTagsPrecache) Then
         If 0 = ObjPtr(oCatHash) Then
             #If UseHashtable Then
                 Set oCatHash = New clsTrickHashTable
@@ -1102,7 +1138,7 @@ Public Function SignVerify( _
     If Not CBool(Flags And SV_DisableCatalogVerify) Then
         ' Simple checking tag by cache
         #If UseSimpleCatCheck Then
-            If Not CBool(Flags And SV_DisableLazyCatCheck) Then
+            If Not CBool(Flags And SV_DisableCatCache) Then
                 If oCatalogTag.Exists(sMemberTag) Then
                     SignResult = aCatCache(oCatalogTag(sMemberTag))
                     SignResult.HashFileCode = sMemberTag    'actualize
@@ -1113,7 +1149,7 @@ Public Function SignVerify( _
             End If
         #End If
         
-        If CBool(Flags And SV_EnableHashPrecache) Then
+        If CBool(Flags And SV_EnableAllTagsPrecache) Then
             If oCatHash.Exists(sMemberTag) Then 'check by hashes from Windows Update
                 sCatPredict = oCatHash(sMemberTag)
             Else
@@ -1182,7 +1218,9 @@ SkipCatCheck:
         'End If
         
         '.dwProvFlags = .dwProvFlags Or WTD_NO_POLICY_USAGE_FLAG                                          ' do not check certificate purpose (disabled)
-        If Flags And SV_AllowExpired Then .dwProvFlags = .dwProvFlags Or WTD_LIFETIME_SIGNING_FLAG        ' invalidate expired signatures
+        'System does not use this flag!
+        'By default, OS recognizes timestamped signatures valid even if certificate validity period is elapsed.
+        'If Not CBool(Flags And SV_AllowExpired) Then .dwProvFlags = .dwProvFlags Or WTD_LIFETIME_SIGNING_FLAG        ' invalidate expired signatures
         .dwProvFlags = .dwProvFlags Or WTD_SAFER_FLAG                                                     ' without UI
         
         If Flags And SV_DisableOutdatedAlgo Then .dwProvFlags = .dwProvFlags Or WTD_DISABLE_MD2_MD4
@@ -1274,13 +1312,20 @@ SkipCatCheck:
     If bDebugMode Or bDebugToFile Then tim(4).Start 'WinVerifyTrust
     
     'Specific behaviour for driver
-    'As everybody (?) know drivers usually have at least 2 signatures: 1. 3d-party and 2. From Microsoft (signed via Microsoft Hardware Dev Portal).
+    'Legitimate drivers should always have a Microsoft signature (signed via Microsoft Hardware Dev Portal).
+    'They can often be signed by the secondary signature (it it's a 3rd-party driver)
+    '
     '3d-party signature can be randomly - primary or secondary.
     'So, to check reliably whether driver is Microsoft or not we have to check both signatures.
     '
     'But, in Win7 and older OS it is impossible to check secondary signature (restriction by WinVerifyTrust WinAPI)
     'We are using hack here. Depending on provider passed to WinVerifyTrust, it can can check primary or secondary signature.
     '
+    'Nevertheless, it's not the reliable way to answer is a driver issued by Microsoft,
+    'because 3rd-party drivers can also be signed by the single Microsoft signature (no real publisher name anywhere), just 1 signature.
+    'However, probably such signature has specific OID-s... need more research
+    'As of now, certificate chain of a such 3rd-party driver contain a specific issuer which is: "Microsoft Windows Third Party Component CA 2012"
+    'and may be used for more or less reliable identification. Example of driver: nvhda64v.sys
     
     AppendErrorLogCustom "WinVerifyTrust"
     
@@ -1289,6 +1334,8 @@ SkipCatCheck:
             ReturnVal = WinVerifyTrust(INVALID_HANDLE_VALUE, ActionGuid, VarPtr(WintrustData))
             SignResult.ApiErrorCode = Err.LastDllError
             LastActionGuid = ActionGuid
+            
+            GetSignerInfo WintrustData.hWVTStateData, SignResult, Flags, NumSigners
         Else
             If IsWin8AndNewer Then
                 'For Win8+ primary and all next signatures will be checked by indeces
@@ -1304,17 +1351,26 @@ SkipCatCheck:
                 '    ActionGuid = DRIVER_ACTION_VERIFY
                 'End If
                 ActionGuid = WINTRUST_ACTION_GENERIC_VERIFY_V2
-
+                
+                'Memo:
+                'DRIVER_ACTION_VERIFY is used when we need to ensure this signature is issued by Microsoft
+                'If issuer is different, WinVerifyTrust will return CERT_E_UNTRUSTEDROOT
+                'Thus, we can also use this provider to verify common files (not a driver) to answer the question: is it issued by Microsoft
+                
                 ReturnVal = WinVerifyTrust(INVALID_HANDLE_VALUE, ActionGuid, VarPtr(WintrustData))
                 SignResult.ApiErrorCode = Err.LastDllError
 
                 If ReturnVal = 0 Then SignResult.isSigned = True
-
+                ReturnValPrev = ReturnVal
+                
                 GetSignerInfo WintrustData.hWVTStateData, SignResult, Flags
 
                 If IsMicrosoftCertHash(SignResult.HashRootCert) Then
                     SignResult.isWHQL = True
-
+                    If InStr(1, SignResult.Issuer, "Third Party", 1) <> 0 Then SignResult.isThirdPartyDriver = True
+                    
+                    LastSignResult = SignResult
+                    
                     If SignSettings.cSecondarySigs > 0 Then
 
                         IdxFirstVerified = SignSettings.dwVerifiedSigIndex
@@ -1342,13 +1398,17 @@ SkipCatCheck:
                                 SignResult.ApiErrorCode = Err.LastDllError
 
                                 If ReturnVal <> 0 Then
-                                    Exit For
+                                    ReturnVal = ReturnValPrev
+                                    SignResult = LastSignResult
+                                End If
+                                
+                                GetSignerInfo WintrustData.hWVTStateData, SignResult, Flags
+                                
+                                If IsMicrosoftCertHash(SignResult.HashRootCert) Then
+                                    SignResult.isWHQL = True
+                                    If InStr(1, SignResult.Issuer, "Third Party", 1) <> 0 Then SignResult.isThirdPartyDriver = True
                                 Else
-                                    GetSignerInfo WintrustData.hWVTStateData, SignResult, Flags
-
-                                    If Not IsMicrosoftCertHash(SignResult.HashRootCert) Then
-                                        Exit For
-                                    End If
+                                    Exit For 'Found 3rd-party sign -> exit
                                 End If
                             End If
                         Next
@@ -1360,21 +1420,24 @@ SkipCatCheck:
                 'Win7-
                 'primary signature -> WINTRUST_ACTION_GENERIC_VERIFY_V2
                 'secondary signature -> DRIVER_ACTION_VERIFY
-
+                
                 ReturnVal = WinVerifyTrust(INVALID_HANDLE_VALUE, WINTRUST_ACTION_GENERIC_VERIFY_V2, VarPtr(WintrustData))
                 SignResult.ApiErrorCode = Err.LastDllError
                 LastActionGuid = WINTRUST_ACTION_GENERIC_VERIFY_V2
                 
                 If ReturnVal = 0 Then SignResult.isSigned = True
+                ReturnValPrev = ReturnVal
+                
+                GetSignerInfo WintrustData.hWVTStateData, SignResult, Flags
                 
                 'if it's a Microsoft signature => restart context with secondary signature
                 'XP is not support partial restarting context. CryptCATAdminReleaseCatalogContext cause crash.
-                If ReturnVal = 0 And (OSver.MajorMinor > 5.2) Then
-                    GetSignerInfo WintrustData.hWVTStateData, SignResult, Flags
+                If OSver.MajorMinor > 5.2 Then
 
                     If IsMicrosoftCertHash(SignResult.HashRootCert) Then
 
                         SignResult.isWHQL = True
+                        If InStr(1, SignResult.Issuer, "Third Party", 1) <> 0 Then SignResult.isThirdPartyDriver = True
 
                         LastSignResult = SignResult
 
@@ -1394,11 +1457,17 @@ SkipCatCheck:
                         ReturnVal = WinVerifyTrust(INVALID_HANDLE_VALUE, DRIVER_ACTION_VERIFY, VarPtr(WintrustData))
                         SignResult.ApiErrorCode = Err.LastDllError
                         LastActionGuid = DRIVER_ACTION_VERIFY
-
-                        'If ReturnVal = TRUST_E_NOSIGNATURE Then
+                        
                         If ReturnVal <> 0 Then
-                            ReturnVal = 0
+                            ReturnVal = ReturnValPrev
                             SignResult = LastSignResult
+                        End If
+                        
+                        GetSignerInfo WintrustData.hWVTStateData, SignResult, Flags
+                        
+                        If IsMicrosoftCertHash(SignResult.HashRootCert) Then
+                            SignResult.isWHQL = True
+                            If InStr(1, SignResult.Issuer, "Third Party", 1) <> 0 Then SignResult.isThirdPartyDriver = True
                         End If
                     End If
                 End If
@@ -1489,8 +1558,6 @@ SkipCatCheck:
     '            CALLING SIGNER INFO EXTRACTOR
     ' ----------------------------------------------------
     
-    Dim NumSigners As Long
-    
     If ReturnVal = 0 Then SignResult.isSigned = True
     
     'Sometimes WinVerifyTrust returns GetErrorCode == TRUST_E_NOSIGNATURE even if the file has signature
@@ -1504,7 +1571,8 @@ SkipCatCheck:
         ReturnVal = CERT_E_REVOKED Or _
         ReturnVal = CERT_E_PURPOSE Or _
         SignResult.isSigned) And _
-        WintrustData.hWVTStateData <> 0 Then
+        (WintrustData.hWVTStateData <> 0) And _
+        Not CBool(Flags And SV_isDriver) Then
         
         If bDebugMode Or bDebugToFile Then tim(5).Start 'GetSignerInfo
         
@@ -1729,7 +1797,7 @@ SkipCatCheck:
     If bDebugMode Or bDebugToFile Then tim(7).Start 'CryptCATEnumerateMember
     
     'Enumerating all tags in security catalog and save them in cache (if validation was successful)
-    #If UseSimpleCatCheck And Not CBool(Flags And SV_DisableLazyCatCheck) Then
+    #If UseSimpleCatCheck And Not CBool(Flags And SV_DisableCatCache) Then
         
         If 0 <> Len(SignResult.CatalogPath) And SignResult.isLegit Then
             
@@ -2297,7 +2365,7 @@ End Function
 'Do not use!
 '// TODO: parse multi-quotes:
 ', 2.5.4.10="""Chaos Software"" Ltd", 2.5.4.3=
-Public Function GetSignerNameFromBLOB(Crypto_BLOB As CRYPTOAPI_BLOB) As String
+Private Function GetSignerNameFromBLOB(Crypto_BLOB As CRYPTOAPI_BLOB) As String
     On Error GoTo ErrorHandler
     
     Dim sName As String
@@ -2666,6 +2734,7 @@ Private Sub LoadMicrosoftHashes()
 End Sub
 
 Public Function IsMicrosoftCertHash(hash As String) As Boolean
+    If Len(hash) = 0 Then Exit Function
     If oMsHash.Exists(hash) Then IsMicrosoftCertHash = True
 End Function
 
@@ -2939,13 +3008,13 @@ Public Function IsMicrosoftDriverFileEx(sFile As String, SignResult As SignResul
     'Some drivers signed with own timestamp root server can throw CERT_E_UNTRUSTEDROOT
     'Also, some drivers have additional self-signed signature (example: klgse.sys)
     ElseIf SignResult.ReturnCode = CERT_E_UNTRUSTEDROOT Then
-        'bLegit = SignVerify(sFile, m_eJackDriverFlags And Not SV_PreferInternalSign, SignResult)
-        
-        bLegit = SignVerify(sFile, SV_CacheDoNotLoad Or SV_isDriver Or SV_LightCheckMS Or SV_PreferInternalSign Or _
-            IIf(OSver.IsWindows8OrGreater, SV_DisableOutdatedAlgo, 0) Or SV_LightCheckOther, SignResult)
+        bLegit = SignVerify(sFile, (m_eJackDriverFlags Or SV_CacheDoNotLoad) And Not SV_PreferInternalSign, SignResult)
     End If
     
-    IsMicrosoftDriverFileEx = SignResult.isMicrosoftSign
+    If SignResult.isMicrosoftSign Then
+        If Not SignResult.isThirdPartyDriver Then IsMicrosoftDriverFileEx = True
+    End If
+    
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "IsMicrosoftDriverFile. File: " & sFile

@@ -861,8 +861,10 @@ Public Sub CheckO26Item()
                 
                 If (Not bSafe) Or bIgnoreAllWhitelists Then
                     
+                    SignVerifyJack sFile, result.SignResult
+                    
                     sHit = sAlias & " - Debugger: " & HE.HiveNameAndSID & "\..\" & sKeys(i) & ": [Debugger] = " & _
-                        ConcatFileArg(sFile, sArgs)
+                        ConcatFileArg(sFile, sArgs) & FormatSign(result.SignResult)
                     
                     If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
                     

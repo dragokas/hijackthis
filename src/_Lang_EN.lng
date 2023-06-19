@@ -831,6 +831,14 @@
 1871=Precaching security catalogues ...
 1872=Add folder...
 1873=Clear list
+1874=Mode (for experts)
+1875=Check for revocation (internet required)
+1876=Allow expired certificates
+1877=Don't limit file size
+1878=Prefer embedded signature
+1879=Deshabilitar verificar por catálogo
+1880=Precache tags of all catalogs beforehand
+1881=Skip files of already verified security catalogs
 ;
 ; ============= Registry Key Unlocker =========
 ;
@@ -1837,4 +1845,4 @@
 ; ========= Empty ========
 ;
 ; (2500 - ...)
-;                                     
+;                                       

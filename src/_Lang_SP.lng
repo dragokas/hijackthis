@@ -832,6 +832,14 @@
 1871=Precaching catálogos de seguridad ...
 1872=Agregar carpeta...
 1873=Borrar la lista
+1874=Modo (para expertos)
+1875=Comprobar revocación (se requiere Internet)
+1876=Permitir certificados caducados
+1877=No limitar el tamaño del archivo
+1878=Preferir firma incrustada
+1879=Desactivar verificación por catálogo
+1880=Precaché etiquetas de todos los catálogos
+1881=Omitir archivos de catálogos de seguridad ya verificados
 ;
 ; ============= Registry Key Unlocker =========
 ;
@@ -1843,4 +1851,4 @@
 ; ========= Empty ========
 ;
 ; (2500 - ...)
-;                                           
+;                                            

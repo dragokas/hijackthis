@@ -1023,7 +1023,12 @@ End Sub
 '
 'ret - string array( 0 to MAX-1 ) or non-touched array if none.
 '
-Public Function ListFiles(Path As String, Optional ExtensionWithDot As String = vbNullString, Optional Recursively As Boolean = False) As String()
+Public Function ListFiles( _
+    Path As String, _
+    Optional ExtensionWithDot As String = vbNullString, _
+    Optional Recursively As Boolean = False, _
+    Optional bIncludePeExe As Boolean) As String()
+    
     On Error GoTo ErrorHandler
 
     AppendErrorLogCustom "ListFiles - Begin", "Path: " & Path, "Ext-s: " & ExtensionWithDot, "Recur: " & Recursively
@@ -1041,7 +1046,7 @@ Public Function ListFiles(Path As String, Optional ExtensionWithDot As String = 
     End If
     
     'вызов тушки
-    Call ListFiles_Ex(Path, ExtensionWithDot, Recursively)
+    Call ListFiles_Ex(Path, ExtensionWithDot, Recursively, bIncludePeExe)
     If Total_Files > 0 Then
         Total_Files = Total_Files - 1
         ReDim Preserve arrPathFiles(Total_Files)      '0 to Max -1
@@ -1059,7 +1064,12 @@ ErrorHandler:
 End Function
 
 
-Private Sub ListFiles_Ex(Path As String, Optional Extension As String = vbNullString, Optional Recursively As Boolean = False)
+Private Sub ListFiles_Ex( _
+    Path As String, _
+    Optional Extension As String = vbNullString, _
+    Optional Recursively As Boolean = False, _
+    Optional bIncludePeExe As Boolean)
+    
     'Example of Extension:
     '".txt" - txt files
     '".txt;.doc" - multiple extensions are supported
@@ -1073,6 +1083,10 @@ Private Sub ListFiles_Ex(Path As String, Optional Extension As String = vbNullSt
     Dim L               As Long
     Dim lpSTR           As Long
     Dim fd              As WIN32_FIND_DATA
+    Dim Ext()           As String
+    Dim bComply         As Boolean
+    
+    Ext = SplitSafe(Extension, ";")
     
     'Local module variables:
     '
@@ -1103,12 +1117,21 @@ Private Sub ListFiles_Ex(Path As String, Optional Extension As String = vbNullSt
                     If PathName <> ch_DotDot Then '".."
                         SubPathName = BuildPath(Path, PathName)
                         If Recursively Then
-                            Call ListFiles_Ex(SubPathName, Extension, Recursively)
+                            Call ListFiles_Ex(SubPathName, Extension, Recursively, bIncludePeExe)
                         End If
                     End If
                 End If
             Else
-                If InArray(GetExtensionName(PathName), SplitSafe(Extension, ";"), , , 1) Or Len(Extension) = 0 Then
+                bComply = False
+                If Len(Extension) = 0 Then
+                    bComply = True
+                ElseIf InArray(GetExtensionName(PathName), Ext, , , 1) Then
+                    bComply = True
+                ElseIf bIncludePeExe Then
+                    SubPathName = BuildPath(Path, PathName)
+                    If isPE(SubPathName) Then bComply = True
+                End If
+                If bComply Then
                     SubPathName = BuildPath(Path, PathName)
                     If UBound(arrPathFiles) < Total_Files Then ReDim Preserve arrPathFiles(UBound(arrPathFiles) + 100&) As String
                     arrPathFiles(Total_Files) = SubPathName

@@ -830,6 +830,14 @@ HiJackThis+ est une modification du programme HiJackThis original de Trend Micro
 1871=Mise en cache des catalogues de sécurité...
 1872=Ajout de dossier...
 1873=Effacer la liste
+1874=Mode (pour les experts)
+1875=Vérifier la révocation (Internet requis)
+1876=Autoriser les certificats expirés
+1877=Ne limitez pas la taille du fichier
+1878=Préférer la signature intégrée
+1879=Désactiver la vérification par catalogue
+1880=Précacher les balises de tous les catalogues
+1881=Ignorer les fichiers des catalogues de sécurité déjà vérifiés
 ;
 ; ============= Registry Key Unlocker =========
 ;
@@ -1837,4 +1845,4 @@ HiJackThis+ est une modification du programme HiJackThis original de Trend Micro
 ; ========= Empty ========
 ;
 ; (2500 - ...)
-;                                                          
+;                                                            
