@@ -16,10 +16,10 @@ _________________________________________________________________
 ### Step 1: Show us the required logs (for PC cure only):
 
   * Read carefully: "How to make a request for help in the PC cure section":
-https://github.com/dragokas/hijackthis/wiki/How-to-make-a-request-for-help-in-the-PC-cure-section%3F)
+https://github.com/dragokas/hijackthis/wiki/How-to-make-a-request-for-help-in-the-PC-cure-section%3F
 
   * Attach 'Collection-[Date].zip' log created by "AutoLogger" tool:
-http://tools.safezone.cc/drongo/test/AutoLogger-test.zip
+https://www.safezone.cc/resources/autologger-regist-drongo.59/download
 
 ### Step 2: Describe your problem in details:
 
