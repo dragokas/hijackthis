@@ -1,4 +1,13 @@
-_(this is alpha-version - major changes is in progress; some functions may work unstable; the plus+ means smooth introduction of detection of modern malware and step-by-step moving to replace some modules on C++ to access 64-bit processes in normal way and multi-threading; it is also a differentiation among other possible forks around)_
+## Download
+[![](https://dragokas.com/tools/img/hjt/Icon_mini.png)](https://dragokas.com/tools/HiJackThis_test.zip)
+[Latest build](https://dragokas.com/tools/HiJackThis_test.zip) [v3.x Alpha] - test version
+
+[![](https://dragokas.com/tools/img/hjt/Icon_mini.png)](https://dragokas.com/tools/HiJackThis_stable.zip)
+[Stable build](https://dragokas.com/tools/HiJackThis_stable.zip) [v2 outdated] - not updated anymore
+
+![](https://dragokas.com/tools/img/hjt/main_menu2.png)
+
+_(this is alpha-version - major changes are in progress; some functions may work unstable; the plus+ means smooth introduction of detection of modern malware and step-by-step moving to replace some modules on C++ to access 64-bit processes in normal way and multi-threading; it is also a differentiation among other possible forks around)_
 
 # HiJackThis+
 
@@ -6,13 +15,13 @@ _(this is alpha-version - major changes is in progress; some functions may work 
 
 At the moment, it is a step-by-step 100% rewritten source code of the original engine, aimed to provide a full compatiblity with the most recent Windows OS and a balance beetween compiling very fast results in logfile and combatting with the most popular malware, inluding the one not known to other antiviruses.
 
-It is made by Alex Dragokas - a lawyer, security observer and malware researcher from Ukraine ([Chernobyl](https://en.wikipedia.org/wiki/Chernobyl_disaster), [Na'Vi](https://en.wikipedia.org/wiki/Natus_Vincere), [Щедрик](https://www.youtube.com/watch?v=ZZEMvVcf5-Q), Male slavery, nazism, fascism, [concentration camp](https://www.youtube.com/watch?v=3ASp9tr_-DQ), War of money, authority and blackmail, USA Bio-labs, [radioactive contamination from British](https://www.youtube.com/watch?v=ajY4qcc4OWc), Bombs, drones, whores and crazy people, Colony of USA). Yankee go home! F\*ck Russia, F\*ck Ukraine, F\*ck USA, F\*ck all the world giving weapon for killing the people, imposing sanctions against Ukrainian people in Crimea. I know how will I die, and that is a weapon of EU/USA or Russia.
+It is made by Alex Dragokas - a lawyer, security observer and malware researcher from Ukraine ([Chernobyl](https://en.wikipedia.org/wiki/Chernobyl_disaster), [Na'Vi](https://en.wikipedia.org/wiki/Natus_Vincere), [Щедрик](https://www.youtube.com/watch?v=ZZEMvVcf5-Q), Male slavery, nazism, fascism, [concentration camp](https://www.youtube.com/watch?v=3ASp9tr_-DQ), War of money, authority and blackmail, USA Bio-labs, [radioactive contamination from British](https://www.youtube.com/watch?v=ajY4qcc4OWc), Bombs, drones, whores and crazy people, Colony of USA). Yankee go home! F\*ck Russia, F\*ck Ukraine, F\*ck USA, F\*ck all the world giving weapon for killing the people, imposing sanctions against Ukrainian people in Crimea.
 
 ## Overview
 
-HiJackThis+ is a free utility for Microsoft Windows that scans your computer for settings changed by adware, spyware, malware and other unwanted programs.
+HiJackThis+ is a free utility for Microsoft Windows that scans your computer for settings changed by adware, spyware, malware and other unwanted programs. Shortly, consider it like Sysinternals [Autoruns](https://learn.microsoft.com/en-us/sysinternals/downloads/autoruns).
 
-The difference from classical antiviruses is the ability to function without constant database updates, because HiJackThis+ primarily detects **hijacking methods** rather than comparing items against a pre-built database. This allows it to detect new or previously unknown malware - but it also makes **no distinction** between safe and unsafe items. Users are expected to research all scanned items manually, and only remove items from their PC when absolutely appropriate.
+The difference from classical antiviruses is the ability to function without constant database updates, because HiJackThis+ primarily detects **hijacking methods** rather than comparing items against a pre-built database (signatures). This allows it to detect new or previously unknown malware - but it also makes **no distinction** between safe and unsafe items. Users are expected to research all scanned items manually, and only remove items from their PC when absolutely appropriate.
 
 Therefore, FALSE POSITIVES ARE LIKELY. If you are ever unsure, you should consult with a knowledgeable expert BEFORE deleting anything.
 
@@ -22,16 +31,9 @@ HiJackThis+ is not a replacement of a classical antivirus. It doesn't provide a 
  * Set up boot-up scan in menu "File" - "Settings" - "Add HiJackThis to startup"
  * Next time when user logged in, HiJackThis will silently scan your OS and display UI if only new records in your system has been found.
 
-## Download
-[![](https://dragokas.com/tools/img/hjt/Icon_mini.png)](https://dragokas.com/tools/HiJackThis_stable.zip)
-[Pre-built binary (release version) for Windows](https://dragokas.com/tools/HiJackThis_stable.zip) (outdated v2.x)
+## Tutorial
 
-[Nightly build (private test version) for Windows](https://dragokas.com/tools/HiJackThis_test.zip) (new v3.x Alpha)
-
-Files are digitally signed.
-Certificate's thumbprint (SHA256) should be: 05F1F2D5BA84CDD6866B37AB342969515E3D912E
-
-![](https://dragokas.com/tools/img/hjt/main_menu2.png)
+ * Please, refer to the [List of tutorials](https://github.com/dragokas/hijackthis/wiki/HJT:-Tutorial)
 
 ## Features
 
