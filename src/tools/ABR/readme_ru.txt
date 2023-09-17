@@ -1,8 +1,8 @@
-ABR - Autobackup registry v1.05 Copyright(c) 2017-2018 by D.Kuznetsov
+ABR - Autobackup registry v1.10 Copyright(c) 2017-2022 by D.Kuznetsov
 Поддерживаемые системы: Win2k-Win10 x86/x64
 Freeware
 
-web     : http://dsrt.dyndns.org
+web     : http://dsrt.dyndns.org:8888
 e-mail  : demkd@mail.ru
 
 Параметры abr.exe:
@@ -20,3 +20,5 @@ system_drive_letter - буква системного диска (только для неактивных систем)
 /nr - не перезапускать систему
 (!) запуск restore без параметров восстановит сохраненный реестр (в каталоге запуска) для активной системы.
 (!) для неактивных систем необходимо указывать в параметре запуска букву диска, где находится целевая система.
+
+Используйте defrag.exe для дефрагментации и устранения ошибок в сохранненной копии реестра.

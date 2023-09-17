@@ -919,6 +919,7 @@ Private Function GetUserType() As String
     Const DOMAIN_ALIAS_RID_USERS        As Long = &H221&
     Const DOMAIN_ALIAS_RID_GUESTS       As Long = &H222&
     Const DOMAIN_ALIAS_RID_POWER_USERS  As Long = &H223&
+    Const DOMAIN_ALIAS_RID_RDP          As Long = &H22B&
 
     Dim hProcessToken   As Long
     Dim BufferSize      As Long
@@ -926,6 +927,7 @@ Private Function GetUserType() As String
     Dim psidPower       As Long
     Dim psidUser        As Long
     Dim psidGuest       As Long
+    Dim psidRDP         As Long
     Dim i               As Long
     Dim lResult         As Long
     Dim tpTokens        As TOKEN_GROUPS
@@ -959,8 +961,9 @@ Private Function GetUserType() As String
                 lResult = AllocateAndInitializeSid(tpSidAuth, 2&, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_POWER_USERS, 0&, 0&, 0&, 0&, 0&, 0&, psidPower)
                 lResult = AllocateAndInitializeSid(tpSidAuth, 2&, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_USERS, 0&, 0&, 0&, 0&, 0&, 0&, psidUser)
                 lResult = AllocateAndInitializeSid(tpSidAuth, 2&, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_GUESTS, 0&, 0&, 0&, 0&, 0&, 0&, psidGuest)
+                'lResult = AllocateAndInitializeSid(tpSidAuth, 2&, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_RDP, 0&, 0&, 0&, 0&, 0&, 0&, psidRDP)
             
-                If IsValidSid(psidAdmin) And IsValidSid(psidPower) And IsValidSid(psidUser) And IsValidSid(psidGuest) Then
+                If IsValidSid(psidAdmin) And IsValidSid(psidPower) And IsValidSid(psidUser) And IsValidSid(psidGuest) And IsValidSid(psidRDP) Then
                   
                     For i = 0 To tpTokens.GroupCount
                         ' Берем SID каждой из ассоциированных групп
@@ -997,6 +1000,8 @@ ErrorHandler:
     If psidUser Then FreeSid psidUser
     If psidGuest Then FreeSid psidGuest
 End Function
+
+
 
 Private Function GetCurrentProcessSID() As String
     On Error GoTo ErrorHandler

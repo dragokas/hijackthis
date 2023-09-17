@@ -1,12 +1,12 @@
 VERSION 5.00
 Begin VB.Form frmMain 
    ClientHeight    =   7380
-   ClientLeft      =   4368
+   ClientLeft      =   4365
    ClientTop       =   1500
-   ClientWidth     =   8772
+   ClientWidth     =   8775
    BeginProperty Font 
       Name            =   "Tahoma"
-      Size            =   8.4
+      Size            =   8.25
       Charset         =   204
       Weight          =   400
       Underline       =   0   'False
@@ -17,7 +17,7 @@ Begin VB.Form frmMain
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    ScaleHeight     =   7380
-   ScaleWidth      =   8772
+   ScaleWidth      =   8775
    Begin VB.Timer tmrVTProgress 
       Enabled         =   0   'False
       Interval        =   1000
@@ -111,7 +111,7 @@ Begin VB.Form frmMain
          Caption         =   "Focus"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.4
+            Size            =   8.25
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -136,7 +136,7 @@ Begin VB.Form frmMain
          Caption         =   "Scan"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.4
+            Size            =   8.25
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -167,7 +167,7 @@ Begin VB.Form frmMain
       BackColor       =   &H80000005&
       BorderStyle     =   0  'None
       ForeColor       =   &H80000008&
-      Height          =   396
+      Height          =   495
       Left            =   6720
       Picture         =   "frmMain.frx":4B2A
       ScaleHeight     =   33
@@ -176,7 +176,7 @@ Begin VB.Form frmMain
       TabIndex        =   90
       TabStop         =   0   'False
       Top             =   120
-      Width           =   1872
+      Width           =   2340
    End
    Begin VB.CommandButton cmdHidden 
       Default         =   -1  'True
@@ -192,7 +192,7 @@ Begin VB.Form frmMain
       Enabled         =   0   'False
       BeginProperty Font 
          Name            =   "Tahoma"
-         Size            =   8.4
+         Size            =   8.25
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -211,7 +211,7 @@ Begin VB.Form frmMain
    Begin VB.Frame fraConfig 
       BeginProperty Font 
          Name            =   "Tahoma"
-         Size            =   8.4
+         Size            =   8.25
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -228,7 +228,7 @@ Begin VB.Form frmMain
          Caption         =   "Misc Tools"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.4
+            Size            =   8.25
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -247,7 +247,7 @@ Begin VB.Form frmMain
          Caption         =   "Backups"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.4
+            Size            =   8.25
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -266,7 +266,7 @@ Begin VB.Form frmMain
          Caption         =   "Ignorelist"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.4
+            Size            =   8.25
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -285,7 +285,7 @@ Begin VB.Form frmMain
          Caption         =   "Settings"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.4
+            Size            =   8.25
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -307,7 +307,7 @@ Begin VB.Form frmMain
          Caption         =   "fraConfigMain"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.4
+            Size            =   8.25
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -331,7 +331,7 @@ Begin VB.Form frmMain
                Caption         =   "Interface"
                BeginProperty Font 
                   Name            =   "Tahoma"
-                  Size            =   8.4
+                  Size            =   8.25
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -347,7 +347,7 @@ Begin VB.Form frmMain
                   Caption         =   "B"
                   BeginProperty Font 
                      Name            =   "Tahoma"
-                     Size            =   7.8
+                     Size            =   7.5
                      Charset         =   204
                      Weight          =   700
                      Underline       =   0   'False
@@ -431,7 +431,7 @@ Begin VB.Form frmMain
                Caption         =   "Scan area"
                BeginProperty Font 
                   Name            =   "Tahoma"
-                  Size            =   8.4
+                  Size            =   8.25
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -476,7 +476,7 @@ Begin VB.Form frmMain
                Caption         =   "Fix && Backup"
                BeginProperty Font 
                   Name            =   "Tahoma"
-                  Size            =   8.4
+                  Size            =   8.25
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -547,7 +547,7 @@ Begin VB.Form frmMain
                Caption         =   "Scan options"
                BeginProperty Font 
                   Name            =   "Tahoma"
-                  Size            =   8.4
+                  Size            =   8.25
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -625,7 +625,7 @@ Begin VB.Form frmMain
          Caption         =   "fraConfigBackup"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.4
+            Size            =   8.25
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -717,7 +717,7 @@ Begin VB.Form frmMain
          Caption         =   "Hosts file manager"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.4
+            Size            =   8.25
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -793,7 +793,7 @@ Begin VB.Form frmMain
          Caption         =   "fraConfigIgnorelist"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.4
+            Size            =   8.25
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -872,7 +872,7 @@ Begin VB.Form frmMain
                Caption         =   "Uninstall"
                BeginProperty Font 
                   Name            =   "Tahoma"
-                  Size            =   8.4
+                  Size            =   8.25
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -910,7 +910,7 @@ Begin VB.Form frmMain
                Caption         =   "Plugins"
                BeginProperty Font 
                   Name            =   "Tahoma"
-                  Size            =   8.4
+                  Size            =   8.25
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -966,7 +966,7 @@ Begin VB.Form frmMain
                Caption         =   "System tools"
                BeginProperty Font 
                   Name            =   "Tahoma"
-                  Size            =   8.4
+                  Size            =   8.25
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -1135,7 +1135,7 @@ Begin VB.Form frmMain
                Caption         =   "StartupList"
                BeginProperty Font 
                   Name            =   "Tahoma"
-                  Size            =   8.4
+                  Size            =   8.25
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -1171,7 +1171,7 @@ Begin VB.Form frmMain
                Caption         =   "Update check"
                BeginProperty Font 
                   Name            =   "Tahoma"
-                  Size            =   8.4
+                  Size            =   8.25
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -1336,7 +1336,7 @@ Begin VB.Form frmMain
                Caption         =   "Testing staff"
                BeginProperty Font 
                   Name            =   "Tahoma"
-                  Size            =   8.4
+                  Size            =   8.25
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -1365,7 +1365,7 @@ Begin VB.Form frmMain
       Caption         =   "Main menu"
       BeginProperty Font 
          Name            =   "Tahoma"
-         Size            =   8.4
+         Size            =   8.25
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -1392,7 +1392,7 @@ Begin VB.Form frmMain
          Enabled         =   0   'False
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.4
+            Size            =   8.25
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -1410,7 +1410,7 @@ Begin VB.Form frmMain
          Enabled         =   0   'False
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.4
+            Size            =   8.25
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -1463,7 +1463,7 @@ Begin VB.Form frmMain
          Enabled         =   0   'False
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.4
+            Size            =   8.25
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -1517,7 +1517,7 @@ Begin VB.Form frmMain
       Caption         =   "Help"
       BeginProperty Font 
          Name            =   "Tahoma"
-         Size            =   8.4
+         Size            =   8.25
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -1534,7 +1534,7 @@ Begin VB.Form frmMain
          Caption         =   "History"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.4
+            Size            =   8.25
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -1553,7 +1553,7 @@ Begin VB.Form frmMain
          Caption         =   "Purpose"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.4
+            Size            =   8.25
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -1572,7 +1572,7 @@ Begin VB.Form frmMain
          Caption         =   "Keys"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.4
+            Size            =   8.25
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -1591,7 +1591,7 @@ Begin VB.Form frmMain
          Caption         =   "Sections"
          BeginProperty Font 
             Name            =   "Tahoma"
-            Size            =   8.4
+            Size            =   8.25
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -2067,16 +2067,22 @@ Public Sub Test()
     
 '    If inIDE Then
 '        Dim SignResult As SignResult_TYPE, sFile As String: sFile = "C:\Windows\system32\DRIVERS\klgse.sys"
-'        'Debug.Print SignVerify(sFile, 0, SignResult)
+'        Debug.Print SignVerify(sFile, 0, SignResult)
 '        'Debug.Print SignVerifyJack(sFile, SignResult)
-'        Debug.Print IsMicrosoftDriverFileEx(sFile, SignResult)
+'        'Debug.Print IsMicrosoftDriverFileEx(sFile, SignResult)
 '        Debug.Print "Api err code: 0x" & Hex(SignResult.ApiErrorCode) & " - " & ErrMessageText(SignResult.ApiErrorCode)
 '        Debug.Print "Signer: " & SignResult.SubjectName
 '        Debug.Print "Email: " & SignResult.SubjectEmail
+'        Debug.Print "HashFinalCert: " & SignResult.HashFinalCert
 '    End If
     
     'DownloadAndUpdateSelf "https://dragokas.com/tools/HiJackThis.zip", False
+    '// TODO
     'UnpackZIP = make recursive
+    
+    'Debug.Print IsUserMembershipRDP("Alex")
+    
+    'CheckO27Item
     
     Exit Sub
 ErrorHandler:
@@ -2227,7 +2233,7 @@ Private Sub FormStart_Stage1()
     ProcManVer = PROC_MAN_VERSION
     UninstManVer = UNINST_MAN_VERSION
     
-    g_HJT_Items_Count = 37 'R + F + B + O1-...-O26 + Subsections (for progressbar)
+    g_HJT_Items_Count = 38 'R + F + B + O1-...-O27 + Subsections (for progressbar)
 
     If inIDE Then DisableSubclassing = True
     
@@ -4819,6 +4825,7 @@ Private Sub cmdFix_Click()
                 Case "O24":            FixO24Item sItem, result: bO24Fixed = True
                 Case "O25":            FixO25Item sItem, result
                 Case "O26":            FixO26Item sItem, result
+                Case "O27":            FixO27Item sItem, result
                 Case Else
                    ' msgboxW "Fixing of " & Rtrim$(left$(lstResults.List(i), 3)) & _
                            " is not implemented yet. Bug me about it at " & _
@@ -6725,7 +6732,7 @@ Private Sub chkHelp_Click(Index As Integer)
         NotifyChangeFrame FRAME_ALIAS_HELP_SECTIONS
     
         aSect = Array("R0", "R1", "R2", "R3", "R4", "F0", "F1", "F2", "F3", "B", "O1", "O2", "O3", "O4", "O5", "O6", "O7", "O8", "O9", "O10", _
-            "O11", "O12", "O13", "O14", "O15", "O16", "O17", "O18", "O19", "O20", "O21", "O22", "O23", "O24", "O25", "O26")
+            "O11", "O12", "O13", "O14", "O15", "O16", "O17", "O18", "O19", "O20", "O21", "O22", "O23", "O24", "O25", "O26", "O27")
         
         sText = Translate(31) & vbCrLf & vbCrLf & Translate(490)
         sSeparator = String$(100, "-")

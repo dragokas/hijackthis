@@ -74,7 +74,7 @@
 1023=¡Advertencia! La integridad de esta instancia de HiJackThis está dañada.
      Quizás el archivo haya sido parcheado o infectado por un virus.
      Se recomienda descargar el programa nuevamente desde la fuente oficial: https://github.com/dragokas/hijackthis
-     Si este error se repite, verifique su PC usando un disco de arranque o LiveCD, por ejemplo: https://support.kaspersky.ru/14226 o https://free.drweb.ru/aid_admin
+     Si este error se repite, verifique su PC usando un disco de arranque o LiveCD, por ejemplo: https://www.kaspersky.com/downloads/free-rescue-disk o https://free.drweb.com/aid_admin/?lng=en
 1024=¿Descargar el programa a través de Internet?
 1025=¡Ocurrió un error durante la descarga!
 1026=Descarga completa. ¿Ejecutar el programa?
@@ -197,7 +197,7 @@
 1222=Portugués [desactualizado]
 1223=Holandés [desactualizado]
 1224=Buscar actualizaciones
-1225=Acerca de HiJackThis ...
+1225=Acerca de programa...
 1226=Soporte
 1227=Descripciones de las secciones
 1228=Teclas de línea de comando
@@ -244,7 +244,6 @@
          O5 - Ocultar elementos del panel de control
          O6 - Políticas de IE: Desactivación de la pestaña principal 'Opciones de Internet'
          O7 - Políticas: Regedit, Explorer, TaskMgr / Seguridad IP / Certificados / Solución de problemas del sistema operativo
-         O7 - AutoLogon: usuario configurado para inicio de sesión automático
          O8 - Internet Explorer: elementos adicionales del menú contextual
          O9 - Internet Explorer: botones y servicios adicionales
          O10 - Interrupción del acceso a Internet debido al daño o infección en Winsock LSP
@@ -264,6 +263,7 @@
          O24 - Componentes de escritorio ActiveX
          O25 - Consumidores de eventos permanentes de WMI
          O26 - Depuradores de procesos
+         O27 - Cuenta y protocolo de escritorio remoto
 0032=
      Teclas de línea de comandos:
      --------------------------------
@@ -778,7 +778,7 @@
 0266=O7 - Seguridad IP
 0267=O7 - Permisos de clave de política
 0268=Listado de módulos
-0251=O19 - Hoja de estilo de usuario
+1750=O27 - Cuenta y protocolo de escritorio remoto
 ;
 ; ================ Hosts ==================
 ;
@@ -909,6 +909,7 @@
 2480=Descriptor de seguridad
 2481=Nombre de la clase
 2482=Llaves ocultas (Null)
+2483=Crear clave si no existe
 ;
 ; ============ Delete on reboot
 ;
@@ -1295,13 +1296,32 @@
      >>> Acción tomada por HiJackThis:
       - se elimina el valor del registro.
 ; [O27]
-0437=
+0436=        Notas O27 - Account:
+             (AutoLogon) representa el nombre de cuenta registrado para el inicio de sesión automático en el sistema operativo con una contraseña guardada. El malware puede obligar al usuario a iniciar sesión automáticamente para evitar el cambio de cuenta.
+             (Bad profile) es una carpeta ubicada en %SystemDrive%\Users a la que no hace referencia ninguno de los perfiles de usuario.
+             (Missing) esta es una entrada de registro para el SID y el perfil de un usuario cuya carpeta de perfil no está en el disco.
+             (Hidden) es una cuenta oculta en la pantalla de inicio de sesión.
+             (RDP Group) es un usuario que es miembro del grupo RDP. Permite conexiones remotas en nombre de este usuario.
+             (Other) otras configuraciones de perfil en el registro.
+
+             Notas O27 - RDP:
+             (Port) informa que el puerto entrante 3389 (TCP/UDP) está abierto en el firewall.
+             (Other) otras configuraciones del protocolo de conexión remota.
+             
+     >>> Acción tomada por HiJackThis:
+      - para (AutoLogon): el inicio de sesión automático está deshabilitado. Se le solicitará al usuario que ingrese la contraseña.
+      - para (Bad profile): se elimina la carpeta.
+      - para (Hidden): muestra la cuenta de usuario de la pantalla de inicio de sesión.
+      - para (RDP Group): cancela la membresía del usuario en el grupo RDP.
+      - para (Missing): la entrada SID del usuario se eliminará del registro. La rama HKEY_USERS\<SID> no se procesa.
+      - para (Port): deshabilita la regla de firewall que permite conexiones entrantes al puerto 3389 de svchost.exe.
+      - para (Other): la entrada de registro se establece en los valores predeterminados.
 ; [O28]
-0438=
+0437=
 ; [O29]
-0439=
+0438=
 ; [O30]
-0440=
+0439=
 ; [B]
 0441=        La sección del navegador representa extensiones y políticas sospechosas. Está en construcción en este momento. No se admiten muchas definiciones y navegadores.
 
@@ -1353,6 +1373,7 @@
      Use el programa {1} de {2}
      
      ¿Te gustaría visitar ese sitio?
+0581=HiJackThis no puede reparar las entradas de LSP de O10 Winsock.
 0590=¡Ha ocurrido un error inesperado!
 
      Ayúdenos a mejorar HiJackThis informando este error.
@@ -1851,4 +1872,4 @@
 ; ========= Empty ========
 ;
 ; (2500 - ...)
-;                                            
+;                                                 

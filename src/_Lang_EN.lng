@@ -75,7 +75,7 @@
 1023=Warning! The integrity of this HiJackThis instance is corrupted.
      Perhaps the file has been patched or infected by a virus.
      It is recommended to download the program again from official source: https://github.com/dragokas/hijackthis
-     If this error repeats, check your PC using a boot disk or LiveCD, e.g.: https://support.kaspersky.ru/14226 or https://free.drweb.ru/aid_admin
+     If this error repeats, check your PC using a boot disk or LiveCD, e.g.: https://www.kaspersky.com/downloads/free-rescue-disk or https://free.drweb.com/aid_admin/?lng=en
 1024=Download the program via Internet?
 1025=Error occurred while downloading!
 1026=Downloading complete. Run the program?
@@ -198,7 +198,7 @@
 1222=Portuguese [outdated]
 1223=Dutch [outdated]
 1224=Check for updates
-1225=About HiJackThis...
+1225=About program...
 1226=Support
 1227=Section descriptions
 1228=Command line keys
@@ -245,7 +245,6 @@
          O5 - Hiding Control Panel items
          O6 - IE Policy: Disabling of 'Internet Options' main tab
          O7 - Policies: Regedit, Explorer, TaskMgr / IP Security / Certificates / OS troubleshooting
-         O7 - AutoLogon: User configured for automatic login
          O8 - Internet Explorer: Extra context menu items
          O9 - Internet Explorer: Extra services and buttons
          O10 - Breaking of Internet access due to the damage or infection in Winsock LSP
@@ -265,6 +264,7 @@
          O24 - ActiveX Desktop Components
          O25 - WMI permanent event consumers
          O26 - Process debuggers
+         O27 - Account & Remote desktop protocol
 0032=
      Command-line keys:
      --------------------------------
@@ -779,6 +779,7 @@
 0266=O7 - IP Security
 0267=O7 - Policy key permissions
 0268=Listing the modules
+1750=O27 - Account & Remote desktop protocol
 ;
 ; ================ Hosts ==================
 ;
@@ -836,7 +837,7 @@
 1876=Allow expired certificates
 1877=Don't limit file size
 1878=Prefer embedded signature
-1879=Deshabilitar verificar por catálogo
+1879=Disable verify by catalog
 1880=Precache tags of all catalogs beforehand
 1881=Skip files of already verified security catalogs
 ;
@@ -908,6 +909,7 @@
 2480=Security descriptor
 2481=Class name
 2482=Hidden keys (Null)
+2483=Create key if not exists
 ;
 ; ============ Delete on reboot ========
 ;
@@ -1293,13 +1295,32 @@
      >>> Action taken by HiJackThis:
       - registry value is deleted.
 ; [O27]
-0437=
+0436=        O27 - Account marks:
+             (AutoLogon) represents account name registered for automatic logon in OS with a saved password. Malware can force user for automatic logon to prevent from account change.
+             (Bad profile) is a folder located at %SystemDrive%\Users which is not referenced by any of the user profiles.
+             (Missing) is a registry record about SID and user profile, having profile folder missing from the disk.
+             (Hidden) is an account hidden from the logon screen.
+             (RDP Group) is a user who is the member of RDP group. Allows remote connections on behalf of this user.
+             (Other) other account settings in registry.
+             
+             O27 - RDP marks:
+             (Port) informs about 3389 (TCP/UDP) inbound port opened in firewall.
+             (Other) other remote desktop protocol settings.
+
+     >>> Action taken by HiJackThis:
+      - for (AutoLogon): automatic logon is disabled. User will we prompted to enter the password.
+      - for (Bad profile): the folder is removed.
+      - for (Hidden): unhides user account from the logon screen.
+      - for (RDP Group): cancels user's membership in the RDP group.
+      - for (Missing): user's SID record is removed from the registry. HKEY_USERS\<SID> key is not handled.
+      - for (Port): disables firewall rule, which allow incoming connections to 3389 port of svchost.exe.
+      - for (Other): registry entry is set to defaults.
 ; [O28]
-0438=
+0437=
 ; [O29]
-0439=
+0438=
 ; [O30]
-0440=
+0439=
 ; [B]
 0441=        Browser section represents suspicious extensions and policies. It's under construction at the moment. Not many definitions and browsers are supported.
 
@@ -1350,6 +1371,7 @@
      Use the program {1} from {2}
      
      Would you like to visit that site?
+0581=HiJackThis cannot repair O10 Winsock LSP entries.
 0590=An unexpected error has occurred !
 
      Please help us improve HiJackThis by reporting this error.
@@ -1845,4 +1867,4 @@
 ; ========= Empty ========
 ;
 ; (2500 - ...)
-;                                       
+;                                           

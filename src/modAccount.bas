@@ -45,7 +45,6 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-
 'thanks to dmex
 Private Function GetUserAccountTypeBySidPtr(pSid As Long) As String
     
@@ -118,4 +117,175 @@ Public Function GetUserSid(sUser As String) As String
             End If
         End If
     Next i
+End Function
+
+Public Function GetLocalGroupNames() As String()
+    
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "GetLocalGroupNames - Begin"
+    
+    Dim nStatus As Long
+    Dim dwLevel As Long
+    Dim groupinfo As LOCALGROUP_INFO_0
+    Dim dwEntriesRead As Long
+    Dim dwTotalEntries As Long
+    Dim dwResumeHandle As Long
+    Dim pBuf As Long, pTmpBuf As Long
+    Dim i As Long
+    
+    dwLevel = 0 'for LOCALGROUP_INFO_0
+    
+    Do
+        nStatus = NetLocalGroupEnum(0&, dwLevel, pBuf, MAX_PREFERRED_LENGTH, dwEntriesRead, dwTotalEntries, dwResumeHandle)
+        
+        If nStatus = NERR_Success Or nStatus = ERROR_MORE_DATA Then
+            If pBuf <> 0 Then
+                pTmpBuf = pBuf
+                For i = 0 To dwEntriesRead - 1
+                    'memcpy userinfo, ByVal pTmpBuf, LenB(userinfo)
+                    GetMem4 ByVal pTmpBuf, groupinfo
+                    ArrayAddStr GetLocalGroupNames, StringFromPtrW(groupinfo.lgrpi0_name)
+                    pTmpBuf = pTmpBuf + LenB(groupinfo)
+                Next
+            End If
+        End If
+        
+        If pBuf Then
+            NetApiBufferFree pBuf
+        End If
+    Loop While nStatus = ERROR_MORE_DATA
+    
+    AppendErrorLogCustom "GetLocalGroupNames - End"
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetLocalGroupNames"
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function GetUserGroupNames(sUser As String) As String()
+    
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "GetUserGroupNames - Begin"
+    
+    Dim nStatus As Long
+    Dim dwLevel As Long
+    Dim groupinfo As LOCALGROUP_INFO_0
+    Dim dwEntriesRead As Long
+    Dim dwTotalEntries As Long
+    Dim dwResumeHandle As Long
+    Dim pBuf As Long, pTmpBuf As Long
+    Dim i As Long
+    
+    dwLevel = 0 'for LOCALGROUP_INFO_0
+    
+    nStatus = NetUserGetLocalGroups(0&, StrPtr(sUser), dwLevel, LG_INCLUDE_INDIRECT, pBuf, MAX_PREFERRED_LENGTH, dwEntriesRead, dwTotalEntries)
+    
+    If nStatus = NERR_Success Or nStatus = ERROR_MORE_DATA Then
+        If pBuf <> 0 Then
+            pTmpBuf = pBuf
+            For i = 0 To dwEntriesRead - 1
+                GetMem4 ByVal pTmpBuf, groupinfo
+                ArrayAddStr GetUserGroupNames, StringFromPtrW(groupinfo.lgrpi0_name)
+                pTmpBuf = pTmpBuf + LenB(groupinfo)
+            Next
+        End If
+    End If
+    
+    If pBuf Then
+        NetApiBufferFree pBuf
+    End If
+    
+    AppendErrorLogCustom "GetUserGroupNames - End"
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetUserGroupNames"
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function GetLocalUserNames() As String()
+    
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "GetLocalUserNames - Begin"
+    
+    Dim nStatus As Long
+    Dim dwLevel As Long
+    Dim userinfo As USER_INFO_0
+    Dim dwEntriesRead As Long
+    Dim dwTotalEntries As Long
+    Dim dwResumeHandle As Long
+    Dim pBuf As Long, pTmpBuf As Long
+    Dim i As Long
+    
+    dwLevel = 0 'for USER_INFO_0
+    
+    Do
+        nStatus = NetUserEnum(0&, dwLevel, FILTER_NORMAL_ACCOUNT, pBuf, MAX_PREFERRED_LENGTH, dwEntriesRead, dwTotalEntries, dwResumeHandle)
+        
+        If nStatus = NERR_Success Or nStatus = ERROR_MORE_DATA Then
+            If pBuf <> 0 Then
+                pTmpBuf = pBuf
+                For i = 0 To dwEntriesRead - 1
+                    'memcpy userinfo, ByVal pTmpBuf, LenB(userinfo)
+                    GetMem4 ByVal pTmpBuf, userinfo
+                    ArrayAddStr GetLocalUserNames, StringFromPtrW(userinfo.usri0_name)
+                    pTmpBuf = pTmpBuf + LenB(userinfo)
+                Next
+            End If
+        End If
+        
+        If pBuf Then
+            NetApiBufferFree pBuf
+        End If
+    Loop While nStatus = ERROR_MORE_DATA
+
+    AppendErrorLogCustom "GetLocalUserNames - End"
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetLocalUserNames"
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function IsValidSidEx(sSid As String) As Boolean
+    Dim bufSid() As Byte
+    bufSid = CreateBufferedSID(sSid)
+    IsValidSidEx = IsValidSid(VarPtr(bufSid(0)))
+End Function
+
+Public Function IsValidUserName(sUsername As String) As Boolean
+    If Len(sUsername) = 0 Then Exit Function
+    IsValidUserName = InArray(sUsername, g_LocalUserNames, , , vbTextCompare)
+End Function
+
+Public Function IsValidGroupName(sGroupname As String) As Boolean
+    If Len(sGroupname) = 0 Then Exit Function
+    IsValidGroupName = InArray(sGroupname, g_LocalGroupNames, , , vbTextCompare)
+End Function
+
+Public Function IsUserMembershipRDP(sUsername As String) As Boolean
+    Dim sRdpSid As String, sRdpGroup As String
+    sRdpSid = "S-1-5-32-555"
+    sRdpGroup = MapSIDToUsername(sRdpSid)
+    If Len(sRdpGroup) <> 0 Then
+        IsUserMembershipRDP = IsUserMembershipInGroup(sUsername, sRdpGroup)
+    End If
+End Function
+
+Public Function IsUserMembershipInGroup(sUsername As String, sGroup As String) As Boolean
+    Dim aGroups() As String
+    Dim i As Long
+    aGroups = modAccount.GetUserGroupNames(sUsername)
+    For i = 0 To UBoundSafe(aGroups)
+        If StrComp(aGroups(i), sGroup, vbTextCompare) = 0 Then
+            IsUserMembershipInGroup = True
+            Exit For
+        End If
+    Next
+End Function
+
+Public Function RemoveUserGroupMembership(sUsername As String, sGroup As String) As Boolean
+    RemoveUserGroupMembership = (NERR_Success = NetLocalGroupDelMembers(0&, StrPtr(sGroup), 3&, VarPtr(StrPtr(sUsername)), 1&)) 'LOCALGROUP_MEMBERS_INFO_3
+End Function
+
+Public Function AddUserGroupMembership(sUsername As String, sGroup As String) As Boolean
+    AddUserGroupMembership = (NERR_Success = NetLocalGroupAddMembers(0&, StrPtr(sGroup), 3&, VarPtr(StrPtr(sUsername)), 1&)) 'LOCALGROUP_MEMBERS_INFO_3
 End Function

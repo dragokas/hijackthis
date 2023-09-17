@@ -15,7 +15,7 @@ _(this is alpha-version - major changes are in progress; some functions may work
 
 At the moment, it is a step-by-step 100% rewritten source code of the original engine, aimed to provide a full compatiblity with the most recent Windows OS and a balance beetween compiling very fast results in logfile and combatting with the most popular malware, inluding the one not known to other antiviruses.
 
-It is made by Alex Dragokas - a lawyer, security observer and malware researcher from Ukraine ([Chernobyl](https://en.wikipedia.org/wiki/Chernobyl_disaster), [Na'Vi](https://en.wikipedia.org/wiki/Natus_Vincere), [Щедрик](https://www.youtube.com/watch?v=ZZEMvVcf5-Q), Male slavery, nazism, fascism, [concentration camp](https://www.youtube.com/watch?v=3ASp9tr_-DQ), War of money, authority and blackmail, USA Bio-labs, [radioactive contamination from British](https://www.youtube.com/watch?v=ajY4qcc4OWc), Bombs, drones, whores and crazy people, Colony of USA). Yankee go home! F\*ck Russia, F\*ck Ukraine, F\*ck USA, F\*ck all the world giving weapon for killing the people, imposing sanctions against Ukrainian people in Crimea.
+It is made by Alex Dragokas - a lawyer, security observer and malware researcher from Ukraine ([Chernobyl](https://en.wikipedia.org/wiki/Chernobyl_disaster), [Na'Vi](https://en.wikipedia.org/wiki/Natus_Vincere), [Щедрик](https://www.youtube.com/watch?v=ZZEMvVcf5-Q), Male slavery, nazism, fascism, [concentration camp](https://www.youtube.com/watch?v=3ASp9tr_-DQ), War of money, authority and blackmail, USA Bio-labs, [radioactive contamination from British](https://www.youtube.com/watch?v=ajY4qcc4OWc), Bombs, drones, whores and crazy people, Colony of USA). Yankee go home! F\*ck Russia, F\*ck Ukraine, F\*ck USA, F\*ck all the world giving weapon for killing the people, imposing sanctions against Ukrainian people in Crimea. F\*cking ukrainophobs, rusophobs and castrated negrophobes, provoking genocide of Ukrainian people with hundred tons of "free" cluster and nuclear weapon, exploding at our land like your own polygon.
 
 ## Overview
 
@@ -26,7 +26,7 @@ The difference from classical antiviruses is the ability to function without con
 Therefore, FALSE POSITIVES ARE LIKELY. If you are ever unsure, you should consult with a knowledgeable expert BEFORE deleting anything.
 
 HiJackThis+ is not a replacement of a classical antivirus. It doesn't provide a real-time protection, because it is a passive scanner only. Consider it as an addition. However, you can use it in form of boot-up automatical scanner in the following way: 
- * Run the scanning
+ * Run the scanning by clicking "Do a system scan only"
  * Add all items in the ignore-list
  * Set up boot-up scan in menu "File" - "Settings" - "Add HiJackThis to startup"
  * Next time when user logged in, HiJackThis will silently scan your OS and display UI if only new records in your system has been found.
@@ -120,6 +120,12 @@ HiJackThis+ is distributed under the initial [GPLv2 license](https://github.com/
 [![](https://dragokas.com/tools/img/hjt/chocolatey_badge2.png)](https://chocolatey.org/packages/hijackthis)
 
 **Note:** These mirrors belong to other companies. They are non-official.
+
+### More references:
+// TODO
+
+https://en.wikipedia.org/wiki/HijackThis
+https://ru.wikipedia.org/wiki/HijackThis
 
 ## Donate
 

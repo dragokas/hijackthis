@@ -2,13 +2,13 @@ VERSION 5.00
 Begin VB.Form frmRegTypeChecker 
    AutoRedraw      =   -1  'True
    Caption         =   "Registry Key Type Checker"
-   ClientHeight    =   6588
+   ClientHeight    =   6585
    ClientLeft      =   120
-   ClientTop       =   468
+   ClientTop       =   465
    ClientWidth     =   12480
    BeginProperty Font 
       Name            =   "Tahoma"
-      Size            =   8.4
+      Size            =   8.25
       Charset         =   204
       Weight          =   400
       Underline       =   0   'False
@@ -18,13 +18,13 @@ Begin VB.Form frmRegTypeChecker
    Icon            =   "frmRegKeyChecker.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   ScaleHeight     =   6588
+   ScaleHeight     =   6585
    ScaleWidth      =   12480
    Begin VB.Frame fraArea 
       Caption         =   "Area"
       BeginProperty Font 
          Name            =   "Tahoma"
-         Size            =   7.8
+         Size            =   7.5
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -159,24 +159,32 @@ Begin VB.Form frmRegTypeChecker
       Caption         =   "Mode"
       BeginProperty Font 
          Name            =   "Tahoma"
-         Size            =   7.8
+         Size            =   7.5
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   1332
+      Height          =   1572
       Left            =   8640
       TabIndex        =   19
       Top             =   4320
       Width           =   3735
+      Begin VB.CheckBox chkCreateKey 
+         Caption         =   "Create key if not exists"
+         Height          =   252
+         Left            =   240
+         TabIndex        =   41
+         Top             =   720
+         Width           =   3252
+      End
       Begin VB.CheckBox chkQueryX32 
          Caption         =   "Query x32 view (additionally)"
          Height          =   492
          Left            =   240
          TabIndex        =   21
-         Top             =   720
+         Top             =   960
          Width           =   3372
       End
       Begin VB.CheckBox chkRecurse 
@@ -208,7 +216,7 @@ Begin VB.Form frmRegTypeChecker
       Caption         =   "Report format"
       BeginProperty Font 
          Name            =   "Tahoma"
-         Size            =   7.8
+         Size            =   7.5
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -241,7 +249,7 @@ Begin VB.Form frmRegTypeChecker
    Begin VB.Frame fraBeauty 
       BeginProperty Font 
          Name            =   "Tahoma"
-         Size            =   7.8
+         Size            =   7.5
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -392,7 +400,7 @@ Begin VB.Form frmRegTypeChecker
       Caption         =   "100 %"
       BeginProperty Font 
          Name            =   "Tahoma"
-         Size            =   10.2
+         Size            =   10.5
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -568,12 +576,14 @@ Private Sub GetKeyInfo(KeyInfo As REG_KEY_INFO, ByVal sKey As String, bView32 As
         KeyInfo.Redirection = KEY_REDIRECTION_NO_KEY 'it just make no sense for x32 view
     Else
         KeyInfo.Redirection = Reg.GetKeyRedirectionType(hHive, sKey, True, KeyInfo.SymlinkTarget)
-        'skip "< Win7" rule to ensure
+        
         Dim iReflectionDisabled As Long
-        lret = RegQueryReflectionKey(hKey, iReflectionDisabled)
-        If lret = ERROR_SUCCESS Then
-            If iReflectionDisabled = 0 Then
-                KeyInfo.Redirection = KeyInfo.Redirection Or KEY_REDIRECTION_REFLECTED
+        If g_bIsReflectionSupported Then
+            lret = RegQueryReflectionKey(hKey, iReflectionDisabled)
+            If lret = ERROR_SUCCESS Then
+                If iReflectionDisabled = 0 Then
+                    KeyInfo.Redirection = KeyInfo.Redirection Or KEY_REDIRECTION_REFLECTED
+                End If
             End If
         End If
     End If
@@ -765,8 +775,12 @@ Private Sub cmdGo_Click()
     Dim hFile&, i&, k&, iRedir&
     Dim sb              As clsStringBuilder
     Dim oDictKeys       As clsTrickHashTable
+    Dim oDictCreatedKeys As clsTrickHashTable
     Dim delim           As String
     Dim bLogWritten     As Boolean
+    Dim bCreateKey      As Boolean
+    Dim bHasKey         As Boolean
+    Dim aNodes()        As String
     
     RefreshLogLevel
     
@@ -775,7 +789,10 @@ Private Sub cmdGo_Click()
     
     Set sb = New clsStringBuilder
     Set oDictKeys = New clsTrickHashTable
+    Set oDictCreatedKeys = New clsTrickHashTable
+    
     oDictKeys.CompareMode = vbTextCompare
+    oDictCreatedKeys.CompareMode = vbTextCompare
     
     LockUI True
     
@@ -784,6 +801,7 @@ Private Sub cmdGo_Click()
     delim = IIf(bCSV, ";", " | ")
     bPlainText = optPlainText.Value   'Plain (in Unicode)
     bRecursively = chkRecurse.Value
+    bCreateKey = chkCreateKey.Value   'create the key if it doesn't exist to be able to check it, then remove it
     bQueryX32 = chkQueryX32.Value
     
     sPathes = txtKeys.Text
@@ -799,7 +817,35 @@ Private Sub cmdGo_Click()
     For i = 0 To UBound(aPathes)
         For iRedir = 0 To IIf(bQueryX32, 1, 0)
             DoEvents
-            If Reg.KeyExists(0, aPathes(i), CBool(iRedir)) Then
+            
+            bHasKey = Reg.KeyExists(0, aPathes(i), CBool(iRedir))
+            
+            If (Not bHasKey) And bCreateKey Then
+                'ensure it's not "access denied" status
+                If (Reg.StatusCode = ERROR_FILE_NOT_FOUND) Or (Reg.StatusCode = ERROR_PATH_NOT_FOUND) Then
+                    'build the key sequently to remove it further correctly
+                    aNodes = Split(aPathes(i), "\")
+                    sKey = aNodes(0)
+                    For k = 1 To UBound(aNodes)
+                        sKey = sKey & "\" & aNodes(k)
+                        If Not Reg.KeyExists(0, sKey, CBool(iRedir)) And _
+                            ((Reg.StatusCode = ERROR_FILE_NOT_FOUND) Or (Reg.StatusCode = ERROR_PATH_NOT_FOUND)) Then
+                        
+                            If Reg.CreateKey(0, sKey, CBool(iRedir), bOverrideACL:=False) Then
+                                bHasKey = True
+                                
+                                If Not oDictCreatedKeys.Exists(sKey) Then
+                                    oDictCreatedKeys.Add sKey, IIf(iRedir, REDIR_PRESENCE_X32, REDIR_PRESENCE_NATIVE)
+                                Else
+                                    oDictCreatedKeys(sKey) = oDictCreatedKeys(sKey) Or IIf(iRedir, REDIR_PRESENCE_X32, REDIR_PRESENCE_NATIVE)
+                                End If
+                            End If
+                        End If
+                    Next
+                End If
+            End If
+            
+            If bHasKey Then
                 Erase aKeys
                 
                 sKey = aPathes(i)
@@ -867,7 +913,7 @@ Private Sub cmdGo_Click()
             
             If Not isRan Then
                 LockUI False
-                Exit Sub
+                GoTo Fin
             End If
             
             EraseKeyInfo KeyInfo
@@ -908,6 +954,34 @@ ReportRepeat:
 
     OpenLogFile ReportPath
 
+Fin:
+    'in vice versa order (from leaf to the root, so the key must has no subkeys)
+    For k = oDictCreatedKeys.Count - 1 To 0 Step -1
+        sKey = oDictCreatedKeys.Keys(k)
+        eRedirPresence = oDictCreatedKeys.Items(k)
+        iRedirCount = 0
+        If eRedirPresence And REDIR_PRESENCE_NATIVE Then iRedirCount = iRedirCount + 1
+        If eRedirPresence And REDIR_PRESENCE_X32 Then iRedirCount = iRedirCount + 1
+        
+        For i = 0 To iRedirCount - 1
+            DoEvents
+            
+            If iRedirCount = 2 Then
+                iRedir = i
+            Else
+                iRedir = IIf(CBool(eRedirPresence And REDIR_PRESENCE_X32), 1, 0)
+            End If
+            
+            'double ensure the key is empty (just in case):
+            If (Reg.GetKeysCount(0, sKey, CBool(iRedir)) = 0) And Reg.StatusSuccess Then
+                If (Reg.GetValuesCount(0, sKey, CBool(iRedir)) = 0) And Reg.StatusSuccess Then
+                
+                    Reg.DelKey 0, sKey, CBool(iRedir)
+                End If
+            End If
+        Next
+    Next
+    
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "frmRegTypeChecker.cmdGo_Click"

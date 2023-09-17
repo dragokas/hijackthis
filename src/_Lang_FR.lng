@@ -73,7 +73,7 @@
 1023=Avertissement! L'intégrité de cette instance de HiJackThis est corrompue.
      Il se pourrait que le fichier ait été modifié ou infecté par un virus.
      Il est recommandé de retélécharger le programme à partir de la source officielle: https://github.com/dragokas/hijackthis
-     Si cette erreur se répète, vérifiez votre ordinateur à l'aide d'une disquette de démarrage ou d'un LiveCD, par exemple: https://support.kaspersky.ru/14226 ou https://free.drweb.ru/aid_admin
+     Si cette erreur se répète, vérifiez votre ordinateur à l'aide d'une disquette de démarrage ou d'un LiveCD, par exemple: https://www.kaspersky.com/downloads/free-rescue-disk ou https://free.drweb.com/aid_admin/?lng=en
 1024=Télécharger le programme via Internet?
 1025=Une erreur s'est produite lors du téléchargement!
 1026=Téléchargement terminé. Lancer le programme?
@@ -198,7 +198,7 @@ et enregistrer un rapport
 1222=Portugais [obsolète]
 1223=Néerlandais [obsolète]
 1224=Vérifier les mises à jour
-1225=A propos de HiJackThis...
+1225=A propos du programme...
 1226=Support
 1227=Descriptions de section
 1228=Touches de ligne de commande
@@ -245,7 +245,6 @@ et enregistrer un rapport
          O5 - Masquer les éléments du panneau de configuration
          O6 - Politique IE: Désactivation de l'onglet principal "Options Internet"
          O7 - Stratégies: Dépannage Regedit, Explorer, TaskMgr/Sécurité IP/Certificats/Système d'exploitation
-         O7 - AutoLogon: Utilisateur configuré pour la connexion automatique
          O8 - Internet Explorer: Eléments du menu contextuel supplémentaires
          O9 - Internet Explorer: Services supplémentaires et boutons
          O10 - Interruption de l'accès à Internet en raison d'un dommage ou d'une infection survenue dans LSP Winsock
@@ -265,6 +264,7 @@ et enregistrer un rapport
          O24 - Composants ActiveX Desktop
          O25 - Consommateurs d'événements permanents WMI
          O26 - Débogueurs de processus
+         O27 - Compte et protocole de bureau à distance
 0032=
      Clés de ligne de commande:
      --------------------------------
@@ -778,6 +778,7 @@ HiJackThis+ est une modification du programme HiJackThis original de Trend Micro
 0266=O7 - Sécurité IP
 0267=O7 - Politiques des clés d'autorisation
 0268=Liste des modules
+1750=O27 - Compte et protocole de bureau à distance
 ;
 ; ================ Hosts ==================
 ;
@@ -907,6 +908,7 @@ HiJackThis+ est une modification du programme HiJackThis original de Trend Micro
 2480=Descripteur de sécurité
 2481=Nom du cours
 2482=Clés cachées (Null)
+2483=Créer une clé si elle n'existe pas
 ;
 ; ============ Delete on reboot ========
 ;
@@ -1293,13 +1295,32 @@ HiJackThis+ est une modification du programme HiJackThis original de Trend Micro
      >>> Action prise par HiJackThis:
       - La valeur du registre sera supprimée
 ; [O27]
-0437=
+0436=        Remarques O27 - Account:
+             (AutoLogon) représente le nom de compte enregistré pour la connexion automatique dans le système d'exploitation avec un mot de passe enregistré. Les logiciels malveillants peuvent forcer l'utilisateur à se connecter automatiquement pour empêcher le changement de compte.
+             (Bad profile) est un dossier situé dans %SystemDrive%\Users qui n'est référencé par aucun des profils utilisateur.
+             (Missing) il s'agit d'une entrée de registre pour le SID et le profil d'un utilisateur dont le dossier de profil n'est pas sur le disque.
+             (Hidden) est un compte caché de l'écran de connexion.
+             (RDP Group) est un utilisateur membre du groupe RDP. Autorise les connexions à distance au nom de cet utilisateur.
+             (Other) d'autres paramètres de profil dans le registre.
+             
+             Remarques O27 - RDP:
+             (Port) signale que le port entrant 3389 (TCP/UDP) est ouvert dans le pare-feu.
+             (Other) d'autres paramètres du protocole de connexion à distance.
+             
+     >>> Action prise par HiJackThis :
+      - pour (AutoLogon): la connexion automatique est désactivée. L'utilisateur sera invité à entrer le mot de passe.
+      - pour (Bad profile): le dossier est supprimé.
+      - pour (Hidden): affiche le compte d'utilisateur à partir de l'écran de connexion.
+      - pour (RDP Group): annule l'appartenance de l'utilisateur au groupe RDP.
+      - pour (Missing): l'entrée SID de l'utilisateur sera supprimée du registre. La branche HKEY_USERS\<SID> n'est pas traitée.
+      - pour (Port): désactive la règle de pare-feu qui autorise les connexions entrantes au port 3389 de svchost.exe.
+      - pour (Other): l'entrée de registre est définie sur les valeurs par défaut.
 ; [O28]
-0438=
+0437=
 ; [O29]
-0439=
+0438=
 ; [O30]
-0440=
+0439=
 ; [B]
 0441=        La section du navigateur représente les extensions et les politiques suspectes. C'est en construction en ce moment. Peu de définitions et de navigateurs sont pris en charge.
 
@@ -1350,6 +1371,7 @@ HiJackThis+ est une modification du programme HiJackThis original de Trend Micro
      Utiliser le programme {1} de {2}
      
      Voulez-vous visiter ce site ?
+0581=HiJackThis ne peut réparer les entrées O10 Winsock LSP.
 0590=Une erreur inattendue s'est produite !
 
      Aidez-nous à améliorer HiJackThis en signalant cette erreur.
@@ -1845,4 +1867,4 @@ HiJackThis+ est une modification du programme HiJackThis original de Trend Micro
 ; ========= Empty ========
 ;
 ; (2500 - ...)
-;                                                            
+;                                                                   

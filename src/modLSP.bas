@@ -386,7 +386,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Public Sub FixLSP()
+Public Sub FixLSP() 'FixO10
     On Error GoTo ErrorHandler:
     
     If Not bSeenLSPWarning Then
@@ -395,12 +395,15 @@ Public Sub FixLSP()
         '       "from https://www.foolishit.com/vb6-projects/winsockreset/" & vbCrLf & vbCrLf & _
         '       "Would you like to visit that site?"
         
+        bSeenLSPWarning = True
+        
         Dim sTool As String
         Dim sSite As String
         Dim sMsg As String
         If OSver.IsWindows8OrGreater Then
-            sTool = "NetFix"
-            sSite = "https://www.d7xtech.com/uncle-careys-windows-10-netfix/"
+            'HiJackThis cannot repair O10 Winsock LSP entries.
+            MsgBoxW Translate(581), vbExclamation
+            Exit Sub
         Else
             sTool = "WinsockReset"
             sSite = "https://www.d7xtech.com/vb6-projects/winsockreset/"
@@ -410,7 +413,7 @@ Public Sub FixLSP()
         If vbYes = MsgBoxW(sMsg, vbExclamation Or vbYesNo) Then
             ShellExecute 0&, StrPtr("open"), StrPtr(sSite), 0&, 0&, 1
         End If
-        bSeenLSPWarning = True
+        
     End If
     Exit Sub
 ErrorHandler:

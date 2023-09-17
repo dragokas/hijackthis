@@ -18,7 +18,7 @@ Option Explicit
 ' Registry functions class by Alex Dragokas
 '
 
-'Revision 3.9 (26.05.2023)
+'Revision 3.10 (29.06.2023)
 
 'Private Const MAX_PATH       As Long = 260&
 'Private Const MAX_PATH_W     As Long = 32767&
@@ -529,7 +529,7 @@ Public Sub NormalizeKeyNameAndHiveHandle(ByRef hHive As ENUM_REG_HIVE, ByRef in_
 End Sub
 
 
-Public Function CreateKey(hHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 As Boolean) As Boolean
+Public Function CreateKey(hHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow64 As Boolean, Optional bOverrideACL As Boolean = True) As Boolean
     On Error GoTo ErrorHandler:
     Dim hKey&, lret&
     Call NormalizeKeyNameAndHiveHandle(hHive, sKey)
@@ -537,7 +537,7 @@ Public Function CreateKey(hHive As ENUM_REG_HIVE, ByVal sKey$, Optional bUseWow6
     lret = RegCreateKeyEx(hHive, StrPtr(sKey), 0&, ByVal 0&, 0&, KEY_CREATE_SUB_KEY Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), ByVal 0&, hKey, ByVal 0&)
     
     If lret <> ERROR_SUCCESS Then
-        If lret = ERROR_ACCESS_DENIED Then
+        If lret = ERROR_ACCESS_DENIED And bOverrideACL Then
             If modPermissions.RegKeyResetDACL(hHive, GetParentDir(sKey), bUseWow64, False) Then
                 lret = RegCreateKeyEx(hHive, StrPtr(sKey), 0&, ByVal 0&, 0&, KEY_CREATE_SUB_KEY Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), ByVal 0&, hKey, ByVal 0&)
                 modPermissions.RegKeyResetDACL hHive, sKey, bUseWow64, True
@@ -2868,10 +2868,12 @@ Public Function GetKeyRedirectionType( _
     
     If Not OSver.IsWindows7OrGreater Then ' < Win7
         Dim iReflectionDisabled As Long
-        lret = RegQueryReflectionKey(hKey1, iReflectionDisabled)
-        If lret = ERROR_SUCCESS Then
-            If iReflectionDisabled = 0 Then
-                GetKeyRedirectionType = GetKeyRedirectionType Or KEY_REDIRECTION_REFLECTED
+        If g_bIsReflectionSupported Then
+            lret = RegQueryReflectionKey(hKey1, iReflectionDisabled)
+            If lret = ERROR_SUCCESS Then
+                If iReflectionDisabled = 0 Then
+                    GetKeyRedirectionType = GetKeyRedirectionType Or KEY_REDIRECTION_REFLECTED
+                End If
             End If
         End If
     End If
@@ -3047,10 +3049,12 @@ Public Function NtGetKeyRedirectionType( _
     
     If Not OSver.IsWindows7OrGreater Then ' < Win7
         Dim iReflectionDisabled As Long
-        lret = RegQueryReflectionKey(hKey1, iReflectionDisabled)
-        If lret = ERROR_SUCCESS Then
-            If iReflectionDisabled = 0 Then
-                NtGetKeyRedirectionType = NtGetKeyRedirectionType Or KEY_REDIRECTION_REFLECTED
+        If g_bIsReflectionSupported Then
+            lret = RegQueryReflectionKey(hKey1, iReflectionDisabled)
+            If lret = ERROR_SUCCESS Then
+                If iReflectionDisabled = 0 Then
+                    NtGetKeyRedirectionType = NtGetKeyRedirectionType Or KEY_REDIRECTION_REFLECTED
+                End If
             End If
         End If
     End If
@@ -3495,6 +3499,10 @@ Public Property Get StatusCodeDescOnFail(iSuccesValue As Variant) As String
         Case Else
             StatusCodeDescOnFail = "(Error code: " & m_StatusCode & ")"
     End Select
+End Property
+
+Public Property Get StatusFailed() As Boolean
+    StatusFailed = (m_StatusCode <> ERROR_SUCCESS)
 End Property
 
 Private Sub Class_Initialize()

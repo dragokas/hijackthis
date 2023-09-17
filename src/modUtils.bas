@@ -2693,7 +2693,7 @@ Public Sub FillUsers()
     gUserOfHive(UBound(gHives) - 1) = "All users"
     
     gHives(UBound(gHives)) = "HKCU"
-    gUserOfHive(UBound(gHives)) = OSver.UserName
+    gUserOfHive(UBound(gHives)) = OSver.username
     
     AppendErrorLogCustom "FillUsers - End"
     Exit Sub
@@ -2749,109 +2749,6 @@ ErrorHandler:
     ErrorMsg Err, "GetHives"
     If inIDE Then Stop: Resume Next
 End Sub
-
-Public Function GetLocalGroupNames() As String()
-    
-    On Error GoTo ErrorHandler:
-    AppendErrorLogCustom "GetLocalGroupNames - Begin"
-    
-    Dim nStatus As Long
-    Dim dwLevel As Long
-    Dim groupinfo As LOCALGROUP_INFO_0
-    Dim dwEntriesRead As Long
-    Dim dwTotalEntries As Long
-    Dim dwResumeHandle As Long
-    Dim pBuf As Long, pTmpBuf As Long
-    Dim i As Long
-    
-    dwLevel = 0 'for LOCALGROUP_INFO_0
-    
-    Do
-        nStatus = NetLocalGroupEnum(0&, dwLevel, pBuf, MAX_PREFERRED_LENGTH, dwEntriesRead, dwTotalEntries, dwResumeHandle)
-        
-        If nStatus = NERR_Success Or nStatus = ERROR_MORE_DATA Then
-            If pBuf <> 0 Then
-                pTmpBuf = pBuf
-                For i = 0 To dwEntriesRead - 1
-                    'memcpy userinfo, ByVal pTmpBuf, LenB(userinfo)
-                    GetMem4 ByVal pTmpBuf, groupinfo
-                    ArrayAddStr GetLocalGroupNames, StringFromPtrW(groupinfo.lgrpi0_name)
-                    pTmpBuf = pTmpBuf + LenB(groupinfo)
-                Next
-            End If
-        End If
-        
-        If pBuf Then
-            NetApiBufferFree pBuf
-        End If
-    Loop While nStatus = ERROR_MORE_DATA
-    
-    AppendErrorLogCustom "GetLocalGroupNames - End"
-    Exit Function
-ErrorHandler:
-    ErrorMsg Err, "GetLocalGroupNames"
-    If inIDE Then Stop: Resume Next
-End Function
-
-
-Public Function GetLocalUserNames() As String()
-    
-    On Error GoTo ErrorHandler:
-    AppendErrorLogCustom "GetLocalUserNames - Begin"
-    
-    Dim nStatus As Long
-    Dim dwLevel As Long
-    Dim userinfo As USER_INFO_0
-    Dim dwEntriesRead As Long
-    Dim dwTotalEntries As Long
-    Dim dwResumeHandle As Long
-    Dim pBuf As Long, pTmpBuf As Long
-    Dim i As Long
-    
-    dwLevel = 0 'for USER_INFO_0
-    
-    Do
-        nStatus = NetUserEnum(0&, dwLevel, FILTER_NORMAL_ACCOUNT, pBuf, MAX_PREFERRED_LENGTH, dwEntriesRead, dwTotalEntries, dwResumeHandle)
-        
-        If nStatus = NERR_Success Or nStatus = ERROR_MORE_DATA Then
-            If pBuf <> 0 Then
-                pTmpBuf = pBuf
-                For i = 0 To dwEntriesRead - 1
-                    'memcpy userinfo, ByVal pTmpBuf, LenB(userinfo)
-                    GetMem4 ByVal pTmpBuf, userinfo
-                    ArrayAddStr GetLocalUserNames, StringFromPtrW(userinfo.usri0_name)
-                    pTmpBuf = pTmpBuf + LenB(userinfo)
-                Next
-            End If
-        End If
-        
-        If pBuf Then
-            NetApiBufferFree pBuf
-        End If
-    Loop While nStatus = ERROR_MORE_DATA
-
-    AppendErrorLogCustom "GetLocalUserNames - End"
-    Exit Function
-ErrorHandler:
-    ErrorMsg Err, "GetLocalUserNames"
-    If inIDE Then Stop: Resume Next
-End Function
-
-Public Function IsValidSidEx(sSid As String) As Boolean
-    Dim bufSid() As Byte
-    bufSid = CreateBufferedSID(sSid)
-    IsValidSidEx = IsValidSid(VarPtr(bufSid(0)))
-End Function
-
-Public Function IsValidUserName(sUsername As String) As Boolean
-    If Len(sUsername) = 0 Then Exit Function
-    IsValidUserName = InArray(sUsername, g_LocalUserNames, , , vbTextCompare)
-End Function
-
-Public Function IsValidGroupName(sGroupname As String) As Boolean
-    If Len(sGroupname) = 0 Then Exit Function
-    IsValidGroupName = InArray(sGroupname, g_LocalGroupNames, , , vbTextCompare)
-End Function
 
 Public Function IsValidBuildInUserName(sUsername As String) As Boolean
     

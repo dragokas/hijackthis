@@ -7,7 +7,7 @@ Attribute VB_Name = "modGlobals"
 
 Option Explicit
 
-Public Const LAST_CHECK_OTHER_SECTION_NUMBER As Long = 26
+Public Const LAST_CHECK_OTHER_SECTION_NUMBER As Long = 27
 
 Public Const MAX_TIMEOUT_DEFAULT As Long = 180 'Standard scan timeout
 
@@ -29,6 +29,7 @@ Public Const STR_MISSING        As String = "(missing)"
 Public Const STR_ACCESS_DENIED  As String = "(access denied)"
 Public Const STR_NOT_SIGNED     As String = "(not signed)"
 Public Const STR_INVALID_SIGN   As String = "(invalid sign)"
+Public Const STR_NO_FIX         As String = "(no fix)"
 
 #If False Then 'for common var. names character case fixation
     Public X, Y, Length, Index, sFilename, i, j, k, N, State, frm, ret, VT, isInit, hwnd, pv, Reg, pid, File, msg, VT, InArray, Self, status, FileName
@@ -421,6 +422,7 @@ Public bLoadDefaults        As Boolean
 Public bSkipIgnoreList      As Boolean
 Public g_bDelmodeDisabling  As Boolean
 Public g_iCpuUsage          As Long
+Public g_bIsReflectionSupported As Boolean
 
 Public bSeenHostsFileAccessDeniedWarning As Boolean
 Public bGlobalDontFocusListBox As Boolean
@@ -1291,9 +1293,14 @@ End Enum
 Public Declare Function GetSaveFileName Lib "comdlg32.dll" Alias "GetSaveFileNameW" (pOpenfilename As OPENFILENAME) As Long
 Public Declare Function GetUserName Lib "Advapi32.dll" Alias "GetUserNameW" (ByVal lpBuffer As Long, nSize As Long) As Long
 Public Declare Function GetComputerName Lib "kernel32.dll" Alias "GetComputerNameW" (ByVal lpBuffer As Long, nSize As Long) As Long
-Public Declare Function NetUserEnum Lib "Netapi32.dll" (ByVal servername As Long, ByVal level As Long, ByVal Filter As Long, bufptr As Long, ByVal prefmaxlen As Long, entriesread As Long, totalentries As Long, resume_handle As Long) As Long
-Public Declare Function NetLocalGroupEnum Lib "Netapi32.dll" (ByVal servername As Long, ByVal level As Long, bufptr As Long, ByVal prefmaxlen As Long, entriesread As Long, totalentries As Long, resume_handle As Long) As Long
-Public Declare Function NetApiBufferFree Lib "Netapi32.dll" (ByVal Buffer As Long) As Long
+Public Declare Function NetUserEnum Lib "netapi32.dll" (ByVal servername As Long, ByVal level As Long, ByVal Filter As Long, bufptr As Long, ByVal prefmaxlen As Long, entriesread As Long, totalentries As Long, resume_handle As Long) As Long
+Public Declare Function NetLocalGroupEnum Lib "netapi32.dll" (ByVal servername As Long, ByVal level As Long, bufptr As Long, ByVal prefmaxlen As Long, entriesread As Long, totalentries As Long, resume_handle As Long) As Long
+Public Declare Function NetUserGetGroups Lib "netapi32.dll" (ByVal servername As Long, ByVal UserName As Long, ByVal level As Long, bufptr As Long, ByVal prefmaxlen As Long, entriesread As Long, totalentries As Long) As Long
+Public Declare Function NetUserGetLocalGroups Lib "netapi32.dll" (ByVal servername As Long, ByVal UserName As Long, ByVal level As Long, ByVal Flags As Long, bufptr As Long, ByVal prefmaxlen As Long, entriesread As Long, totalentries As Long) As Long
+Public Declare Function NetGroupDelUser Lib "netapi32.dll" (ByVal servername As Long, ByVal groupname As Long, ByVal UserName As Long) As Long
+Public Declare Function NetLocalGroupDelMembers Lib "netapi32.dll" (ByVal servername As Long, ByVal groupname As Long, ByVal level As Long, ByVal bufptr As Long, ByVal totalentries As Long) As Long
+Public Declare Function NetLocalGroupAddMembers Lib "netapi32.dll" (ByVal servername As Long, ByVal groupname As Long, ByVal level As Long, ByVal bufptr As Long, ByVal totalentries As Long) As Long
+Public Declare Function NetApiBufferFree Lib "netapi32.dll" (ByVal Buffer As Long) As Long
 Public Declare Function GetDateFormat Lib "kernel32.dll" Alias "GetDateFormatW" (ByVal Locale As Long, ByVal dwFlags As Long, lpDate As SYSTEMTIME, ByVal lpFormat As Long, ByVal lpDateStr As Long, ByVal cchDate As Long) As Long
 Public Declare Function QueryPerformanceFrequency Lib "kernel32.dll" (lpFrequency As Any) As Long
 Public Declare Function QueryPerformanceCounter Lib "kernel32.dll" (lpPerformanceCount As Any) As Long
@@ -1373,6 +1380,7 @@ Public Const VARCMP_GT                     As Long = 2
 Public Const SECURITY_NT_AUTHORITY         As Long = &H5&
 Public Const SECURITY_AUTHENTICATED_USER_RID As Long = 11
 Public Const TOKEN_QUERY                   As Long = &H8&
+Public Const TOKEN_READ                    As Long = &H20000 Or &H8&
 Public Const TokenGroups                   As Long = 2&
 Public Const SECURITY_BUILTIN_DOMAIN_RID   As Long = &H20&
 Public Const SECURITY_LOGON_IDS_RID        As Long = 5
@@ -1387,6 +1395,7 @@ Public Const DOMAIN_ALIAS_RID_BACKUP_OPS   As Long = 551&
 Public Const FILTER_NORMAL_ACCOUNT         As Long = 2&
 Public Const MAX_PREFERRED_LENGTH          As Long = -1&
 Public Const NERR_Success                  As Long = 0&
+Public Const LG_INCLUDE_INDIRECT           As Long = 1&
 
 Public Const ERROR_NONE_MAPPED As Long = 1332&
 

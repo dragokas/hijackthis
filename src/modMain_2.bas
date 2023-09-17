@@ -4,14 +4,15 @@ Attribute VB_Name = "modMain_2"
 '
 ' Core check / Fix Engine
 '
-' (part 2: O25 - O26)
+' (part 2: O25 - O27)
 
 '
-' O25, O26 by Alex Dragokas
+' O25, O26, O27 by Alex Dragokas
 '
 
 'O25 - Windows Management Instrumentation (WMI) event consumers
 'O26 - Image File Execution Options (IFEO) and System Tools hijack
+'O27 - Account & Remote Desktop Protocol
 
 Option Explicit
 
@@ -1259,5 +1260,333 @@ ErrorHandler:
 End Sub
 
 Public Sub FixO26Item(sItem$, result As SCAN_RESULT)
+    FixIt result
+End Sub
+
+Public Sub CheckO27Item()
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "CheckO27Item - Begin"
+    
+    CheckO27Item_RDP
+    
+    Dim lData&
+    Dim sHit$, result As SCAN_RESULT
+    Dim HE As clsHiveEnum:      Set HE = New clsHiveEnum
+    Dim DC As clsDataChecker:   Set DC = New clsDataChecker
+    
+    HE.Init HE_HIVE_HKLM, , HE_REDIR_NO_WOW
+    HE.AddKey "SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+    
+    DC.AddValueData "dontdisplaylastusername", 0
+    
+    'O27 - Account: (Other)
+    Do While HE.MoveNext
+        Do While DC.MoveNext
+            lData = Reg.GetDword(HE.Hive, HE.Key, DC.ValueName, HE.Redirected)
+            
+            If Not DC.ContainsData(lData) Then
+                sHit = "O27 - Account: (Other) " & HE.KeyAndHivePhysical & ": " & "[" & DC.ValueName & "] = " & Reg.StatusCodeDescOnFail(lData)
+                
+                If Not IsOnIgnoreList(sHit) Then
+                    With result
+                        .Section = "O27"
+                        .HitLineW = sHit
+                        AddRegToFix .Reg, RESTORE_VALUE, HE.Hive, HE.Key, DC.ValueName, DC.DataLong, HE.Redirected, REG_RESTORE_DWORD
+                        .CureType = REGISTRY_BASED
+                    End With
+                    AddToScanResults result
+                End If
+            End If
+        Loop
+    Loop
+    
+    'O27 - Account: (RDP Group)
+    Dim sRdpSid As String, sRdpGroup As String
+    sRdpSid = "S-1-5-32-555"
+    sRdpGroup = MapSIDToUsername(sRdpSid)
+    Dim i As Long
+    For i = 0 To UBound(g_LocalUserNames)
+        If IsUserMembershipInGroup(g_LocalUserNames(i), sRdpGroup) Then
+            sHit = "O27 - Account: (RDP Group) User '" & g_LocalUserNames(i) & "' is a member of Remote desktop group"
+            
+            If Not IsOnIgnoreList(sHit) Then
+                With result
+                    .Section = "O27"
+                    .HitLineW = sHit
+                    AddCustomToFix .Custom, CUSTOM_ACTION_REMOVE_GROUP_MEMBERSHIP, sRdpGroup, , , g_LocalUserNames(i)
+                    .CureType = CUSTOM_BASED
+                End With
+                AddToScanResults result
+            End If
+        End If
+    Next
+    
+    'O27 - Account: (AutoLogon)
+    Call CheckAutoLogon
+    
+    'O27 - Account: (Missing)
+    Dim sidList() As String
+    Dim aProfiles() As String
+    Dim sProfilePath As String
+    Dim sKey As String
+    
+    sKey = "SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList"
+    
+    For i = 1 To Reg.EnumSubKeysToArray(HKLM, sKey, sidList)
+        
+        sProfilePath = Reg.GetString(HKLM, sKey & "\" & sidList(i), "ProfileImagePath")
+        ArrayAddStr aProfiles, sProfilePath
+        
+        If Not FolderExists(sProfilePath) Then
+            sHit = "O27 - Account: (Missing) HKLM\..\ProfileList\" & sidList(i) & " [ProfileImagePath] = " & sProfilePath & " " & STR_FOLDER_MISSING
+            
+            If Not IsOnIgnoreList(sHit) Then
+                With result
+                    .Section = "O27"
+                    .HitLineW = sHit
+                    AddRegToFix .Reg, REMOVE_KEY, HKLM, sKey & "\" & sidList(i)
+                    .CureType = REGISTRY_BASED
+                End With
+                AddToScanResults result
+            End If
+        End If
+    Next
+    
+    'O27 - Account: (Bad profile)
+    If Len(ProfilesDir) <> 0 Then
+        Dim aFolders() As String
+        Dim sName As String
+        Dim aWhiteUsers(3) As String
+        aWhiteUsers(0) = "Default"
+        aWhiteUsers(1) = "Public"
+        aWhiteUsers(2) = "All Users"
+        aWhiteUsers(3) = "Default User"
+        
+        aFolders = ListSubfolders(ProfilesDir) '%SystemDrive%\Users\*
+        
+        For i = 0 To UBound(aFolders)
+            sName = GetFileName(aFolders(i), True)
+            If Not InArray(sName, aWhiteUsers, , , vbTextCompare) Then
+                If Not InArray(aFolders(i), aProfiles, , , vbTextCompare) Then
+                    sHit = "O27 - Account: (Bad profile) Folder is not referenced by any of user SIDs: " & aFolders(i)
+                    If Not IsOnIgnoreList(sHit) Then
+                        With result
+                            .Section = "O27"
+                            .HitLineW = sHit
+                            AddFileToFix .File, REMOVE_FOLDER, aFolders(i)
+                            .CureType = FILE_BASED
+                        End With
+                        AddToScanResults result
+                    End If
+                End If
+            End If
+        Next
+    End If
+    
+    'O27 - Account: (Hidden)
+    Dim aValue() As String
+    sKey = "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\SpecialAccounts\UserList"
+    For i = 1 To Reg.EnumValuesToArray(HKLM, sKey, aValue(), False)
+        sHit = "O27 - Account: (Hidden) User '" & aValue(i) & "' is invisible on logon screen"
+        If Not IsOnIgnoreList(sHit) Then
+            With result
+                .Section = "O27"
+                .HitLineW = sHit
+                AddRegToFix .Reg, REMOVE_VALUE, HKLM, sKey, aValue(i)
+                .CureType = REGISTRY_BASED
+            End With
+            AddToScanResults result
+        End If
+    Next
+    
+    AppendErrorLogCustom "CheckO27Item - End"
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "CheckO27Item"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Public Sub CheckO27Item_RDP()
+    On Error GoTo ErrorHandler:
+    
+    '//TODO: check port
+    'netsh advfirewall firewall set rule name="Remote Desktop" new localport=
+    
+    Dim lData&
+    Dim sHit$, result As SCAN_RESULT
+    Dim HE As clsHiveEnum:      Set HE = New clsHiveEnum
+    Dim DC As clsDataChecker:   Set DC = New clsDataChecker
+    
+    HE.Init HE_HIVE_HKLM, , HE_REDIR_NO_WOW
+    HE.AddKey "SYSTEM\CurrentControlSet\Control\Terminal Server"
+    
+    DC.AddValueData "AllowRemoteRPC", 0
+    DC.AddValueData "fDenyTSConnections", 1
+    If Not OSver.IsServer Then
+        DC.AddValueData "fSingleSessionPerUser", 1
+    End If
+    
+    'O27 - RDP: (Other)
+    Do While HE.MoveNext
+        Do While DC.MoveNext
+            lData = Reg.GetDword(HE.Hive, HE.Key, DC.ValueName, HE.Redirected)
+            
+            If Not DC.ContainsData(lData) Then
+                sHit = "O27 - RDP: (Other) " & HE.KeyAndHivePhysical & ": " & "[" & DC.ValueName & "] = " & Reg.StatusCodeDescOnFail(lData)
+                
+                If Not IsOnIgnoreList(sHit) Then
+                    With result
+                        .Section = "O27"
+                        .HitLineW = sHit
+                        AddRegToFix .Reg, RESTORE_VALUE, HE.Hive, HE.Key, DC.ValueName, DC.DataLong, HE.Redirected, REG_RESTORE_DWORD
+                        .CureType = REGISTRY_BASED
+                    End With
+                    AddToScanResults result
+                End If
+            End If
+        Loop
+    Loop
+    
+    'https://learn.microsoft.com/en-us/troubleshoot/windows-server/remote/shadow-terminal-server-session
+    
+    HE.Clear: DC.Clear
+    
+    HE.AddKey "SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services"
+    HE.AddKey "SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp"
+    
+    '0 - Disable shadow
+    '1 - Full access with user's permission
+    DC.AddValueData "Shadow", Array(0, 1)
+    
+    Do While HE.MoveNext
+        Do While DC.MoveNext
+            lData = Reg.GetDword(HE.Hive, HE.Key, DC.ValueName, HE.Redirected)
+            
+            If Not DC.ContainsData(lData) Then
+                sHit = "O27 - RDP: (Other) " & HE.KeyAndHivePhysical & ": " & "[" & DC.ValueName & "] = " & Reg.StatusCodeDescOnFail(lData)
+                
+                If Not IsOnIgnoreList(sHit) Then
+                    With result
+                        .Section = "O27"
+                        .HitLineW = sHit
+                        AddRegToFix .Reg, RESTORE_VALUE, HE.Hive, HE.Key, DC.ValueName, DC.DataLong, HE.Redirected, REG_RESTORE_DWORD
+                        .CureType = REGISTRY_BASED
+                    End With
+                    AddToScanResults result
+                End If
+            End If
+        Loop
+    Loop
+    
+    'O27 - RDP: (Port)
+    Dim pFwNetFwPolicy2 As New NetFwPolicy2
+    Dim pFwRules As INetFwRules
+    Dim pFwRule As NetFwRule
+    Dim sProtocol As String
+    Dim sService As String
+    Dim sApp As String
+    
+    Set pFwRules = pFwNetFwPolicy2.Rules
+    
+    For Each pFwRule In pFwRules
+        If pFwRule.Enabled Then
+            If pFwRule.Action = NET_FW_ACTION_ALLOW Then
+                If pFwRule.direction = NET_FW_RULE_DIR_IN Then
+                    'Win11 has RdpSa.exe
+                    'Also, sometimes 3389 opened system-wide
+                    'If StrComp(GetFileName(pFwRule.ApplicationName, True), "svchost.exe", 1) = 0 Then
+                        'If FW_IsPortInRange(3389, pFwRule.LocalPorts) Then
+                        If StrComp("3389", pFwRule.LocalPorts) = 0 Then
+                            sService = pFwRule.serviceName
+                            sApp = pFwRule.ApplicationName
+                            
+                            If Len(sService) = 0 Then sService = "(no service)"
+                            If Len(sApp) = 0 Then sApp = "(all applications)"
+                            
+                            sHit = "O27 - RDP: (Port) 3389 " & FW_GetProtocolName(pFwRule.Protocol) & " opened as inbound - " & _
+                                sService & " - (" & pFwRule.Name & ") - " & sApp
+                            
+                            If Not IsOnIgnoreList(sHit) Then
+                                With result
+                                    .Section = "O27"
+                                    .HitLineW = sHit
+                                    AddCustomToFix .Custom, CUSTOM_ACTION_FIREWALL_RULE, pFwRule.Name
+                                    .CureType = CUSTOM_BASED
+                                End With
+                                AddToScanResults result
+                            End If
+                        End If
+                    'End If
+                End If
+            End If
+        End If
+    Next
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "CheckO27Item_RDP"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Private Function FW_GetProtocolName(iProtocol As Long) As String
+    Select Case iProtocol
+    Case 6
+        FW_GetProtocolName = "TCP"
+    Case 17
+        FW_GetProtocolName = "UDP"
+    Case Else
+        FW_GetProtocolName = "Other"
+    End Select
+End Function
+
+'strPorts example: "3306,3310,3315-3320", "*", "3306"
+Private Function FW_IsPortInRange(port As Long, strPorts As String) As Boolean
+    On Error GoTo ErrorHandler:
+    '// TODO: support Port name aliases, e.g. RPC-EPMap
+    If Len(strPorts) = 0 Then Exit Function
+    If strPorts = "*" Then FW_IsPortInRange = True: Exit Function
+    Dim vRange, pos As Long, minValue As Long, maxValue As Long, tmp1 As String, tmp2 As String
+    For Each vRange In Split(strPorts, ",")
+        pos = InStr(1, vRange, "-")
+        If pos = 0 Then
+            If IsNumeric(vRange) Then
+                If CLng(vRange) = port Then FW_IsPortInRange = True: Exit Function
+            End If
+        Else
+            tmp1 = Left$(vRange, pos - 1)
+            tmp2 = mid$(vRange, pos + 1)
+            If IsNumeric(tmp1) And IsNumeric(tmp1) Then
+                minValue = CLng(tmp1)
+                maxValue = CLng(tmp2)
+                If port >= minValue And port <= maxValue Then FW_IsPortInRange = True: Exit Function
+            End If
+        End If
+    Next
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "FW_IsPortInRange", strPorts
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function FW_RuleSetState(sRuleName As String, bEnabled As Boolean) As Boolean
+    On Error GoTo ErrorHandler:
+    Dim pFwNetFwPolicy2 As New NetFwPolicy2
+    Dim pFwRules As INetFwRules
+    Dim pFwRule As NetFwRule
+    
+    Set pFwRules = pFwNetFwPolicy2.Rules
+    
+    For Each pFwRule In pFwRules
+        If StrComp(pFwRule.Name, sRuleName, vbTextCompare) = 0 Then
+            pFwRule.Enabled = bEnabled
+            FW_RuleSetState = True
+        End If
+    Next
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "FW_RuleSetState"
+End Function
+
+Public Sub FixO27Item(sItem$, result As SCAN_RESULT)
     FixIt result
 End Sub

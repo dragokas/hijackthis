@@ -5,7 +5,7 @@ Option Explicit
 
 '
 ' Authenticode digital signature verifier / Driver's WHQL signature verifier
-' revision 3.1
+' revision 3.2
 '
 ' Copyrights: Alex Dragokas
 '
@@ -712,6 +712,13 @@ Public Sub InitVerifyDigiSign()
     
     'For drivers
     m_eJackDriverFlags = (m_eJackFlags Or SV_isDriver Or SV_PreferInternalSign) And Not SV_LightCheckMS
+    
+    Dim i As Long
+    ReDim tim(10)
+    For i = 0 To UBound(tim)
+        Set tim(i) = New clsTimer
+        tim(i).Index = i
+    Next
     
     #If UseHashtable Then
         Set oMsHash = New clsTrickHashTable

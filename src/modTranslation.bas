@@ -1044,6 +1044,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                                     Case "2480": .chkSecurityDescriptor.Caption = Translation
                                     Case "2481": .chkClass.Caption = Translation
                                     Case "2482": .chkNullKey.Caption = Translation
+                                    Case "2483": .chkCreateKey.Caption = Translation
                                 End Select
                             End With
                         End If
@@ -1161,6 +1162,7 @@ Public Function GetTranslationIndex_HelpSection(Section As String) As Long
         Case "O24": j = 432
         Case "O25": j = 433
         Case "O26": j = 435
+        Case "O27": j = 436
     End Select
     GetTranslationIndex_HelpSection = j
 End Function

@@ -194,50 +194,86 @@ End Function
 Private Function DlgWndProc(ByVal hwnd As Long, ByVal msg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
 
     On Error GoTo ErrorHandler:
+    Dim iStage As Long
 
     Select Case msg
     Case WM_COMMAND
         If HIWORD(wParam) = BN_CLICKED Then
+            
+            iStage = 1
             
             If hwndDlg = 0 Then Exit Function
             
             Dim hwndPick As Long
             hwndPick = GetDlgItem(hwndDlg, IDOK)
             
+            iStage = 2
+            
             If lParam = hwndPick Then
                 Dim hwndLVParent As Long, hwndLV As Long
                 Dim pos As Long, itm As LVITEMW, txtLen As Long
+                Dim mItemName As String
+                
+                iStage = 3
                 
                 hwndLVParent = FindWindowEx(hwndDlg, ByVal 0&, "SHELLDLL_DefView", vbNullString)
                 If hwndLVParent <> 0 Then
                     hwndLV = FindWindowEx(hwndLVParent, ByVal 0&, "SysListView32", vbNullString)
                 End If
                 
+                iStage = 4
+                
                 If hwndLV <> 0 Then
                     pos = SendMessageW(hwndLV, LVM_GETNEXTITEM, -1, ByVal LVIS_SELECTED)
                 End If
                 
-                If pos >= 0 Then
+                iStage = 5
+                
+                If (pos >= 0) And (hwndLV <> 0) Then
                     
                     If hwndDlg <> 0 Then
+                    
+                        iStage = 6
+                    
                         mPath = String(MAX_PATH_W, 0)
                         txtLen = SendMessageW(hwndDlg, CDM_GETFOLDERPATH, MAX_PATH_W, ByVal StrPtr(mPath))
-                        mPath = Left$(mPath, txtLen - 1)
+                        If txtLen > 0 Then
+                            mPath = Left$(mPath, txtLen - 1)
+                        Else
+                            mPath = GetPath()
+                        End If
                     End If
                     
-                    itm.cchTextMax = MAX_PATH
-                    itm.pszText = StrPtr(String(MAX_PATH, 0))
+                    iStage = 7
+                    
+                    mItemName = String(MAX_PATH_W, 0)
+                    itm.cchTextMax = MAX_PATH_W
+                    itm.pszText = StrPtr(mItemName)
+                    
+                    iStage = 8
                     
                     Do
+                        iStage = 9
+                    
                         If pos >= 0 Then
                             txtLen = SendMessageW(hwndLV, LVM_GETITEMTEXTW, pos, ByVal VarPtr(itm))
+                            
+                            iStage = 10
+                            
                             mFolders.Add Replace$(NormalizeLink(mPath, StringFromPtrW(itm.pszText)), "\\", "\")
                         End If
+                        
+                        iStage = 11
+                        
                         pos = SendMessageW(hwndLV, LVM_GETNEXTITEM, pos, ByVal LVIS_SELECTED)
                     Loop Until pos = -1
                     
+                    iStage = 12
+                    
                     If hwndDlg <> 0 Then EndDialog hwndDlg, 0: hwndDlg = 0
                 Else
+                    iStage = 13
+                
                     mPath = GetPath()
                     If Len(mPath) Then
                         If hwndDlg <> 0 Then EndDialog hwndDlg, 0: hwndDlg = 0
@@ -253,7 +289,7 @@ Private Function DlgWndProc(ByVal hwnd As Long, ByVal msg As Long, ByVal wParam 
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "modOpenFolder.DlgWndProc"
+    ErrorMsg Err, "modOpenFolder.DlgWndProc. Stage: " & iStage
     If hwndDlg <> 0 Then EndDialog hwndDlg, 0: hwndDlg = 0
     If inIDE Then Stop: Resume Next
 End Function
@@ -271,8 +307,8 @@ End Function
 Private Function GetPath() As String
     Dim txtLen As Long, tmp As String
         
-    tmp = String$(MAX_PATH, 0)
-    txtLen = SendMessageW(hwndDlg, CDM_GETFILEPATH, MAX_PATH, ByVal StrPtr(tmp))
+    tmp = String$(MAX_PATH_W, 0)
+    txtLen = SendMessageW(hwndDlg, CDM_GETFILEPATH, MAX_PATH_W, ByVal StrPtr(tmp))
     
     If txtLen > 0 Then
         tmp = Left(tmp, txtLen - 1)

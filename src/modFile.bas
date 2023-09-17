@@ -572,13 +572,13 @@ Public Function GetW(hFile As Long, Optional vPos As Variant, Optional vOut As V
         
         oldPos = SetFilePointer(hFile, 0&, ByVal 0&, FILE_CURRENT)
         If oldPos = INVALID_SET_FILE_POINTER And NO_ERROR <> Err.LastDllError Then
-            Err.Clear: ErrorMsg Err, "Cannot get file pointer! LastDllErr = " & Err.LastDllError: Err.Raise 52
+            ErrorMsg Err, "Cannot get file pointer! LastDllErr = " & Err.LastDllError: Err.Raise 52
         End If
         
         If pos <> oldPos Then
             If INVALID_SET_FILE_POINTER = SetFilePointer(hFile, pos, ByVal 0&, FILE_BEGIN) Then
                 If NO_ERROR <> Err.LastDllError Then
-                    Err.Clear: ErrorMsg Err, "Cannot set file pointer! LastDllErr = " & Err.LastDllError: Err.Raise 52
+                    ErrorMsg Err, "Cannot set file pointer! LastDllErr = " & Err.LastDllError: Err.Raise 52
                 End If
             End If
         End If
@@ -648,7 +648,7 @@ Public Function PutStringW(hFile As Long, Optional pos As Long, Optional sStr As
 End Function
 
 
-Public Function PutW(hFile As Long, pos As Long, vInPtr As Long, cbToWrite As Long, Optional doAppend As Boolean) As Boolean
+Public Function PutW(hFile As Long, ByVal pos As Long, vInPtr As Long, cbToWrite As Long, Optional doAppend As Boolean) As Boolean
     On Error GoTo ErrorHandler
     'don't uncomment it -> recurse on bDebugToFile !!!
     'AppendErrorLogCustom "PutW - Begin", "Handle: " & hFile, "pos: " & pos, "Bytes: " & cbToWrite
@@ -741,7 +741,7 @@ Public Function CloseW(hFile As Long, Optional bFlushBuffers As Boolean) As Long
     End If
 
     CloseW = CloseHandle(hFile)
-    If CloseW Then hFile = 0
+    If CloseW Then hFile = INVALID_HANDLE_VALUE
 End Function
 
 '// TODO. I don't like it. Re-check it !!!
@@ -1083,10 +1083,10 @@ Private Sub ListFiles_Ex( _
     Dim L               As Long
     Dim lpSTR           As Long
     Dim fd              As WIN32_FIND_DATA
-    Dim Ext()           As String
+    Dim ext()           As String
     Dim bComply         As Boolean
     
-    Ext = SplitSafe(Extension, ";")
+    ext = SplitSafe(Extension, ";")
     
     'Local module variables:
     '
@@ -1125,7 +1125,7 @@ Private Sub ListFiles_Ex( _
                 bComply = False
                 If Len(Extension) = 0 Then
                     bComply = True
-                ElseIf InArray(GetExtensionName(PathName), Ext, , , 1) Then
+                ElseIf InArray(GetExtensionName(PathName), ext, , , 1) Then
                     bComply = True
                 ElseIf bIncludePeExe Then
                     SubPathName = BuildPath(Path, PathName)

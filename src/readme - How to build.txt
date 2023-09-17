@@ -1,4 +1,4 @@
-To build HiJackThis+ project:
+﻿To build HiJackThis+ project:
 
 * You need:
  - Windows XP / 7 / 8.1 / 10 or 11.

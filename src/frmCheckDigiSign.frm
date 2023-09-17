@@ -50,14 +50,14 @@ Begin VB.Form frmCheckDigiSign
          TabIndex        =   23
          Top             =   1440
          Value           =   1  'Checked
-         Width           =   3372
+         Width           =   3492
       End
       Begin VB.CheckBox chkNoSizeLimit 
          Caption         =   "No file size limit"
-         Height          =   156
+         Height          =   204
          Left            =   120
          TabIndex        =   22
-         Top             =   1080
+         Top             =   1100
          Value           =   1  'Checked
          Width           =   3492
       End

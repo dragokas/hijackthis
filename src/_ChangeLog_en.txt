@@ -11,6 +11,18 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[3.2.0.1 Alpha] - Sep 17, 2023
+ - [new] Added detection of O7 - Policy: Bitcoin wallet address hijacker is present (no fix).
+ - [new] Added section O27 - Account & Remote desktop protocol. Description can be found in menu Help - About - Sections.
+ - O7 - Autologon is moved in O27.
+ - Added mark "(no fix)" - which means the fix is not provided.
+ - Registry Key Analyzer: added option "Create key if not exists" (it should create key and instantly remove after checking if it didn't exist).
+ - [clean] Pending delete file operations items are moved to whitelist (known as PendingFileRenameOperations -> DELETE).
+ - Autobackup registry (ABR) is updated to v1.10.
+ - Removed suggestion to use Uncle Carey's Windows 10 NetFix to fix O10 - LSP, because this utility became payed. For Windows 8.1 use other tools, like: https://support.kaspersky.ru/common/windows/12378
+ - Fixed compatibility with Windows XP.
+ - Windows 2000 is no longer supported.
+
 [3.1.0.2 Alpha] - June 19, 2023
  - EDS verification tool:
 	* added expert options
@@ -1783,4 +1795,4 @@ saved and edited in Wordpad.
 
 [v1.00]
 * Original release, later added copy to clipboard button
-                                                                                                                            
+                                                                                                                                  

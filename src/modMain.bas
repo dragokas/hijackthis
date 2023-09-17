@@ -33,12 +33,9 @@ Attribute VB_Name = "modMain"
 'R4 - IE SearchScopes, DefaultScope
 'F0 - Changed inifile value (system.ini)
 'F1 - Created inifile value (win.ini)
-'N1 (removed in 2.0.7) - Changed NS4.x homepage
-'N2 (removed in 2.0.7) - Changed NS6 homepage
-'N3 (removed in 2.0.7) - Changed NS7 homepage/searchpage
-'N4 (removed in 2.0.7) - Changed Moz homepage/searchpage
+'B - Browsers
 'O1 - Hosts / hosts.ics / DNSApi hijackers
-'O2 - BHO
+'O2 - BHO (IE Browser Helper Objects)
 'O3 - IE Toolbar
 'O4 - Reg. autorun entry / msconfig disabled items
 'O5 - Control.ini IE Options block / Applet
@@ -63,6 +60,7 @@ Attribute VB_Name = "modMain"
 'O24 - Active desktop components
 'O25 - Windows Management Instrumentation (WMI) event consumers
 'O26 - Image File Execution Options (IFEO) / Tools Hijack
+'O27 - Account & Remote Desktop Protocol
 
 'Memo:
 'If you have added a new section, you must also:
@@ -253,13 +251,16 @@ End Enum
 #End If
 
 Public Enum ENUM_CUSTOM_ACTION_BASED
-    CUSTOM_ACTION_O25 = 1
-    CUSTOM_ACTION_SPECIFIC = 2
-    CUSTOM_ACTION_BITS = 4
-    CUSTOM_ACTION_APPLOCKER = 8
+    CUSTOM_ACTION_O25 = 2 ^ 0
+    CUSTOM_ACTION_SPECIFIC = 2 ^ 1
+    CUSTOM_ACTION_BITS = 2 ^ 2
+    CUSTOM_ACTION_APPLOCKER = 2 ^ 3
+    CUSTOM_ACTION_REMOVE_GROUP_MEMBERSHIP = 2 ^ 4
+    CUSTOM_ACTION_FIREWALL_RULE = 2 ^ 5
 End Enum
 #If False Then
-    Dim CUSTOM_ACTION_O25, CUSTOM_ACTION_SPECIFIC, CUSTOM_ACTION_BITS, CUSTOM_ACTION_APPLOCKER
+    Dim CUSTOM_ACTION_O25, CUSTOM_ACTION_SPECIFIC, CUSTOM_ACTION_BITS, CUSTOM_ACTION_APPLOCKER, CUSTOM_ACTION_REMOVE_GROUP_MEMBERSHIP
+    Dim CUSTOM_ACTION_FIREWALL_RULE
 #End If
 
 Public Enum ENUM_COMMANDLINE_ACTION_BASED
@@ -317,7 +318,7 @@ Public Type FIX_CUSTOM
     Name            As String
     id              As String
     URL             As String
-    Target          As String
+    TargetOrUser    As String
     CommandLine     As String
 End Type
 
@@ -1027,7 +1028,7 @@ Public Function InArrayResultCustom(CustomArray() As FIX_CUSTOM, Item As FIX_CUS
                 If Item.ActionType = .ActionType Then
                     If Item.Name = .Name Then
                         If Item.id = .id Then
-                            If Item.Target = .Target Then
+                            If Item.TargetOrUser = .TargetOrUser Then
                                 If Item.CommandLine = .CommandLine Then
                                     InArrayResultCustom = True
                                     Exit For
@@ -1915,6 +1916,8 @@ Public Sub StartScan()
     'Dim SignResult As SignResult_TYPE
     'SignVerify vbNullString, SV_EnableAllTagsPrecache, SignResult
     
+    EnumBITS_Stage1 ' Speed hack. Run process in advance, get results at the very end.
+    
     'Registry
     
     UpdateProgressBar "R"
@@ -1936,9 +1939,13 @@ Public Sub StartScan()
     'Netscape/Mozilla stuff
     'CheckNetscapeMozilla        'N1-4
     
+    Dim sWalletAddr As String
+    Dim sClipPrevText As String
+    sWalletAddr = GenWalletAddressETH()
+    sClipPrevText = ClipboardGetText()
+    ClipboardSetText sWalletAddr
     
     'Other options
-    EnumBITS_Stage1 ' Speed hack. Run process in advance, get results at the very end.
     UpdateProgressBar "B"
     CheckBrowsersItem
     UpdateProgressBar "O1"
@@ -1957,6 +1964,8 @@ Public Sub StartScan()
     CheckO6Item 'IE Policy
     UpdateProgressBar "O7"
     CheckO7Item 'OS Policy
+    CheckO7Item_Bitcoin sWalletAddr
+    If Len(sClipPrevText) <> 0 Then ClipboardSetText sClipPrevText
     UpdateProgressBar "O8"
     CheckO8Item 'IE: Context menu
     UpdateProgressBar "O9"
@@ -1995,8 +2004,8 @@ Public Sub StartScan()
     CheckO25Item 'WMI
     UpdateProgressBar "O26"
     CheckO26Item 'Debuggers, Tools hijack
-    'UpdateProgressBar "O27"
-    'CheckO27Item 'Account
+    UpdateProgressBar "O27"
+    CheckO27Item 'Account
     EnumBITS_Stage2
     UpdateProgressBar "ProcList"
     
@@ -2216,6 +2225,7 @@ Public Sub UpdateProgressBar(Section As String, Optional sAppendText As String)
             Case "O24": .lblStatus.Caption = Translate(257) & "..."
             Case "O25": .lblStatus.Caption = Translate(258) & "..."
             Case "O26": .lblStatus.Caption = Translate(261) & "..."
+            Case "O27": .lblStatus.Caption = Translate(1750) & "..."
             
             Case "ProcList": .lblStatus.Caption = Translate(260) & "..."
             Case "ModuleList": .lblStatus.Caption = Translate(268) & "..."
@@ -4716,10 +4726,12 @@ Sub CheckO4_RegRuns()
           aLines = SplitSafe(sData, vbNullChar)
         
           For j = 0 To UBound(aLines) Step 2
+            bSafe = False
             sFile = PathNormalize(aLines(j))
             If j + 1 <= UBound(aLines) Then
                 If Len(aLines(j + 1)) = 0 Then
                     sArgs = "-> DELETE"
+                    If Not bIgnoreAllWhitelists Then bSafe = True
                 Else
                     sArgs = "-> " & PathNormalize(aLines(j + 1))
                 End If
@@ -4735,10 +4747,7 @@ Sub CheckO4_RegRuns()
             
             If g_bCheckSum Then sHash = GetFileCheckSum(sFile): sHit = sHit & sHash
             
-            If Not IsOnIgnoreList(sHit) Then
-            
-              'If sArgs <> "-> DELETE" Or (sArgs = "-> DELETE" And bShowPendingDeleted) Then
-
+            If (Not bSafe) And (Not IsOnIgnoreList(sHit)) Then
                 With result
                     .Section = "O4"
                     .HitLineW = sHit
@@ -4749,7 +4758,6 @@ Sub CheckO4_RegRuns()
                     .CureType = REGISTRY_BASED Or FILE_BASED
                 End With
                 AddToScanResults result
-              'End If
             End If
           Next
         End If
@@ -5684,9 +5692,9 @@ Sub CheckO4_ActiveSetup() 'Thanks to Helge Klein for explanations
                     
                     If (Not bSafe) Then
                         'garbage by MS :)
-                        If sData = "U (file missing)" Then
+                        If sData = "U " & STR_FILE_MISSING Then
                             bSafe = True
-                        ElseIf sData = "/UserInstall (file missing)" Then
+                        ElseIf sData = "/UserInstall " & STR_FILE_MISSING Then
                             bSafe = True
                         End If
                     End If
@@ -8344,13 +8352,14 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Public Function EnableApplocker()
+Public Function EnableApplocker() As Boolean
+    Dim bSuccess As Boolean: bSuccess = True
     SetServiceStartMode "applockerfltr", SERVICE_MODE_AUTOMATIC
     SetServiceStartMode "appidsvc", SERVICE_MODE_AUTOMATIC
     SetServiceStartMode "appid", SERVICE_MODE_AUTOMATIC
-    StartService "applockerfltr"
-    StartService "appidsvc"
-    StartService "appid"
+    bSuccess = bSuccess And StartService("applockerfltr")
+    bSuccess = bSuccess And StartService("appidsvc")
+    bSuccess = bSuccess And StartService("appid")
 End Function
 
 
@@ -8388,15 +8397,54 @@ Public Sub CheckO7Item()
     UpdateProgressBar "O7-IPSec"
     Call CheckIPSec
     
-    UpdateProgressBar "O7-AutoLogon"
-    Call CheckAutoLogon
-    
     AppendErrorLogCustom "CheckO7Item - End"
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "modMain_CheckO7Item"
     If inIDE Then Stop: Resume Next
 End Sub
+
+Public Sub CheckO7Item_Bitcoin(sWalletAddr As String)
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "CheckO7Item_Bitcoin - Begin"
+    
+    Dim sHit As String, sActualClip As String, result As SCAN_RESULT
+
+    DoEvents
+    sActualClip = ClipboardGetText()
+    
+    If (InStr(1, sActualClip, "0x", 1) <> 0) And (sWalletAddr <> sActualClip) Then
+
+        sHit = "O7 - Policy: Bitcoin wallet address hijacker is present " & STR_NO_FIX
+        
+        If Not IsOnIgnoreList(sHit) Then
+            With result
+                .Section = "O7"
+                .HitLineW = sHit
+                .CureType = CUSTOM_BASED
+            End With
+            AddToScanResults result
+        End If
+    End If
+    
+    AppendErrorLogCustom "CheckO7Item_Bitcoin - End"
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "CheckO7Item_Bitcoin"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Public Function GenWalletAddressETH() As String
+    Dim i&, s$, Value&
+    Randomize Time
+    For i = 1 To 40
+        Value = Int(Rnd * 16) '48-57 (0-9), 65-70 (A-F)
+        Value = Value + 48
+        If Value > 57 Then Value = Value + 7
+        s = s & Chr$(Value)
+    Next
+    GenWalletAddressETH = "0x" & s
+End Function
 
 Public Sub CheckAutoLogon()
     On Error GoTo ErrorHandler:
@@ -8418,11 +8466,11 @@ Public Sub CheckAutoLogon()
             sAccType = GetUserAccountType(sUser)
             If Len(sAccType) <> 0 Then sAccType = " (type: " & sAccType & ")"
             
-            sHit = "O7 - AutoLogon: HKLM\..\Winlogon: " & sDomain & "\" & sUser & sAccType & IIf(bEnabled, "", " (disabled)")
+            sHit = "O27 - Account: (AutoLogon) HKLM\..\Winlogon: " & sDomain & "\" & sUser & sAccType & IIf(bEnabled, "", " (disabled)")
             
             If Not IsOnIgnoreList(sHit) Then
                 With result
-                    .Section = "O7"
+                    .Section = "O27"
                     .HitLineW = sHit
                     AddRegToFix .Reg, RESTORE_VALUE, HKLM, sKey, "AutoAdminLogon", "0", , REG_RESTORE_SZ
                     AddRegToFix .Reg, REMOVE_VALUE, HKLM, sKey, "DefaultDomainName"
@@ -8452,7 +8500,7 @@ Public Sub CheckAutoLogon()
             iLength = Len(sText)
             If iLength > 300 Then sText = Left$(sText, 300) & " ... (" & iLength & " characters)"
             
-            sHit = "O7 - AutoLogon: HKLM\..\Winlogon: [" & aParam(i) & "] = " & sText
+            sHit = "O7 - Policy: HKLM\..\Winlogon: [" & aParam(i) & "] = " & sText
             
             If Not IsOnIgnoreList(sHit) Then
                 With result
@@ -11345,6 +11393,7 @@ Public Sub CheckO23Item()
     Dim bSuspicious As Boolean
     Dim sGroup As String
     Dim sServiceGroup As String
+    Dim sFailureCommand As String
     
     Dim dLegitService As clsTrickHashTable
     Set dLegitService = New clsTrickHashTable
@@ -11368,6 +11417,11 @@ Public Sub CheckO23Item()
         
         sName = sServices(i)
         Dbg sName
+        
+        'sFailureCommand = Reg.GetString(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\" & sName, "FailureCommand")
+        'If Len(sFailureCommand) <> 0 Then
+        '    Debug.Print sName; " -> " & sFailureCommand
+        'End If
         
         lType = Reg.GetDword(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\" & sName, "Type")
         
@@ -11453,6 +11507,13 @@ Public Sub CheckO23Item()
         '32 - A Win32 service that can share a process with other Win32 services
         '272 - A Win32 program that runs in a process by itself (like Type16) and that can interact with users.
         '288 - A Win32 program that shares a process and that can interact with users.
+        '
+        'According to Helge Klein (per-user services), see: https://helgeklein.com/blog/per-user-services-in-windows-info-and-configuration/
+        '
+        '80 (0x50) - (per-user service) individual Process template (SERVICE_USER_OWN_PROCESS)
+        '96 (0x60) - (per-user service) shared process template (SERVICE_USER_SHARE_PROCESS)
+        '208 (0xd0) - (per-user service) individual process (SERVICE_USER_OWN_PROCESS + SERVICE_USERSERVICE_INSTANCE + 0x10)
+        '224 (0xe0) - (per-user service) shared process (SERVICE_USER_SHARE_PROCESS + SERVICE_USERSERVICE_INSTANCE + 0x10)
         
         ServState = GetServiceRunState(sName)
         
@@ -14000,11 +14061,7 @@ Public Sub InitVariables()
     Dim lr As Long, i As Long, nChars As Long
     Dim Path As String, dwBufSize As Long
     
-    ReDim tim(10)
-    For i = 0 To UBound(tim)
-        Set tim(i) = New clsTimer
-        tim(i).Index = i
-    Next
+    g_bIsReflectionSupported = IsProcedureAvail("RegQueryReflectionKey", "Advapi32.dll")
     
     SysDisk = String$(MAX_PATH, 0)
     lr = GetSystemWindowsDirectory(StrPtr(SysDisk), MAX_PATH)
@@ -16118,9 +16175,9 @@ Public Function MakeLogHeader() As String
             "Display: " & OSver.LangDisplayNameFull & " (" & "0x" & Hex$(OSver.LangDisplayCode) & "). " & _
             "Non-Unicode: " & OSver.LangNonUnicodeNameFull & " (" & "0x" & Hex$(OSver.LangNonUnicodeCode) & ")" & vbCrLf
     
-    sText = sText & "Memory:    " & OSver.MemoryFree & " MiB Free (" & OSver.MemoryLoad & " %)"
+    sText = sText & "Memory:    " & OSver.MemoryFree & " MiB Free. Loading RAM (" & OSver.MemoryLoad & " %)"
     If OSver.IsWindowsVistaOrGreater Then
-        sText = sText & ". CPU Loading: (" & IIf(g_iCpuUsage <> 0, g_iCpuUsage, CLng(OSver.CpuUsage)) & " %)" & vbCrLf
+        sText = sText & ", CPU (" & IIf(g_iCpuUsage <> 0, g_iCpuUsage, CLng(OSver.CpuUsage)) & " %)" & vbCrLf
     Else
         sText = sText & vbCrLf
     End If
@@ -16291,7 +16348,7 @@ Public Sub SortSectionsOfResultList_Ex(aSrcArray() As String, aDstArray() As Str
     cSectNames.Add "O23 - Service"
     cSectNames.Add "O23 - Driver"
     cSectNames.Add "O23"
-    For i = 24 To LAST_CHECK_OTHER_SECTION_NUMBER '26
+    For i = 24 To LAST_CHECK_OTHER_SECTION_NUMBER
         cSectNames.Add "O" & i
     Next
     
@@ -16780,7 +16837,7 @@ Public Sub AddCustomToFix( _
     Optional sName As String, _
     Optional id As String, _
     Optional URL As String, _
-    Optional sTarget As String, _
+    Optional sTargetOrUser As String, _
     Optional sCmd As String)
     
     On Error GoTo ErrorHandler
@@ -16799,7 +16856,7 @@ Public Sub AddCustomToFix( _
         .Name = sName
         .id = id
         .URL = URL
-        .Target = sTarget
+        .TargetOrUser = sTargetOrUser
         .CommandLine = sCmd
     End With
     
@@ -16951,6 +17008,12 @@ Public Sub FixCustomHandler(result As SCAN_RESULT)
                     
                     Case CUSTOM_ACTION_APPLOCKER
                         RestoreApplockerDefaults
+                    
+                    Case CUSTOM_ACTION_REMOVE_GROUP_MEMBERSHIP
+                        RemoveUserGroupMembership result.Custom(i).TargetOrUser, result.Custom(i).Name
+                    
+                    Case CUSTOM_ACTION_FIREWALL_RULE
+                        FW_RuleSetState result.Custom(i).Name, False
                     
                     End Select
                 End With
