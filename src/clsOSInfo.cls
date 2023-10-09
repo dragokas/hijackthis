@@ -963,7 +963,7 @@ Private Function GetUserType() As String
                 lResult = AllocateAndInitializeSid(tpSidAuth, 2&, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_GUESTS, 0&, 0&, 0&, 0&, 0&, 0&, psidGuest)
                 'lResult = AllocateAndInitializeSid(tpSidAuth, 2&, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_RDP, 0&, 0&, 0&, 0&, 0&, 0&, psidRDP)
             
-                If IsValidSid(psidAdmin) And IsValidSid(psidPower) And IsValidSid(psidUser) And IsValidSid(psidGuest) And IsValidSid(psidRDP) Then
+                If IsValidSid(psidAdmin) And IsValidSid(psidPower) And IsValidSid(psidUser) And IsValidSid(psidGuest) Then  'And IsValidSid(psidRDP)
                   
                     For i = 0 To tpTokens.GroupCount
                         ' Берем SID каждой из ассоциированных групп

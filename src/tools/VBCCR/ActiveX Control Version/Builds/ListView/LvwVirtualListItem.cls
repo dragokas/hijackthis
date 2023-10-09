@@ -12,14 +12,30 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
 Option Explicit
-Private ShadowObjectPointer As Long
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
+Private ShadowObjectPointer As LongPtr
 Private PropIndex As Long
 
 Private Function ShadowListView() As ListView
-ComCtlsPtrToShadowObj ShadowListView, ShadowObjectPointer
+ComCtlsObjSetAddRef ShadowListView, ShadowObjectPointer
 End Function
 
+#If VBA7 Then
+Friend Sub FInit(ByVal ObjectPointer As LongPtr, ByVal Index As Long)
+#Else
 Friend Sub FInit(ByVal ObjectPointer As Long, ByVal Index As Long)
+#End If
 ShadowObjectPointer = ObjectPointer
 PropIndex = Index
 End Sub
@@ -109,8 +125,13 @@ Attribute EnsureVisible.VB_Description = "Ensures a virtual list item is visible
 ShadowListView.FListItemEnsureVisible PropIndex
 End Sub
 
+#If VBA7 Then
+Public Function CreateDragImage(Optional ByRef X As Single, Optional ByRef Y As Single) As LongPtr
+Attribute CreateDragImage.VB_Description = "Retrieves the handle to an image list containing a bitmap that can be used to visualize dragging of this virtual list item. Your application is responsible for destroying the image list when it is no longer needed."
+#Else
 Public Function CreateDragImage(Optional ByRef X As Single, Optional ByRef Y As Single) As Long
 Attribute CreateDragImage.VB_Description = "Retrieves the handle to an image list containing a bitmap that can be used to visualize dragging of this virtual list item. Your application is responsible for destroying the image list when it is no longer needed."
+#End If
 CreateDragImage = ShadowListView.FListItemCreateDragImage(PropIndex, X, Y)
 End Function
 

@@ -26,6 +26,18 @@ Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
 Private Type RECT
 Left As Long
 Top As Long
@@ -37,10 +49,10 @@ X As Long
 Y As Long
 End Type
 Private Type TMSG
-hWnd As Long
+hWnd As LongPtr
 Message As Long
-wParam As Long
-lParam As Long
+wParam As LongPtr
+lParam As LongPtr
 Time As Long
 PT As POINTAPI
 End Type
@@ -90,6 +102,25 @@ Public Event OLESetData(Data As DataObject, DataFormat As Integer)
 Attribute OLESetData.VB_Description = "Occurs at the OLE drag/drop source control when the drop target requests data that was not provided to the DataObject during the OLEDragStart event."
 Public Event OLEStartDrag(Data As DataObject, AllowedEffects As Long)
 Attribute OLEStartDrag.VB_Description = "Occurs when an OLE drag/drop operation is initiated either manually or automatically."
+#If VBA7 Then
+Private Declare PtrSafe Function CreateWindowEx Lib "user32" Alias "CreateWindowExW" (ByVal dwExStyle As Long, ByVal lpClassName As LongPtr, ByVal lpWindowName As LongPtr, ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hWndParent As LongPtr, ByVal hMenu As LongPtr, ByVal hInstance As LongPtr, ByRef lpParam As Any) As LongPtr
+Private Declare PtrSafe Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByRef lParam As Any) As LongPtr
+Private Declare PtrSafe Function PeekMessage Lib "user32" Alias "PeekMessageW" (ByRef lpMsg As TMSG, ByVal hWnd As LongPtr, ByVal wMsgFilterMin As Long, ByVal wMsgFilterMax As Long, ByVal wRemoveMsg As Long) As Long
+Private Declare PtrSafe Function DispatchMessage Lib "user32" Alias "DispatchMessageW" (ByRef lpMsg As TMSG) As LongPtr
+Private Declare PtrSafe Function DestroyWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
+Private Declare PtrSafe Function SetParent Lib "user32" (ByVal hWndChild As LongPtr, ByVal hWndNewParent As LongPtr) As LongPtr
+Private Declare PtrSafe Function SetFocusAPI Lib "user32" Alias "SetFocus" (ByVal hWnd As LongPtr) As LongPtr
+Private Declare PtrSafe Function ShowWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal nCmdShow As Long) As Long
+Private Declare PtrSafe Function MoveWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint As Long) As Long
+Private Declare PtrSafe Function LockWindowUpdate Lib "user32" (ByVal hWndLock As LongPtr) As Long
+Private Declare PtrSafe Function EnableWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal fEnable As Long) As Long
+Private Declare PtrSafe Function RedrawWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal lprcUpdate As LongPtr, ByVal hrgnUpdate As LongPtr, ByVal fuRedraw As Long) As Long
+Private Declare PtrSafe Function DrawEdge Lib "user32" (ByVal hDC As LongPtr, ByRef qRC As RECT, ByVal Edge As Long, ByVal grfFlags As Long) As Long
+Private Declare PtrSafe Function LoadCursor Lib "user32" Alias "LoadCursorW" (ByVal hInstance As LongPtr, ByVal lpCursorName As Any) As LongPtr
+Private Declare PtrSafe Function SetCursor Lib "user32" (ByVal hCursor As LongPtr) As LongPtr
+Private Declare PtrSafe Function LoadLibrary Lib "kernel32" Alias "LoadLibraryW" (ByVal lpLibFileName As LongPtr) As LongPTr
+Private Declare PtrSafe Function FreeLibrary Lib "kernel32" (ByVal hLibModule As LongPtr) As Long
+#Else
 Private Declare Function CreateWindowEx Lib "user32" Alias "CreateWindowExW" (ByVal dwExStyle As Long, ByVal lpClassName As Long, ByVal lpWindowName As Long, ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hWndParent As Long, ByVal hMenu As Long, ByVal hInstance As Long, ByRef lpParam As Any) As Long
 Private Declare Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByRef lParam As Any) As Long
 Private Declare Function PeekMessage Lib "user32" Alias "PeekMessageW" (ByRef lpMsg As TMSG, ByVal hWnd As Long, ByVal wMsgFilterMin As Long, ByVal wMsgFilterMax As Long, ByVal wRemoveMsg As Long) As Long
@@ -107,6 +138,7 @@ Private Declare Function LoadCursor Lib "user32" Alias "LoadCursorW" (ByVal hIns
 Private Declare Function SetCursor Lib "user32" (ByVal hCursor As Long) As Long
 Private Declare Function LoadLibrary Lib "kernel32" Alias "LoadLibraryW" (ByVal lpLibFileName As Long) As Long
 Private Declare Function FreeLibrary Lib "kernel32" (ByVal hLibModule As Long) As Long
+#End If
 Private Const ICC_ANIMATE_CLASS As Long = &H80
 Private Const RDW_UPDATENOW As Long = &H100, RDW_INVALIDATE As Long = &H1, RDW_ERASE As Long = &H4, RDW_ALLCHILDREN As Long = &H80
 Private Const WS_VISIBLE As Long = &H10000000
@@ -145,14 +177,14 @@ Implements ISubclass
 Implements OLEGuids.IObjectSafety
 Implements OLEGuids.IOleInPlaceActiveObjectVB
 Implements OLEGuids.IPerPropertyBrowsingVB
-Private AnimationHandle As Long
+Private AnimationHandle As LongPtr
 Private AnimationCharCodeCache As Long
 Private AnimationMouseOver As Boolean
 Private AnimationDesignMode As Boolean
 Private AnimationFileName As String
 Private AnimationResID As Integer
 Private AnimationResFileName As String
-Private AnimationModHandle As Long
+Private AnimationModHandle As LongPtr
 Private AnimationLoaded As Boolean
 Private AnimationPlaying As Boolean
 Private DispIDMousePointer As Long
@@ -174,10 +206,14 @@ End Sub
 Private Sub IObjectSafety_SetInterfaceSafetyOptions(ByRef riid As OLEGuids.OLECLSID, ByVal dwOptionsSetMask As Long, ByVal dwEnabledOptions As Long)
 End Sub
 
+#If VBA7 Then
+Private Sub IOleInPlaceActiveObjectVB_TranslateAccelerator(ByRef Handled As Boolean, ByRef RetVal As Long, ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal Shift As Long)
+#Else
 Private Sub IOleInPlaceActiveObjectVB_TranslateAccelerator(ByRef Handled As Boolean, ByRef RetVal As Long, ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal Shift As Long)
+#End If
 If wMsg = WM_KEYDOWN Or wMsg = WM_KEYUP Then
     Dim KeyCode As Integer, IsInputKey As Boolean
-    KeyCode = wParam And &HFF&
+    KeyCode = CLng(wParam) And &HFF&
     If wMsg = WM_KEYDOWN Then
         RaiseEvent PreviewKeyDown(KeyCode, IsInputKey)
     ElseIf wMsg = WM_KEYUP Then
@@ -364,7 +400,7 @@ If InProc = True Then Exit Sub
 InProc = True
 With UserControl
 If DPICorrectionFactor() <> 1 Then Call SyncObjectRectsToContainer(Me)
-If AnimationHandle <> 0 Then MoveWindow AnimationHandle, 0, 0, .ScaleWidth, .ScaleHeight, 1
+If AnimationHandle <> NULL_PTR Then MoveWindow AnimationHandle, 0, 0, .ScaleWidth, .ScaleHeight, 1
 If AnimationDesignMode = True Then
     ImageFilm.Left = (.ScaleWidth / 2) - (ImageFilm.Width / 2)
     ImageFilm.Top = (.ScaleHeight / 2) - (ImageFilm.Height / 2)
@@ -521,14 +557,25 @@ Attribute ZOrder.VB_Description = "Places a specified object at the front or bac
 If IsMissing(Position) Then Extender.ZOrder Else Extender.ZOrder Position
 End Sub
 
+#If VBA7 Then
+Public Property Get hWnd() As LongPtr
+Attribute hWnd.VB_Description = "Returns a handle to a control."
+Attribute hWnd.VB_UserMemId = -515
+#Else
 Public Property Get hWnd() As Long
 Attribute hWnd.VB_Description = "Returns a handle to a control."
 Attribute hWnd.VB_UserMemId = -515
+#End If
 hWnd = AnimationHandle
 End Property
 
+#If VBA7 Then
+Public Property Get hWndUserControl() As LongPtr
+Attribute hWndUserControl.VB_Description = "Returns a handle to a control."
+#Else
 Public Property Get hWndUserControl() As Long
 Attribute hWndUserControl.VB_Description = "Returns a handle to a control."
+#End If
 hWndUserControl = UserControl.hWnd
 End Property
 
@@ -552,7 +599,7 @@ End Property
 
 Public Property Let Enabled(ByVal Value As Boolean)
 UserControl.Enabled = Value
-If AnimationHandle <> 0 Then EnableWindow AnimationHandle, IIf(Value = True, 1, 0)
+If AnimationHandle <> NULL_PTR Then EnableWindow AnimationHandle, IIf(Value = True, 1, 0)
 UserControl.PropertyChanged "Enabled"
 End Property
 
@@ -600,7 +647,7 @@ Public Property Set MouseIcon(ByVal Value As IPictureDisp)
 If Value Is Nothing Then
     Set PropMouseIcon = Nothing
 Else
-    If Value.Type = vbPicTypeIcon Or Value.Handle = 0 Then
+    If Value.Type = vbPicTypeIcon Or Value.Handle = NULL_PTR Then
         Set PropMouseIcon = Value
     Else
         If AnimationDesignMode = True Then
@@ -641,7 +688,7 @@ If AnimationDesignMode = False Then
     Call ComCtlsSetRightToLeft(UserControl.hWnd, dwMask)
     dwMask = 0
 End If
-If AnimationHandle <> 0 Then Call ReCreateAnimation
+If AnimationHandle <> NULL_PTR Then Call ReCreateAnimation
 UserControl.PropertyChanged "RightToLeft"
 End Property
 
@@ -679,7 +726,7 @@ End Property
 
 Public Property Let AutoPlay(ByVal Value As Boolean)
 PropAutoPlay = Value
-If AnimationHandle <> 0 Then Call ReCreateAnimation
+If AnimationHandle <> NULL_PTR Then Call ReCreateAnimation
 UserControl.PropertyChanged "AutoPlay"
 End Property
 
@@ -696,7 +743,7 @@ Select Case Value
     Case Else
         Err.Raise 380
 End Select
-If AnimationHandle <> 0 Then Call ReCreateAnimation
+If AnimationHandle <> NULL_PTR Then Call ReCreateAnimation
 UserControl.PropertyChanged "BackStyle"
 End Property
 
@@ -707,12 +754,12 @@ End Property
 
 Public Property Let Center(ByVal Value As Boolean)
 PropCenter = Value
-If AnimationHandle <> 0 Then Call ReCreateAnimation
+If AnimationHandle <> NULL_PTR Then Call ReCreateAnimation
 UserControl.PropertyChanged "Center"
 End Property
 
 Private Sub CreateAnimation()
-If AnimationHandle <> 0 Then Exit Sub
+If AnimationHandle <> NULL_PTR Then Exit Sub
 Dim dwStyle As Long, dwExStyle As Long
 dwStyle = WS_CHILD Or WS_VISIBLE
 dwExStyle = WS_EX_TRANSPARENT
@@ -721,10 +768,10 @@ If PropRightToLeft = True And PropRightToLeftLayout = True Then dwExStyle = dwEx
 If PropAutoPlay = True Then dwStyle = dwStyle Or ACS_AUTOPLAY
 If PropBackStyle = CCBackStyleTransparent Then dwStyle = dwStyle Or ACS_TRANSPARENT
 If PropCenter = True Then dwStyle = dwStyle Or ACS_CENTER
-AnimationHandle = CreateWindowEx(dwExStyle, StrPtr("SysAnimate32"), 0, dwStyle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, 0, App.hInstance, ByVal 0&)
+AnimationHandle = CreateWindowEx(dwExStyle, StrPtr("SysAnimate32"), NULL_PTR, dwStyle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, NULL_PTR, App.hInstance, ByVal NULL_PTR)
 Me.Enabled = UserControl.Enabled
 If AnimationDesignMode = False Then
-    If AnimationHandle <> 0 Then Call ComCtlsSetSubclass(AnimationHandle, Me, 1)
+    If AnimationHandle <> NULL_PTR Then Call ComCtlsSetSubclass(AnimationHandle, Me, 1)
     Call ComCtlsSetSubclass(UserControl.hWnd, Me, 2)
 End If
 End Sub
@@ -752,7 +799,7 @@ If AnimationDesignMode = False Then
             End If
         End If
     End If
-    If Locked = True Then LockWindowUpdate 0
+    If Locked = True Then LockWindowUpdate NULL_PTR
     Me.Refresh
     Call ProcessWMCommands
 Else
@@ -763,26 +810,26 @@ End If
 End Sub
 
 Private Sub DestroyAnimation()
-If AnimationHandle = 0 Then Exit Sub
+If AnimationHandle = NULL_PTR Then Exit Sub
 Call ComCtlsRemoveSubclass(AnimationHandle)
 Call ComCtlsRemoveSubclass(UserControl.hWnd)
 Me.Unload
 ShowWindow AnimationHandle, SW_HIDE
-SetParent AnimationHandle, 0
+SetParent AnimationHandle, NULL_PTR
 DestroyWindow AnimationHandle
-AnimationHandle = 0
+AnimationHandle = NULL_PTR
 End Sub
 
 Public Sub Refresh()
 Attribute Refresh.VB_Description = "Forces a complete repaint of a object."
 Attribute Refresh.VB_UserMemId = -550
 UserControl.Refresh
-RedrawWindow UserControl.hWnd, 0, 0, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
+RedrawWindow UserControl.hWnd, NULL_PTR, NULL_PTR, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
 End Sub
 
 Public Sub Play(Optional ByVal RepeatCount As Long = -1, Optional ByVal StartFrame As Integer = 0, Optional ByVal EndFrame As Integer = -1)
 Attribute Play.VB_Description = "Method to play the associated AVI clip."
-If AnimationHandle <> 0 Then
+If AnimationHandle <> NULL_PTR Then
     If Me.Playing = True Then
         SendMessage AnimationHandle, ACM_STOP, 0, ByVal 0&
         Call ProcessWMCommands
@@ -794,7 +841,7 @@ End Sub
 
 Public Sub StopPlay()
 Attribute StopPlay.VB_Description = "Method to stop playing the associated AVI clip."
-If AnimationHandle <> 0 Then
+If AnimationHandle <> NULL_PTR Then
     SendMessage AnimationHandle, ACM_STOP, 0, ByVal 0&
     Call ProcessWMCommands
 End If
@@ -803,7 +850,7 @@ End Sub
 Public Property Get Playing() As Boolean
 Attribute Playing.VB_Description = "Returns a value that determines whether an AVI clip is playing or not."
 Attribute Playing.VB_MemberFlags = "400"
-If AnimationHandle <> 0 And ComCtlsSupportLevel() >= 2 Then
+If AnimationHandle <> NULL_PTR And ComCtlsSupportLevel() >= 2 Then
     Playing = CBool(SendMessage(AnimationHandle, ACM_ISPLAYING, 0, ByVal 0&) <> 0)
 Else
     Playing = AnimationPlaying
@@ -812,7 +859,7 @@ End Property
 
 Public Sub LoadFile(ByVal FileName As String)
 Attribute LoadFile.VB_Description = "Loads an AVI clip from the specified file name and displays its first frame."
-If AnimationHandle <> 0 Then
+If AnimationHandle <> NULL_PTR Then
     Me.Unload
     If SendMessage(AnimationHandle, ACM_OPEN, 0, ByVal StrPtr(FileName)) <> 0 Then
         AnimationFileName = FileName
@@ -828,14 +875,14 @@ End Sub
 
 Public Sub LoadRes(ByVal ResID As Integer, Optional ByVal FileName As String = vbNullString)
 Attribute LoadRes.VB_Description = "Loads an AVI clip from the specified resource and displays its first frame. This method will fail in the IDE."
-If AnimationHandle <> 0 Then
+If AnimationHandle <> NULL_PTR Then
     Me.Unload
-    Dim hMod As Long
-    If StrPtr(FileName) = 0 Then
+    Dim hMod As LongPtr
+    If StrPtr(FileName) = NULL_PTR Then
         hMod = App.hInstance
     Else
         hMod = LoadLibrary(StrPtr(FileName))
-        If hMod = 0 Then Err.Raise 53: Exit Sub
+        If hMod = NULL_PTR Then Err.Raise 53: Exit Sub
         AnimationModHandle = hMod
     End If
     If SendMessage(AnimationHandle, ACM_OPEN, hMod, ByVal MakeDWord(ResID, 0)) <> 0 Then
@@ -852,14 +899,14 @@ End Sub
 
 Public Sub Unload()
 Attribute Unload.VB_Description = "Unloads the associated AVI clip."
-If AnimationHandle <> 0 And AnimationLoaded = True Then
+If AnimationHandle <> NULL_PTR And AnimationLoaded = True Then
     SendMessage AnimationHandle, ACM_OPEN, 0, ByVal 0&
     AnimationFileName = vbNullString
     AnimationResID = 0
     AnimationResFileName = vbNullString
-    If AnimationModHandle <> 0 Then
+    If AnimationModHandle <> NULL_PTR Then
         FreeLibrary AnimationModHandle
-        AnimationModHandle = 0
+        AnimationModHandle = NULL_PTR
     End If
     AnimationLoaded = False
     Me.Refresh
@@ -874,7 +921,11 @@ Do While PeekMessage(Msg, UserControl.hWnd, WM_COMMAND, WM_COMMAND, PM_REMOVE) <
 Loop
 End Sub
 
+#If VBA7 Then
+Private Function ISubclass_Message(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
+#Else
 Private Function ISubclass_Message(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal dwRefData As Long) As Long
+#End If
 Select Case dwRefData
     Case 1
         ISubclass_Message = WindowProcControl(hWnd, wMsg, wParam, lParam)
@@ -883,7 +934,7 @@ Select Case dwRefData
 End Select
 End Function
 
-Private Function WindowProcControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_SETFOCUS
         If wParam <> UserControl.hWnd Then SetFocusAPI UserControl.hWnd: Exit Function
@@ -892,7 +943,7 @@ Select Case wMsg
         Call DeActivateIPAO
     Case WM_KEYDOWN, WM_KEYUP, WM_SYSKEYDOWN, WM_SYSKEYUP
         Dim KeyCode As Integer
-        KeyCode = wParam And &HFF&
+        KeyCode = CLng(wParam) And &HFF&
         If wMsg = WM_KEYDOWN Or wMsg = WM_KEYUP Then
             If wMsg = WM_KEYDOWN Then
                 RaiseEvent KeyDown(KeyCode, GetShiftStateFromMsg())
@@ -912,7 +963,7 @@ Select Case wMsg
             KeyChar = CUIntToInt(AnimationCharCodeCache And &HFFFF&)
             AnimationCharCodeCache = 0
         Else
-            KeyChar = CUIntToInt(wParam And &HFFFF&)
+            KeyChar = CUIntToInt(CLng(wParam) And &HFFFF&)
         End If
         RaiseEvent KeyPress(KeyChar)
         wParam = CIntToUInt(KeyChar)
@@ -921,7 +972,7 @@ Select Case wMsg
             WindowProcControl = 1
         Else
             Dim UTF16 As String
-            UTF16 = UTF32CodePoint_To_UTF16(wParam)
+            UTF16 = UTF32CodePoint_To_UTF16(CLng(wParam))
             If Len(UTF16) = 1 Then
                 SendMessage hWnd, WM_CHAR, CIntToUInt(AscW(UTF16)), ByVal lParam
             ElseIf Len(UTF16) = 2 Then
@@ -938,11 +989,11 @@ End Select
 WindowProcControl = ComCtlsDefaultProc(hWnd, wMsg, wParam, lParam)
 End Function
 
-Private Function WindowProcUserControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcUserControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_COMMAND
         If lParam = AnimationHandle Then
-            Select Case HiWord(wParam)
+            Select Case HiWord(CLng(wParam))
                 Case ACN_START
                     If AnimationPlaying = False Then
                         AnimationPlaying = True
@@ -956,9 +1007,9 @@ Select Case wMsg
             End Select
         End If
     Case WM_SETCURSOR
-        If LoWord(lParam) = HTCLIENT Then
+        If LoWord(CLng(lParam)) = HTCLIENT Then
             If MousePointerID(PropMousePointer) <> 0 Then
-                SetCursor LoadCursor(0, MousePointerID(PropMousePointer))
+                SetCursor LoadCursor(NULL_PTR, MousePointerID(PropMousePointer))
                 WindowProcUserControl = 1
                 Exit Function
             ElseIf PropMousePointer = 99 Then

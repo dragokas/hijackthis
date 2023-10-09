@@ -9,7 +9,7 @@ set "ProjFile=_HijackThis.vbp"
 set "TaskName=Run HJT Project"
 
 echo.
-echo ---  Loading HiJackthis Fork Project ...
+echo ---  Loading HiJackthis+ Project ...
 echo.
 echo.
 
@@ -31,7 +31,8 @@ if not exist "%compiler%" (
 
 ::XP ?
 ver |>NUL find " 5." && (
-  regsvr32.exe /s MSCOMCTL.OCX
+  call :RegLibs
+  call :CheckErrorHandler
   start "" "%PF%\Microsoft Visual Studio\VB98\vb6.exe" "%~dp0%ProjFile%"
   exit /b
 )
@@ -39,27 +40,38 @@ ver |>NUL find " 5." && (
 call :TaskExist
 
 if defined TaskExist (
-  call :RunProject NoCheck
+  call :RunProjectAsTask NoCheck
 ) else (
   if "%~1" neq "Admin" (
     call :GetPrivileges
   ) else (
-    if not exist "tools\RegTLib\REGTLIB.EXE" call :BuildCustomProject "tools\RegTLib\Project1.vbp" "tools\RegTLib\RegTLib.exe"
-    if exist "tools\RegTLib\REGTLIB.EXE" (
-	  tools\RegTLib\REGTLIB.EXE "%~dp0oleexp.tlb" /admin
-	  tools\RegTLib\REGTLIB.EXE "%~dp0NetFW.tlb" /admin
-      tools\RegTLib\REGTLIB.EXE %SystemRoot%\System32\msdatsrc.tlb /admin
-      if "%OSBitness%"=="x64" (
-        tools\RegTLib\REGTLIB.EXE %SystemRoot%\SysWow64\msdatsrc.tlb /admin
-      )
-    )
-    regsvr32.exe /s MSCOMCTL.OCX
+    call :RegLibs
     call :CreateTask
-    call :RunProject
+	call :CheckErrorHandler
+    call :RunProjectAsTask
   )
 )
-
 goto :eof
+
+:RegLibs
+  if not exist "tools\RegTLib\REGTLIB.EXE" call :BuildCustomProject "tools\RegTLib\Project1.vbp" "tools\RegTLib\RegTLib.exe"
+  if exist "tools\RegTLib\REGTLIB.EXE" (
+    rem Note: REGTLIB.EXE require a full path! + don't forget to register as HKCU
+    call :RegTLib "%~dp0oleexp.tlb"
+    call :RegTLib "%~dp0NetFW.tlb"
+    call :RegTLib "%SystemRoot%\System32\msdatsrc.tlb"
+    call :RegTLib "%~dp0tools\VBCCR\Standard EXE Version\OLEGuids\OLEGuids.tlb"
+  )
+  regsvr32.exe /s MSCOMCTL.OCX
+  regsvr32.exe /s /u "tools\VBCCR\ActiveX Control Version\Bin\VBCCR17.OCX"
+  timeout /t 2
+  regsvr32.exe /s "tools\VBCCR\ActiveX Control Version\Bin\VBCCR17.OCX"
+exit /b
+
+:RegTLib
+  tools\RegTLib\REGTLIB.EXE "%~1" /admin
+  tools\RegTLib\REGTLIB.EXE "%~1"
+exit /b
 
 :CreateTask
   schtasks.exe /create /tn "%TaskName%" /SC ONCE /ST 00:00 /F /RL HIGHEST /tr "\"%PF%\Microsoft Visual Studio\VB98\vb6.exe\" \"%~dp0%ProjFile%\""
@@ -90,8 +102,7 @@ exit /b
   )
 exit /b
 
-:RunProject
-  call :CheckErrorHandler
+:RunProjectAsTask
   if "%~1"=="NoCheck" (
     rem if project already run
 	chcp 437

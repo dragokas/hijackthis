@@ -2,27 +2,27 @@ Attribute VB_Name = "modHosts"
 '[modHosts.bas]
 
 '
-' Hosts file module by Merijn Bellekom
+' Hosts file module by Merijn Bellekom & Alex Dragokas
 '
 
 Option Explicit
 
-'Private Declare Function GetFileAttributes Lib "kernel32.dll" Alias "GetFileAttributesW" (ByVal lpFileName As Long) As Long
-'Private Declare Function SetFileAttributes Lib "kernel32.dll" Alias "SetFileAttributesW" (ByVal lpFileName As Long, ByVal dwFileAttributes As Long) As Long
-
-
-Public Sub ListHostsFile(objList As ListBox, objInfo As Label)
+Public Sub ListHostsFile(objList As ListBox)
     On Error GoTo ErrorHandler:
 
-    'custom hosts file handling?
-    Dim sAttr$, iAttr&, sDummy$, vContent As Variant, i&, ff%
-    'On Error Resume Next
+    Dim sAttr$, iAttr&, aContent() As String, i&
+    
+    objList.Clear
+    
+    Dim objInfo As Label
+    Set objInfo = frmMain.lblHostsTip1
+    
     'objInfo.Caption = "Loading hosts file, please wait..."
     objInfo.Caption = Translate(279)
     frmMain.cmdHostsManDel.Enabled = False
     frmMain.cmdHostsManToggle.Enabled = False
-    DoEvents
-    If Not FileExists(sHostsFile) Then
+    
+    If Not FileExists(g_HostsFile) Then
         'If MsgBoxW("Cannot find the hosts file." & vbCrLf & "Do you want to create a new, default hosts file?", vbExclamation + vbYesNo) = vbNo Then
         If MsgBoxW(Translate(280), vbExclamation Or vbYesNo) = vbNo Then
             'objInfo.Caption = "No hosts file found."
@@ -32,35 +32,27 @@ Public Sub ListHostsFile(objList As ListBox, objInfo As Label)
             CreateDefaultHostsFile
         End If
     End If
+    
     'Loading hosts file, please wait...
     objInfo.Caption = Translate(279)
     frmMain.cmdHostsManDel.Enabled = False
     frmMain.cmdHostsManToggle.Enabled = False
     DoEvents
-    iAttr = GetFileAttributes(StrPtr(sHostsFile))
+    iAttr = GetFileAttributes(StrPtr(g_HostsFile))
     If (iAttr And FILE_ATTRIBUTE_READONLY) Then sAttr = sAttr & "R"
     If (iAttr And FILE_ATTRIBUTE_ARCHIVE) Then sAttr = sAttr & "A"
     If (iAttr And FILE_ATTRIBUTE_HIDDEN) Then sAttr = sAttr & "H"
     If (iAttr And FILE_ATTRIBUTE_SYSTEM) Then sAttr = sAttr & "S"
     If (iAttr And FILE_ATTRIBUTE_COMPRESSED) Then sAttr = sAttr & "C"
     
-    ff = FreeFile()
-    Open sHostsFile For Binary As #ff
-        sDummy = Input(FileLenW(sHostsFile), #ff)
-    Close #ff
-    vContent = Split(sDummy, vbCrLf)
-    If UBound(vContent) = 0 And InStr(vContent(0), Chr$(10)) > 0 Then
-        'unix style hosts file
-        vContent = Split(sDummy, Chr$(10))
-    End If
+    aContent = ReadHostsFileToArray()
     
-    objList.Clear
-    For i = 0 To UBound(vContent)
-        objList.AddItem CStr(vContent(i))
-    Next i
-
+    For i = 0 To UBound(aContent)
+        objList.AddItem aContent(i)
+    Next
+    
     'objInfo.Caption = "Hosts file is located at " & sHostsFile & "Line: [], Attributes: []"
-    objInfo.Caption = Translate(271) & " " & sHostsFile & _
+    objInfo.Caption = Translate(271) & " " & g_HostsFile & _
                       " (" & Translate(278) & " " & objList.ListCount & ", " & Translate(277) & " " & _
                       sAttr & ")"
     frmMain.cmdHostsManDel.Enabled = True
@@ -72,23 +64,35 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Public Sub CreateDefaultHostsFile()
-    On Error GoTo ErrorHandler:
-    
-    Dim ff%
-    Open sHostsFile For Output As #ff
-        Print #ff, GetDefaultHostsContents()
-    Close #ff
-    
-    Exit Sub
-ErrorHandler:
-    ErrorMsg Err, "CreateDefaultHostsFile"
-    If inIDE Then Stop: Resume Next
-End Sub
+Private Function ReadHostsFileToArray() As String()
+    Dim sContents As String
+    sContents = ReadFileContents(g_HostsFile, False)
+    sContents = Replace$(sContents, vbCrLf, vbLf)
+    ReadHostsFileToArray = SplitSafe(sContents, vbLf, True)
+End Function
+
+Private Function WriteHostsFileContents(sContents As String) As Boolean
+    Dim hFile As Long
+    If OpenW(g_HostsFile, FOR_OVERWRITE_CREATE, hFile) Then
+        WriteHostsFileContents = PutStringW(hFile, 1, sContents, False)
+        CloseW hFile
+    End If
+End Function
+
+Public Function CreateDefaultHostsFile() As Boolean
+    CreateDefaultHostsFile = WriteHostsFileContents(GetDefaultHostsContents())
+End Function
+
+Public Function HostsReset() As Boolean
+    'Are you really sure to reset hosts file contents to defaults?
+    If MsgBox(Translate(301), vbQuestion Or vbYesNo, "") = vbYes Then
+        HostsReset = CreateDefaultHostsFile()
+    End If
+End Function
 
 Public Function GetDefaultHostsContents() As String
   Dim DefaultContent$
-    
+
   If OSver.MajorMinor < 6 Then
     
     'XP
@@ -174,36 +178,40 @@ End Function
 Public Sub HostsDeleteLine(objList As ListBox)
     On Error GoTo ErrorHandler:
 
-    'delete ith line in hosts file (zero-based)
-    Dim iAttr&, sDummy$, vContent As Variant, i&, ff%
+    'delete the line in hosts file
+    Dim iAttr&, i&
     
-    SetFileAttributes StrPtr(sHostsFile), vbArchive
-    If Err.Number Then
-        'MsgBoxW "The hosts file is locked for reading and cannot be edited. " & vbCrLf & _
-        '       "Make sure you have privileges to modify the hosts file and " & _
-        '       "no program is protecting it against changes.", vbCritical
-        MsgBoxW Translate(282), vbCritical
+    iAttr = GetFileAttributes(StrPtr(g_HostsFile))
+    
+    If SetFileAttributes(StrPtr(g_HostsFile), vbArchive) = 0 Then
+        'The hosts file is locked for reading and cannot be edited
+        'Make sure you have privileges to modify the hosts file and no program is protecting it against changes.
+        MsgBoxW Translate(282) & vbCrLf & Translate(284), vbCritical
         Exit Sub
     End If
     
-    ff = FreeFile()
-    Open sHostsFile For Binary As #ff
-        sDummy = Input(FileLenW(sHostsFile), #ff)
-    Close #ff
-    vContent = Split(sDummy, vbCrLf)
-    If UBound(vContent) = 0 And InStr(vContent(0), Chr$(10)) > 0 Then
-        'unix style hosts file
-        vContent = Split(sDummy, Chr$(10))
+    Dim sb As clsStringBuilder
+    Set sb = New clsStringBuilder
+    
+    With objList
+        For i = 0 To .ListCount - 1
+            If Not .Selected(i) Then sb.AppendLine .List(i)
+        Next i
+        For i = .ListCount - 1 To 0 Step -1
+            If .Selected(i) Then .RemoveItem i
+        Next i
+    End With
+    If sb.Length > 1 Then sb.Remove sb.Length - 1, 2 ' -CRLF
+    
+    If Not WriteHostsFileContents(sb.ToString()) Then
+        'Unable to write the selected changes to your hosts file. Another program may be denying access to it, or your user account may have insufficient rights to access it.
+        'Make sure you have privileges to modify the hosts file and no program is protecting it against changes.
+        MsgBoxW Translate(303) & vbCrLf & Translate(284), vbCritical
+        'revert changes
+        ListHostsFile objList
     End If
     
-    ff = FreeFile()
-    Open sHostsFile For Output As #ff
-        With objList
-            For i = 0 To UBound(vContent) - 1
-                If Not .Selected(i) Then Print #ff, vContent(i)
-            Next i
-        End With
-    Close #ff
+    SetFileAttributes StrPtr(g_HostsFile), iAttr
     
     Exit Sub
 ErrorHandler:
@@ -214,45 +222,46 @@ End Sub
 Public Sub HostsToggleLine(objList As ListBox)
     On Error GoTo ErrorHandler:
 
-    'enable/disable ith line in hosts file (zero-based)
-    Dim iAttr&, sDummy$, vContent As Variant, i&, ff%
+    'enable/disable the line in hosts file
+    Dim iAttr&, sLine As String, i&
     
-    SetFileAttributes StrPtr(sHostsFile), vbArchive
-    If Err.Number Then
-        '"The hosts file is locked for reading and cannot be edited. " & vbCrLf & _
-               "Make sure you have privileges to modify the hosts file and " & _
-               "no program is protecting it against changes."
-        MsgBoxW Translate(282), vbCritical
+    iAttr = GetFileAttributes(StrPtr(g_HostsFile))
+    
+    If SetFileAttributes(StrPtr(g_HostsFile), vbArchive) = 0 Then
+        'The hosts file is locked for reading and cannot be edited
+        'Make sure you have privileges to modify the hosts file and no program is protecting it against changes.
+        MsgBoxW Translate(282) & vbCrLf & Translate(284), vbCritical
         Exit Sub
     End If
     
-    ff = FreeFile()
-    Open sHostsFile For Binary As #ff
-        sDummy = Input(FileLenW(sHostsFile), #ff)
-    Close #ff
-    vContent = Split(sDummy, vbCrLf)
-    If UBound(vContent) = 0 And InStr(vContent(0), Chr$(10)) > 0 Then
-        'unix style hosts file
-        vContent = Split(sDummy, Chr$(10))
-    End If
+    Dim sb As clsStringBuilder
+    Set sb = New clsStringBuilder
     
     With objList
-        For i = 0 To UBound(vContent)
+        For i = 0 To .ListCount - 1
+            sLine = .List(i)
             If .Selected(i) Then
-                If InStr(vContent(i), "#") = 1 Then
-                    vContent(i) = Mid$(vContent(i), 2)
+                If Left$(LTrim$(sLine), 1) = "#" Then
+                    sLine = mid$(sLine, 2)
                 Else
-                    vContent(i) = "#" & vContent(i)
+                    sLine = "#" & sLine
                 End If
             End If
-        Next i
+            .List(i) = sLine
+            sb.AppendLine sLine
+        Next
     End With
+    If sb.Length > 1 Then sb.Remove sb.Length - 1, 2 ' -CRLF
     
-    ff = FreeFile()
-    Open sHostsFile For Output As #ff
-        Print #ff, Join(vContent, vbCrLf)
-    Close #ff
-    SetFileAttributes StrPtr(sHostsFile), iAttr
+    If Not WriteHostsFileContents(sb.ToString()) Then
+        'Unable to write the selected changes to your hosts file. Another program may be denying access to it, or your user account may have insufficient rights to access it.
+        'Make sure you have privileges to modify the hosts file and no program is protecting it against changes.
+        MsgBoxW Translate(303) & vbCrLf & Translate(284), vbCritical
+        'revert changes
+        ListHostsFile objList
+    End If
+    
+    SetFileAttributes StrPtr(g_HostsFile), iAttr
     
     Exit Sub
 ErrorHandler:

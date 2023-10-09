@@ -18,6 +18,18 @@ Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
 
 #Const ImplementThemedBorder = True
 
@@ -94,6 +106,35 @@ Public Event OLESetData(Data As DataObject, DataFormat As Integer)
 Attribute OLESetData.VB_Description = "Occurs at the OLE drag/drop source control when the drop target requests data that was not provided to the DataObject during the OLEDragStart event."
 Public Event OLEStartDrag(Data As DataObject, AllowedEffects As Long)
 Attribute OLEStartDrag.VB_Description = "Occurs when an OLE drag/drop operation is initiated either manually or automatically."
+#If VBA7 Then
+Private Declare PtrSafe Function CreateWindowEx Lib "user32" Alias "CreateWindowExW" (ByVal dwExStyle As Long, ByVal lpClassName As LongPtr, ByVal lpWindowName As LongPtr, ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hWndParent As LongPtr, ByVal hMenu As LongPtr, ByVal hInstance As LongPtr, ByRef lpParam As Any) As LongPtr
+Private Declare PtrSafe Function GetAncestor Lib "user32" (ByVal hWnd As LongPtr, ByVal gaFlags As Long) As LongPtr
+Private Declare PtrSafe Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByRef lParam As Any) As LongPtr
+Private Declare PtrSafe Function DefWindowProc Lib "user32" Alias "DefWindowProcW" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
+Private Declare PtrSafe Function DestroyWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
+Private Declare PtrSafe Function SetParent Lib "user32" (ByVal hWndChild As LongPtr, ByVal hWndNewParent As LongPtr) As LongPtr
+Private Declare PtrSafe Function SetFocusAPI Lib "user32" Alias "SetFocus" (ByVal hWnd As LongPtr) As LongPtr
+Private Declare PtrSafe Function GetFocus Lib "user32" () As LongPtr
+Private Declare PtrSafe Function SetWindowPos Lib "user32" (ByVal hWnd As LongPtr, ByVal hWndInsertAfter As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal CX As Long, ByVal CY As Long, ByVal wFlags As Long) As Long
+Private Declare PtrSafe Function DeleteObject Lib "gdi32" (ByVal hObject As LongPtr) As Long
+Private Declare PtrSafe Function ShowWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal nCmdShow As Long) As Long
+Private Declare PtrSafe Function MoveWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint As Long) As Long
+Private Declare PtrSafe Function EnableWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal fEnable As Long) As Long
+Private Declare PtrSafe Function RedrawWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal lprcUpdate As LongPtr, ByVal hrgnUpdate As LongPtr, ByVal fuRedraw As Long) As Long
+Private Declare PtrSafe Function SetBkMode Lib "gdi32" (ByVal hDC As LongPtr, ByVal nBkMode As Long) As Long
+Private Declare PtrSafe Function GetClientRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As RECT) As Long
+Private Declare PtrSafe Function CreateSolidBrush Lib "gdi32" (ByVal crColor As Long) As LongPtr
+Private Declare PtrSafe Function FillRect Lib "user32" (ByVal hDC As LongPtr, ByRef lpRect As RECT, ByVal hBrush As LongPtr) As Long
+Private Declare PtrSafe Function LoadCursor Lib "user32" Alias "LoadCursorW" (ByVal hInstance As LongPtr, ByVal lpCursorName As Any) As LongPtr
+Private Declare PtrSafe Function SetCursor Lib "user32" (ByVal hCursor As LongPtr) As LongPtr
+Private Declare PtrSafe Function GetTickCount Lib "kernel32" () As Long
+Private Declare PtrSafe Function GetDoubleClickTime Lib "user32" () As Long
+Private Declare PtrSafe Function GetSystemMetrics Lib "user32" (ByVal nIndex As Long) As Long
+Private Declare PtrSafe Function GetClassLong Lib "user32" Alias "GetClassLongW" (ByVal hWnd As LongPtr, ByVal nIndex As Long) As Long
+Private Declare PtrSafe Function GetKeyboardLayout Lib "user32" (ByVal dwThreadID As Long) As LongPtr
+Private Declare PtrSafe Function GetKeyNameText Lib "user32" Alias "GetKeyNameTextW" (ByVal lParam As Long, ByVal lpBuffer As LongPtr, ByVal nSize As Long) As Long
+Private Declare PtrSafe Function MapVirtualKeyEx Lib "user32" Alias "MapVirtualKeyExW" (ByVal wCode As Long, ByVal wMapType As Long, ByVal hKL As LongPtr) As Long
+#Else
 Private Declare Function CreateWindowEx Lib "user32" Alias "CreateWindowExW" (ByVal dwExStyle As Long, ByVal lpClassName As Long, ByVal lpWindowName As Long, ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hWndParent As Long, ByVal hMenu As Long, ByVal hInstance As Long, ByRef lpParam As Any) As Long
 Private Declare Function GetAncestor Lib "user32" (ByVal hWnd As Long, ByVal gaFlags As Long) As Long
 Private Declare Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByRef lParam As Any) As Long
@@ -117,11 +158,11 @@ Private Declare Function SetCursor Lib "user32" (ByVal hCursor As Long) As Long
 Private Declare Function GetTickCount Lib "kernel32" () As Long
 Private Declare Function GetDoubleClickTime Lib "user32" () As Long
 Private Declare Function GetSystemMetrics Lib "user32" (ByVal nIndex As Long) As Long
-Private Declare Function PtInRect Lib "user32" (ByRef lpRect As RECT, ByVal X As Long, ByVal Y As Long) As Long
 Private Declare Function GetClassLong Lib "user32" Alias "GetClassLongW" (ByVal hWnd As Long, ByVal nIndex As Long) As Long
 Private Declare Function GetKeyboardLayout Lib "user32" (ByVal dwThreadID As Long) As Long
 Private Declare Function GetKeyNameText Lib "user32" Alias "GetKeyNameTextW" (ByVal lParam As Long, ByVal lpBuffer As Long, ByVal nSize As Long) As Long
 Private Declare Function MapVirtualKeyEx Lib "user32" Alias "MapVirtualKeyExW" (ByVal wCode As Long, ByVal wMapType As Long, ByVal hKL As Long) As Long
+#End If
 
 #If ImplementThemedBorder = True Then
 
@@ -142,9 +183,22 @@ EPSN_HOT = 2
 EPSN_FOCUSED = 3
 EPSN_DISABLED = 4
 End Enum
-Private Declare Function OpenThemeData Lib "uxtheme" (ByVal hWnd As Long, ByVal pszClassList As Long) As Long
+#If VBA7 Then
+Private Declare PtrSafe Function OpenThemeData Lib "uxtheme" (ByVal hWnd As LongPtr, ByVal lpszClassList As LongPtr) As LongPtr
+Private Declare PtrSafe Function CloseThemeData Lib "uxtheme" (ByVal Theme As LongPtr) As Long
+Private Declare PtrSafe Function IsThemeBackgroundPartiallyTransparent Lib "uxtheme" (ByVal Theme As LongPtr, ByVal iPartId As Long, ByVal iStateId As Long) As Long
+Private Declare PtrSafe Function DrawThemeParentBackground Lib "uxtheme" (ByVal hWnd As LongPtr, ByVal hDC As LongPtr, ByRef pRect As RECT) As Long
+Private Declare PtrSafe Function DrawThemeBackground Lib "uxtheme" (ByVal Theme As LongPtr, ByVal hDC As LongPtr, ByVal iPartId As Long, ByVal iStateId As Long, ByRef pRect As RECT, ByRef pClipRect As RECT) As Long
+Private Declare PtrSafe Function SetRect Lib "user32" (ByRef lpRect As RECT, ByVal X1 As Long, ByVal Y1 As Long, ByVal X2 As Long, ByVal Y2 As Long) As Long
+Private Declare PtrSafe Function GetWindowDC Lib "user32" (ByVal hWnd As LongPtr) As LongPtr
+Private Declare PtrSafe Function GetDCEx Lib "user32" (ByVal hWnd As LongPtr, ByVal hRgnClip As LongPtr, ByVal fdwOptions As Long) As LongPtr
+Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hWnd As LongPtr, ByVal hDC As LongPtr) As Long
+Private Declare PtrSafe Function ExcludeClipRect Lib "gdi32" (ByVal hDC As LongPtr, ByVal X1 As Long, ByVal Y1 As Long, ByVal X2 As Long, ByVal Y2 As Long) As Long
+Private Declare PtrSafe Function GetWindowRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As RECT) As Long
+#Else
+Private Declare Function OpenThemeData Lib "uxtheme" (ByVal hWnd As Long, ByVal lpszClassList As Long) As Long
 Private Declare Function CloseThemeData Lib "uxtheme" (ByVal Theme As Long) As Long
-Private Declare Function IsThemeBackgroundPartiallyTransparent Lib "uxtheme" (ByVal Theme As Long, iPartId As Long, iStateId As Long) As Long
+Private Declare Function IsThemeBackgroundPartiallyTransparent Lib "uxtheme" (ByVal Theme As Long, ByVal iPartId As Long, ByVal iStateId As Long) As Long
 Private Declare Function DrawThemeParentBackground Lib "uxtheme" (ByVal hWnd As Long, ByVal hDC As Long, ByRef pRect As RECT) As Long
 Private Declare Function DrawThemeBackground Lib "uxtheme" (ByVal Theme As Long, ByVal hDC As Long, ByVal iPartId As Long, ByVal iStateId As Long, ByRef pRect As RECT, ByRef pClipRect As RECT) As Long
 Private Declare Function SetRect Lib "user32" (ByRef lpRect As RECT, ByVal X1 As Long, ByVal Y1 As Long, ByVal X2 As Long, ByVal Y2 As Long) As Long
@@ -153,6 +207,7 @@ Private Declare Function GetDCEx Lib "user32" (ByVal hWnd As Long, ByVal hRgnCli
 Private Declare Function ReleaseDC Lib "user32" (ByVal hWnd As Long, ByVal hDC As Long) As Long
 Private Declare Function ExcludeClipRect Lib "gdi32" (ByVal hDC As Long, ByVal X1 As Long, ByVal Y1 As Long, ByVal X2 As Long, ByVal Y2 As Long) As Long
 Private Declare Function GetWindowRect Lib "user32" (ByVal hWnd As Long, ByRef lpRect As RECT) As Long
+#End If
 
 #End If
 
@@ -215,9 +270,9 @@ Implements ISubclass
 Implements OLEGuids.IObjectSafety
 Implements OLEGuids.IOleInPlaceActiveObjectVB
 Implements OLEGuids.IPerPropertyBrowsingVB
-Private HotKeyHandle As Long
-Private HotKeyFontHandle As Long
-Private HotKeyBackColorBrush As Long
+Private HotKeyHandle As LongPtr
+Private HotKeyFontHandle As LongPtr
+Private HotKeyBackColorBrush As LongPtr
 Private HotKeyCharCodeCache As Long
 Private HotKeyIsClick As Boolean
 Private HotKeyMouseOver As Boolean
@@ -247,10 +302,14 @@ End Sub
 Private Sub IObjectSafety_SetInterfaceSafetyOptions(ByRef riid As OLEGuids.OLECLSID, ByVal dwOptionsSetMask As Long, ByVal dwEnabledOptions As Long)
 End Sub
 
+#If VBA7 Then
+Private Sub IOleInPlaceActiveObjectVB_TranslateAccelerator(ByRef Handled As Boolean, ByRef RetVal As Long, ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal Shift As Long)
+#Else
 Private Sub IOleInPlaceActiveObjectVB_TranslateAccelerator(ByRef Handled As Boolean, ByRef RetVal As Long, ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal Shift As Long)
+#End If
 If wMsg = WM_KEYDOWN Or wMsg = WM_KEYUP Then
     Dim KeyCode As Integer, IsInputKey As Boolean
-    KeyCode = wParam And &HFF&
+    KeyCode = CLng(wParam) And &HFF&
     If wMsg = WM_KEYDOWN Then
         RaiseEvent PreviewKeyDown(KeyCode, IsInputKey)
     ElseIf wMsg = WM_KEYUP Then
@@ -384,7 +443,7 @@ If InProc = True Then Exit Sub
 InProc = True
 With UserControl
 If DPICorrectionFactor() <> 1 Then Call SyncObjectRectsToContainer(Me)
-If HotKeyHandle <> 0 Then MoveWindow HotKeyHandle, 0, 0, .ScaleWidth, .ScaleHeight, 1
+If HotKeyHandle <> NULL_PTR Then MoveWindow HotKeyHandle, 0, 0, .ScaleWidth, .ScaleHeight, 1
 End With
 InProc = False
 End Sub
@@ -537,14 +596,25 @@ Attribute ZOrder.VB_Description = "Places a specified object at the front or bac
 If IsMissing(Position) Then Extender.ZOrder Else Extender.ZOrder Position
 End Sub
 
+#If VBA7 Then
+Public Property Get hWnd() As LongPtr
+Attribute hWnd.VB_Description = "Returns a handle to a control."
+Attribute hWnd.VB_UserMemId = -515
+#Else
 Public Property Get hWnd() As Long
 Attribute hWnd.VB_Description = "Returns a handle to a control."
 Attribute hWnd.VB_UserMemId = -515
+#End If
 hWnd = HotKeyHandle
 End Property
 
+#If VBA7 Then
+Public Property Get hWndUserControl() As LongPtr
+Attribute hWndUserControl.VB_Description = "Returns a handle to a control."
+#Else
 Public Property Get hWndUserControl() As Long
 Attribute hWndUserControl.VB_Description = "Returns a handle to a control."
+#End If
 hWndUserControl = UserControl.hWnd
 End Property
 
@@ -560,21 +630,21 @@ End Property
 
 Public Property Set Font(ByVal NewFont As StdFont)
 If NewFont Is Nothing Then Set NewFont = Ambient.Font
-Dim OldFontHandle As Long
+Dim OldFontHandle As LongPtr
 Set PropFont = NewFont
 OldFontHandle = HotKeyFontHandle
 HotKeyFontHandle = CreateGDIFontFromOLEFont(PropFont)
-If HotKeyHandle <> 0 Then SendMessage HotKeyHandle, WM_SETFONT, HotKeyFontHandle, ByVal 1&
-If OldFontHandle <> 0 Then DeleteObject OldFontHandle
+If HotKeyHandle <> NULL_PTR Then SendMessage HotKeyHandle, WM_SETFONT, HotKeyFontHandle, ByVal 1&
+If OldFontHandle <> NULL_PTR Then DeleteObject OldFontHandle
 UserControl.PropertyChanged "Font"
 End Property
 
 Private Sub PropFont_FontChanged(ByVal PropertyName As String)
-Dim OldFontHandle As Long
+Dim OldFontHandle As LongPtr
 OldFontHandle = HotKeyFontHandle
 HotKeyFontHandle = CreateGDIFontFromOLEFont(PropFont)
-If HotKeyHandle <> 0 Then SendMessage HotKeyHandle, WM_SETFONT, HotKeyFontHandle, ByVal 1&
-If OldFontHandle <> 0 Then DeleteObject OldFontHandle
+If HotKeyHandle <> NULL_PTR Then SendMessage HotKeyHandle, WM_SETFONT, HotKeyFontHandle, ByVal 1&
+If OldFontHandle <> NULL_PTR Then DeleteObject OldFontHandle
 UserControl.PropertyChanged "Font"
 End Sub
 
@@ -586,7 +656,7 @@ End Property
 Public Property Let VisualStyles(ByVal Value As Boolean)
 PropVisualStyles = Value
 HotKeyEnabledVisualStyles = EnabledVisualStyles()
-If HotKeyHandle <> 0 And HotKeyEnabledVisualStyles = True Then
+If HotKeyHandle <> NULL_PTR And HotKeyEnabledVisualStyles = True Then
     If PropVisualStyles = True Then
         ActivateVisualStyles HotKeyHandle
     Else
@@ -605,7 +675,7 @@ End Property
 
 Public Property Let Enabled(ByVal Value As Boolean)
 UserControl.Enabled = Value
-If HotKeyHandle <> 0 Then EnableWindow HotKeyHandle, IIf(Value = True, 1, 0)
+If HotKeyHandle <> NULL_PTR Then EnableWindow HotKeyHandle, IIf(Value = True, 1, 0)
 UserControl.PropertyChanged "Enabled"
 End Property
 
@@ -653,7 +723,7 @@ Public Property Set MouseIcon(ByVal Value As IPictureDisp)
 If Value Is Nothing Then
     Set PropMouseIcon = Nothing
 Else
-    If Value.Type = vbPicTypeIcon Or Value.Handle = 0 Then
+    If Value.Type = vbPicTypeIcon Or Value.Handle = NULL_PTR Then
         Set PropMouseIcon = Value
     Else
         If HotKeyDesignMode = True Then
@@ -686,8 +756,8 @@ End Property
 
 Public Property Let BackColor(ByVal Value As OLE_COLOR)
 PropBackColor = Value
-If HotKeyHandle <> 0 Then
-    If HotKeyBackColorBrush <> 0 Then DeleteObject HotKeyBackColorBrush
+If HotKeyHandle <> NULL_PTR Then
+    If HotKeyBackColorBrush <> NULL_PTR Then DeleteObject HotKeyBackColorBrush
     HotKeyBackColorBrush = CreateSolidBrush(WinColor(PropBackColor))
 End If
 Me.Refresh
@@ -696,7 +766,7 @@ Me.Refresh
 
 If PropBorderStyle = CCBorderStyleSunken Then
     ' Redraw the border to consider the new back color for the themed border, if any.
-    RedrawWindow UserControl.hWnd, 0, 0, RDW_FRAME Or RDW_INVALIDATE Or RDW_UPDATENOW Or RDW_NOCHILDREN
+    RedrawWindow UserControl.hWnd, NULL_PTR, NULL_PTR, RDW_FRAME Or RDW_INVALIDATE Or RDW_UPDATENOW Or RDW_NOCHILDREN
 End If
 
 #End If
@@ -717,15 +787,15 @@ Select Case Value
     Case Else
         Err.Raise 380
 End Select
-If HotKeyHandle <> 0 Then Call ComCtlsChangeBorderStyle(HotKeyHandle, PropBorderStyle)
+If HotKeyHandle <> NULL_PTR Then Call ComCtlsChangeBorderStyle(HotKeyHandle, PropBorderStyle)
 UserControl.PropertyChanged "BorderStyle"
 End Property
 
 Private Sub CreateHotKey()
-If HotKeyHandle <> 0 Then Exit Sub
+If HotKeyHandle <> NULL_PTR Then Exit Sub
 Dim dwStyle As Long
 dwStyle = WS_CHILD Or WS_VISIBLE
-HotKeyHandle = CreateWindowEx(0, StrPtr("msctls_hotkey32"), 0, dwStyle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, 0, App.hInstance, ByVal 0&)
+HotKeyHandle = CreateWindowEx(0, StrPtr("msctls_hotkey32"), NULL_PTR, dwStyle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, NULL_PTR, App.hInstance, ByVal NULL_PTR)
 Set Me.Font = PropFont
 Me.VisualStyles = PropVisualStyles
 Me.Enabled = UserControl.Enabled
@@ -735,35 +805,35 @@ If PropBorderStyle <> CCBorderStyleSunken Then
     Me.BorderStyle = PropBorderStyle
 End If
 If HotKeyDesignMode = False Then
-    If HotKeyHandle <> 0 Then
+    If HotKeyHandle <> NULL_PTR Then
         HotKeyDblClickSupported = CBool((GetClassLong(HotKeyHandle, GCL_STYLE) And CS_DBLCLKS) <> 0)
-        If HotKeyBackColorBrush = 0 Then HotKeyBackColorBrush = CreateSolidBrush(WinColor(PropBackColor))
+        If HotKeyBackColorBrush = NULL_PTR Then HotKeyBackColorBrush = CreateSolidBrush(WinColor(PropBackColor))
         Call ComCtlsSetSubclass(HotKeyHandle, Me, 1)
     End If
     Call ComCtlsSetSubclass(UserControl.hWnd, Me, 2)
 Else
-    If HotKeyHandle <> 0 Then
-        If HotKeyBackColorBrush = 0 Then HotKeyBackColorBrush = CreateSolidBrush(WinColor(PropBackColor))
+    If HotKeyHandle <> NULL_PTR Then
+        If HotKeyBackColorBrush = NULL_PTR Then HotKeyBackColorBrush = CreateSolidBrush(WinColor(PropBackColor))
         Call ComCtlsSetSubclass(HotKeyHandle, Me, 3)
     End If
 End If
 End Sub
 
 Private Sub DestroyHotKey()
-If HotKeyHandle = 0 Then Exit Sub
+If HotKeyHandle = NULL_PTR Then Exit Sub
 Call ComCtlsRemoveSubclass(HotKeyHandle)
 Call ComCtlsRemoveSubclass(UserControl.hWnd)
 ShowWindow HotKeyHandle, SW_HIDE
-SetParent HotKeyHandle, 0
+SetParent HotKeyHandle, NULL_PTR
 DestroyWindow HotKeyHandle
-HotKeyHandle = 0
-If HotKeyFontHandle <> 0 Then
+HotKeyHandle = NULL_PTR
+If HotKeyFontHandle <> NULL_PTR Then
     DeleteObject HotKeyFontHandle
-    HotKeyFontHandle = 0
+    HotKeyFontHandle = NULL_PTR
 End If
-If HotKeyBackColorBrush <> 0 Then
+If HotKeyBackColorBrush <> NULL_PTR Then
     DeleteObject HotKeyBackColorBrush
-    HotKeyBackColorBrush = 0
+    HotKeyBackColorBrush = NULL_PTR
 End If
 End Sub
 
@@ -771,43 +841,43 @@ Public Sub Refresh()
 Attribute Refresh.VB_Description = "Forces a complete repaint of a object."
 Attribute Refresh.VB_UserMemId = -550
 UserControl.Refresh
-RedrawWindow UserControl.hWnd, 0, 0, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
+RedrawWindow UserControl.hWnd, NULL_PTR, NULL_PTR, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
 End Sub
 
 Public Property Get Value(Optional ByRef Modifiers As Integer) As VBRUN.KeyCodeConstants
 Attribute Value.VB_Description = "Returns/sets the virtual key code and modifier keys that define a hot key combination."
 Attribute Value.VB_UserMemId = 0
 Attribute Value.VB_MemberFlags = "400"
-If HotKeyHandle <> 0 Then
+If HotKeyHandle <> NULL_PTR Then
     Dim RetVal As Integer
-    RetVal = LoWord(SendMessage(HotKeyHandle, HKM_GETHOTKEY, 0, ByVal 0&))
+    RetVal = LoWord(CLng(SendMessage(HotKeyHandle, HKM_GETHOTKEY, 0, ByVal 0&)))
     Value = LoByte(RetVal)
     Modifiers = HiByte(RetVal)
 End If
 End Property
 
 Public Property Let Value(Optional ByRef Modifiers As Integer, ByVal NewValue As VBRUN.KeyCodeConstants)
-If HotKeyHandle <> 0 Then SendMessage HotKeyHandle, HKM_SETHOTKEY, MakeDWord(MakeWord(NewValue And &HFF&, Modifiers And &HFF&), 0), ByVal 0&
+If HotKeyHandle <> NULL_PTR Then SendMessage HotKeyHandle, HKM_SETHOTKEY, MakeDWord(MakeWord(NewValue And &HFF&, Modifiers And &HFF&), 0), ByVal 0&
 End Property
 
 Public Property Get RawValue() As Long
 Attribute RawValue.VB_Description = "Returns/sets the hot key combination."
 Attribute RawValue.VB_MemberFlags = "400"
-If HotKeyHandle <> 0 Then RawValue = SendMessage(HotKeyHandle, HKM_GETHOTKEY, 0, ByVal 0&)
+If HotKeyHandle <> NULL_PTR Then RawValue = CLng(SendMessage(HotKeyHandle, HKM_GETHOTKEY, 0, ByVal 0&))
 End Property
 
 Public Property Let RawValue(ByVal Value As Long)
-If HotKeyHandle <> 0 Then SendMessage HotKeyHandle, HKM_SETHOTKEY, Value, ByVal 0&
+If HotKeyHandle <> NULL_PTR Then SendMessage HotKeyHandle, HKM_SETHOTKEY, Value, ByVal 0&
 End Property
 
 Public Property Get Text() As String
 Attribute Text.VB_Description = "Returns the text contained in an object."
 Attribute Text.VB_MemberFlags = "400"
-If HotKeyHandle <> 0 Then
-    Dim hKL As Long
+If HotKeyHandle <> NULL_PTR Then
+    Dim hKL As LongPtr
     hKL = GetKeyboardLayout(0)
     Dim RetVal As Integer, KeyCode As Integer, Modifiers As Integer
-    RetVal = LoWord(SendMessage(HotKeyHandle, HKM_GETHOTKEY, 0, ByVal 0&))
+    RetVal = LoWord(CLng(SendMessage(HotKeyHandle, HKM_GETHOTKEY, 0, ByVal 0&)))
     KeyCode = LoByte(RetVal)
     Modifiers = HiByte(RetVal)
     Dim ScanCode As Long
@@ -845,21 +915,37 @@ Public Sub SetRules(ByVal InvalidKeyCombinations As HkeInvalidKeyCombinationCons
 Attribute SetRules.VB_Description = "Defines the invalid key combinations and the default modifiers for the hot key control."
 Select Case InvalidKeyCombinations
     Case HkeInvalidKeyCombinationNone, HkeInvalidKeyCombinationShift, HkeInvalidKeyCombinationCtrl, HkeInvalidKeyCombinationAlt, HkeInvalidKeyCombinationShiftCtrl, HkeInvalidKeyCombinationShiftAlt, HkeInvalidKeyCombinationCtrlAlt, HkeInvalidKeyCombinationShiftCtrlAlt
-        If HotKeyHandle <> 0 Then SendMessage HotKeyHandle, HKM_SETRULES, InvalidKeyCombinations, ByVal CLng(DefaultModifiers)
+        If HotKeyHandle <> NULL_PTR Then SendMessage HotKeyHandle, HKM_SETRULES, InvalidKeyCombinations, ByVal CLng(DefaultModifiers)
     Case Else
         Err.Raise 380
 End Select
 End Sub
 
+#If VBA7 Then
+Public Function SetApplicationHotKey(Optional ByVal hWnd As LongPtr) As Long
+Attribute SetApplicationHotKey.VB_Description = "Sets the hot key of the specified window to the current hot key. A hot key cannot be associated with a child window."
+#Else
 Public Function SetApplicationHotKey(Optional ByVal hWnd As Long) As Long
 Attribute SetApplicationHotKey.VB_Description = "Sets the hot key of the specified window to the current hot key. A hot key cannot be associated with a child window."
-If HotKeyHandle <> 0 Then
-    If hWnd = 0 Then hWnd = GetAncestor(HotKeyHandle, GA_ROOT)
-    SetApplicationHotKey = SendMessage(hWnd, WM_SETHOTKEY, SendMessage(HotKeyHandle, HKM_GETHOTKEY, 0, ByVal 0&), ByVal 0&)
+#End If
+If HotKeyHandle <> NULL_PTR Then
+    If hWnd = NULL_PTR Then hWnd = GetAncestor(HotKeyHandle, GA_ROOT)
+    SetApplicationHotKey = CLng(SendMessage(hWnd, WM_SETHOTKEY, SendMessage(HotKeyHandle, HKM_GETHOTKEY, 0, ByVal 0&), ByVal 0&))
 End If
 End Function
 
+Private Function PtInRect(ByRef lpRect As RECT, ByVal X As Long, ByVal Y As Long) As Long
+' Avoid API declare since x64 calling convention aligns 8 bytes per argument.
+' So the handling of a ByVal PT being split into two 4-byte arguments will crash.
+PtInRect = 0
+If X >= lpRect.Left And X < lpRect.Right And Y >= lpRect.Top And Y < lpRect.Bottom Then PtInRect = 1
+End Function
+
+#If VBA7 Then
+Private Function ISubclass_Message(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
+#Else
 Private Function ISubclass_Message(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal dwRefData As Long) As Long
+#End If
 Select Case dwRefData
     Case 1
         ISubclass_Message = WindowProcControl(hWnd, wMsg, wParam, lParam)
@@ -870,7 +956,7 @@ Select Case dwRefData
 End Select
 End Function
 
-Private Function WindowProcControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_SETFOCUS
         If wParam <> UserControl.hWnd Then SetFocusAPI UserControl.hWnd: Exit Function
@@ -879,7 +965,7 @@ Select Case wMsg
         Call DeActivateIPAO
     Case WM_KEYDOWN, WM_KEYUP, WM_SYSKEYDOWN, WM_SYSKEYUP
         Dim KeyCode As Integer
-        KeyCode = wParam And &HFF&
+        KeyCode = CLng(wParam) And &HFF&
         If wMsg = WM_KEYDOWN Or wMsg = WM_KEYUP Then
             If wMsg = WM_KEYDOWN Then
                 RaiseEvent KeyDown(KeyCode, GetShiftStateFromMsg())
@@ -899,7 +985,7 @@ Select Case wMsg
             KeyChar = CUIntToInt(HotKeyCharCodeCache And &HFFFF&)
             HotKeyCharCodeCache = 0
         Else
-            KeyChar = CUIntToInt(wParam And &HFFFF&)
+            KeyChar = CUIntToInt(CLng(wParam) And &HFFFF&)
         End If
         RaiseEvent KeyPress(KeyChar)
         wParam = CIntToUInt(KeyChar)
@@ -908,7 +994,7 @@ Select Case wMsg
             WindowProcControl = 1
         Else
             Dim UTF16 As String
-            UTF16 = UTF32CodePoint_To_UTF16(wParam)
+            UTF16 = UTF32CodePoint_To_UTF16(CLng(wParam))
             If Len(UTF16) = 1 Then
                 SendMessage hWnd, WM_CHAR, CIntToUInt(AscW(UTF16)), ByVal lParam
             ElseIf Len(UTF16) = 2 Then
@@ -922,9 +1008,9 @@ Select Case wMsg
         SendMessage hWnd, WM_CHAR, wParam, ByVal lParam
         Exit Function
     Case WM_SETCURSOR
-        If LoWord(lParam) = HTCLIENT Then
+        If LoWord(CLng(lParam)) = HTCLIENT Then
             If MousePointerID(PropMousePointer) <> 0 Then
-                SetCursor LoadCursor(0, MousePointerID(PropMousePointer))
+                SetCursor LoadCursor(NULL_PTR, MousePointerID(PropMousePointer))
                 WindowProcControl = 1
                 Exit Function
             ElseIf PropMousePointer = 99 Then
@@ -936,7 +1022,7 @@ Select Case wMsg
             End If
         End If
     Case WM_ERASEBKGND
-        If HotKeyBackColorBrush <> 0 Then
+        If HotKeyBackColorBrush <> NULL_PTR Then
             SetBkMode wParam, 1
             Dim RC As RECT
             GetClientRect hWnd, RC
@@ -950,23 +1036,23 @@ Select Case wMsg
     Case WM_THEMECHANGED, WM_STYLECHANGED, WM_ENABLE
         If wMsg = WM_THEMECHANGED Then HotKeyEnabledVisualStyles = EnabledVisualStyles()
         If PropBorderStyle = CCBorderStyleSunken And PropVisualStyles = True Then
-            If HotKeyEnabledVisualStyles = True Then SetWindowPos hWnd, 0, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE Or SWP_NOOWNERZORDER Or SWP_NOZORDER Or SWP_DRAWFRAME
+            If HotKeyEnabledVisualStyles = True Then SetWindowPos hWnd, NULL_PTR, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE Or SWP_NOOWNERZORDER Or SWP_NOZORDER Or SWP_DRAWFRAME
         End If
     Case WM_NCPAINT
         ' Bugfix for msctls_hotkey32 class as it always draws a themed border.
         ' However, it should only draw themed when the border style is sunken. (like the edit control)
         ' In addition the disabled and focused state will be handled.
         If PropBorderStyle = CCBorderStyleSunken And PropVisualStyles = True And HotKeyEnabledVisualStyles = True Then
-            Dim Theme As Long
+            Dim Theme As LongPtr
             Theme = OpenThemeData(hWnd, StrPtr("Edit"))
-            If Theme <> 0 Then
-                Dim hDC As Long
+            If Theme <> NULL_PTR Then
+                Dim hDC As LongPtr
                 If wParam = 1 Then ' Alias for entire window
                     hDC = GetWindowDC(hWnd)
                 Else
                     hDC = GetDCEx(hWnd, wParam, DCX_WINDOW Or DCX_INTERSECTRGN Or DCX_USESTYLE)
                 End If
-                If hDC <> 0 Then
+                If hDC <> NULL_PTR Then
                     Dim BorderX As Long, BorderY As Long
                     Dim RC1 As RECT, RC2 As RECT, WndRect2 As RECT
                     Const SM_CXEDGE As Long = 45
@@ -981,7 +1067,7 @@ Select Case wMsg
                     ExcludeClipRect hDC, RC1.Left, RC1.Top, RC1.Right, RC1.Bottom
                     Dim EditPart As Long, EditState As Long
                     EditPart = EP_EDITBORDER_NOSCROLL
-                    Dim Brush As Long
+                    Dim Brush As LongPtr
                     If Me.Enabled = False Then
                         EditState = EPSN_DISABLED
                         Brush = CreateSolidBrush(WinColor(vbButtonFace))
@@ -1060,7 +1146,7 @@ Select Case wMsg
     Case WM_SETFOCUS, WM_KILLFOCUS
         HotKeyFocused = CBool(wMsg = WM_SETFOCUS)
         If PropBorderStyle = CCBorderStyleSunken And PropVisualStyles = True Then
-            If HotKeyEnabledVisualStyles = True Then SetWindowPos hWnd, 0, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE Or SWP_NOOWNERZORDER Or SWP_NOZORDER Or SWP_DRAWFRAME
+            If HotKeyEnabledVisualStyles = True Then SetWindowPos hWnd, NULL_PTR, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE Or SWP_NOOWNERZORDER Or SWP_NOZORDER Or SWP_DRAWFRAME
         End If
     
     #End If
@@ -1111,11 +1197,11 @@ Select Case wMsg
 End Select
 End Function
 
-Private Function WindowProcUserControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcUserControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_COMMAND
         If lParam = HotKeyHandle Then
-            Select Case HiWord(wParam)
+            Select Case HiWord(CLng(wParam))
                 Case EN_CHANGE
                     RaiseEvent Change
             End Select
@@ -1125,7 +1211,7 @@ WindowProcUserControl = ComCtlsDefaultProc(hWnd, wMsg, wParam, lParam)
 If wMsg = WM_SETFOCUS And UCNoSetFocusFwd = False Then SetFocusAPI HotKeyHandle
 End Function
 
-Private Function WindowProcControlDesignMode(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcControlDesignMode(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     
     #If ImplementThemedBorder = True Then

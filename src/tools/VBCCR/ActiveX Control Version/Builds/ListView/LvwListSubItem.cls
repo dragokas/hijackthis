@@ -12,17 +12,33 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
 Option Explicit
-Private ShadowObjectPointer As Long
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
+Private ShadowObjectPointer As LongPtr
 Private ShadowListItem As LvwListItem
 Private PropIndex As Long
-Private PropPtr As Long
+Private PropPtr As LongPtr
 Private PropSubItemIndex As Long
 
 Private Function ShadowListView() As ListView
-ComCtlsPtrToShadowObj ShadowListView, ShadowObjectPointer
+ComCtlsObjSetAddRef ShadowListView, ShadowObjectPointer
 End Function
 
+#If VBA7 Then
+Friend Sub FInit(ByVal ObjectPointer As LongPtr, ByVal ListItem As LvwListItem, ByVal Index As Long, ByVal Ptr As LongPtr, ByVal SubItemIndex As Long)
+#Else
 Friend Sub FInit(ByVal ObjectPointer As Long, ByVal ListItem As LvwListItem, ByVal Index As Long, ByVal Ptr As Long, ByVal SubItemIndex As Long)
+#End If
 ShadowObjectPointer = ObjectPointer
 Set ShadowListItem = ListItem
 PropIndex = Index

@@ -18,6 +18,18 @@ Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
 Option Explicit
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
 #If False Then
 Private MciFormatMilliseconds, MciFormatHms, MciFormatMsf, MciFormatFrames, MciFormatSmpte24, MciFormatSmpte25, MciFormatSmpte30, MciFormatSmpte30Drop, MciFormatBytes, MciFormatSamples, MciFormatTmsf
 Private MciModeNotReady, MciModeStop, MciModePlay, MciModeRecord, MciModeSeek, MciModePause, MciModeOpen
@@ -148,8 +160,30 @@ Public Event OLESetData(Data As DataObject, DataFormat As Integer)
 Attribute OLESetData.VB_Description = "Occurs at the OLE drag/drop source control when the drop target requests data that was not provided to the DataObject during the OLEDragStart event."
 Public Event OLEStartDrag(Data As DataObject, AllowedEffects As Long)
 Attribute OLEStartDrag.VB_Description = "Occurs when an OLE drag/drop operation is initiated either manually or automatically."
+#If VBA7 Then
+Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
+Private Declare PtrSafe Function CreateWindowEx Lib "user32" Alias "CreateWindowExW" (ByVal dwExStyle As Long, ByVal lpClassName As LongPtr, ByVal lpWindowName As LongPtr, ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hWndParent As LongPtr, ByVal hMenu As LongPtr, ByVal hInstance As LongPtr, ByRef lpParam As Any) As LongPtr
+Private Declare PtrSafe Function GetProfileString Lib "kernel32" Alias "GetProfileStringW" (ByVal lpAppName As LongPtr, ByVal lpKeyName As LongPtr, ByVal lpDefault As LongPtr, ByVal lpReturnedString As LongPtr, ByVal nSize As Long) As Long
+Private Declare PtrSafe Function lstrlen Lib "kernel32" Alias "lstrlenW" (ByVal lpString As LongPtr) As Long
+Private Declare PtrSafe Function lstrlenA Lib "kernel32" (ByVal lpString As LongPtr) As Long
+Private Declare PtrSafe Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByRef lParam As Any) As LongPtr
+Private Declare PtrSafe Function SetWindowLong Lib "user32" Alias "SetWindowLongW" (ByVal hWnd As LongPtr, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
+Private Declare PtrSafe Function GetWindowLong Lib "user32" Alias "GetWindowLongW" (ByVal hWnd As LongPtr, ByVal nIndex As Long) As Long
+Private Declare PtrSafe Function SetFocusAPI Lib "user32" Alias "SetFocus" (ByVal hWnd As LongPtr) As LongPtr
+Private Declare PtrSafe Function GetFocus Lib "user32" () As LongPtr
+Private Declare PtrSafe Function GetClientRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As RECT) As Long
+Private Declare PtrSafe Function CreateSolidBrush Lib "gdi32" (ByVal crColor As Long) As LongPtr
+Private Declare PtrSafe Function FillRect Lib "user32" (ByVal hDC As LongPtr, ByRef lpRect As RECT, ByVal hBrush As LongPtr) As Long
+Private Declare PtrSafe Function DeleteObject Lib "gdi32" (ByVal hObject As LongPtr) As Long
+Private Declare PtrSafe Function MoveWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint As Long) As Long
+Private Declare PtrSafe Function GetWindowRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As RECT) As Long
+Private Declare PtrSafe Function EnableWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal fEnable As Long) As Long
+Private Declare PtrSafe Function RedrawWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal lprcUpdate As LongPtr, ByVal hrgnUpdate As LongPtr, ByVal fuRedraw As Long) As Long
+Private Declare PtrSafe Function LoadCursor Lib "user32" Alias "LoadCursorW" (ByVal hInstance As LongPtr, ByVal lpCursorName As Any) As LongPtr
+Private Declare PtrSafe Function SetCursor Lib "user32" (ByVal hCursor As LongPtr) As LongPtr
+Private Declare PtrSafe Function GetWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal wCmd As Long) As LongPtr
+#Else
 Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
-Private Declare Function MCIWndRegisterClass Lib "msvfw32" () As Long
 Private Declare Function CreateWindowEx Lib "user32" Alias "CreateWindowExW" (ByVal dwExStyle As Long, ByVal lpClassName As Long, ByVal lpWindowName As Long, ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hWndParent As Long, ByVal hMenu As Long, ByVal hInstance As Long, ByRef lpParam As Any) As Long
 Private Declare Function GetProfileString Lib "kernel32" Alias "GetProfileStringW" (ByVal lpAppName As Long, ByVal lpKeyName As Long, ByVal lpDefault As Long, ByVal lpReturnedString As Long, ByVal nSize As Long) As Long
 Private Declare Function lstrlen Lib "kernel32" Alias "lstrlenW" (ByVal lpString As Long) As Long
@@ -170,6 +204,7 @@ Private Declare Function RedrawWindow Lib "user32" (ByVal hWnd As Long, ByVal lp
 Private Declare Function LoadCursor Lib "user32" Alias "LoadCursorW" (ByVal hInstance As Long, ByVal lpCursorName As Any) As Long
 Private Declare Function SetCursor Lib "user32" (ByVal hCursor As Long) As Long
 Private Declare Function GetWindow Lib "user32" (ByVal hWnd As Long, ByVal wCmd As Long) As Long
+#End If
 Private Const RDW_UPDATENOW As Long = &H100, RDW_INVALIDATE As Long = &H1, RDW_ERASE As Long = &H4, RDW_ALLCHILDREN As Long = &H80
 Private Const GWL_STYLE As Long = (-16)
 Private Const GW_CHILD As Long = 5
@@ -301,8 +336,8 @@ Implements ISubclass
 Implements OLEGuids.IObjectSafety
 Implements OLEGuids.IOleInPlaceActiveObjectVB
 Implements OLEGuids.IPerPropertyBrowsingVB
-Private MCIWndHandle As Long
-Private MCIWndBackColorBrush As Long
+Private MCIWndHandle As LongPtr
+Private MCIWndBackColorBrush As LongPtr
 Private MCIWndCharCodeCache As Long
 Private MCIWndCommand As String
 Private MCIWndIsClick As Boolean
@@ -336,10 +371,14 @@ End Sub
 Private Sub IObjectSafety_SetInterfaceSafetyOptions(ByRef riid As OLEGuids.OLECLSID, ByVal dwOptionsSetMask As Long, ByVal dwEnabledOptions As Long)
 End Sub
 
+#If VBA7 Then
+Private Sub IOleInPlaceActiveObjectVB_TranslateAccelerator(ByRef Handled As Boolean, ByRef RetVal As Long, ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal Shift As Long)
+#Else
 Private Sub IOleInPlaceActiveObjectVB_TranslateAccelerator(ByRef Handled As Boolean, ByRef RetVal As Long, ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal Shift As Long)
+#End If
 If wMsg = WM_KEYDOWN Or wMsg = WM_KEYUP Then
     Dim KeyCode As Integer, IsInputKey As Boolean
-    KeyCode = wParam And &HFF&
+    KeyCode = CLng(wParam) And &HFF&
     If wMsg = WM_KEYDOWN Then
         RaiseEvent PreviewKeyDown(KeyCode, IsInputKey)
     ElseIf wMsg = WM_KEYUP Then
@@ -381,7 +420,7 @@ End Sub
 
 Private Sub UserControl_Initialize()
 Call ComCtlsLoadShellMod
-MCIWndRegisterClass
+Call ComCtlsMCIWndRegisterClass
 Call SetVTableHandling(Me, VTableInterfaceInPlaceActiveObject)
 Call SetVTableHandling(Me, VTableInterfacePerPropertyBrowsing)
 End Sub
@@ -499,7 +538,7 @@ If InProc = True Then Exit Sub
 InProc = True
 With UserControl
 If DPICorrectionFactor() <> 1 Then Call SyncObjectRectsToContainer(Me)
-If MCIWndHandle <> 0 Then MoveWindow MCIWndHandle, 0, 0, .ScaleWidth, .ScaleHeight, 1
+If MCIWndHandle <> NULL_PTR Then MoveWindow MCIWndHandle, 0, 0, .ScaleWidth, .ScaleHeight, 1
 InProc = False
 If PrevHeight <> .ScaleHeight Or PrevWidth <> .ScaleWidth Then
     PrevHeight = .ScaleHeight
@@ -513,6 +552,7 @@ Private Sub UserControl_Terminate()
 Call RemoveVTableHandling(Me, VTableInterfaceInPlaceActiveObject)
 Call RemoveVTableHandling(Me, VTableInterfacePerPropertyBrowsing)
 Call DestroyMCIWnd
+Call ComCtlsMCIWndReleaseClass
 Call ComCtlsReleaseShellMod
 End Sub
 
@@ -657,14 +697,25 @@ Attribute ZOrder.VB_Description = "Places a specified object at the front or bac
 If IsMissing(Position) Then Extender.ZOrder Else Extender.ZOrder Position
 End Sub
 
+#If VBA7 Then
+Public Property Get hWnd() As LongPtr
+Attribute hWnd.VB_Description = "Returns a handle to a control."
+Attribute hWnd.VB_UserMemId = -515
+#Else
 Public Property Get hWnd() As Long
 Attribute hWnd.VB_Description = "Returns a handle to a control."
 Attribute hWnd.VB_UserMemId = -515
+#End If
 hWnd = MCIWndHandle
 End Property
 
+#If VBA7 Then
+Public Property Get hWndUserControl() As LongPtr
+Attribute hWndUserControl.VB_Description = "Returns a handle to a control."
+#Else
 Public Property Get hWndUserControl() As Long
 Attribute hWndUserControl.VB_Description = "Returns a handle to a control."
+#End If
 hWndUserControl = UserControl.hWnd
 End Property
 
@@ -675,15 +726,15 @@ End Property
 
 Public Property Let VisualStyles(ByVal Value As Boolean)
 PropVisualStyles = Value
-If MCIWndHandle <> 0 And EnabledVisualStyles() = True Then
+If MCIWndHandle <> NULL_PTR And EnabledVisualStyles() = True Then
     If PropVisualStyles = True Then
         ActivateVisualStyles MCIWndHandle
     Else
         RemoveVisualStyles MCIWndHandle
     End If
-    Dim hWnd As Long
+    Dim hWnd As LongPtr
     hWnd = GetWindow(MCIWndHandle, GW_CHILD)
-    Do While hWnd <> 0
+    Do While hWnd <> NULL_PTR
         If PropVisualStyles = True Then
             ActivateVisualStyles hWnd
         Else
@@ -704,11 +755,11 @@ End Property
 
 Public Property Let Enabled(ByVal Value As Boolean)
 UserControl.Enabled = Value
-If MCIWndHandle <> 0 Then
+If MCIWndHandle <> NULL_PTR Then
     EnableWindow MCIWndHandle, IIf(Value = True, 1, 0)
-    Dim hWnd As Long
+    Dim hWnd As LongPtr
     hWnd = GetWindow(MCIWndHandle, GW_CHILD)
-    Do While hWnd <> 0
+    Do While hWnd <> NULL_PTR
         EnableWindow hWnd, IIf(Value = True, 1, 0)
         hWnd = GetWindow(hWnd, GW_HWNDNEXT)
     Loop
@@ -760,7 +811,7 @@ Public Property Set MouseIcon(ByVal Value As IPictureDisp)
 If Value Is Nothing Then
     Set PropMouseIcon = Nothing
 Else
-    If Value.Type = vbPicTypeIcon Or Value.Handle = 0 Then
+    If Value.Type = vbPicTypeIcon Or Value.Handle = NULL_PTR Then
         Set PropMouseIcon = Value
     Else
         If MCIWndDesignMode = True Then
@@ -793,8 +844,8 @@ End Property
 
 Public Property Let BackColor(ByVal Value As OLE_COLOR)
 PropBackColor = Value
-If MCIWndHandle <> 0 Then
-    If MCIWndBackColorBrush <> 0 Then DeleteObject MCIWndBackColorBrush
+If MCIWndHandle <> NULL_PTR Then
+    If MCIWndBackColorBrush <> NULL_PTR Then DeleteObject MCIWndBackColorBrush
     MCIWndBackColorBrush = CreateSolidBrush(WinColor(PropBackColor))
 End If
 Me.Refresh
@@ -814,13 +865,13 @@ Select Case Value
     Case Else
         Err.Raise 380
 End Select
-If MCIWndHandle <> 0 And PropCaption = MciCaptionNone Then Call ComCtlsChangeBorderStyle(MCIWndHandle, PropBorderStyle)
+If MCIWndHandle <> NULL_PTR And PropCaption = MciCaptionNone Then Call ComCtlsChangeBorderStyle(MCIWndHandle, PropBorderStyle)
 UserControl.PropertyChanged "BorderStyle"
 End Property
 
 Public Property Get Repeat() As Boolean
 Attribute Repeat.VB_Description = "Returns/sets a value indicating if the playback continuously repeats when the play button on the play bar is pressed."
-If MCIWndHandle <> 0 Then
+If MCIWndHandle <> NULL_PTR Then
     Repeat = CBool(SendMessage(MCIWndHandle, MCIWNDM_GETREPEAT, 0, ByVal 0&) <> 0)
 Else
     Repeat = PropRepeat
@@ -829,7 +880,7 @@ End Property
 
 Public Property Let Repeat(ByVal Value As Boolean)
 PropRepeat = Value
-If MCIWndHandle <> 0 Then SendMessage MCIWndHandle, MCIWNDM_SETREPEAT, 0, ByVal CLng(IIf(PropRepeat = True, 1, 0))
+If MCIWndHandle <> NULL_PTR Then SendMessage MCIWndHandle, MCIWNDM_SETREPEAT, 0, ByVal CLng(IIf(PropRepeat = True, 1, 0))
 UserControl.PropertyChanged "Repeat"
 End Property
 
@@ -840,7 +891,7 @@ End Property
 
 Public Property Let ErrorDlg(ByVal Value As Boolean)
 PropErrorDlg = Value
-If MCIWndHandle <> 0 Then
+If MCIWndHandle <> NULL_PTR Then
     If PropErrorDlg = False Then
         SendMessage MCIWndHandle, MCIWNDM_CHANGESTYLES, MCIWNDF_NOERRORDLG, ByVal MCIWNDF_NOERRORDLG
     Else
@@ -857,7 +908,7 @@ End Property
 
 Public Property Let Record(ByVal Value As Boolean)
 PropRecord = Value
-If MCIWndHandle <> 0 Then
+If MCIWndHandle <> NULL_PTR Then
     If PropRecord = True Then
         SendMessage MCIWndHandle, MCIWNDM_CHANGESTYLES, MCIWNDF_RECORD, ByVal MCIWNDF_RECORD
     Else
@@ -875,7 +926,7 @@ End Property
 
 Public Property Let Playbar(ByVal Value As Boolean)
 PropPlaybar = Value
-If MCIWndHandle <> 0 Then
+If MCIWndHandle <> NULL_PTR Then
     If PropPlaybar = False Then
         SendMessage MCIWndHandle, MCIWNDM_CHANGESTYLES, MCIWNDF_NOPLAYBAR, ByVal MCIWNDF_NOPLAYBAR
     Else
@@ -894,7 +945,7 @@ End Property
 
 Public Property Let Menu(ByVal Value As Boolean)
 PropMenu = Value
-If MCIWndHandle <> 0 Then
+If MCIWndHandle <> NULL_PTR Then
     If PropMenu = False Then
         SendMessage MCIWndHandle, MCIWNDM_CHANGESTYLES, MCIWNDF_NOMENU, ByVal MCIWNDF_NOMENU
     Else
@@ -912,7 +963,7 @@ End Property
 
 Public Property Let AllowOpen(ByVal Value As Boolean)
 PropAllowOpen = Value
-If MCIWndHandle <> 0 And MCIWndDesignMode = False Then
+If MCIWndHandle <> NULL_PTR And MCIWndDesignMode = False Then
     If PropAllowOpen = False Then
         SendMessage MCIWndHandle, MCIWNDM_CHANGESTYLES, MCIWNDF_NOOPEN, ByVal MCIWNDF_NOOPEN
     Else
@@ -930,7 +981,7 @@ End Property
 
 Public Property Let AutoSizeWindow(ByVal Value As Boolean)
 PropAutoSizeWindow = Value
-If MCIWndHandle <> 0 Then
+If MCIWndHandle <> NULL_PTR Then
     If PropAutoSizeWindow = False Then
         SendMessage MCIWndHandle, MCIWNDM_CHANGESTYLES, MCIWNDF_NOAUTOSIZEWINDOW, ByVal MCIWNDF_NOAUTOSIZEWINDOW
     Else
@@ -948,7 +999,7 @@ End Property
 
 Public Property Let AutoSizeMovie(ByVal Value As Boolean)
 PropAutoSizeMovie = Value
-If MCIWndHandle <> 0 Then
+If MCIWndHandle <> NULL_PTR Then
     If PropAutoSizeMovie = False Then
         SendMessage MCIWndHandle, MCIWNDM_CHANGESTYLES, MCIWNDF_NOAUTOSIZEMOVIE, ByVal MCIWNDF_NOAUTOSIZEMOVIE
     Else
@@ -974,14 +1025,14 @@ If Value <= 0 Then
     End If
 End If
 PropTimerFreq = Value
-If MCIWndHandle <> 0 Then SendMessage MCIWndHandle, MCIWNDM_SETTIMERS, PropTimerFreq, ByVal CLng(PropTimerFreq)
+If MCIWndHandle <> NULL_PTR Then SendMessage MCIWndHandle, MCIWNDM_SETTIMERS, PropTimerFreq, ByVal CLng(PropTimerFreq)
 UserControl.PropertyChanged "TimerFreq"
 End Property
 
 Public Property Get Zoom() As Long
 Attribute Zoom.VB_Description = "Returns/sets the playback movie size based on a percentage of the authored size of the file."
-If MCIWndHandle <> 0 Then
-    Zoom = SendMessage(MCIWndHandle, MCIWNDM_GETZOOM, 0, ByVal 0&)
+If MCIWndHandle <> NULL_PTR Then
+    Zoom = CLng(SendMessage(MCIWndHandle, MCIWNDM_GETZOOM, 0, ByVal 0&))
 Else
     Zoom = PropZoom
 End If
@@ -997,7 +1048,7 @@ If Value <= 0 Then
     End If
 End If
 PropZoom = Value
-If MCIWndHandle <> 0 Then
+If MCIWndHandle <> NULL_PTR Then
     SendMessage MCIWndHandle, MCIWNDM_SETZOOM, 0, ByVal PropZoom
     Call UserControl_Resize
 End If
@@ -1016,7 +1067,7 @@ Select Case Value
     Case Else
         Err.Raise 380
 End Select
-If MCIWndHandle <> 0 Then
+If MCIWndHandle <> NULL_PTR Then
     SendMessage MCIWndHandle, MCIWNDM_CHANGESTYLES, MCIWNDF_SHOWALL, ByVal 0&
     Dim dwStyle As Long
     If PropCaption = MciCaptionNone Then
@@ -1051,7 +1102,7 @@ UserControl.PropertyChanged "Caption"
 End Property
 
 Private Sub CreateMCIWnd()
-If MCIWndHandle <> 0 Then Exit Sub
+If MCIWndHandle <> NULL_PTR Then Exit Sub
 Dim dwStyle As Long, dwExStyle As Long
 dwStyle = WS_CHILD Or WS_VISIBLE Or MCIWNDF_NOTIFYALL
 If PropCaption = MciCaptionNone Then
@@ -1082,35 +1133,35 @@ Select Case PropCaption
     Case MciCaptionMode
         dwStyle = dwStyle Or MCIWNDF_SHOWMODE
 End Select
-MCIWndHandle = CreateWindowEx(dwExStyle, StrPtr("MCIWndClass"), 0, dwStyle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, 0, App.hInstance, ByVal 0&)
+MCIWndHandle = CreateWindowEx(dwExStyle, StrPtr("MCIWndClass"), NULL_PTR, dwStyle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, NULL_PTR, App.hInstance, ByVal NULL_PTR)
 Me.Enabled = UserControl.Enabled
 Me.VisualStyles = PropVisualStyles
 Me.Repeat = PropRepeat
 Me.TimerFreq = PropTimerFreq
 Me.Zoom = PropZoom
 If MCIWndDesignMode = False Then
-    If MCIWndHandle <> 0 Then
-        If MCIWndBackColorBrush = 0 Then MCIWndBackColorBrush = CreateSolidBrush(WinColor(PropBackColor))
+    If MCIWndHandle <> NULL_PTR Then
+        If MCIWndBackColorBrush = NULL_PTR Then MCIWndBackColorBrush = CreateSolidBrush(WinColor(PropBackColor))
         Call ComCtlsSetSubclass(MCIWndHandle, Me, 1)
         Call ComCtlsSetSubclass(UserControl.hWnd, Me, 2)
     End If
 Else
-    If MCIWndHandle <> 0 Then
-        If MCIWndBackColorBrush = 0 Then MCIWndBackColorBrush = CreateSolidBrush(WinColor(PropBackColor))
+    If MCIWndHandle <> NULL_PTR Then
+        If MCIWndBackColorBrush = NULL_PTR Then MCIWndBackColorBrush = CreateSolidBrush(WinColor(PropBackColor))
         Call ComCtlsSetSubclass(MCIWndHandle, Me, 3)
     End If
 End If
 End Sub
 
 Private Sub DestroyMCIWnd()
-If MCIWndHandle = 0 Then Exit Sub
+If MCIWndHandle = NULL_PTR Then Exit Sub
 Call ComCtlsRemoveSubclass(MCIWndHandle)
 Call ComCtlsRemoveSubclass(UserControl.hWnd)
 SendMessage MCIWndHandle, WM_CLOSE, 0, ByVal 0& ' MCIWndDestroy
-MCIWndHandle = 0
-If MCIWndBackColorBrush <> 0 Then
+MCIWndHandle = NULL_PTR
+If MCIWndBackColorBrush <> NULL_PTR Then
     DeleteObject MCIWndBackColorBrush
-    MCIWndBackColorBrush = 0
+    MCIWndBackColorBrush = NULL_PTR
 End If
 End Sub
 
@@ -1118,68 +1169,68 @@ Public Sub Refresh()
 Attribute Refresh.VB_Description = "Forces a complete repaint of a object."
 Attribute Refresh.VB_UserMemId = -550
 UserControl.Refresh
-RedrawWindow UserControl.hWnd, 0, 0, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
-If MCIWndHandle <> 0 Then SendMessage MCIWndHandle, MCIWNDM_VALIDATEMEDIA, 0, ByVal 0&
+RedrawWindow UserControl.hWnd, NULL_PTR, NULL_PTR, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
+If MCIWndHandle <> NULL_PTR Then SendMessage MCIWndHandle, MCIWNDM_VALIDATEMEDIA, 0, ByVal 0&
 End Sub
 
 Public Function ShowOpen() As Boolean
 Attribute ShowOpen.VB_Description = "Displays the open dialog box."
-If MCIWndHandle <> 0 Then ShowOpen = CBool(SendMessage(MCIWndHandle, MCIWNDM_OPEN, 0, ByVal -1&) = 0)
+If MCIWndHandle <> NULL_PTR Then ShowOpen = CBool(SendMessage(MCIWndHandle, MCIWNDM_OPEN, 0, ByVal -1&) = 0)
 End Function
 
 Public Function ShowSave() As Boolean
 Attribute ShowSave.VB_Description = "Displays the save dialog box."
-If MCIWndHandle <> 0 Then ShowSave = CBool(SendMessage(MCIWndHandle, MCI_SAVE, 0, ByVal -1&) = 0)
+If MCIWndHandle <> NULL_PTR Then ShowSave = CBool(SendMessage(MCIWndHandle, MCI_SAVE, 0, ByVal -1&) = 0)
 End Function
 
 Public Function CanSave() As Boolean
 Attribute CanSave.VB_Description = "Determines if an MCI device can save."
-If MCIWndHandle <> 0 Then CanSave = CBool(SendMessage(MCIWndHandle, MCIWNDM_CAN_SAVE, 0, ByVal 0&) <> 0)
+If MCIWndHandle <> NULL_PTR Then CanSave = CBool(SendMessage(MCIWndHandle, MCIWNDM_CAN_SAVE, 0, ByVal 0&) <> 0)
 End Function
 
 Public Function Eject() As Boolean
 Attribute Eject.VB_Description = "Sends a command to an MCI device to eject its media."
-If MCIWndHandle <> 0 Then Eject = CBool(SendMessage(MCIWndHandle, MCIWNDM_EJECT, 0, ByVal 0&) = 0)
+If MCIWndHandle <> NULL_PTR Then Eject = CBool(SendMessage(MCIWndHandle, MCIWNDM_EJECT, 0, ByVal 0&) = 0)
 End Function
 
 Public Function CanEject() As Boolean
 Attribute CanEject.VB_Description = "Determines if an MCI device can eject its media."
-If MCIWndHandle <> 0 Then CanEject = CBool(SendMessage(MCIWndHandle, MCIWNDM_CAN_EJECT, 0, ByVal 0&) <> 0)
+If MCIWndHandle <> NULL_PTR Then CanEject = CBool(SendMessage(MCIWndHandle, MCIWNDM_CAN_EJECT, 0, ByVal 0&) <> 0)
 End Function
 
 Public Function PlayFrom(ByVal StartPosition As Long) As Boolean
 Attribute PlayFrom.VB_Description = "Plays the content of an MCI device from the specified start to the end of the content."
-If MCIWndHandle <> 0 Then PlayFrom = CBool(SendMessage(MCIWndHandle, MCIWNDM_PLAYFROM, 0, ByVal StartPosition) = 0)
+If MCIWndHandle <> NULL_PTR Then PlayFrom = CBool(SendMessage(MCIWndHandle, MCIWNDM_PLAYFROM, 0, ByVal StartPosition) = 0)
 End Function
 
 Public Function PlayTo(ByVal EndPosition As Long) As Boolean
 Attribute PlayTo.VB_Description = "Plays the content of an MCI device from the current position to the specified ending location."
-If MCIWndHandle <> 0 Then PlayTo = CBool(SendMessage(MCIWndHandle, MCIWNDM_PLAYTO, 0, ByVal EndPosition) = 0)
+If MCIWndHandle <> NULL_PTR Then PlayTo = CBool(SendMessage(MCIWndHandle, MCIWNDM_PLAYTO, 0, ByVal EndPosition) = 0)
 End Function
 
 Public Function PlayReverse() As Boolean
 Attribute PlayReverse.VB_Description = "Plays the current content in the reverse direction, beginning at the current position and ending at the beginning of the content."
-If MCIWndHandle <> 0 Then PlayReverse = CBool(SendMessage(MCIWndHandle, MCIWNDM_PLAYREVERSE, 0, ByVal 0&) = 0)
+If MCIWndHandle <> NULL_PTR Then PlayReverse = CBool(SendMessage(MCIWndHandle, MCIWNDM_PLAYREVERSE, 0, ByVal 0&) = 0)
 End Function
 
 Public Function CanPlay() As Boolean
 Attribute CanPlay.VB_Description = "Determines if an MCI device can play."
-If MCIWndHandle <> 0 Then CanPlay = CBool(SendMessage(MCIWndHandle, MCIWNDM_CAN_PLAY, 0, ByVal 0&) <> 0)
+If MCIWndHandle <> NULL_PTR Then CanPlay = CBool(SendMessage(MCIWndHandle, MCIWNDM_CAN_PLAY, 0, ByVal 0&) <> 0)
 End Function
 
 Public Function CanRecord() As Boolean
 Attribute CanRecord.VB_Description = "Determines if an MCI device supports recording."
-If MCIWndHandle <> 0 Then CanRecord = CBool(SendMessage(MCIWndHandle, MCIWNDM_CAN_RECORD, 0, ByVal 0&) <> 0)
+If MCIWndHandle <> NULL_PTR Then CanRecord = CBool(SendMessage(MCIWndHandle, MCIWNDM_CAN_RECORD, 0, ByVal 0&) <> 0)
 End Function
 
 Public Function CanConfig() As Boolean
 Attribute CanConfig.VB_Description = "Determines if an MCI device can display a configuration dialog box."
-If MCIWndHandle <> 0 Then CanConfig = CBool(SendMessage(MCIWndHandle, MCIWNDM_CAN_CONFIG, 0, ByVal 0&) <> 0)
+If MCIWndHandle <> NULL_PTR Then CanConfig = CBool(SendMessage(MCIWndHandle, MCIWNDM_CAN_CONFIG, 0, ByVal 0&) <> 0)
 End Function
 
 Public Function CanWindow() As Boolean
 Attribute CanWindow.VB_Description = "Determines if an MCI device supports window-oriented MCI commands."
-If MCIWndHandle <> 0 Then CanWindow = CBool(SendMessage(MCIWndHandle, MCIWNDM_CAN_WINDOW, 0, ByVal 0&) <> 0)
+If MCIWndHandle <> NULL_PTR Then CanWindow = CBool(SendMessage(MCIWndHandle, MCIWNDM_CAN_WINDOW, 0, ByVal 0&) <> 0)
 End Function
 
 Public Property Get Command() As String
@@ -1190,13 +1241,13 @@ End Property
 
 Public Property Let Command(ByVal Value As String)
 MCIWndCommand = Value
-If MCIWndHandle <> 0 Then SendMessage MCIWndHandle, MCIWNDM_SENDSTRING, 0, ByVal StrPtr(MCIWndCommand)
+If MCIWndHandle <> NULL_PTR Then SendMessage MCIWndHandle, MCIWNDM_SENDSTRING, 0, ByVal StrPtr(MCIWndCommand)
 End Property
 
 Public Property Get CommandReturn() As String
 Attribute CommandReturn.VB_Description = "Returns the string from previously executed MCI command."
 Attribute CommandReturn.VB_MemberFlags = "400"
-If MCIWndHandle <> 0 Then
+If MCIWndHandle <> NULL_PTR Then
     Dim Buffer As String
     Buffer = String(256, vbNullChar)
     SendMessage MCIWndHandle, MCIWNDM_RETURNSTRING, LenB(Buffer), ByVal StrPtr(Buffer)
@@ -1211,7 +1262,7 @@ End Property
 Public Property Get FileName() As String
 Attribute FileName.VB_Description = "Returns/sets the device or device element (file) to be opened."
 Attribute FileName.VB_MemberFlags = "400"
-If MCIWndHandle <> 0 Then
+If MCIWndHandle <> NULL_PTR Then
     Dim Buffer As String
     Buffer = String(256, vbNullChar)
     If SendMessage(MCIWndHandle, MCIWNDM_GETFILENAME, LenB(Buffer), ByVal StrPtr(Buffer)) = 0 Then
@@ -1221,13 +1272,13 @@ End If
 End Property
 
 Public Property Let FileName(ByVal Value As String)
-If MCIWndHandle <> 0 Then If SendMessage(MCIWndHandle, MCIWNDM_OPEN, 0, ByVal StrPtr(Value)) <> 0 Then Err.Raise 53
+If MCIWndHandle <> NULL_PTR Then If SendMessage(MCIWndHandle, MCIWNDM_OPEN, 0, ByVal StrPtr(Value)) <> 0 Then Err.Raise 53
 End Property
 
 Public Property Get DeviceAlias() As Long
 Attribute DeviceAlias.VB_Description = "Returns the device alias of the currently open device element."
 Attribute DeviceAlias.VB_MemberFlags = "400"
-If MCIWndHandle <> 0 Then DeviceAlias = SendMessage(MCIWndHandle, MCIWNDM_GETALIAS, 0, ByVal 0&)
+If MCIWndHandle <> NULL_PTR Then DeviceAlias = CLng(SendMessage(MCIWndHandle, MCIWNDM_GETALIAS, 0, ByVal 0&))
 End Property
 
 Public Property Let DeviceAlias(ByVal Value As Long)
@@ -1237,7 +1288,7 @@ End Property
 Public Property Get DeviceID() As Long
 Attribute DeviceID.VB_Description = "Returns the device ID of the currently open device element."
 Attribute DeviceID.VB_MemberFlags = "400"
-If MCIWndHandle <> 0 Then DeviceID = SendMessage(MCIWndHandle, MCIWNDM_GETDEVICEID, 0, ByVal 0&)
+If MCIWndHandle <> NULL_PTR Then DeviceID = CLng(SendMessage(MCIWndHandle, MCIWNDM_GETDEVICEID, 0, ByVal 0&))
 End Property
 
 Public Property Let DeviceID(ByVal Value As Long)
@@ -1247,7 +1298,7 @@ End Property
 Public Property Get Device() As String
 Attribute Device.VB_Description = "Returns/sets the type of the currently open device."
 Attribute Device.VB_MemberFlags = "400"
-If MCIWndHandle <> 0 Then
+If MCIWndHandle <> NULL_PTR Then
     Dim Buffer As String
     Buffer = String(256, vbNullChar)
     If SendMessage(MCIWndHandle, MCIWNDM_GETDEVICE, LenB(Buffer), ByVal StrPtr(Buffer)) = 0 Then
@@ -1267,13 +1318,13 @@ Err.Raise Number:=394, Description:="Property is write-only"
 End Property
 
 Public Property Let NewDevice(ByVal Value As String)
-If MCIWndHandle <> 0 Then SendMessage MCIWndHandle, MCIWNDM_NEW, 0, ByVal StrPtr(Value)
+If MCIWndHandle <> NULL_PTR Then SendMessage MCIWndHandle, MCIWNDM_NEW, 0, ByVal StrPtr(Value)
 End Property
 
 Public Property Get Error() As Long
 Attribute Error.VB_Description = "Returns the error code generated by the last command."
 Attribute Error.VB_MemberFlags = "400"
-If MCIWndHandle <> 0 Then Error = SendMessage(MCIWndHandle, MCIWNDM_GETERROR, 0, ByVal 0&)
+If MCIWndHandle <> NULL_PTR Then Error = CLng(SendMessage(MCIWndHandle, MCIWNDM_GETERROR, 0, ByVal 0&))
 End Property
 
 Public Property Let Error(ByVal Value As Long)
@@ -1283,7 +1334,7 @@ End Property
 Public Property Get ErrorString() As String
 Attribute ErrorString.VB_Description = "Returns the error string returned from the last MCI command."
 Attribute ErrorString.VB_MemberFlags = "400"
-If MCIWndHandle <> 0 Then
+If MCIWndHandle <> NULL_PTR Then
     Dim Buffer As String
     Buffer = String(256, vbNullChar)
     SendMessage MCIWndHandle, MCIWNDM_GETERROR, LenB(Buffer), ByVal StrPtr(Buffer)
@@ -1298,11 +1349,11 @@ End Property
 Public Property Get TimeFormat() As MciFormatConstants
 Attribute TimeFormat.VB_Description = "Returns/sets the current time format of an open MCI device."
 Attribute TimeFormat.VB_MemberFlags = "400"
-If MCIWndHandle <> 0 Then TimeFormat = SendMessage(MCIWndHandle, MCIWNDM_GETTIMEFORMAT, 0, ByVal 0&)
+If MCIWndHandle <> NULL_PTR Then TimeFormat = CLng(SendMessage(MCIWndHandle, MCIWNDM_GETTIMEFORMAT, 0, ByVal 0&))
 End Property
 
 Public Property Let TimeFormat(ByVal Value As MciFormatConstants)
-If MCIWndHandle <> 0 Then
+If MCIWndHandle <> NULL_PTR Then
     Dim pszFormat As String
     Select Case Value
         Case MciFormatMilliseconds
@@ -1337,7 +1388,7 @@ End Property
 Public Property Get Mode() As MciModeConstants
 Attribute Mode.VB_Description = "Returns the mode of the current device."
 Attribute Mode.VB_MemberFlags = "400"
-If MCIWndHandle <> 0 Then Mode = SendMessage(MCIWndHandle, MCIWNDM_GETMODE, 0, ByVal 0&)
+If MCIWndHandle <> NULL_PTR Then Mode = CLng(SendMessage(MCIWndHandle, MCIWNDM_GETMODE, 0, ByVal 0&))
 End Property
 
 Public Property Let Mode(ByVal Value As MciModeConstants)
@@ -1347,7 +1398,7 @@ End Property
 Public Property Get ModeString() As String
 Attribute ModeString.VB_Description = "Returns the mode of the current device."
 Attribute ModeString.VB_MemberFlags = "400"
-If MCIWndHandle <> 0 Then
+If MCIWndHandle <> NULL_PTR Then
     Dim Buffer As String
     Buffer = String(256, vbNullChar)
     SendMessage MCIWndHandle, MCIWNDM_GETMODE, LenB(Buffer), ByVal StrPtr(Buffer)
@@ -1362,7 +1413,7 @@ End Property
 Public Property Get Position() As Long
 Attribute Position.VB_Description = "Returns the current position of an open MCI device in the current time format."
 Attribute Position.VB_MemberFlags = "400"
-If MCIWndHandle <> 0 Then Position = SendMessage(MCIWndHandle, MCIWNDM_GETPOSITION, 0, ByVal 0&)
+If MCIWndHandle <> NULL_PTR Then Position = CLng(SendMessage(MCIWndHandle, MCIWNDM_GETPOSITION, 0, ByVal 0&))
 End Property
 
 Public Property Let Position(ByVal Value As Long)
@@ -1372,7 +1423,7 @@ End Property
 Public Property Get PositionString() As String
 Attribute PositionString.VB_Description = "Returns the current position of an open MCI device. If the device supports tracks, the position is returned in tracks, minutes, seconds, and frames; otherwise, it is returned as a string."
 Attribute PositionString.VB_MemberFlags = "400"
-If MCIWndHandle <> 0 Then
+If MCIWndHandle <> NULL_PTR Then
     Dim Buffer As String
     Buffer = String(256, vbNullChar)
     SendMessage MCIWndHandle, MCIWNDM_GETPOSITION, LenB(Buffer), ByVal StrPtr(Buffer)
@@ -1387,7 +1438,7 @@ End Property
 Public Property Get StartPositon() As Long
 Attribute StartPositon.VB_Description = "Returns the start positon of the device element currently opened in the current time format."
 Attribute StartPositon.VB_MemberFlags = "400"
-If MCIWndHandle <> 0 Then StartPositon = SendMessage(MCIWndHandle, MCIWNDM_GETSTART, 0, ByVal 0&)
+If MCIWndHandle <> NULL_PTR Then StartPositon = CLng(SendMessage(MCIWndHandle, MCIWNDM_GETSTART, 0, ByVal 0&))
 End Property
 
 Public Property Let StartPositon(ByVal Value As Long)
@@ -1397,7 +1448,7 @@ End Property
 Public Property Get Length() As Long
 Attribute Length.VB_Description = "Returns the length of the device element currently opened in the current time format."
 Attribute Length.VB_MemberFlags = "400"
-If MCIWndHandle <> 0 Then Length = SendMessage(MCIWndHandle, MCIWNDM_GETLENGTH, 0, ByVal 0&)
+If MCIWndHandle <> NULL_PTR Then Length = CLng(SendMessage(MCIWndHandle, MCIWNDM_GETLENGTH, 0, ByVal 0&))
 End Property
 
 Public Property Let Length(ByVal Value As Long)
@@ -1407,7 +1458,7 @@ End Property
 Public Property Get EndPosition() As Long
 Attribute EndPosition.VB_Description = "Returns the end positon of the device element currently opened in the current time format."
 Attribute EndPosition.VB_MemberFlags = "400"
-If MCIWndHandle <> 0 Then EndPosition = SendMessage(MCIWndHandle, MCIWNDM_GETEND, 0, ByVal 0&)
+If MCIWndHandle <> NULL_PTR Then EndPosition = CLng(SendMessage(MCIWndHandle, MCIWNDM_GETEND, 0, ByVal 0&))
 End Property
 
 Public Property Let EndPosition(ByVal Value As Long)
@@ -1417,24 +1468,28 @@ End Property
 Public Property Get Volume() As Long
 Attribute Volume.VB_Description = "Returns/sets the audio volume level of the MCI device. Specify 1000 for the normal volume level. Specify larger values for a louder volume level and smaller values for a more quiet volume level."
 Attribute Volume.VB_MemberFlags = "400"
-If MCIWndHandle <> 0 Then Volume = SendMessage(MCIWndHandle, MCIWNDM_GETVOLUME, 0, ByVal 0&)
+If MCIWndHandle <> NULL_PTR Then Volume = CLng(SendMessage(MCIWndHandle, MCIWNDM_GETVOLUME, 0, ByVal 0&))
 End Property
 
 Public Property Let Volume(ByVal Value As Long)
-If MCIWndHandle <> 0 Then SendMessage MCIWndHandle, MCIWNDM_SETVOLUME, 0, ByVal Value
+If MCIWndHandle <> NULL_PTR Then SendMessage MCIWndHandle, MCIWNDM_SETVOLUME, 0, ByVal Value
 End Property
 
 Public Property Get Speed() As Long
 Attribute Speed.VB_Description = "Returns/sets the speed of the MCI device. Specify 1000 for the normal speed. Specify larger values for faster speeds and smaller values for slower speeds."
 Attribute Speed.VB_MemberFlags = "400"
-If MCIWndHandle <> 0 Then Speed = SendMessage(MCIWndHandle, MCIWNDM_GETSPEED, 0, ByVal 0&)
+If MCIWndHandle <> NULL_PTR Then Speed = CLng(SendMessage(MCIWndHandle, MCIWNDM_GETSPEED, 0, ByVal 0&))
 End Property
 
 Public Property Let Speed(ByVal Value As Long)
-If MCIWndHandle <> 0 Then SendMessage MCIWndHandle, MCIWNDM_SETSPEED, 0, ByVal Value
+If MCIWndHandle <> NULL_PTR Then SendMessage MCIWndHandle, MCIWNDM_SETSPEED, 0, ByVal Value
 End Property
 
+#If VBA7 Then
+Private Function ISubclass_Message(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
+#Else
 Private Function ISubclass_Message(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal dwRefData As Long) As Long
+#End If
 Select Case dwRefData
     Case 1
         ISubclass_Message = WindowProcControl(hWnd, wMsg, wParam, lParam)
@@ -1445,7 +1500,7 @@ Select Case dwRefData
 End Select
 End Function
 
-Private Function WindowProcControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_SETFOCUS
         If wParam <> UserControl.hWnd Then SetFocusAPI UserControl.hWnd: Exit Function
@@ -1453,7 +1508,7 @@ Select Case wMsg
     Case WM_KILLFOCUS
         Call DeActivateIPAO
     Case WM_ERASEBKGND
-        If MCIWndBackColorBrush <> 0 Then
+        If MCIWndBackColorBrush <> NULL_PTR Then
             Dim RC As RECT
             GetClientRect hWnd, RC
             FillRect wParam, RC, MCIWndBackColorBrush
@@ -1462,7 +1517,7 @@ Select Case wMsg
         End If
     Case WM_KEYDOWN, WM_KEYUP, WM_SYSKEYDOWN, WM_SYSKEYUP
         Dim KeyCode As Integer
-        KeyCode = wParam And &HFF&
+        KeyCode = CLng(wParam) And &HFF&
         If wMsg = WM_KEYDOWN Or wMsg = WM_KEYUP Then
             If wMsg = WM_KEYDOWN Then
                 RaiseEvent KeyDown(KeyCode, GetShiftStateFromMsg())
@@ -1482,7 +1537,7 @@ Select Case wMsg
             KeyChar = CUIntToInt(MCIWndCharCodeCache And &HFFFF&)
             MCIWndCharCodeCache = 0
         Else
-            KeyChar = CUIntToInt(wParam And &HFFFF&)
+            KeyChar = CUIntToInt(CLng(wParam) And &HFFFF&)
         End If
         RaiseEvent KeyPress(KeyChar)
         wParam = CIntToUInt(KeyChar)
@@ -1491,7 +1546,7 @@ Select Case wMsg
             WindowProcControl = 1
         Else
             Dim UTF16 As String
-            UTF16 = UTF32CodePoint_To_UTF16(wParam)
+            UTF16 = UTF32CodePoint_To_UTF16(CLng(wParam))
             If Len(UTF16) = 1 Then
                 SendMessage hWnd, WM_CHAR, CIntToUInt(AscW(UTF16)), ByVal lParam
             ElseIf Len(UTF16) = 2 Then
@@ -1507,9 +1562,9 @@ Select Case wMsg
     Case WM_LBUTTONDOWN
         If GetFocus() <> hWnd Then SetFocusAPI UserControl.hWnd ' UCNoSetFocusFwd not applicable
     Case WM_SETCURSOR
-        If LoWord(lParam) = HTCLIENT Then
+        If LoWord(CLng(lParam)) = HTCLIENT Then
             If MousePointerID(PropMousePointer) <> 0 Then
-                SetCursor LoadCursor(0, MousePointerID(PropMousePointer))
+                SetCursor LoadCursor(NULL_PTR, MousePointerID(PropMousePointer))
                 WindowProcControl = 1
                 Exit Function
             ElseIf PropMousePointer = 99 Then
@@ -1523,9 +1578,9 @@ Select Case wMsg
     Case WM_SYSCOMMAND
         If (wParam And &HFFF0&) = SC_MOVE Then Exit Function
     Case MM_MCINOTIFY
-        RaiseEvent Notify(wParam)
+        RaiseEvent Notify(CLng(wParam))
     Case MM_MCISIGNAL
-        RaiseEvent Signal(wParam, lParam)
+        RaiseEvent Signal(CLng(wParam), CLng(lParam))
     Case MCIWNDM_OPEN, MCI_SAVE
         If lParam = -1 Then ' Alias to request for a file name
             ' The intrinsic dialogs are obselete and not supported prior Windows 7.
@@ -1615,12 +1670,12 @@ Select Case wMsg
 End Select
 End Function
 
-Private Function WindowProcUserControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcUserControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case MCIWNDM_NOTIFYMODE
-        If wParam = MCIWndHandle Then RaiseEvent ModeChange(lParam)
+        If wParam = MCIWndHandle Then RaiseEvent ModeChange(CLng(lParam))
     Case MCIWNDM_NOTIFYPOS
-        If wParam = MCIWndHandle Then RaiseEvent PositionChange(lParam)
+        If wParam = MCIWndHandle Then RaiseEvent PositionChange(CLng(lParam))
     Case MCIWNDM_NOTIFYSIZE
         If wParam = MCIWndHandle Then
             Dim WndRect As RECT
@@ -1651,13 +1706,13 @@ Select Case wMsg
             RaiseEvent MediaChange(NewFileName)
         End If
     Case MCIWNDM_NOTIFYERROR
-        If wParam = MCIWndHandle Then RaiseEvent Error(lParam)
+        If wParam = MCIWndHandle Then RaiseEvent Error(CLng(lParam))
 End Select
 WindowProcUserControl = ComCtlsDefaultProc(hWnd, wMsg, wParam, lParam)
 If wMsg = WM_SETFOCUS And UCNoSetFocusFwd = False Then SetFocusAPI MCIWndHandle
 End Function
 
-Private Function WindowProcControlDesignMode(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcControlDesignMode(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_ERASEBKGND
         WindowProcControlDesignMode = WindowProcControl(hWnd, wMsg, wParam, lParam)

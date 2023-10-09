@@ -12,11 +12,23 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
-Private ShadowObjectPointer As Long
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
+Private ShadowObjectPointer As LongPtr
 Private PropListItem As Collection
 
 Private Function ShadowListView() As ListView
-ComCtlsPtrToShadowObj ShadowListView, ShadowObjectPointer
+ComCtlsObjSetAddRef ShadowListView, ShadowObjectPointer
 End Function
 
 Private Sub Class_Initialize()
@@ -37,7 +49,11 @@ Friend Sub FInit(ByVal Object As ListView)
 ShadowObjectPointer = ObjPtr(Object)
 End Sub
 
+#If VBA7 Then
+Friend Sub FChangeKey(ByVal Ptr As LongPtr, ByRef OldKey As String, ByVal NewKey As String)
+#Else
 Friend Sub FChangeKey(ByVal Ptr As Long, ByRef OldKey As String, ByVal NewKey As String)
+#End If
 Dim Item As Variant, i As Long
 For Each Item In PropListItem
     i = i + 1
@@ -71,7 +87,7 @@ Else
     Call ComCtlsImlListImageIndex(ShadowListView, ShadowListView.SmallIcons, SmallIcon, SmallIconIndex)
 End If
 Dim NewListItem As New LvwListItem
-Dim Ptr As Long
+Dim Ptr As LongPtr
 Ptr = ObjPtr(NewListItem)
 If Index = 0 Then Index = PropListItem.Count + 1
 NewListItem.FInit ShadowObjectPointer, Index, Key, Ptr, Text, Icon, IconIndex, SmallIcon, SmallIconIndex
@@ -89,9 +105,9 @@ Attribute Item.VB_Description = "Returns a list item given its index or key."
 Attribute Item.VB_UserMemId = 0
 Select Case VarType(Index)
     Case vbLong, vbInteger, vbByte, vbDouble, vbSingle
-        Dim Ptr As Long
+        Dim Ptr As LongPtr
         Ptr = ShadowListView.FListItemPtr(Index)
-        If Ptr <> 0 Then
+        If Ptr <> NULL_PTR Then
             Set Item = PtrToObj(Ptr)
         Else
             Err.Raise Number:=35600, Description:="Index out of bounds"
@@ -126,9 +142,9 @@ Public Sub Remove(ByVal Index As Variant)
 Attribute Remove.VB_Description = "Removes a list item from the collection."
 Select Case VarType(Index)
     Case vbLong, vbInteger, vbByte, vbDouble, vbSingle
-        Dim Ptr As Long
+        Dim Ptr As LongPtr
         Ptr = ShadowListView.FListItemPtr(Index)
-        If Ptr <> 0 Then
+        If Ptr <> NULL_PTR Then
             Dim Item As Variant, i As Long
             ShadowListView.FListItemsRemove Index
             For Each Item In PropListItem

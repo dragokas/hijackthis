@@ -12,17 +12,33 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
-Private ShadowObjectPointer As Long
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
+Private ShadowObjectPointer As LongPtr
 Private PropIndex As Long, PropKey As String
 Private PropTag As Variant
 Private PropImage As Variant, PropImageIndex As Long
 Private PropSelImage As Variant, PropSelImageIndex As Long
 
 Private Function ShadowImageCombo() As ImageCombo
-ComCtlsPtrToShadowObj ShadowImageCombo, ShadowObjectPointer
+ComCtlsObjSetAddRef ShadowImageCombo, ShadowObjectPointer
 End Function
 
+#If VBA7 Then
+Friend Sub FInit(ByVal ObjectPointer As LongPtr, ByRef IndexPtr As LongPtr, ByVal Key As String, ByVal Image As Variant, ByVal ImageIndex As Long, ByVal SelImage As Variant, ByVal SelImageIndex As Long)
+#Else
 Friend Sub FInit(ByVal ObjectPointer As Long, ByRef IndexPtr As Long, ByVal Key As String, ByVal Image As Variant, ByVal ImageIndex As Long, ByVal SelImage As Variant, ByVal SelImageIndex As Long)
+#End If
 ShadowObjectPointer = ObjectPointer
 IndexPtr = VarPtr(PropIndex)
 PropKey = Key
@@ -141,11 +157,20 @@ Public Property Let Selected(ByVal Value As Boolean)
 ShadowImageCombo.FComboItemSelected(PropIndex) = Value
 End Property
 
+#If VBA7 Then
+Public Property Get Data() As LongPtr
+Attribute Data.VB_Description = "Returns/sets a specific number of the combo item."
+#Else
 Public Property Get Data() As Long
 Attribute Data.VB_Description = "Returns/sets a specific number of the combo item."
+#End If
 Data = ShadowImageCombo.FComboItemData(PropIndex)
 End Property
 
+#If VBA7 Then
+Public Property Let Data(ByVal Value As LongPtr)
+#Else
 Public Property Let Data(ByVal Value As Long)
+#End If
 ShadowImageCombo.FComboItemData(PropIndex) = Value
 End Property

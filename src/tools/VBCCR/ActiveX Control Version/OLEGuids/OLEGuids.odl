@@ -113,7 +113,7 @@ library OLEGuids
 	{
 		HRESULT SetClientSite([in] IOleClientSite *pClientSite);
 		HRESULT GetClientSite([out, retval] IOleClientSite **ppClientSite);
-		HRESULT SetHostNames([in] LPWSTR szContainerApp, [in] LPWSTR szContainerObj);
+		HRESULT SetHostNames([in] LONG lpszContainerApp, [in] LONG lpszContainerObj);
 		HRESULT Close([in] LONG dwSaveOption);
 		HRESULT SetMoniker([in] LONG dwWhichMoniker, [in] LONG lpmk);
 		HRESULT GetMoniker([in] LONG dwAssign, [in] LONG dwWhichMoniker, [out, retval] LONG *lppmk);
@@ -181,7 +181,7 @@ library OLEGuids
 		HRESULT GetBorder([in] LONG lpRectBorder);
 		HRESULT RequestBorderSpace([in] LONG pBorderWidths);
 		HRESULT SetBorderSpace([in] LONG pBorderWidths);
-		HRESULT SetActiveObject([in] IOleInPlaceActiveObject *pActiveObject, [in] LPWSTR pszObjName);
+		HRESULT SetActiveObject([in] IOleInPlaceActiveObject *pActiveObject, [in] LONG lpszObjName);
     	};
 	[
 		uuid(00000116-0000-0000-C000-000000000046),
@@ -217,7 +217,7 @@ library OLEGuids
 		typedef IDispatch *LPDISPATCH;
 		HRESULT GetTypeInfoCount([out] LONG *pctInfo);
     		HRESULT GetTypeInfo([in] LONG itinfo, [in] LONG lcid, [out] LONG *pptinfo);
-    		HRESULT GetIDsOfNames([in] REFIID riid, [in] LPWSTR *rgszNames, [in] LONG cNames, [in] LONG lcid, [in, out] LONG *rgDispID);
+    		HRESULT GetIDsOfNames([in] REFIID riid, [in] LONG *rgszNames, [in] LONG cNames, [in] LONG lcid, [in, out] LONG *rgDispID);
     		HRESULT Invoke([in] LONG DispIDMember, [in] REFIID riid, [in] LONG lcid, [in] SHORT wFlags, [in] DISPPARAMS *pdispparams, [in, out] VARIANT *pvarResult, [out] EXCEPINFO *pexcepinfo, [out] LONG *puArgErr);
 	};
 	[
@@ -226,7 +226,7 @@ library OLEGuids
 	]
 	interface IPerPropertyBrowsing : IUnknown
 	{
-		LONG GetDisplayString([in] LONG DispID, [out] LONG *pDisplayName);
+		LONG GetDisplayString([in] LONG DispID, [out] LONG *lpDisplayName);
 		LONG MapPropertyToPage([in] LONG DispID, [out] OLECLSID *pCLSID);
 		LONG GetPredefinedStrings([in] LONG DispID, [out] OLECALPOLESTR *pCaStringsOut, [out] OLECADWORD *pCaCookiesOut);
 		LONG GetPredefinedValue([in] LONG DispID, [in] LONG dwCookie, [out] VARIANT *pVarOut);
@@ -331,9 +331,9 @@ library OLEGuids
 		LONG GetLinkCount();
 		LONG GetObject([in] LONG iob, [in] void *pREOBJECT, [in] LONG dwFlags);
 		LONG InsertObject([in] void *pREOBJECT);
-		LONG ConvertObject([in] LONG iob, [in] OLECLSID *pCLSIDNew, [in] LPSTR pstrUserTypeNew);
+		LONG ConvertObject([in] LONG iob, [in] OLECLSID *pCLSIDNew, [in] LONG lpstrUserTypeNew);
 		LONG ActivateAs([in] OLECLSID *pCLSID, [in] OLECLSID *pCLSIDAs);
-		LONG SetHostNames([in] LPSTR pstrContainerApp, [in] LPSTR pstrContainerObj);
+		LONG SetHostNames([in] LONG lpstrContainerApp, [in] LONG lpstrContainerObj);
 		LONG SetLinkAvailable([in] LONG iob, [in] LONG fAvailable);
 		LONG SetDvaspect([in] LONG iob, [in] LONG dvAspect);
 		LONG HandsOffStorage([in] LONG iob);

@@ -1044,9 +1044,9 @@ End Function
 
 Public Sub GetHosts()
     If bIsWinNT Then
-        sHostsFile = Reg.GetString(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\Tcpip\Parameters", "DataBasePath")
-        'sHostsFile = replace$(sHostsFile, "%SystemRoot%", sWinDir, , , vbTextCompare)
-        sHostsFile = EnvironW(sHostsFile) & "\hosts"
+        g_HostsFile = Reg.GetString(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\Tcpip\Parameters", "DataBasePath") & "\hosts"
+    Else
+        g_HostsFile = sWinDir & "\hosts"
     End If
 End Sub
 
@@ -2054,7 +2054,7 @@ Public Sub StartScan()
             'Append Header to the end and close debug log file
             Dim b() As Byte
             b = sEDS_Time & vbCrLf & vbCrLf
-            PutW g_hDebugLog, 1&, VarPtr(b(0)), UBound(b) + 1, doAppend:=True
+            PutW_NoLog g_hDebugLog, 1&, VarPtr(b(0)), UBound(b) + 1, doAppend:=True
         End If
     End If
     
@@ -2111,6 +2111,17 @@ Public Sub CloseHashProgressbar()
     
     g_bCalcHashInProgress = False
     
+End Sub
+
+Public Sub SetProgressBarOnFront()
+    frmMain.lblStatus.Visible = True
+    frmMain.lblStatus.ZOrder 0 'on top
+    frmMain.lblInfo(0).Visible = False
+    frmMain.lblInfo(1).Visible = False
+    frmMain.shpBackground.Visible = True
+    frmMain.shpProgress.Visible = True
+    frmMain.shpProgress.ZOrder 1
+    frmMain.shpBackground.ZOrder 1
 End Sub
 
 Public Sub SetProgressBar(lMaxTags As Long)
@@ -3010,9 +3021,12 @@ Private Sub CheckFileItems(ByVal sRule$)
                     If Not (HE.Redirected And sParam = "UserInit" And StrComp(sData, BuildPath(sWinSysDirWow64, "userinit.exe")) = 0) Then
                         
                         SignVerifyJack sData, result.SignResult
+                        
                         sHit = BitPrefix("F2", HE) & " - " & HE.HiveNameAndSID & "\..\WinLogon: " & _
                             "[" & sParam & "] = " & sData & FormatSign(result.SignResult)
+                            
                         If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sData)
+                        
                         If Not IsOnIgnoreList(sHit) Then
                             With result
                                 .Section = "F2"
@@ -3196,7 +3210,7 @@ Public Sub CheckO1Item_ICS()
     If bIsWin9x Then sHostsFileICS_Default = sWinDir & "\hosts.ics"
     If bIsWinNT Then sHostsFileICS_Default = sWinDir & "\System32\drivers\etc\hosts.ics"
     
-    sHostsFileICS = sHostsFile & ".ics"
+    sHostsFileICS = g_HostsFile & ".ics"
     
     If StrComp(sHostsFileICS, sHostsFileICS_Default) <> 0 Then
         NonDefaultPath = True
@@ -3377,9 +3391,9 @@ Public Sub CheckO1Item()
     
     Dbg "2"
     
-    If StrComp(sHostsFile, HostsDefaultFile) <> 0 Then
+    If StrComp(g_HostsFile, HostsDefaultFile) <> 0 Then
         'sHit = "O1 - Hosts file is located at: " & sHostsFile
-        sHit = "O1 - " & Translate(271) & ": " & sHostsFile
+        sHit = "O1 - " & Translate(271) & ": " & g_HostsFile
         If Not IsOnIgnoreList(sHit) Then
             With result
                 .Section = "O1"
@@ -3397,12 +3411,12 @@ Public Sub CheckO1Item()
     Dbg "3"
     
     If NonDefaultPath Then                              'Note: \System32\drivers\etc is not under Wow6432 redirection
-        ToggleWow64FSRedirection False, sHostsFile
+        ToggleWow64FSRedirection False, g_HostsFile
     End If
     
     Dbg "4"
     
-    cFileSize = FileLenW(sHostsFile)
+    cFileSize = FileLenW(g_HostsFile)
     
     If cFileSize = 0 Then
         If NonDefaultPath Then
@@ -3415,7 +3429,7 @@ Public Sub CheckO1Item()
                 With result
                     .Section = "O1"
                     .HitLineW = sHit
-                    AddFileToFix .File, BACKUP_FILE, sHostsFile
+                    AddFileToFix .File, BACKUP_FILE, g_HostsFile
                     .CureType = CUSTOM_BASED
                 End With
                 AddToScanResults result
@@ -3428,9 +3442,9 @@ Public Sub CheckO1Item()
     
     Dbg "5"
     
-    If OpenW(sHostsFile, FOR_READ, hFile, g_FileBackupFlag) Then
+    If OpenW(g_HostsFile, FOR_READ, hFile, g_FileBackupFlag) Then
         CloseW hFile
-        sLines = ReadFileContents(sHostsFile, False) 'speed up
+        sLines = ReadFileContents(g_HostsFile, False)  'speed up
         ToggleWow64FSRedirection True
     Else
         ToggleWow64FSRedirection True
@@ -3441,7 +3455,7 @@ Public Sub CheckO1Item()
             With result
                 .Section = "O1"
                 .HitLineW = sHit
-                AddFileToFix .File, BACKUP_FILE, sHostsFile
+                AddFileToFix .File, BACKUP_FILE, g_HostsFile
                 .CureType = CUSTOM_BASED
             End With
             AddToScanResults result
@@ -3464,7 +3478,7 @@ Public Sub CheckO1Item()
             With result
                 .Section = "O1"
                 .HitLineW = sHit
-                AddFileToFix .File, BACKUP_FILE, sHostsFile
+                AddFileToFix .File, BACKUP_FILE, g_HostsFile
                 .CureType = CUSTOM_BASED
             End With
             AddToScanResults result
@@ -3532,7 +3546,7 @@ Public Sub CheckO1Item()
                     With result
                         .Section = "O1"
                         .HitLineW = sHit
-                        AddFileToFix .File, BACKUP_FILE, sHostsFile
+                        AddFileToFix .File, BACKUP_FILE, g_HostsFile
                         .CureType = CUSTOM_BASED
                     End With
                     AddToScanResults result
@@ -3560,7 +3574,7 @@ Public Sub CheckO1Item()
             With result
                 .Section = "O1"
                 .HitLineW = sHit
-                AddFileToFix .File, BACKUP_FILE, sHostsFile
+                AddFileToFix .File, BACKUP_FILE, g_HostsFile
                 .CureType = CUSTOM_BASED
             End With
             'limit for first and last 20 entries only to view on results window
@@ -3619,7 +3633,7 @@ CheckHostsDefault:
                         With result
                             .Section = "O1"
                             .HitLineW = sHit
-                            AddFileToFix .File, BACKUP_FILE, sHostsFile
+                            AddFileToFix .File, BACKUP_FILE, g_HostsFile
                             .CureType = CUSTOM_BASED
                         End With
                         AddToScanResults result
@@ -3749,11 +3763,11 @@ Public Sub FixO1Item(sItem$, result As SCAN_RESULT)
         
         sHosts = HostsDefaultFile   'default hosts path
     Else
-        sHosts = sHostsFile         'path that may be redirected
+        sHosts = g_HostsFile         'path that may be redirected
     End If
     
     If StrBeginWith(sItem, "O1 - Hosts.ICS: ") Then
-        sHosts = sHostsFile & ".ics"
+        sHosts = g_HostsFile & ".ics"
         isICS = True
     ElseIf StrBeginWith(sItem, "O1 - Hosts.ICS default: ") Then
         sHosts = HostsDefaultFile & ".ics"
@@ -7173,7 +7187,7 @@ Sub CheckPolicyScripts()
     '* for "Local PC\User" the mirror is located under: C:\Windows\System32\GroupPolicyUsers\<SID>
     
     Dim sHit$, result As SCAN_RESULT
-    Dim pos As Long, X As Long, Y As Long, i As Long
+    Dim pos As Long, x As Long, y As Long, i As Long
     Dim vType As Variant, vFile As Variant
     Dim sFile$, sArgs$, sAlias$, sHash$, aKeyX$(), aKeyY$(), sKey$, aFiles$(), sIniPath$, sIniPathPS$, sFileSysPath$
     Dim oFiles As clsTrickHashTable
@@ -7189,17 +7203,17 @@ Sub CheckPolicyScripts()
 
         Do While HE.MoveNext
 
-            For X = 1 To Reg.EnumSubKeysToArray(HE.Hive, HE.Key, aKeyX(), HE.Redirected, False, False, True)
+            For x = 1 To Reg.EnumSubKeysToArray(HE.Hive, HE.Key, aKeyX(), HE.Redirected, False, False, True)
 
-                sFileSysPath = Reg.GetString(HE.Hive, HE.Key & "\" & aKeyX(X), "FileSysPath")
+                sFileSysPath = Reg.GetString(HE.Hive, HE.Key & "\" & aKeyX(x), "FileSysPath")
                 
                 sIniPath = EnvironW(sFileSysPath)
                 sIniPath = sFileSysPath & "\Scripts\scripts.ini"
                 sIniPathPS = sFileSysPath & "\Scripts\psscripts.ini"
                 
-                For Y = 1 To Reg.EnumSubKeysToArray(HE.Hive, HE.Key & "\" & aKeyX(X), aKeyY(), HE.Redirected, False, False, True)
+                For y = 1 To Reg.EnumSubKeysToArray(HE.Hive, HE.Key & "\" & aKeyX(x), aKeyY(), HE.Redirected, False, False, True)
 
-                    sKey = HE.Key & "\" & aKeyX(X) & "\" & aKeyY(Y)
+                    sKey = HE.Key & "\" & aKeyX(x) & "\" & aKeyY(y)
 
                     If Reg.ValueExists(HE.Hive, sKey, "Script", HE.Redirected) Then
 
@@ -7218,7 +7232,7 @@ Sub CheckPolicyScripts()
                         
                         SignVerifyJack sFile, result.SignResult
                         
-                        sHit = sAlias & HE.HiveNameAndSID & "\..\Group Policy\Scripts\" & vType & "\" & aKeyX(X) & "\" & aKeyY(Y) & _
+                        sHit = sAlias & HE.HiveNameAndSID & "\..\Group Policy\Scripts\" & vType & "\" & aKeyX(x) & "\" & aKeyY(y) & _
                             ": [" & "Script" & "] = " & ConcatFileArg(sFile, sArgs) & FormatSign(result.SignResult)
                         
                         If g_bCheckSum Then sHash = GetFileCheckSum(sFile): sHit = sHit & sHash
@@ -7233,23 +7247,23 @@ Sub CheckPolicyScripts()
                                 
                                 If 1 = Reg.GetDword(HE.Hive, sKey, "IsPowershell", HE.Redirected) Then
                                     
-                                    AddIniToFix .Reg, REMOVE_VALUE_INI, sIniPathPS, vType, aKeyY(Y) & "CmdLine"
-                                    AddIniToFix .Reg, REMOVE_VALUE_INI, sIniPathPS, vType, aKeyY(Y) & "Parameters"
+                                    AddIniToFix .Reg, REMOVE_VALUE_INI, sIniPathPS, vType, aKeyY(y) & "CmdLine"
+                                    AddIniToFix .Reg, REMOVE_VALUE_INI, sIniPathPS, vType, aKeyY(y) & "Parameters"
                                 Else
-                                    AddIniToFix .Reg, REMOVE_VALUE_INI, sIniPath, vType, aKeyY(Y) & "CmdLine"
-                                    AddIniToFix .Reg, REMOVE_VALUE_INI, sIniPath, vType, aKeyY(Y) & "Parameters"
+                                    AddIniToFix .Reg, REMOVE_VALUE_INI, sIniPath, vType, aKeyY(y) & "CmdLine"
+                                    AddIniToFix .Reg, REMOVE_VALUE_INI, sIniPath, vType, aKeyY(y) & "Parameters"
                                 End If
                                 
                                 'remove state data
                                 If vType = "Startup" Or vType = "Shutdown" Then
                                     'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\State\Machine\Scripts\Startup\0\0
-                                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\State\Machine\Scripts\" & vType & "\" & aKeyX(X) & "\" & aKeyY(Y), , , HE.Redirected
-                                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Group Policy\State\Machine\Scripts\" & vType & "\" & aKeyX(X) & "\" & aKeyY(Y), , , HE.Redirected
+                                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\State\Machine\Scripts\" & vType & "\" & aKeyX(x) & "\" & aKeyY(y), , , HE.Redirected
+                                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Group Policy\State\Machine\Scripts\" & vType & "\" & aKeyX(x) & "\" & aKeyY(y), , , HE.Redirected
                                 
                                 Else ' vType = "Logon" Or vType = "Logoff" Then
                                     'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\State\S-1-5-21-4161311594-4244952198-1204953518-1000\Scripts\Logon\0\0
-                                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\State\" & HE.SID & "\Scripts\" & vType & "\" & aKeyX(X) & "\" & aKeyY(Y), , , HE.Redirected
-                                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Group Policy\State\" & HE.SID & "\Scripts\" & vType & "\" & aKeyX(X) & "\" & aKeyY(Y), , , HE.Redirected
+                                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\State\" & HE.SID & "\Scripts\" & vType & "\" & aKeyX(x) & "\" & aKeyY(y), , , HE.Redirected
+                                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Group Policy\State\" & HE.SID & "\Scripts\" & vType & "\" & aKeyX(x) & "\" & aKeyY(y), , , HE.Redirected
                                 End If
                                 AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sFile, sArgs
                                 .CureType = FILE_BASED Or REGISTRY_BASED
@@ -7420,7 +7434,7 @@ Public Sub PolicyScripts_RebuildChain()
     Dim vType, vFile
     Dim sKey As String, sIniPath As String, sName As String
     Dim aFiles() As String, aKeyX() As String, aKeyY() As String
-    Dim X As Long, Y As Long, i As Long, idx As Long
+    Dim x As Long, y As Long, i As Long, idx As Long
     
     Dim oFiles As clsTrickHashTable
     Set oFiles = New clsTrickHashTable
@@ -7435,20 +7449,20 @@ Public Sub PolicyScripts_RebuildChain()
         
         Do While HE.MoveNext
         
-            For X = 1 To Reg.EnumSubKeysToArray(HE.Hive, HE.Key, aKeyX(), HE.Redirected, False, False, True)
+            For x = 1 To Reg.EnumSubKeysToArray(HE.Hive, HE.Key, aKeyX(), HE.Redirected, False, False, True)
                 
-                sIniPath = Reg.GetString(HE.Hive, HE.Key & "\" & aKeyX(X), "FileSysPath") & "\Scripts\scripts.ini"
+                sIniPath = Reg.GetString(HE.Hive, HE.Key & "\" & aKeyX(x), "FileSysPath") & "\Scripts\scripts.ini"
                 sIniPath = EnvironW(sIniPath)
                 
                 If Not oFiles.Exists(sIniPath) Then oFiles.Add sIniPath, 0&
                 
                 idx = 0
                 
-                For Y = 1 To Reg.EnumSubKeysToArray(HE.Hive, HE.Key & "\" & aKeyX(X), aKeyY(), HE.Redirected, False, False, True)
+                For y = 1 To Reg.EnumSubKeysToArray(HE.Hive, HE.Key & "\" & aKeyX(x), aKeyY(), HE.Redirected, False, False, True)
                 
-                    If aKeyY(Y) <> idx Then
+                    If aKeyY(y) <> idx Then
                         
-                        sKey = HE.Key & "\" & aKeyX(X) & "\" & aKeyY(Y)
+                        sKey = HE.Key & "\" & aKeyX(x) & "\" & aKeyY(y)
                         
                         Reg.RenameKey HE.Hive, sKey, CStr(idx), HE.Redirected
                     End If
@@ -7505,16 +7519,16 @@ Public Sub PolicyScripts_RebuildChain()
                 
                 aParam = cIni.GetParamNames(vType)
                 
-                For X = 0 To UBoundSafe(aParam)
+                For x = 0 To UBoundSafe(aParam)
                     
-                    sName = mid$(aParam(X), 2)
+                    sName = mid$(aParam(x), 2)
                     
                     If StrComp(sName, "CmdLine", 1) = 0 Then
                         
-                        If IsNumeric(Left$(aParam(X), 1)) Then
+                        If IsNumeric(Left$(aParam(x), 1)) Then
                             
                             idx = idx + 1
-                            iNum = CLng(Left$(aParam(X), 1))
+                            iNum = CLng(Left$(aParam(x), 1))
                             
                             If iNum <> idx Then
                                 cIni.RenameParam vType, CStr(iNum) & "CmdLine", CStr(idx) & "CmdLine"
@@ -13338,7 +13352,7 @@ Public Sub SetAllFontCharset(frm As Form, Optional sFontName As String, Optional
     Dim ctlTxtBox   As TextBox
     Dim ctlLstBox   As ListBox
     Dim CtlLbl      As Label
-    Dim CtlFrame    As Frame
+    Dim CtlFrame    As frame
     Dim CtlCombo    As ComboBox
     Dim CtlTree     As TreeView
     Dim CtlPict     As PictureBox
@@ -13982,7 +13996,7 @@ Public Function MsgBoxW(Prompt As String, Optional Buttons As VbMsgBoxStyle, Opt
     Else
         hActiveWnd = GetForegroundWindow()
         For Each frm In Forms
-            If frm.hwnd = hActiveWnd Then hMyWnd = hActiveWnd: Exit For
+            If frm.hWnd = hActiveWnd Then hMyWnd = hActiveWnd: Exit For
         Next
         MsgBoxW = MessageBox(IIf(hMyWnd <> 0, hMyWnd, g_HwndMain), StrPtr(Prompt), StrPtr(Title), ByVal Buttons)
     End If
@@ -14517,16 +14531,21 @@ ErrorHandler:
 End Function
 
 'The same as Split(), except of proper error handling when source data is empty string and you assign result to variable defined as array.
-'So, in case of empty string it return array with 0 items.
+'So, in case of empty string it return array with 1 empty item (0 to 0), unless bAllowReturnEmptyArray=true is specified.
+'If that's the case, bounds(0 to -1) are returned.
 'Also: return type is 'string()' instead of 'variant()'
 '
-'Warning note: Do not use this function in For each statement !!! - use default Split() instead:
-'Differences in behavior:
-'Split() with empty string cause 'For each' to not execute any its cycles at all.
-'Split() cause to execute 'For Each' for a 1 cycle with empty value.
-Public Function SplitSafe(sComplexString As String, Optional Delimiter As String = " ") As String()
+'Warning note:
+'To use this function in For each loop, specify bAllowReturnEmptyArray = true
+Public Function SplitSafe(sComplexString As String, Optional Delimiter As String = " ", _
+    Optional bAllowReturnEmptyArray As Boolean = False) As String()
+    
     If 0 = Len(sComplexString) Then
-        ReDim SplitSafe(0)
+        If bAllowReturnEmptyArray Then
+            SplitSafe = EmptyArray()
+        Else
+            ReDim SplitSafe(0)
+        End If
     Else
         SplitSafe = Split(sComplexString, Delimiter)
     End If
@@ -14536,6 +14555,8 @@ Public Sub ArrayRemoveEmptyItems(arr() As String)
     Dim i As Long
     Dim d As Long
     Dim bShift As Boolean
+    
+    If IsArrayEmpty(arr) Then Exit Sub
     
     For i = LBound(arr) To UBound(arr)
         If Len(arr(i)) <> 0 Then
@@ -14566,6 +14587,10 @@ Public Function SplitExGetLast(sSerializedArray As String, Optional Delimiter As
     SplitExGetLast = ret(UBound(ret))
 End Function
 
+Public Function IsArrayEmpty(arr() As String) As Boolean
+    IsArrayEmpty = (UBound(arr) < LBound(arr))
+End Function
+
 Private Sub DeleteDuplicatesInArray(arr() As String, CompareMethod As VbCompareMethod, Optional DontCompress As Boolean)
     On Error GoTo ErrorHandler:
     
@@ -14578,6 +14603,7 @@ Private Sub DeleteDuplicatesInArray(arr() As String, CompareMethod As VbCompareM
     'all subsequent array items are shifted to the item where duplicate was found.
     
     Dim i As Long
+    If IsArrayEmpty(arr) Then Exit Sub
     
     If DontCompress Then
         For i = UBound(arr) To LBound(arr) + 1 Step -1
@@ -15070,20 +15096,20 @@ End Sub
 
 Public Sub AddHorizontalScrollBarToResults(lstControl As ListBox)
     'Adds a horizontal scrollbar to the results display if it is needed (after the scan)
-    Dim X As Long, s$
+    Dim x As Long, s$
     Dim idx As Long
     
     With lstControl
         For idx = 0 To .ListCount - 1
             s = Replace$(.List(idx), vbTab, "12345678")
-            If .Width < frmMain.TextWidth(s) + 300 And X < frmMain.TextWidth(s) + 300 Then
-                X = frmMain.TextWidth(.List(idx)) + 300
+            If .Width < frmMain.TextWidth(s) + 300 And x < frmMain.TextWidth(s) + 300 Then
+                x = frmMain.TextWidth(.List(idx)) + 300
             End If
         Next
-        If X <> 0 Then
-            If frmMain.ScaleMode = vbTwips Then X = X / Screen.TwipsPerPixelX + 50  ' if twips change to pixels (+50 to account for the width of the vertical scrollbar
+        If x <> 0 Then
+            If frmMain.ScaleMode = vbTwips Then x = x / Screen.TwipsPerPixelX + 50  ' if twips change to pixels (+50 to account for the width of the vertical scrollbar
         End If
-        SendMessage .hwnd, LB_SETHORIZONTALEXTENT, X, ByVal 0&
+        SendMessage .hWnd, LB_SETHORIZONTALEXTENT, x, ByVal 0&
     End With
 End Sub
 
@@ -15161,11 +15187,9 @@ Public Sub AppendErrorLogCustom(ParamArray CodeModule())    'trace info
     
     If bDebugToFile Then
         If g_hDebugLog <> 0 Then
-            If InStr(Other, "modFile.PutW") = 0 Then 'prevent infinite loop
-                Dim b() As Byte
-                b = "- " & Time & " - " & Format$(tim1 / freq, "##0.000") & " - " & Other & vbCrLf
-                PutW g_hDebugLog, 1&, VarPtr(b(0)), UBound(b) + 1, doAppend:=True
-            End If
+            Dim b() As Byte
+            b = "- " & Time & " - " & Format$(tim1 / freq, "##0.000") & " - " & Other & vbCrLf
+            PutW_NoLog g_hDebugLog, 1&, VarPtr(b(0)), UBound(b) + 1, doAppend:=True
         End If
     End If
     
@@ -15202,7 +15226,7 @@ Public Sub OpenDebugLogHandle()
     
     Dim sCurTime$
     sCurTime = vbCrLf & vbCrLf & "Logging started at: " & Now() & vbCrLf & vbCrLf
-    PutW g_hDebugLog, 1&, StrPtr(sCurTime), LenB(sCurTime), doAppend:=True
+    PutW_NoLog g_hDebugLog, 1&, StrPtr(sCurTime), LenB(sCurTime), doAppend:=True
 End Sub
 
 Public Sub OpenLogHandle()
@@ -15354,7 +15378,7 @@ Public Sub LockInterfaceMain(bDoUnlock As Boolean)
         .cmdN00bLog.Enabled = bDoUnlock
         .cmdN00bScan.Enabled = bDoUnlock
         .cmdN00bBackups.Enabled = bDoUnlock
-        .cmdN00bTools.Enabled = bDoUnlock
+        .cmdFixing.Enabled = bDoUnlock
         .cmdN00bHJTQuickStart.Enabled = bDoUnlock
         .FraIncludeSections.Enabled = bDoUnlock
         .fraScanOpt.Enabled = bDoUnlock
@@ -16038,7 +16062,7 @@ MakeLog:
     If bDebugToFile Then
         If g_hDebugLog <> 0 Then
             b() = vbCrLf & vbCrLf & "Contents of the main logfile:" & vbCrLf & vbCrLf & sLog.ToString & vbCrLf
-            PutW g_hDebugLog, 1&, VarPtr(b(0)), UBound(b) + 1, doAppend:=True
+            PutW_NoLog g_hDebugLog, 1&, VarPtr(b(0)), UBound(b) + 1, doAppend:=True
         End If
     End If
     
@@ -16052,7 +16076,7 @@ MakeLog:
     If bDebugToFile Then
         If g_hDebugLog <> 0 Then
             b() = vbCrLf & "--" & vbCrLf & "End of file - " & "Time spent: " & ((Perf.EndTime - Perf.StartTime) \ 100) / 10 & " sec."
-            PutW g_hDebugLog, 1&, VarPtr(b(0)), UBound(b) + 1, doAppend:=True
+            PutW_NoLog g_hDebugLog, 1&, VarPtr(b(0)), UBound(b) + 1, doAppend:=True
             CloseW g_hDebugLog, True: g_hDebugLog = 0
         End If
     End If
@@ -17736,7 +17760,7 @@ Public Function SetTaskBarProgressValue(frm As Form, ByVal Value As Single) As B
         If Value = 0 Then
             TaskBar.SetProgressState g_HwndMain, TBPF_NOPROGRESS
         Else
-            TaskBar.SetProgressValue frm.hwnd, CCur(Value * 10000), CCur(10000)
+            TaskBar.SetProgressValue frm.hWnd, CCur(Value * 10000), CCur(10000)
         End If
     End If
 End Function
@@ -18221,7 +18245,7 @@ Public Sub HJT_Shutdown()   ' emergency exits the program due to exceeding the t
     Dim s$
     If g_hDebugLog <> 0 Then
         s = vbCrLf & vbCrLf & String$(39, "=") & vbCrLf & "!!! WARNING !!! Timeout is detected !!!" & vbCrLf & String$(39, "=") & vbCrLf & vbCrLf
-        PutW g_hDebugLog, 1, StrPtr(s), LenB(s), True
+        PutW_NoLog g_hDebugLog, 1, StrPtr(s), LenB(s), True
     End If
     
     'CloseW hLog, True

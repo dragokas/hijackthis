@@ -25,8 +25,19 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-Attribute VB_Ext_KEY = "PropPageWizardRun" ,"Yes"
 Option Explicit
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
 #If False Then
 Private SbrStyleNormal, SbrStyleSimple
 Private SbrPanelStyleText, SbrPanelStyleCaps, SbrPanelStyleNum, SbrPanelStyleIns, SbrPanelStyleScrl, SbrPanelStyleTime, SbrPanelStyleDate, SbrPanelStyleKana, SbrPanelStyleHangul, SbrPanelStyleJunja, SbrPanelStyleFinal, SbrPanelStyleKanji, SbrPanelStyleHanja
@@ -88,19 +99,19 @@ CX As Long
 CY As Long
 End Type
 Private Type NMHDR
-hWndFrom As Long
-IDFrom As Long
+hWndFrom As LongPtr
+IDFrom As LongPtr
 Code As Long
 End Type
 Private Type NMMOUSE
 hdr As NMHDR
-dwItemSpec As Long
-dwItemData As Long
+dwItemSpec As LongPtr
+dwItemData As LongPtr
 PT As POINTAPI
-dwHitInfo As Long
+dwHitInfo As LongPtr
 End Type
 Private Type PAINTSTRUCT
-hDC As Long
+hDC As LongPtr
 fErase As Long
 RCPaint As RECT
 fRestore As Long
@@ -113,20 +124,20 @@ CtlID As Long
 ItemID As Long
 ItemAction As Long
 ItemState As Long
-hWndItem As Long
-hDC As Long
+hWndItem As LongPtr
+hDC As LongPtr
 RCItem As RECT
-ItemData As Long
+ItemData As LongPtr
 End Type
 Private Type TOOLINFO
 cbSize As Long
 uFlags As Long
-hWnd As Long
-uId As Long
+hWnd As LongPtr
+uId As LongPtr
 RC As RECT
-hInst As Long
-lpszText As Long
-lParam As Long
+hInst As LongPtr
+lpszText As LongPtr
+lParam As LongPtr
 End Type
 Public Event Click()
 Attribute Click.VB_Description = "Occurs when the user presses and then releases a mouse button over an object."
@@ -165,6 +176,43 @@ Public Event OLESetData(Data As DataObject, DataFormat As Integer)
 Attribute OLESetData.VB_Description = "Occurs at the OLE drag/drop source control when the drop target requests data that was not provided to the DataObject during the OLEDragStart event."
 Public Event OLEStartDrag(Data As DataObject, AllowedEffects As Long)
 Attribute OLEStartDrag.VB_Description = "Occurs when an OLE drag/drop operation is initiated either manually or automatically."
+#If VBA7 Then
+Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
+Private Declare PtrSafe Function GetWindowLong Lib "user32" Alias "GetWindowLongW" (ByVal hWnd As LongPtr, ByVal nIndex As Long) As Long
+Private Declare PtrSafe Function GetKeyboardState Lib "user32" (ByRef pbKeyState As Byte) As Long
+Private Declare PtrSafe Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByRef lParam As Any) As LongPtr
+Private Declare PtrSafe Function CreateWindowEx Lib "user32" Alias "CreateWindowExW" (ByVal dwExStyle As Long, ByVal lpClassName As LongPtr, ByVal lpWindowName As LongPtr, ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hWndParent As LongPtr, ByVal hMenu As LongPtr, ByVal hInstance As LongPtr, ByRef lpParam As Any) As LongPtr
+Private Declare PtrSafe Function ShowWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal nCmdShow As Long) As Long
+Private Declare PtrSafe Function MoveWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint As Long) As Long
+Private Declare PtrSafe Function UpdateWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
+Private Declare PtrSafe Function BeginPaint Lib "user32" (ByVal hWnd As LongPtr, ByRef lpPaint As PAINTSTRUCT) As LongPtr
+Private Declare PtrSafe Function EndPaint Lib "user32" (ByVal hWnd As LongPtr, ByRef lpPaint As PAINTSTRUCT) As Long
+Private Declare PtrSafe Function WindowFromDC Lib "user32" (ByVal hDC As LongPtr) As LongPtr
+Private Declare PtrSafe Function CreateCompatibleDC Lib "gdi32" (ByVal hDC As LongPtr) As LongPtr
+Private Declare PtrSafe Function CreateCompatibleBitmap Lib "gdi32" (ByVal hDC As LongPtr, ByVal nWidth As Long, ByVal nHeight As Long) As LongPtr
+Private Declare PtrSafe Function DeleteDC Lib "gdi32" (ByVal hDC As LongPtr) As Long
+Private Declare PtrSafe Function BitBlt Lib "gdi32" (ByVal hDestDC As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hSrcDC As LongPtr, ByVal XSrc As Long, ByVal YSrc As Long, ByVal dwRop As Long) As Long
+Private Declare PtrSafe Function SetTextColor Lib "gdi32" (ByVal hDC As LongPtr, ByVal crColor As Long) As Long
+Private Declare PtrSafe Function SetBkMode Lib "gdi32" (ByVal hDC As LongPtr, ByVal nBkMode As Long) As Long
+Private Declare PtrSafe Function SetTextAlign Lib "gdi32" (ByVal hDC As LongPtr, ByVal fMode As Long) As Long
+Private Declare PtrSafe Function DrawState Lib "user32" Alias "DrawStateW" (ByVal hDC As LongPtr, ByVal hBrush As LongPtr, ByVal lpDrawStateProc As LongPtr, ByVal lData As LongPtr, ByVal wData As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal CX As Long, ByVal CY As Long, ByVal fFlags As Long) As Long
+Private Declare PtrSafe Function InvalidateRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As Any, ByVal bErase As Long) As Long
+Private Declare PtrSafe Function GetSystemMetrics Lib "user32" (ByVal nIndex As Long) As Long
+Private Declare PtrSafe Function GetWindowRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As RECT) As Long
+Private Declare PtrSafe Function GetClientRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As RECT) As Long
+Private Declare PtrSafe Function DestroyWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
+Private Declare PtrSafe Function SetParent Lib "user32" (ByVal hWndChild As LongPtr, ByVal hWndNewParent As LongPtr) As LongPtr
+Private Declare PtrSafe Function LockWindowUpdate Lib "user32" (ByVal hWndLock As LongPtr) As Long
+Private Declare PtrSafe Function EnableWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal fEnable As Long) As Long
+Private Declare PtrSafe Function GetTextExtentPoint32 Lib "gdi32" Alias "GetTextExtentPoint32W" (ByVal hDC As LongPtr, ByVal lpsz As LongPtr, ByVal cbString As Long, ByRef lpSize As SIZEAPI) As Long
+Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hWnd As LongPtr) As LongPtr
+Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hWnd As LongPtr, ByVal hDC As LongPtr) As Long
+Private Declare PtrSafe Function SelectObject Lib "gdi32" (ByVal hDC As LongPtr, ByVal hObject As LongPtr) As LongPtr
+Private Declare PtrSafe Function DeleteObject Lib "gdi32" (ByVal hObject As LongPtr) As Long
+Private Declare PtrSafe Function RedrawWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal lprcUpdate As LongPtr, ByVal hrgnUpdate As LongPtr, ByVal fuRedraw As Long) As Long
+Private Declare PtrSafe Function LoadCursor Lib "user32" Alias "LoadCursorW" (ByVal hInstance As LongPtr, ByVal lpCursorName As Any) As LongPtr
+Private Declare PtrSafe Function SetCursor Lib "user32" (ByVal hCursor As LongPtr) As LongPtr
+#Else
 Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
 Private Declare Function GetWindowLong Lib "user32" Alias "GetWindowLongW" (ByVal hWnd As Long, ByVal nIndex As Long) As Long
 Private Declare Function GetKeyboardState Lib "user32" (ByRef pbKeyState As Byte) As Long
@@ -200,7 +248,7 @@ Private Declare Function DeleteObject Lib "gdi32" (ByVal hObject As Long) As Lon
 Private Declare Function RedrawWindow Lib "user32" (ByVal hWnd As Long, ByVal lprcUpdate As Long, ByVal hrgnUpdate As Long, ByVal fuRedraw As Long) As Long
 Private Declare Function LoadCursor Lib "user32" Alias "LoadCursorW" (ByVal hInstance As Long, ByVal lpCursorName As Any) As Long
 Private Declare Function SetCursor Lib "user32" (ByVal hCursor As Long) As Long
-Private Declare Function PtInRect Lib "user32" (ByRef lpRect As RECT, ByVal X As Long, ByVal Y As Long) As Long
+#End If
 Private Const ICC_BAR_CLASSES As Long = &H20
 Private Const ICC_TAB_CLASSES As Long = &H8
 Private Const GWL_STYLE As Long = (-16)
@@ -343,18 +391,18 @@ FixedWidth As Long
 Left As Long
 ActualWidth As Long
 End Type
-Private StatusBarHandle As Long, StatusBarToolTipHandle As Long
+Private StatusBarHandle As LongPtr, StatusBarToolTipHandle As LongPtr
 Private StatusBarSizeGripAllowable As Boolean
 Private StatusBarParentForm As VB.Form
 Private WithEvents StatusBarParentMDIFormEvents As VB.MDIForm
 Attribute StatusBarParentMDIFormEvents.VB_VarHelpID = -1
 Private WithEvents StatusBarParentFormEvents As VB.Form
 Attribute StatusBarParentFormEvents.VB_VarHelpID = -1
-Private StatusBarFontHandle As Long, StatusBarBoldFontHandle As Long
+Private StatusBarFontHandle As LongPtr, StatusBarBoldFontHandle As LongPtr
 Private StatusBarIsClick As Boolean
 Private StatusBarMouseOver As Boolean
 Private StatusBarDesignMode As Boolean
-Private StatusBarDoubleBufferEraseBkgDC As Long
+Private StatusBarDoubleBufferEraseBkgDC As LongPtr
 Private StatusBarAlignable As Boolean
 Private DispIDMousePointer As Long
 Private WithEvents PropFont As StdFont
@@ -539,7 +587,7 @@ If StatusBarDesignMode = False Then
 End If
 If StatusBarAlignable = True Then StatusBarSizeGripAllowable = CBool((GetWindowLong(UserControl.ContainerHwnd, GWL_STYLE) And WS_THICKFRAME) = WS_THICKFRAME) Else StatusBarSizeGripAllowable = False
 Call CreateStatusBar
-If InitPanelsCount > 0 And StatusBarHandle <> 0 Then
+If InitPanelsCount > 0 And StatusBarHandle <> NULL_PTR Then
     For i = 1 To InitPanelsCount
         Me.Panels.Add i, InitPanels(i).Key, InitPanels(i).Text, InitPanels(i).Style
         Me.Panels(i).Tag = InitPanels(i).Tag
@@ -664,7 +712,7 @@ LastAlign = Align
 End With
 If DPICorrectionFactor() <> 1 Then Call SyncObjectRectsToContainer(Me)
 Call SetMinHeight
-If StatusBarHandle <> 0 Then MoveWindow StatusBarHandle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, 1
+If StatusBarHandle <> NULL_PTR Then MoveWindow StatusBarHandle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, 1
 Call SetParts
 If PropShowTips = True Then Call UpdateToolTipRects
 InProc = False
@@ -699,7 +747,7 @@ LastWindowState = CurrentWindowState
 End Sub
 
 Private Sub TimerUpdatePanels_Timer()
-If StatusBarHandle = 0 Then Exit Sub
+If StatusBarHandle = NULL_PTR Then Exit Sub
 Dim NeedUpdate As Boolean
 If PropShadowPanelsCount > 0 Then
     Dim i As Long, Text As String, Enabled As Boolean, RC As RECT
@@ -708,7 +756,7 @@ If PropShadowPanelsCount > 0 Then
         If .Visible = True Then
             Call GetDisplayText(i, Text, Enabled)
             If StrComp(Text, .DisplayText) <> 0 Then
-                InvalidateRect StatusBarHandle, ByVal 0&, 1
+                InvalidateRect StatusBarHandle, ByVal NULL_PTR, 1
                 Call SetParts
                 NeedUpdate = True
                 Exit For
@@ -861,14 +909,25 @@ Attribute ZOrder.VB_Description = "Places a specified object at the front or bac
 If IsMissing(Position) Then Extender.ZOrder Else Extender.ZOrder Position
 End Sub
 
+#If VBA7 Then
+Public Property Get hWnd() As LongPtr
+Attribute hWnd.VB_Description = "Returns a handle to a control."
+Attribute hWnd.VB_UserMemId = -515
+#Else
 Public Property Get hWnd() As Long
 Attribute hWnd.VB_Description = "Returns a handle to a control."
 Attribute hWnd.VB_UserMemId = -515
+#End If
 hWnd = StatusBarHandle
 End Property
 
+#If VBA7 Then
+Public Property Get hWndUserControl() As LongPtr
+Attribute hWndUserControl.VB_Description = "Returns a handle to a control."
+#Else
 Public Property Get hWndUserControl() As Long
 Attribute hWndUserControl.VB_Description = "Returns a handle to a control."
+#End If
 hWndUserControl = UserControl.hWnd
 End Property
 
@@ -884,7 +943,7 @@ End Property
 
 Public Property Set Font(ByVal NewFont As StdFont)
 If NewFont Is Nothing Then Set NewFont = Ambient.Font
-Dim OldFontHandle As Long, OldBoldFontHandle As Long
+Dim OldFontHandle As LongPtr, OldBoldFontHandle As LongPtr
 Dim TempFont As StdFont
 Set PropFont = NewFont
 OldFontHandle = StatusBarFontHandle
@@ -893,15 +952,15 @@ StatusBarFontHandle = CreateGDIFontFromOLEFont(PropFont)
 Set TempFont = CloneOLEFont(PropFont)
 TempFont.Bold = True
 StatusBarBoldFontHandle = CreateGDIFontFromOLEFont(TempFont)
-If StatusBarHandle <> 0 Then SendMessage StatusBarHandle, WM_SETFONT, StatusBarFontHandle, ByVal 1&
-If OldFontHandle <> 0 Then DeleteObject OldFontHandle
-If OldBoldFontHandle <> 0 Then DeleteObject OldBoldFontHandle
+If StatusBarHandle <> NULL_PTR Then SendMessage StatusBarHandle, WM_SETFONT, StatusBarFontHandle, ByVal 1&
+If OldFontHandle <> NULL_PTR Then DeleteObject OldFontHandle
+If OldBoldFontHandle <> NULL_PTR Then DeleteObject OldBoldFontHandle
 Call SetMinHeight
 UserControl.PropertyChanged "Font"
 End Property
 
 Private Sub PropFont_FontChanged(ByVal PropertyName As String)
-Dim OldFontHandle As Long, OldBoldFontHandle As Long
+Dim OldFontHandle As LongPtr, OldBoldFontHandle As LongPtr
 Dim TempFont As StdFont
 OldFontHandle = StatusBarFontHandle
 OldBoldFontHandle = StatusBarBoldFontHandle
@@ -909,9 +968,9 @@ StatusBarFontHandle = CreateGDIFontFromOLEFont(PropFont)
 Set TempFont = CloneOLEFont(PropFont)
 TempFont.Bold = True
 StatusBarBoldFontHandle = CreateGDIFontFromOLEFont(TempFont)
-If StatusBarHandle <> 0 Then SendMessage StatusBarHandle, WM_SETFONT, StatusBarFontHandle, ByVal 1&
-If OldFontHandle <> 0 Then DeleteObject OldFontHandle
-If OldBoldFontHandle <> 0 Then DeleteObject OldBoldFontHandle
+If StatusBarHandle <> NULL_PTR Then SendMessage StatusBarHandle, WM_SETFONT, StatusBarFontHandle, ByVal 1&
+If OldFontHandle <> NULL_PTR Then DeleteObject OldFontHandle
+If OldBoldFontHandle <> NULL_PTR Then DeleteObject OldBoldFontHandle
 Call SetMinHeight
 UserControl.PropertyChanged "Font"
 End Sub
@@ -923,7 +982,7 @@ End Property
 
 Public Property Let VisualStyles(ByVal Value As Boolean)
 PropVisualStyles = Value
-If StatusBarHandle <> 0 And EnabledVisualStyles() = True Then
+If StatusBarHandle <> NULL_PTR And EnabledVisualStyles() = True Then
     If PropVisualStyles = True Then
         ActivateVisualStyles StatusBarHandle
     Else
@@ -948,7 +1007,7 @@ End Property
 
 Public Property Let Enabled(ByVal Value As Boolean)
 UserControl.Enabled = Value
-If StatusBarHandle <> 0 Then EnableWindow StatusBarHandle, IIf(Value = True, 1, 0)
+If StatusBarHandle <> NULL_PTR Then EnableWindow StatusBarHandle, IIf(Value = True, 1, 0)
 UserControl.PropertyChanged "Enabled"
 End Property
 
@@ -996,7 +1055,7 @@ Public Property Set MouseIcon(ByVal Value As IPictureDisp)
 If Value Is Nothing Then
     Set PropMouseIcon = Nothing
 Else
-    If Value.Type = vbPicTypeIcon Or Value.Handle = 0 Then
+    If Value.Type = vbPicTypeIcon Or Value.Handle = NULL_PTR Then
         Set PropMouseIcon = Value
     Else
         If StatusBarDesignMode = True Then
@@ -1034,9 +1093,9 @@ Call ComCtlsCheckRightToLeft(PropRightToLeft, UserControl.RightToLeft, PropRight
 Dim dwMask As Long
 If PropRightToLeft = True And PropRightToLeftLayout = True Then dwMask = WS_EX_LAYOUTRTL
 If StatusBarDesignMode = False Then Call ComCtlsSetRightToLeft(UserControl.hWnd, dwMask)
-If StatusBarHandle <> 0 Then Call ComCtlsSetRightToLeft(StatusBarHandle, dwMask)
+If StatusBarHandle <> NULL_PTR Then Call ComCtlsSetRightToLeft(StatusBarHandle, dwMask)
 Me.SimpleText = Me.SimpleText
-If StatusBarToolTipHandle <> 0 Then
+If StatusBarToolTipHandle <> NULL_PTR Then
     If PropRightToLeft = True Then
         If PropRightToLeftLayout = True Then dwMask = WS_EX_LAYOUTRTL Else dwMask = WS_EX_RTLREADING
     Else
@@ -1076,7 +1135,7 @@ End Property
 
 Public Property Get Style() As SbrStyleConstants
 Attribute Style.VB_Description = "Returns/sets the single (simple) or multiple panel (normal) style."
-If StatusBarHandle <> 0 Then
+If StatusBarHandle <> NULL_PTR Then
     If SendMessage(StatusBarHandle, SB_ISSIMPLE, 0, ByVal 0&) = 0 Then
         Style = SbrStyleNormal
     Else
@@ -1094,17 +1153,17 @@ Select Case Value
     Case Else
         Err.Raise 380
 End Select
-If StatusBarHandle <> 0 Then SendMessage StatusBarHandle, SB_SIMPLE, IIf(PropStyle = SbrStyleSimple, 1, 0), ByVal 0&
+If StatusBarHandle <> NULL_PTR Then SendMessage StatusBarHandle, SB_SIMPLE, IIf(PropStyle = SbrStyleSimple, 1, 0), ByVal 0&
 UserControl.PropertyChanged "Style"
 End Property
 
 Public Property Get SimpleText() As String
 Attribute SimpleText.VB_Description = "Returns/sets the text displayed when the style property is set to simple."
 Attribute SimpleText.VB_MemberFlags = "200"
-If StatusBarHandle <> 0 Then
+If StatusBarHandle <> NULL_PTR Then
     If SendMessage(StatusBarHandle, SB_ISSIMPLE, 0, ByVal 0&) <> 0 Then
         Dim Length As Long
-        Length = CIntToUInt(LoWord(SendMessage(StatusBarHandle, SB_GETTEXTLENGTH, 0, ByVal 0&)))
+        Length = CIntToUInt(LoWord(CLng(SendMessage(StatusBarHandle, SB_GETTEXTLENGTH, 0, ByVal 0&))))
         If Length > 0 Then
             SimpleText = String$(Length, vbNullChar)
             SendMessage StatusBarHandle, SB_GETTEXT, 0, ByVal StrPtr(SimpleText)
@@ -1119,7 +1178,7 @@ End Property
 
 Public Property Let SimpleText(ByVal Value As String)
 PropSimpleText = Value
-If StatusBarHandle <> 0 Then
+If StatusBarHandle <> NULL_PTR Then
     Dim Style As Long
     Style = 0
     If PropRightToLeft = True And PropRightToLeftLayout = False Then Style = Style Or SBT_RTLREADING
@@ -1135,7 +1194,7 @@ End Property
 
 Public Property Let AllowSizeGrip(ByVal Value As Boolean)
 PropAllowSizeGrip = Value
-If StatusBarHandle <> 0 Then Call ReCreateStatusBar
+If StatusBarHandle <> NULL_PTR Then Call ReCreateStatusBar
 UserControl.PropertyChanged "AllowSizeGrip"
 End Property
 
@@ -1146,7 +1205,7 @@ End Property
 
 Public Property Let ShowTips(ByVal Value As Boolean)
 PropShowTips = Value
-If StatusBarHandle <> 0 And StatusBarDesignMode = False Then
+If StatusBarHandle <> NULL_PTR And StatusBarDesignMode = False Then
     If PropShowTips = False Then
         Call DestroyToolTip
     Else
@@ -1165,7 +1224,7 @@ End Property
 
 Public Property Let BackColor(ByVal Value As OLE_COLOR)
 PropBackColor = Value
-If StatusBarHandle <> 0 Then SendMessage StatusBarHandle, SB_SETBKCOLOR, 0, ByVal WinColor(PropBackColor)
+If StatusBarHandle <> NULL_PTR Then SendMessage StatusBarHandle, SB_SETBKCOLOR, 0, ByVal WinColor(PropBackColor)
 If PropVisualStyles = False Or EnabledVisualStyles() = False Then
     UserControl.BackColor = PropBackColor
 Else
@@ -1238,7 +1297,7 @@ End Sub
 
 Friend Sub FPanelsRemove(ByVal Index As Long)
 If PropShowTips = True Then
-    If StatusBarHandle <> 0 And StatusBarToolTipHandle <> 0 Then
+    If StatusBarHandle <> NULL_PTR And StatusBarToolTipHandle <> NULL_PTR Then
         Dim TI As TOOLINFO
         With TI
         .cbSize = LenB(TI)
@@ -1272,12 +1331,12 @@ Next i
 End Sub
 
 Friend Property Get FPanelText(ByVal Index As Long) As String
-If StatusBarHandle <> 0 Then FPanelText = PropShadowPanels(Index).Text
+If StatusBarHandle <> NULL_PTR Then FPanelText = PropShadowPanels(Index).Text
 End Property
 
 Friend Property Let FPanelText(ByVal Index As Long, ByVal Value As String)
 If PropShadowPanels(Index).Text = Value Then Exit Property
-If StatusBarHandle <> 0 Then
+If StatusBarHandle <> NULL_PTR Then
     PropShadowPanels(Index).Text = Value
     Call SetPanelText(Index)
     Call GetDisplayText(Index, PropShadowPanels(Index).DisplayText)
@@ -1286,22 +1345,22 @@ End If
 End Property
 
 Friend Property Get FPanelToolTipText(ByVal Index As Long) As String
-If StatusBarHandle <> 0 Then FPanelToolTipText = PropShadowPanels(Index).ToolTipText
+If StatusBarHandle <> NULL_PTR Then FPanelToolTipText = PropShadowPanels(Index).ToolTipText
 End Property
 
 Friend Property Let FPanelToolTipText(ByVal Index As Long, ByVal Value As String)
-If StatusBarHandle <> 0 Then
+If StatusBarHandle <> NULL_PTR Then
     PropShadowPanels(Index).ToolTipText = Value
     If PropShowTips = True Then Call SetPanelToolTipText(Index)
 End If
 End Property
 
 Friend Property Get FPanelStyle(ByVal Index As Long) As SbrPanelStyleConstants
-If StatusBarHandle <> 0 Then FPanelStyle = PropShadowPanels(Index).Style
+If StatusBarHandle <> NULL_PTR Then FPanelStyle = PropShadowPanels(Index).Style
 End Property
 
 Friend Property Let FPanelStyle(ByVal Index As Long, ByVal Value As SbrPanelStyleConstants)
-If StatusBarHandle <> 0 Then
+If StatusBarHandle <> NULL_PTR Then
     Select Case Value
         Case SbrPanelStyleText, SbrPanelStyleCaps, SbrPanelStyleNum, SbrPanelStyleIns, SbrPanelStyleScrl, SbrPanelStyleTime, SbrPanelStyleDate, SbrPanelStyleKana, SbrPanelStyleHangul, SbrPanelStyleJunja, SbrPanelStyleFinal, SbrPanelStyleKanji, SbrPanelStyleHanja
             PropShadowPanels(Index).Style = Value
@@ -1317,11 +1376,11 @@ End If
 End Property
 
 Friend Property Get FPanelBevel(ByVal Index As Long) As SbrPanelBevelConstants
-If StatusBarHandle <> 0 Then FPanelBevel = PropShadowPanels(Index).Bevel
+If StatusBarHandle <> NULL_PTR Then FPanelBevel = PropShadowPanels(Index).Bevel
 End Property
 
 Friend Property Let FPanelBevel(ByVal Index As Long, ByVal Value As SbrPanelBevelConstants)
-If StatusBarHandle <> 0 Then
+If StatusBarHandle <> NULL_PTR Then
     Select Case Value
         Case SbrPanelBevelFlat, SbrPanelBevelInset, SbrPanelBevelRaised
             PropShadowPanels(Index).Bevel = Value
@@ -1334,11 +1393,11 @@ End If
 End Property
 
 Friend Property Get FPanelAutoSize(ByVal Index As Long) As SbrPanelAutoSizeConstants
-If StatusBarHandle <> 0 Then FPanelAutoSize = PropShadowPanels(Index).AutoSize
+If StatusBarHandle <> NULL_PTR Then FPanelAutoSize = PropShadowPanels(Index).AutoSize
 End Property
 
 Friend Property Let FPanelAutoSize(ByVal Index As Long, ByVal Value As SbrPanelAutoSizeConstants)
-If StatusBarHandle <> 0 Then
+If StatusBarHandle <> NULL_PTR Then
     Select Case Value
         Case SbrPanelAutoSizeNone, SbrPanelAutoSizeSpring, SbrPanelAutoSizeContent
             PropShadowPanels(Index).AutoSize = Value
@@ -1351,11 +1410,11 @@ End If
 End Property
 
 Friend Property Get FPanelAlignment(ByVal Index As Long) As SbrPanelAlignmentConstants
-If StatusBarHandle <> 0 Then FPanelAlignment = PropShadowPanels(Index).Alignment
+If StatusBarHandle <> NULL_PTR Then FPanelAlignment = PropShadowPanels(Index).Alignment
 End Property
 
 Friend Property Let FPanelAlignment(ByVal Index As Long, ByVal Value As SbrPanelAlignmentConstants)
-If StatusBarHandle <> 0 Then
+If StatusBarHandle <> NULL_PTR Then
     Select Case Value
         Case SbrPanelAlignmentLeft, SbrPanelAlignmentCenter, SbrPanelAlignmentRight
             PropShadowPanels(Index).Alignment = Value
@@ -1370,11 +1429,11 @@ End If
 End Property
 
 Friend Property Get FPanelDTFormat(ByVal Index As Long) As SbrPanelDTFormatConstants
-If StatusBarHandle <> 0 Then FPanelDTFormat = PropShadowPanels(Index).DTFormat
+If StatusBarHandle <> NULL_PTR Then FPanelDTFormat = PropShadowPanels(Index).DTFormat
 End Property
 
 Friend Property Let FPanelDTFormat(ByVal Index As Long, ByVal Value As SbrPanelDTFormatConstants)
-If StatusBarHandle <> 0 Then
+If StatusBarHandle <> NULL_PTR Then
     Select Case Value
         Case SbrPanelDTFormatShort, SbrPanelDTFormatLong
             PropShadowPanels(Index).DTFormat = Value
@@ -1395,11 +1454,11 @@ End If
 End Property
 
 Friend Property Get FPanelForeColor(ByVal Index As Long) As OLE_COLOR
-If StatusBarHandle <> 0 Then FPanelForeColor = PropShadowPanels(Index).ForeColor
+If StatusBarHandle <> NULL_PTR Then FPanelForeColor = PropShadowPanels(Index).ForeColor
 End Property
 
 Friend Property Let FPanelForeColor(ByVal Index As Long, ByVal Value As OLE_COLOR)
-If StatusBarHandle <> 0 Then
+If StatusBarHandle <> NULL_PTR Then
     PropShadowPanels(Index).ForeColor = Value
     Dim RC As RECT
     Call GetPanelRect(Index, RC)
@@ -1409,12 +1468,12 @@ End If
 End Property
 
 Friend Property Get FPanelMinWidth(ByVal Index As Long) As Single
-If StatusBarHandle <> 0 Then FPanelMinWidth = UserControl.ScaleX(PropShadowPanels(Index).MinWidth, vbPixels, vbContainerSize)
+If StatusBarHandle <> NULL_PTR Then FPanelMinWidth = UserControl.ScaleX(PropShadowPanels(Index).MinWidth, vbPixels, vbContainerSize)
 End Property
 
 Friend Property Let FPanelMinWidth(ByVal Index As Long, ByVal Value As Single)
 If Value < 0 Then Err.Raise 380
-If StatusBarHandle <> 0 Then
+If StatusBarHandle <> NULL_PTR Then
     PropShadowPanels(Index).MinWidth = CLng(UserControl.ScaleX(Value, vbContainerSize, vbPixels))
     Call SetParts
     Call SetPanels
@@ -1422,7 +1481,7 @@ End If
 End Property
 
 Friend Property Get FPanelPicture(ByVal Index As Long) As IPictureDisp
-If StatusBarHandle <> 0 Then Set FPanelPicture = PropShadowPanels(Index).Picture
+If StatusBarHandle <> NULL_PTR Then Set FPanelPicture = PropShadowPanels(Index).Picture
 End Property
 
 Friend Property Let FPanelPicture(ByVal Index As Long, ByVal Value As IPictureDisp)
@@ -1430,7 +1489,7 @@ Set Me.FPanelPicture(Index) = Value
 End Property
 
 Friend Property Set FPanelPicture(ByVal Index As Long, ByVal Value As IPictureDisp)
-If StatusBarHandle <> 0 Then
+If StatusBarHandle <> NULL_PTR Then
     Set PropShadowPanels(Index).Picture = Value
     PropShadowPanels(Index).PictureRenderFlag = 0
     Call SetParts
@@ -1439,11 +1498,11 @@ End If
 End Property
 
 Friend Property Get FPanelEnabled(ByVal Index As Long) As Boolean
-If StatusBarHandle <> 0 Then FPanelEnabled = PropShadowPanels(Index).Enabled
+If StatusBarHandle <> NULL_PTR Then FPanelEnabled = PropShadowPanels(Index).Enabled
 End Property
 
 Friend Property Let FPanelEnabled(ByVal Index As Long, ByVal Value As Boolean)
-If StatusBarHandle <> 0 Then
+If StatusBarHandle <> NULL_PTR Then
     PropShadowPanels(Index).Enabled = Value
     Dim RC As RECT
     Call GetPanelRect(Index, RC)
@@ -1453,11 +1512,11 @@ End If
 End Property
 
 Friend Property Get FPanelVisible(ByVal Index As Long) As Boolean
-If StatusBarHandle <> 0 Then FPanelVisible = PropShadowPanels(Index).Visible
+If StatusBarHandle <> NULL_PTR Then FPanelVisible = PropShadowPanels(Index).Visible
 End Property
 
 Friend Property Let FPanelVisible(ByVal Index As Long, ByVal Value As Boolean)
-If StatusBarHandle <> 0 Then
+If StatusBarHandle <> NULL_PTR Then
     PropShadowPanels(Index).Visible = Value
     Call SetParts
     Call SetPanels
@@ -1465,11 +1524,11 @@ End If
 End Property
 
 Friend Property Get FPanelBold(ByVal Index As Long) As Boolean
-If StatusBarHandle <> 0 Then FPanelBold = PropShadowPanels(Index).Bold
+If StatusBarHandle <> NULL_PTR Then FPanelBold = PropShadowPanels(Index).Bold
 End Property
 
 Friend Property Let FPanelBold(ByVal Index As Long, ByVal Value As Boolean)
-If StatusBarHandle <> 0 Then
+If StatusBarHandle <> NULL_PTR Then
     PropShadowPanels(Index).Bold = Value
     Dim RC As RECT
     Call GetPanelRect(Index, RC)
@@ -1479,11 +1538,11 @@ End If
 End Property
 
 Friend Property Get FPanelLeft(ByVal Index As Long) As Single
-If StatusBarHandle <> 0 Then FPanelLeft = UserControl.ScaleX(PropShadowPanels(Index).Left, vbPixels, vbContainerSize)
+If StatusBarHandle <> NULL_PTR Then FPanelLeft = UserControl.ScaleX(PropShadowPanels(Index).Left, vbPixels, vbContainerSize)
 End Property
 
 Friend Property Get FPanelWidth(ByVal Index As Long) As Single
-If StatusBarHandle <> 0 Then FPanelWidth = UserControl.ScaleX(PropShadowPanels(Index).ActualWidth, vbPixels, vbContainerSize)
+If StatusBarHandle <> NULL_PTR Then FPanelWidth = UserControl.ScaleX(PropShadowPanels(Index).ActualWidth, vbPixels, vbContainerSize)
 End Property
 
 Friend Property Let FPanelWidth(ByVal Index As Long, ByVal Value As Single)
@@ -1493,7 +1552,7 @@ If Value < 0 Then
         Err.Raise 380
     End If
 End If
-If StatusBarHandle <> 0 Then
+If StatusBarHandle <> NULL_PTR Then
     If PropShadowPanels(Index).AutoSize <> SbrPanelAutoSizeSpring Then
         Select Case PropShadowPanels(Index).AutoSize
             Case SbrPanelAutoSizeNone
@@ -1512,7 +1571,7 @@ End If
 End Property
 
 Private Sub CreateStatusBar()
-If StatusBarHandle <> 0 Then Exit Sub
+If StatusBarHandle <> NULL_PTR Then Exit Sub
 Dim dwStyle As Long, dwExStyle As Long
 dwStyle = WS_CHILD Or WS_VISIBLE Or WS_CLIPSIBLINGS Or CCS_BOTTOM
 If StatusBarSizeGripAllowable = True And PropAllowSizeGrip = True Then dwStyle = dwStyle Or SBARS_SIZEGRIP
@@ -1522,7 +1581,7 @@ If StatusBarDesignMode = False Then
     ' Thus it is necessary to subclass the parent before the control is created.
     Call ComCtlsSetSubclass(UserControl.hWnd, Me, 2)
 End If
-StatusBarHandle = CreateWindowEx(dwExStyle, StrPtr("msctls_statusbar32"), 0, dwStyle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, 0, App.hInstance, ByVal 0&)
+StatusBarHandle = CreateWindowEx(dwExStyle, StrPtr("msctls_statusbar32"), NULL_PTR, dwStyle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, NULL_PTR, App.hInstance, ByVal NULL_PTR)
 Set Me.Font = PropFont
 Me.VisualStyles = PropVisualStyles
 Me.Enabled = UserControl.Enabled
@@ -1531,7 +1590,7 @@ Me.SimpleText = PropSimpleText
 Me.ShowTips = PropShowTips
 Me.BackColor = PropBackColor
 If StatusBarDesignMode = False Then
-    If StatusBarHandle <> 0 Then Call ComCtlsSetSubclass(StatusBarHandle, Me, 1)
+    If StatusBarHandle <> NULL_PTR Then Call ComCtlsSetSubclass(StatusBarHandle, Me, 1)
 Else
     Call ComCtlsSetSubclass(UserControl.hWnd, Me, 3)
 End If
@@ -1542,15 +1601,15 @@ End Sub
 Private Sub CreateToolTip()
 Static Done As Boolean
 Dim dwExStyle As Long
-If StatusBarToolTipHandle <> 0 Then Exit Sub
+If StatusBarToolTipHandle <> NULL_PTR Then Exit Sub
 If Done = False Then
     Call ComCtlsInitCC(ICC_TAB_CLASSES)
     Done = True
 End If
 dwExStyle = WS_EX_TOOLWINDOW Or WS_EX_TOPMOST
 If PropRightToLeft = True And PropRightToLeftLayout = True Then dwExStyle = dwExStyle Or WS_EX_LAYOUTRTL
-StatusBarToolTipHandle = CreateWindowEx(dwExStyle, StrPtr("tooltips_class32"), StrPtr("Tool Tip"), WS_POPUP Or TTS_ALWAYSTIP Or TTS_NOPREFIX, 0, 0, 0, 0, UserControl.hWnd, 0, App.hInstance, ByVal 0&)
-If StatusBarToolTipHandle <> 0 Then Call ComCtlsInitToolTip(StatusBarToolTipHandle)
+StatusBarToolTipHandle = CreateWindowEx(dwExStyle, StrPtr("tooltips_class32"), StrPtr("Tool Tip"), WS_POPUP Or TTS_ALWAYSTIP Or TTS_NOPREFIX, 0, 0, 0, 0, UserControl.hWnd, NULL_PTR, App.hInstance, ByVal NULL_PTR)
+If StatusBarToolTipHandle <> NULL_PTR Then Call ComCtlsInitToolTip(StatusBarToolTipHandle)
 Call SetVisualStylesToolTip
 End Sub
 
@@ -1563,52 +1622,52 @@ Call CreateStatusBar
 Call UserControl_Resize
 Call SetParts
 Call SetPanels
-If Locked = True Then LockWindowUpdate 0
+If Locked = True Then LockWindowUpdate NULL_PTR
 .Refresh
 End With
 End Sub
 
 Private Sub DestroyStatusBar()
-If StatusBarHandle = 0 Then Exit Sub
+If StatusBarHandle = NULL_PTR Then Exit Sub
 TimerUpdatePanels.Enabled = False
 Call ComCtlsRemoveSubclass(StatusBarHandle)
 Call ComCtlsRemoveSubclass(UserControl.hWnd)
 Call DestroyToolTip
 ShowWindow StatusBarHandle, SW_HIDE
-SetParent StatusBarHandle, 0
+SetParent StatusBarHandle, NULL_PTR
 DestroyWindow StatusBarHandle
-StatusBarHandle = 0
-If StatusBarFontHandle <> 0 Then
+StatusBarHandle = NULL_PTR
+If StatusBarFontHandle <> NULL_PTR Then
     DeleteObject StatusBarFontHandle
-    StatusBarFontHandle = 0
+    StatusBarFontHandle = NULL_PTR
 End If
-If StatusBarBoldFontHandle <> 0 Then
+If StatusBarBoldFontHandle <> NULL_PTR Then
     DeleteObject StatusBarBoldFontHandle
-    StatusBarBoldFontHandle = 0
+    StatusBarBoldFontHandle = NULL_PTR
 End If
 End Sub
 
 Private Sub DestroyToolTip()
-If StatusBarToolTipHandle = 0 Then Exit Sub
+If StatusBarToolTipHandle = NULL_PTR Then Exit Sub
 DestroyWindow StatusBarToolTipHandle
-StatusBarToolTipHandle = 0
+StatusBarToolTipHandle = NULL_PTR
 End Sub
 
 Public Sub Refresh()
 Attribute Refresh.VB_Description = "Forces a complete repaint of a object."
 Attribute Refresh.VB_UserMemId = -550
 UserControl.Refresh
-RedrawWindow UserControl.hWnd, 0, 0, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
+RedrawWindow UserControl.hWnd, NULL_PTR, NULL_PTR, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
 End Sub
 
 Public Function IncludesSizeGrip() As Boolean
 Attribute IncludesSizeGrip.VB_Description = "Returns a value indicating if the control includes a size grip at the right end."
-If StatusBarHandle <> 0 Then IncludesSizeGrip = CBool((GetWindowLong(StatusBarHandle, GWL_STYLE) And SBARS_SIZEGRIP) = SBARS_SIZEGRIP)
+If StatusBarHandle <> NULL_PTR Then IncludesSizeGrip = CBool((GetWindowLong(StatusBarHandle, GWL_STYLE) And SBARS_SIZEGRIP) = SBARS_SIZEGRIP)
 End Function
 
 Public Function HitTest(ByVal X As Single, ByVal Y As Single) As SbrPanel
 Attribute HitTest.VB_Description = "Returns a reference to the panel item object located at the coordinates of X and Y."
-If StatusBarHandle <> 0 Then
+If StatusBarHandle <> NULL_PTR Then
     Dim P As POINTAPI, RC As RECT, i As Long
     P.X = UserControl.ScaleX(X, vbContainerPosition, vbPixels)
     P.Y = UserControl.ScaleY(Y, vbContainerPosition, vbPixels)
@@ -1694,21 +1753,21 @@ Select Case PropShadowPanels(Index).Style
 End Select
 End Sub
 
-Private Sub DrawPanel(ByVal Index As Long, ByVal hDC As Long, ByRef RC As RECT)
-If Index <> SB_SIMPLEID And StatusBarHandle <> 0 Then
-    Dim Text As String, Size As SIZEAPI, OldTextAlign As Long, OldBkMode As Long, OldTextColor As Long, hFontOld As Long
+Private Sub DrawPanel(ByVal Index As Long, ByVal hDC As LongPtr, ByRef RC As RECT)
+If Index <> SB_SIMPLEID And StatusBarHandle <> NULL_PTR Then
+    Dim Text As String, Size As SIZEAPI, OldTextAlign As Long, OldBkMode As Long, OldTextColor As Long, hFontOld As LongPtr
     With PropShadowPanels(Index)
     Call GetDisplayText(Index, Text, .Enabled)
     .DisplayText = Text
-    If StrPtr(Text) = 0 Then Text = ""
+    If StrPtr(Text) = NULL_PTR Then Text = ""
     OldBkMode = SetBkMode(hDC, 1)
     OldTextColor = SetTextColor(hDC, WinColor(.ForeColor))
-    If .Bold = True And StatusBarBoldFontHandle <> 0 Then hFontOld = SelectObject(hDC, StatusBarBoldFontHandle)
+    If .Bold = True And StatusBarBoldFontHandle <> NULL_PTR Then hFontOld = SelectObject(hDC, StatusBarBoldFontHandle)
     GetTextExtentPoint32 hDC, ByVal StrPtr(Text), Len(Text), Size
     Dim PictureWidth As Long, PictureHeight As Long
     Dim PictureLeft As Long, PictureTop As Long
     If Not .Picture Is Nothing Then
-        If .Picture.Handle <> 0 Then
+        If .Picture.Handle <> NULL_PTR Then
             PictureWidth = CHimetricToPixel_X(.Picture.Width)
             PictureHeight = CHimetricToPixel_Y(.Picture.Height)
             PictureTop = RC.Top + ((RC.Bottom - RC.Top) \ 2) - (PictureHeight \ 2)
@@ -1734,30 +1793,30 @@ If Index <> SB_SIMPLEID And StatusBarHandle <> 0 Then
     Flags = DST_TEXT
     If .Enabled = False Then Flags = Flags Or DSS_DISABLED
     If PropRightToLeft = True And PropRightToLeftLayout = False Then OldTextAlign = SetTextAlign(hDC, TA_RTLREADING)
-    DrawState hDC, 0, 0, StrPtr(Text), Len(Text), RC.Left, RC.Top, RC.Right - RC.Left, RC.Bottom - RC.Top, Flags
+    DrawState hDC, NULL_PTR, NULL_PTR, StrPtr(Text), Len(Text), RC.Left, RC.Top, RC.Right - RC.Left, RC.Bottom - RC.Top, Flags
     If PropRightToLeft = True And PropRightToLeftLayout = False Then SetTextAlign hDC, OldTextAlign
     SetBkMode hDC, OldBkMode
     SetTextColor hDC, OldTextColor
-    If hFontOld <> 0 Then SelectObject hDC, hFontOld
+    If hFontOld <> NULL_PTR Then SelectObject hDC, hFontOld
     End With
 End If
 End Sub
 
 Private Sub SetMinHeight()
-If StatusBarHandle <> 0 Then
+If StatusBarHandle <> NULL_PTR Then
     Dim Borders(0 To 2) As Long
     SendMessage StatusBarHandle, SB_GETBORDERS, 0, ByVal VarPtr(Borders(0))
     With UserControl
     Dim Height As Long, FontHeight As Long
-    Dim hDC As Long
-    Dim hFontOld As Long
+    Dim hDC As LongPtr
+    Dim hFontOld As LongPtr
     Dim Size As SIZEAPI
     Height = UserControl.ScaleHeight - Borders(SBB_VERTICAL)
-    If StatusBarFontHandle <> 0 Then
+    If StatusBarFontHandle <> NULL_PTR Then
         hDC = GetDC(StatusBarHandle)
-        If hDC <> 0 Then
+        If hDC <> NULL_PTR Then
             hFontOld = SelectObject(hDC, StatusBarFontHandle)
-            If hFontOld <> 0 Then
+            If hFontOld <> NULL_PTR Then
                 GetTextExtentPoint32 hDC, StrPtr("A"), 1, Size
                 FontHeight = Size.CY + Borders(SBB_VERTICAL)
                 SelectObject hDC, hFontOld
@@ -1779,7 +1838,7 @@ End If
 End Sub
 
 Private Sub SetParts()
-If StatusBarHandle <> 0 Then
+If StatusBarHandle <> NULL_PTR Then
     Dim Parts() As Long
     If PropShadowPanelsCount > 0 Then
         Dim Borders(0 To 2) As Long
@@ -1834,7 +1893,7 @@ End If
 End Sub
 
 Private Function GetGoodWidth(ByVal Index As Long) As Long
-If StatusBarHandle <> 0 Then
+If StatusBarHandle <> NULL_PTR Then
     GetGoodWidth = PropShadowPanels(Index).MinWidth
     If PropShadowPanels(Index).Visible = True Then
         Select Case PropShadowPanels(Index).AutoSize
@@ -1845,7 +1904,7 @@ If StatusBarHandle <> 0 Then
                 Width = GetTextWidth(Index)
                 If Width > GetGoodWidth Then GetGoodWidth = Width
                 If Not PropShadowPanels(Index).Picture Is Nothing Then
-                    If PropShadowPanels(Index).Picture.Handle <> 0 Then GetGoodWidth = GetGoodWidth + CHimetricToPixel_X(PropShadowPanels(Index).Picture.Width) + 2
+                    If PropShadowPanels(Index).Picture.Handle <> NULL_PTR Then GetGoodWidth = GetGoodWidth + CHimetricToPixel_X(PropShadowPanels(Index).Picture.Width) + 2
                 End If
         End Select
     Else
@@ -1855,22 +1914,22 @@ End If
 End Function
 
 Private Function GetTextWidth(ByVal Index As Long) As Long
-If StatusBarHandle <> 0 And StatusBarFontHandle <> 0 Then
-    Dim hDC As Long
-    Dim hFontOld As Long
+If StatusBarHandle <> NULL_PTR And StatusBarFontHandle <> NULL_PTR Then
+    Dim hDC As LongPtr
+    Dim hFontOld As LongPtr
     Dim Size As SIZEAPI
     hDC = GetDC(StatusBarHandle)
-    If hDC <> 0 Then
-        If PropShadowPanels(Index).Bold = False Or StatusBarBoldFontHandle = 0 Then
+    If hDC <> NULL_PTR Then
+        If PropShadowPanels(Index).Bold = False Or StatusBarBoldFontHandle = NULL_PTR Then
             hFontOld = SelectObject(hDC, StatusBarFontHandle)
         Else
             hFontOld = SelectObject(hDC, StatusBarBoldFontHandle)
         End If
-        If hFontOld <> 0 Then
+        If hFontOld <> NULL_PTR Then
             Dim Text As String
             Text = PropShadowPanels(Index).DisplayText
             GetTextExtentPoint32 hDC, StrPtr(Text), Len(Text), Size
-            GetTextWidth = Size.CX + 8
+            GetTextWidth = Size.CX + (8 * PixelsPerDIP_X())
             SelectObject hDC, hFontOld
         End If
         ReleaseDC StatusBarHandle, hDC
@@ -1879,7 +1938,7 @@ End If
 End Function
 
 Private Sub GetPanelRect(ByVal Index As Long, ByRef RC As RECT)
-If StatusBarHandle <> 0 Then
+If StatusBarHandle <> NULL_PTR Then
     SendMessage StatusBarHandle, SB_GETRECT, Index - 1, ByVal VarPtr(RC)
     If ComCtlsSupportLevel() = 1 Then ' Bugfix for Windows XP
         If Me.IncludesSizeGrip = True Then
@@ -1893,7 +1952,7 @@ End If
 End Sub
 
 Private Sub SetPanels()
-If StatusBarHandle <> 0 And PropShadowPanelsCount > 0 Then
+If StatusBarHandle <> NULL_PTR And PropShadowPanelsCount > 0 Then
     Dim i As Long
     For i = 1 To UBound(PropShadowPanels())
         Call SetPanelText(i)
@@ -1903,7 +1962,7 @@ End If
 End Sub
 
 Private Sub SetPanelText(ByVal Index As Long)
-If StatusBarHandle <> 0 Then
+If StatusBarHandle <> NULL_PTR Then
     Dim BevelStyle As Long
     Select Case PropShadowPanels(Index).Bevel
         Case SbrPanelBevelFlat
@@ -1918,7 +1977,7 @@ End If
 End Sub
 
 Private Sub SetPanelToolTipText(ByVal Index As Long)
-If StatusBarHandle <> 0 And StatusBarToolTipHandle <> 0 Then
+If StatusBarHandle <> NULL_PTR And StatusBarToolTipHandle <> NULL_PTR Then
     Dim TI As TOOLINFO
     With TI
     .cbSize = LenB(TI)
@@ -1943,7 +2002,7 @@ End If
 End Sub
 
 Private Sub UpdateToolTipRects()
-If StatusBarHandle <> 0 And StatusBarToolTipHandle <> 0 And PropShadowPanelsCount > 0 Then
+If StatusBarHandle <> NULL_PTR And StatusBarToolTipHandle <> NULL_PTR And PropShadowPanelsCount > 0 Then
     Dim TI As TOOLINFO
     With TI
     .cbSize = LenB(TI)
@@ -1959,7 +2018,7 @@ End If
 End Sub
 
 Private Sub CheckTimer()
-If StatusBarHandle <> 0 And PropShadowPanelsCount > 0 Then
+If StatusBarHandle <> NULL_PTR And PropShadowPanelsCount > 0 Then
     TimerUpdatePanels.Enabled = Not StatusBarDesignMode
 Else
     TimerUpdatePanels.Enabled = False
@@ -1967,8 +2026,8 @@ End If
 End Sub
 
 Private Sub SetVisualStylesToolTip()
-If StatusBarHandle <> 0 Then
-    If StatusBarToolTipHandle <> 0 And EnabledVisualStyles() = True Then
+If StatusBarHandle <> NULL_PTR Then
+    If StatusBarToolTipHandle <> NULL_PTR And EnabledVisualStyles() = True Then
         If PropVisualStyles = True Then
             ActivateVisualStyles StatusBarToolTipHandle
         Else
@@ -1984,7 +2043,18 @@ ID = ID + 1
 NextToolTipID = ID
 End Function
 
+Private Function PtInRect(ByRef lpRect As RECT, ByVal X As Long, ByVal Y As Long) As Long
+' Avoid API declare since x64 calling convention aligns 8 bytes per argument.
+' So the handling of a ByVal PT being split into two 4-byte arguments will crash.
+PtInRect = 0
+If X >= lpRect.Left And X < lpRect.Right And Y >= lpRect.Top And Y < lpRect.Bottom Then PtInRect = 1
+End Function
+
+#If VBA7 Then
+Private Function ISubclass_Message(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
+#Else
 Private Function ISubclass_Message(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal dwRefData As Long) As Long
+#End If
 Select Case dwRefData
     Case 1
         ISubclass_Message = WindowProcControl(hWnd, wMsg, wParam, lParam)
@@ -1995,12 +2065,12 @@ Select Case dwRefData
 End Select
 End Function
 
-Private Function WindowProcControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_SETCURSOR
-        If LoWord(lParam) = HTCLIENT Then
+        If LoWord(CLng(lParam)) = HTCLIENT Then
             If MousePointerID(PropMousePointer) <> 0 Then
-                SetCursor LoadCursor(0, MousePointerID(PropMousePointer))
+                SetCursor LoadCursor(NULL_PTR, MousePointerID(PropMousePointer))
                 WindowProcControl = 1
                 Exit Function
             ElseIf PropMousePointer = 99 Then
@@ -2012,28 +2082,28 @@ Select Case wMsg
             End If
         End If
     Case WM_ERASEBKGND
-        If PropDoubleBuffer = True And (StatusBarDoubleBufferEraseBkgDC <> wParam Or StatusBarDoubleBufferEraseBkgDC = 0) And WindowFromDC(wParam) = hWnd Then
+        If PropDoubleBuffer = True And (StatusBarDoubleBufferEraseBkgDC <> wParam Or StatusBarDoubleBufferEraseBkgDC = NULL_PTR) And WindowFromDC(wParam) = hWnd Then
             WindowProcControl = 0
             Exit Function
         End If
     Case WM_PAINT
         If PropDoubleBuffer = True Then
-            Dim ClientRect As RECT, hDC As Long
-            Dim hDCBmp As Long
-            Dim hBmp As Long, hBmpOld As Long
+            Dim ClientRect As RECT, hDC As LongPtr
+            Dim hDCBmp As LongPtr
+            Dim hBmp As LongPtr, hBmpOld As LongPtr
             GetClientRect hWnd, ClientRect
             Dim PS As PAINTSTRUCT
             hDC = BeginPaint(hWnd, PS)
             With PS
             If wParam <> 0 Then hDC = wParam
             hDCBmp = CreateCompatibleDC(hDC)
-            If hDCBmp <> 0 Then
+            If hDCBmp <> NULL_PTR Then
                 hBmp = CreateCompatibleBitmap(hDC, ClientRect.Right - ClientRect.Left, ClientRect.Bottom - ClientRect.Top)
-                If hBmp <> 0 Then
+                If hBmp <> NULL_PTR Then
                     hBmpOld = SelectObject(hDCBmp, hBmp)
                     StatusBarDoubleBufferEraseBkgDC = hDCBmp
                     SendMessage hWnd, WM_PRINT, hDCBmp, ByVal PRF_CLIENT Or PRF_ERASEBKGND
-                    StatusBarDoubleBufferEraseBkgDC = 0
+                    StatusBarDoubleBufferEraseBkgDC = NULL_PTR
                     With PS.RCPaint
                     BitBlt hDC, .Left, .Top, .Right - .Left, .Bottom - .Top, hDCBmp, .Left, .Top, vbSrcCopy
                     End With
@@ -2096,7 +2166,7 @@ Select Case wMsg
 End Select
 End Function
 
-Private Function WindowProcUserControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcUserControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_SHOWWINDOW
         If StatusBarSizeGripAllowable = True Then
@@ -2108,9 +2178,9 @@ Select Case wMsg
             End If
         End If
     Case WM_WINDOWPOSCHANGED
-        Static PrevWndContainer As Long
+        Static PrevWndContainer As LongPtr
         If StatusBarAlignable = True Then
-            If PrevWndContainer <> UserControl.ContainerHwnd And PrevWndContainer <> 0 Then
+            If PrevWndContainer <> UserControl.ContainerHwnd And PrevWndContainer <> NULL_PTR Then
                 If Not StatusBarSizeGripAllowable = CBool(((GetWindowLong(UserControl.ContainerHwnd, GWL_STYLE) And WS_THICKFRAME) = WS_THICKFRAME) And Extender.Align = vbAlignBottom) Then
                     StatusBarSizeGripAllowable = Not StatusBarSizeGripAllowable
                     Call ReCreateStatusBar
@@ -2122,7 +2192,7 @@ Select Case wMsg
                 StatusBarSizeGripAllowable = False
                 Call ReCreateStatusBar
             End If
-            PrevWndContainer = 0
+            PrevWndContainer = NULL_PTR
         End If
     Case WM_DRAWITEM
         Dim DIS As DRAWITEMSTRUCT
@@ -2173,7 +2243,7 @@ End Select
 WindowProcUserControl = ComCtlsDefaultProc(hWnd, wMsg, wParam, lParam)
 End Function
 
-Private Function WindowProcUserControlDesignMode(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcUserControlDesignMode(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 If wMsg = WM_DRAWITEM Then
     Dim DIS As DRAWITEMSTRUCT
     CopyMemory DIS, ByVal lParam, LenB(DIS)

@@ -650,8 +650,7 @@ End Function
 
 Public Function PutW(hFile As Long, ByVal pos As Long, vInPtr As Long, cbToWrite As Long, Optional doAppend As Boolean) As Boolean
     On Error GoTo ErrorHandler
-    'don't uncomment it -> recurse on bDebugToFile !!!
-    'AppendErrorLogCustom "PutW - Begin", "Handle: " & hFile, "pos: " & pos, "Bytes: " & cbToWrite
+    AppendErrorLogCustom "PutW - Begin", "Handle: " & hFile, "pos: " & pos, "Bytes: " & cbToWrite
     
     Dim lBytesWrote  As Long
     
@@ -665,11 +664,30 @@ Public Function PutW(hFile As Long, ByVal pos As Long, vInPtr As Long, cbToWrite
     
     If WriteFile(hFile, vInPtr, cbToWrite, lBytesWrote, 0&) Then PutW = True
     
-    'AppendErrorLogCustom "PutW - End"
+    AppendErrorLogCustom "PutW - End"
     Exit Function
 ErrorHandler:
-    'don't change/append this identifier !!! -> can cause recurse on bDebugToFile !!!
+    'preventing PutW infinite recurse call when bDebugToFile == true
+    Dim g_hPrevHandle As Long: g_hPrevHandle = g_hDebugLog
+    g_hDebugLog = 0
     ErrorMsg Err, "modFile.PutW"
+    g_hDebugLog = g_hPrevHandle
+End Function
+
+Public Function PutW_NoLog(hFile As Long, ByVal pos As Long, vInPtr As Long, cbToWrite As Long, Optional doAppend As Boolean) As Boolean
+    On Error GoTo ErrorHandler
+
+    Dim lBytesWrote  As Long
+    pos = pos - 1   ' VB's Get & SetFilePointer difference correction
+    
+    If doAppend Then
+        If INVALID_SET_FILE_POINTER = SetFilePointer(hFile, 0&, ByVal 0&, FILE_END) Then Exit Function
+    Else
+        If INVALID_SET_FILE_POINTER = SetFilePointer(hFile, pos, ByVal 0&, FILE_BEGIN) Then Exit Function
+    End If
+    
+    If WriteFile(hFile, vInPtr, cbToWrite, lBytesWrote, 0&) Then PutW_NoLog = True
+ErrorHandler:
 End Function
 
 Public Function LOFW(hFile As Long) As Currency
@@ -1638,15 +1656,6 @@ End Function
 
 Private Function StrBeginWith(Text As String, BeginPart As String) As Boolean
     StrBeginWith = (StrComp(Left$(Text, Len(BeginPart)), BeginPart, 1) = 0)
-End Function
-
-Private Function SplitSafe(sComplexString As String, Optional Delimiter As String = " ") As String()
-    If 0 = Len(sComplexString) Then
-        ReDim arr(0) As String
-        SplitSafe = arr
-    Else
-        SplitSafe = Split(sComplexString, Delimiter)
-    End If
 End Function
 
 ' Возвращает true, если искомое значение найдено в одном из элементов массива (lB, uB ограничивает просматриваемый диапазон индексов)
@@ -3004,7 +3013,7 @@ Public Function ShowFileProperties(sFile$, Handle As Long) As Boolean
     With uSEI
         .cbSize = Len(uSEI)
         .fMask = SEE_MASK_INVOKEIDLIST Or SEE_MASK_NOCLOSEPROCESS Or SEE_MASK_DOENVSUBST Or SEE_MASK_FLAG_NO_UI
-        .hwnd = Handle
+        .hWnd = Handle
         .lpFile = StrPtr(PathX64(sFile))
         .lpVerb = StrPtr("properties")
         .nShow = 1

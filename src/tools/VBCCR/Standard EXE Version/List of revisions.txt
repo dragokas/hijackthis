@@ -1,5 +1,27 @@
 List of revisions:
 
+06-Sep-2023
+- Passing vbNullString to the Let .List(i) property of the ComboBoxW/ListBoxW control does not cause an misbehavior anymore.
+- WM_CHAR now blocked in the list control if the Locked property is true in the ComboBoxW/FontCombo/VirtualCombo/ImageCombo control.
+
+25-Jul-2023
+- ODS_HOTLIGHT added to the OwnerDraw event in the CommandButtonW/CheckBoxW/OptionButtonW.
+  Condition is that the MouseTrack property is set to True.
+
+08-Jul-2023
+- Fixed const FR_HIDEMATCHCASE.
+
+07-Jul-2023
+- Modified OLEGuids.tlb as following: (compiled with same uuid)
+  - replaced LPSTR and LPWSTR to LONG StrPtr() to get compatibility with x64 OLEGuids twinBASIC package.
+  Unregister to old OLEGuids.tlb is not necessary, just overwrite the file.
+
+06-Jul-2023
+- Changing font for ProgressBar will cause an invalidation when a Text property is set.
+
+02-Jul-2023
+- PtInRect/LBItemFromPt/WindowFromPoint/DragDetect API and code adaptions so it can be migrated to x64 more easily.
+
 17-May-2023
 - Support of icons and metafiles for the Picture property in the TbrButtonMenu of the ToolBar control.
   Selecting such a picture file (design-time) will show a warning message that the menu theme will be removed. (HBMMENU_CALLBACK)

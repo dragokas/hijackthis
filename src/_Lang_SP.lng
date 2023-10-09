@@ -18,7 +18,7 @@
 ;
 0001=Bienvenido a HiJackThis+
      Este programa generará un reporte de elementos inusuales
-     (archivos, modificacones en registros, etc.) en las areas mas vulnerables del sistema operativo, comúnmente manipulado por malware, así como por buen software.
+     (archivos, modificacones en registros, etc.) en las areas mas vulnerables del sistema operativo, comúnmente manipulado por malware, así como por buen software
 0002=HiJackThis ya se está ejecutando.
      ¿Estás seguro de que deseas lanzar otra copia?
 0004=A continuación se muestran los resultados del escaneo HiJackThis.
@@ -40,7 +40,6 @@
 0015=   Otras cosas
 0016=Ayuda
 0017=Atrás
-0018=Configuraciones
 0019=Reporte
 0020=Agregar marcados a lista ignorados
 0021=Módulos cargados
@@ -101,6 +100,10 @@
 1070=Línea de comandos
 1080=longitud de la dirección
 1081=caracteres
+;main menu
+1088=Configuraciones
+;scan results menu
+1089=Configuraciones
 ;
 ; ============== EULA ============
 ;
@@ -128,6 +131,9 @@
 1117=Ninguno de los anteriores, solo iniciar el programa
 1118=No mostrar este menú después de iniciar el programa
 1119=Idioma:
+1120=Tutorial en línea
+1121=Manual sin conexión
+1122=Foros de cura
 ;
 ; ================ Context menu ==============
 ;
@@ -198,7 +204,7 @@
 1223=Holandés [desactualizado]
 1224=Buscar actualizaciones
 1225=Acerca de programa...
-1226=Soporte
+1226=Informe sobre error
 1227=Descripciones de las secciones
 1228=Teclas de línea de comando
 1229=Registro
@@ -375,7 +381,7 @@
      Sistemas compatibles
      -------------------------
      
-      * Microsoft™ Windows™ 11 / 10 / 8.1 / 8 / 7 / Vista / XP / 2000, incluidas las ediciones para servidores, tanto 32 y 64 bits.
+      * Microsoft™ Windows™ 11 / 10 / 8.1 / 8 / 7 / Vista / XP, incluidas las ediciones para servidores, tanto 32 y 64 bits.
 
 
      Autores y Derechos de Autor
@@ -798,8 +804,11 @@
      ¿Desea crear un nuevo archivo de hosts predeterminado?
 0281=No se encontró ningún archivo de hosts.
 0282=El archivo de hosts está bloqueado para lectura y no se puede editar.
-     Asegúrese de tener privilegios para modificar el archivo de hosts y que ningún programa lo proteja contra cambios.
-0303=HiJackThis no pudo escribir los cambios seleccionados en su archivo de hosts. Es posible que otro programa le esté negando el acceso o que su cuenta de usuario no tenga derechos suficientes para acceder a él.
+0284=Asegúrese de tener privilegios para modificar el archivo de hosts y que ningún programa lo proteja contra cambios.
+0300=Reiniciar
+0301=¿Está realmente seguro de restablecer el contenido del archivo hosts a los valores predeterminados?
+0302=Actualizar lista
+0303=No pudo escribir los cambios seleccionados en su archivo de hosts. Es posible que otro programa le esté negando el acceso o que su cuenta de usuario no tenga derechos suficientes para acceder a él.
 ;
 ;
 ; =========== Digital signature checker ==========
@@ -1314,7 +1323,7 @@
       - para (Hidden): muestra la cuenta de usuario de la pantalla de inicio de sesión.
       - para (RDP Group): cancela la membresía del usuario en el grupo RDP.
       - para (Missing): la entrada SID del usuario se eliminará del registro. La rama HKEY_USERS\<SID> no se procesa.
-      - para (Port): deshabilita la regla de firewall que permite conexiones entrantes al puerto 3389 de svchost.exe.
+      - para (Port): deshabilita la regla de firewall que permite conexiones entrantes al puerto 3389.
       - para (Other): la entrada de registro se establece en los valores predeterminados.
 ; [O28]
 0437=
@@ -1872,4 +1881,4 @@
 ; ========= Empty ========
 ;
 ; (2500 - ...)
-;                                                 
+;                                                  

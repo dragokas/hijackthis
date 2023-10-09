@@ -24,8 +24,19 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-Attribute VB_Ext_KEY = "PropPageWizardRun" ,"Yes"
 Option Explicit
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
 #If False Then
 Private TvwStyleTextOnly, TvwStylePictureText, TvwStylePlusMinusText, TvwStylePlusMinusPictureText, TvwStyleTreeLinesText, TvwStyleTreeLinesPictureText, TvwStyleTreeLinesPlusMinusText, TvwStyleTreeLinesPlusMinusPictureText
 Private TvwLineStyleTreeLines, TvwLineStyleRootLines
@@ -92,15 +103,15 @@ Bottom As Long
 End Type
 Private Type TVITEM
 Mask As Long
-hItem As Long
+hItem As LongPtr
 State As Long
 StateMask As Long
-pszText As Long
+pszText As LongPtr
 cchTextMax As Long
 iImage As Long
 iSelectedImage As Long
 cChildren As Long
-lParam As Long
+lParam As LongPtr
 End Type
 Private Type TVITEMEX
 TVI As TVITEM
@@ -110,27 +121,27 @@ Private Type TVITEMEX_V61
 TVI As TVITEM
 iIntegral As Long
 uStateEx As Long
-hWnd As Long
+hWnd As LongPtr
 iExpandedImage As Long
 End Type
 Private Type TVINSERTSTRUCT
-hParent As Long
-hInsertAfter As Long
+hParent As LongPtr
+hInsertAfter As LongPtr
 Item As TVITEMEX
 End Type
 Private Type TVHITTESTINFO
 PT As POINTAPI
 Flags As Long
-hItem As Long
+hItem As LongPtr
 End Type
 Private Type TVSORTCB
-hParent As Long
-lpfnCompare As Long
-lParam As Long
+hParent As LongPtr
+lpfnCompare As LongPtr
+lParam As LongPtr
 End Type
 Private Type NMHDR
-hWndFrom As Long
-IDFrom As Long
+hWndFrom As LongPtr
+IDFrom As LongPtr
 Code As Long
 End Type
 Private Const CDDS_PREPAINT As Long = &H1
@@ -147,11 +158,11 @@ Private Const TVCDRF_NOIMAGES As Long = &H10000
 Private Type NMCUSTOMDRAW
 hdr As NMHDR
 dwDrawStage As Long
-hDC As Long
+hDC As LongPtr
 RC As RECT
-dwItemSpec As Long
+dwItemSpec As LongPtr
 uItemState As Long
-lItemlParam As Long
+lItemlParam As LongPtr
 End Type
 Private Type NMTVCUSTOMDRAW
 NMCD As NMCUSTOMDRAW
@@ -172,10 +183,10 @@ Item As TVITEM
 End Type
 Private Type NMTVGETINFOTIP
 hdr As NMHDR
-pszText As Long
+pszText As LongPtr
 cchTextMax As Long
-hItem As Long
-lParam As Long
+hItem As LongPtr
+lParam As LongPtr
 End Type
 Public Event Click()
 Attribute Click.VB_Description = "Occurs when the user presses and then releases a mouse button over an object."
@@ -249,12 +260,44 @@ Public Event OLESetData(Data As DataObject, DataFormat As Integer)
 Attribute OLESetData.VB_Description = "Occurs at the OLE drag/drop source control when the drop target requests data that was not provided to the DataObject during the OLEDragStart event."
 Public Event OLEStartDrag(Data As DataObject, AllowedEffects As Long)
 Attribute OLEStartDrag.VB_Description = "Occurs when an OLE drag/drop operation is initiated either manually or automatically."
+#If VBA7 Then
+Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
+Private Declare PtrSafe Function lstrlen Lib "kernel32" Alias "lstrlenW" (ByVal lpString As LongPtr) As Long
+Private Declare PtrSafe Function lstrcmp Lib "kernel32" Alias "lstrcmpW" (ByVal lpString1 As LongPtr, ByVal lpString2 As LongPtr) As Long
+Private Declare PtrSafe Function lstrcmpi Lib "kernel32" Alias "lstrcmpiW" (ByVal lpString1 As LongPtr, ByVal lpString2 As LongPtr) As Long
+Private Declare PtrSafe Function GetTickCount Lib "kernel32" () As Long
+Private Declare PtrSafe Function SetWindowTheme Lib "uxtheme" (ByVal hWnd As LongPtr, ByVal lpSubAppName As LongPtr, ByVal lpSubIDList As LongPtr) As Long
+Private Declare PtrSafe Function ImageList_Destroy Lib "comctl32" (ByVal hImageList As LongPtr) As Long
+Private Declare PtrSafe Function PostMessage Lib "user32" Alias "PostMessageW" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByRef lParam As Any) As LongPtr
+Private Declare PtrSafe Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByRef lParam As Any) As LongPtr
+Private Declare PtrSafe Function CreateWindowEx Lib "user32" Alias "CreateWindowExW" (ByVal dwExStyle As Long, ByVal lpClassName As LongPtr, ByVal lpWindowName As LongPtr, ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hWndParent As LongPtr, ByVal hMenu As LongPtr, ByVal hInstance As LongPtr, ByRef lpParam As Any) As LongPtr
+Private Declare PtrSafe Function SetWindowLong Lib "user32" Alias "SetWindowLongW" (ByVal hWnd As LongPtr, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
+Private Declare PtrSafe Function GetWindowLong Lib "user32" Alias "GetWindowLongW" (ByVal hWnd As LongPtr, ByVal nIndex As Long) As Long
+Private Declare PtrSafe Function ShowWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal nCmdShow As Long) As Long
+Private Declare PtrSafe Function MoveWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint As Long) As Long
+Private Declare PtrSafe Function DestroyWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
+Private Declare PtrSafe Function SetParent Lib "user32" (ByVal hWndChild As LongPtr, ByVal hWndNewParent As LongPtr) As LongPtr
+Private Declare PtrSafe Function EnableWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal fEnable As Long) As Long
+Private Declare PtrSafe Function SetFocusAPI Lib "user32" Alias "SetFocus" (ByVal hWnd As LongPtr) As LongPtr
+Private Declare PtrSafe Function GetFocus Lib "user32" () As LongPtr
+Private Declare PtrSafe Function DeleteObject Lib "gdi32" (ByVal hObject As LongPtr) As Long
+Private Declare PtrSafe Function RedrawWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal lprcUpdate As LongPtr, ByVal hrgnUpdate As LongPtr, ByVal fuRedraw As Long) As Long
+Private Declare PtrSafe Function GetCursorPos Lib "user32" (ByRef lpPoint As POINTAPI) As Long
+Private Declare PtrSafe Function ScreenToClient Lib "user32" (ByVal hWnd As LongPtr, ByRef lpPoint As POINTAPI) As Long
+Private Declare PtrSafe Function GetWindowRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As RECT) As Long
+Private Declare PtrSafe Function LoadCursor Lib "user32" Alias "LoadCursorW" (ByVal hInstance As LongPtr, ByVal lpCursorName As Any) As LongPtr
+Private Declare PtrSafe Function SetCursor Lib "user32" (ByVal hCursor As LongPtr) As LongPtr
+Private Declare PtrSafe Function InvalidateRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As Any, ByVal bErase As Long) As Long
+Private Declare PtrSafe Function UpdateWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
+Private Declare PtrSafe Function GetDoubleClickTime Lib "user32" () As Long
+Private Declare PtrSafe Function GetSysColor Lib "user32" (ByVal nIndex As Long) As Long
+#Else
 Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
 Private Declare Function lstrlen Lib "kernel32" Alias "lstrlenW" (ByVal lpString As Long) As Long
 Private Declare Function lstrcmp Lib "kernel32" Alias "lstrcmpW" (ByVal lpString1 As Long, ByVal lpString2 As Long) As Long
 Private Declare Function lstrcmpi Lib "kernel32" Alias "lstrcmpiW" (ByVal lpString1 As Long, ByVal lpString2 As Long) As Long
 Private Declare Function GetTickCount Lib "kernel32" () As Long
-Private Declare Function SetWindowTheme Lib "uxtheme" (ByVal hWnd As Long, ByVal pSubAppName As Long, ByVal pSubIDList As Long) As Long
+Private Declare Function SetWindowTheme Lib "uxtheme" (ByVal hWnd As Long, ByVal lpSubAppName As Long, ByVal lpSubIDList As Long) As Long
 Private Declare Function ImageList_Destroy Lib "comctl32" (ByVal hImageList As Long) As Long
 Private Declare Function PostMessage Lib "user32" Alias "PostMessageW" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByRef lParam As Any) As Long
 Private Declare Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByRef lParam As Any) As Long
@@ -279,6 +322,7 @@ Private Declare Function InvalidateRect Lib "user32" (ByVal hWnd As Long, ByRef 
 Private Declare Function UpdateWindow Lib "user32" (ByVal hWnd As Long) As Long
 Private Declare Function GetDoubleClickTime Lib "user32" () As Long
 Private Declare Function GetSysColor Lib "user32" (ByVal nIndex As Long) As Long
+#End If
 Private Const ICC_TREEVIEW_CLASSES As Long = &H2
 Private Const RDW_UPDATENOW As Long = &H100, RDW_INVALIDATE As Long = &H1, RDW_ERASE As Long = &H4, RDW_ALLCHILDREN As Long = &H80
 Private Const GWL_STYLE As Long = (-16)
@@ -499,9 +543,9 @@ Implements ISubclass
 Implements OLEGuids.IObjectSafety
 Implements OLEGuids.IOleInPlaceActiveObjectVB
 Implements OLEGuids.IPerPropertyBrowsingVB
-Private TreeViewHandle As Long, TreeViewToolTipHandle As Long
-Private TreeViewFontHandle As Long
-Private TreeViewIMCHandle As Long
+Private TreeViewHandle As LongPtr, TreeViewToolTipHandle As LongPtr
+Private TreeViewFontHandle As LongPtr
+Private TreeViewIMCHandle As LongPtr
 Private TreeViewCharCodeCache As Long
 Private TreeViewIsClick As Boolean
 Private TreeViewMouseOver As Boolean
@@ -509,18 +553,18 @@ Private TreeViewDesignMode As Boolean
 Private TreeViewLabelInEdit As Boolean
 Private TreeViewStartLabelEdit As Boolean
 Private TreeViewButtonDown As Integer
-Private TreeViewDragItemBuffer As Long, TreeViewDragItem As Long
-Private TreeViewInsertMarkItem As Long, TreeViewInsertMarkAfter As Boolean
-Private TreeViewExpandItem As Long, TreeViewPrevExpandItem As Long, TreeViewTickCount As Double
+Private TreeViewDragItemBuffer As LongPtr, TreeViewDragItem As LongPtr
+Private TreeViewInsertMarkItem As LongPtr, TreeViewInsertMarkAfter As Boolean
+Private TreeViewExpandItem As LongPtr, TreeViewPrevExpandItem As LongPtr, TreeViewTickCount As Double
 Private TreeViewSampleMode As Boolean
-Private TreeViewImageListObjectPointer As Long
+Private TreeViewImageListObjectPointer As LongPtr
 Private TreeViewAlignable As Boolean
 Private TreeViewFocused As Boolean
 Private TreeViewSelectedCount As Long
-Private TreeViewSelectedItems() As Long
+Private TreeViewSelectedItems() As LongPtr
 Private TreeViewClickSelectedCount As Long
 Private TreeViewClickShift As Integer
-Private TreeViewAnchorItem As Long
+Private TreeViewAnchorItem As LongPtr
 Private UCNoSetFocusFwd As Boolean
 Private DispIDMousePointer As Long
 Private DispIDImageList As Long, ImageListArray() As String
@@ -573,10 +617,14 @@ End Sub
 Private Sub IObjectSafety_SetInterfaceSafetyOptions(ByRef riid As OLEGuids.OLECLSID, ByVal dwOptionsSetMask As Long, ByVal dwEnabledOptions As Long)
 End Sub
 
+#If VBA7 Then
+Private Sub IOleInPlaceActiveObjectVB_TranslateAccelerator(ByRef Handled As Boolean, ByRef RetVal As Long, ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal Shift As Long)
+#Else
 Private Sub IOleInPlaceActiveObjectVB_TranslateAccelerator(ByRef Handled As Boolean, ByRef RetVal As Long, ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal Shift As Long)
+#End If
 If wMsg = WM_KEYDOWN Or wMsg = WM_KEYUP Then
     Dim KeyCode As Integer, IsInputKey As Boolean
-    KeyCode = wParam And &HFF&
+    KeyCode = CLng(wParam) And &HFF&
     If wMsg = WM_KEYDOWN Then
         RaiseEvent PreviewKeyDown(KeyCode, IsInputKey)
     ElseIf wMsg = WM_KEYUP Then
@@ -810,7 +858,7 @@ End Sub
 
 Private Sub UserControl_OLECompleteDrag(Effect As Long)
 RaiseEvent OLECompleteDrag(Effect)
-TreeViewDragItem = 0
+TreeViewDragItem = NULL_PTR
 End Sub
 
 Private Sub UserControl_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
@@ -819,7 +867,7 @@ End Sub
 
 Private Sub UserControl_OLEDragOver(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single, State As Integer)
 RaiseEvent OLEDragOver(Data, Effect, Button, Shift, UserControl.ScaleX(X, vbPixels, vbContainerPosition), UserControl.ScaleY(Y, vbPixels, vbContainerPosition), State)
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     If State = vbOver And Not Effect = vbDropEffectNone Then
         If PropOLEDragDropScroll = True Then
             Dim RC As RECT
@@ -846,7 +894,7 @@ If TreeViewHandle <> 0 Then
         .PT.X = X
         .PT.Y = Y
         SendMessage TreeViewHandle, TVM_HITTEST, 0, ByVal VarPtr(TVHTI)
-        If .hItem <> 0 And (.Flags And TVHT_ONITEMBUTTON) <> 0 Then
+        If .hItem <> NULL_PTR And (.Flags And TVHT_ONITEMBUTTON) <> 0 Then
             If Me.FNodeExpanded(.hItem) = False And PropOLEDragExpandTime > 0 Or PropOLEDragExpandTime = -1 Then
                 TreeViewExpandItem = .hItem
                 If TreeViewExpandItem <> TreeViewPrevExpandItem Then
@@ -860,10 +908,10 @@ If TreeViewHandle <> 0 Then
                 End If
                 TreeViewPrevExpandItem = TreeViewExpandItem
             Else
-                TreeViewPrevExpandItem = 0
+                TreeViewPrevExpandItem = NULL_PTR
             End If
         Else
-            TreeViewPrevExpandItem = 0
+            TreeViewPrevExpandItem = NULL_PTR
         End If
         End With
     End If
@@ -879,7 +927,7 @@ RaiseEvent OLESetData(Data, DataFormat)
 End Sub
 
 Private Sub UserControl_OLEStartDrag(Data As DataObject, AllowedEffects As Long)
-If TreeViewDragItem <> 0 Then
+If TreeViewDragItem <> NULL_PTR Then
     If PropOLEDragMode = vbOLEDragAutomatic Then
         Dim Text As String
         Text = Me.FNodeText(TreeViewDragItem)
@@ -890,13 +938,13 @@ If TreeViewDragItem <> 0 Then
     End If
 End If
 RaiseEvent OLEStartDrag(Data, AllowedEffects)
-If AllowedEffects = vbDropEffectNone Then TreeViewDragItem = 0
+If AllowedEffects = vbDropEffectNone Then TreeViewDragItem = NULL_PTR
 End Sub
 
 Public Sub OLEDrag()
 Attribute OLEDrag.VB_Description = "Starts an OLE drag/drop event with the given control as the source."
-If TreeViewDragItem <> 0 Then Exit Sub
-If TreeViewDragItemBuffer <> 0 Then TreeViewDragItem = TreeViewDragItemBuffer
+If TreeViewDragItem <> NULL_PTR Then Exit Sub
+If TreeViewDragItemBuffer <> NULL_PTR Then TreeViewDragItem = TreeViewDragItemBuffer
 UserControl.OLEDrag
 End Sub
 
@@ -928,7 +976,7 @@ LastAlign = Align
 End With
 With UserControl
 If DPICorrectionFactor() <> 1 Then Call SyncObjectRectsToContainer(Me)
-If TreeViewHandle <> 0 Then MoveWindow TreeViewHandle, 0, 0, .ScaleWidth, .ScaleHeight, 1
+If TreeViewHandle <> NULL_PTR Then MoveWindow TreeViewHandle, 0, 0, .ScaleWidth, .ScaleHeight, 1
 End With
 InProc = False
 End Sub
@@ -1104,20 +1152,36 @@ Attribute ZOrder.VB_Description = "Places a specified object at the front or bac
 If IsMissing(Position) Then Extender.ZOrder Else Extender.ZOrder Position
 End Sub
 
+#If VBA7 Then
+Public Property Get hWnd() As LongPtr
+Attribute hWnd.VB_Description = "Returns a handle to a control."
+Attribute hWnd.VB_UserMemId = -515
+#Else
 Public Property Get hWnd() As Long
 Attribute hWnd.VB_Description = "Returns a handle to a control."
 Attribute hWnd.VB_UserMemId = -515
+#End If
 hWnd = TreeViewHandle
 End Property
 
+#If VBA7 Then
+Public Property Get hWndUserControl() As LongPtr
+Attribute hWndUserControl.VB_Description = "Returns a handle to a control."
+#Else
 Public Property Get hWndUserControl() As Long
 Attribute hWndUserControl.VB_Description = "Returns a handle to a control."
+#End If
 hWndUserControl = UserControl.hWnd
 End Property
 
+#If VBA7 Then
+Public Property Get hWndLabelEdit() As LongPtr
+Attribute hWndLabelEdit.VB_Description = "Returns a handle to a control."
+#Else
 Public Property Get hWndLabelEdit() As Long
 Attribute hWndLabelEdit.VB_Description = "Returns a handle to a control."
-If TreeViewHandle <> 0 Then hWndLabelEdit = SendMessage(TreeViewHandle, TVM_GETEDITCONTROL, 0, ByVal 0&)
+#End If
+If TreeViewHandle <> NULL_PTR Then hWndLabelEdit = SendMessage(TreeViewHandle, TVM_GETEDITCONTROL, 0, ByVal 0&)
 End Property
 
 Public Property Get Font() As StdFont
@@ -1132,21 +1196,21 @@ End Property
 
 Public Property Set Font(ByVal NewFont As StdFont)
 If NewFont Is Nothing Then Set NewFont = Ambient.Font
-Dim OldFontHandle As Long
+Dim OldFontHandle As LongPtr
 Set PropFont = NewFont
 OldFontHandle = TreeViewFontHandle
 TreeViewFontHandle = CreateGDIFontFromOLEFont(PropFont)
-If TreeViewHandle <> 0 Then SendMessage TreeViewHandle, WM_SETFONT, TreeViewFontHandle, ByVal 1&
-If OldFontHandle <> 0 Then DeleteObject OldFontHandle
+If TreeViewHandle <> NULL_PTR Then SendMessage TreeViewHandle, WM_SETFONT, TreeViewFontHandle, ByVal 1&
+If OldFontHandle <> NULL_PTR Then DeleteObject OldFontHandle
 UserControl.PropertyChanged "Font"
 End Property
 
 Private Sub PropFont_FontChanged(ByVal PropertyName As String)
-Dim OldFontHandle As Long
+Dim OldFontHandle As LongPtr
 OldFontHandle = TreeViewFontHandle
 TreeViewFontHandle = CreateGDIFontFromOLEFont(PropFont)
-If TreeViewHandle <> 0 Then SendMessage TreeViewHandle, WM_SETFONT, TreeViewFontHandle, ByVal 1&
-If OldFontHandle <> 0 Then DeleteObject OldFontHandle
+If TreeViewHandle <> NULL_PTR Then SendMessage TreeViewHandle, WM_SETFONT, TreeViewFontHandle, ByVal 1&
+If OldFontHandle <> NULL_PTR Then DeleteObject OldFontHandle
 UserControl.PropertyChanged "Font"
 End Sub
 
@@ -1157,10 +1221,10 @@ End Property
 
 Public Property Let VisualStyles(ByVal Value As Boolean)
 PropVisualStyles = Value
-If TreeViewHandle <> 0 And EnabledVisualStyles() = True Then
+If TreeViewHandle <> NULL_PTR And EnabledVisualStyles() = True Then
     If PropVisualStyles = True Then
         If PropVisualTheme = TvwVisualThemeExplorer Then
-            SetWindowTheme TreeViewHandle, StrPtr("Explorer"), 0
+            SetWindowTheme TreeViewHandle, StrPtr("Explorer"), NULL_PTR
         Else
             ActivateVisualStyles TreeViewHandle
         End If
@@ -1197,7 +1261,7 @@ End Property
 
 Public Property Let Enabled(ByVal Value As Boolean)
 UserControl.Enabled = Value
-If TreeViewHandle <> 0 Then EnableWindow TreeViewHandle, IIf(Value = True, 1, 0)
+If TreeViewHandle <> NULL_PTR Then EnableWindow TreeViewHandle, IIf(Value = True, 1, 0)
 UserControl.PropertyChanged "Enabled"
 End Property
 
@@ -1288,7 +1352,7 @@ Public Property Set MouseIcon(ByVal Value As IPictureDisp)
 If Value Is Nothing Then
     Set PropMouseIcon = Nothing
 Else
-    If Value.Type = vbPicTypeIcon Or Value.Handle = 0 Then
+    If Value.Type = vbPicTypeIcon Or Value.Handle = NULL_PTR Then
         Set PropMouseIcon = Value
     Else
         If TreeViewDesignMode = True Then
@@ -1332,7 +1396,7 @@ End If
 If PropRightToLeft = True Then
     If PropRightToLeftLayout = True Then dwMask = WS_EX_LAYOUTRTL
 End If
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     Call ComCtlsSetRightToLeft(TreeViewHandle, dwMask)
     Dim dwStyle As Long
     dwStyle = GetWindowLong(TreeViewHandle, GWL_STYLE)
@@ -1373,7 +1437,7 @@ End Property
 Public Property Get ImageList() As Variant
 Attribute ImageList.VB_Description = "Returns/sets the image list control to be used."
 If TreeViewDesignMode = False Then
-    If PropImageListInit = False And TreeViewImageListObjectPointer = 0 Then
+    If PropImageListInit = False And TreeViewImageListObjectPointer = NULL_PTR Then
         If Not PropImageListName = "(None)" Then Me.ImageList = PropImageListName
         PropImageListInit = True
     End If
@@ -1388,13 +1452,13 @@ Me.ImageList = Value
 End Property
 
 Public Property Let ImageList(ByVal Value As Variant)
-If TreeViewHandle <> 0 Then
-    Dim Success As Boolean, Handle As Long
+If TreeViewHandle <> NULL_PTR Then
+    Dim Success As Boolean, Handle As LongPtr
     On Error Resume Next
     If IsObject(Value) Then
         If TypeName(Value) = "ImageList" Then
             Handle = Value.hImageList
-            Success = CBool(Err.Number = 0 And Handle <> 0)
+            Success = CBool(Err.Number = 0 And Handle <> NULL_PTR)
         End If
         If Success = True Then
             Select Case PropStyle
@@ -1437,9 +1501,9 @@ If TreeViewHandle <> 0 Then
     On Error GoTo 0
     If Success = False Then
         SendMessage TreeViewHandle, TVM_SETIMAGELIST, TVSIL_NORMAL, ByVal 0&
-        TreeViewImageListObjectPointer = 0
+        TreeViewImageListObjectPointer = NULL_PTR
         PropImageListName = "(None)"
-    ElseIf Handle = 0 Then
+    ElseIf Handle = NULL_PTR Then
         SendMessage TreeViewHandle, TVM_SETIMAGELIST, TVSIL_NORMAL, ByVal 0&
     End If
     SendMessage TreeViewHandle, TVM_SETINDENT, PropIndentation, ByVal 0&
@@ -1464,7 +1528,7 @@ Select Case Value
     Case Else
         Err.Raise 380
 End Select
-If TreeViewHandle <> 0 Then Call ComCtlsChangeBorderStyle(TreeViewHandle, PropBorderStyle)
+If TreeViewHandle <> NULL_PTR Then Call ComCtlsChangeBorderStyle(TreeViewHandle, PropBorderStyle)
 UserControl.PropertyChanged "BorderStyle"
 End Property
 
@@ -1476,7 +1540,7 @@ End Property
 
 Public Property Let BackColor(ByVal Value As OLE_COLOR)
 PropBackColor = Value
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     SendMessage TreeViewHandle, TVM_SETBKCOLOR, 0, ByVal WinColor(PropBackColor)
     Me.Refresh
 End If
@@ -1491,7 +1555,7 @@ End Property
 
 Public Property Let ForeColor(ByVal Value As OLE_COLOR)
 PropForeColor = Value
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     SendMessage TreeViewHandle, TVM_SETTEXTCOLOR, 0, ByVal WinColor(PropForeColor)
     Me.Refresh
 End If
@@ -1505,7 +1569,7 @@ End Property
 
 Public Property Let Redraw(ByVal Value As Boolean)
 PropRedraw = Value
-If TreeViewHandle <> 0 And TreeViewDesignMode = False Then
+If TreeViewHandle <> NULL_PTR And TreeViewDesignMode = False Then
     SendMessage TreeViewHandle, WM_SETREDRAW, IIf(PropRedraw = True, 1, 0), ByVal 0&
     If PropRedraw = True Then Me.Refresh
 End If
@@ -1524,7 +1588,7 @@ Select Case Value
     Case Else
         Err.Raise 380
 End Select
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     Dim dwStyle As Long
     dwStyle = GetWindowLong(TreeViewHandle, GWL_STYLE)
     If (dwStyle And TVS_HASBUTTONS) = TVS_HASBUTTONS Then dwStyle = dwStyle And Not TVS_HASBUTTONS
@@ -1569,7 +1633,7 @@ Select Case Value
     Case Else
         Err.Raise 380
 End Select
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     Dim dwStyle As Long
     dwStyle = GetWindowLong(TreeViewHandle, GWL_STYLE)
     Select Case PropLineStyle
@@ -1590,7 +1654,7 @@ End Property
 
 Public Property Let LineColor(ByVal Value As OLE_COLOR)
 PropLineColor = Value
-If TreeViewHandle <> 0 Then SendMessage TreeViewHandle, TVM_SETLINECOLOR, 0, ByVal WinColor(PropLineColor)
+If TreeViewHandle <> NULL_PTR Then SendMessage TreeViewHandle, TVM_SETLINECOLOR, 0, ByVal WinColor(PropLineColor)
 UserControl.PropertyChanged "LineColor"
 End Property
 
@@ -1606,7 +1670,7 @@ Select Case Value
     Case Else
         Err.Raise 380
 End Select
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     Dim dwStyle As Long
     dwStyle = GetWindowLong(TreeViewHandle, GWL_STYLE)
     Select Case PropLabelEdit
@@ -1627,7 +1691,7 @@ End Property
 
 Public Property Let Checkboxes(ByVal Value As Boolean)
 PropCheckboxes = Value
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     Dim dwStyle As Long
     dwStyle = GetWindowLong(TreeViewHandle, GWL_STYLE)
     If PropCheckboxes = True Then
@@ -1635,9 +1699,9 @@ If TreeViewHandle <> 0 Then
     Else
         If (dwStyle And TVS_CHECKBOXES) = TVS_CHECKBOXES Then
             SetWindowLong TreeViewHandle, GWL_STYLE, dwStyle And Not TVS_CHECKBOXES
-            Dim hImageList As Long
+            Dim hImageList As LongPtr
             hImageList = SendMessage(TreeViewHandle, TVM_GETIMAGELIST, TVSIL_STATE, ByVal 0&)
-            If hImageList <> 0 Then
+            If hImageList <> NULL_PTR Then
                 SendMessage TreeViewHandle, TVM_SETIMAGELIST, TVSIL_STATE, ByVal 0&
                 ImageList_Destroy hImageList
             End If
@@ -1654,7 +1718,7 @@ End Property
 
 Public Property Let ShowTips(ByVal Value As Boolean)
 PropShowTips = Value
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     Dim dwStyle As Long
     dwStyle = GetWindowLong(TreeViewHandle, GWL_STYLE)
     If PropShowTips = True Then
@@ -1674,7 +1738,7 @@ End Property
 
 Public Property Let HideSelection(ByVal Value As Boolean)
 PropHideSelection = Value
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     Dim dwStyle As Long
     dwStyle = GetWindowLong(TreeViewHandle, GWL_STYLE)
     If PropHideSelection = True Then
@@ -1695,7 +1759,7 @@ End Property
 
 Public Property Let FullRowSelect(ByVal Value As Boolean)
 PropFullRowSelect = Value
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     Dim dwStyle As Long
     dwStyle = GetWindowLong(TreeViewHandle, GWL_STYLE)
     If PropFullRowSelect = True Then
@@ -1715,7 +1779,7 @@ End Property
 
 Public Property Let HotTracking(ByVal Value As Boolean)
 PropHotTracking = Value
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     Dim dwStyle As Long
     dwStyle = GetWindowLong(TreeViewHandle, GWL_STYLE)
     If PropHotTracking = True Then
@@ -1756,7 +1820,7 @@ If LngValue < 0 Or ErrValue <> 0 Then
     End If
 Else
     PropIndentation = LngValue
-    If TreeViewHandle <> 0 Then SendMessage TreeViewHandle, TVM_SETINDENT, PropIndentation, ByVal 0&
+    If TreeViewHandle <> NULL_PTR Then SendMessage TreeViewHandle, TVM_SETINDENT, PropIndentation, ByVal 0&
 End If
 UserControl.PropertyChanged "Indentation"
 End Property
@@ -1778,7 +1842,7 @@ End Property
 
 Public Property Let Scroll(ByVal Value As Boolean)
 PropScroll = Value
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     Dim dwStyle As Long
     dwStyle = GetWindowLong(TreeViewHandle, GWL_STYLE)
     If PropScroll = True Then
@@ -1798,7 +1862,7 @@ End Property
 
 Public Property Let SingleSel(ByVal Value As Boolean)
 PropSingleSel = Value
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     Dim dwStyle As Long
     dwStyle = GetWindowLong(TreeViewHandle, GWL_STYLE)
     If PropSingleSel = True Then
@@ -1859,7 +1923,7 @@ End Property
 
 Public Property Let InsertMarkColor(ByVal Value As OLE_COLOR)
 PropInsertMarkColor = Value
-If TreeViewHandle <> 0 Then SendMessage TreeViewHandle, TVM_SETINSERTMARKCOLOR, 0, ByVal WinColor(PropInsertMarkColor)
+If TreeViewHandle <> NULL_PTR Then SendMessage TreeViewHandle, TVM_SETINSERTMARKCOLOR, 0, ByVal WinColor(PropInsertMarkColor)
 UserControl.PropertyChanged "InsertMarkColor"
 End Property
 
@@ -1870,7 +1934,7 @@ End Property
 
 Public Property Let DoubleBuffer(ByVal Value As Boolean)
 PropDoubleBuffer = Value
-If TreeViewHandle <> 0 And ComCtlsSupportLevel() >= 2 Then
+If TreeViewHandle <> NULL_PTR And ComCtlsSupportLevel() >= 2 Then
     If PropDoubleBuffer = True Then
         SendMessage TreeViewHandle, TVM_SETEXTENDEDSTYLE, TVS_EX_DOUBLEBUFFER, ByVal TVS_EX_DOUBLEBUFFER
     Else
@@ -1892,13 +1956,13 @@ Select Case Value
     Case Else
         Err.Raise 380
 End Select
-If TreeViewHandle <> 0 And TreeViewDesignMode = False Then
+If TreeViewHandle <> NULL_PTR And TreeViewDesignMode = False Then
     If GetFocus() = TreeViewHandle Then
         Call ComCtlsSetIMEMode(TreeViewHandle, TreeViewIMCHandle, PropIMEMode)
     ElseIf TreeViewLabelInEdit = True Then
-        Dim LabelEditHandle As Long
+        Dim LabelEditHandle As LongPtr
         LabelEditHandle = Me.hWndLabelEdit
-        If LabelEditHandle <> 0 Then
+        If LabelEditHandle <> NULL_PTR Then
             If GetFocus() = LabelEditHandle Then Call ComCtlsSetIMEMode(LabelEditHandle, TreeViewIMCHandle, PropIMEMode)
         End If
     End If
@@ -1935,8 +1999,8 @@ Set Nodes = PropNodes
 End Property
 
 Friend Sub FNodesAdd(ByRef NewNode As TvwNode, Optional ByVal RelativeNode As TvwNode, Optional ByVal Relationship As TvwNodeRelationshipConstants, Optional ByVal Text As String, Optional ByVal ImageIndex As Long, Optional ByVal SelectedImageIndex As Long)
-If TreeViewHandle <> 0 Then
-    Dim TVIS As TVINSERTSTRUCT, hRelative As Long, hNode As Long
+If TreeViewHandle <> NULL_PTR Then
+    Dim TVIS As TVINSERTSTRUCT, hRelative As LongPtr, hNode As LongPtr
     With TVIS
     If RelativeNode Is Nothing Then
         hRelative = TVI_ROOT
@@ -1957,20 +2021,20 @@ If TreeViewHandle <> 0 Then
                 .hParent = hRelative
             Else
                 .hParent = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_PARENT, ByVal hRelative)
-                If .hParent = 0 Then .hParent = TVI_ROOT
+                If .hParent = NULL_PTR Then .hParent = TVI_ROOT
             End If
             .hInsertAfter = hRelative
         Case TvwNodeRelationshipPrevious
-            Dim hPrevious As Long
+            Dim hPrevious As LongPtr
             hPrevious = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_PREVIOUS, ByVal hRelative)
-            If hPrevious = 0 Then
+            If hPrevious = NULL_PTR Then
                 .hParent = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_PARENT, ByVal hRelative)
                 .hInsertAfter = TVI_FIRST
             Else
                 .hParent = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_PARENT, ByVal hRelative)
                 .hInsertAfter = hPrevious
             End If
-            If .hParent = 0 Then .hParent = TVI_ROOT
+            If .hParent = NULL_PTR Then .hParent = TVI_ROOT
         Case TvwNodeRelationshipChild
             .hParent = hRelative
         Case Else
@@ -1997,7 +2061,7 @@ If TreeViewHandle <> 0 Then
         NewNode.Handle = hNode
         If .hParent = TVI_ROOT Then
             If PropSorted = True Then Call SortNodes(TVI_ROOT, PropSortType)
-        ElseIf .hParent <> 0 Then
+        ElseIf .hParent <> NULL_PTR Then
             If RelativeNode.Sorted = True Then Call SortNodes(.hParent, RelativeNode.SortType)
         End If
     End If
@@ -2005,16 +2069,20 @@ If TreeViewHandle <> 0 Then
 End If
 End Sub
 
+#If VBA7 Then
+Friend Function FNodesRemove(ByVal Handle As LongPtr) As Collection
+#Else
 Friend Function FNodesRemove(ByVal Handle As Long) As Collection
+#End If
 Set FNodesRemove = New Collection
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     Call NodesRemoveRecursion(FNodesRemove, Handle)
     SendMessage TreeViewHandle, TVM_DELETEITEM, 0, ByVal Handle
 End If
 End Function
 
 Friend Sub FNodesClear()
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     ' The tree view control will delete all items one by one.
     ' Ensure no caret item is set to have no unnecessary TVN_SELCHANGING/TVN_SELCHANGED notifications.
     SendMessage TreeViewHandle, TVM_SELECTITEM, TVGN_CARET, ByVal 0&
@@ -2022,8 +2090,12 @@ If TreeViewHandle <> 0 Then
 End If
 End Sub
 
+#If VBA7 Then
+Friend Property Get FNodeText(ByVal Handle As LongPtr) As String
+#Else
 Friend Property Get FNodeText(ByVal Handle As Long) As String
-If TreeViewHandle <> 0 Then
+#End If
+If TreeViewHandle <> NULL_PTR Then
     Dim TVI As TVITEM
     With TVI
     .Mask = TVIF_HANDLE Or TVIF_TEXT
@@ -2038,8 +2110,12 @@ If TreeViewHandle <> 0 Then
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Let FNodeText(ByVal Handle As LongPtr, ByVal Value As String)
+#Else
 Friend Property Let FNodeText(ByVal Handle As Long, ByVal Value As String)
-If TreeViewHandle <> 0 Then
+#End If
+If TreeViewHandle <> NULL_PTR Then
     Dim TVI As TVITEM
     With TVI
     .Mask = TVIF_HANDLE Or TVIF_TEXT
@@ -2051,10 +2127,14 @@ If TreeViewHandle <> 0 Then
 End If
 End Property
 
+#If VBA7 Then
+Friend Sub FNodeRedraw(ByVal Handle As LongPtr)
+#Else
 Friend Sub FNodeRedraw(ByVal Handle As Long)
-If TreeViewHandle <> 0 Then
+#End If
+If TreeViewHandle <> NULL_PTR Then
     Dim RC As RECT
-    RC.Left = Handle
+    Call StuffHandleIntoRect(RC, Handle)
     If SendMessage(TreeViewHandle, TVM_GETITEMRECT, 0, ByVal VarPtr(RC)) <> 0 Then
         InvalidateRect TreeViewHandle, RC, 1
         UpdateWindow TreeViewHandle
@@ -2062,8 +2142,12 @@ If TreeViewHandle <> 0 Then
 End If
 End Sub
 
+#If VBA7 Then
+Friend Property Get FNodeSelected(ByVal Handle As LongPtr) As Boolean
+#Else
 Friend Property Get FNodeSelected(ByVal Handle As Long) As Boolean
-If TreeViewHandle <> 0 Then
+#End If
+If TreeViewHandle <> NULL_PTR Then
     Dim TVI As TVITEM
     With TVI
     .Mask = TVIF_HANDLE Or TVIF_STATE
@@ -2084,8 +2168,12 @@ If TreeViewHandle <> 0 Then
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Let FNodeSelected(ByVal Handle As LongPtr, ByVal Value As Boolean)
+#Else
 Friend Property Let FNodeSelected(ByVal Handle As Long, ByVal Value As Boolean)
-If TreeViewHandle <> 0 Then
+#End If
+If TreeViewHandle <> NULL_PTR Then
     Dim TVI As TVITEM
     With TVI
     .Mask = TVIF_HANDLE Or TVIF_STATE
@@ -2119,8 +2207,12 @@ If TreeViewHandle <> 0 Then
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Get FNodeCheckBox(ByVal Handle As LongPtr) As Boolean
+#Else
 Friend Property Get FNodeCheckBox(ByVal Handle As Long) As Boolean
-If TreeViewHandle <> 0 Then
+#End If
+If TreeViewHandle <> NULL_PTR Then
     Dim TVI As TVITEM
     With TVI
     .Mask = TVIF_HANDLE Or TVIF_STATE
@@ -2132,8 +2224,12 @@ If TreeViewHandle <> 0 Then
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Let FNodeCheckBox(ByVal Handle As LongPtr, ByVal Value As Boolean)
+#Else
 Friend Property Let FNodeCheckBox(ByVal Handle As Long, ByVal Value As Boolean)
-If TreeViewHandle <> 0 Then
+#End If
+If TreeViewHandle <> NULL_PTR Then
     Dim TVI As TVITEM
     With TVI
     .Mask = TVIF_HANDLE Or TVIF_STATE
@@ -2150,8 +2246,12 @@ If TreeViewHandle <> 0 Then
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Get FNodeChecked(ByVal Handle As LongPtr) As Boolean
+#Else
 Friend Property Get FNodeChecked(ByVal Handle As Long) As Boolean
-If TreeViewHandle <> 0 Then
+#End If
+If TreeViewHandle <> NULL_PTR Then
     Dim TVI As TVITEM
     With TVI
     .Mask = TVIF_HANDLE Or TVIF_STATE
@@ -2163,8 +2263,12 @@ If TreeViewHandle <> 0 Then
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Let FNodeChecked(ByVal Handle As LongPtr, ByVal Value As Boolean)
+#Else
 Friend Property Let FNodeChecked(ByVal Handle As Long, ByVal Value As Boolean)
-If TreeViewHandle <> 0 Then
+#End If
+If TreeViewHandle <> NULL_PTR Then
     Dim TVI As TVITEM
     With TVI
     .Mask = TVIF_HANDLE Or TVIF_STATE
@@ -2173,9 +2277,9 @@ If TreeViewHandle <> 0 Then
     SendMessage TreeViewHandle, TVM_GETITEM, 0, ByVal VarPtr(TVI)
     If StateImageMaskToIndex(.State And TVIS_STATEIMAGEMASK) <> 0 Then
         If CBool(StateImageMaskToIndex(.State And TVIS_STATEIMAGEMASK) = IIL_CHECKED) <> Value Then
-            Dim Ptr As Long, Node As TvwNode, Cancel As Boolean
+            Dim Ptr As LongPtr, Node As TvwNode, Cancel As Boolean
             Ptr = GetItemPtr(Handle)
-            If Ptr <> 0 Then Set Node = PtrToObj(Ptr)
+            If Ptr <> NULL_PTR Then Set Node = PtrToObj(Ptr)
             RaiseEvent NodeBeforeCheck(Node, Cancel)
             If Cancel = False Then
                 If Value = True Then
@@ -2192,8 +2296,12 @@ If TreeViewHandle <> 0 Then
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Get FNodeBold(ByVal Handle As LongPtr) As Boolean
+#Else
 Friend Property Get FNodeBold(ByVal Handle As Long) As Boolean
-If TreeViewHandle <> 0 Then
+#End If
+If TreeViewHandle <> NULL_PTR Then
     Dim TVI As TVITEM
     With TVI
     .Mask = TVIF_HANDLE Or TVIF_STATE
@@ -2205,8 +2313,12 @@ If TreeViewHandle <> 0 Then
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Let FNodeBold(ByVal Handle As LongPtr, ByVal Value As Boolean)
+#Else
 Friend Property Let FNodeBold(ByVal Handle As Long, ByVal Value As Boolean)
-If TreeViewHandle <> 0 Then
+#End If
+If TreeViewHandle <> NULL_PTR Then
     Dim TVI As TVITEM
     With TVI
     .Mask = TVIF_HANDLE Or TVIF_STATE
@@ -2222,8 +2334,12 @@ If TreeViewHandle <> 0 Then
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Get FNodeGhosted(ByVal Handle As LongPtr) As Boolean
+#Else
 Friend Property Get FNodeGhosted(ByVal Handle As Long) As Boolean
-If TreeViewHandle <> 0 Then
+#End If
+If TreeViewHandle <> NULL_PTR Then
     Dim TVI As TVITEM
     With TVI
     .Mask = TVIF_HANDLE Or TVIF_STATE
@@ -2235,8 +2351,12 @@ If TreeViewHandle <> 0 Then
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Let FNodeGhosted(ByVal Handle As LongPtr, ByVal Value As Boolean)
+#Else
 Friend Property Let FNodeGhosted(ByVal Handle As Long, ByVal Value As Boolean)
-If TreeViewHandle <> 0 Then
+#End If
+If TreeViewHandle <> NULL_PTR Then
     Dim TVI As TVITEM
     With TVI
     .Mask = TVIF_HANDLE Or TVIF_STATE
@@ -2252,8 +2372,12 @@ If TreeViewHandle <> 0 Then
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Get FNodeExpanded(ByVal Handle As LongPtr) As Boolean
+#Else
 Friend Property Get FNodeExpanded(ByVal Handle As Long) As Boolean
-If TreeViewHandle <> 0 Then
+#End If
+If TreeViewHandle <> NULL_PTR Then
     Dim TVI As TVITEM
     With TVI
     .Mask = TVIF_HANDLE Or TVIF_STATE
@@ -2265,8 +2389,12 @@ If TreeViewHandle <> 0 Then
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Let FNodeExpanded(ByVal Handle As LongPtr, ByVal Value As Boolean)
+#Else
 Friend Property Let FNodeExpanded(ByVal Handle As Long, ByVal Value As Boolean)
-If TreeViewHandle <> 0 Then
+#End If
+If TreeViewHandle <> NULL_PTR Then
     Dim TVI As TVITEM
     With TVI
     .Mask = TVIF_HANDLE Or TVIF_STATE
@@ -2274,9 +2402,9 @@ If TreeViewHandle <> 0 Then
     .StateMask = TVIS_EXPANDED Or TVIS_EXPANDEDONCE
     SendMessage TreeViewHandle, TVM_GETITEM, 0, ByVal VarPtr(TVI)
     If CBool((.State And TVIS_EXPANDED) = TVIS_EXPANDED) <> Value Then
-        Dim Ptr As Long, Node As TvwNode, Cancel As Boolean
+        Dim Ptr As LongPtr, Node As TvwNode, Cancel As Boolean
         Ptr = GetItemPtr(Handle)
-        If Ptr <> 0 Then Set Node = PtrToObj(Ptr)
+        If Ptr <> NULL_PTR Then Set Node = PtrToObj(Ptr)
         If (.State And TVIS_EXPANDEDONCE) = TVIS_EXPANDEDONCE Then
             ' The TVN_ITEMEXPANDING and TVN_ITEMEXPANDED notification codes are not generated in this case.
             If SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_CHILD, ByVal Handle) <> 0 Then
@@ -2323,8 +2451,12 @@ If TreeViewHandle <> 0 Then
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Get FNodeEnabled(ByVal Handle As LongPtr) As Boolean
+#Else
 Friend Property Get FNodeEnabled(ByVal Handle As Long) As Boolean
-If TreeViewHandle <> 0 Then
+#End If
+If TreeViewHandle <> NULL_PTR Then
     If ComCtlsSupportLevel() >= 2 Then
         Dim TVI_V61 As TVITEMEX_V61
         With TVI_V61
@@ -2339,8 +2471,12 @@ If TreeViewHandle <> 0 Then
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Let FNodeEnabled(ByVal Handle As LongPtr, ByVal Value As Boolean)
+#Else
 Friend Property Let FNodeEnabled(ByVal Handle As Long, ByVal Value As Boolean)
-If TreeViewHandle <> 0 And ComCtlsSupportLevel() >= 2 Then
+#End If
+If TreeViewHandle <> NULL_PTR And ComCtlsSupportLevel() >= 2 Then
     Dim TVI_V61 As TVITEMEX_V61
     With TVI_V61
     .TVI.Mask = TVIF_HANDLE Or TVIF_STATEEX
@@ -2355,15 +2491,23 @@ If TreeViewHandle <> 0 And ComCtlsSupportLevel() >= 2 Then
 End If
 End Property
 
+#If VBA7 Then
+Friend Sub FNodeSort(ByVal Handle As LongPtr, ByVal SortType As TvwSortTypeConstants)
+#Else
 Friend Sub FNodeSort(ByVal Handle As Long, ByVal SortType As TvwSortTypeConstants)
+#End If
 Call SortNodes(Handle, SortType)
 End Sub
 
+#If VBA7 Then
+Friend Property Get FNodeChildren(ByVal Handle As LongPtr) As Long
+#Else
 Friend Property Get FNodeChildren(ByVal Handle As Long) As Long
-If TreeViewHandle <> 0 Then
-    Dim hItem As Long, Count As Long
+#End If
+If TreeViewHandle <> NULL_PTR Then
+    Dim hItem As LongPtr, Count As Long
     hItem = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_CHILD, ByVal Handle)
-    Do While hItem <> 0
+    Do While hItem <> NULL_PTR
         Count = Count + 1
         hItem = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_NEXT, ByVal hItem)
     Loop
@@ -2371,19 +2515,27 @@ If TreeViewHandle <> 0 Then
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Get FNodeChild(ByVal Handle As LongPtr) As TvwNode
+#Else
 Friend Property Get FNodeChild(ByVal Handle As Long) As TvwNode
-If TreeViewHandle <> 0 Then
-    Dim Ptr As Long
+#End If
+If TreeViewHandle <> NULL_PTR Then
+    Dim Ptr As LongPtr
     Ptr = GetItemPtr(SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_CHILD, ByVal Handle))
-    If Ptr <> 0 Then Set FNodeChild = PtrToObj(Ptr)
+    If Ptr <> NULL_PTR Then Set FNodeChild = PtrToObj(Ptr)
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Get FNodeLevel(ByVal Handle As LongPtr) As Long
+#Else
 Friend Property Get FNodeLevel(ByVal Handle As Long) As Long
-If TreeViewHandle <> 0 Then
-    Dim hItem As Long, Count As Long
+#End If
+If TreeViewHandle <> NULL_PTR Then
+    Dim hItem As LongPtr, Count As Long
     hItem = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_PARENT, ByVal Handle)
-    Do While hItem <> 0
+    Do While hItem <> NULL_PTR
         Count = Count + 1
         hItem = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_PARENT, ByVal hItem)
     Loop
@@ -2391,26 +2543,38 @@ If TreeViewHandle <> 0 Then
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Get FNodeParent(ByVal Handle As LongPtr) As TvwNode
+#Else
 Friend Property Get FNodeParent(ByVal Handle As Long) As TvwNode
-If TreeViewHandle <> 0 Then
-    Dim Ptr As Long
+#End If
+If TreeViewHandle <> NULL_PTR Then
+    Dim Ptr As LongPtr
     Ptr = GetItemPtr(SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_PARENT, ByVal Handle))
-    If Ptr <> 0 Then Set FNodeParent = PtrToObj(Ptr)
+    If Ptr <> NULL_PTR Then Set FNodeParent = PtrToObj(Ptr)
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Let FNodeParent(ByVal Handle As LongPtr, Value As TvwNode)
+#Else
 Friend Property Let FNodeParent(ByVal Handle As Long, Value As TvwNode)
+#End If
 Set Me.FNodeParent(Handle) = Value
 End Property
 
+#If VBA7 Then
+Friend Property Set FNodeParent(ByVal Handle As LongPtr, Value As TvwNode)
+#Else
 Friend Property Set FNodeParent(ByVal Handle As Long, Value As TvwNode)
-If TreeViewHandle <> 0 Then
+#End If
+If TreeViewHandle <> NULL_PTR Then
     If Value Is Nothing Then
         Err.Raise Number:=35610, Description:="Invalid object"
     Else
-        Dim hParentTest As Long
+        Dim hParentTest As LongPtr
         hParentTest = Value.Handle
-        Do While hParentTest <> 0
+        Do While hParentTest <> NULL_PTR
             If hParentTest = Handle Then Err.Raise Number:=35614, Description:="This would introduce a cycle"
             hParentTest = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_PARENT, ByVal hParentTest)
         Loop
@@ -2423,95 +2587,135 @@ If TreeViewHandle <> 0 Then
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Get FNodeRoot(ByVal Handle As LongPtr) As TvwNode
+#Else
 Friend Property Get FNodeRoot(ByVal Handle As Long) As TvwNode
-If TreeViewHandle <> 0 Then
-    Dim Ptr As Long
+#End If
+If TreeViewHandle <> NULL_PTR Then
+    Dim Ptr As LongPtr
     Ptr = GetItemPtr(SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_ROOT, ByVal Handle))
-    If Ptr <> 0 Then Set FNodeRoot = PtrToObj(Ptr)
+    If Ptr <> NULL_PTR Then Set FNodeRoot = PtrToObj(Ptr)
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Get FNodeNextSibling(ByVal Handle As LongPtr) As TvwNode
+#Else
 Friend Property Get FNodeNextSibling(ByVal Handle As Long) As TvwNode
-If TreeViewHandle <> 0 Then
-    Dim Ptr As Long
+#End If
+If TreeViewHandle <> NULL_PTR Then
+    Dim Ptr As LongPtr
     Ptr = GetItemPtr(SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_NEXT, ByVal Handle))
-    If Ptr <> 0 Then Set FNodeNextSibling = PtrToObj(Ptr)
+    If Ptr <> NULL_PTR Then Set FNodeNextSibling = PtrToObj(Ptr)
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Get FNodePreviousSibling(ByVal Handle As LongPtr) As TvwNode
+#Else
 Friend Property Get FNodePreviousSibling(ByVal Handle As Long) As TvwNode
-If TreeViewHandle <> 0 Then
-    Dim Ptr As Long
+#End If
+If TreeViewHandle <> NULL_PTR Then
+    Dim Ptr As LongPtr
     Ptr = GetItemPtr(SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_PREVIOUS, ByVal Handle))
-    If Ptr <> 0 Then Set FNodePreviousSibling = PtrToObj(Ptr)
+    If Ptr <> NULL_PTR Then Set FNodePreviousSibling = PtrToObj(Ptr)
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Get FNodeFirstSibling(ByVal Handle As LongPtr) As TvwNode
+#Else
 Friend Property Get FNodeFirstSibling(ByVal Handle As Long) As TvwNode
-If TreeViewHandle <> 0 Then
-    Dim Ptr As Long, hItem As Long, hItemBuffer As Long
+#End If
+If TreeViewHandle <> NULL_PTR Then
+    Dim Ptr As LongPtr, hItem As LongPtr, hItemBuffer As LongPtr
     hItemBuffer = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_PREVIOUS, ByVal Handle)
-    Do While hItemBuffer <> 0
+    Do While hItemBuffer <> NULL_PTR
         hItem = hItemBuffer
         hItemBuffer = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_PREVIOUS, ByVal hItem)
     Loop
-    If hItem = 0 Then hItem = Handle
+    If hItem = NULL_PTR Then hItem = Handle
     Ptr = GetItemPtr(hItem)
-    If Ptr <> 0 Then Set FNodeFirstSibling = PtrToObj(Ptr)
+    If Ptr <> NULL_PTR Then Set FNodeFirstSibling = PtrToObj(Ptr)
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Get FNodeLastSibling(ByVal Handle As LongPtr) As TvwNode
+#Else
 Friend Property Get FNodeLastSibling(ByVal Handle As Long) As TvwNode
-If TreeViewHandle <> 0 Then
-    Dim Ptr As Long, hItem As Long, hItemBuffer As Long
+#End If
+If TreeViewHandle <> NULL_PTR Then
+    Dim Ptr As LongPtr, hItem As LongPtr, hItemBuffer As LongPtr
     hItemBuffer = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_NEXT, ByVal Handle)
-    Do While hItemBuffer <> 0
+    Do While hItemBuffer <> NULL_PTR
         hItem = hItemBuffer
         hItemBuffer = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_NEXT, ByVal hItem)
     Loop
-    If hItem = 0 Then hItem = Handle
+    If hItem = NULL_PTR Then hItem = Handle
     Ptr = GetItemPtr(hItem)
-    If Ptr <> 0 Then Set FNodeLastSibling = PtrToObj(Ptr)
+    If Ptr <> NULL_PTR Then Set FNodeLastSibling = PtrToObj(Ptr)
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Get FNodeFirstVisibleSibling(ByVal Handle As LongPtr) As TvwNode
+#Else
 Friend Property Get FNodeFirstVisibleSibling(ByVal Handle As Long) As TvwNode
-If TreeViewHandle <> 0 Then
-    Dim Ptr As Long
+#End If
+If TreeViewHandle <> NULL_PTR Then
+    Dim Ptr As LongPtr
     Ptr = GetItemPtr(SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_FIRSTVISIBLE, ByVal Handle))
-    If Ptr <> 0 Then Set FNodeFirstVisibleSibling = PtrToObj(Ptr)
+    If Ptr <> NULL_PTR Then Set FNodeFirstVisibleSibling = PtrToObj(Ptr)
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Get FNodeLastVisibleSibling(ByVal Handle As LongPtr) As TvwNode
+#Else
 Friend Property Get FNodeLastVisibleSibling(ByVal Handle As Long) As TvwNode
-If TreeViewHandle <> 0 Then
-    Dim Ptr As Long
+#End If
+If TreeViewHandle <> NULL_PTR Then
+    Dim Ptr As LongPtr
     Ptr = GetItemPtr(SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_LASTVISIBLE, ByVal Handle))
-    If Ptr <> 0 Then Set FNodeLastVisibleSibling = PtrToObj(Ptr)
+    If Ptr <> NULL_PTR Then Set FNodeLastVisibleSibling = PtrToObj(Ptr)
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Get FNodeNextVisibleSibling(ByVal Handle As LongPtr) As TvwNode
+#Else
 Friend Property Get FNodeNextVisibleSibling(ByVal Handle As Long) As TvwNode
-If TreeViewHandle <> 0 Then
-    Dim Ptr As Long
+#End If
+If TreeViewHandle <> NULL_PTR Then
+    Dim Ptr As LongPtr
     Ptr = GetItemPtr(SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_NEXTVISIBLE, ByVal Handle))
-    If Ptr <> 0 Then Set FNodeNextVisibleSibling = PtrToObj(Ptr)
+    If Ptr <> NULL_PTR Then Set FNodeNextVisibleSibling = PtrToObj(Ptr)
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Get FNodePreviousVisibleSibling(ByVal Handle As LongPtr) As TvwNode
+#Else
 Friend Property Get FNodePreviousVisibleSibling(ByVal Handle As Long) As TvwNode
-If TreeViewHandle <> 0 Then
-    Dim Ptr As Long
+#End If
+If TreeViewHandle <> NULL_PTR Then
+    Dim Ptr As LongPtr
     Ptr = GetItemPtr(SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_PREVIOUSVISIBLE, ByVal Handle))
-    If Ptr <> 0 Then Set FNodePreviousVisibleSibling = PtrToObj(Ptr)
+    If Ptr <> NULL_PTR Then Set FNodePreviousVisibleSibling = PtrToObj(Ptr)
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Get FNodeFullPath(ByVal Handle As LongPtr) As String
+#Else
 Friend Property Get FNodeFullPath(ByVal Handle As Long) As String
-If TreeViewHandle <> 0 Then
-    Dim Temp As String, hItem As Long
+#End If
+If TreeViewHandle <> NULL_PTR Then
+    Dim Temp As String, hItem As LongPtr
     hItem = Handle
-    Do While hItem <> 0
+    Do While hItem <> NULL_PTR
         Temp = PropPathSeparator & Me.FNodeText(hItem) & Temp
         hItem = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_PARENT, ByVal hItem)
     Loop
@@ -2520,17 +2724,25 @@ If TreeViewHandle <> 0 Then
 End If
 End Property
 
+#If VBA7 Then
+Friend Property Get FNodeVisible(ByVal Handle As LongPtr) As Boolean
+#Else
 Friend Property Get FNodeVisible(ByVal Handle As Long) As Boolean
-If TreeViewHandle <> 0 Then
+#End If
+If TreeViewHandle <> NULL_PTR Then
     Dim RC As RECT
-    RC.Left = Handle
+    Call StuffHandleIntoRect(RC, Handle)
     FNodeVisible = CBool(SendMessage(TreeViewHandle, TVM_GETITEMRECT, 0, ByVal VarPtr(RC)) <> 0)
 End If
 End Property
 
+#If VBA7 Then
+Friend Sub FNodeMove(ByVal Handle As LongPtr, Optional ByVal RelativeNode As TvwNode, Optional ByVal Relationship As TvwNodeRelationshipConstants)
+#Else
 Friend Sub FNodeMove(ByVal Handle As Long, Optional ByVal RelativeNode As TvwNode, Optional ByVal Relationship As TvwNodeRelationshipConstants)
-If TreeViewHandle <> 0 And Handle <> 0 Then
-    Dim hParent As Long, hInsertAfter As Long, hRelative As Long
+#End If
+If TreeViewHandle <> NULL_PTR And Handle <> NULL_PTR Then
+    Dim hParent As LongPtr, hInsertAfter As LongPtr, hRelative As LongPtr
     If RelativeNode Is Nothing Then
         hRelative = TVI_ROOT
     Else
@@ -2550,29 +2762,29 @@ If TreeViewHandle <> 0 And Handle <> 0 Then
                 hParent = hRelative
             Else
                 hParent = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_PARENT, ByVal hRelative)
-                If hParent = 0 Then hParent = TVI_ROOT
+                If hParent = NULL_PTR Then hParent = TVI_ROOT
             End If
             hInsertAfter = hRelative
         Case TvwNodeRelationshipPrevious
-            Dim hPrevious As Long
+            Dim hPrevious As LongPtr
             hPrevious = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_PREVIOUS, ByVal hRelative)
-            If hPrevious = 0 Then
+            If hPrevious = NULL_PTR Then
                 hParent = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_PARENT, ByVal hRelative)
                 hInsertAfter = TVI_FIRST
             Else
                 hParent = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_PARENT, ByVal hRelative)
                 hInsertAfter = hPrevious
             End If
-            If hParent = 0 Then hParent = TVI_ROOT
+            If hParent = NULL_PTR Then hParent = TVI_ROOT
         Case TvwNodeRelationshipChild
             hParent = hRelative
         Case Else
             Err.Raise 380
     End Select
     If hParent <> TVI_ROOT Then
-        Dim hParentTest As Long
+        Dim hParentTest As LongPtr
         hParentTest = hParent
-        Do While hParentTest <> 0
+        Do While hParentTest <> NULL_PTR
             If hParentTest = Handle Then Err.Raise Number:=35614, Description:="This would introduce a cycle"
             hParentTest = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_PARENT, ByVal hParentTest)
         Loop
@@ -2585,12 +2797,20 @@ If TreeViewHandle <> 0 And Handle <> 0 Then
 End If
 End Sub
 
+#If VBA7 Then
+Friend Sub FNodeEnsureVisible(ByVal Handle As LongPtr)
+#Else
 Friend Sub FNodeEnsureVisible(ByVal Handle As Long)
-If TreeViewHandle <> 0 Then SendMessage TreeViewHandle, TVM_ENSUREVISIBLE, 0, ByVal Handle
+#End If
+If TreeViewHandle <> NULL_PTR Then SendMessage TreeViewHandle, TVM_ENSUREVISIBLE, 0, ByVal Handle
 End Sub
 
+#If VBA7 Then
+Friend Function FNodeCreateDragImage(ByVal Handle As LongPtr, ByVal ImageIndex As Long) As LongPtr
+#Else
 Friend Function FNodeCreateDragImage(ByVal Handle As Long, ByVal ImageIndex As Long) As Long
-If TreeViewHandle <> 0 Then
+#End If
+If TreeViewHandle <> NULL_PTR Then
     Dim TVI As TVITEM
     With TVI
     .Mask = TVIF_HANDLE Or TVIF_IMAGE
@@ -2627,7 +2847,11 @@ Friend Function FSelectedNodesItem(ByVal Index As Long) As TvwNode
 Set FSelectedNodesItem = PtrToObj(GetItemPtr(TreeViewSelectedItems(TreeViewSelectedCount - Index + 1)))
 End Function
 
+#If VBA7 Then
+Friend Function FSelectedNodesIndex(ByVal Handle As LongPtr) As Long
+#Else
 Friend Function FSelectedNodesIndex(ByVal Handle As Long) As Long
+#End If
 Dim i As Long
 For i = 1 To TreeViewSelectedCount
     If TreeViewSelectedItems(i) = Handle Then
@@ -2639,7 +2863,7 @@ Next i
 End Function
 
 Private Sub CreateTreeView()
-If TreeViewHandle <> 0 Then Exit Sub
+If TreeViewHandle <> NULL_PTR Then Exit Sub
 Dim dwStyle As Long, dwExStyle As Long
 dwStyle = WS_CHILD Or WS_VISIBLE
 If PropRightToLeft = True Then
@@ -2673,10 +2897,10 @@ If TreeViewDesignMode = False Then
 Else
     dwStyle = dwStyle Or TVS_NOTOOLTIPS Or TVS_DISABLEDRAGDROP
 End If
-TreeViewHandle = CreateWindowEx(dwExStyle, StrPtr("SysTreeView32"), 0, dwStyle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, 0, App.hInstance, ByVal 0&)
-If TreeViewHandle <> 0 Then
+TreeViewHandle = CreateWindowEx(dwExStyle, StrPtr("SysTreeView32"), NULL_PTR, dwStyle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, NULL_PTR, App.hInstance, ByVal NULL_PTR)
+If TreeViewHandle <> NULL_PTR Then
     TreeViewToolTipHandle = SendMessage(TreeViewHandle, TVM_GETTOOLTIPS, 0, ByVal 0&)
-    If TreeViewToolTipHandle <> 0 Then Call ComCtlsInitToolTip(TreeViewToolTipHandle)
+    If TreeViewToolTipHandle <> NULL_PTR Then Call ComCtlsInitToolTip(TreeViewToolTipHandle)
 End If
 Set Me.Font = PropFont
 Me.VisualStyles = PropVisualStyles
@@ -2690,7 +2914,7 @@ Me.LineColor = PropLineColor
 Me.Checkboxes = PropCheckboxes
 Me.InsertMarkColor = PropInsertMarkColor
 Me.DoubleBuffer = PropDoubleBuffer
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     If ComCtlsSupportLevel() = 0 Then
         ' According to MSDN:
         ' - If you change the font by returning CDRF_NEWFONT, the tree view control might display clipped text.
@@ -2702,7 +2926,7 @@ If TreeViewHandle <> 0 Then
     SendMessage TreeViewHandle, TVM_SETINDENT, PropIndentation, ByVal 0&
 End If
 If TreeViewDesignMode = False Then
-    If TreeViewHandle <> 0 Then
+    If TreeViewHandle <> NULL_PTR Then
         Call ComCtlsSetSubclass(TreeViewHandle, Me, 1)
         Call ComCtlsCreateIMC(TreeViewHandle, TreeViewIMCHandle)
     End If
@@ -2710,21 +2934,21 @@ End If
 End Sub
 
 Private Sub DestroyTreeView()
-If TreeViewHandle = 0 Then Exit Sub
+If TreeViewHandle = NULL_PTR Then Exit Sub
 Call ComCtlsRemoveSubclass(TreeViewHandle)
 Call ComCtlsRemoveSubclass(UserControl.hWnd)
 Call ComCtlsDestroyIMC(TreeViewHandle, TreeViewIMCHandle)
-Dim hImageList As Long
+Dim hImageList As LongPtr
 hImageList = SendMessage(TreeViewHandle, TVM_GETIMAGELIST, TVSIL_STATE, ByVal 0&)
-If hImageList <> 0 Then ImageList_Destroy hImageList
+If hImageList <> NULL_PTR Then ImageList_Destroy hImageList
 ShowWindow TreeViewHandle, SW_HIDE
-SetParent TreeViewHandle, 0
+SetParent TreeViewHandle, NULL_PTR
 DestroyWindow TreeViewHandle
-TreeViewHandle = 0
-TreeViewToolTipHandle = 0
-If TreeViewFontHandle <> 0 Then
+TreeViewHandle = NULL_PTR
+TreeViewToolTipHandle = NULL_PTR
+If TreeViewFontHandle <> NULL_PTR Then
     DeleteObject TreeViewFontHandle
-    TreeViewFontHandle = 0
+    TreeViewFontHandle = NULL_PTR
 End If
 End Sub
 
@@ -2732,21 +2956,21 @@ Public Sub Refresh()
 Attribute Refresh.VB_Description = "Forces a complete repaint of a object."
 Attribute Refresh.VB_UserMemId = -550
 UserControl.Refresh
-If PropRedraw = True Or TreeViewDesignMode = True Then RedrawWindow UserControl.hWnd, 0, 0, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
+If PropRedraw = True Or TreeViewDesignMode = True Then RedrawWindow UserControl.hWnd, NULL_PTR, NULL_PTR, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
 End Sub
 
 Public Function HitTest(ByVal X As Single, ByVal Y As Single) As TvwNode
 Attribute HitTest.VB_Description = "Returns a reference to the node object located at the coordinates of X and Y."
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     Dim TVHTI As TVHITTESTINFO
     With TVHTI
     .PT.X = UserControl.ScaleX(X, vbContainerPosition, vbPixels)
     .PT.Y = UserControl.ScaleY(Y, vbContainerPosition, vbPixels)
     If SendMessage(TreeViewHandle, TVM_HITTEST, 0, ByVal VarPtr(TVHTI)) <> 0 Then
         If (.Flags And TVHT_ONITEM) <> 0 Then
-            Dim Ptr As Long
+            Dim Ptr As LongPtr
             Ptr = GetItemPtr(.hItem)
-            If Ptr <> 0 Then Set HitTest = PtrToObj(Ptr)
+            If Ptr <> NULL_PTR Then Set HitTest = PtrToObj(Ptr)
         End If
     End If
     End With
@@ -2755,18 +2979,18 @@ End Function
 
 Public Function HitTestInsertMark(ByVal X As Single, ByVal Y As Single, Optional ByRef After As Boolean) As TvwNode
 Attribute HitTestInsertMark.VB_Description = "Returns a reference to the node object located at the coordinates of X and Y and retrieves a value that determines where the insertion point should appear."
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     Dim TVHTI As TVHITTESTINFO
     With TVHTI
     .PT.X = UserControl.ScaleX(X, vbContainerPosition, vbPixels)
     .PT.Y = UserControl.ScaleY(Y, vbContainerPosition, vbPixels)
     If SendMessage(TreeViewHandle, TVM_HITTEST, 0, ByVal VarPtr(TVHTI)) <> 0 Then
         If (.Flags And TVHT_ONITEM) <> 0 Then
-            Dim Ptr As Long
+            Dim Ptr As LongPtr
             Ptr = GetItemPtr(.hItem)
-            If Ptr <> 0 Then Set HitTestInsertMark = PtrToObj(Ptr)
+            If Ptr <> NULL_PTR Then Set HitTestInsertMark = PtrToObj(Ptr)
             Dim RC As RECT
-            RC.Left = .hItem
+            Call StuffHandleIntoRect(RC, .hItem)
             SendMessage TreeViewHandle, TVM_GETITEMRECT, 0, ByVal VarPtr(RC)
             After = CBool(.PT.Y > (RC.Top + (RC.Bottom - RC.Top) \ 2))
         End If
@@ -2777,16 +3001,16 @@ End Function
 
 Public Function GetVisibleCount() As Long
 Attribute GetVisibleCount.VB_Description = "Returns the number of fully visible nodes."
-If TreeViewHandle <> 0 Then GetVisibleCount = SendMessage(TreeViewHandle, TVM_GETVISIBLECOUNT, 0, ByVal 0&)
+If TreeViewHandle <> NULL_PTR Then GetVisibleCount = CLng(SendMessage(TreeViewHandle, TVM_GETVISIBLECOUNT, 0, ByVal 0&))
 End Function
 
 Public Property Get TopItem() As TvwNode
 Attribute TopItem.VB_Description = "Returns/sets a reference to the topmost visible node."
 Attribute TopItem.VB_MemberFlags = "400"
-If TreeViewHandle <> 0 Then
-    Dim Ptr As Long
+If TreeViewHandle <> NULL_PTR Then
+    Dim Ptr As LongPtr
     Ptr = GetItemPtr(SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_FIRSTVISIBLE, ByVal 0&))
-    If Ptr <> 0 Then Set TopItem = PtrToObj(Ptr)
+    If Ptr <> NULL_PTR Then Set TopItem = PtrToObj(Ptr)
 End If
 End Property
 
@@ -2795,7 +3019,7 @@ Set Me.TopItem = Value
 End Property
 
 Public Property Set TopItem(ByVal Value As TvwNode)
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     If Not Value Is Nothing Then
         SendMessage TreeViewHandle, TVM_SELECTITEM, TVGN_FIRSTVISIBLE, ByVal Value.Handle
     Else
@@ -2807,10 +3031,10 @@ End Property
 Public Property Get SelectedItem() As TvwNode
 Attribute SelectedItem.VB_Description = "Returns/sets a reference to the currently selected node."
 Attribute SelectedItem.VB_MemberFlags = "400"
-If TreeViewHandle <> 0 Then
-    Dim Ptr As Long
+If TreeViewHandle <> NULL_PTR Then
+    Dim Ptr As LongPtr
     Ptr = GetItemPtr(SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_CARET, ByVal 0&))
-    If Ptr <> 0 Then Set SelectedItem = PtrToObj(Ptr)
+    If Ptr <> NULL_PTR Then Set SelectedItem = PtrToObj(Ptr)
 End If
 End Property
 
@@ -2819,7 +3043,7 @@ Set Me.SelectedItem = Value
 End Property
 
 Public Property Set SelectedItem(ByVal Value As TvwNode)
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     If Not Value Is Nothing Then
         SendMessage TreeViewHandle, TVM_SELECTITEM, TVGN_CARET, ByVal Value.Handle
     Else
@@ -2830,10 +3054,10 @@ End Property
 
 Public Sub StartLabelEdit()
 Attribute StartLabelEdit.VB_Description = "Begins a label editing operation on a node. This method will fail if the label edit property is set to disabled."
-If TreeViewHandle <> 0 Then
-    Dim hItem As Long
+If TreeViewHandle <> NULL_PTR Then
+    Dim hItem As LongPtr
     hItem = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_CARET, ByVal 0&)
-    If hItem <> 0 Then
+    If hItem <> NULL_PTR Then
         TreeViewStartLabelEdit = True
         SendMessage TreeViewHandle, TVM_EDITLABEL, 0, ByVal hItem
         TreeViewStartLabelEdit = False
@@ -2843,13 +3067,13 @@ End Sub
 
 Public Sub EndLabelEdit(Optional ByVal Discard As Boolean)
 Attribute EndLabelEdit.VB_Description = "Ends the label editing operation on a node."
-If TreeViewHandle <> 0 Then SendMessage TreeViewHandle, TVM_ENDEDITLABELNOW, IIf(Discard = True, 1, 0), ByVal 0&
+If TreeViewHandle <> NULL_PTR Then SendMessage TreeViewHandle, TVM_ENDEDITLABELNOW, IIf(Discard = True, 1, 0), ByVal 0&
 End Sub
 
 Public Property Get LineHeight() As Single
 Attribute LineHeight.VB_Description = "Returns/sets the line height."
 Attribute LineHeight.VB_MemberFlags = "400"
-If TreeViewHandle <> 0 Then LineHeight = UserControl.ScaleY(SendMessage(TreeViewHandle, TVM_GETITEMHEIGHT, 0, ByVal 0&), vbPixels, vbContainerSize)
+If TreeViewHandle <> NULL_PTR Then LineHeight = UserControl.ScaleY(SendMessage(TreeViewHandle, TVM_GETITEMHEIGHT, 0, ByVal 0&), vbPixels, vbContainerSize)
 End Property
 
 Public Property Let LineHeight(ByVal Value As Single)
@@ -2860,16 +3084,16 @@ If Value = -1 Then
 Else
     LngValue = CLng(UserControl.ScaleY(Value, vbContainerSize, vbPixels))
 End If
-If TreeViewHandle <> 0 Then SendMessage TreeViewHandle, TVM_SETITEMHEIGHT, LngValue, ByVal 0&
+If TreeViewHandle <> NULL_PTR Then SendMessage TreeViewHandle, TVM_SETITEMHEIGHT, LngValue, ByVal 0&
 End Property
 
 Public Property Get DropHighlight() As TvwNode
 Attribute DropHighlight.VB_Description = "Returns/sets a reference to a node and highlights it with the system highlight color."
 Attribute DropHighlight.VB_MemberFlags = "400"
-If TreeViewHandle <> 0 Then
-    Dim Ptr As Long
+If TreeViewHandle <> NULL_PTR Then
+    Dim Ptr As LongPtr
     Ptr = GetItemPtr(SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_DROPHILITE, ByVal 0&))
-    If Ptr <> 0 Then Set DropHighlight = PtrToObj(Ptr)
+    If Ptr <> NULL_PTR Then Set DropHighlight = PtrToObj(Ptr)
 End If
 End Property
 
@@ -2878,7 +3102,7 @@ Set Me.DropHighlight = Value
 End Property
 
 Public Property Set DropHighlight(ByVal Value As TvwNode)
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     If Not Value Is Nothing Then
         SendMessage TreeViewHandle, TVM_SELECTITEM, TVGN_DROPHILITE, ByVal Value.Handle
     Else
@@ -2890,9 +3114,9 @@ End Property
 Public Property Get InsertMark(Optional ByRef After As Boolean) As TvwNode
 Attribute InsertMark.VB_Description = "Returns/sets a reference to a node where an insertion mark is positioned."
 Attribute InsertMark.VB_MemberFlags = "400"
-Dim Ptr As Long
+Dim Ptr As LongPtr
 Ptr = GetItemPtr(TreeViewInsertMarkItem)
-If Ptr <> 0 Then Set InsertMark = PtrToObj(Ptr)
+If Ptr <> NULL_PTR Then Set InsertMark = PtrToObj(Ptr)
 After = TreeViewInsertMarkAfter
 End Property
 
@@ -2901,9 +3125,9 @@ Set Me.InsertMark(After) = Value
 End Property
 
 Public Property Set InsertMark(Optional ByRef After As Boolean, ByVal Value As TvwNode)
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     If Value Is Nothing Then
-        TreeViewInsertMarkItem = 0
+        TreeViewInsertMarkItem = NULL_PTR
         TreeViewInsertMarkAfter = False
     Else
         If TreeViewInsertMarkItem = Value.Handle And TreeViewInsertMarkAfter = After Then Exit Property
@@ -2917,9 +3141,9 @@ End Property
 Public Property Get AnchorItem() As TvwNode
 Attribute AnchorItem.VB_Description = "Returns/sets a reference to the anchor item. That is the item from which a multiple selection starts."
 Attribute AnchorItem.VB_MemberFlags = "400"
-Dim Ptr As Long
+Dim Ptr As LongPtr
 Ptr = GetItemPtr(TreeViewAnchorItem)
-If Ptr <> 0 Then Set AnchorItem = PtrToObj(Ptr)
+If Ptr <> NULL_PTR Then Set AnchorItem = PtrToObj(Ptr)
 End Property
 
 Public Property Let AnchorItem(ByVal Value As TvwNode)
@@ -2930,23 +3154,23 @@ Public Property Set AnchorItem(ByVal Value As TvwNode)
 If Not Value Is Nothing Then
     TreeViewAnchorItem = Value.Handle
 Else
-    TreeViewAnchorItem = 0
+    TreeViewAnchorItem = NULL_PTR
 End If
 End Property
 
 Public Property Get OLEDraggedItem() As TvwNode
 Attribute OLEDraggedItem.VB_Description = "Returns a reference to the currently dragged node during an OLE drag/drop operation."
 Attribute OLEDraggedItem.VB_MemberFlags = "400"
-If TreeViewDragItem <> 0 Then
-    Dim Ptr As Long
+If TreeViewDragItem <> NULL_PTR Then
+    Dim Ptr As LongPtr
     Ptr = GetItemPtr(TreeViewDragItem)
-    If Ptr <> 0 Then Set OLEDraggedItem = PtrToObj(Ptr)
+    If Ptr <> NULL_PTR Then Set OLEDraggedItem = PtrToObj(Ptr)
 End If
 End Property
 
 Public Sub ResetForeColors()
 Attribute ResetForeColors.VB_Description = "Resets the foreground color of particular nodes that have been modified."
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     Dim Node As TvwNode
     SendMessage TreeViewHandle, WM_SETREDRAW, 0, ByVal 0&
     For Each Node In Me.Nodes
@@ -2957,8 +3181,8 @@ End If
 End Sub
 
 Private Sub SetVisualStylesToolTip()
-If TreeViewHandle <> 0 Then
-    If TreeViewToolTipHandle <> 0 And EnabledVisualStyles() = True Then
+If TreeViewHandle <> NULL_PTR Then
+    If TreeViewToolTipHandle <> NULL_PTR And EnabledVisualStyles() = True Then
         If PropVisualStyles = True Then
             ActivateVisualStyles TreeViewToolTipHandle
         Else
@@ -2968,8 +3192,8 @@ If TreeViewHandle <> 0 Then
 End If
 End Sub
 
-Private Function GetItemPtr(ByVal Handle As Long) As Long
-If Handle <> 0 Then
+Private Function GetItemPtr(ByVal Handle As LongPtr) As LongPtr
+If Handle <> NULL_PTR Then
     Dim TVI As TVITEM
     With TVI
     .Mask = TVIF_HANDLE Or TVIF_PARAM
@@ -2980,8 +3204,16 @@ If Handle <> 0 Then
 End If
 End Function
 
-Private Function MoveNodes(ByVal Handle As Long, ByVal ParentHandle As Long, ByVal InsertAfter As Long) As Long
-If TreeViewHandle <> 0 And Handle <> 0 And ParentHandle <> 0 Then
+Private Sub StuffHandleIntoRect(ByRef RC As RECT, ByVal Handle As LongPtr)
+#If Win64 Then
+CopyMemory ByVal VarPtr(RC.Left), ByVal VarPtr(Handle), PTR_SIZE
+#Else
+RC.Left = Handle
+#End If
+End Sub
+
+Private Function MoveNodes(ByVal Handle As LongPtr, ByVal ParentHandle As LongPtr, ByVal InsertAfter As LongPtr) As LongPtr
+If TreeViewHandle <> NULL_PTR And Handle <> NULL_PTR And ParentHandle <> NULL_PTR Then
     Dim TVIS As TVINSERTSTRUCT
     With TVIS
     .hParent = ParentHandle
@@ -3011,13 +3243,13 @@ If TreeViewHandle <> 0 And Handle <> 0 And ParentHandle <> 0 Then
     Else
         MoveNodes = SendMessage(TreeViewHandle, TVM_INSERTITEM, 0, ByVal VarPtr(TVIS))
     End If
-    If MoveNodes <> 0 Then
+    If MoveNodes <> NULL_PTR Then
         Dim Node As TvwNode
         Set Node = PtrToObj(.Item.TVI.lParam)
         Node.Handle = MoveNodes
-        Dim hChild As Long
+        Dim hChild As LongPtr
         hChild = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_CHILD, ByVal Handle)
-        Do While hChild <> 0
+        Do While hChild <> NULL_PTR
             MoveNodes hChild, MoveNodes, TVI_LAST
             hChild = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_NEXT, ByVal hChild)
         Loop
@@ -3026,8 +3258,8 @@ If TreeViewHandle <> 0 And Handle <> 0 And ParentHandle <> 0 Then
 End If
 End Function
 
-Private Sub SortNodes(ByVal Handle As Long, ByVal SortType As TvwSortTypeConstants)
-If TreeViewHandle <> 0 And Handle <> 0 Then
+Private Sub SortNodes(ByVal Handle As LongPtr, ByVal SortType As TvwSortTypeConstants)
+If TreeViewHandle <> NULL_PTR And Handle <> NULL_PTR Then
     Dim TVSCB As TVSORTCB
     With TVSCB
     .hParent = Handle
@@ -3037,7 +3269,7 @@ If TreeViewHandle <> 0 And Handle <> 0 Then
         Case TvwSortTypeText
             .lpfnCompare = ProcPtr(AddressOf ComCtlsTvwSortingFunctionText)
     End Select
-    If .lpfnCompare <> 0 Then
+    If .lpfnCompare <> NULL_PTR Then
         Dim This As ISubclass
         Set This = Me
         .lParam = ObjPtr(This)
@@ -3047,95 +3279,95 @@ If TreeViewHandle <> 0 And Handle <> 0 Then
 End If
 End Sub
 
-Private Sub NodesRemoveRecursion(ByVal ChildNodes As Collection, ByVal hChild As Long)
-If TreeViewHandle <> 0 Then
-    Dim Ptr As Long
+Private Sub NodesRemoveRecursion(ByVal ChildNodes As Collection, ByVal hChild As LongPtr)
+If TreeViewHandle <> NULL_PTR Then
+    Dim Ptr As LongPtr
     hChild = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_CHILD, ByVal hChild)
-    Do While hChild <> 0
+    Do While hChild <> NULL_PTR
         Ptr = GetItemPtr(hChild)
-        If Ptr <> 0 Then ChildNodes.Add Ptr
+        If Ptr <> NULL_PTR Then ChildNodes.Add Ptr
         Call NodesRemoveRecursion(ChildNodes, hChild)
         hChild = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_NEXT, ByVal hChild)
     Loop
 End If
 End Sub
 
-Private Function GetSelectRange(ByVal hItem1 As Long, ByVal hItem2 As Long) As Collection
+Private Function GetSelectRange(ByVal hItem1 As LongPtr, ByVal hItem2 As LongPtr) As Collection
 Set GetSelectRange = New Collection
-If TreeViewHandle <> 0 Then
-    If hItem1 <> 0 And hItem2 <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
+    If hItem1 <> NULL_PTR And hItem2 <> NULL_PTR Then
         GetSelectRange.Add hItem1
-        Dim hParent As Long
+        Dim hParent As LongPtr
         hParent = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_PARENT, ByVal hItem2)
-        Dim hItem As Long, RC As RECT
+        Dim hItem As LongPtr, RC As RECT
         hItem = hItem1
         Do Until hItem = hItem2
             hItem = GetSelectRangeStep(hItem)
-            If hItem = 0 Then Exit Do
+            If hItem = NULL_PTR Then Exit Do
             If PropMultiSelect = TvwMultiSelectAll Then
                 GetSelectRange.Add hItem
             ElseIf PropMultiSelect = TvwMultiSelectVisibleOnly Then
-                RC.Left = hItem
+                Call StuffHandleIntoRect(RC, hItem)
                 If SendMessage(TreeViewHandle, TVM_GETITEMRECT, 0, ByVal VarPtr(RC)) <> 0 Then GetSelectRange.Add hItem
             ElseIf PropMultiSelect = TvwMultiSelectRestrictSiblings Then
                 If SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_PARENT, ByVal hItem) = hParent Then GetSelectRange.Add hItem
             End If
         Loop
-        If hItem = 0 Then
+        If hItem = NULL_PTR Then
             Set GetSelectRange = New Collection
             GetSelectRange.Add hItem2
             hItem = hItem2
             Do Until hItem = hItem1
                 hItem = GetSelectRangeStep(hItem)
-                If hItem = 0 Then Exit Do
+                If hItem = NULL_PTR Then Exit Do
                 If PropMultiSelect = TvwMultiSelectAll Then
                     GetSelectRange.Add hItem, , 1
                 ElseIf PropMultiSelect = TvwMultiSelectVisibleOnly Then
-                    RC.Left = hItem
+                    Call StuffHandleIntoRect(RC, hItem)
                     If SendMessage(TreeViewHandle, TVM_GETITEMRECT, 0, ByVal VarPtr(RC)) <> 0 Then GetSelectRange.Add hItem, , 1
                 ElseIf PropMultiSelect = TvwMultiSelectRestrictSiblings Then
                     If SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_PARENT, ByVal hItem) = hParent Then GetSelectRange.Add hItem, , 1
                 End If
             Loop
         End If
-    ElseIf hItem2 <> 0 Then
+    ElseIf hItem2 <> NULL_PTR Then
         GetSelectRange.Add hItem2
     End If
 End If
 End Function
 
-Private Function GetSelectRangeStep(ByVal hItem As Long) As Long
-If TreeViewHandle <> 0 And hItem <> 0 Then
-    Dim hStep As Long
+Private Function GetSelectRangeStep(ByVal hItem As LongPtr) As LongPtr
+If TreeViewHandle <> NULL_PTR And hItem <> NULL_PTR Then
+    Dim hStep As LongPtr
     hStep = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_CHILD, ByVal hItem)
-    If hStep <> 0 Then
+    If hStep <> NULL_PTR Then
         GetSelectRangeStep = hStep
         Exit Function
     End If
     hStep = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_NEXT, ByVal hItem)
-    If hStep <> 0 Then
+    If hStep <> NULL_PTR Then
         GetSelectRangeStep = hStep
         Exit Function
     End If
     hStep = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_PARENT, ByVal hItem)
-    If hStep = 0 Then Exit Function
+    If hStep = NULL_PTR Then Exit Function
     hStep = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_NEXT, ByVal hStep)
-    If hStep <> 0 Then
+    If hStep <> NULL_PTR Then
         GetSelectRangeStep = hStep
     Else
-        Dim hParent As Long
+        Dim hParent As LongPtr
         hParent = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_PARENT, ByVal hItem)
-        While hParent <> 0
+        While hParent <> NULL_PTR
             hStep = hParent
             hParent = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_PARENT, ByVal hParent)
         Wend
         hStep = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_NEXT, ByVal hStep)
-        If hStep <> 0 Then GetSelectRangeStep = hStep
+        If hStep <> NULL_PTR Then GetSelectRangeStep = hStep
     End If
 End If
 End Function
 
-Private Sub SetItemSelected(ByVal Handle As Long, ByVal State As Boolean, Optional ByVal NoRedraw As Boolean)
+Private Sub SetItemSelected(ByVal Handle As LongPtr, ByVal State As Boolean, Optional ByVal NoRedraw As Boolean)
 Dim i As Long
 For i = 1 To TreeViewSelectedCount
     If TreeViewSelectedItems(i) = Handle Then Exit For
@@ -3143,7 +3375,7 @@ Next i
 If State = True Then
     If i > TreeViewSelectedCount Then
         TreeViewSelectedCount = TreeViewSelectedCount + 1
-        ReDim Preserve TreeViewSelectedItems(1 To TreeViewSelectedCount) As Long
+        ReDim Preserve TreeViewSelectedItems(1 To TreeViewSelectedCount) ' As LongPtr
         TreeViewSelectedItems(TreeViewSelectedCount) = Handle
     Else
         NoRedraw = True
@@ -3156,7 +3388,7 @@ Else
         Next j
         TreeViewSelectedCount = TreeViewSelectedCount - 1
         If TreeViewSelectedCount > 0 Then
-            ReDim Preserve TreeViewSelectedItems(1 To TreeViewSelectedCount) As Long
+            ReDim Preserve TreeViewSelectedItems(1 To TreeViewSelectedCount) ' As LongPtr
         Else
             Erase TreeViewSelectedItems()
         End If
@@ -3165,9 +3397,9 @@ Else
     End If
 End If
 If NoRedraw = False Then
-    If TreeViewHandle <> 0 Then
+    If TreeViewHandle <> NULL_PTR Then
         Dim RC As RECT
-        RC.Left = Handle
+        Call StuffHandleIntoRect(RC, Handle)
         If SendMessage(TreeViewHandle, TVM_GETITEMRECT, 0, ByVal VarPtr(RC)) <> 0 Then
             InvalidateRect TreeViewHandle, RC, 1
             UpdateWindow TreeViewHandle
@@ -3176,7 +3408,7 @@ If NoRedraw = False Then
 End If
 End Sub
 
-Private Function IsItemSelected(ByVal Handle As Long) As Boolean
+Private Function IsItemSelected(ByVal Handle As LongPtr) As Boolean
 Dim i As Long
 For i = 1 To TreeViewSelectedCount
     If TreeViewSelectedItems(i) = Handle Then Exit For
@@ -3184,13 +3416,13 @@ Next i
 If i <= TreeViewSelectedCount And TreeViewSelectedCount > 0 Then IsItemSelected = True
 End Function
 
-Private Function ClearSelectedItems(Optional ByVal Handle As Variant) As Long
+Private Function ClearSelectedItems(Optional ByVal Handle As Variant) As LongPtr
 Dim RC As RECT, NeedUpdate As Boolean
 If TreeViewSelectedCount > 0 Then
-    If TreeViewHandle <> 0 Then
+    If TreeViewHandle <> NULL_PTR Then
         Dim i As Long
         For i = 1 To TreeViewSelectedCount
-            RC.Left = TreeViewSelectedItems(i)
+            Call StuffHandleIntoRect(RC, TreeViewSelectedItems(i))
             If SendMessage(TreeViewHandle, TVM_GETITEMRECT, 0, ByVal VarPtr(RC)) <> 0 Then
                 InvalidateRect TreeViewHandle, RC, 1
                 NeedUpdate = True
@@ -3200,21 +3432,21 @@ If TreeViewSelectedCount > 0 Then
     TreeViewSelectedCount = 0
     Erase TreeViewSelectedItems()
 End If
-If TreeViewHandle <> 0 Then
+If TreeViewHandle <> NULL_PTR Then
     If PropMultiSelect <> TvwMultiSelectNone Then
-        Dim hItem As Long
+        Dim hItem As LongPtr
         If IsMissing(Handle) Then
             hItem = SendMessage(TreeViewHandle, TVM_GETNEXTITEM, TVGN_CARET, ByVal 0&)
         Else
             hItem = Handle
         End If
-        If hItem <> 0 Then
+        If hItem <> NULL_PTR Then
             ClearSelectedItems = hItem
             If (SendMessage(TreeViewHandle, TVM_GETITEMSTATE, hItem, ByVal TVIS_SELECTED) And TVIS_SELECTED) <> 0 Then
                 TreeViewSelectedCount = 1
-                ReDim Preserve TreeViewSelectedItems(1 To TreeViewSelectedCount) As Long
+                ReDim Preserve TreeViewSelectedItems(1 To TreeViewSelectedCount) ' As LongPtr
                 TreeViewSelectedItems(TreeViewSelectedCount) = hItem
-                RC.Left = TreeViewSelectedItems(1)
+                Call StuffHandleIntoRect(RC, TreeViewSelectedItems(1))
                 If SendMessage(TreeViewHandle, TVM_GETITEMRECT, 0, ByVal VarPtr(RC)) <> 0 Then
                     InvalidateRect TreeViewHandle, RC, 1
                     NeedUpdate = True
@@ -3226,7 +3458,7 @@ If TreeViewHandle <> 0 Then
 End If
 End Function
 
-Private Function NodesSortingFunctionBinary(ByVal lParam1 As Long, ByVal lParam2 As Long) As Long
+Private Function NodesSortingFunctionBinary(ByVal lParam1 As LongPtr, ByVal lParam2 As LongPtr) As Long
 Dim Text1 As String, Text2 As String, Node1 As TvwNode, Node2 As TvwNode, ParentNode As TvwNode
 Set Node1 = PtrToObj(lParam1)
 Set Node2 = PtrToObj(lParam2)
@@ -3241,7 +3473,7 @@ Else
 End If
 End Function
 
-Private Function NodesSortingFunctionText(ByVal lParam1 As Long, ByVal lParam2 As Long) As Long
+Private Function NodesSortingFunctionText(ByVal lParam1 As LongPtr, ByVal lParam2 As LongPtr) As Long
 Dim Text1 As String, Text2 As String, Node1 As TvwNode, Node2 As TvwNode, ParentNode As TvwNode
 Set Node1 = PtrToObj(lParam1)
 Set Node2 = PtrToObj(lParam2)
@@ -3265,10 +3497,14 @@ StateImageMaskToIndex = ImgState / (2 ^ 12)
 End Function
 
 Private Function PropImageListControl() As Object
-If TreeViewImageListObjectPointer <> 0 Then Set PropImageListControl = PtrToObj(TreeViewImageListObjectPointer)
+If TreeViewImageListObjectPointer <> NULL_PTR Then Set PropImageListControl = PtrToObj(TreeViewImageListObjectPointer)
 End Function
 
+#If VBA7 Then
+Private Function ISubclass_Message(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
+#Else
 Private Function ISubclass_Message(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal dwRefData As Long) As Long
+#End If
 Select Case dwRefData
     Case 1
         ISubclass_Message = WindowProcControl(hWnd, wMsg, wParam, lParam)
@@ -3283,7 +3519,7 @@ Select Case dwRefData
 End Select
 End Function
 
-Private Function WindowProcControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_SETFOCUS
         If wParam <> UserControl.hWnd Then SetFocusAPI UserControl.hWnd: Exit Function
@@ -3300,9 +3536,9 @@ Select Case wMsg
         If GetFocus() <> hWnd Then UCNoSetFocusFwd = True: SetFocusAPI UserControl.hWnd: UCNoSetFocusFwd = False
         PostMessage hWnd, UM_BUTTONDOWN, MakeDWord(vbRightButton, GetShiftStateFromParam(wParam)), ByVal lParam
     Case WM_SETCURSOR
-        If LoWord(lParam) = HTCLIENT Then
+        If LoWord(CLng(lParam)) = HTCLIENT Then
             If MousePointerID(PropMousePointer) <> 0 Then
-                SetCursor LoadCursor(0, MousePointerID(PropMousePointer))
+                SetCursor LoadCursor(NULL_PTR, MousePointerID(PropMousePointer))
                 WindowProcControl = 1
                 Exit Function
             ElseIf PropMousePointer = 99 Then
@@ -3315,7 +3551,7 @@ Select Case wMsg
         End If
     Case WM_KEYDOWN, WM_KEYUP, WM_SYSKEYDOWN, WM_SYSKEYUP
         Dim KeyCode As Integer
-        KeyCode = wParam And &HFF&
+        KeyCode = CLng(wParam) And &HFF&
         If wMsg = WM_KEYDOWN Or wMsg = WM_KEYUP Then
             If wMsg = WM_KEYDOWN Then
                 RaiseEvent KeyDown(KeyCode, GetShiftStateFromMsg())
@@ -3351,7 +3587,7 @@ Select Case wMsg
             KeyChar = CUIntToInt(TreeViewCharCodeCache And &HFFFF&)
             TreeViewCharCodeCache = 0
         Else
-            KeyChar = CUIntToInt(wParam And &HFFFF&)
+            KeyChar = CUIntToInt(CLng(wParam) And &HFFFF&)
         End If
         RaiseEvent KeyPress(KeyChar)
         wParam = CIntToUInt(KeyChar)
@@ -3360,7 +3596,7 @@ Select Case wMsg
             WindowProcControl = 1
         Else
             Dim UTF16 As String
-            UTF16 = UTF32CodePoint_To_UTF16(wParam)
+            UTF16 = UTF32CodePoint_To_UTF16(CLng(wParam))
             If Len(UTF16) = 1 Then
                 SendMessage hWnd, WM_CHAR, CIntToUInt(AscW(UTF16)), ByVal lParam
             ElseIf Len(UTF16) = 2 Then
@@ -3383,8 +3619,8 @@ Select Case wMsg
     Case UM_BUTTONDOWN
         ' The control enters a modal message loop (DragDetect) on WM_LBUTTONDOWN and WM_RBUTTONDOWN.
         ' This workaround is necessary to raise 'MouseDown' before the button was released or the mouse was moved.
-        RaiseEvent MouseDown(LoWord(wParam), HiWord(wParam), UserControl.ScaleX(Get_X_lParam(lParam), vbPixels, vbTwips), UserControl.ScaleY(Get_Y_lParam(lParam), vbPixels, vbTwips))
-        TreeViewButtonDown = LoWord(wParam)
+        RaiseEvent MouseDown(LoWord(CLng(wParam)), HiWord(CLng(wParam)), UserControl.ScaleX(Get_X_lParam(lParam), vbPixels, vbTwips), UserControl.ScaleY(Get_Y_lParam(lParam), vbPixels, vbTwips))
+        TreeViewButtonDown = LoWord(CLng(wParam))
         TreeViewIsClick = True
         Exit Function
 End Select
@@ -3443,7 +3679,7 @@ Select Case wMsg
 End Select
 End Function
 
-Private Function WindowProcLabelEdit(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcLabelEdit(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_SETFOCUS
         Call ActivateIPAO(Me)
@@ -3461,7 +3697,7 @@ Select Case wMsg
             WindowProcLabelEdit = 1
         Else
             Dim UTF16 As String
-            UTF16 = UTF32CodePoint_To_UTF16(wParam)
+            UTF16 = UTF32CodePoint_To_UTF16(CLng(wParam))
             If Len(UTF16) = 1 Then
                 SendMessage hWnd, WM_CHAR, CIntToUInt(AscW(UTF16)), ByVal lParam
             ElseIf Len(UTF16) = 2 Then
@@ -3482,18 +3718,18 @@ End Select
 WindowProcLabelEdit = ComCtlsDefaultProc(hWnd, wMsg, wParam, lParam)
 End Function
 
-Private Function WindowProcUserControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcUserControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_NOTIFY
         Dim NM As NMHDR
         CopyMemory NM, ByVal lParam, LenB(NM)
         If NM.hWndFrom = TreeViewHandle Then
-            Dim Ptr As Long, Node As TvwNode, hEnum As Variant
+            Dim Ptr As LongPtr, Node As TvwNode, hEnum As Variant
             Dim Length As Long, Cancel As Boolean
             Dim NMTV As NMTREEVIEW, NMTVDI As NMTVDISPINFO, TVHTI As TVHITTESTINFO
             Select Case NM.Code
                 Case TVN_BEGINLABELEDIT, TVN_ENDLABELEDIT
-                    Static LabelEditHandle As Long
+                    Static LabelEditHandle As LongPtr
                     Select Case NM.Code
                         Case TVN_BEGINLABELEDIT
                             If PropLabelEdit = TvwLabelEditManual And TreeViewStartLabelEdit = False Then
@@ -3514,7 +3750,7 @@ Select Case wMsg
                                     Else
                                         WindowProcUserControl = 0
                                         LabelEditHandle = Me.hWndLabelEdit
-                                        If LabelEditHandle <> 0 Then
+                                        If LabelEditHandle <> NULL_PTR Then
                                             If PropRightToLeft = True And PropRightToLeftLayout = False Then Call ComCtlsSetRightToLeft(LabelEditHandle, WS_EX_RTLREADING)
                                             Call ComCtlsSetSubclass(LabelEditHandle, Me, 2)
                                         End If
@@ -3527,7 +3763,7 @@ Select Case wMsg
                         Case TVN_ENDLABELEDIT
                             CopyMemory NMTVDI, ByVal lParam, LenB(NMTVDI)
                             With NMTVDI.Item
-                            If .pszText <> 0 Then
+                            If .pszText <> NULL_PTR Then
                                 Dim NewText As String
                                 Length = lstrlen(.pszText)
                                 If Length > 0 Then
@@ -3544,9 +3780,9 @@ Select Case wMsg
                                 WindowProcUserControl = 0
                             End If
                             End With
-                            If LabelEditHandle <> 0 Then
+                            If LabelEditHandle <> NULL_PTR Then
                                 Call ComCtlsRemoveSubclass(LabelEditHandle)
-                                LabelEditHandle = 0
+                                LabelEditHandle = NULL_PTR
                             End If
                             TreeViewLabelInEdit = False
                     End Select
@@ -3563,7 +3799,7 @@ Select Case wMsg
                         ElseIf NM.Code = TVN_BEGINRDRAG Then
                             RaiseEvent NodeDrag(Node, vbRightButton)
                         End If
-                        TreeViewDragItemBuffer = 0
+                        TreeViewDragItemBuffer = NULL_PTR
                     End If
                     End With
                 Case NM_CLICK, NM_RCLICK
@@ -3571,7 +3807,7 @@ Select Case wMsg
                     GetCursorPos .PT
                     ScreenToClient TreeViewHandle, .PT
                     SendMessage TreeViewHandle, TVM_HITTEST, 0, ByVal VarPtr(TVHTI)
-                    If .hItem <> 0 Then
+                    If .hItem <> NULL_PTR Then
                         If PropMultiSelect <> TvwMultiSelectNone Then
                             TreeViewClickSelectedCount = TreeViewSelectedCount
                             TreeViewClickShift = GetShiftStateFromMsg()
@@ -3589,7 +3825,7 @@ Select Case wMsg
                                             Me.FNodeSelected(.hItem) = Not IsItemSelected(.hItem)
                                         ElseIf (TreeViewClickShift And vbShiftMask) <> 0 Then
                                             If TreeViewAnchorItem <> .hItem Then
-                                                If (TreeViewClickShift And vbCtrlMask) = 0 Then ClearSelectedItems 0&
+                                                If (TreeViewClickShift And vbCtrlMask) = 0 Then ClearSelectedItems NULL_PTR
                                                 For Each hEnum In GetSelectRange(TreeViewAnchorItem, .hItem)
                                                     Select Case hEnum
                                                         Case TreeViewAnchorItem, .hItem
@@ -3615,7 +3851,7 @@ Select Case wMsg
                             End If
                         End If
                         Ptr = GetItemPtr(.hItem)
-                        If Ptr <> 0 Then Set Node = PtrToObj(Ptr)
+                        If Ptr <> NULL_PTR Then Set Node = PtrToObj(Ptr)
                         If (.Flags And (TVHT_ONITEMICON Or TVHT_ONITEMLABEL)) <> 0 Then
                             If NM.Code = NM_CLICK Then
                                 RaiseEvent NodeClick(Node, vbLeftButton)
@@ -3661,9 +3897,9 @@ Select Case wMsg
                     GetCursorPos .PT
                     ScreenToClient TreeViewHandle, .PT
                     SendMessage TreeViewHandle, TVM_HITTEST, 0, ByVal VarPtr(TVHTI)
-                    If .hItem <> 0 Then
+                    If .hItem <> NULL_PTR Then
                         Ptr = GetItemPtr(.hItem)
-                        If Ptr <> 0 Then Set Node = PtrToObj(Ptr)
+                        If Ptr <> NULL_PTR Then Set Node = PtrToObj(Ptr)
                         If (.Flags And (TVHT_ONITEMICON Or TVHT_ONITEMLABEL)) <> 0 Then
                             If NM.Code = NM_DBLCLK Then
                                 RaiseEvent NodeDblClick(Node, vbLeftButton)
@@ -3729,7 +3965,7 @@ Select Case wMsg
                                 Case TVC_BYMOUSE, TVC_BYKEYBOARD
                                     Dim Shift As Integer
                                     Shift = GetShiftStateFromMsg()
-                                    If TreeViewAnchorItem = 0 Or (Shift And vbShiftMask) = 0 Then TreeViewAnchorItem = .ItemNew.hItem
+                                    If TreeViewAnchorItem = NULL_PTR Or (Shift And vbShiftMask) = 0 Then TreeViewAnchorItem = .ItemNew.hItem
                                     If (Shift And (vbShiftMask Or vbCtrlMask)) = 0 Then
                                         ' Clear all highlighted items in case it is a simple click.
                                         ClearSelectedItems .ItemNew.hItem
@@ -3745,7 +3981,7 @@ Select Case wMsg
                                             Me.FNodeSelected(.ItemNew.hItem) = Not IsItemSelected(.ItemNew.hItem)
                                         ElseIf (Shift And vbShiftMask) <> 0 Then
                                             If TreeViewAnchorItem <> .ItemNew.hItem Then
-                                                If (Shift And vbCtrlMask) = 0 Then ClearSelectedItems 0&
+                                                If (Shift And vbCtrlMask) = 0 Then ClearSelectedItems NULL_PTR
                                                 For Each hEnum In GetSelectRange(TreeViewAnchorItem, .ItemNew.hItem)
                                                     Select Case hEnum
                                                         Case TreeViewAnchorItem, .ItemNew.hItem
@@ -3779,14 +4015,14 @@ Select Case wMsg
                     Else
                         ' If hItem is zero then there is no caret item anymore.
                         ' Clear all selected items in case the tree view is multi select.
-                        If PropMultiSelect <> TvwMultiSelectNone Then TreeViewAnchorItem = ClearSelectedItems(0&)
+                        If PropMultiSelect <> TvwMultiSelectNone Then TreeViewAnchorItem = ClearSelectedItems(NULL_PTR)
                     End If
                     End With
                 Case TVN_DELETEITEM
                     If PropMultiSelect <> TvwMultiSelectNone Then
                         CopyMemory NMTV, ByVal lParam, LenB(NMTV)
                         With NMTV.ItemOld
-                        If .hItem = TreeViewAnchorItem Then TreeViewAnchorItem = 0
+                        If .hItem = TreeViewAnchorItem Then TreeViewAnchorItem = NULL_PTR
                         Call SetItemSelected(.hItem, False, True)
                         End With
                     End If
@@ -3886,7 +4122,7 @@ Select Case wMsg
                     Dim NMTVGIT As NMTVGETINFOTIP
                     CopyMemory NMTVGIT, ByVal lParam, LenB(NMTVGIT)
                     With NMTVGIT
-                    If .hItem <> 0 And .lParam <> 0 And .pszText <> 0 Then
+                    If .hItem <> NULL_PTR And .lParam <> 0 And .pszText <> NULL_PTR Then
                         Set Node = PtrToObj(.lParam)
                         Dim ToolTipText As String
                         ToolTipText = Node.ToolTipText

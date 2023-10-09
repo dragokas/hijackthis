@@ -1409,9 +1409,6 @@ End Sub
 Public Sub CheckO27Item_RDP()
     On Error GoTo ErrorHandler:
     
-    '//TODO: check port
-    'netsh advfirewall firewall set rule name="Remote Desktop" new localport=
-    
     Dim lData&
     Dim sHit$, result As SCAN_RESULT
     Dim HE As clsHiveEnum:      Set HE = New clsHiveEnum

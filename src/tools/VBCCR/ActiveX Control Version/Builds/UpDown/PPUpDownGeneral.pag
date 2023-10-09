@@ -203,7 +203,11 @@ Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
 Option Explicit
+#If VBA7 Then
+Private Declare PtrSafe Function PostMessage Lib "user32" Alias "PostMessageW" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByRef lParam As Any) As LongPtr
+#Else
 Private Declare Function PostMessage Lib "user32" Alias "PostMessageW" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByRef lParam As Any) As Long
+#End If
 Private BuddyControlEnumerated As Boolean, BuddyProperties() As String
 Private CurrBuddyControl As String
 Private FreezeChanged As Boolean
@@ -267,7 +271,9 @@ If BuddyControlEnumerated = False Then
     Dim TLI As Object, ObjInterface As Object, ObjMember As Object
     Dim LastMemberName As String, PropUBound As Long
     On Error Resume Next
+    #If (Win64 = 0) Then
     Set TLI = CreateObject("TLI.TLIApplication")
+    #End If
     If Err.Number <> 0 Then Set TLI = Nothing
     On Error GoTo 0
     Dim ControlEnum As Object

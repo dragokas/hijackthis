@@ -44,6 +44,8 @@ Private lSubclassedScan     As Long
 Private hGetMsgHook         As Long
 Private m_hColTextbox       As New clsCollectionEx
 
+Public inIDE As Boolean
+
 Public Sub SubClassScroll(SwitchON As Boolean)
     
     SubClassScroll_Tools SwitchON
@@ -67,7 +69,7 @@ Public Sub SubClassScroll_ScanResults(SwitchON As Boolean)
     If SwitchON And Not bAutoLogSilent Then
         If Not (frmMain Is Nothing) Then
             If lSubclassedScan Then SubClassScroll_ScanResults False
-            h_HwndScanResults = frmMain.lstResults.hwnd
+            h_HwndScanResults = frmMain.lstResults.hWnd
             If lSubclassedScan = 0 Then lSubclassedScan = SetWindowSubclass(h_HwndScanResults, AddressOf WndProcScan, 0&)
         End If
     Else
@@ -98,12 +100,12 @@ Public Sub SubClassTextbox(hTextbox As Long, SwitchON As Boolean)
     End If
 End Sub
 
-Public Function IsMouseWithin(hwnd As Long) As Boolean
+Public Function IsMouseWithin(hWnd As Long) As Boolean
     Dim r As RECT
     Dim p As POINTAPI
-    If GetWindowRect(hwnd, r) Then
+    If GetWindowRect(hWnd, r) Then
         If GetCursorPos(p) Then
-            IsMouseWithin = PtInRect(r, p.X, p.Y)
+            IsMouseWithin = PtInRect(r, p.x, p.y)
         End If
     End If
 End Function
@@ -160,7 +162,7 @@ End Function
 '    GetMsgProc = CallNextHookEx(hGetMsgHook, nCode, wParam, lParam)
 'End Function
 
-Private Function WndProcTools(ByVal hwnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal uIdSubclass As Long, ByVal dwRefData As Long) As Long
+Private Function WndProcTools(ByVal hWnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal uIdSubclass As Long, ByVal dwRefData As Long) As Long
     On Error Resume Next
     
     Static MouseKeys&, Rotation&, NewValue%
@@ -201,11 +203,11 @@ Private Function WndProcTools(ByVal hwnd As Long, ByVal uMsg As Long, ByVal wPar
     
     End Select
     
-    WndProcTools = DefSubclassProc(hwnd, uMsg, wParam, lParam)
+    WndProcTools = DefSubclassProc(hWnd, uMsg, wParam, lParam)
     
 End Function
 
-Private Function WndProcScan(ByVal hwnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal uIdSubclass As Long, ByVal dwRefData As Long) As Long
+Private Function WndProcScan(ByVal hWnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal uIdSubclass As Long, ByVal dwRefData As Long) As Long
     On Error Resume Next
     
     Static Rotation&
@@ -233,11 +235,11 @@ Private Function WndProcScan(ByVal hwnd As Long, ByVal uMsg As Long, ByVal wPara
     
     End Select
     
-    WndProcScan = DefSubclassProc(hwnd, uMsg, wParam, lParam)
+    WndProcScan = DefSubclassProc(hWnd, uMsg, wParam, lParam)
     
 End Function
 
-Private Function Callback_WndTextbox(ByVal hwnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal uIdSubclass As Long, ByVal dwRefData As Long) As Long
+Private Function Callback_WndTextbox(ByVal hWnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal uIdSubclass As Long, ByVal dwRefData As Long) As Long
     On Error Resume Next
     
     Select Case uMsg
@@ -250,7 +252,7 @@ Private Function Callback_WndTextbox(ByVal hwnd As Long, ByVal uMsg As Long, ByV
         
     Case WM_KEYDOWN
         If wParam = Asc("A") And GetKeyState(VK_CONTROL) < 0 Then
-            SendMessage hwnd, EM_SETSEL, ByVal 0&, ByVal -1&
+            SendMessage hWnd, EM_SETSEL, ByVal 0&, ByVal -1&
             Exit Function
         End If
         
@@ -258,13 +260,13 @@ Private Function Callback_WndTextbox(ByVal hwnd As Long, ByVal uMsg As Long, ByV
         Dim txt As String
         txt = ClipboardGetText()
         If Len(txt) <> 0 Then
-            SendMessage hwnd, EM_REPLACESEL, True, ByVal StrPtr(txt)
+            SendMessage hWnd, EM_REPLACESEL, True, ByVal StrPtr(txt)
             Exit Function
         End If
     
     Case WM_COPY
-        Callback_WndTextbox = DefSubclassProc(hwnd, uMsg, wParam, lParam)
-        If OpenClipboard(hwnd) Then
+        Callback_WndTextbox = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+        If OpenClipboard(hWnd) Then
             Dim hMem As Long
             Dim ptr As Long
             hMem = GlobalAlloc(GMEM_MOVEABLE, 4)
@@ -283,7 +285,7 @@ Private Function Callback_WndTextbox(ByVal hwnd As Long, ByVal uMsg As Long, ByV
     
     End Select
     
-    Callback_WndTextbox = DefSubclassProc(hwnd, uMsg, wParam, lParam)
+    Callback_WndTextbox = DefSubclassProc(hWnd, uMsg, wParam, lParam)
     
 End Function
 
@@ -420,7 +422,11 @@ Public Sub GetBrowsersInfo()
     Dim Path As String
     Dim Arguments As String
     Cmd = GetDefaultApp("http", FriendlyName)
-    SplitIntoPathAndArgs Cmd, Path, Arguments
+    If Len(Cmd) = 0 Then
+        Cmd = "Program is not associated"
+    Else
+        SplitIntoPathAndArgs Cmd, Path, Arguments
+    End If
     
     With BROWSERS
         .Edge.Version = GetEdgeVersion()
@@ -842,7 +848,7 @@ End Function
 ' argv(0) - this applications' exe
 ' argv(1 - ... argc) - tokens from the incoming "Line"
 '
-Public Function ParseCommandLine(Line As String, argc As Long, argv() As String) As Boolean
+Public Function ParseCommandLine(Line As String, argc As Long, argv() As String, Optional bFirstArgIncomedAsAppExe As Boolean = False) As Boolean
   On Error GoTo ErrorHandler
   Dim Lex$(), nL&, nA&, Unit$, St$
   St = Line
@@ -865,13 +871,24 @@ Public Function ParseCommandLine(Line As String, argc As Long, argv() As String)
         End If
         Unit = Replace$(Unit, """", vbNullString) '”дал€ем кавычки
         nA = nA + 1 '—четчик кол-ва выходных аргументов
-        argv(nA) = Unit
+        If bFirstArgIncomedAsAppExe Then
+          If nA > 1 Then
+            argv(nA - 1) = Unit
+          End If
+        Else
+          argv(nA) = Unit
+        End If
       End If
       nL = nL + 1 '—четчик текущей лексемы
     Loop
   End If
-  ReDim Preserve argv(0 To nA) ' урезаем массив до реального числа аргументов
-  argc = nA
+  If bFirstArgIncomedAsAppExe Then
+    argc = nA - 1
+  Else
+    argc = nA
+  End If
+  If argc < 0 Then argc = 0
+  ReDim Preserve argv(0 To argc) ' урезаем массив до реального числа аргументов
   Exit Function
 ErrorHandler:
   ErrorMsg Err, "Parser.ParseCommandLine", "CmdLine:", Line
@@ -1106,36 +1123,27 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Sub PictureBoxRgn(ByRef hObject As Object, ByVal lMaskColor As Long)
-    On Error GoTo ErrorHandler:
-
-    Dim hRgn As Long, hOutRgn As Long
-    Dim i As Long, j As Long
-    Dim lHeight As Long, lWidth As Long
-    
-    hOutRgn = CreateRectRgn(0, 0, 0, 0)
-    lWidth = hObject.Width / Screen.TwipsPerPixelX
-    lHeight = hObject.Height / Screen.TwipsPerPixelY
-
-    For i = 0 To lWidth - 1
-        For j = 0 To lHeight - 1
-            If GetPixel(hObject.hdc, i, j) <> lMaskColor Then
-                hRgn = CreateRectRgn(i, j, i + 1, j + 1)
-                Call CombineRgn(hOutRgn, hOutRgn, hRgn, RGN_OR)
-                Call DeleteObject(hRgn)
-            End If
-        Next j
-    Next i
-    
-    Call SetWindowRgn(hObject.hwnd, hOutRgn, True)
-    Call DeleteObject(hOutRgn)
-    Exit Sub
-ErrorHandler:
-    ErrorMsg Err, "GetWindowsVersion"
-    If inIDE Then Stop: Resume Next
+Public Sub PictureBoxRgn(pict As PictureBox, ByVal lMaskColor As Long)
+    Const RGN_OR As Long = 2
+    Dim hRgn As Long, hOutRgn As Long, i As Long, j As Long, lHeight As Long, lWidth As Long
+    With pict
+        hOutRgn = CreateRectRgn(0, 0, 0, 0)
+        lWidth = .ScaleWidth: lHeight = .ScaleHeight
+        For i = 0 To lWidth - 1
+            For j = 0 To lHeight - 1
+                If GetPixel(.hdc, i, j) <> lMaskColor Then
+                    hRgn = CreateRectRgn(i, j, i + 1, j + 1)
+                    Call CombineRgn(hOutRgn, hOutRgn, hRgn, RGN_OR)
+                    Call DeleteObject(hRgn)
+                End If
+            Next j
+        Next i
+        Call SetWindowRgn(.hWnd, hOutRgn, True)
+        Call DeleteObject(hOutRgn)
+    End With
 End Sub
 
-Function GetDefaultApp(Protocol As String, Optional out_FriendlyName As String) As String
+Public Function GetDefaultApp(Protocol As String, Optional out_FriendlyName As String) As String
     On Error GoTo ErrorHandler
     
     Const ASSOCF_INIT_FIXED_PROGID  As Long = 2048
@@ -1193,7 +1201,7 @@ Function GetDefaultApp(Protocol As String, Optional out_FriendlyName As String) 
     End If
     
     If 0 = Len(out_FriendlyName) And "(AppID)" = GetDefaultApp Or "?" = GetDefaultApp Then
-        GetDefaultApp = "Program is not associated"
+        GetDefaultApp = ""
     End If
     
     Exit Function
@@ -1922,8 +1930,8 @@ End Function
 Public Sub AlignCommandButtonText(Button As CommandButton, Style As BUTTON_ALIGNMENT)
     Dim lOldStyle As Long
     Dim lret As Long
-    lOldStyle = GetWindowLong(Button.hwnd, GWL_STYLE)
-    lret = SetWindowLong(Button.hwnd, GWL_STYLE, Style Or lOldStyle)
+    lOldStyle = GetWindowLong(Button.hWnd, GWL_STYLE)
+    lret = SetWindowLong(Button.hWnd, GWL_STYLE, Style Or lOldStyle)
     Button.Refresh
 End Sub
 
@@ -1984,7 +1992,7 @@ Public Function GetHandleType(Handle As Long) As String
 End Function
 
 ' affected by wow64
-Public Function OpenFileDialog(Optional sTitle As String, Optional InitDir As String, Optional sFilter As String, Optional hwnd As Long) As String
+Public Function OpenFileDialog(Optional sTitle As String, Optional InitDir As String, Optional sFilter As String, Optional hWnd As Long) As String
     On Error GoTo ErrorHandler
     Const OFN_DONTADDTORECENT As Long = &H2000000
     Const OFN_ENABLESIZING As Long = &H800000
@@ -1999,7 +2007,7 @@ Public Function OpenFileDialog(Optional sTitle As String, Optional InitDir As St
     End If
     
     If OSver.IsWindowsVistaOrGreater Then
-        OpenFileDialog = OpenFileDialogVista_Simple(sTitle, InitDir, sFilter, hwnd)
+        OpenFileDialog = OpenFileDialogVista_Simple(sTitle, InitDir, sFilter, hWnd)
         Exit Function
     End If
     
@@ -2013,7 +2021,7 @@ Public Function OpenFileDialog(Optional sTitle As String, Optional InitDir As St
     out = String$(MAX_PATH_W, vbNullChar)
     
     With OFN
-        .hWndOwner = IIf(hwnd = 0, g_HwndMain, hwnd)
+        .hWndOwner = IIf(hWnd = 0, g_HwndMain, hWnd)
         .lpstrTitle = StrPtr(sTitle)
         .lpstrFile = StrPtr(out)
         .lStructSize = Len(OFN)
@@ -2033,7 +2041,7 @@ Public Function OpenFileDialog_Multi( _
     Optional sTitle As String, _
     Optional InitDir As String, _
     Optional sFilter As String, _
-    Optional hwnd As Long) As Long
+    Optional hWnd As Long) As Long
     
     On Error GoTo ErrorHandler
     Const OFN_DONTADDTORECENT As Long = &H2000000
@@ -2051,7 +2059,7 @@ Public Function OpenFileDialog_Multi( _
     End If
     
     If OSver.IsWindowsVistaOrGreater Then
-        OpenFileDialog_Multi = OpenFileDialogVista_Multi(aPath, sTitle, InitDir, sFilter, hwnd)
+        OpenFileDialog_Multi = OpenFileDialogVista_Multi(aPath, sTitle, InitDir, sFilter, hWnd)
         Exit Function
     End If
     
@@ -2067,7 +2075,7 @@ Public Function OpenFileDialog_Multi( _
     out = String$(MAX_PATH_W, vbNullChar)
     
     With OFN
-        .hWndOwner = IIf(hwnd = 0, g_HwndMain, hwnd)
+        .hWndOwner = IIf(hWnd = 0, g_HwndMain, hWnd)
         .lpstrTitle = StrPtr(sTitle)
         .lpstrFile = StrPtr(out)
         .lStructSize = Len(OFN)
@@ -2103,7 +2111,7 @@ Public Function SaveFileDialog( _
     Optional InitDir As String, _
     Optional sDefFile As String, _
     Optional sFilter As String, _
-    Optional hwnd As Long) As String
+    Optional hWnd As Long) As String
     
     Dim uOFN As OPENFILENAME, sFile$, sExt$
     On Error GoTo ErrorHandler:
@@ -2116,7 +2124,7 @@ Public Function SaveFileDialog( _
     End If
     
     If OSver.IsWindowsVistaOrGreater Then
-        SaveFileDialog = SaveFileDialogVista(sTitle, InitDir, sDefFile, sFilter, hwnd)
+        SaveFileDialog = SaveFileDialogVista(sTitle, InitDir, sDefFile, sFilter, hWnd)
         Exit Function
     End If
     
@@ -2127,7 +2135,7 @@ Public Function SaveFileDialog( _
     LSet sFile = sDefFile
     With uOFN
         .lStructSize = Len(uOFN)
-        .hWndOwner = IIf(hwnd = 0, g_HwndMain, hwnd)
+        .hWndOwner = IIf(hWnd = 0, g_HwndMain, hWnd)
         .lpstrFilter = StrPtr(sFilter)
         .lpstrFile = StrPtr(sFile)
         .lpstrTitle = StrPtr(sTitle)
@@ -2174,7 +2182,7 @@ Private Function OpenFileDialogVista_Multi( _
     Optional sTitle As String, _
     Optional InitDir As String, _
     Optional sFilter As String, _
-    Optional hwnd As Long) As Long
+    Optional hWnd As Long) As Long
     
     On Error GoTo ErrorHandler:
     
@@ -2235,7 +2243,7 @@ Private Function OpenFileDialogVista_Multi( _
         .SetFileTypes UBound(FileFilter) + 1, VarPtr(FileFilter(0).pszName) ' number of items in filter
         
         On Error Resume Next
-        .Show IIf(hwnd = 0, g_HwndMain, hwnd)
+        .Show IIf(hWnd = 0, g_HwndMain, hWnd)
         If Err.Number = 0 Then
             On Error GoTo ErrorHandler:
             
@@ -2277,7 +2285,7 @@ Private Function OpenFileDialogVista_Simple( _
     Optional sTitle As String, _
     Optional InitDir As String, _
     Optional sFilter As String, _
-    Optional hwnd As Long) As String
+    Optional hWnd As Long) As String
     
     On Error GoTo ErrorHandler:
     
@@ -2331,7 +2339,7 @@ Private Function OpenFileDialogVista_Simple( _
         If Not (isiDef Is Nothing) Then .SetFolder isiDef
         
         On Error Resume Next
-        .Show IIf(hwnd = 0, g_HwndMain, hwnd)
+        .Show IIf(hWnd = 0, g_HwndMain, hWnd)
         If Err.Number = 0 Then
             On Error GoTo ErrorHandler:
             .GetResult isiRes
@@ -2359,7 +2367,7 @@ Private Function SaveFileDialogVista( _
     Optional InitDir As String, _
     Optional DefSaveFile As String, _
     Optional sFilter As String, _
-    Optional hwnd As Long) As String
+    Optional hWnd As Long) As String
     
     On Error GoTo ErrorHandler:
     
@@ -2417,7 +2425,7 @@ Private Function SaveFileDialogVista( _
         .SetFileName DefSaveFile
         
         On Error Resume Next
-        .Show IIf(hwnd = 0, g_HwndMain, hwnd)
+        .Show IIf(hWnd = 0, g_HwndMain, hWnd)
         If Err.Number = 0 Then
             On Error GoTo ErrorHandler:
             .GetResult isiRes
@@ -2693,7 +2701,7 @@ Public Sub FillUsers()
     gUserOfHive(UBound(gHives) - 1) = "All users"
     
     gHives(UBound(gHives)) = "HKCU"
-    gUserOfHive(UBound(gHives)) = OSver.username
+    gUserOfHive(UBound(gHives)) = OSver.UserName
     
     AppendErrorLogCustom "FillUsers - End"
     Exit Sub
@@ -2894,3 +2902,43 @@ Public Sub PathRemoveLastSlashInArray(arr() As String)
     Next
 End Sub
 
+Public Function GetDefaultTextEditorPath() As String
+    Dim Cmd As String, Path As String
+    Cmd = GetDefaultApp(".txt")
+    SplitIntoPathAndArgs Cmd, Path
+    Path = EnvironW(Path)
+    If Not FileExists(Path) Then
+        Path = "rundll32.exe shell32,ShellExec_RunDLL"
+    End If
+    GetDefaultTextEditorPath = Path
+End Function
+
+Public Sub OpenInTextEditor(sTextFile As String)
+    On Error GoTo ErrorHandler:
+    Dim editorPath As String
+    editorPath = GetDefaultTextEditorPath()
+    If Not FileExists(editorPath) Then
+        GoTo tryDefault
+    End If
+    Dim uSEI As SHELLEXECUTEINFO
+    With uSEI
+        .cbSize = Len(uSEI)
+        .lpVerb = StrPtr("open")
+        .lpFile = StrPtr(editorPath)
+        .fMask = SEE_MASK_NOCLOSEPROCESS
+        .nShow = SW_SHOWNORMAL
+    End With
+    If ShellExecuteEx(uSEI) = 0 Then
+        GoTo tryDefault
+    End If
+    If uSEI.hProcess <> 0 Then
+        MakeWindowForegroundByProcessHandle uSEI.hProcess
+    End If
+    Exit Sub
+tryDefault:
+    Shell "rundll32.exe shell32,ShellExec_RunDLL" & " " & """" & sTextFile & """", vbNormalFocus
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "OpenInTextEditor"
+    If inIDE Then Stop: Resume Next
+End Sub

@@ -20,6 +20,18 @@ Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
 #If False Then
 Private SpbNumberStyleDecimal, SpbNumberStyleHexadecimal
 #End If
@@ -34,7 +46,7 @@ End Type
 Private Type TRACKMOUSEEVENTSTRUCT
 cbSize As Long
 dwFlags As Long
-hWndTrack As Long
+hWndTrack As LongPtr
 dwHoverTime As Long
 End Type
 Private Type UDACCEL
@@ -42,8 +54,8 @@ nSec As Long
 nInc As Long
 End Type
 Private Type NMHDR
-hWndFrom As Long
-IDFrom As Long
+hWndFrom As LongPtr
+IDFrom As LongPtr
 Code As Long
 End Type
 Private Type NMUPDOWN
@@ -101,6 +113,31 @@ Public Event OLESetData(Data As DataObject, DataFormat As Integer)
 Attribute OLESetData.VB_Description = "Occurs at the OLE drag/drop source control when the drop target requests data that was not provided to the DataObject during the OLEDragStart event."
 Public Event OLEStartDrag(Data As DataObject, AllowedEffects As Long)
 Attribute OLEStartDrag.VB_Description = "Occurs when an OLE drag/drop operation is initiated either manually or automatically."
+#If VBA7 Then
+Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
+Private Declare PtrSafe Function CreateWindowEx Lib "user32" Alias "CreateWindowExW" (ByVal dwExStyle As Long, ByVal lpClassName As LongPtr, ByVal lpWindowName As LongPtr, ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hWndParent As LongPtr, ByVal hMenu As LongPtr, ByVal hInstance As LongPtr, ByRef lpParam As Any) As LongPtr
+Private Declare PtrSafe Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByRef lParam As Any) As LongPtr
+Private Declare PtrSafe Function PostMessage Lib "user32" Alias "PostMessageW" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByRef lParam As Any) As LongPtr
+Private Declare PtrSafe Function DestroyWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
+Private Declare PtrSafe Function SetParent Lib "user32" (ByVal hWndChild As LongPtr, ByVal hWndNewParent As LongPtr) As LongPtr
+Private Declare PtrSafe Function SetFocusAPI Lib "user32" Alias "SetFocus" (ByVal hWnd As LongPtr) As LongPtr
+Private Declare PtrSafe Function GetFocus Lib "user32" () As LongPtr
+Private Declare PtrSafe Function DeleteObject Lib "gdi32" (ByVal hObject As LongPtr) As Long
+Private Declare PtrSafe Function ShowWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal nCmdShow As Long) As Long
+Private Declare PtrSafe Function MoveWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint As Long) As Long
+Private Declare PtrSafe Function SetWindowLong Lib "user32" Alias "SetWindowLongW" (ByVal hWnd As LongPtr, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
+Private Declare PtrSafe Function GetWindowLong Lib "user32" Alias "GetWindowLongW" (ByVal hWnd As LongPtr, ByVal nIndex As Long) As Long
+Private Declare PtrSafe Function LockWindowUpdate Lib "user32" (ByVal hWndLock As LongPtr) As Long
+Private Declare PtrSafe Function EnableWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal fEnable As Long) As Long
+Private Declare PtrSafe Function RedrawWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal lprcUpdate As LongPtr, ByVal hrgnUpdate As LongPtr, ByVal fuRedraw As Long) As Long
+Private Declare PtrSafe Function LoadCursor Lib "user32" Alias "LoadCursorW" (ByVal hInstance As LongPtr, ByVal lpCursorName As Any) As LongPtr
+Private Declare PtrSafe Function SetCursor Lib "user32" (ByVal hCursor As LongPtr) As LongPtr
+Private Declare PtrSafe Function ScreenToClient Lib "user32" (ByVal hWnd As LongPtr, ByRef lpPoint As POINTAPI) As Long
+Private Declare PtrSafe Function MapWindowPoints Lib "user32" (ByVal hWndFrom As LongPtr, ByVal hWndTo As LongPtr, ByRef lppt As Any, ByVal cPoints As Long) As Long
+Private Declare PtrSafe Function TrackMouseEvent Lib "user32" (ByRef lpEventTrack As TRACKMOUSEEVENTSTRUCT) As Long
+Private Declare PtrSafe Function GetMessagePos Lib "user32" () As Long
+Private Declare PtrSafe Function WindowFromPoint Lib "user32" (ByVal XY As Currency) As Long
+#Else
 Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
 Private Declare Function CreateWindowEx Lib "user32" Alias "CreateWindowExW" (ByVal dwExStyle As Long, ByVal lpClassName As Long, ByVal lpWindowName As Long, ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hWndParent As Long, ByVal hMenu As Long, ByVal hInstance As Long, ByRef lpParam As Any) As Long
 Private Declare Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByRef lParam As Any) As Long
@@ -123,7 +160,8 @@ Private Declare Function ScreenToClient Lib "user32" (ByVal hWnd As Long, ByRef 
 Private Declare Function MapWindowPoints Lib "user32" (ByVal hWndFrom As Long, ByVal hWndTo As Long, ByRef lppt As Any, ByVal cPoints As Long) As Long
 Private Declare Function TrackMouseEvent Lib "user32" (ByRef lpEventTrack As TRACKMOUSEEVENTSTRUCT) As Long
 Private Declare Function GetMessagePos Lib "user32" () As Long
-Private Declare Function WindowFromPoint Lib "user32" (ByVal X As Long, ByVal Y As Long) As Long
+Private Declare Function WindowFromPoint Lib "user32" (ByVal XY As Currency) As Long
+#End If
 Private Const ICC_STANDARD_CLASSES As Long = &H4000
 Private Const ICC_UPDOWN_CLASS As Long = &H10
 Private Const RDW_UPDATENOW As Long = &H100, RDW_INVALIDATE As Long = &H1, RDW_ERASE As Long = &H4, RDW_ALLCHILDREN As Long = &H80
@@ -204,8 +242,8 @@ Implements ISubclass
 Implements OLEGuids.IObjectSafety
 Implements OLEGuids.IOleInPlaceActiveObjectVB
 Implements OLEGuids.IPerPropertyBrowsingVB
-Private SpinBoxUpDownHandle As Long, SpinBoxEditHandle As Long
-Private SpinBoxFontHandle As Long
+Private SpinBoxUpDownHandle As LongPtr, SpinBoxEditHandle As LongPtr
+Private SpinBoxFontHandle As LongPtr
 Private SpinBoxCharCodeCache As Long
 Private SpinBoxMouseOver(0 To 2) As Boolean
 Private SpinBoxDesignMode As Boolean
@@ -240,10 +278,14 @@ End Sub
 Private Sub IObjectSafety_SetInterfaceSafetyOptions(ByRef riid As OLEGuids.OLECLSID, ByVal dwOptionsSetMask As Long, ByVal dwEnabledOptions As Long)
 End Sub
 
+#If VBA7 Then
+Private Sub IOleInPlaceActiveObjectVB_TranslateAccelerator(ByRef Handled As Boolean, ByRef RetVal As Long, ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal Shift As Long)
+#Else
 Private Sub IOleInPlaceActiveObjectVB_TranslateAccelerator(ByRef Handled As Boolean, ByRef RetVal As Long, ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal Shift As Long)
+#End If
 If wMsg = WM_KEYDOWN Or wMsg = WM_KEYUP Then
     Dim KeyCode As Integer, IsInputKey As Boolean
-    KeyCode = wParam And &HFF&
+    KeyCode = CLng(wParam) And &HFF&
     If wMsg = WM_KEYDOWN Then
         RaiseEvent PreviewKeyDown(KeyCode, IsInputKey)
     ElseIf wMsg = WM_KEYUP Then
@@ -420,9 +462,9 @@ If InProc = True Then Exit Sub
 InProc = True
 With UserControl
 If DPICorrectionFactor() <> 1 Then Call SyncObjectRectsToContainer(Me)
-If SpinBoxEditHandle <> 0 Then MoveWindow SpinBoxEditHandle, 0, 0, .ScaleWidth, .ScaleHeight, 1
+If SpinBoxEditHandle <> NULL_PTR Then MoveWindow SpinBoxEditHandle, 0, 0, .ScaleWidth, .ScaleHeight, 1
 End With
-If SpinBoxUpDownHandle <> 0 Then SendMessage SpinBoxUpDownHandle, UDM_SETBUDDY, SpinBoxEditHandle, ByVal 0&
+If SpinBoxUpDownHandle <> NULL_PTR Then SendMessage SpinBoxUpDownHandle, UDM_SETBUDDY, SpinBoxEditHandle, ByVal 0&
 InProc = False
 End Sub
 
@@ -574,19 +616,35 @@ Attribute ZOrder.VB_Description = "Places a specified object at the front or bac
 If IsMissing(Position) Then Extender.ZOrder Else Extender.ZOrder Position
 End Sub
 
+#If VBA7 Then
+Public Property Get hWnd() As LongPtr
+Attribute hWnd.VB_Description = "Returns a handle to a control."
+Attribute hWnd.VB_UserMemId = -515
+#Else
 Public Property Get hWnd() As Long
 Attribute hWnd.VB_Description = "Returns a handle to a control."
 Attribute hWnd.VB_UserMemId = -515
+#End If
 hWnd = SpinBoxUpDownHandle
 End Property
 
+#If VBA7 Then
+Public Property Get hWndUserControl() As LongPtr
+Attribute hWndUserControl.VB_Description = "Returns a handle to a control."
+#Else
 Public Property Get hWndUserControl() As Long
 Attribute hWndUserControl.VB_Description = "Returns a handle to a control."
+#End If
 hWndUserControl = UserControl.hWnd
 End Property
 
+#If VBA7 Then
+Public Property Get hWndEdit() As LongPtr
+Attribute hWndEdit.VB_Description = "Returns a handle to a control."
+#Else
 Public Property Get hWndEdit() As Long
 Attribute hWndEdit.VB_Description = "Returns a handle to a control."
+#End If
 hWndEdit = SpinBoxEditHandle
 End Property
 
@@ -602,21 +660,21 @@ End Property
 
 Public Property Set Font(ByVal NewFont As StdFont)
 If NewFont Is Nothing Then Set NewFont = Ambient.Font
-Dim OldFontHandle As Long
+Dim OldFontHandle As LongPtr
 Set PropFont = NewFont
 OldFontHandle = SpinBoxFontHandle
 SpinBoxFontHandle = CreateGDIFontFromOLEFont(PropFont)
-If SpinBoxEditHandle <> 0 Then SendMessage SpinBoxEditHandle, WM_SETFONT, SpinBoxFontHandle, ByVal 1&
-If OldFontHandle <> 0 Then DeleteObject OldFontHandle
+If SpinBoxEditHandle <> NULL_PTR Then SendMessage SpinBoxEditHandle, WM_SETFONT, SpinBoxFontHandle, ByVal 1&
+If OldFontHandle <> NULL_PTR Then DeleteObject OldFontHandle
 UserControl.PropertyChanged "Font"
 End Property
 
 Private Sub PropFont_FontChanged(ByVal PropertyName As String)
-Dim OldFontHandle As Long
+Dim OldFontHandle As LongPtr
 OldFontHandle = SpinBoxFontHandle
 SpinBoxFontHandle = CreateGDIFontFromOLEFont(PropFont)
-If SpinBoxUpDownHandle <> 0 Then SendMessage SpinBoxUpDownHandle, WM_SETFONT, SpinBoxFontHandle, ByVal 1&
-If OldFontHandle <> 0 Then DeleteObject OldFontHandle
+If SpinBoxUpDownHandle <> NULL_PTR Then SendMessage SpinBoxUpDownHandle, WM_SETFONT, SpinBoxFontHandle, ByVal 1&
+If OldFontHandle <> NULL_PTR Then DeleteObject OldFontHandle
 UserControl.PropertyChanged "Font"
 End Sub
 
@@ -627,7 +685,7 @@ End Property
 
 Public Property Let VisualStyles(ByVal Value As Boolean)
 PropVisualStyles = Value
-If SpinBoxUpDownHandle <> 0 And SpinBoxEditHandle <> 0 And EnabledVisualStyles() = True Then
+If SpinBoxUpDownHandle <> NULL_PTR And SpinBoxEditHandle <> NULL_PTR And EnabledVisualStyles() = True Then
     If PropVisualStyles = True Then
         ActivateVisualStyles SpinBoxUpDownHandle
         ActivateVisualStyles SpinBoxEditHandle
@@ -672,9 +730,9 @@ End Property
 
 Public Property Let Enabled(ByVal Value As Boolean)
 UserControl.Enabled = Value
-If SpinBoxUpDownHandle <> 0 Then
+If SpinBoxUpDownHandle <> NULL_PTR Then
     EnableWindow SpinBoxUpDownHandle, IIf(Value = True, 1, 0)
-    If SpinBoxEditHandle <> 0 Then EnableWindow SpinBoxEditHandle, IIf(Value = True, 1, 0)
+    If SpinBoxEditHandle <> NULL_PTR Then EnableWindow SpinBoxEditHandle, IIf(Value = True, 1, 0)
 End If
 UserControl.PropertyChanged "Enabled"
 End Property
@@ -723,7 +781,7 @@ Public Property Set MouseIcon(ByVal Value As IPictureDisp)
 If Value Is Nothing Then
     Set PropMouseIcon = Nothing
 Else
-    If Value.Type = vbPicTypeIcon Or Value.Handle = 0 Then
+    If Value.Type = vbPicTypeIcon Or Value.Handle = NULL_PTR Then
         Set PropMouseIcon = Value
     Else
         If SpinBoxDesignMode = True Then
@@ -760,7 +818,7 @@ UserControl.RightToLeft = PropRightToLeft
 Call ComCtlsCheckRightToLeft(PropRightToLeft, UserControl.RightToLeft, PropRightToLeftMode)
 Dim dwMask As Long
 If PropRightToLeft = True Then dwMask = WS_EX_RTLREADING
-If SpinBoxEditHandle <> 0 Then
+If SpinBoxEditHandle <> NULL_PTR Then
     Call ComCtlsSetRightToLeft(SpinBoxEditHandle, dwMask)
     If PropRightToLeft = False Then
         If PropAlignment = CCLeftRightAlignmentLeft Then Me.Alignment = CCLeftRightAlignmentRight
@@ -791,7 +849,7 @@ End Property
 
 Public Property Get Min() As Long
 Attribute Min.VB_Description = "Returns/sets the minimum value."
-If SpinBoxUpDownHandle <> 0 Then
+If SpinBoxUpDownHandle <> NULL_PTR Then
     SendMessage SpinBoxUpDownHandle, UDM_GETRANGE32, VarPtr(Min), ByVal 0&
 Else
     Min = PropMin
@@ -810,14 +868,14 @@ Else
         Err.Raise 380
     End If
 End If
-If SpinBoxUpDownHandle <> 0 Then SendMessage SpinBoxUpDownHandle, UDM_SETRANGE32, PropMin, ByVal PropMax
+If SpinBoxUpDownHandle <> NULL_PTR Then SendMessage SpinBoxUpDownHandle, UDM_SETRANGE32, PropMin, ByVal PropMax
 Me.Refresh
 UserControl.PropertyChanged "Min"
 End Property
 
 Public Property Get Max() As Long
 Attribute Max.VB_Description = "Returns/sets the maximum value."
-If SpinBoxUpDownHandle <> 0 Then
+If SpinBoxUpDownHandle <> NULL_PTR Then
     SendMessage SpinBoxUpDownHandle, UDM_GETRANGE32, 0, ByVal VarPtr(Max)
 Else
     Max = PropMax
@@ -836,7 +894,7 @@ Else
         Err.Raise 380
     End If
 End If
-If SpinBoxUpDownHandle <> 0 Then SendMessage SpinBoxUpDownHandle, UDM_SETRANGE32, PropMin, ByVal PropMax
+If SpinBoxUpDownHandle <> NULL_PTR Then SendMessage SpinBoxUpDownHandle, UDM_SETRANGE32, PropMin, ByVal PropMax
 Me.Refresh
 UserControl.PropertyChanged "Max"
 End Property
@@ -845,8 +903,8 @@ Public Property Get Value() As Long
 Attribute Value.VB_Description = "Returns/sets the current position."
 Attribute Value.VB_UserMemId = 0
 Attribute Value.VB_MemberFlags = "123c"
-If SpinBoxUpDownHandle <> 0 Then
-    Value = SendMessage(SpinBoxUpDownHandle, UDM_GETPOS32, 0, ByVal 0&)
+If SpinBoxUpDownHandle <> NULL_PTR Then
+    Value = CLng(SendMessage(SpinBoxUpDownHandle, UDM_GETPOS32, 0, ByVal 0&))
 Else
     Value = PropValue
 End If
@@ -861,7 +919,7 @@ End If
 Dim Changed As Boolean
 Changed = CBool(Me.Value <> NewValue)
 PropValue = NewValue
-If SpinBoxUpDownHandle <> 0 Then SendMessage SpinBoxUpDownHandle, UDM_SETPOS32, 0, ByVal PropValue
+If SpinBoxUpDownHandle <> NULL_PTR Then SendMessage SpinBoxUpDownHandle, UDM_SETPOS32, 0, ByVal PropValue
 UserControl.PropertyChanged "Value"
 If Changed = True Then
     On Error Resume Next
@@ -873,7 +931,7 @@ End Property
 
 Public Property Get Increment() As Long
 Attribute Increment.VB_Description = "Returns/sets the position change increment."
-If SpinBoxUpDownHandle <> 0 Then
+If SpinBoxUpDownHandle <> NULL_PTR Then
     Dim Accel As UDACCEL
     SendMessage SpinBoxUpDownHandle, UDM_GETACCEL, 1, Accel
     Increment = Accel.nInc
@@ -884,7 +942,7 @@ End Property
 
 Public Property Let Increment(ByVal Value As Long)
 PropIncrement = Value
-If SpinBoxUpDownHandle <> 0 Then
+If SpinBoxUpDownHandle <> NULL_PTR Then
     Dim Accel As UDACCEL
     Accel.nSec = 0
     Accel.nInc = PropIncrement
@@ -900,7 +958,7 @@ End Property
 
 Public Property Let Wrap(ByVal Value As Boolean)
 PropWrap = Value
-If SpinBoxUpDownHandle <> 0 Then Call ReCreateSpinBox
+If SpinBoxUpDownHandle <> NULL_PTR Then Call ReCreateSpinBox
 UserControl.PropertyChanged "Wrap"
 End Property
 
@@ -911,7 +969,7 @@ End Property
 
 Public Property Let HotTracking(ByVal Value As Boolean)
 PropHotTracking = Value
-If SpinBoxUpDownHandle <> 0 Then Call ReCreateSpinBox
+If SpinBoxUpDownHandle <> NULL_PTR Then Call ReCreateSpinBox
 UserControl.PropertyChanged "HotTracking"
 End Property
 
@@ -927,7 +985,7 @@ Select Case Value
     Case Else
         Err.Raise 380
 End Select
-If SpinBoxUpDownHandle <> 0 Then Call ReCreateSpinBox
+If SpinBoxUpDownHandle <> NULL_PTR Then Call ReCreateSpinBox
 UserControl.PropertyChanged "Alignment"
 End Property
 
@@ -938,13 +996,13 @@ End Property
 
 Public Property Let ThousandsSeparator(ByVal Value As Boolean)
 PropThousandsSeparator = Value
-If SpinBoxUpDownHandle <> 0 Then Call ReCreateSpinBox
+If SpinBoxUpDownHandle <> NULL_PTR Then Call ReCreateSpinBox
 UserControl.PropertyChanged "ThousandsSeparator"
 End Property
 
 Public Property Get NumberStyle() As SpbNumberStyleConstants
 Attribute NumberStyle.VB_Description = "Returns/sets the number style."
-If SpinBoxUpDownHandle <> 0 Then
+If SpinBoxUpDownHandle <> NULL_PTR Then
     Select Case SendMessage(SpinBoxUpDownHandle, UDM_GETBASE, 0, ByVal 0&)
         Case 10
             NumberStyle = SpbNumberStyleDecimal
@@ -965,7 +1023,7 @@ Select Case Value
     Case Else
         Err.Raise 380
 End Select
-If SpinBoxUpDownHandle <> 0 Then
+If SpinBoxUpDownHandle <> NULL_PTR Then
     Select Case PropNumberStyle
         Case SpbNumberStyleDecimal
             SendMessage SpinBoxUpDownHandle, UDM_SETBASE, 10, ByVal 0&
@@ -983,7 +1041,7 @@ End Property
 
 Public Property Let ArrowKeysChange(ByVal Value As Boolean)
 PropArrowKeysChange = Value
-If SpinBoxUpDownHandle <> 0 Then Call ReCreateSpinBox
+If SpinBoxUpDownHandle <> NULL_PTR Then Call ReCreateSpinBox
 UserControl.PropertyChanged "ArrowKeysChange"
 End Property
 
@@ -994,7 +1052,7 @@ End Property
 
 Public Property Let AllowOnlyNumbers(ByVal Value As Boolean)
 PropAllowOnlyNumbers = Value
-If SpinBoxEditHandle <> 0 Then
+If SpinBoxEditHandle <> NULL_PTR Then
     Dim dwStyle As Long
     dwStyle = GetWindowLong(SpinBoxEditHandle, GWL_STYLE)
     If PropAllowOnlyNumbers = True Then
@@ -1019,7 +1077,7 @@ Select Case Value
     Case Else
         Err.Raise 380
 End Select
-If SpinBoxEditHandle <> 0 Then
+If SpinBoxEditHandle <> NULL_PTR Then
     Dim dwStyle As Long
     dwStyle = GetWindowLong(SpinBoxEditHandle, GWL_STYLE)
     If (dwStyle And ES_LEFT) = ES_LEFT Then dwStyle = dwStyle And Not ES_LEFT
@@ -1041,7 +1099,7 @@ End Property
 
 Public Property Get Locked() As Boolean
 Attribute Locked.VB_Description = "Returns/sets a value indicating whether the contents can be edited."
-If SpinBoxEditHandle <> 0 Then
+If SpinBoxEditHandle <> NULL_PTR Then
     Locked = CBool((GetWindowLong(SpinBoxEditHandle, GWL_STYLE) And ES_READONLY) <> 0)
 Else
     Locked = PropLocked
@@ -1050,7 +1108,7 @@ End Property
 
 Public Property Let Locked(ByVal Value As Boolean)
 PropLocked = Value
-If SpinBoxEditHandle <> 0 Then SendMessage SpinBoxEditHandle, EM_SETREADONLY, IIf(PropLocked = True, 1, 0), ByVal 0&
+If SpinBoxEditHandle <> NULL_PTR Then SendMessage SpinBoxEditHandle, EM_SETREADONLY, IIf(PropLocked = True, 1, 0), ByVal 0&
 UserControl.PropertyChanged "Locked"
 End Property
 
@@ -1061,12 +1119,12 @@ End Property
 
 Public Property Let HideSelection(ByVal Value As Boolean)
 PropHideSelection = Value
-If SpinBoxUpDownHandle <> 0 Then Call ReCreateSpinBox
+If SpinBoxUpDownHandle <> NULL_PTR Then Call ReCreateSpinBox
 UserControl.PropertyChanged "HideSelection"
 End Property
 
 Private Sub CreateSpinBox()
-If SpinBoxUpDownHandle <> 0 Or SpinBoxEditHandle <> 0 Then Exit Sub
+If SpinBoxUpDownHandle <> NULL_PTR Or SpinBoxEditHandle <> NULL_PTR Then Exit Sub
 Dim dwStyle As Long, dwStyleEdit As Long, dwExStyleEdit As Long
 dwStyle = WS_CHILD Or WS_VISIBLE Or UDS_SETBUDDYINT
 dwStyleEdit = WS_CHILD Or WS_VISIBLE Or ES_AUTOHSCROLL
@@ -1093,10 +1151,10 @@ Select Case PropTextAlignment
 End Select
 If PropLocked = True Then dwStyleEdit = dwStyleEdit Or ES_READONLY
 If PropHideSelection = False Then dwStyleEdit = dwStyleEdit Or ES_NOHIDESEL
-SpinBoxEditHandle = CreateWindowEx(dwExStyleEdit, StrPtr("Edit"), 0, dwStyleEdit, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, 0, App.hInstance, ByVal 0&)
-If SpinBoxEditHandle <> 0 Then
-    SpinBoxUpDownHandle = CreateWindowEx(0, StrPtr("msctls_updown32"), 0, dwStyle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, 0, App.hInstance, ByVal 0&)
-    If SpinBoxUpDownHandle <> 0 Then
+SpinBoxEditHandle = CreateWindowEx(dwExStyleEdit, StrPtr("Edit"), NULL_PTR, dwStyleEdit, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, NULL_PTR, App.hInstance, ByVal NULL_PTR)
+If SpinBoxEditHandle <> NULL_PTR Then
+    SpinBoxUpDownHandle = CreateWindowEx(0, StrPtr("msctls_updown32"), NULL_PTR, dwStyle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, NULL_PTR, App.hInstance, ByVal NULL_PTR)
+    If SpinBoxUpDownHandle <> NULL_PTR Then
         SendMessage SpinBoxUpDownHandle, UDM_SETUNICODEFORMAT, 1, ByVal 0&
         SendMessage SpinBoxUpDownHandle, UDM_SETRANGE32, PropMin, ByVal PropMax
         SendMessage SpinBoxUpDownHandle, UDM_SETBUDDY, SpinBoxEditHandle, ByVal 0&
@@ -1109,8 +1167,8 @@ Me.Enabled = UserControl.Enabled
 Me.Value = PropValue
 Me.Increment = PropIncrement
 If SpinBoxDesignMode = False Then
-    If SpinBoxUpDownHandle <> 0 Then Call ComCtlsSetSubclass(SpinBoxUpDownHandle, Me, 1)
-    If SpinBoxEditHandle <> 0 Then Call ComCtlsSetSubclass(SpinBoxEditHandle, Me, 2)
+    If SpinBoxUpDownHandle <> NULL_PTR Then Call ComCtlsSetSubclass(SpinBoxUpDownHandle, Me, 1)
+    If SpinBoxEditHandle <> NULL_PTR Then Call ComCtlsSetSubclass(SpinBoxEditHandle, Me, 2)
     Call ComCtlsSetSubclass(UserControl.hWnd, Me, 3)
 End If
 End Sub
@@ -1122,13 +1180,13 @@ If SpinBoxDesignMode = False Then
     Locked = CBool(LockWindowUpdate(UserControl.hWnd) <> 0)
     Dim Text As String, SelStart As Long, SelEnd As Long
     Text = .Text
-    If SpinBoxEditHandle <> 0 Then SendMessage SpinBoxEditHandle, EM_GETSEL, VarPtr(SelStart), ByVal VarPtr(SelEnd)
+    If SpinBoxEditHandle <> NULL_PTR Then SendMessage SpinBoxEditHandle, EM_GETSEL, VarPtr(SelStart), ByVal VarPtr(SelEnd)
     Call DestroySpinBox
     Call CreateSpinBox
     Call UserControl_Resize
     .Text = Text
-    If SpinBoxEditHandle <> 0 Then SendMessage SpinBoxEditHandle, EM_SETSEL, SelStart, ByVal SelEnd
-    If Locked = True Then LockWindowUpdate 0
+    If SpinBoxEditHandle <> NULL_PTR Then SendMessage SpinBoxEditHandle, EM_SETSEL, SelStart, ByVal SelEnd
+    If Locked = True Then LockWindowUpdate NULL_PTR
     .Refresh
     End With
 Else
@@ -1139,22 +1197,22 @@ End If
 End Sub
 
 Private Sub DestroySpinBox()
-If SpinBoxUpDownHandle = 0 Or SpinBoxEditHandle = 0 Then Exit Sub
+If SpinBoxUpDownHandle = NULL_PTR Or SpinBoxEditHandle = NULL_PTR Then Exit Sub
 Call ComCtlsRemoveSubclass(SpinBoxUpDownHandle)
 Call ComCtlsRemoveSubclass(SpinBoxEditHandle)
 Call ComCtlsRemoveSubclass(UserControl.hWnd)
 ShowWindow SpinBoxUpDownHandle, SW_HIDE
 ShowWindow SpinBoxEditHandle, SW_HIDE
 SendMessage SpinBoxUpDownHandle, UDM_SETBUDDY, 0, ByVal 0&
-SetParent SpinBoxUpDownHandle, 0
-SetParent SpinBoxEditHandle, 0
+SetParent SpinBoxUpDownHandle, NULL_PTR
+SetParent SpinBoxEditHandle, NULL_PTR
 DestroyWindow SpinBoxUpDownHandle
 DestroyWindow SpinBoxEditHandle
-SpinBoxUpDownHandle = 0
-SpinBoxEditHandle = 0
-If SpinBoxFontHandle <> 0 Then
+SpinBoxUpDownHandle = NULL_PTR
+SpinBoxEditHandle = NULL_PTR
+If SpinBoxFontHandle <> NULL_PTR Then
     DeleteObject SpinBoxFontHandle
-    SpinBoxFontHandle = 0
+    SpinBoxFontHandle = NULL_PTR
 End If
 End Sub
 
@@ -1162,17 +1220,17 @@ Public Sub Refresh()
 Attribute Refresh.VB_Description = "Forces a complete repaint of a object."
 Attribute Refresh.VB_UserMemId = -550
 UserControl.Refresh
-RedrawWindow UserControl.hWnd, 0, 0, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
+RedrawWindow UserControl.hWnd, NULL_PTR, NULL_PTR, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
 End Sub
 
 Public Sub SetAcceleration(ByVal Delays As Variant, ByVal Increments As Variant)
 Attribute SetAcceleration.VB_Description = "Method to set an acceleration. The delays array specify the amount of time to elapse (in seconds) before the position change increment specified in the increments array is used."
-If SpinBoxUpDownHandle <> 0 Then
+If SpinBoxUpDownHandle <> NULL_PTR Then
     If IsArray(Delays) And IsArray(Increments) Then
-        Dim Ptr(0 To 1) As Long
-        CopyMemory Ptr(0), ByVal UnsignedAdd(VarPtr(Delays), 8), 4
-        CopyMemory Ptr(1), ByVal UnsignedAdd(VarPtr(Increments), 8), 4
-        If Ptr(0) <> 0 And Ptr(1) <> 0 Then
+        Dim Ptr(0 To 1) As LongPtr
+        CopyMemory Ptr(0), ByVal UnsignedAdd(VarPtr(Delays), 8), PTR_SIZE
+        CopyMemory Ptr(1), ByVal UnsignedAdd(VarPtr(Increments), 8), PTR_SIZE
+        If Ptr(0) <> NULL_PTR And Ptr(1) <> NULL_PTR Then
             Dim DimensionCount(0 To 1) As Integer
             CopyMemory DimensionCount(0), ByVal Ptr(0), 2
             CopyMemory DimensionCount(1), ByVal Ptr(1), 2
@@ -1215,11 +1273,11 @@ End Sub
 
 Public Sub ValidateText()
 Attribute ValidateText.VB_Description = "Method that validates and updates the text displayed in the spin box."
-If SpinBoxUpDownHandle <> 0 Then
+If SpinBoxUpDownHandle <> NULL_PTR Then
     Dim Text As String, Value As Long
-    Text = String(SendMessage(SpinBoxEditHandle, WM_GETTEXTLENGTH, 0, ByVal 0&), vbNullChar)
+    Text = String$(CLng(SendMessage(SpinBoxEditHandle, WM_GETTEXTLENGTH, 0, ByVal 0&)), vbNullChar)
     SendMessage SpinBoxEditHandle, WM_GETTEXT, Len(Text) + 1, ByVal StrPtr(Text)
-    Value = SendMessage(SpinBoxUpDownHandle, UDM_GETPOS32, 0, ByVal 0&)
+    Value = CLng(SendMessage(SpinBoxUpDownHandle, UDM_GETPOS32, 0, ByVal 0&))
     If Not Text = CStr(Value) Then
         Text = CStr(Value)
         SendMessage SpinBoxEditHandle, WM_SETTEXT, 0, ByVal StrPtr(Text)
@@ -1230,24 +1288,24 @@ End Sub
 Public Property Get Text() As String
 Attribute Text.VB_Description = "Returns/sets the text contained in an object."
 Attribute Text.VB_MemberFlags = "400"
-If SpinBoxEditHandle <> 0 Then
-    Text = String(SendMessage(SpinBoxEditHandle, WM_GETTEXTLENGTH, 0, ByVal 0&), vbNullChar)
+If SpinBoxEditHandle <> NULL_PTR Then
+    Text = String$(CLng(SendMessage(SpinBoxEditHandle, WM_GETTEXTLENGTH, 0, ByVal 0&)), vbNullChar)
     SendMessage SpinBoxEditHandle, WM_GETTEXT, Len(Text) + 1, ByVal StrPtr(Text)
 End If
 End Property
 
 Public Property Let Text(ByVal Value As String)
-If SpinBoxEditHandle <> 0 Then SendMessage SpinBoxEditHandle, WM_SETTEXT, 0, ByVal StrPtr(Value)
+If SpinBoxEditHandle <> NULL_PTR Then SendMessage SpinBoxEditHandle, WM_SETTEXT, 0, ByVal StrPtr(Value)
 End Property
 
 Public Property Get SelStart() As Long
 Attribute SelStart.VB_Description = "Returns/sets the starting point of text selected; indicates the position of the insertion point if no text is selected."
 Attribute SelStart.VB_MemberFlags = "400"
-If SpinBoxEditHandle <> 0 Then SendMessage SpinBoxEditHandle, EM_GETSEL, VarPtr(SelStart), ByVal 0&
+If SpinBoxEditHandle <> NULL_PTR Then SendMessage SpinBoxEditHandle, EM_GETSEL, VarPtr(SelStart), ByVal 0&
 End Property
 
 Public Property Let SelStart(ByVal Value As Long)
-If SpinBoxEditHandle <> 0 Then
+If SpinBoxEditHandle <> NULL_PTR Then
     If Value >= 0 Then
         SendMessage SpinBoxEditHandle, EM_SETSEL, Value, ByVal Value
     Else
@@ -1259,7 +1317,7 @@ End Property
 Public Property Get SelLength() As Long
 Attribute SelLength.VB_Description = "Returns/sets the number of characters selected."
 Attribute SelLength.VB_MemberFlags = "400"
-If SpinBoxEditHandle <> 0 Then
+If SpinBoxEditHandle <> NULL_PTR Then
     Dim SelStart As Long, SelEnd As Long
     SendMessage SpinBoxEditHandle, EM_GETSEL, VarPtr(SelStart), ByVal VarPtr(SelEnd)
     SelLength = SelEnd - SelStart
@@ -1267,7 +1325,7 @@ End If
 End Property
 
 Public Property Let SelLength(ByVal Value As Long)
-If SpinBoxEditHandle <> 0 Then
+If SpinBoxEditHandle <> NULL_PTR Then
     If Value >= 0 Then
         Dim SelStart As Long
         SendMessage SpinBoxEditHandle, EM_GETSEL, VarPtr(SelStart), ByVal 0&
@@ -1281,7 +1339,7 @@ End Property
 Public Property Get SelText() As String
 Attribute SelText.VB_Description = "Returns/sets the string containing the currently selected text."
 Attribute SelText.VB_MemberFlags = "400"
-If SpinBoxEditHandle <> 0 Then
+If SpinBoxEditHandle <> NULL_PTR Then
     Dim SelStart As Long, SelEnd As Long
     SendMessage SpinBoxEditHandle, EM_GETSEL, VarPtr(SelStart), ByVal VarPtr(SelEnd)
     On Error Resume Next
@@ -1291,13 +1349,17 @@ End If
 End Property
 
 Public Property Let SelText(ByVal Value As String)
-If SpinBoxEditHandle <> 0 Then
-    If StrPtr(Value) = 0 Then Value = ""
+If SpinBoxEditHandle <> NULL_PTR Then
+    If StrPtr(Value) = NULL_PTR Then Value = ""
     SendMessage SpinBoxEditHandle, EM_REPLACESEL, 0, ByVal StrPtr(Value)
 End If
 End Property
 
+#If VBA7 Then
+Private Function ISubclass_Message(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
+#Else
 Private Function ISubclass_Message(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal dwRefData As Long) As Long
+#End If
 Select Case dwRefData
     Case 1
         ISubclass_Message = WindowProcControl(hWnd, wMsg, wParam, lParam)
@@ -1308,10 +1370,10 @@ Select Case dwRefData
 End Select
 End Function
 
-Private Function WindowProcControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 If wMsg = UM_CHECKVALUE Then
     If wParam <> PropValue Then
-        PropValue = wParam
+        PropValue = CLng(wParam)
         UserControl.PropertyChanged "Value"
         On Error Resume Next
         UserControl.Extender.DataChanged = True
@@ -1323,14 +1385,14 @@ End If
 WindowProcControl = ComCtlsDefaultProc(hWnd, wMsg, wParam, lParam)
 Select Case wMsg
     Case WM_LBUTTONDOWN, WM_MBUTTONDOWN, WM_RBUTTONDOWN, WM_MOUSEMOVE, WM_LBUTTONUP, WM_MBUTTONUP, WM_RBUTTONUP
-        Dim P As POINTAPI
-        P.X = Get_X_lParam(lParam)
-        P.Y = Get_Y_lParam(lParam)
-        MapWindowPoints hWnd, UserControl.hWnd, P, 1
+        Dim P1 As POINTAPI
+        P1.X = Get_X_lParam(lParam)
+        P1.Y = Get_Y_lParam(lParam)
+        MapWindowPoints hWnd, UserControl.hWnd, P1, 1
         Dim X As Single
         Dim Y As Single
-        X = UserControl.ScaleX(P.X, vbPixels, vbTwips)
-        Y = UserControl.ScaleY(P.Y, vbPixels, vbTwips)
+        X = UserControl.ScaleX(P1.X, vbPixels, vbTwips)
+        Y = UserControl.ScaleY(P1.Y, vbPixels, vbTwips)
         Select Case wMsg
             Case WM_LBUTTONDOWN
                 RaiseEvent MouseDown(vbLeftButton, GetShiftStateFromParam(wParam), X, Y)
@@ -1358,9 +1420,12 @@ Select Case wMsg
     Case WM_MOUSELEAVE
         SpinBoxMouseOver(0) = False
         If SpinBoxMouseOver(2) = True Then
-            Dim Pos As Long
+            Dim Pos As Long, P2 As POINTAPI, XY As Currency
             Pos = GetMessagePos()
-            If WindowFromPoint(Get_X_lParam(Pos), Get_Y_lParam(Pos)) <> SpinBoxEditHandle Or SpinBoxEditHandle = 0 Then
+            P2.X = Get_X_lParam(Pos)
+            P2.Y = Get_Y_lParam(Pos)
+            CopyMemory ByVal VarPtr(XY), ByVal VarPtr(P2), 8
+            If WindowFromPoint(XY) <> SpinBoxEditHandle Or SpinBoxEditHandle = NULL_PTR Then
                 SpinBoxMouseOver(2) = False
                 RaiseEvent MouseLeave
             End If
@@ -1368,7 +1433,7 @@ Select Case wMsg
 End Select
 End Function
 
-Private Function WindowProcEdit(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcEdit(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_SETFOCUS
         If wParam <> UserControl.hWnd Then SetFocusAPI UserControl.hWnd: Exit Function
@@ -1376,9 +1441,9 @@ Select Case wMsg
     Case WM_KILLFOCUS
         Call DeActivateIPAO
     Case WM_SETCURSOR
-        If LoWord(lParam) = HTCLIENT Then
+        If LoWord(CLng(lParam)) = HTCLIENT Then
             If MousePointerID(PropMousePointer) <> 0 Then
-                SetCursor LoadCursor(0, MousePointerID(PropMousePointer))
+                SetCursor LoadCursor(NULL_PTR, MousePointerID(PropMousePointer))
                 WindowProcEdit = 1
                 Exit Function
             ElseIf PropMousePointer = 99 Then
@@ -1393,7 +1458,7 @@ Select Case wMsg
         If GetFocus() <> hWnd Then UCNoSetFocusFwd = True: SetFocusAPI UserControl.hWnd: UCNoSetFocusFwd = False
     Case WM_KEYDOWN, WM_KEYUP, WM_SYSKEYDOWN, WM_SYSKEYUP
         Dim KeyCode As Integer
-        KeyCode = wParam And &HFF&
+        KeyCode = CLng(wParam) And &HFF&
         If wMsg = WM_KEYDOWN Or wMsg = WM_KEYUP Then
             If wMsg = WM_KEYDOWN Then
                 RaiseEvent KeyDown(KeyCode, GetShiftStateFromMsg())
@@ -1413,7 +1478,7 @@ Select Case wMsg
             KeyChar = CUIntToInt(SpinBoxCharCodeCache And &HFFFF&)
             SpinBoxCharCodeCache = 0
         Else
-            KeyChar = CUIntToInt(wParam And &HFFFF&)
+            KeyChar = CUIntToInt(CLng(wParam) And &HFFFF&)
         End If
         RaiseEvent KeyPress(KeyChar)
         If (wParam And &HFFFF&) <> 0 And KeyChar = 0 Then
@@ -1426,7 +1491,7 @@ Select Case wMsg
             WindowProcEdit = 1
         Else
             Dim UTF16 As String
-            UTF16 = UTF32CodePoint_To_UTF16(wParam)
+            UTF16 = UTF32CodePoint_To_UTF16(CLng(wParam))
             If Len(UTF16) = 1 Then
                 SendMessage hWnd, WM_CHAR, CIntToUInt(AscW(UTF16)), ByVal lParam
             ElseIf Len(UTF16) = 2 Then
@@ -1500,9 +1565,12 @@ Select Case wMsg
     Case WM_NCMOUSELEAVE
         SpinBoxMouseOver(1) = False
         If SpinBoxMouseOver(2) = True Then
-            Dim Pos As Long
+            Dim Pos As Long, P As POINTAPI, XY As Currency
             Pos = GetMessagePos()
-            If WindowFromPoint(Get_X_lParam(Pos), Get_Y_lParam(Pos)) <> SpinBoxUpDownHandle Or SpinBoxUpDownHandle = 0 Then
+            P.X = Get_X_lParam(Pos)
+            P.Y = Get_Y_lParam(Pos)
+            CopyMemory ByVal VarPtr(XY), ByVal VarPtr(P), 8
+            If WindowFromPoint(XY) <> SpinBoxUpDownHandle Or SpinBoxUpDownHandle = NULL_PTR Then
                 SpinBoxMouseOver(2) = False
                 RaiseEvent MouseLeave
             End If
@@ -1510,7 +1578,7 @@ Select Case wMsg
 End Select
 End Function
 
-Private Function WindowProcUserControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcUserControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_NOTIFY
         Dim NM As NMHDR
@@ -1534,12 +1602,12 @@ Select Case wMsg
     Case WM_COMMAND
         Static ChangeFrozen As Boolean
         Const EN_UPDATE As Long = &H400, EN_CHANGE As Long = &H300
-        Select Case HiWord(wParam)
+        Select Case HiWord(CLng(wParam))
             Case EN_UPDATE
                 If PropAllowOnlyNumbers = True Then
                     If ComCtlsSupportLevel() <= 1 And ChangeFrozen = False Then
                         Dim Text As String
-                        Text = String(SendMessage(lParam, WM_GETTEXTLENGTH, 0, ByVal 0&), vbNullChar)
+                        Text = String$(CLng(SendMessage(lParam, WM_GETTEXTLENGTH, 0, ByVal 0&)), vbNullChar)
                         SendMessage lParam, WM_GETTEXT, Len(Text) + 1, ByVal StrPtr(Text)
                         If Not Text = vbNullString Then
                             On Error Resume Next
@@ -1561,7 +1629,7 @@ Select Case wMsg
             Case EN_CHANGE
                 If ChangeFrozen = False Then
                     RaiseEvent TextChange
-                    If SpinBoxUpDownHandle <> 0 Then PostMessage SpinBoxUpDownHandle, UM_CHECKVALUE, SendMessage(SpinBoxUpDownHandle, UDM_GETPOS32, 0, ByVal 0&), ByVal 0&
+                    If SpinBoxUpDownHandle <> NULL_PTR Then PostMessage SpinBoxUpDownHandle, UM_CHECKVALUE, SendMessage(SpinBoxUpDownHandle, UDM_GETPOS32, 0, ByVal 0&), ByVal 0&
                 Else
                     ChangeFrozen = False
                     Exit Function
@@ -1570,7 +1638,7 @@ Select Case wMsg
     Case WM_VSCROLL, WM_HSCROLL
         If lParam = SpinBoxUpDownHandle Then
             Dim NewValue As Long
-            NewValue = SendMessage(SpinBoxUpDownHandle, UDM_GETPOS32, 0, ByVal 0&)
+            NewValue = CLng(SendMessage(SpinBoxUpDownHandle, UDM_GETPOS32, 0, ByVal 0&))
             If PropValue <> NewValue Then
                 PropValue = NewValue
                 UserControl.PropertyChanged "Value"

@@ -12,14 +12,26 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
-Private ShadowObjectPointer As Long
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
+Private ShadowObjectPointer As LongPtr
 Private PropIndex As Long, PropKey As String
 Private PropTag As Variant
 Private PropToolTipText As String
 Private PropImage As Variant, PropImageIndex As Long
 
 Private Function ShadowTabStrip() As TabStrip
-ComCtlsPtrToShadowObj ShadowTabStrip, ShadowObjectPointer
+ComCtlsObjSetAddRef ShadowTabStrip, ShadowObjectPointer
 End Function
 
 Friend Sub FInit(ByVal Object As TabStrip, ByVal Key As String, ByVal Image As Variant, ByVal ImageIndex As Long)

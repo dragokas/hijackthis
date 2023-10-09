@@ -19,7 +19,7 @@
 0001=Welcome to HiJackThis+
      This program will generate a report of unusual items
      (files, registry modifications etc.) in the most vulnerable areas of the operating system,
-     commonly manipulated by malware as well as good software.
+     commonly manipulated by malware as well as good software
 0002=HiJackThis is already running.
      Are you sure you want to launch another copy?
 0004=Below are the results of the HiJackThis scan.
@@ -41,7 +41,6 @@
 0015=   Other stuff
 0016=Help
 0017=Back
-0018=Settings
 0019=Report
 0020=Add checked to ignore list
 0021=Loaded modules
@@ -102,6 +101,10 @@
 1070=Command line
 1080=length of address
 1081=characters
+;main menu
+1088=Settings
+;scan results menu
+1089=Settings
 ;
 ; ============== EULA ============
 ;
@@ -123,12 +126,15 @@
 1111=What would you like to do?
 1112=Do a system scan and save a logfile
 1113=Do a system scan only
-1114=List of Backups
-1115=Misc Tools
-1116=Online Guide
+1114=Backups
+1115=Fixing
+1116=Tutorial && Support
 1117=None of the above, just start the program
 1118=Do not show this menu after starting the program
 1119=Language:
+1120=Online tutorial
+1121=Offline manual
+1122=Cure forums
 ;
 ; ================ Context menu ==============
 ;
@@ -199,7 +205,7 @@
 1223=Dutch [outdated]
 1224=Check for updates
 1225=About program...
-1226=Support
+1226=Report a bug
 1227=Section descriptions
 1228=Command line keys
 1229=Registry
@@ -376,7 +382,7 @@
      System Compatibility
      -------------------------
      
-      * Microsoft™ Windows™ 11 / 10 / 8.1 / 8 / 7 / Vista / XP / 2000, including Server editions, both 32 and 64-bit.
+      * Microsoft™ Windows™ 11 / 10 / 8.1 / 8 / 7 / Vista / XP, including Server editions, both 32 and 64-bit.
 
 
      Authors and copyrights
@@ -429,7 +435,7 @@
 
      Donation
      -------------
-     If you like my HiJackThis modification and want to donate 
+     If you like my HiJackThis modification and you want to donate 
      for creative inspiration and further active development of the project, I'll be always glad:
 
 0034=
@@ -799,8 +805,11 @@
      Do you want to create a new, default hosts file?
 0281=No hosts file found.
 0282=The hosts file is locked for reading and cannot be edited.
-     Make sure you have privileges to modify the hosts file and no program is protecting it against changes.
-0303=HiJackThis could not write the selected changes to your hosts file. Another program may be denying access to it, or your user account may have insufficient rights to access it.
+0284=Make sure you have privileges to modify the hosts file and no program is protecting it against changes.
+0300=Reset
+0301=Are you really sure to reset hosts file contents to defaults?
+0302=Refresh list
+0303=Unable to write the selected changes to your hosts file. Another program may be denying access to it, or your user account may have insufficient rights to access it.
 ;
 ; =========== Digital signature checker ==========
 ;
@@ -1313,7 +1322,7 @@
       - for (Hidden): unhides user account from the logon screen.
       - for (RDP Group): cancels user's membership in the RDP group.
       - for (Missing): user's SID record is removed from the registry. HKEY_USERS\<SID> key is not handled.
-      - for (Port): disables firewall rule, which allow incoming connections to 3389 port of svchost.exe.
+      - for (Port): disables firewall rule, which allow incoming connections to 3389 port.
       - for (Other): registry entry is set to defaults.
 ; [O28]
 0437=
@@ -1867,4 +1876,4 @@
 ; ========= Empty ========
 ;
 ; (2500 - ...)
-;                                           
+;                                              

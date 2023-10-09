@@ -1,6 +1,6 @@
 Type=Exe
-Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#\\?\C:\Windows\SysWOW64\stdole2.tlb#OLE Automation
-Reference=*\G{5A2B9220-BF07-11E6-9598-0800200C9A66}#1.0#0#\\?\C:\Windows\SysWOW64\OLEGuids.tlb#OLE Guid and interface definitions
+Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#C:\Windows\SysWOW64\stdole2.tlb#OLE Automation
+Reference=*\G{5A2B9220-BF07-11E6-9598-0800200C9A66}#1.0#0#OLEGuids\OLEGuids.tlb#OLE Guid and interface definitions
 Form=MainForm.frm
 Form=PagerForm.frm
 Form=RichTextBoxForm.frm

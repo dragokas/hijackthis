@@ -12,17 +12,33 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
 Private Type TINDEXPTR
-Ptr As Long
-ShadowObjPtr As Long
+Ptr As LongPtr
+ShadowObjPtr As LongPtr
 End Type
+#If VBA7 Then
+Private Declare PtrSafe Function PutMem4 Lib "msvbvm60.dll" (ByVal Addr As LongPtr, ByVal Value As Long) As Long
+#Else
 Private Declare Function PutMem4 Lib "msvbvm60.dll" (ByVal Addr As Long, ByVal Value As Long) As Long
-Private ShadowObjectPointer As Long
+#End If
+Private ShadowObjectPointer As LongPtr
 Private PropComboItem As Collection
 Private PropIndexPtrArr() As TINDEXPTR
 
 Private Function ShadowImageCombo() As ImageCombo
-ComCtlsPtrToShadowObj ShadowImageCombo, ShadowObjectPointer
+ComCtlsObjSetAddRef ShadowImageCombo, ShadowObjectPointer
 End Function
 
 Private Sub Class_Initialize()
@@ -71,7 +87,7 @@ Else
     Call ComCtlsImlListImageIndex(ShadowImageCombo, ShadowImageCombo.ImageList, SelImage, SelImageIndex)
 End If
 Dim NewComboItem As New ImcComboItem
-Dim IndexPtr As Long
+Dim IndexPtr As LongPtr
 NewComboItem.FInit ShadowObjectPointer, IndexPtr, Key, Image, ImageIndex, SelImage, SelImageIndex
 If Key = vbNullString Then
     If Index > 0 And Index <= PropComboItem.Count Then

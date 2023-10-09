@@ -30,6 +30,18 @@ Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
 Option Explicit
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
 #If False Then
 Private LblEllipsisFormatNone, LblEllipsisFormatEnd, LblEllipsisFormatPath, LblEllipsisFormatWord
 #End If
@@ -44,10 +56,10 @@ X As Long
 Y As Long
 End Type
 Private Type TMSG
-hWnd As Long
+hWnd As LongPtr
 Message As Long
-wParam As Long
-lParam As Long
+wParam As LongPtr
+lParam As LongPtr
 Time As Long
 PT As POINTAPI
 End Type
@@ -90,6 +102,30 @@ Public Event OLESetData(Data As DataObject, DataFormat As Integer)
 Attribute OLESetData.VB_Description = "Occurs at the OLE drag/drop source control when the drop target requests data that was not provided to the DataObject during the OLEDragStart event."
 Public Event OLEStartDrag(Data As DataObject, AllowedEffects As Long)
 Attribute OLEStartDrag.VB_Description = "Occurs when an OLE drag/drop operation is initiated either manually or automatically."
+#If VBA7 Then
+Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
+Private Declare PtrSafe Function DrawText Lib "user32" Alias "DrawTextW" (ByVal hDC As LongPtr, ByVal lpchText As LongPtr, ByVal nCount As Long, ByRef lpRect As RECT, ByVal uFormat As Long) As Long
+Private Declare PtrSafe Function PeekMessage Lib "user32" Alias "PeekMessageW" (ByRef lpMsg As TMSG, ByVal hWnd As LongPtr, ByVal wMsgFilterMin As Long, ByVal wMsgFilterMax As Long, ByVal wRemoveMsg As Long) As Long
+Private Declare PtrSafe Function DispatchMessage Lib "user32" Alias "DispatchMessageW" (ByRef lpMsg As TMSG) As LongPtr
+Private Declare PtrSafe Function SetRect Lib "user32" (ByRef lpRect As RECT, ByVal X1 As Long, ByVal Y1 As Long, ByVal X2 As Long, ByVal Y2 As Long) As Long
+Private Declare PtrSafe Function LoadCursor Lib "user32" Alias "LoadCursorW" (ByVal hInstance As LongPtr, ByVal lpCursorName As Any) As LongPtr
+Private Declare PtrSafe Function GetMessagePos Lib "user32" () As Long
+Private Declare PtrSafe Function GetCapture Lib "user32" () As LongPtr
+Private Declare PtrSafe Function WindowFromPoint Lib "user32" (ByVal XY As Currency) As LongPtr
+Private Declare PtrSafe Function DeleteObject Lib "gdi32" (ByVal hObject As LongPtr) As Long
+Private Declare PtrSafe Function SelectObject Lib "gdi32" (ByVal hDC As LongPtr, ByVal hObject As LongPtr) As LongPtr
+Private Declare PtrSafe Function SetTextColor Lib "gdi32" (ByVal hDC As LongPtr, ByVal crColor As Long) As Long
+Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hWnd As LongPtr) As LongPtr
+Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hWnd As LongPtr, ByVal hDC As LongPtr) As Long
+Private Declare PtrSafe Function CreateCompatibleDC Lib "gdi32" (ByVal hDC As LongPtr) As LongPtr
+Private Declare PtrSafe Function DeleteDC Lib "gdi32" (ByVal hDC As LongPtr) As Long
+Private Declare PtrSafe Function GetSystemMetrics Lib "user32" (ByVal nIndex As Long) As Long
+Private Declare PtrSafe Function DrawEdge Lib "user32" (ByVal hDC As LongPtr, ByRef qRC As RECT, ByVal Edge As Long, ByVal grfFlags As Long) As Long
+Private Declare PtrSafe Function CreateRectRgn Lib "gdi32" (ByVal X1 As Long, ByVal Y1 As Long, ByVal X2 As Long, ByVal Y2 As Long) As LongPtr
+Private Declare PtrSafe Function GetClipRgn Lib "gdi32" (ByVal hDC As LongPtr, ByVal hRgn As LongPtr) As Long
+Private Declare PtrSafe Function SelectClipRgn Lib "gdi32" (ByVal hDC As LongPtr, ByVal hRgn As LongPtr) As Long
+#Else
+Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
 Private Declare Function DrawText Lib "user32" Alias "DrawTextW" (ByVal hDC As Long, ByVal lpchText As Long, ByVal nCount As Long, ByRef lpRect As RECT, ByVal uFormat As Long) As Long
 Private Declare Function PeekMessage Lib "user32" Alias "PeekMessageW" (ByRef lpMsg As TMSG, ByVal hWnd As Long, ByVal wMsgFilterMin As Long, ByVal wMsgFilterMax As Long, ByVal wRemoveMsg As Long) As Long
 Private Declare Function DispatchMessage Lib "user32" Alias "DispatchMessageW" (ByRef lpMsg As TMSG) As Long
@@ -97,7 +133,7 @@ Private Declare Function SetRect Lib "user32" (ByRef lpRect As RECT, ByVal X1 As
 Private Declare Function LoadCursor Lib "user32" Alias "LoadCursorW" (ByVal hInstance As Long, ByVal lpCursorName As Any) As Long
 Private Declare Function GetMessagePos Lib "user32" () As Long
 Private Declare Function GetCapture Lib "user32" () As Long
-Private Declare Function WindowFromPoint Lib "user32" (ByVal X As Long, ByVal Y As Long) As Long
+Private Declare Function WindowFromPoint Lib "user32" (ByVal XY As Currency) As Long
 Private Declare Function DeleteObject Lib "gdi32" (ByVal hObject As Long) As Long
 Private Declare Function SelectObject Lib "gdi32" (ByVal hDC As Long, ByVal hObject As Long) As Long
 Private Declare Function SetTextColor Lib "gdi32" (ByVal hDC As Long, ByVal crColor As Long) As Long
@@ -110,6 +146,7 @@ Private Declare Function DrawEdge Lib "user32" (ByVal hDC As Long, ByRef qRC As 
 Private Declare Function CreateRectRgn Lib "gdi32" (ByVal X1 As Long, ByVal Y1 As Long, ByVal X2 As Long, ByVal Y2 As Long) As Long
 Private Declare Function GetClipRgn Lib "gdi32" (ByVal hDC As Long, ByVal hRgn As Long) As Long
 Private Declare Function SelectClipRgn Lib "gdi32" (ByVal hDC As Long, ByVal hRgn As Long) As Long
+#End If
 Private Const DT_LEFT As Long = &H0
 Private Const DT_CENTER As Long = &H1
 Private Const DT_RIGHT As Long = &H2
@@ -283,7 +320,7 @@ End Sub
 
 Private Sub UserControl_Paint()
 If LabelPaintFrozen = True Then Exit Sub
-Dim RC As RECT, CalcRect As RECT, Format As Long, Buffer As String
+Dim RC As RECT, CalcRect As RECT, DrawFlags As Long, Buffer As String
 Dim BorderWidth As Long, BorderHeight As Long
 With UserControl
 SetRect RC, 0, 0, .ScaleWidth, .ScaleHeight
@@ -306,32 +343,32 @@ Select Case PropBorderStyle
         DrawEdge .hDC, RC, BDR_RAISEDOUTER Or BDR_RAISEDINNER, BF_RECT
 End Select
 If .Enabled = False Then SetTextColor .hDC, WinColor(vbGrayText)
-Format = DT_NOCLIP
+DrawFlags = DT_NOCLIP
 Select Case PropAlignment
     Case vbLeftJustify
-        Format = Format Or DT_LEFT
+        DrawFlags = DrawFlags Or DT_LEFT
     Case vbCenter
-        Format = Format Or DT_CENTER
+        DrawFlags = DrawFlags Or DT_CENTER
     Case vbRightJustify
-        Format = Format Or DT_RIGHT
+        DrawFlags = DrawFlags Or DT_RIGHT
 End Select
-If PropRightToLeft = True Then Format = Format Or DT_RTLREADING
-If PropUseMnemonic = False Then Format = Format Or DT_NOPREFIX
-If PropWordWrap = True Then Format = Format Or DT_WORDBREAK
+If PropRightToLeft = True Then DrawFlags = DrawFlags Or DT_RTLREADING
+If PropUseMnemonic = False Then DrawFlags = DrawFlags Or DT_NOPREFIX
+If PropWordWrap = True Then DrawFlags = DrawFlags Or DT_WORDBREAK
 Select Case PropEllipsisFormat
     Case LblEllipsisFormatEnd
-        Format = Format Or DT_END_ELLIPSIS
+        DrawFlags = DrawFlags Or DT_END_ELLIPSIS
     Case LblEllipsisFormatPath
-        Format = Format Or DT_PATH_ELLIPSIS
+        DrawFlags = DrawFlags Or DT_PATH_ELLIPSIS
     Case LblEllipsisFormatWord
-        Format = Format Or DT_WORD_ELLIPSIS
+        DrawFlags = DrawFlags Or DT_WORD_ELLIPSIS
 End Select
 If PropVerticalAlignment <> CCVerticalAlignmentTop Then
     Dim Height As Long, Result As Long
     Buffer = PropCaption
     If Buffer = vbNullString Then Buffer = " "
     LSet CalcRect = RC
-    Height = DrawText(.hDC, StrPtr(Buffer), -1, CalcRect, Format Or DT_CALCRECT)
+    Height = DrawText(.hDC, StrPtr(Buffer), -1, CalcRect, DrawFlags Or DT_CALCRECT)
     Select Case PropVerticalAlignment
         Case CCVerticalAlignmentCenter
             Result = ((((RC.Bottom - RC.Top) - (BorderHeight * 2)) - Height) / 2)
@@ -345,24 +382,24 @@ If Not PropCaption = vbNullString Then
     ' The function could add up to four additional characters to this string.
     ' The buffer containing the string should be large enough to accommodate these extra characters.
     Buffer = PropCaption & String$(4, vbNullChar) & vbNullChar
-    Dim hRgn As Long
+    Dim hRgn As LongPtr
     If PropAutoSize = True Then
         ' Temporarily remove the clipping region in this case.
         hRgn = CreateRectRgn(0, 0, 0, 0)
-        If hRgn <> 0 Then
+        If hRgn <> NULL_PTR Then
             If GetClipRgn(.hDC, hRgn) = 1 Then
-                SelectClipRgn .hDC, 0
+                SelectClipRgn .hDC, NULL_PTR
             Else
                 DeleteObject hRgn
-                hRgn = 0
+                hRgn = NULL_PTR
             End If
         End If
     End If
-    DrawText .hDC, StrPtr(Buffer), -1, RC, Format Or DT_MODIFYSTRING
-    If hRgn <> 0 Then
+    DrawText .hDC, StrPtr(Buffer), -1, RC, DrawFlags Or DT_MODIFYSTRING
+    If hRgn <> NULL_PTR Then
         SelectClipRgn .hDC, hRgn
         DeleteObject hRgn
-        hRgn = 0
+        hRgn = NULL_PTR
     End If
     LabelDisplayedCaption = Left$(Buffer, InStr(Buffer, vbNullChar) - 1)
 Else
@@ -448,9 +485,12 @@ End Sub
 
 Private Sub TimerMouseTrack_Timer()
 If GetCapture() <> UserControl.ContainerHwnd Then
-    Dim Pos As Long
+    Dim Pos As Long, P As POINTAPI, XY As Currency
     Pos = GetMessagePos()
-    If LabelMouseOverPos <> Pos Or WindowFromPoint(Get_X_lParam(Pos), Get_Y_lParam(Pos)) <> UserControl.ContainerHwnd Then
+    P.X = Get_X_lParam(Pos)
+    P.Y = Get_Y_lParam(Pos)
+    CopyMemory ByVal VarPtr(XY), ByVal VarPtr(P), 8
+    If LabelMouseOverPos <> Pos Or WindowFromPoint(XY) <> UserControl.ContainerHwnd Then
         LabelMouseOver = False
         TimerMouseTrack.Enabled = False
         RaiseEvent MouseLeave
@@ -704,7 +744,7 @@ If LabelDesignMode = False Then
             If PropMousePointer = vbCustom Then
                 Set UserControl.MouseIcon = PropMouseIcon
             Else
-                Set UserControl.MouseIcon = PictureFromHandle(LoadCursor(0, MousePointerID(PropMousePointer)), vbPicTypeIcon)
+                Set UserControl.MouseIcon = PictureFromHandle(LoadCursor(NULL_PTR, MousePointerID(PropMousePointer)), vbPicTypeIcon)
             End If
             UserControl.MousePointer = vbCustom
         Case Else
@@ -727,7 +767,7 @@ Public Property Set MouseIcon(ByVal Value As IPictureDisp)
 If Value Is Nothing Then
     Set PropMouseIcon = Nothing
 Else
-    If Value.Type = vbPicTypeIcon Or Value.Handle = 0 Then
+    If Value.Type = vbPicTypeIcon Or Value.Handle = NULL_PTR Then
         Set PropMouseIcon = Value
     Else
         If LabelDesignMode = True Then
@@ -943,7 +983,7 @@ Public Sub Refresh()
 Attribute Refresh.VB_Description = "Forces a complete repaint of a object."
 Attribute Refresh.VB_UserMemId = -550
 Call RedrawLabel
-Dim Msg As TMSG, hWndContainer As Long
+Dim Msg As TMSG, hWndContainer As LongPtr
 hWndContainer = UserControl.ContainerHwnd
 Const WM_PAINT As Long = &HF, PM_REMOVE As Long = &H1
 Do While PeekMessage(Msg, hWndContainer, WM_PAINT, WM_PAINT, PM_REMOVE) <> 0
@@ -957,8 +997,8 @@ Attribute DisplayedCaption.VB_MemberFlags = "400"
 DisplayedCaption = LabelDisplayedCaption
 End Property
 
-Private Sub DoAutoSize(ByVal hDC As Long)
-Dim RC As RECT, CalcRect As RECT, Format As Long, Buffer As String
+Private Sub DoAutoSize(ByVal hDC As LongPtr)
+Dim RC As RECT, CalcRect As RECT, DrawFlags As Long, Buffer As String
 Dim BorderWidth As Long, BorderHeight As Long
 With UserControl
 SetRect RC, 0, 0, .ScaleWidth, .ScaleHeight
@@ -976,22 +1016,22 @@ Select Case PropBorderStyle
         BorderWidth = GetSystemMetrics(SM_CXDLGFRAME)
         BorderHeight = GetSystemMetrics(SM_CYDLGFRAME)
 End Select
-Format = DT_NOCLIP
+DrawFlags = DT_NOCLIP
 Select Case PropAlignment
     Case vbLeftJustify
-        Format = Format Or DT_LEFT
+        DrawFlags = DrawFlags Or DT_LEFT
     Case vbCenter
-        Format = Format Or DT_CENTER
+        DrawFlags = DrawFlags Or DT_CENTER
     Case vbRightJustify
-        Format = Format Or DT_RIGHT
+        DrawFlags = DrawFlags Or DT_RIGHT
 End Select
-If PropRightToLeft = True Then Format = Format Or DT_RTLREADING
-If PropUseMnemonic = False Then Format = Format Or DT_NOPREFIX
-If PropWordWrap = True Then Format = Format Or DT_WORDBREAK
+If PropRightToLeft = True Then DrawFlags = DrawFlags Or DT_RTLREADING
+If PropUseMnemonic = False Then DrawFlags = DrawFlags Or DT_NOPREFIX
+If PropWordWrap = True Then DrawFlags = DrawFlags Or DT_WORDBREAK
 Buffer = PropCaption
 If Buffer = vbNullString Then Buffer = " "
 LSet CalcRect = RC
-DrawText hDC, StrPtr(Buffer), -1, CalcRect, Format Or DT_CALCRECT
+DrawText hDC, StrPtr(Buffer), -1, CalcRect, DrawFlags Or DT_CALCRECT
 Dim OldRight As Single, OldCenter As Single, OldBottom As Single, OldVCenter As Single
 OldRight = .Extender.Left + .Extender.Width
 OldCenter = .Extender.Left + (.Extender.Width / 2)
@@ -1028,20 +1068,20 @@ Private Sub RedrawLabel()
 If LabelAutoSizeFlag = False Then
     UserControl.Refresh
 Else
-    Dim hDCScreen As Long, hDC As Long
-    hDCScreen = GetDC(0)
-    If hDCScreen <> 0 Then
+    Dim hDCScreen As LongPtr, hDC As LongPtr
+    hDCScreen = GetDC(NULL_PTR)
+    If hDCScreen <> NULL_PTR Then
         hDC = CreateCompatibleDC(hDCScreen)
-        If hDC <> 0 Then
-            Dim Font As IFont, hFontOld As Long
+        If hDC <> NULL_PTR Then
+            Dim Font As IFont, hFontOld As LongPtr
             Set Font = PropFont
             If Not Font Is Nothing Then hFontOld = SelectObject(hDC, Font.hFont)
             Call DoAutoSize(hDC)
-            If hFontOld <> 0 Then SelectObject hDC, hFontOld
+            If hFontOld <> NULL_PTR Then SelectObject hDC, hFontOld
             Set Font = Nothing
             DeleteDC hDC
         End If
-        ReleaseDC 0, hDCScreen
+        ReleaseDC NULL_PTR, hDCScreen
     End If
     LabelAutoSizeFlag = False
 End If

@@ -1390,10 +1390,9 @@ SkipCatCheck:
                                 WintrustData.dwStateAction = WTD_STATEACTION_CLOSE
                                 WinVerifyTrust INVALID_HANDLE_VALUE, ActionGuid, VarPtr(WintrustData)
 
-                                'restarting context
-                                If hCatAdmin <> 0 Then CryptCATAdminReleaseContext hCatAdmin, 0&
-
                                 If CatalogContext <> 0 And Not CBool(Flags And SV_DisableCatalogVerify) Then
+                                    'restarting context
+                                    If hCatAdmin <> 0 Then CryptCATAdminReleaseContext hCatAdmin, 0&: hCatAdmin = 0
                                     CryptCATAdminAcquireContext2 hCatAdmin, VarPtr(DRIVER_ACTION_VERIFY), StrPtr(BCRYPT_SHA256_ALGORITHM), 0&, 0&
                                     WintrustCatalog.hCatAdmin = hCatAdmin
                                 End If
@@ -1452,10 +1451,9 @@ SkipCatCheck:
                         WintrustData.dwStateAction = WTD_STATEACTION_CLOSE
                         WinVerifyTrust INVALID_HANDLE_VALUE, WINTRUST_ACTION_GENERIC_VERIFY_V2, VarPtr(WintrustData)
 
-                        'restarting context
-                        If hCatAdmin <> 0 Then CryptCATAdminReleaseContext hCatAdmin, 0&
-
                         If CatalogContext <> 0 And Not CBool(Flags And SV_DisableCatalogVerify) Then
+                            'restarting context
+                            If hCatAdmin <> 0 Then CryptCATAdminReleaseContext hCatAdmin, 0&
                             CryptCATAdminAcquireContext hCatAdmin, VarPtr(DRIVER_ACTION_VERIFY), 0&
                             WintrustCatalog.hCatAdmin = hCatAdmin
                         End If
@@ -1539,10 +1537,9 @@ SkipCatCheck:
                 WintrustData.dwStateAction = WTD_STATEACTION_CLOSE
                 WinVerifyTrust INVALID_HANDLE_VALUE, LastActionGuid, VarPtr(WintrustData)
                 
-                'restarting context
-                If hCatAdmin <> 0 Then CryptCATAdminReleaseContext hCatAdmin, 0&: hCatAdmin = 0
-                
                 If CatalogContext <> 0 And Not CBool(Flags And SV_DisableCatalogVerify) Then
+                    'restarting context
+                    If hCatAdmin <> 0 Then CryptCATAdminReleaseContext hCatAdmin, 0&: hCatAdmin = 0
                     CryptCATAdminAcquireContext2 hCatAdmin, VarPtr(DRIVER_ACTION_VERIFY), StrPtr(BCRYPT_SHA256_ALGORITHM), 0&, 0&
                     WintrustCatalog.hCatAdmin = hCatAdmin
                 End If
@@ -1927,6 +1924,8 @@ Finalize:
     If bWrongPredict Then
         SignVerify = SignVerify(sFilePath, Flags Or SV_NoCatPrediction Or SV_CacheDoNotLoad, SignResult)
     End If
+    
+    AppendErrorLogCustom "SignVerify - End"
     
     Exit Function
 ErrorHandler:

@@ -21,6 +21,18 @@ Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
 Option Explicit
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
 
 #Const ImplementThemedButton = True
 
@@ -80,7 +92,7 @@ CtlID As Long
 ItemID As Long
 ItemWidth As Long
 ItemHeight As Long
-ItemData As Long
+ItemData As LongPtr
 End Type
 Private Type DRAWITEMSTRUCT
 CtlType As Long
@@ -88,10 +100,10 @@ CtlID As Long
 ItemID As Long
 ItemAction As Long
 ItemState As Long
-hWndItem As Long
-hDC As Long
+hWndItem As LongPtr
+hDC As LongPtr
 RCItem As RECT
-ItemData As Long
+ItemData As LongPtr
 End Type
 Private Type SCROLLINFO
 cbSize As Long
@@ -158,9 +170,56 @@ Public Event OLESetData(Data As DataObject, DataFormat As Integer)
 Attribute OLESetData.VB_Description = "Occurs at the OLE drag/drop source control when the drop target requests data that was not provided to the DataObject during the OLEDragStart event."
 Public Event OLEStartDrag(Data As DataObject, AllowedEffects As Long)
 Attribute OLEStartDrag.VB_Description = "Occurs when an OLE drag/drop operation is initiated either manually or automatically."
+#If VBA7 Then
+Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
+Private Declare PtrSafe Function CreateWindowEx Lib "user32" Alias "CreateWindowExW" (ByVal dwExStyle As Long, ByVal lpClassName As LongPtr, ByVal lpWindowName As LongPtr, ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hWndParent As LongPtr, ByVal hMenu As LongPtr, ByVal hInstance As LongPtr, ByRef lpParam As Any) As LongPtr
+Private Declare PtrSafe Function LBItemFromPt Lib "comctl32" (ByVal hLB As LongPtr, ByVal XY As Currency, ByVal bAutoScroll As Long) As Long
+Private Declare PtrSafe Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByRef lParam As Any) As LongPtr
+Private Declare PtrSafe Function DestroyWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
+Private Declare PtrSafe Function GetWindowLong Lib "user32" Alias "GetWindowLongW" (ByVal hWnd As LongPtr, ByVal nIndex As Long) As Long
+Private Declare PtrSafe Function SetParent Lib "user32" (ByVal hWndChild As LongPtr, ByVal hWndNewParent As LongPtr) As LongPtr
+Private Declare PtrSafe Function SetFocusAPI Lib "user32" Alias "SetFocus" (ByVal hWnd As LongPtr) As LongPtr
+Private Declare PtrSafe Function GetFocus Lib "user32" () As LongPtr
+Private Declare PtrSafe Function ShowWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal nCmdShow As Long) As Long
+Private Declare PtrSafe Function MoveWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint As Long) As Long
+Private Declare PtrSafe Function LockWindowUpdate Lib "user32" (ByVal hWndLock As LongPtr) As Long
+Private Declare PtrSafe Function EnableWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal fEnable As Long) As Long
+Private Declare PtrSafe Function RedrawWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal lprcUpdate As LongPtr, ByVal hrgnUpdate As LongPtr, ByVal fuRedraw As Long) As Long
+Private Declare PtrSafe Function GetWindowRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As RECT) As Long
+Private Declare PtrSafe Function GetClientRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As RECT) As Long
+Private Declare PtrSafe Function DeleteObject Lib "gdi32" (ByVal hObject As LongPtr) As Long
+Private Declare PtrSafe Function LoadCursor Lib "user32" Alias "LoadCursorW" (ByVal hInstance As LongPtr, ByVal lpCursorName As Any) As LongPtr
+Private Declare PtrSafe Function SetCursor Lib "user32" (ByVal hCursor As LongPtr) As LongPtr
+Private Declare PtrSafe Function ScreenToClient Lib "user32" (ByVal hWnd As LongPtr, ByRef lpPoint As POINTAPI) As Long
+Private Declare PtrSafe Function ClientToScreen Lib "user32" (ByVal hWnd As LongPtr, ByRef lpPoint As POINTAPI) As Long
+Private Declare PtrSafe Function GetScrollInfo Lib "user32" (ByVal hWnd As LongPtr, ByVal wBar As Long, ByRef lpScrollInfo As SCROLLINFO) As Long
+Private Declare PtrSafe Function GetCursorPos Lib "user32" (ByRef lpPoint As POINTAPI) As Long
+Private Declare PtrSafe Function DragDetect Lib "user32" (ByVal hWnd As LongPtr, ByVal XY As Currency) As Long
+Private Declare PtrSafe Function ReleaseCapture Lib "user32" () As Long
+Private Declare PtrSafe Function GetSystemMetrics Lib "user32" (ByVal nIndex As Long) As Long
+Private Declare PtrSafe Function GetTextExtentPoint32 Lib "gdi32" Alias "GetTextExtentPoint32W" (ByVal hDC As LongPtr, ByVal lpsz As LongPtr, ByVal cbString As Long, ByRef lpSize As SIZEAPI) As Long
+Private Declare PtrSafe Function GetTextMetrics Lib "gdi32" Alias "GetTextMetricsW" (ByVal hDC As LongPtr, ByRef lpMetrics As TEXTMETRIC) As Long
+Private Declare PtrSafe Function InvalidateRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As Any, ByVal bErase As Long) As Long
+Private Declare PtrSafe Function CreateRectRgnIndirect Lib "gdi32" (ByRef lpRect As RECT) As LongPtr
+Private Declare PtrSafe Function ExtSelectClipRgn Lib "gdi32" (ByVal hDC As LongPtr, ByVal hRgn As LongPtr, ByVal fnMode As Long) As Long
+Private Declare PtrSafe Function PatBlt Lib "gdi32" (ByVal hDC As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal dwRop As Long) As Long
+Private Declare PtrSafe Function SelectObject Lib "gdi32" (ByVal hDC As LongPtr, ByVal hObject As LongPtr) As LongPtr
+Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hWnd As LongPtr) As LongPtr
+Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hWnd As LongPtr, ByVal hDC As LongPtr) As Long
+Private Declare PtrSafe Function SetRect Lib "user32" (ByRef lpRect As RECT, ByVal X1 As Long, ByVal Y1 As Long, ByVal X2 As Long, ByVal Y2 As Long) As Long
+Private Declare PtrSafe Function SetBkMode Lib "gdi32" (ByVal hDC As LongPtr, ByVal nBkMode As Long) As Long
+Private Declare PtrSafe Function SetTextAlign Lib "gdi32" (ByVal hDC As LongPtr, ByVal fMode As Long) As Long
+Private Declare PtrSafe Function CreateSolidBrush Lib "gdi32" (ByVal crColor As Long) As LongPtr
+Private Declare PtrSafe Function FillRect Lib "user32" (ByVal hDC As LongPtr, ByRef lpRect As RECT, ByVal hBrush As LongPtr) As Long
+Private Declare PtrSafe Function SetTextColor Lib "gdi32" (ByVal hDC As LongPtr, ByVal crColor As Long) As Long
+Private Declare PtrSafe Function TextOut Lib "gdi32" Alias "TextOutW" (ByVal hDC As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal lpString As LongPtr, ByVal nCount As Long) As Long
+Private Declare PtrSafe Function TabbedTextOut Lib "user32" Alias "TabbedTextOutW" (ByVal hDC As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal lpString As LongPtr, ByVal nCount As Long, ByVal nTabPositions As Long, ByVal lpnTabStopPositions As LongPtr, ByVal nTabOrigin As Long) As Long
+Private Declare PtrSafe Function DrawFocusRect Lib "user32" (ByVal hDC As LongPtr, ByRef lpRect As RECT) As Long
+Private Declare PtrSafe Function DrawFrameControl Lib "user32" (ByVal hDC As LongPtr, ByRef lpRect As RECT, ByVal nCtlType As Long, ByVal nFlags As Long) As Long
+#Else
 Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
 Private Declare Function CreateWindowEx Lib "user32" Alias "CreateWindowExW" (ByVal dwExStyle As Long, ByVal lpClassName As Long, ByVal lpWindowName As Long, ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hWndParent As Long, ByVal hMenu As Long, ByVal hInstance As Long, ByRef lpParam As Any) As Long
-Private Declare Function LBItemFromPt Lib "comctl32" (ByVal hLB As Long, ByVal PX As Long, ByVal PY As Long, ByVal bAutoScroll As Long) As Long
+Private Declare Function LBItemFromPt Lib "comctl32" (ByVal hLB As Long, ByVal XY As Currency, ByVal bAutoScroll As Long) As Long
 Private Declare Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByRef lParam As Any) As Long
 Private Declare Function DestroyWindow Lib "user32" (ByVal hWnd As Long) As Long
 Private Declare Function GetWindowLong Lib "user32" Alias "GetWindowLongW" (ByVal hWnd As Long, ByVal nIndex As Long) As Long
@@ -181,7 +240,7 @@ Private Declare Function ScreenToClient Lib "user32" (ByVal hWnd As Long, ByRef 
 Private Declare Function ClientToScreen Lib "user32" (ByVal hWnd As Long, ByRef lpPoint As POINTAPI) As Long
 Private Declare Function GetScrollInfo Lib "user32" (ByVal hWnd As Long, ByVal wBar As Long, ByRef lpScrollInfo As SCROLLINFO) As Long
 Private Declare Function GetCursorPos Lib "user32" (ByRef lpPoint As POINTAPI) As Long
-Private Declare Function DragDetect Lib "user32" (ByVal hWnd As Long, ByVal PX As Integer, ByVal PY As Integer) As Long
+Private Declare Function DragDetect Lib "user32" (ByVal hWnd As Long, ByVal XY As Currency) As Long
 Private Declare Function ReleaseCapture Lib "user32" () As Long
 Private Declare Function GetSystemMetrics Lib "user32" (ByVal nIndex As Long) As Long
 Private Declare Function GetTextExtentPoint32 Lib "gdi32" Alias "GetTextExtentPoint32W" (ByVal hDC As Long, ByVal lpsz As Long, ByVal cbString As Long, ByRef lpSize As SIZEAPI) As Long
@@ -203,6 +262,7 @@ Private Declare Function TextOut Lib "gdi32" Alias "TextOutW" (ByVal hDC As Long
 Private Declare Function TabbedTextOut Lib "user32" Alias "TabbedTextOutW" (ByVal hDC As Long, ByVal X As Long, ByVal Y As Long, ByVal lpString As Long, ByVal nCount As Long, ByVal nTabPositions As Long, ByVal lpnTabStopPositions As Long, ByVal nTabOrigin As Long) As Long
 Private Declare Function DrawFocusRect Lib "user32" (ByVal hDC As Long, ByRef lpRect As RECT) As Long
 Private Declare Function DrawFrameControl Lib "user32" (ByVal hDC As Long, ByRef lpRect As RECT, ByVal nCtlType As Long, ByVal nFlags As Long) As Long
+#End If
 
 #If ImplementThemedButton = True Then
 
@@ -233,11 +293,19 @@ RBS_CHECKEDHOT = 6
 RBS_CHECKEDPRESSED = 7
 RBS_CHECKEDDISABLED = 8
 End Enum
-Private Declare Function IsThemeBackgroundPartiallyTransparent Lib "uxtheme" (ByVal Theme As Long, iPartId As Long, iStateId As Long) As Long
+#If VBA7 Then
+Private Declare PtrSafe Function IsThemeBackgroundPartiallyTransparent Lib "uxtheme" (ByVal Theme As LongPtr, ByVal iPartId As Long, ByVal iStateId As Long) As Long
+Private Declare PtrSafe Function DrawThemeParentBackground Lib "uxtheme" (ByVal hWnd As LongPtr, ByVal hDC As LongPtr, ByRef pRect As RECT) As Long
+Private Declare PtrSafe Function DrawThemeBackground Lib "uxtheme" (ByVal Theme As LongPtr, ByVal hDC As LongPtr, ByVal iPartId As Long, ByVal iStateId As Long, ByRef pRect As RECT, ByRef pClipRect As RECT) As Long
+Private Declare PtrSafe Function OpenThemeData Lib "uxtheme" (ByVal hWnd As LongPtr, ByVal lpszClassList As LongPtr) As LongPtr
+Private Declare PtrSafe Function CloseThemeData Lib "uxtheme" (ByVal Theme As LongPtr) As Long
+#Else
+Private Declare Function IsThemeBackgroundPartiallyTransparent Lib "uxtheme" (ByVal Theme As Long, ByVal iPartId As Long, ByVal iStateId As Long) As Long
 Private Declare Function DrawThemeParentBackground Lib "uxtheme" (ByVal hWnd As Long, ByVal hDC As Long, ByRef pRect As RECT) As Long
 Private Declare Function DrawThemeBackground Lib "uxtheme" (ByVal Theme As Long, ByVal hDC As Long, ByVal iPartId As Long, ByVal iStateId As Long, ByRef pRect As RECT, ByRef pClipRect As RECT) As Long
-Private Declare Function OpenThemeData Lib "uxtheme" (ByVal hWnd As Long, ByVal pszClassList As Long) As Long
+Private Declare Function OpenThemeData Lib "uxtheme" (ByVal hWnd As Long, ByVal lpszClassList As Long) As Long
 Private Declare Function CloseThemeData Lib "uxtheme" (ByVal Theme As Long) As Long
+#End If
 
 #End If
 
@@ -348,8 +416,8 @@ Implements ISubclass
 Implements OLEGuids.IObjectSafety
 Implements OLEGuids.IOleInPlaceActiveObjectVB
 Implements OLEGuids.IPerPropertyBrowsingVB
-Private ListBoxHandle As Long
-Private ListBoxFontHandle As Long
+Private ListBoxHandle As LongPtr
+Private ListBoxFontHandle As LongPtr
 Private ListBoxCharCodeCache As Long
 Private ListBoxMouseOver As Boolean
 Private ListBoxDesignMode As Boolean
@@ -395,10 +463,14 @@ End Sub
 Private Sub IObjectSafety_SetInterfaceSafetyOptions(ByRef riid As OLEGuids.OLECLSID, ByVal dwOptionsSetMask As Long, ByVal dwEnabledOptions As Long)
 End Sub
 
+#If VBA7 Then
+Private Sub IOleInPlaceActiveObjectVB_TranslateAccelerator(ByRef Handled As Boolean, ByRef RetVal As Long, ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal Shift As Long)
+#Else
 Private Sub IOleInPlaceActiveObjectVB_TranslateAccelerator(ByRef Handled As Boolean, ByRef RetVal As Long, ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal Shift As Long)
+#End If
 If wMsg = WM_KEYDOWN Or wMsg = WM_KEYUP Then
     Dim KeyCode As Integer, IsInputKey As Boolean
-    KeyCode = wParam And &HFF&
+    KeyCode = CLng(wParam) And &HFF&
     If wMsg = WM_KEYDOWN Then
         RaiseEvent PreviewKeyDown(KeyCode, IsInputKey)
     ElseIf wMsg = WM_KEYUP Then
@@ -559,7 +631,7 @@ End Sub
 
 Private Sub UserControl_OLEDragOver(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single, State As Integer)
 RaiseEvent OLEDragOver(Data, Effect, Button, Shift, UserControl.ScaleX(X, vbPixels, vbContainerPosition), UserControl.ScaleY(Y, vbPixels, vbContainerPosition), State)
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     If State = vbOver And Not Effect = vbDropEffectNone Then
         If PropOLEDragDropScroll = True Then
             Dim RC As RECT
@@ -611,10 +683,11 @@ If ListBoxDragIndex > 0 Then
         Data.SetData Text, vbCFText
         AllowedEffects = vbDropEffectCopy
     End If
-ElseIf ListBoxHandle <> 0 Then
-    Dim P As POINTAPI
+ElseIf ListBoxHandle <> NULL_PTR Then
+    Dim P As POINTAPI, XY As Currency
     GetCursorPos P
-    ListBoxDragIndex = LBItemFromPt(ListBoxHandle, P.X, P.Y, 0) + 1
+    CopyMemory ByVal VarPtr(XY), ByVal VarPtr(P), 8
+    ListBoxDragIndex = LBItemFromPt(ListBoxHandle, XY, 0) + 1
 End If
 RaiseEvent OLEStartDrag(Data, AllowedEffects)
 If AllowedEffects = vbDropEffectNone Then ListBoxDragIndex = 0
@@ -629,7 +702,7 @@ End Sub
 
 Private Sub UserControl_AmbientChanged(PropertyName As String)
 If ListBoxDesignMode = True And PropertyName = "DisplayName" Then
-    If ListBoxHandle <> 0 Then
+    If ListBoxHandle <> NULL_PTR Then
         If SendMessage(ListBoxHandle, LB_GETCOUNT, 0, ByVal 0&) > 0 Then
             Dim Buffer As String
             Buffer = Ambient.DisplayName
@@ -647,7 +720,7 @@ If InProc = True Then Exit Sub
 InProc = True
 With UserControl
 If DPICorrectionFactor() <> 1 Then Call SyncObjectRectsToContainer(Me)
-If ListBoxHandle = 0 Then InProc = False: Exit Sub
+If ListBoxHandle = NULL_PTR Then InProc = False: Exit Sub
 Dim WndRect As RECT
 MoveWindow ListBoxHandle, 0, 0, .ScaleWidth, .ScaleHeight, 1
 If PropIntegralHeight = True Then
@@ -807,14 +880,25 @@ Attribute ZOrder.VB_Description = "Places a specified object at the front or bac
 If IsMissing(Position) Then Extender.ZOrder Else Extender.ZOrder Position
 End Sub
 
+#If VBA7 Then
+Public Property Get hWnd() As LongPtr
+Attribute hWnd.VB_Description = "Returns a handle to a control."
+Attribute hWnd.VB_UserMemId = -515
+#Else
 Public Property Get hWnd() As Long
 Attribute hWnd.VB_Description = "Returns a handle to a control."
 Attribute hWnd.VB_UserMemId = -515
+#End If
 hWnd = ListBoxHandle
 End Property
 
+#If VBA7 Then
+Public Property Get hWndUserControl() As LongPtr
+Attribute hWndUserControl.VB_Description = "Returns a handle to a control."
+#Else
 Public Property Get hWndUserControl() As Long
 Attribute hWndUserControl.VB_Description = "Returns a handle to a control."
+#End If
 hWndUserControl = UserControl.hWnd
 End Property
 
@@ -830,18 +914,18 @@ End Property
 
 Public Property Set Font(ByVal NewFont As StdFont)
 If NewFont Is Nothing Then Set NewFont = Ambient.Font
-Dim OldFontHandle As Long
+Dim OldFontHandle As LongPtr
 Set PropFont = NewFont
 OldFontHandle = ListBoxFontHandle
 ListBoxFontHandle = CreateGDIFontFromOLEFont(PropFont)
-If ListBoxHandle <> 0 Then SendMessage ListBoxHandle, WM_SETFONT, ListBoxFontHandle, ByVal 1&
-If OldFontHandle <> 0 Then DeleteObject OldFontHandle
-If PropStyle <> LstStyleStandard And ListBoxHandle <> 0 Then
-    Dim hDCScreen As Long
-    hDCScreen = GetDC(0)
-    If hDCScreen <> 0 Then
-        Dim TM As TEXTMETRIC, hFontOld As Long
-        If ListBoxFontHandle <> 0 Then hFontOld = SelectObject(hDCScreen, ListBoxFontHandle)
+If ListBoxHandle <> NULL_PTR Then SendMessage ListBoxHandle, WM_SETFONT, ListBoxFontHandle, ByVal 1&
+If OldFontHandle <> NULL_PTR Then DeleteObject OldFontHandle
+If PropStyle <> LstStyleStandard And ListBoxHandle <> NULL_PTR Then
+    Dim hDCScreen As LongPtr
+    hDCScreen = GetDC(NULL_PTR)
+    If hDCScreen <> NULL_PTR Then
+        Dim TM As TEXTMETRIC, hFontOld As LongPtr
+        If ListBoxFontHandle <> NULL_PTR Then hFontOld = SelectObject(hDCScreen, ListBoxFontHandle)
         If GetTextMetrics(hDCScreen, TM) <> 0 Then
             If TM.TMHeight < ListBoxStateImageSize Then TM.TMHeight = ListBoxStateImageSize
             SendMessage ListBoxHandle, LB_SETITEMHEIGHT, 0, ByVal TM.TMHeight
@@ -850,8 +934,8 @@ If PropStyle <> LstStyleStandard And ListBoxHandle <> 0 Then
                 MoveWindow ListBoxHandle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, 0
             End If
         End If
-        If hFontOld <> 0 Then SelectObject hDCScreen, hFontOld
-        ReleaseDC 0, hDCScreen
+        If hFontOld <> NULL_PTR Then SelectObject hDCScreen, hFontOld
+        ReleaseDC NULL_PTR, hDCScreen
     End If
 End If
 Call UserControl_Resize
@@ -859,17 +943,17 @@ UserControl.PropertyChanged "Font"
 End Property
 
 Private Sub PropFont_FontChanged(ByVal PropertyName As String)
-Dim OldFontHandle As Long
+Dim OldFontHandle As LongPtr
 OldFontHandle = ListBoxFontHandle
 ListBoxFontHandle = CreateGDIFontFromOLEFont(PropFont)
-If ListBoxHandle <> 0 Then SendMessage ListBoxHandle, WM_SETFONT, ListBoxFontHandle, ByVal 1&
-If OldFontHandle <> 0 Then DeleteObject OldFontHandle
-If PropStyle <> LstStyleStandard And ListBoxHandle <> 0 Then
-    Dim hDCScreen As Long
-    hDCScreen = GetDC(0)
-    If hDCScreen <> 0 Then
-        Dim TM As TEXTMETRIC, hFontOld As Long
-        If ListBoxFontHandle <> 0 Then hFontOld = SelectObject(hDCScreen, ListBoxFontHandle)
+If ListBoxHandle <> NULL_PTR Then SendMessage ListBoxHandle, WM_SETFONT, ListBoxFontHandle, ByVal 1&
+If OldFontHandle <> NULL_PTR Then DeleteObject OldFontHandle
+If PropStyle <> LstStyleStandard And ListBoxHandle <> NULL_PTR Then
+    Dim hDCScreen As LongPtr
+    hDCScreen = GetDC(NULL_PTR)
+    If hDCScreen <> NULL_PTR Then
+        Dim TM As TEXTMETRIC, hFontOld As LongPtr
+        If ListBoxFontHandle <> NULL_PTR Then hFontOld = SelectObject(hDCScreen, ListBoxFontHandle)
         If GetTextMetrics(hDCScreen, TM) <> 0 Then
             If TM.TMHeight < ListBoxStateImageSize Then TM.TMHeight = ListBoxStateImageSize
             SendMessage ListBoxHandle, LB_SETITEMHEIGHT, 0, ByVal TM.TMHeight
@@ -878,8 +962,8 @@ If PropStyle <> LstStyleStandard And ListBoxHandle <> 0 Then
                 MoveWindow ListBoxHandle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, 0
             End If
         End If
-        If hFontOld <> 0 Then SelectObject hDCScreen, hFontOld
-        ReleaseDC 0, hDCScreen
+        If hFontOld <> NULL_PTR Then SelectObject hDCScreen, hFontOld
+        ReleaseDC NULL_PTR, hDCScreen
     End If
 End If
 Call UserControl_Resize
@@ -893,7 +977,7 @@ End Property
 
 Public Property Let VisualStyles(ByVal Value As Boolean)
 PropVisualStyles = Value
-If ListBoxHandle <> 0 And EnabledVisualStyles() = True Then
+If ListBoxHandle <> NULL_PTR And EnabledVisualStyles() = True Then
     If PropVisualStyles = True Then
         ActivateVisualStyles ListBoxHandle
     Else
@@ -936,7 +1020,7 @@ End Property
 
 Public Property Let Enabled(ByVal Value As Boolean)
 UserControl.Enabled = Value
-If ListBoxHandle <> 0 Then EnableWindow ListBoxHandle, IIf(Value = True, 1, 0)
+If ListBoxHandle <> NULL_PTR Then EnableWindow ListBoxHandle, IIf(Value = True, 1, 0)
 UserControl.PropertyChanged "Enabled"
 End Property
 
@@ -1009,7 +1093,7 @@ Public Property Set MouseIcon(ByVal Value As IPictureDisp)
 If Value Is Nothing Then
     Set PropMouseIcon = Nothing
 Else
-    If Value.Type = vbPicTypeIcon Or Value.Handle = 0 Then
+    If Value.Type = vbPicTypeIcon Or Value.Handle = NULL_PTR Then
         Set PropMouseIcon = Value
     Else
         If ListBoxDesignMode = True Then
@@ -1046,7 +1130,7 @@ UserControl.RightToLeft = PropRightToLeft
 Call ComCtlsCheckRightToLeft(PropRightToLeft, UserControl.RightToLeft, PropRightToLeftMode)
 Dim dwMask As Long
 If PropRightToLeft = True Then dwMask = WS_EX_RTLREADING Or WS_EX_RIGHT Or WS_EX_LEFTSCROLLBAR
-If ListBoxHandle <> 0 Then Call ComCtlsSetRightToLeft(ListBoxHandle, dwMask)
+If ListBoxHandle <> NULL_PTR Then Call ComCtlsSetRightToLeft(ListBoxHandle, dwMask)
 UserControl.PropertyChanged "RightToLeft"
 End Property
 
@@ -1073,7 +1157,7 @@ End Property
 
 Public Property Let Redraw(ByVal Value As Boolean)
 PropRedraw = Value
-If ListBoxHandle <> 0 And ListBoxDesignMode = False Then
+If ListBoxHandle <> NULL_PTR And ListBoxDesignMode = False Then
     SendMessage ListBoxHandle, WM_SETREDRAW, IIf(PropRedraw = True, 1, 0), ByVal 0&
     If PropRedraw = True Then Me.Refresh
 End If
@@ -1093,7 +1177,7 @@ Select Case Value
     Case Else
         Err.Raise 380
 End Select
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     Call ComCtlsChangeBorderStyle(ListBoxHandle, PropBorderStyle)
     Call UserControl_Resize
 End If
@@ -1115,7 +1199,7 @@ If PropDrawMode = LstDrawModeOwnerDrawVariable And Value = True Then
     End If
 End If
 PropMultiColumn = Value
-If ListBoxHandle <> 0 Then Call ReCreateListBox
+If ListBoxHandle <> NULL_PTR Then Call ReCreateListBox
 UserControl.PropertyChanged "MultiColumn"
 End Property
 
@@ -1126,7 +1210,7 @@ End Property
 
 Public Property Let Sorted(ByVal Value As Boolean)
 PropSorted = Value
-If ListBoxHandle <> 0 Then Call ReCreateListBox
+If ListBoxHandle <> NULL_PTR Then Call ReCreateListBox
 UserControl.PropertyChanged "Sorted"
 End Property
 
@@ -1140,7 +1224,7 @@ If ListBoxDesignMode = False Then
     Err.Raise Number:=382, Description:="IntegralHeight property is read-only at run time"
 Else
     PropIntegralHeight = Value
-    If ListBoxHandle <> 0 Then Call ReCreateListBox
+    If ListBoxHandle <> NULL_PTR Then Call ReCreateListBox
 End If
 UserControl.PropertyChanged "IntegralHeight"
 End Property
@@ -1152,7 +1236,7 @@ End Property
 
 Public Property Let AllowSelection(ByVal Value As Boolean)
 PropAllowSelection = Value
-If ListBoxHandle <> 0 Then Call ReCreateListBox
+If ListBoxHandle <> NULL_PTR Then Call ReCreateListBox
 UserControl.PropertyChanged "AllowSelection"
 End Property
 
@@ -1176,13 +1260,13 @@ Select Case Value
     Case Else
         Err.Raise 380
 End Select
-If ListBoxHandle <> 0 Then Call ReCreateListBox
+If ListBoxHandle <> NULL_PTR Then Call ReCreateListBox
 UserControl.PropertyChanged "MultiSelect"
 End Property
 
 Public Property Get HorizontalExtent() As Single
 Attribute HorizontalExtent.VB_Description = "Returns/sets the width by which a list box can be scrolled horizontally. This is only meaningful if the multi column property is set to false."
-If ListBoxHandle <> 0 And PropMultiColumn = False Then
+If ListBoxHandle <> NULL_PTR And PropMultiColumn = False Then
     HorizontalExtent = UserControl.ScaleX(SendMessage(ListBoxHandle, LB_GETHORIZONTALEXTENT, 0, ByVal 0&), vbPixels, vbContainerSize)
 Else
     HorizontalExtent = UserControl.ScaleX(PropHorizontalExtent, vbPixels, vbContainerSize)
@@ -1199,7 +1283,7 @@ If Value < 0 Then
     End If
 End If
 PropHorizontalExtent = CLng(UserControl.ScaleX(Value, vbContainerSize, vbPixels))
-If ListBoxHandle <> 0 And PropMultiColumn = False Then SendMessage ListBoxHandle, LB_SETHORIZONTALEXTENT, PropHorizontalExtent, ByVal 0&
+If ListBoxHandle <> NULL_PTR And PropMultiColumn = False Then SendMessage ListBoxHandle, LB_SETHORIZONTALEXTENT, PropHorizontalExtent, ByVal 0&
 UserControl.PropertyChanged "HorizontalExtent"
 End Property
 
@@ -1210,7 +1294,7 @@ End Property
 
 Public Property Let UseTabStops(ByVal Value As Boolean)
 PropUseTabStops = Value
-If ListBoxHandle <> 0 Then Call ReCreateListBox
+If ListBoxHandle <> NULL_PTR Then Call ReCreateListBox
 UserControl.PropertyChanged "UseTabStops"
 End Property
 
@@ -1234,7 +1318,7 @@ Else
         Case Else
             Err.Raise 380
     End Select
-    If ListBoxHandle <> 0 Then Call ReCreateListBox
+    If ListBoxHandle <> NULL_PTR Then Call ReCreateListBox
 End If
 UserControl.PropertyChanged "Style"
 End Property
@@ -1246,7 +1330,7 @@ End Property
 
 Public Property Let DisableNoScroll(ByVal Value As Boolean)
 PropDisableNoScroll = Value
-If ListBoxHandle <> 0 Then Call ReCreateListBox
+If ListBoxHandle <> NULL_PTR Then Call ReCreateListBox
 UserControl.PropertyChanged "DisableNoScroll"
 End Property
 
@@ -1263,7 +1347,7 @@ Select Case Value
         Else
             PropDrawMode = Value
             If PropDrawMode <> LstDrawModeNormal Then PropStyle = LstStyleStandard
-            If ListBoxHandle <> 0 Then Call ReCreateListBox
+            If ListBoxHandle <> NULL_PTR Then Call ReCreateListBox
         End If
     Case Else
         Err.Raise 380
@@ -1294,10 +1378,11 @@ End Property
 
 Public Sub AddItem(ByVal Item As String, Optional ByVal Index As Variant)
 Attribute AddItem.VB_Description = "Adds an item to the list box."
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
+    If StrPtr(Item) = NULL_PTR Then Item = ""
     Dim RetVal As Long
     If IsMissing(Index) = True Then
-        RetVal = SendMessage(ListBoxHandle, LB_ADDSTRING, 0, ByVal StrPtr(Item))
+        RetVal = CLng(SendMessage(ListBoxHandle, LB_ADDSTRING, 0, ByVal StrPtr(Item)))
     Else
         Dim IndexLong As Long
         Select Case VarType(Index)
@@ -1319,7 +1404,7 @@ If ListBoxHandle <> 0 Then
             Case Else
                 Err.Raise 13
         End Select
-        RetVal = SendMessage(ListBoxHandle, LB_INSERTSTRING, IndexLong, ByVal StrPtr(Item))
+        RetVal = CLng(SendMessage(ListBoxHandle, LB_INSERTSTRING, IndexLong, ByVal StrPtr(Item)))
     End If
     If Not RetVal = LB_ERR Then
         ListBoxNewIndex = RetVal
@@ -1341,7 +1426,7 @@ End Sub
 
 Public Sub RemoveItem(ByVal Index As Long)
 Attribute RemoveItem.VB_Description = "Removes an item from the list box."
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     If Index >= 0 Then
         If Not SendMessage(ListBoxHandle, LB_DELETESTRING, Index, ByVal 0&) = LB_ERR Then
             ListBoxNewIndex = -1
@@ -1387,7 +1472,7 @@ End Sub
 
 Public Sub Clear()
 Attribute Clear.VB_Description = "Clears the contents of the list box."
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     SendMessage ListBoxHandle, LB_RESETCONTENT, 0, ByVal 0&
     ListBoxNewIndex = -1
     If PropStyle <> LstStyleStandard Then
@@ -1400,15 +1485,15 @@ End Sub
 
 Public Property Get ListCount() As Long
 Attribute ListCount.VB_Description = "Returns the number of items in the list portion of a control."
-If ListBoxHandle <> 0 Then ListCount = SendMessage(ListBoxHandle, LB_GETCOUNT, 0, ByVal 0&)
+If ListBoxHandle <> NULL_PTR Then ListCount = CLng(SendMessage(ListBoxHandle, LB_GETCOUNT, 0, ByVal 0&))
 End Property
 
 Public Property Get List(ByVal Index As Long) As String
 Attribute List.VB_Description = "Returns/sets the items contained in a control's list portion."
 Attribute List.VB_MemberFlags = "400"
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     Dim Length As Long
-    Length = SendMessage(ListBoxHandle, LB_GETTEXTLEN, Index, ByVal 0&)
+    Length = CLng(SendMessage(ListBoxHandle, LB_GETTEXTLEN, Index, ByVal 0&))
     If Not Length = LB_ERR Then
         List = String(Length, vbNullChar)
         SendMessage ListBoxHandle, LB_GETTEXT, Index, ByVal StrPtr(List)
@@ -1419,11 +1504,12 @@ End If
 End Property
 
 Public Property Let List(ByVal Index As Long, ByVal Value As String)
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
+    If StrPtr(Value) = NULL_PTR Then Value = ""
     If Index > -1 Then
-        Dim ListIndex As Long, SelVal As Long, ItemData As Long
+        Dim ListIndex As Long, SelVal As Long, ItemData As LongPtr
         ListIndex = Me.ListIndex
-        If PropMultiSelect <> vbMultiSelectNone Then SelVal = SendMessage(ListBoxHandle, LB_GETSEL, Index, ByVal 0&)
+        If PropMultiSelect <> vbMultiSelectNone Then SelVal = CLng(SendMessage(ListBoxHandle, LB_GETSEL, Index, ByVal 0&))
         ItemData = SendMessage(ListBoxHandle, LB_GETITEMDATA, Index, ByVal 0&)
         If Not SendMessage(ListBoxHandle, LB_DELETESTRING, Index, ByVal 0&) = LB_ERR Then
             SendMessage ListBoxHandle, LB_INSERTSTRING, Index, ByVal StrPtr(Value)
@@ -1445,17 +1531,17 @@ End Property
 Public Property Get ListIndex() As Long
 Attribute ListIndex.VB_Description = "Returns/sets the index of the currently selected item in the control."
 Attribute ListIndex.VB_MemberFlags = "400"
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     If PropMultiSelect = vbMultiSelectNone Then
-        ListIndex = SendMessage(ListBoxHandle, LB_GETCURSEL, 0, ByVal 0&)
+        ListIndex = CLng(SendMessage(ListBoxHandle, LB_GETCURSEL, 0, ByVal 0&))
     Else
-        ListIndex = SendMessage(ListBoxHandle, LB_GETCARETINDEX, 0, ByVal 0&)
+        ListIndex = CLng(SendMessage(ListBoxHandle, LB_GETCARETINDEX, 0, ByVal 0&))
     End If
 End If
 End Property
 
 Public Property Let ListIndex(ByVal Value As Long)
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     Dim Changed As Boolean
     If PropMultiSelect = vbMultiSelectNone Then
         Changed = CBool(SendMessage(ListBoxHandle, LB_GETCURSEL, 0, ByVal 0&) <> Value)
@@ -1472,10 +1558,16 @@ If ListBoxHandle <> 0 Then
 End If
 End Property
 
+#If VBA7 Then
+Public Property Get ItemData(ByVal Index As Long) As LongPtr
+Attribute ItemData.VB_Description = "Returns/sets a specific number for each item in a list box."
+Attribute ItemData.VB_MemberFlags = "400"
+#Else
 Public Property Get ItemData(ByVal Index As Long) As Long
 Attribute ItemData.VB_Description = "Returns/sets a specific number for each item in a list box."
 Attribute ItemData.VB_MemberFlags = "400"
-If ListBoxHandle <> 0 Then
+#End If
+If ListBoxHandle <> NULL_PTR Then
     If Not SendMessage(ListBoxHandle, LB_GETTEXTLEN, Index, ByVal 0&) = LB_ERR Then
         ItemData = SendMessage(ListBoxHandle, LB_GETITEMDATA, Index, ByVal 0&)
     Else
@@ -1484,14 +1576,18 @@ If ListBoxHandle <> 0 Then
 End If
 End Property
 
+#If VBA7 Then
+Public Property Let ItemData(ByVal Index As Long, ByVal Value As LongPtr)
+#Else
 Public Property Let ItemData(ByVal Index As Long, ByVal Value As Long)
-If ListBoxHandle <> 0 Then If SendMessage(ListBoxHandle, LB_SETITEMDATA, Index, ByVal Value) = LB_ERR Then Err.Raise 381
+#End If
+If ListBoxHandle <> NULL_PTR Then If SendMessage(ListBoxHandle, LB_SETITEMDATA, Index, ByVal Value) = LB_ERR Then Err.Raise 381
 End Property
 
 Public Property Get ItemChecked(ByVal Index As Long) As Boolean
 Attribute ItemChecked.VB_Description = "Returns/sets a value that determines whether the item is checked or not. This is only meaningful if the style property is set to 1 (checkbox) or 2 (option)."
 Attribute ItemChecked.VB_MemberFlags = "400"
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     If Not SendMessage(ListBoxHandle, LB_GETTEXTLEN, Index, ByVal 0&) = LB_ERR Then
         If Index <= (ListBoxItemCheckedCount - 1) Then
             If PropStyle = LstStyleCheckbox Then
@@ -1507,7 +1603,7 @@ End If
 End Property
 
 Public Property Let ItemChecked(ByVal Index As Long, ByVal Value As Boolean)
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     If Not SendMessage(ListBoxHandle, LB_GETTEXTLEN, Index, ByVal 0&) = LB_ERR Then
         If Index <= (ListBoxItemCheckedCount - 1) Then
             Dim Changed As Boolean
@@ -1551,7 +1647,7 @@ End If
 End Property
 
 Private Sub CreateListBox()
-If ListBoxHandle <> 0 Then Exit Sub
+If ListBoxHandle <> NULL_PTR Then Exit Sub
 Dim dwStyle As Long, dwExStyle As Long
 dwStyle = WS_CHILD Or WS_VISIBLE Or LBS_NOTIFY Or WS_HSCROLL
 If PropRedraw = False Then dwStyle = dwStyle Or LBS_NOREDRAW
@@ -1589,8 +1685,8 @@ If PropStyle = LstStyleStandard Then
             dwStyle = dwStyle Or LBS_OWNERDRAWVARIABLE Or LBS_HASSTRINGS
     End Select
 End If
-ListBoxHandle = CreateWindowEx(dwExStyle, StrPtr("ListBox"), 0, dwStyle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, 0, App.hInstance, ByVal 0&)
-If ListBoxHandle <> 0 Then
+ListBoxHandle = CreateWindowEx(dwExStyle, StrPtr("ListBox"), NULL_PTR, dwStyle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, NULL_PTR, App.hInstance, ByVal NULL_PTR)
+If ListBoxHandle <> NULL_PTR Then
     Call ComCtlsShowAllUIStates(ListBoxHandle)
     If PropMultiColumn = True And PropRightToLeft = True Then
         ' In a multi-column list box it is necessary to set the right-to-left alignment afterwards.
@@ -1608,10 +1704,10 @@ Set Me.Font = PropFont
 Me.VisualStyles = PropVisualStyles
 Me.Enabled = UserControl.Enabled
 If ListBoxDesignMode = False Then
-    If ListBoxHandle <> 0 Then Call ComCtlsSetSubclass(ListBoxHandle, Me, 1)
+    If ListBoxHandle <> NULL_PTR Then Call ComCtlsSetSubclass(ListBoxHandle, Me, 1)
     Call ComCtlsSetSubclass(UserControl.hWnd, Me, 2)
 Else
-    If ListBoxHandle <> 0 Then
+    If ListBoxHandle <> NULL_PTR Then
         Dim Buffer As String
         Buffer = Ambient.DisplayName
         SendMessage ListBoxHandle, LB_ADDSTRING, 0, ByVal StrPtr(Buffer)
@@ -1629,20 +1725,20 @@ If ListBoxDesignMode = False Then
     Dim Locked As Boolean
     With Me
     Locked = CBool(LockWindowUpdate(UserControl.hWnd) <> 0)
-    Dim ListArr() As String, ItemDataArr() As Long, ItemSelArr() As Long
+    Dim ListArr() As String, ItemDataArr() As LongPtr, ItemSelArr() As Long
     Dim ItemHeight As Long, ListIndex As Long, TopIndex As Long, NewIndex As Long, InsertMark As Long, InsertMarkAfter As Boolean
     Dim Count As Long, i As Long
-    If ListBoxHandle <> 0 Then
-        ItemHeight = SendMessage(ListBoxHandle, LB_GETITEMHEIGHT, 0, ByVal 0&)
-        Count = SendMessage(ListBoxHandle, LB_GETCOUNT, 0, ByVal 0&)
+    If ListBoxHandle <> NULL_PTR Then
+        ItemHeight = CLng(SendMessage(ListBoxHandle, LB_GETITEMHEIGHT, 0, ByVal 0&))
+        Count = CLng(SendMessage(ListBoxHandle, LB_GETCOUNT, 0, ByVal 0&))
         If Count > 0 Then
             ReDim ListArr(0 To (Count - 1)) As String
-            ReDim ItemDataArr(0 To (Count - 1)) As Long
+            ReDim ItemDataArr(0 To (Count - 1)) ' As LongPtr
             ReDim ItemSelArr(0 To (Count - 1)) As Long
             For i = 0 To (Count - 1)
                 ListArr(i) = .List(i)
                 ItemDataArr(i) = SendMessage(ListBoxHandle, LB_GETITEMDATA, i, ByVal 0&)
-                If PropMultiSelect <> vbMultiSelectNone Then ItemSelArr(i) = SendMessage(ListBoxHandle, LB_GETSEL, i, ByVal 0&)
+                If PropMultiSelect <> vbMultiSelectNone Then ItemSelArr(i) = CLng(SendMessage(ListBoxHandle, LB_GETSEL, i, ByVal 0&))
             Next i
         End If
         ListIndex = .ListIndex
@@ -1654,7 +1750,7 @@ If ListBoxDesignMode = False Then
     Call DestroyListBox
     Call CreateListBox
     Call UserControl_Resize
-    If ListBoxHandle <> 0 Then
+    If ListBoxHandle <> NULL_PTR Then
         SendMessage ListBoxHandle, LB_SETITEMHEIGHT, 0, ByVal ItemHeight
         If Count > 0 Then
             SendMessage ListBoxHandle, WM_SETREDRAW, 0, ByVal 0&
@@ -1671,7 +1767,7 @@ If ListBoxDesignMode = False Then
     ListBoxNewIndex = NewIndex
     ListBoxInsertMark = InsertMark
     ListBoxInsertMarkAfter = InsertMarkAfter
-    If Locked = True Then LockWindowUpdate 0
+    If Locked = True Then LockWindowUpdate NULL_PTR
     .Refresh
     If PropRedraw = False Then .Redraw = PropRedraw
     End With
@@ -1684,16 +1780,16 @@ End If
 End Sub
 
 Private Sub DestroyListBox()
-If ListBoxHandle = 0 Then Exit Sub
+If ListBoxHandle = NULL_PTR Then Exit Sub
 Call ComCtlsRemoveSubclass(ListBoxHandle)
 Call ComCtlsRemoveSubclass(UserControl.hWnd)
 ShowWindow ListBoxHandle, SW_HIDE
-SetParent ListBoxHandle, 0
+SetParent ListBoxHandle, NULL_PTR
 DestroyWindow ListBoxHandle
-ListBoxHandle = 0
-If ListBoxFontHandle <> 0 Then
+ListBoxHandle = NULL_PTR
+If ListBoxFontHandle <> NULL_PTR Then
     DeleteObject ListBoxFontHandle
-    ListBoxFontHandle = 0
+    ListBoxFontHandle = NULL_PTR
 End If
 End Sub
 
@@ -1701,14 +1797,14 @@ Public Sub Refresh()
 Attribute Refresh.VB_Description = "Forces a complete repaint of a object."
 Attribute Refresh.VB_UserMemId = -550
 UserControl.Refresh
-If PropRedraw = True Or ListBoxDesignMode = True Then RedrawWindow UserControl.hWnd, 0, 0, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
+If PropRedraw = True Or ListBoxDesignMode = True Then RedrawWindow UserControl.hWnd, NULL_PTR, NULL_PTR, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
 End Sub
 
 Public Property Get Text() As String
 Attribute Text.VB_Description = "Returns/sets the text contained in the control."
 Attribute Text.VB_UserMemId = 0
 Attribute Text.VB_MemberFlags = "143c"
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     Dim Index As Long
     Index = Me.ListIndex
     If Index > -1 Then Text = Me.List(Index)
@@ -1716,21 +1812,21 @@ End If
 End Property
 
 Public Property Let Text(ByVal Value As String)
-If ListBoxHandle <> 0 Then Me.ListIndex = SendMessage(ListBoxHandle, LB_FINDSTRINGEXACT, -1, ByVal StrPtr(Value))
+If ListBoxHandle <> NULL_PTR Then Me.ListIndex = CLng(SendMessage(ListBoxHandle, LB_FINDSTRINGEXACT, -1, ByVal StrPtr(Value)))
 End Property
 
 Public Property Get SelCount() As Long
 Attribute SelCount.VB_Description = "Returns the number of selected items in the list box."
 Attribute SelCount.VB_MemberFlags = "400"
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     Dim RetVal As Long
-    RetVal = SendMessage(ListBoxHandle, LB_GETSELCOUNT, 0, ByVal 0&)
+    RetVal = CLng(SendMessage(ListBoxHandle, LB_GETSELCOUNT, 0, ByVal 0&))
     If Not RetVal = LB_ERR Then
         SelCount = RetVal
     Else
-        RetVal = SendMessage(ListBoxHandle, LB_GETCURSEL, 0, ByVal 0&)
+        RetVal = CLng(SendMessage(ListBoxHandle, LB_GETCURSEL, 0, ByVal 0&))
         If Not RetVal = LB_ERR Then
-            RetVal = SendMessage(ListBoxHandle, LB_GETSEL, RetVal, ByVal 0&)
+            RetVal = CLng(SendMessage(ListBoxHandle, LB_GETSEL, RetVal, ByVal 0&))
             If RetVal > 0 Then SelCount = 1
         End If
     End If
@@ -1739,7 +1835,7 @@ End Property
 
 Public Property Get Selected(ByVal Index As Long) As Boolean
 Attribute Selected.VB_Description = "Returns/sets the selection status of an item."
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     If Not SendMessage(ListBoxHandle, LB_GETTEXTLEN, Index, ByVal 0&) = LB_ERR Then
         Selected = CBool(SendMessage(ListBoxHandle, LB_GETSEL, Index, ByVal 0&) > 0)
     Else
@@ -1749,7 +1845,7 @@ End If
 End Property
 
 Public Property Let Selected(ByVal Index As Long, ByVal Value As Boolean)
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     If Not SendMessage(ListBoxHandle, LB_GETTEXTLEN, Index, ByVal 0&) = LB_ERR Then
         Dim Changed As Boolean, RetVal As Long
         If PropMultiSelect <> vbMultiSelectNone Then
@@ -1757,7 +1853,7 @@ If ListBoxHandle <> 0 Then
             SendMessage ListBoxHandle, LB_SETSEL, IIf(Value = True, 1, 0), ByVal Index
             Changed = CBool(IIf(SendMessage(ListBoxHandle, LB_GETSEL, Index, ByVal 0&) > 0, 1, 0) <> RetVal)
         Else
-            RetVal = SendMessage(ListBoxHandle, LB_GETCURSEL, 0, ByVal 0&)
+            RetVal = CLng(SendMessage(ListBoxHandle, LB_GETCURSEL, 0, ByVal 0&))
             If Value = False Then
                 If SendMessage(ListBoxHandle, LB_GETCURSEL, 0, ByVal 0&) = Index Then
                     If SendMessage(ListBoxHandle, LB_GETSEL, Index, ByVal 0&) > 0 Then SendMessage ListBoxHandle, LB_SETCURSEL, -1, ByVal 0&
@@ -1776,10 +1872,10 @@ End Property
 
 Public Sub SetSelRange(ByVal StartIndex As Long, ByVal EndIndex As Long)
 Attribute SetSelRange.VB_Description = "Sets the start and end item for the current selection range."
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     If Not SendMessage(ListBoxHandle, LB_GETTEXTLEN, StartIndex, ByVal 0&) = LB_ERR And Not SendMessage(ListBoxHandle, LB_GETTEXTLEN, EndIndex, ByVal 0&) = LB_ERR Then
         Dim RetVal As Long
-        RetVal = SendMessage(ListBoxHandle, LB_GETSELCOUNT, 0, ByVal 0&)
+        RetVal = CLng(SendMessage(ListBoxHandle, LB_GETSELCOUNT, 0, ByVal 0&))
         If Not RetVal = LB_ERR Then
             Dim Changed As Boolean
             SendMessage ListBoxHandle, LB_SELITEMRANGEEX, StartIndex, ByVal EndIndex
@@ -1797,16 +1893,16 @@ End Sub
 Public Property Get ItemHeight(Optional ByVal Index As Long) As Single
 Attribute ItemHeight.VB_Description = "Returns/sets the height of an item. The optional index argument can be specified in an variable owner-drawn list box."
 Attribute ItemHeight.VB_MemberFlags = "400"
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     Dim RetVal As Long
     If PropDrawMode <> LstDrawModeOwnerDrawVariable Then
         If Index = 0 Then
-            RetVal = SendMessage(ListBoxHandle, LB_GETITEMHEIGHT, 0, ByVal 0&)
+            RetVal = CLng(SendMessage(ListBoxHandle, LB_GETITEMHEIGHT, 0, ByVal 0&))
         Else
             RetVal = LB_ERR
         End If
     Else
-        RetVal = SendMessage(ListBoxHandle, LB_GETITEMHEIGHT, Index, ByVal 0&)
+        RetVal = CLng(SendMessage(ListBoxHandle, LB_GETITEMHEIGHT, Index, ByVal 0&))
     End If
     If Not RetVal = LB_ERR Then
         ItemHeight = UserControl.ScaleY(RetVal, vbPixels, vbContainerSize)
@@ -1818,16 +1914,16 @@ End Property
 
 Public Property Let ItemHeight(Optional ByVal Index As Long, ByVal Value As Single)
 If Value < 0 Then Err.Raise 380
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     Dim RetVal As Long
     If PropDrawMode <> LstDrawModeOwnerDrawVariable Then
         If Index = 0 Then
-            RetVal = SendMessage(ListBoxHandle, LB_SETITEMHEIGHT, 0, ByVal CLng(UserControl.ScaleY(Value, vbContainerSize, vbPixels)))
+            RetVal = CLng(SendMessage(ListBoxHandle, LB_SETITEMHEIGHT, 0, ByVal CLng(UserControl.ScaleY(Value, vbContainerSize, vbPixels))))
         Else
             RetVal = LB_ERR
         End If
     Else
-        RetVal = SendMessage(ListBoxHandle, LB_SETITEMHEIGHT, Index, ByVal CLng(UserControl.ScaleY(Value, vbContainerSize, vbPixels)))
+        RetVal = CLng(SendMessage(ListBoxHandle, LB_SETITEMHEIGHT, Index, ByVal CLng(UserControl.ScaleY(Value, vbContainerSize, vbPixels))))
     End If
     If Not RetVal = LB_ERR Then
         If PropIntegralHeight = True Then
@@ -1853,11 +1949,11 @@ End Property
 Public Property Get TopIndex() As Long
 Attribute TopIndex.VB_Description = "Returns/sets which item in a control is displayed in the topmost position."
 Attribute TopIndex.VB_MemberFlags = "400"
-If ListBoxHandle <> 0 Then TopIndex = SendMessage(ListBoxHandle, LB_GETTOPINDEX, 0, ByVal 0&)
+If ListBoxHandle <> NULL_PTR Then TopIndex = CLng(SendMessage(ListBoxHandle, LB_GETTOPINDEX, 0, ByVal 0&))
 End Property
 
 Public Property Let TopIndex(ByVal Value As Long)
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     If Value >= 0 Then
         If SendMessage(ListBoxHandle, LB_SETTOPINDEX, Value, ByVal 0&) = LB_ERR Then Err.Raise 380
     Else
@@ -1869,11 +1965,11 @@ End Property
 Public Property Get AnchorIndex() As Long
 Attribute AnchorIndex.VB_Description = "Returns/sets the anchor item. That is the item from which a multiple selection starts."
 Attribute AnchorIndex.VB_MemberFlags = "400"
-If ListBoxHandle <> 0 Then AnchorIndex = SendMessage(ListBoxHandle, LB_GETANCHORINDEX, 0, ByVal 0&)
+If ListBoxHandle <> NULL_PTR Then AnchorIndex = CLng(SendMessage(ListBoxHandle, LB_GETANCHORINDEX, 0, ByVal 0&))
 End Property
 
 Public Property Let AnchorIndex(ByVal Value As Long)
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     If Value < -1 Then
         Err.Raise 380
     Else
@@ -1885,7 +1981,7 @@ End Property
 Public Sub SetColumnWidth(ByVal Value As Single)
 Attribute SetColumnWidth.VB_Description = "Sets the width of all columns in a multiple-column list box."
 If Value < 0 Then Err.Raise 380
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     Dim LngValue As Long
     LngValue = CLng(UserControl.ScaleX(Value, vbContainerSize, vbPixels))
     If LngValue > 0 Then
@@ -1898,26 +1994,26 @@ End Sub
 
 Public Function ItemsPerColumn() As Long
 Attribute ItemsPerColumn.VB_Description = "Retrieves the number of items per column."
-If ListBoxHandle <> 0 Then ItemsPerColumn = SendMessage(ListBoxHandle, LB_GETLISTBOXINFO, 0, ByVal 0&)
+If ListBoxHandle <> NULL_PTR Then ItemsPerColumn = CLng(SendMessage(ListBoxHandle, LB_GETLISTBOXINFO, 0, ByVal 0&))
 End Function
 
 Public Function SelectedIndices() As Collection
 Attribute SelectedIndices.VB_Description = "Returns a reference to a collection containing the indexes to the selected items."
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     Set SelectedIndices = New Collection
     Dim Count As Long
-    Count = SendMessage(ListBoxHandle, LB_GETCOUNT, 0, ByVal 0&)
+    Count = CLng(SendMessage(ListBoxHandle, LB_GETCOUNT, 0, ByVal 0&))
     If Count > 0 Then
         Dim LngArr() As Long, RetVal As Long
         ReDim LngArr(1 To Count) As Long
-        RetVal = SendMessage(ListBoxHandle, LB_GETSELITEMS, Count, ByVal VarPtr(LngArr(1)))
+        RetVal = CLng(SendMessage(ListBoxHandle, LB_GETSELITEMS, Count, ByVal VarPtr(LngArr(1))))
         If Not RetVal = LB_ERR Then
             Dim i As Long
             For i = 1 To RetVal
                 SelectedIndices.Add LngArr(i)
             Next i
         Else
-            RetVal = SendMessage(ListBoxHandle, LB_GETCURSEL, 0, ByVal 0&)
+            RetVal = CLng(SendMessage(ListBoxHandle, LB_GETCURSEL, 0, ByVal 0&))
             If Not RetVal = LB_ERR Then
                 If SendMessage(ListBoxHandle, LB_GETSEL, RetVal, ByVal 0&) > 0 Then
                     SelectedIndices.Add RetVal
@@ -1930,10 +2026,10 @@ End Function
 
 Public Function CheckedIndices() As Collection
 Attribute CheckedIndices.VB_Description = "Returns a reference to a collection containing the indexes to the checked items."
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     Set CheckedIndices = New Collection
     Dim Count As Long
-    Count = SendMessage(ListBoxHandle, LB_GETCOUNT, 0, ByVal 0&)
+    Count = CLng(SendMessage(ListBoxHandle, LB_GETCOUNT, 0, ByVal 0&))
     If Count > 0 Then
         If PropStyle = LstStyleCheckbox Then
             Dim i As Long
@@ -1949,23 +2045,25 @@ End Function
 
 Public Function HitTest(ByVal X As Single, ByVal Y As Single) As Long
 Attribute HitTest.VB_Description = "Returns the index of the item located at the coordinates of X and Y."
-If ListBoxHandle <> 0 Then
-    Dim P As POINTAPI
+If ListBoxHandle <> NULL_PTR Then
+    Dim P As POINTAPI, XY As Currency
     P.X = UserControl.ScaleX(X, vbContainerPosition, vbPixels)
     P.Y = UserControl.ScaleY(Y, vbContainerPosition, vbPixels)
     ClientToScreen ListBoxHandle, P
-    HitTest = LBItemFromPt(ListBoxHandle, P.X, P.Y, 0)
+    CopyMemory ByVal VarPtr(XY), ByVal VarPtr(P), 8
+    HitTest = LBItemFromPt(ListBoxHandle, XY, 0)
 End If
 End Function
 
 Public Function HitTestInsertMark(ByVal X As Single, ByVal Y As Single, Optional ByRef After As Boolean) As Long
 Attribute HitTestInsertMark.VB_Description = "Returns the index of the item located at the coordinates of X and Y and retrieves a value that determines where the insertion point should appear."
-If ListBoxHandle <> 0 Then
-    Dim P As POINTAPI, Index As Long
+If ListBoxHandle <> NULL_PTR Then
+    Dim P As POINTAPI, XY As Currency, Index As Long
     P.X = UserControl.ScaleX(X, vbContainerPosition, vbPixels)
     P.Y = UserControl.ScaleY(Y, vbContainerPosition, vbPixels)
     ClientToScreen ListBoxHandle, P
-    Index = LBItemFromPt(ListBoxHandle, P.X, P.Y, 0)
+    CopyMemory ByVal VarPtr(XY), ByVal VarPtr(P), 8
+    Index = LBItemFromPt(ListBoxHandle, XY, 0)
     If Index > -1 Then
         Dim RC As RECT
         SendMessage ListBoxHandle, LB_GETITEMRECT, Index, ByVal VarPtr(RC)
@@ -1977,12 +2075,12 @@ End Function
 
 Public Function FindItem(ByVal Text As String, Optional ByVal Index As Long = -1, Optional ByVal Partial As Boolean) As Long
 Attribute FindItem.VB_Description = "Finds an item in the list box and returns the index of that item."
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     If Not SendMessage(ListBoxHandle, LB_GETTEXTLEN, Index, ByVal 0&) = LB_ERR Or Index = -1 Then
         If Partial = True Then
-            FindItem = SendMessage(ListBoxHandle, LB_FINDSTRING, Index, ByVal StrPtr(Text))
+            FindItem = CLng(SendMessage(ListBoxHandle, LB_FINDSTRING, Index, ByVal StrPtr(Text)))
         Else
-            FindItem = SendMessage(ListBoxHandle, LB_FINDSTRINGEXACT, Index, ByVal StrPtr(Text))
+            FindItem = CLng(SendMessage(ListBoxHandle, LB_FINDSTRINGEXACT, Index, ByVal StrPtr(Text)))
         End If
     Else
         Err.Raise 381
@@ -1999,7 +2097,7 @@ End Property
 
 Public Property Let InsertMark(Optional ByRef After As Boolean, ByVal Value As Long)
 If ListBoxInsertMark = Value And ListBoxInsertMarkAfter = After Then Exit Property
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     If Not SendMessage(ListBoxHandle, LB_GETTEXTLEN, Value, ByVal 0&) = LB_ERR Or Value = -1 Then
         If ListBoxInsertMark > -1 Then Call InvalidateInsertMark
         ListBoxInsertMark = Value
@@ -2018,7 +2116,7 @@ OptionIndex = ListBoxOptionIndex
 End Property
 
 Public Property Let OptionIndex(ByVal Value As Long)
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     If Not SendMessage(ListBoxHandle, LB_GETTEXTLEN, Value, ByVal 0&) = LB_ERR Or Value = -1 Then
         If PropStyle = LstStyleOption Then
             If Value > -1 Then
@@ -2041,11 +2139,11 @@ End Property
 
 Public Function GetIdealHorizontalExtent() As Single
 Attribute GetIdealHorizontalExtent.VB_Description = "Gets the ideal value for the horizontal extent property."
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     Dim Count As Long
-    Count = SendMessage(ListBoxHandle, LB_GETCOUNT, 0, ByVal 0&)
+    Count = CLng(SendMessage(ListBoxHandle, LB_GETCOUNT, 0, ByVal 0&))
     If Count > 0 Then
-        Dim RC(0 To 1) As RECT, CX As Long, ScrollWidth As Long, hDC As Long, i As Long, Length As Long, Text As String, Size As SIZEAPI
+        Dim RC(0 To 1) As RECT, CX As Long, ScrollWidth As Long, hDC As LongPtr, i As Long, Length As Long, Text As String, Size As SIZEAPI
         GetWindowRect ListBoxHandle, RC(0)
         GetClientRect ListBoxHandle, RC(1)
         If (GetWindowLong(ListBoxHandle, GWL_STYLE) And WS_VSCROLL) = WS_VSCROLL Then
@@ -2055,7 +2153,7 @@ If ListBoxHandle <> 0 Then
         hDC = GetDC(ListBoxHandle)
         SelectObject hDC, ListBoxFontHandle
         For i = 0 To Count - 1
-            Length = SendMessage(ListBoxHandle, LB_GETTEXTLEN, i, ByVal 0&)
+            Length = CLng(SendMessage(ListBoxHandle, LB_GETTEXTLEN, i, ByVal 0&))
             If Not Length = LB_ERR Then
                 Text = String(Length, vbNullChar)
                 SendMessage ListBoxHandle, LB_GETTEXT, i, ByVal StrPtr(Text)
@@ -2071,9 +2169,9 @@ End Function
 
 Public Function SelectItem(ByVal Text As String, Optional ByVal Index As Long = -1) As Long
 Attribute SelectItem.VB_Description = "Searches for an item that begins with the characters in a specified string. If a matching item is found, the item is selected. The search is not case sensitive."
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     If Not SendMessage(ListBoxHandle, LB_GETTEXTLEN, Index, ByVal 0&) = LB_ERR Or Index = -1 Then
-        SelectItem = SendMessage(ListBoxHandle, LB_SELECTSTRING, Index, ByVal StrPtr(Text))
+        SelectItem = CLng(SendMessage(ListBoxHandle, LB_SELECTSTRING, Index, ByVal StrPtr(Text)))
     Else
         Err.Raise 381
     End If
@@ -2081,8 +2179,8 @@ End If
 End Function
 
 Private Sub SetItemCheck(Optional ByVal Index As Long = LB_ERR)
-If ListBoxHandle <> 0 Then
-    If Index = LB_ERR Then Index = SendMessage(ListBoxHandle, LB_GETCURSEL, 0, ByVal 0&)
+If ListBoxHandle <> NULL_PTR Then
+    If Index = LB_ERR Then Index = CLng(SendMessage(ListBoxHandle, LB_GETCURSEL, 0, ByVal 0&))
     If Not Index = LB_ERR Then
         If Index <= (ListBoxItemCheckedCount - 1) Then
             Dim Changed As Boolean
@@ -2122,7 +2220,7 @@ End Sub
 
 Private Function CheckTopIndex() As Boolean
 Dim TopIndex As Long
-If ListBoxHandle <> 0 Then TopIndex = SendMessage(ListBoxHandle, LB_GETTOPINDEX, 0, ByVal 0&)
+If ListBoxHandle <> NULL_PTR Then TopIndex = CLng(SendMessage(ListBoxHandle, LB_GETTOPINDEX, 0, ByVal 0&))
 If TopIndex <> ListBoxTopIndex Then
     ListBoxTopIndex = TopIndex
     If ListBoxInsertMark > -1 Then Call InvalidateInsertMark
@@ -2132,7 +2230,7 @@ End If
 End Function
 
 Private Sub InvalidateInsertMark()
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     If SendMessage(ListBoxHandle, LB_GETTEXTLEN, ListBoxInsertMark, ByVal 0&) = LB_ERR Then Exit Sub
     Dim RC As RECT
     SendMessage ListBoxHandle, LB_GETITEMRECT, ListBoxInsertMark, ByVal VarPtr(RC)
@@ -2150,14 +2248,14 @@ End If
 End Sub
 
 Private Sub DrawInsertMark()
-If ListBoxHandle <> 0 Then
+If ListBoxHandle <> NULL_PTR Then
     If SendMessage(ListBoxHandle, LB_GETTEXTLEN, ListBoxInsertMark, ByVal 0&) = LB_ERR Then Exit Sub
-    Dim RC As RECT, hRgn As Long, hDC As Long, Brush As Long, OldBrush As Long
+    Dim RC As RECT, hRgn As LongPtr, hDC As LongPtr, Brush As LongPtr, OldBrush As LongPtr
     GetClientRect ListBoxHandle, RC
     hDC = GetDC(ListBoxHandle)
-    If hDC <> 0 Then
+    If hDC <> NULL_PTR Then
         hRgn = CreateRectRgnIndirect(RC)
-        If hRgn <> 0 Then ExtSelectClipRgn hDC, hRgn, RGN_COPY
+        If hRgn <> NULL_PTR Then ExtSelectClipRgn hDC, hRgn, RGN_COPY
         SendMessage ListBoxHandle, LB_GETITEMRECT, ListBoxInsertMark, ByVal VarPtr(RC)
         If ListBoxInsertMarkAfter = False Then
             RC.Bottom = RC.Top + 1
@@ -2167,16 +2265,16 @@ If ListBoxHandle <> 0 Then
             RC.Bottom = RC.Bottom + 1
         End If
         Brush = CreateSolidBrush(WinColor(PropInsertMarkColor))
-        If Brush <> 0 Then OldBrush = SelectObject(hDC, Brush)
+        If Brush <> NULL_PTR Then OldBrush = SelectObject(hDC, Brush)
         PatBlt hDC, RC.Left, RC.Top - 2, 1, 6, vbPatCopy
         PatBlt hDC, RC.Left + 1, RC.Top - 1, 1, 4, vbPatCopy
         PatBlt hDC, RC.Left + 2, RC.Top, RC.Right - RC.Left - 2, RC.Bottom - RC.Top, vbPatCopy
         PatBlt hDC, RC.Right - 2, RC.Top - 1, 1, 4, vbPatCopy
         PatBlt hDC, RC.Right - 1, RC.Top - 2, 1, 6, vbPatCopy
-        If OldBrush <> 0 Then SelectObject hDC, OldBrush
-        If Brush <> 0 Then DeleteObject Brush
-        If hRgn <> 0 Then
-            ExtSelectClipRgn hDC, 0, RGN_COPY
+        If OldBrush <> NULL_PTR Then SelectObject hDC, OldBrush
+        If Brush <> NULL_PTR Then DeleteObject Brush
+        If hRgn <> NULL_PTR Then
+            ExtSelectClipRgn hDC, NULL_PTR, RGN_COPY
             DeleteObject hRgn
         End If
         ReleaseDC ListBoxHandle, hDC
@@ -2184,7 +2282,11 @@ If ListBoxHandle <> 0 Then
 End If
 End Sub
 
+#If VBA7 Then
+Private Function ISubclass_Message(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
+#Else
 Private Function ISubclass_Message(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal dwRefData As Long) As Long
+#End If
 Select Case dwRefData
     Case 1
         ISubclass_Message = WindowProcControl(hWnd, wMsg, wParam, lParam)
@@ -2195,7 +2297,7 @@ Select Case dwRefData
 End Select
 End Function
 
-Private Function WindowProcControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_SETFOCUS
         If wParam <> UserControl.hWnd Then SetFocusAPI UserControl.hWnd: Exit Function
@@ -2204,7 +2306,7 @@ Select Case wMsg
         Call DeActivateIPAO
     Case WM_KEYDOWN, WM_KEYUP, WM_SYSKEYDOWN, WM_SYSKEYUP
         Dim KeyCode As Integer
-        KeyCode = wParam And &HFF&
+        KeyCode = CLng(wParam) And &HFF&
         If wMsg = WM_KEYDOWN Or wMsg = WM_KEYUP Then
             If wMsg = WM_KEYDOWN Then
                 RaiseEvent KeyDown(KeyCode, GetShiftStateFromMsg())
@@ -2225,7 +2327,7 @@ Select Case wMsg
             KeyChar = CUIntToInt(ListBoxCharCodeCache And &HFFFF&)
             ListBoxCharCodeCache = 0
         Else
-            KeyChar = CUIntToInt(wParam And &HFFFF&)
+            KeyChar = CUIntToInt(CLng(wParam) And &HFFFF&)
         End If
         RaiseEvent KeyPress(KeyChar)
         wParam = CIntToUInt(KeyChar)
@@ -2234,7 +2336,7 @@ Select Case wMsg
             WindowProcControl = 1
         Else
             Dim UTF16 As String
-            UTF16 = UTF32CodePoint_To_UTF16(wParam)
+            UTF16 = UTF32CodePoint_To_UTF16(CLng(wParam))
             If Len(UTF16) = 1 Then
                 SendMessage hWnd, WM_CHAR, CIntToUInt(AscW(UTF16)), ByVal lParam
             ElseIf Len(UTF16) = 2 Then
@@ -2249,13 +2351,14 @@ Select Case wMsg
         Exit Function
     Case WM_LBUTTONDOWN
         If PropOLEDragMode = vbOLEDragAutomatic Or PropStyle <> LstStyleStandard Then
-            Dim P1 As POINTAPI, P2 As POINTAPI, Index As Long
+            Dim P1 As POINTAPI, P2 As POINTAPI, XY As Currency, Index As Long
             P1.X = Get_X_lParam(lParam)
             P1.Y = Get_Y_lParam(lParam)
             P2.X = P1.X
             P2.Y = P1.Y
             ClientToScreen ListBoxHandle, P2
-            Index = LBItemFromPt(ListBoxHandle, P2.X, P2.Y, 0)
+            CopyMemory ByVal VarPtr(XY), ByVal VarPtr(P2), 8
+            Index = LBItemFromPt(ListBoxHandle, XY, 0)
             If Index > -1 Then
                 Dim IsItemCheck As Boolean
                 If PropStyle <> LstStyleStandard Then
@@ -2275,7 +2378,7 @@ Select Case wMsg
                     If SendMessage(ListBoxHandle, LB_GETSEL, Index, ByVal 0&) > 0 Then
                         If GetFocus() <> hWnd Then SetFocusAPI UserControl.hWnd ' UCNoSetFocusFwd not applicable
                         RaiseEvent MouseDown(vbLeftButton, GetShiftStateFromParam(wParam), UserControl.ScaleX(P1.X, vbPixels, vbTwips), UserControl.ScaleY(P1.Y, vbPixels, vbTwips))
-                        If DragDetect(ListBoxHandle, CUIntToInt(P2.X And &HFFFF&), CUIntToInt(P2.Y And &HFFFF&)) <> 0 Then
+                        If DragDetect(ListBoxHandle, XY) <> 0 Then
                             ListBoxDragIndexBuffer = Index + 1
                             Me.OLEDrag
                             ListBoxDragIndexBuffer = 0
@@ -2303,9 +2406,9 @@ Select Case wMsg
             If GetFocus() <> hWnd Then UCNoSetFocusFwd = True: SetFocusAPI UserControl.hWnd: UCNoSetFocusFwd = False
         End If
     Case WM_SETCURSOR
-        If LoWord(lParam) = HTCLIENT Then
+        If LoWord(CLng(lParam)) = HTCLIENT Then
             If MousePointerID(PropMousePointer) <> 0 Then
-                SetCursor LoadCursor(0, MousePointerID(PropMousePointer))
+                SetCursor LoadCursor(NULL_PTR, MousePointerID(PropMousePointer))
                 WindowProcControl = 1
                 Exit Function
             ElseIf PropMousePointer = 99 Then
@@ -2331,7 +2434,7 @@ Select Case wMsg
         End If
     Case WM_HSCROLL, WM_VSCROLL
         If Not (wMsg = WM_HSCROLL And PropMultiColumn = False) Then
-            Select Case LoWord(wParam)
+            Select Case LoWord(CLng(wParam))
                 Case SB_THUMBPOSITION, SB_THUMBTRACK
                     ' HiWord carries only 16 bits of scroll box position data.
                     ' Below workaround will circumvent the 16-bit barrier by using the 32-bit GetScrollInfo function.
@@ -2348,7 +2451,7 @@ Select Case wMsg
                         End If
                         GetScrollInfo ListBoxHandle, wBar, SCI
                         PrevPos = SCI.nPos
-                        Select Case LoWord(wParam)
+                        Select Case LoWord(CLng(wParam))
                             Case SB_THUMBPOSITION
                                 SCI.nPos = SCI.nTrackPos
                             Case SB_THUMBTRACK
@@ -2414,11 +2517,11 @@ Select Case wMsg
 End Select
 End Function
 
-Private Function WindowProcUserControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcUserControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_COMMAND
         If lParam = ListBoxHandle Then
-            Select Case HiWord(wParam)
+            Select Case HiWord(CLng(wParam))
                 Case LBN_SELCHANGE
                     If CheckTopIndex() = False And ListBoxInsertMark > -1 Then Call InvalidateInsertMark
                     RaiseEvent Click
@@ -2447,7 +2550,7 @@ Select Case wMsg
         CopyMemory DIS, ByVal lParam, LenB(DIS)
         If DIS.CtlType = ODT_LISTBOX And DIS.hWndItem = ListBoxHandle And DIS.ItemID > -1 Then
             If PropStyle <> LstStyleStandard Then
-                Dim BackColorBrush As Long, BackColorSelBrush As Long
+                Dim BackColorBrush As LongPtr, BackColorSelBrush As LongPtr
                 BackColorBrush = CreateSolidBrush(WinColor(Me.BackColor))
                 If (DIS.ItemState And ODS_SELECTED) = ODS_SELECTED And PropAllowSelection = True Then BackColorSelBrush = CreateSolidBrush(WinColor(vbHighlight))
                 Dim RC As RECT
@@ -2460,7 +2563,7 @@ Select Case wMsg
                     .Right = .Right - ListBoxStateImageSize
                 End If
                 End With
-                If BackColorSelBrush <> 0 Then
+                If BackColorSelBrush <> NULL_PTR Then
                     FillRect DIS.hDC, DIS.RCItem, BackColorSelBrush
                     DeleteObject BackColorSelBrush
                 Else
@@ -2468,12 +2571,12 @@ Select Case wMsg
                 End If
                 FillRect DIS.hDC, RC, BackColorBrush
                 DeleteObject BackColorBrush
+                Dim Theme As LongPtr
                 
                 #If ImplementThemedButton = True Then
                 
-                Dim Theme As Long
                 If EnabledVisualStyles() = True And PropVisualStyles = True Then Theme = OpenThemeData(ListBoxHandle, StrPtr("Button"))
-                If Theme <> 0 Then
+                If Theme <> NULL_PTR Then
                     Dim ButtonPart As Long, CheckState As Long
                     If PropStyle = LstStyleCheckbox Then
                         ButtonPart = BP_CHECKBOX
@@ -2511,7 +2614,11 @@ Select Case wMsg
                     If IsThemeBackgroundPartiallyTransparent(Theme, ButtonPart, CheckState) <> 0 Then DrawThemeParentBackground DIS.hWndItem, DIS.hDC, RC
                     DrawThemeBackground Theme, DIS.hDC, ButtonPart, CheckState, RC, RC
                     CloseThemeData Theme
-                Else
+                End If
+                
+                #End If
+                
+                If Theme = NULL_PTR Then
                     Dim Flags As Long
                     Flags = DFCS_FLAT
                     If (DIS.ItemState And ODS_DISABLED) = ODS_DISABLED Then Flags = Flags Or DFCS_INACTIVE
@@ -2528,29 +2635,8 @@ Select Case wMsg
                     End If
                     DrawFrameControl DIS.hDC, RC, DFC_BUTTON, Flags
                 End If
-                
-                #Else
-                
-                Dim Flags As Long
-                Flags = DFCS_FLAT
-                If (DIS.ItemState And ODS_DISABLED) = ODS_DISABLED Then Flags = Flags Or DFCS_INACTIVE
-                If PropStyle = LstStyleCheckbox Then
-                    Flags = Flags Or DFCS_BUTTONCHECK
-                    If DIS.ItemID <= (ListBoxItemCheckedCount - 1) Then
-                        If ListBoxItemChecked(DIS.ItemID + 1) = vbChecked Then Flags = Flags Or DFCS_CHECKED
-                    End If
-                ElseIf PropStyle = LstStyleOption Then
-                    Flags = Flags Or DFCS_BUTTONRADIO
-                    If DIS.ItemID <= (ListBoxItemCheckedCount - 1) Then
-                        If ListBoxOptionIndex = DIS.ItemID Then Flags = Flags Or DFCS_CHECKED
-                    End If
-                End If
-                DrawFrameControl DIS.hDC, RC, DFC_BUTTON, Flags
-                
-                #End If
-                
                 Dim Length As Long
-                Length = SendMessage(ListBoxHandle, LB_GETTEXTLEN, DIS.ItemID, ByVal 0&)
+                Length = CLng(SendMessage(ListBoxHandle, LB_GETTEXTLEN, DIS.ItemID, ByVal 0&))
                 If Not Length = LB_ERR Then
                     Dim Text As String
                     Text = String(Length, vbNullChar)
@@ -2569,13 +2655,13 @@ Select Case wMsg
                         If PropUseTabStops = False Then
                             TextOut DIS.hDC, DIS.RCItem.Left + (1 * PixelsPerDIP_X()), DIS.RCItem.Top, StrPtr(Text), Length
                         Else
-                            TabbedTextOut DIS.hDC, DIS.RCItem.Left + (1 * PixelsPerDIP_X()), DIS.RCItem.Top, StrPtr(Text), Len(Text), 0, 0, 0
+                            TabbedTextOut DIS.hDC, DIS.RCItem.Left + (1 * PixelsPerDIP_X()), DIS.RCItem.Top, StrPtr(Text), Len(Text), 0, NULL_PTR, 0
                         End If
                     Else
                         If PropUseTabStops = False Then
                             TextOut DIS.hDC, DIS.RCItem.Right - (1 * PixelsPerDIP_X()), DIS.RCItem.Top, StrPtr(Text), Length
                         Else
-                            TabbedTextOut DIS.hDC, DIS.RCItem.Right - (1 * PixelsPerDIP_X()), DIS.RCItem.Top, StrPtr(Text), Len(Text), 0, 0, 0
+                            TabbedTextOut DIS.hDC, DIS.RCItem.Right - (1 * PixelsPerDIP_X()), DIS.RCItem.Top, StrPtr(Text), Len(Text), 0, NULL_PTR, 0
                         End If
                     End If
                     SetBkMode DIS.hDC, OldBkMode
@@ -2585,7 +2671,13 @@ Select Case wMsg
                 If (DIS.ItemState And ODS_FOCUS) = ODS_FOCUS Then DrawFocusRect DIS.hDC, DIS.RCItem
             Else
                 With DIS
+                #If Win64 Then
+                Dim hDC32 As Long
+                CopyMemory ByVal VarPtr(hDC32), ByVal VarPtr(.hDC), 4
+                RaiseEvent ItemDraw(.ItemID, .ItemAction, .ItemState, hDC32, .RCItem.Left, .RCItem.Top, .RCItem.Right, .RCItem.Bottom)
+                #Else
                 RaiseEvent ItemDraw(.ItemID, .ItemAction, .ItemState, .hDC, .RCItem.Left, .RCItem.Top, .RCItem.Right, .RCItem.Bottom)
+                #End If
                 End With
             End If
             WindowProcUserControl = 1
@@ -2596,7 +2688,7 @@ WindowProcUserControl = ComCtlsDefaultProc(hWnd, wMsg, wParam, lParam)
 If wMsg = WM_SETFOCUS And UCNoSetFocusFwd = False Then SetFocusAPI ListBoxHandle
 End Function
 
-Private Function WindowProcUserControlDesignMode(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcUserControlDesignMode(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 If wMsg = WM_DRAWITEM Then
     WindowProcUserControlDesignMode = WindowProcUserControl(hWnd, wMsg, wParam, lParam)
     Exit Function

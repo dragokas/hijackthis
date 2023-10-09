@@ -36,6 +36,18 @@ Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
 Option Explicit
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
 #If False Then
 Private ImlColorDepth4Bit, ImlColorDepth8Bit, ImlColorDepth16Bit, ImlColorDepth24Bit, ImlColorDepth32Bit
 Private ImlDrawNormal, ImlDrawTransparent, ImlDrawSelected, ImlDrawFocus, ImlDrawNoMask
@@ -60,19 +72,41 @@ Top As Long
 Right As Long
 Bottom As Long
 End Type
+#If VBA7 Then
+Private Declare PtrSafe Function ImageList_Replace Lib "comctl32" (ByVal hImageList As LongPtr, ByVal ImgIndex As Long, ByVal hBmpImage As LongPtr, ByVal hBMMask As LongPtr) As Long
+Private Declare PtrSafe Function ImageList_ReplaceIcon Lib "comctl32" (ByVal hImageList As LongPtr, ByVal ImgIndex As Long, ByVal hIcon As LongPtr) As Long
+Private Declare PtrSafe Function ImageList_Create Lib "comctl32" (ByVal MinCX As Long, ByVal MinCY As Long, ByVal Flags As Long, ByVal cInitial As Long, ByVal cGrow As Long) As LongPtr
+Private Declare PtrSafe Function ImageList_AddMasked Lib "comctl32" (ByVal hImageList As LongPtr, ByVal hBmpImage As LongPtr, ByVal crMask As Long) As Long
+Private Declare PtrSafe Function ImageList_Add Lib "comctl32" (ByVal hImageList As LongPtr, ByVal hBmpImage As LongPtr, ByVal hBMMask As LongPtr) As Long
+Private Declare PtrSafe Function ImageList_Copy Lib "comctl32" (ByVal hImageListDst As LongPtr, ByVal iDst As Long, ByVal hImageListSrc As LongPtr, ByVal iSrc As Long, ByVal uFlags As Long) As Long
+Private Declare PtrSafe Function ImageList_Remove Lib "comctl32" (ByVal hImageList As LongPtr, ByVal ImgIndex As Long) As Long
+Private Declare PtrSafe Function ImageList_AddIcon Lib "comctl32" (ByVal hImageList As LongPtr, ByVal hIcon As LongPtr) As Long
+Private Declare PtrSafe Function ImageList_GetIcon Lib "comctl32" (ByVal hImageList As LongPtr, ByVal ImgIndex As Long, ByVal fuFlags As Long) As LongPtr
+Private Declare PtrSafe Function ImageList_GetImageCount Lib "comctl32" (ByVal hImageList As LongPtr) As Long
+Private Declare PtrSafe Function ImageList_Destroy Lib "comctl32" (ByVal hImageList As LongPtr) As Long
+Private Declare PtrSafe Function ImageList_Draw Lib "comctl32" (ByVal hImageList As LongPtr, ByVal ImgIndex As Long, ByVal hDcDst As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal fStyle As Long) As Long
+Private Declare PtrSafe Function ImageList_DrawEx Lib "comctl32" (ByVal hImageList As LongPtr, ByVal ImgIndex As Long, ByVal hDcDst As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal DX As Long, ByVal DY As Long, ByVal rgbBk As Long, ByVal rgbFg As Long, ByVal fStyle As Long) As Long
+Private Declare PtrSafe Function ImageList_SetBkColor Lib "comctl32" (ByVal hImageList As LongPtr, ByVal ClrBk As Long) As Long
+Private Declare PtrSafe Function ImageList_SetOverlayImage Lib "comctl32" (ByVal hImageList As LongPtr, ByVal ImgIndex As Long, ByVal iOverlay As Long) As Boolean
+Private Declare PtrSafe Function CreateDCAsNull Lib "gdi32" Alias "CreateDCW" (ByVal lpDriverName As LongPtr, ByRef lpDeviceName As Any, ByRef lpOutput As Any, ByRef lpInitData As Any) As LongPtr
+Private Declare PtrSafe Function DeleteDC Lib "gdi32" (ByVal hDC As LongPtr) As Long
+Private Declare PtrSafe Function DrawEdge Lib "user32" (ByVal hDC As LongPtr, ByRef qRC As RECT, ByVal Edge As Long, ByVal grfFlags As Long) As Long
+Private Declare PtrSafe Function GetDeviceCaps Lib "gdi32" (ByVal hDC As LongPtr, ByVal nIndex As Long) As Long
+Private Declare PtrSafe Function DestroyIcon Lib "user32" (ByVal hIcon As LongPtr) As Long
+#Else
 Private Declare Function ImageList_Replace Lib "comctl32" (ByVal hImageList As Long, ByVal ImgIndex As Long, ByVal hBmpImage As Long, ByVal hBMMask As Long) As Long
-Private Declare Function ImageList_ReplaceIcon Lib "comctl32" (ByVal hImageList As Long, ByVal i As Long, ByVal hIcon As Long) As Long
+Private Declare Function ImageList_ReplaceIcon Lib "comctl32" (ByVal hImageList As Long, ByVal ImgIndex As Long, ByVal hIcon As Long) As Long
 Private Declare Function ImageList_Create Lib "comctl32" (ByVal MinCX As Long, ByVal MinCY As Long, ByVal Flags As Long, ByVal cInitial As Long, ByVal cGrow As Long) As Long
 Private Declare Function ImageList_AddMasked Lib "comctl32" (ByVal hImageList As Long, ByVal hBmpImage As Long, ByVal crMask As Long) As Long
-Private Declare Function ImageList_Add Lib "comctl32" (ByVal hImageList As Long, ByVal hBmpImage As Long, ByRef hBMMask As Long) As Long
+Private Declare Function ImageList_Add Lib "comctl32" (ByVal hImageList As Long, ByVal hBmpImage As Long, ByVal hBMMask As Long) As Long
 Private Declare Function ImageList_Copy Lib "comctl32" (ByVal hImageListDst As Long, ByVal iDst As Long, ByVal hImageListSrc As Long, ByVal iSrc As Long, ByVal uFlags As Long) As Long
 Private Declare Function ImageList_Remove Lib "comctl32" (ByVal hImageList As Long, ByVal ImgIndex As Long) As Long
 Private Declare Function ImageList_AddIcon Lib "comctl32" (ByVal hImageList As Long, ByVal hIcon As Long) As Long
 Private Declare Function ImageList_GetIcon Lib "comctl32" (ByVal hImageList As Long, ByVal ImgIndex As Long, ByVal fuFlags As Long) As Long
 Private Declare Function ImageList_GetImageCount Lib "comctl32" (ByVal hImageList As Long) As Long
 Private Declare Function ImageList_Destroy Lib "comctl32" (ByVal hImageList As Long) As Long
-Private Declare Function ImageList_Draw Lib "comctl32" (ByVal hImageList As Long, ByVal i As Long, ByVal hDcDst As Long, ByVal X As Long, ByVal Y As Long, ByVal fStyle As Long) As Long
-Private Declare Function ImageList_DrawEx Lib "comctl32" (ByVal hImageList As Long, ByVal i As Long, ByVal hDcDst As Long, ByVal X As Long, ByVal Y As Long, ByVal DX As Long, ByVal DY As Long, ByVal rgbBk As Long, ByVal rgbFg As Long, ByVal fStyle As Long) As Long
+Private Declare Function ImageList_Draw Lib "comctl32" (ByVal hImageList As Long, ByVal ImgIndex As Long, ByVal hDcDst As Long, ByVal X As Long, ByVal Y As Long, ByVal fStyle As Long) As Long
+Private Declare Function ImageList_DrawEx Lib "comctl32" (ByVal hImageList As Long, ByVal ImgIndex As Long, ByVal hDcDst As Long, ByVal X As Long, ByVal Y As Long, ByVal DX As Long, ByVal DY As Long, ByVal rgbBk As Long, ByVal rgbFg As Long, ByVal fStyle As Long) As Long
 Private Declare Function ImageList_SetBkColor Lib "comctl32" (ByVal hImageList As Long, ByVal ClrBk As Long) As Long
 Private Declare Function ImageList_SetOverlayImage Lib "comctl32" (ByVal hImageList As Long, ByVal ImgIndex As Long, ByVal iOverlay As Long) As Boolean
 Private Declare Function CreateDCAsNull Lib "gdi32" Alias "CreateDCW" (ByVal lpDriverName As Long, ByRef lpDeviceName As Any, ByRef lpOutput As Any, ByRef lpInitData As Any) As Long
@@ -80,6 +114,7 @@ Private Declare Function DeleteDC Lib "gdi32" (ByVal hDC As Long) As Long
 Private Declare Function DrawEdge Lib "user32" (ByVal hDC As Long, ByRef qRC As RECT, ByVal Edge As Long, ByVal grfFlags As Long) As Long
 Private Declare Function GetDeviceCaps Lib "gdi32" (ByVal hDC As Long, ByVal nIndex As Long) As Long
 Private Declare Function DestroyIcon Lib "user32" (ByVal hIcon As Long) As Long
+#End If
 Private Const ILD_NORMAL As Long = &H0
 Private Const ILD_TRANSPARENT As Long = &H1
 Private Const ILD_FOCUS As Long = &H2
@@ -103,7 +138,7 @@ Private Const BDR_RAISEDINNER As Long = 4
 Private Const CLR_NONE As Long = -1
 Private Const CLR_DEFAULT As Long = -16777216
 Implements OLEGuids.IObjectSafety
-Private ImageListHandle As Long
+Private ImageListHandle As LongPtr
 Private ImageListInitListImagesCount As Long
 Private ImageListDesignMode As Boolean
 Private PropListImages As ImlListImages
@@ -247,8 +282,13 @@ Attribute Parent.VB_Description = "Returns the object on which this object is lo
 Set Parent = UserControl.Parent
 End Property
 
+#If VBA7 Then
+Public Property Get hImageList() As LongPtr
+Attribute hImageList.VB_Description = "Returns a handle to an image list control."
+#Else
 Public Property Get hImageList() As Long
 Attribute hImageList.VB_Description = "Returns a handle to an image list control."
+#End If
 hImageList = ImageListHandle
 End Property
 
@@ -277,8 +317,8 @@ Else
         End If
     End If
 End If
-If ImageListHandle <> 0 Then Call DestroyImageList
-If ImageListHandle = 0 Then Call CreateImageList
+If ImageListHandle <> NULL_PTR Then Call DestroyImageList
+If ImageListHandle = NULL_PTR Then Call CreateImageList
 UserControl.PropertyChanged "ImageWidth"
 End Property
 
@@ -307,8 +347,8 @@ Else
         End If
     End If
 End If
-If ImageListHandle <> 0 Then Call DestroyImageList
-If ImageListHandle = 0 Then Call CreateImageList
+If ImageListHandle <> NULL_PTR Then Call DestroyImageList
+If ImageListHandle = NULL_PTR Then Call CreateImageList
 UserControl.PropertyChanged "ImageHeight"
 End Property
 
@@ -333,7 +373,7 @@ Else
             Err.Raise 380
     End Select
 End If
-If ImageListHandle <> 0 Then
+If ImageListHandle <> NULL_PTR Then
     Call DestroyImageList
     Call CreateImageList
 End If
@@ -356,7 +396,7 @@ If Me.ListImages.Count > 0 Then
 Else
     PropRightToLeftMirror = Value
 End If
-If ImageListHandle <> 0 Then
+If ImageListHandle <> NULL_PTR Then
     Call DestroyImageList
     Call CreateImageList
 End If
@@ -370,7 +410,7 @@ End Property
 
 Public Property Let UseBackColor(ByVal Value As Boolean)
 PropUseBackColor = Value
-If ImageListHandle <> 0 Then
+If ImageListHandle <> NULL_PTR Then
     If PropUseBackColor = True Then
         ImageList_SetBkColor ImageListHandle, WinColor(PropBackColor)
     Else
@@ -387,7 +427,7 @@ End Property
 
 Public Property Let BackColor(ByVal Value As OLE_COLOR)
 PropBackColor = Value
-If ImageListHandle <> 0 Then
+If ImageListHandle <> NULL_PTR Then
     If PropUseBackColor = True Then
         ImageList_SetBkColor ImageListHandle, WinColor(PropBackColor)
     Else
@@ -435,7 +475,7 @@ Else
 End If
 If Picture Is Nothing Then
     Err.Raise Number:=35607, Description:="Required argument is missing"
-ElseIf Picture.Handle = 0 Then
+ElseIf Picture.Handle = NULL_PTR Then
     Err.Raise Number:=35607, Description:="Required argument is missing"
 Else
     Set UserControl.Picture = Picture
@@ -443,15 +483,15 @@ Else
     Set UserControl.Picture = Nothing
     If PropImageWidth = 0 Then PropImageWidth = CHimetricToPixel_X(Picture.Width)
     If PropImageHeight = 0 Then PropImageHeight = CHimetricToPixel_Y(Picture.Height)
-    If ImageListHandle = 0 Then Call CreateImageList
-    If ImageListHandle <> 0 Then
+    If ImageListHandle = NULL_PTR Then Call CreateImageList
+    If ImageListHandle <> NULL_PTR Then
         Dim OrigCount As Long, NewCount As Long
         OrigCount = ImageList_GetImageCount(ImageListHandle)
         If Picture.Type = vbPicTypeBitmap Then
             If PropUseMaskColor = True Then
                 ImageList_AddMasked ImageListHandle, Picture.Handle, WinColor(PropMaskColor)
             Else
-                ImageList_Add ImageListHandle, Picture.Handle, 0
+                ImageList_Add ImageListHandle, Picture.Handle, NULL_PTR
             End If
         ElseIf Picture.Type = vbPicTypeIcon Then
             ImageList_AddIcon ImageListHandle, Picture.Handle
@@ -471,29 +511,33 @@ UserControl.PropertyChanged "InitImageLists"
 End Sub
 
 Friend Sub FListImagesRemove(ByVal Index As Long)
-If ImageListHandle <> 0 Then
+If ImageListHandle <> NULL_PTR Then
     ImageList_Remove ImageListHandle, Index - 1
     If ImageList_GetImageCount(ImageListHandle) = 0 Then
         PropImageWidth = 0
         PropImageHeight = 0
-        If ImageListHandle <> 0 Then Call DestroyImageList
-        If ImageListHandle = 0 Then Call CreateImageList
+        If ImageListHandle <> NULL_PTR Then Call DestroyImageList
+        If ImageListHandle = NULL_PTR Then Call CreateImageList
     End If
 End If
 UserControl.PropertyChanged "InitImageLists"
 End Sub
 
 Friend Sub FListImagesClear()
-If ImageListHandle <> 0 Then Do While ImageList_Remove(ImageListHandle, 0) <> 0: Loop
+If ImageListHandle <> NULL_PTR Then ImageList_Remove ImageListHandle, -1
 PropImageWidth = 0
 PropImageHeight = 0
-If ImageListHandle <> 0 Then Call DestroyImageList
-If ImageListHandle = 0 Then Call CreateImageList
+If ImageListHandle <> NULL_PTR Then Call DestroyImageList
+If ImageListHandle = NULL_PTR Then Call CreateImageList
 UserControl.PropertyChanged "InitImageLists"
 End Sub
 
+#If VBA7 Then
+Friend Sub FListImageDraw(ByVal Index As Long, ByVal hDC As LongPtr, Optional ByVal X As Long, Optional ByVal Y As Long, Optional ByVal Style As ImlDrawConstants)
+#Else
 Friend Sub FListImageDraw(ByVal Index As Long, ByVal hDC As Long, Optional ByVal X As Long, Optional ByVal Y As Long, Optional ByVal Style As ImlDrawConstants)
-If ImageListHandle <> 0 Then
+#End If
+If ImageListHandle <> NULL_PTR Then
     Dim Flags As Long
     If Style = 0 Then
         Flags = ILD_NORMAL
@@ -509,10 +553,10 @@ End If
 End Sub
 
 Friend Function FListImageExtractIcon(ByVal Index As Long) As IPictureDisp
-If ImageListHandle <> 0 Then
-    Dim hIcon As Long
+If ImageListHandle <> NULL_PTR Then
+    Dim hIcon As LongPtr
     hIcon = ImageList_GetIcon(ImageListHandle, Index - 1, ILD_TRANSPARENT)
-    If hIcon <> 0 Then
+    If hIcon <> NULL_PTR Then
         Set UserControl.Picture = PictureFromHandle(hIcon, vbPicTypeIcon)
         Set FListImageExtractIcon = UserControl.Picture
         Set UserControl.Picture = Nothing
@@ -521,27 +565,27 @@ End If
 End Function
 
 Private Sub CreateImageList()
-If ImageListHandle <> 0 Then Exit Sub
+If ImageListHandle <> NULL_PTR Then Exit Sub
 If PropImageWidth = 0 Or PropImageHeight = 0 Then Exit Sub
 If PropRightToLeftMirror = True And ComCtlsSupportLevel() >= 1 Then
-    ImageListHandle = ImageList_Create(PropImageWidth, PropImageHeight, ILC_MASK Or PropColorDepth, 4, 4)
-Else
     ImageListHandle = ImageList_Create(PropImageWidth, PropImageHeight, ILC_MASK Or ILC_MIRROR Or PropColorDepth, 4, 4)
+Else
+    ImageListHandle = ImageList_Create(PropImageWidth, PropImageHeight, ILC_MASK Or PropColorDepth, 4, 4)
 End If
 Me.BackColor = PropBackColor
 End Sub
 
 Private Sub DestroyImageList()
-If ImageListHandle = 0 Then Exit Sub
+If ImageListHandle = NULL_PTR Then Exit Sub
 ImageList_Destroy ImageListHandle
-ImageListHandle = 0
+ImageListHandle = NULL_PTR
 End Sub
 
 Public Property Get SystemColorDepth() As ImlColorDepthConstants
 Attribute SystemColorDepth.VB_Description = "Returns the system color depth."
-Dim hDC As Long
-hDC = CreateDCAsNull(StrPtr("DISPLAY"), ByVal 0&, ByVal 0&, ByVal 0&)
-If hDC <> 0 Then
+Dim hDC As LongPtr
+hDC = CreateDCAsNull(StrPtr("DISPLAY"), ByVal NULL_PTR, ByVal NULL_PTR, ByVal NULL_PTR)
+If hDC <> NULL_PTR Then
     SystemColorDepth = GetDeviceCaps(hDC, BITSPIXEL)
     DeleteDC hDC
 End If
@@ -549,10 +593,10 @@ End Property
 
 Public Function Overlay(ByVal Index1 As Variant, ByVal Index2 As Variant) As IPictureDisp
 Attribute Overlay.VB_Description = "Creates a composite third icon out of two list image objects."
-If ImageListHandle <> 0 Then
-    Dim TempImageListHandle As Long
+If ImageListHandle <> NULL_PTR Then
+    Dim TempImageListHandle As LongPtr
     TempImageListHandle = ImageList_Create(PropImageWidth, PropImageHeight, ILC_MASK Or PropColorDepth, 4, 4)
-    Dim hIcon1 As Long, hIcon2 As Long
+    Dim hIcon1 As LongPtr, hIcon2 As LongPtr
     hIcon1 = ImageList_GetIcon(ImageListHandle, Me.ListImages(Index1).Index - 1, ILD_TRANSPARENT)
     hIcon2 = ImageList_GetIcon(ImageListHandle, Me.ListImages(Index2).Index - 1, ILD_TRANSPARENT)
     ImageList_AddIcon TempImageListHandle, hIcon1

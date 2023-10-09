@@ -40,7 +40,7 @@ Private Type MENUITEMINFOW
     hbmpItem        As Long
 End Type
 
-Private Declare Function GetMenu Lib "user32" (ByVal hwnd As Long) As Long
+Private Declare Function GetMenu Lib "user32" (ByVal hWnd As Long) As Long
 Private Declare Function GetSubMenu Lib "user32" (ByVal hMenu As Long, ByVal nPos As Long) As Long
 Private Declare Function SetMenuItemBitmaps Lib "user32" (ByVal hMenu As Long, ByVal nPosition As Long, ByVal wFlags As Long, ByVal hBitmapUnchecked As Long, ByVal hBitmapChecked As Long) As Long
 Private Declare Function GetMenuItemID Lib "user32" (ByVal hMenu As Long, ByVal nPos As Long) As Long
@@ -97,7 +97,7 @@ End Sub
 Private Sub PrecacheMenuHandles(frm As Form)
     Dim hRootMenu As Long
     Dim cntPrecached As Long
-    hRootMenu = GetMenu(frm.hwnd)
+    hRootMenu = GetMenu(frm.hWnd)
     m_RootMenu = hRootMenu
     If hRootMenu <> 0 Then
         cntPrecached = PrecacheSubMenuHandles(frm, hRootMenu)
@@ -513,7 +513,7 @@ Public Sub SetMenuIcons(frm As Form)
         SetMenuIconByMenu frmMain.mnuToolsDelFileOnReboot, LoadResPicture("CROSS_BLACK", vbResBitmap)  ' Translate(1209)
         SetMenuIconByMenu frmMain.mnuToolsDelServ, LoadResPicture("CROSS_BLACK", vbResBitmap)  ' Translate(1210)
         SetMenuIconByMenu frmMain.mnuToolsHosts, LoadResPicture("HOSTS", vbResBitmap)  ' Translate(1206)
-        SetMenuIconByMenu frmMain.mnuHelpSupport, LoadResPicture("IE", vbResBitmap)  ' Translate(1226)
+        SetMenuIconByMenu frmMain.mnuHelpReportBug, LoadResPicture("IE", vbResBitmap)  ' Translate(1226)
         SetMenuIconByMenu frmMain.mnuHelpManualBasic, LoadResPicture("IE", vbResBitmap)  ' Translate(1233)
         SetMenuIconByMenu frmMain.mnuToolsRegUnlockKey, LoadResPicture("KEY", vbResBitmap)  ' Translate(1211)
         SetMenuIconByMenu frmMain.mnuToolsRegTypeChecker, LoadResPicture("REGTYPE", vbResBitmap)  ' Translate(1239)
@@ -566,9 +566,9 @@ Public Sub pvSetFormIcon(frm As Form)
     
     If hIcon <> 0 Then
         Set frm.Icon = Nothing
-        hWndOwner = GetWindow(frm.hwnd, GW_OWNER)
+        hWndOwner = GetWindow(frm.hWnd, GW_OWNER)
         If hIcon <> 0 Then
-            DestroyIcon SendMessageW(frm.hwnd, WM_SETICON, ICON_BIG, hIcon)
+            DestroyIcon SendMessageW(frm.hWnd, WM_SETICON, ICON_BIG, hIcon)
             DestroyIcon SendMessageW(hWndOwner, WM_SETICON, ICON_BIG, hIcon)
         End If
     End If

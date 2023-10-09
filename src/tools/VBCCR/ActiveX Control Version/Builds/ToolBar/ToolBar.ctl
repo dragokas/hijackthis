@@ -26,8 +26,19 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
-Attribute VB_Ext_KEY = "PropPageWizardRun" ,"Yes"
 Option Explicit
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
 #If False Then
 Private TbrStyleStandard, TbrStyleFlat
 Private TbrTextAlignBottom, TbrTextAlignRight
@@ -60,13 +71,16 @@ TbrButtonValueUnpressed = 0
 TbrButtonValuePressed = 1
 End Enum
 Private Type KEYBDINPUT
-dwType As Long
 wVKey As Integer
 wScan As Integer
 dwFlags As Long
 Time As Long
-dwExtraInfo As Long
-dwPadding As Currency
+dwExtraInfo As LongPtr
+dwPadding As Currency ' 8 extra bytes for MOUSEINPUT.
+End Type
+Private Type GENERALINPUT
+dwType As Long
+KEYBDI As KEYBDINPUT
 End Type
 Private Type RECT
 Left As Long
@@ -88,7 +102,7 @@ CtlID As Long
 ItemID As Long
 ItemWidth As Long
 ItemHeight As Long
-ItemData As Long
+ItemData As LongPtr
 End Type
 Private Type DRAWITEMSTRUCT
 CtlType As Long
@@ -96,10 +110,10 @@ CtlID As Long
 ItemID As Long
 ItemAction As Long
 ItemState As Long
-hWndItem As Long
-hDC As Long
+hWndItem As LongPtr
+hDC As LongPtr
 RCItem As RECT
-ItemData As Long
+ItemData As LongPtr
 End Type
 Private Type TBBUTTON
 iBitmap As Long
@@ -108,8 +122,8 @@ fsState As Byte
 fsStyle As Byte
 bReserved1 As Byte
 bReserved2 As Byte
-dwData As Long
-iString As Long
+dwData As LongPtr
+iString As LongPtr
 End Type
 Private Type TBBUTTONINFO
 cbSize As Long
@@ -119,14 +133,14 @@ iImage As Long
 fsState As Byte
 fsStyle As Byte
 CX As Integer
-lParam As Long
-pszText As Long
+lParam As LongPtr
+pszText As LongPtr
 cchText As Long
 End Type
 Private Type TBSAVEPARAMS
-hKey As Long
-pszSubKey As Long
-pszValueName As Long
+hKey As LongPtr
+pszSubKey As LongPtr
+pszValueName As LongPtr
 End Type
 Private Type TPMPARAMS
 cbSize As Long
@@ -141,9 +155,9 @@ cbSize As Long
 fMask As Long
 dwStyle As Long
 CYMax As Long
-hBrBack As Long
+hBrBack As LongPtr
 dwContextHelpID As Long
-dwMenuData As Long
+dwMenuData As LongPtr
 End Type
 Private Type MENUITEMINFO
 cbSize As Long
@@ -151,16 +165,16 @@ fMask As Long
 fType As Long
 fState As Long
 wID As Long
-hSubMenu As Long
-hBmpChecked As Long
-hBmpUnchecked As Long
-dwItemData As Long
-dwTypeData As Long
+hSubMenu As LongPtr
+hBmpChecked As LongPtr
+hBmpUnchecked As LongPtr
+dwItemData As LongPtr
+dwTypeData As LongPtr
 cch As Long
-hBmpItem As Long
+hBmpItem As LongPtr
 End Type
 Private Type PAINTSTRUCT
-hDC As Long
+hDC As LongPtr
 fErase As Long
 RCPaint As RECT
 fRestore As Long
@@ -168,8 +182,8 @@ fIncUpdate As Long
 RGBReserved(0 To 31) As Byte
 End Type
 Private Type NMHDR
-hWndFrom As Long
-IDFrom As Long
+hWndFrom As LongPtr
+IDFrom As LongPtr
 Code As Long
 End Type
 Private Const CDDS_PREPAINT As Long = &H1
@@ -185,17 +199,17 @@ Private Const TBCDRF_USECDCOLORS As Long = &H800000
 Private Type NMCUSTOMDRAW
 hdr As NMHDR
 dwDrawStage As Long
-hDC As Long
+hDC As LongPtr
 RC As RECT
-dwItemSpec As Long
+dwItemSpec As LongPtr
 uItemState As Long
-lItemlParam As Long
+lItemlParam As LongPtr
 End Type
 Private Type NMTBCUSTOMDRAW
 NMCD As NMCUSTOMDRAW
-hBrMonoDither As Long
-hBrLines As Long
-hPenLines As Long
+hBrMonoDither As LongPtr
+hBrLines As LongPtr
+hPenLines As LongPtr
 ClrText As Long
 ClrMark As Long
 ClrTextHighlight As Long
@@ -211,27 +225,27 @@ hdr As NMHDR
 iItem As Long
 TBB As TBBUTTON
 cchText As Long
-pszText As Long
+pszText As LongPtr
 End Type
 Private Type NMTBDISPINFO
 hdr As NMHDR
 dwMask As Long
 IDCommand As Long
-lParam As Long
+lParam As LongPtr
 iImage As Long
-pszText As Long
+pszText As LongPtr
 cchText As Long
 End Type
 Private Type NMTBGETINFOTIP
 hdr As NMHDR
-pszText As Long
+pszText As LongPtr
 cchTextMax As Long
 iItem As Long
-lParam As Long
+lParam As LongPtr
 End Type
 Private Type NMTOOLTIPSCREATED
 hdr As NMHDR
-hWndToolTips As Long
+hWndToolTips As LongPtr
 End Type
 Private Type NMTBHOTITEM
 hdr As NMHDR
@@ -241,8 +255,8 @@ dwFlags As Long
 End Type
 Private Type NMTBSAVE
 hdr As NMHDR
-pData As Long
-pCurrent As Long
+lpData As LongPtr
+lpCurrent As LongPtr
 cbData As Long
 iItem As Long
 cButtons As Long
@@ -250,8 +264,8 @@ TBB As TBBUTTON
 End Type
 Private Type NMTBRESTORE
 hdr As NMHDR
-pData As Long
-pCurrent As Long
+lpData As LongPtr
+lpCurrent As LongPtr
 cbData As Long
 iItem As Long
 cButtons As Long
@@ -315,6 +329,53 @@ Public Event OLESetData(Data As DataObject, DataFormat As Integer)
 Attribute OLESetData.VB_Description = "Occurs at the OLE drag/drop source control when the drop target requests data that was not provided to the DataObject during the OLEDragStart event."
 Public Event OLEStartDrag(Data As DataObject, AllowedEffects As Long)
 Attribute OLEStartDrag.VB_Description = "Occurs when an OLE drag/drop operation is initiated either manually or automatically."
+#If VBA7 Then
+Private Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
+Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
+Private Declare PtrSafe Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByRef lParam As Any) As LongPtr
+Private Declare PtrSafe Function PostMessage Lib "user32" Alias "PostMessageW" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByRef lParam As Any) As LongPtr
+Private Declare PtrSafe Function CreateWindowEx Lib "user32" Alias "CreateWindowExW" (ByVal dwExStyle As Long, ByVal lpClassName As LongPtr, ByVal lpWindowName As LongPtr, ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hWndParent As LongPtr, ByVal hMenu As LongPtr, ByVal hInstance As LongPtr, ByRef lpParam As Any) As LongPtr
+Private Declare PtrSafe Function VkKeyScan Lib "user32" Alias "VkKeyScanW" (ByVal cChar As Integer) As Integer
+Private Declare PtrSafe Function ShowWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal nCmdShow As Long) As Long
+Private Declare PtrSafe Function MoveWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint As Long) As Long
+Private Declare PtrSafe Function UpdateWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
+Private Declare PtrSafe Function BeginPaint Lib "user32" (ByVal hWnd As LongPtr, ByRef lpPaint As PAINTSTRUCT) As LongPtr
+Private Declare PtrSafe Function EndPaint Lib "user32" (ByVal hWnd As LongPtr, ByRef lpPaint As PAINTSTRUCT) As Long
+Private Declare PtrSafe Function WindowFromDC Lib "user32" (ByVal hDC As LongPtr) As LongPtr
+Private Declare PtrSafe Function InvalidateRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As Any, ByVal bErase As Long) As Long
+Private Declare PtrSafe Function GetWindowRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As RECT) As Long
+Private Declare PtrSafe Function DestroyWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
+Private Declare PtrSafe Function SetParent Lib "user32" (ByVal hWndChild As LongPtr, ByVal hWndNewParent As LongPtr) As LongPtr
+Private Declare PtrSafe Function LockWindowUpdate Lib "user32" (ByVal hWndLock As LongPtr) As Long
+Private Declare PtrSafe Function EnableWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal fEnable As Long) As Long
+Private Declare PtrSafe Function IsWindowEnabled Lib "user32" (ByVal hWnd As LongPtr) As Long
+Private Declare PtrSafe Function GetClientRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As RECT) As Long
+Private Declare PtrSafe Function GetFocus Lib "user32" () As LongPtr
+Private Declare PtrSafe Function SetFocusAPI Lib "user32" Alias "SetFocus" (ByVal hWnd As LongPtr) As LongPtr
+Private Declare PtrSafe Function GetSysColorBrush Lib "user32" (ByVal nIndex As Long) As LongPtr
+Private Declare PtrSafe Function CreateSolidBrush Lib "gdi32" (ByVal crColor As Long) As LongPtr
+Private Declare PtrSafe Function CreatePatternBrush Lib "gdi32" (ByVal hBitmap As LongPtr) As LongPtr
+Private Declare PtrSafe Function FillRect Lib "user32" (ByVal hDC As LongPtr, ByRef lpRect As RECT, ByVal hBrush As LongPtr) As Long
+Private Declare PtrSafe Function CreateCompatibleDC Lib "gdi32" (ByVal hDC As LongPtr) As LongPtr
+Private Declare PtrSafe Function CreateCompatibleBitmap Lib "gdi32" (ByVal hDC As LongPtr, ByVal nWidth As Long, ByVal nHeight As Long) As LongPtr
+Private Declare PtrSafe Function SelectObject Lib "gdi32" (ByVal hDC As LongPtr, ByVal hObject As LongPtr) As LongPtr
+Private Declare PtrSafe Function DeleteObject Lib "gdi32" (ByVal hObject As LongPtr) As Long
+Private Declare PtrSafe Function DeleteDC Lib "gdi32" (ByVal hDC As LongPtr) As Long
+Private Declare PtrSafe Function BitBlt Lib "gdi32" (ByVal hDestDC As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hSrcDC As LongPtr, ByVal XSrc As Long, ByVal YSrc As Long, ByVal dwRop As Long) As Long
+Private Declare PtrSafe Function DrawState Lib "user32" Alias "DrawStateW" (ByVal hDC As LongPtr, ByVal hBrush As LongPtr, ByVal lpDrawStateProc As LongPtr, ByVal lData As LongPtr, ByVal wData As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal CX As Long, ByVal CY As Long, ByVal fFlags As Long) As Long
+Private Declare PtrSafe Function RedrawWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal lprcUpdate As LongPtr, ByVal hrgnUpdate As LongPtr, ByVal fuRedraw As Long) As Long
+Private Declare PtrSafe Function SetViewportOrgEx Lib "gdi32" (ByVal hDC As LongPtr, ByVal X As Long, ByVal Y As Long, ByRef lpPoint As POINTAPI) As Long
+Private Declare PtrSafe Function LoadCursor Lib "user32" Alias "LoadCursorW" (ByVal hInstance As LongPtr, ByVal lpCursorName As Any) As LongPtr
+Private Declare PtrSafe Function SetCursor Lib "user32" (ByVal hCursor As LongPtr) As LongPtr
+Private Declare PtrSafe Function ImageList_GetIconSize Lib "comctl32" (ByVal hImageList As LongPtr, ByRef CX As Long, ByRef CY As Long) As Long
+Private Declare PtrSafe Function CreatePopupMenu Lib "user32" () As LongPtr
+Private Declare PtrSafe Function DestroyMenu Lib "user32" (ByVal hMenu As LongPtr) As Long
+Private Declare PtrSafe Function InsertMenuItem Lib "user32" Alias "InsertMenuItemW" (ByVal hMenu As LongPtr, ByVal uItem As Long, ByVal fByPosition As Long, ByRef lpMII As MENUITEMINFO) As Long
+Private Declare PtrSafe Function SetMenuInfo Lib "user32" (ByVal hMenu As LongPtr, ByRef MI As MENUINFO) As Long
+Private Declare PtrSafe Function TrackPopupMenuEx Lib "user32" (ByVal hMenu As LongPtr, ByVal uFlags As Long, ByVal X As Long, ByVal Y As Long, ByVal hWnd As LongPtr, ByRef lpTPMParams As TPMPARAMS) As Long
+Private Declare PtrSafe Function MapWindowPoints Lib "user32" (ByVal hWndFrom As LongPtr, ByVal hWndTo As LongPtr, ByRef lppt As Any, ByVal cPoints As Long) As Long
+Private Declare PtrSafe Function SendInput Lib "user32" (ByVal nInputs As Long, ByRef pInputs As Any, ByVal cbSize As Long) As Long
+#Else
 Private Declare Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
 Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
 Private Declare Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByRef lParam As Any) As Long
@@ -355,14 +416,19 @@ Private Declare Function SetCursor Lib "user32" (ByVal hCursor As Long) As Long
 Private Declare Function ImageList_GetIconSize Lib "comctl32" (ByVal hImageList As Long, ByRef CX As Long, ByRef CY As Long) As Long
 Private Declare Function CreatePopupMenu Lib "user32" () As Long
 Private Declare Function DestroyMenu Lib "user32" (ByVal hMenu As Long) As Long
-Private Declare Function InsertMenuItem Lib "user32" Alias "InsertMenuItemW" (ByVal hMenu As Long, ByVal uItem As Long, ByVal fByPosition As Long, ByRef lpmii As MENUITEMINFO) As Long
+Private Declare Function InsertMenuItem Lib "user32" Alias "InsertMenuItemW" (ByVal hMenu As Long, ByVal uItem As Long, ByVal fByPosition As Long, ByRef lpMII As MENUITEMINFO) As Long
 Private Declare Function SetMenuInfo Lib "user32" (ByVal hMenu As Long, ByRef MI As MENUINFO) As Long
 Private Declare Function TrackPopupMenuEx Lib "user32" (ByVal hMenu As Long, ByVal uFlags As Long, ByVal X As Long, ByVal Y As Long, ByVal hWnd As Long, ByRef lpTPMParams As TPMPARAMS) As Long
 Private Declare Function MapWindowPoints Lib "user32" (ByVal hWndFrom As Long, ByVal hWndTo As Long, ByRef lppt As Any, ByVal cPoints As Long) As Long
 Private Declare Function SendInput Lib "user32" (ByVal nInputs As Long, ByRef pInputs As Any, ByVal cbSize As Long) As Long
+#End If
 Private Const ICC_BAR_CLASSES As Long = &H20
 Private Const RDW_UPDATENOW As Long = &H100, RDW_INVALIDATE As Long = &H1, RDW_ERASE As Long = &H4, RDW_ALLCHILDREN As Long = &H80
+#If VBA7 Then
+Private Const HWND_DESKTOP As LongPtr = &H0
+#Else
 Private Const HWND_DESKTOP As Long = &H0
+#End If
 Private Const COLOR_MENU As Long = 4
 Private Const DST_ICON As Long = &H3
 Private Const DST_BITMAP As Long = &H4
@@ -379,7 +445,11 @@ Private Const MFS_ENABLED As Long = &H0
 Private Const MFS_UNCHECKED As Long = &H0
 Private Const MFS_DISABLED As Long = &H3
 Private Const MFS_CHECKED As Long = &H8
+#If VBA7 Then
+Private Const HBMMENU_CALLBACK As LongPtr = (-1)
+#Else
 Private Const HBMMENU_CALLBACK As Long = (-1)
+#End If
 Private Const TPM_TOPALIGN As Long = &H0
 Private Const TPM_LEFTALIGN As Long = &H0
 Private Const TPM_LEFTBUTTON As Long = &H0
@@ -629,10 +699,10 @@ TBB As TBBUTTON
 Caption As String
 CX As Long
 End Type
-Private ToolBarHandle As Long, ToolBarToolTipHandle As Long
-Private ToolBarBackColorBrush As Long
-Private ToolBarTransparentBrush As Long
-Private ToolBarFontHandle As Long
+Private ToolBarHandle As LongPtr, ToolBarToolTipHandle As LongPtr
+Private ToolBarBackColorBrush As LongPtr
+Private ToolBarTransparentBrush As LongPtr
+Private ToolBarFontHandle As LongPtr
 Private ToolBarCustomizeButtonsCount As Long
 Private ToolBarCustomizeButtons() As ShadowButtonStruct
 Private ToolBarIsClick As Boolean
@@ -640,13 +710,13 @@ Private ToolBarMouseOver As Boolean, ToolBarMouseOverIndex As Long
 Private ToolBarDesignMode As Boolean
 Private ToolBarResizeFrozen As Boolean
 Private ToolBarImageSize As Long, ToolBarDefaultImageSize As Long
-Private ToolBarDoubleBufferEraseBkgDC As Long
+Private ToolBarDoubleBufferEraseBkgDC As LongPtr
 Private ToolBarAlignable As Boolean
-Private ToolBarImageListObjectPointer As Long
-Private ToolBarDisabledImageListObjectPointer As Long
-Private ToolBarHotImageListObjectPointer As Long
-Private ToolBarPressedImageListObjectPointer As Long
-Private ToolBarPopupMenuHandle As Long, ToolBarPopupMenuButton As TbrButton, ToolBarPopupMenuKeyboard As Boolean
+Private ToolBarImageListObjectPointer As LongPtr
+Private ToolBarDisabledImageListObjectPointer As LongPtr
+Private ToolBarHotImageListObjectPointer As LongPtr
+Private ToolBarPressedImageListObjectPointer As LongPtr
+Private ToolBarPopupMenuHandle As LongPtr, ToolBarPopupMenuButton As TbrButton, ToolBarPopupMenuKeyboard As Boolean
 Private DispIDMousePointer As Long
 Private DispIDImageList As Long, ImageListArray() As String, ImageListSize As SIZEAPI
 Private DispIDDisabledImageList As Long, DisabledImageListArray() As String, DisabledImageListSize As SIZEAPI
@@ -909,7 +979,7 @@ If InitButtonsCount > 0 Then
 End If
 End With
 Call CreateToolBar
-If InitButtonsCount > 0 And ToolBarHandle <> 0 Then
+If InitButtonsCount > 0 And ToolBarHandle <> NULL_PTR Then
     Dim ImageListInit As Boolean
     ImageListInit = PropImageListInit
     PropImageListInit = True
@@ -1071,11 +1141,11 @@ Static InProc As Boolean
 If InProc = True Or ToolBarResizeFrozen = True Then Exit Sub
 InProc = True
 If DPICorrectionFactor() <> 1 Then Call SyncObjectRectsToContainer(Me)
-If ToolBarHandle = 0 Then InProc = False: Exit Sub
+If ToolBarHandle = NULL_PTR Then InProc = False: Exit Sub
 SendMessage ToolBarHandle, TB_AUTOSIZE, 0, ByVal 0&
 Dim dwStyle As Long, Count As Long, Size As SIZEAPI, Rows As Long
-dwStyle = SendMessage(ToolBarHandle, TB_GETSTYLE, 0, ByVal 0&)
-Count = SendMessage(ToolBarHandle, TB_BUTTONCOUNT, 0, ByVal 0&)
+dwStyle = CLng(SendMessage(ToolBarHandle, TB_GETSTYLE, 0, ByVal 0&))
+Count = CLng(SendMessage(ToolBarHandle, TB_BUTTONCOUNT, 0, ByVal 0&))
 If Count > 0 Then
     Dim i As Long, RC As RECT
     If PropWrappable = False Then
@@ -1096,7 +1166,7 @@ If Count > 0 Then
             If RC.Bottom > Size.CY Then Size.CY = RC.Bottom
         End If
     Next i
-    If PropWrappable = True Then Rows = SendMessage(ToolBarHandle, TB_GETROWS, 0, ByVal 0&)
+    If PropWrappable = True Then Rows = CLng(SendMessage(ToolBarHandle, TB_GETROWS, 0, ByVal 0&))
 Else
     Size.CX = PropButtonWidth
     Size.CY = PropButtonHeight
@@ -1153,11 +1223,11 @@ End Select
 If DPICorrectionFactor() <> 1 Then Call SyncObjectRectsToContainer(Me)
 If PropTransparent = True Then
     MoveWindow ToolBarHandle, 0, 0, .ScaleWidth, .ScaleHeight, 0
-    If ToolBarTransparentBrush <> 0 Then
+    If ToolBarTransparentBrush <> NULL_PTR Then
         DeleteObject ToolBarTransparentBrush
-        ToolBarTransparentBrush = 0
+        ToolBarTransparentBrush = NULL_PTR
     End If
-    RedrawWindow ToolBarHandle, 0, 0, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE
+    RedrawWindow ToolBarHandle, NULL_PTR, NULL_PTR, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE
 Else
     MoveWindow ToolBarHandle, 0, 0, .ScaleWidth, .ScaleHeight, 1
 End If
@@ -1340,14 +1410,25 @@ Attribute ZOrder.VB_Description = "Places a specified object at the front or bac
 If IsMissing(Position) Then Extender.ZOrder Else Extender.ZOrder Position
 End Sub
 
+#If VBA7 Then
+Public Property Get hWnd() As LongPtr
+Attribute hWnd.VB_Description = "Returns a handle to a control."
+Attribute hWnd.VB_UserMemId = -515
+#Else
 Public Property Get hWnd() As Long
 Attribute hWnd.VB_Description = "Returns a handle to a control."
 Attribute hWnd.VB_UserMemId = -515
+#End If
 hWnd = ToolBarHandle
 End Property
 
+#If VBA7 Then
+Public Property Get hWndUserControl() As LongPtr
+Attribute hWndUserControl.VB_Description = "Returns a handle to a control."
+#Else
 Public Property Get hWndUserControl() As Long
 Attribute hWndUserControl.VB_Description = "Returns a handle to a control."
+#End If
 hWndUserControl = UserControl.hWnd
 End Property
 
@@ -1363,23 +1444,23 @@ End Property
 
 Public Property Set Font(ByVal NewFont As StdFont)
 If NewFont Is Nothing Then Set NewFont = Ambient.Font
-Dim OldFontHandle As Long
+Dim OldFontHandle As LongPtr
 Set PropFont = NewFont
 OldFontHandle = ToolBarFontHandle
 ToolBarFontHandle = CreateGDIFontFromOLEFont(PropFont)
-If ToolBarHandle <> 0 Then SendMessage ToolBarHandle, WM_SETFONT, ToolBarFontHandle, ByVal 1&
-If OldFontHandle <> 0 Then DeleteObject OldFontHandle
+If ToolBarHandle <> NULL_PTR Then SendMessage ToolBarHandle, WM_SETFONT, ToolBarFontHandle, ByVal 1&
+If OldFontHandle <> NULL_PTR Then DeleteObject OldFontHandle
 Call ReCreateButtons
 Call UserControl_Resize
 UserControl.PropertyChanged "Font"
 End Property
 
 Private Sub PropFont_FontChanged(ByVal PropertyName As String)
-Dim OldFontHandle As Long
+Dim OldFontHandle As LongPtr
 OldFontHandle = ToolBarFontHandle
 ToolBarFontHandle = CreateGDIFontFromOLEFont(PropFont)
-If ToolBarHandle <> 0 Then SendMessage ToolBarHandle, WM_SETFONT, ToolBarFontHandle, ByVal 1&
-If OldFontHandle <> 0 Then DeleteObject OldFontHandle
+If ToolBarHandle <> NULL_PTR Then SendMessage ToolBarHandle, WM_SETFONT, ToolBarFontHandle, ByVal 1&
+If OldFontHandle <> NULL_PTR Then DeleteObject OldFontHandle
 Call ReCreateButtons
 Call UserControl_Resize
 UserControl.PropertyChanged "Font"
@@ -1392,7 +1473,7 @@ End Property
 
 Public Property Let VisualStyles(ByVal Value As Boolean)
 PropVisualStyles = Value
-If ToolBarHandle <> 0 And EnabledVisualStyles() = True Then
+If ToolBarHandle <> NULL_PTR And EnabledVisualStyles() = True Then
     If PropVisualStyles = True Then
         ActivateVisualStyles ToolBarHandle
     Else
@@ -1415,7 +1496,7 @@ End Property
 
 Public Property Let Enabled(ByVal Value As Boolean)
 UserControl.Enabled = Value
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     EnableWindow ToolBarHandle, IIf(Value = True, 1, 0)
     Me.Refresh
 End If
@@ -1466,7 +1547,7 @@ Public Property Set MouseIcon(ByVal Value As IPictureDisp)
 If Value Is Nothing Then
     Set PropMouseIcon = Nothing
 Else
-    If Value.Type = vbPicTypeIcon Or Value.Handle = 0 Then
+    If Value.Type = vbPicTypeIcon Or Value.Handle = NULL_PTR Then
         Set PropMouseIcon = Value
     Else
         If ToolBarDesignMode = True Then
@@ -1507,7 +1588,7 @@ If ToolBarDesignMode = False Then
     Call ComCtlsSetRightToLeft(UserControl.hWnd, dwMask)
     dwMask = 0
 End If
-If ToolBarHandle <> 0 Then Call ReCreateToolBar
+If ToolBarHandle <> NULL_PTR Then Call ReCreateToolBar
 UserControl.PropertyChanged "RightToLeft"
 End Property
 
@@ -1541,7 +1622,7 @@ End Property
 Public Property Get ImageList() As Variant
 Attribute ImageList.VB_Description = "Returns/sets the image list control to be used."
 If ToolBarDesignMode = False Then
-    If PropImageListInit = False And ToolBarImageListObjectPointer = 0 Then
+    If PropImageListInit = False And ToolBarImageListObjectPointer = NULL_PTR Then
         If Not PropImageListName = "(None)" Then Me.ImageList = PropImageListName
         PropImageListInit = True
     End If
@@ -1556,13 +1637,13 @@ Me.ImageList = Value
 End Property
 
 Public Property Let ImageList(ByVal Value As Variant)
-If ToolBarHandle <> 0 Then
-    Dim Success As Boolean, Handle As Long, OldSize As SIZEAPI
+If ToolBarHandle <> NULL_PTR Then
+    Dim Success As Boolean, Handle As LongPtr, OldSize As SIZEAPI
     On Error Resume Next
     If IsObject(Value) Then
         If TypeName(Value) = "ImageList" Then
             Handle = Value.hImageList
-            Success = CBool(Err.Number = 0 And Handle <> 0)
+            Success = CBool(Err.Number = 0 And Handle <> NULL_PTR)
         End If
         If Success = True Then
             LSet OldSize = ImageListSize
@@ -1589,7 +1670,7 @@ If ToolBarHandle <> 0 Then
                 If CompareName = Value And Not CompareName = vbNullString Then
                     Err.Clear
                     Handle = ControlEnum.hImageList
-                    Success = CBool(Err.Number = 0 And Handle <> 0)
+                    Success = CBool(Err.Number = 0 And Handle <> NULL_PTR)
                     If Success = True Then
                         LSet OldSize = ImageListSize
                         ImageList_GetIconSize Handle, ImageListSize.CX, ImageListSize.CY
@@ -1619,10 +1700,10 @@ If ToolBarHandle <> 0 Then
     On Error GoTo 0
     If Success = False Then
         If SendMessage(ToolBarHandle, TB_GETIMAGELIST, 0, ByVal 0&) <> 0 Then SendMessage ToolBarHandle, TB_SETIMAGELIST, 0, ByVal 0&
-        ToolBarImageListObjectPointer = 0
+        ToolBarImageListObjectPointer = NULL_PTR
         PropImageListName = "(None)"
         ImageListSize.CX = 0: ImageListSize.CY = 0
-    ElseIf Handle = 0 Then
+    ElseIf Handle = NULL_PTR Then
         If SendMessage(ToolBarHandle, TB_GETIMAGELIST, 0, ByVal 0&) <> 0 Then SendMessage ToolBarHandle, TB_SETIMAGELIST, 0, ByVal 0&
         ImageListSize.CX = 0: ImageListSize.CY = 0
     End If
@@ -1641,7 +1722,7 @@ End Property
 Public Property Get DisabledImageList() As Variant
 Attribute DisabledImageList.VB_Description = "Returns/sets the image list control to be used for disabled buttons."
 If ToolBarDesignMode = False Then
-    If PropDisabledImageListInit = False And ToolBarDisabledImageListObjectPointer = 0 Then
+    If PropDisabledImageListInit = False And ToolBarDisabledImageListObjectPointer = NULL_PTR Then
         If Not PropDisabledImageListName = "(None)" Then Me.DisabledImageList = PropDisabledImageListName
         PropDisabledImageListInit = True
     End If
@@ -1656,13 +1737,13 @@ Me.DisabledImageList = Value
 End Property
 
 Public Property Let DisabledImageList(ByVal Value As Variant)
-If ToolBarHandle <> 0 Then
-    Dim Success As Boolean, Handle As Long, OldSize As SIZEAPI
+If ToolBarHandle <> NULL_PTR Then
+    Dim Success As Boolean, Handle As LongPtr, OldSize As SIZEAPI
     On Error Resume Next
     If IsObject(Value) Then
         If TypeName(Value) = "ImageList" Then
             Handle = Value.hImageList
-            Success = CBool(Err.Number = 0 And Handle <> 0)
+            Success = CBool(Err.Number = 0 And Handle <> NULL_PTR)
         End If
         If Success = True Then
             LSet OldSize = DisabledImageListSize
@@ -1689,7 +1770,7 @@ If ToolBarHandle <> 0 Then
                 If CompareName = Value And Not CompareName = vbNullString Then
                     Err.Clear
                     Handle = ControlEnum.hImageList
-                    Success = CBool(Err.Number = 0 And Handle <> 0)
+                    Success = CBool(Err.Number = 0 And Handle <> NULL_PTR)
                     If Success = True Then
                         LSet OldSize = DisabledImageListSize
                         ImageList_GetIconSize Handle, DisabledImageListSize.CX, DisabledImageListSize.CY
@@ -1719,10 +1800,10 @@ If ToolBarHandle <> 0 Then
     On Error GoTo 0
     If Success = False Then
         If SendMessage(ToolBarHandle, TB_GETDISABLEDIMAGELIST, 0, ByVal 0&) <> 0 Then SendMessage ToolBarHandle, TB_SETDISABLEDIMAGELIST, 0, ByVal 0&
-        ToolBarDisabledImageListObjectPointer = 0
+        ToolBarDisabledImageListObjectPointer = NULL_PTR
         PropDisabledImageListName = "(None)"
         DisabledImageListSize.CX = 0: DisabledImageListSize.CY = 0
-    ElseIf Handle = 0 Then
+    ElseIf Handle = NULL_PTR Then
         If SendMessage(ToolBarHandle, TB_GETDISABLEDIMAGELIST, 0, ByVal 0&) <> 0 Then SendMessage ToolBarHandle, TB_SETDISABLEDIMAGELIST, 0, ByVal 0&
         DisabledImageListSize.CX = 0: DisabledImageListSize.CY = 0
     End If
@@ -1734,7 +1815,7 @@ End Property
 Public Property Get HotImageList() As Variant
 Attribute HotImageList.VB_Description = "Returns/sets the image list control to be used for hot buttons."
 If ToolBarDesignMode = False Then
-    If PropHotImageListInit = False And ToolBarHotImageListObjectPointer = 0 Then
+    If PropHotImageListInit = False And ToolBarHotImageListObjectPointer = NULL_PTR Then
         If Not PropHotImageListName = "(None)" Then Me.HotImageList = PropHotImageListName
         PropHotImageListInit = True
     End If
@@ -1749,13 +1830,13 @@ Me.HotImageList = Value
 End Property
 
 Public Property Let HotImageList(ByVal Value As Variant)
-If ToolBarHandle <> 0 Then
-    Dim Success As Boolean, Handle As Long, OldSize As SIZEAPI
+If ToolBarHandle <> NULL_PTR Then
+    Dim Success As Boolean, Handle As LongPtr, OldSize As SIZEAPI
     On Error Resume Next
     If IsObject(Value) Then
         If TypeName(Value) = "ImageList" Then
             Handle = Value.hImageList
-            Success = CBool(Err.Number = 0 And Handle <> 0)
+            Success = CBool(Err.Number = 0 And Handle <> NULL_PTR)
         End If
         If Success = True Then
             LSet OldSize = HotImageListSize
@@ -1782,7 +1863,7 @@ If ToolBarHandle <> 0 Then
                 If CompareName = Value And Not CompareName = vbNullString Then
                     Err.Clear
                     Handle = ControlEnum.hImageList
-                    Success = CBool(Err.Number = 0 And Handle <> 0)
+                    Success = CBool(Err.Number = 0 And Handle <> NULL_PTR)
                     If Success = True Then
                         LSet OldSize = HotImageListSize
                         ImageList_GetIconSize Handle, HotImageListSize.CX, HotImageListSize.CY
@@ -1813,9 +1894,9 @@ If ToolBarHandle <> 0 Then
     If Success = False Then
         If SendMessage(ToolBarHandle, TB_GETHOTIMAGELIST, 0, ByVal 0&) <> 0 Then SendMessage ToolBarHandle, TB_SETHOTIMAGELIST, 0, ByVal 0&
         PropHotImageListName = "(None)"
-        ToolBarHotImageListObjectPointer = 0
+        ToolBarHotImageListObjectPointer = NULL_PTR
         HotImageListSize.CX = 0: HotImageListSize.CY = 0
-    ElseIf Handle = 0 Then
+    ElseIf Handle = NULL_PTR Then
         If SendMessage(ToolBarHandle, TB_GETHOTIMAGELIST, 0, ByVal 0&) <> 0 Then SendMessage ToolBarHandle, TB_SETHOTIMAGELIST, 0, ByVal 0&
         HotImageListSize.CX = 0: HotImageListSize.CY = 0
     End If
@@ -1827,7 +1908,7 @@ End Property
 Public Property Get PressedImageList() As Variant
 Attribute PressedImageList.VB_Description = "Returns/sets the image list control to be used for pressed buttons. Requires comctl32.dll version 6.1 or higher."
 If ToolBarDesignMode = False Then
-    If PropPressedImageListInit = False And ToolBarPressedImageListObjectPointer = 0 Then
+    If PropPressedImageListInit = False And ToolBarPressedImageListObjectPointer = NULL_PTR Then
         If Not PropPressedImageListName = "(None)" Then Me.PressedImageList = PropPressedImageListName
         PropPressedImageListInit = True
     End If
@@ -1842,13 +1923,13 @@ Me.PressedImageList = Value
 End Property
 
 Public Property Let PressedImageList(ByVal Value As Variant)
-If ToolBarHandle <> 0 Then
-    Dim Success As Boolean, Handle As Long, OldSize As SIZEAPI
+If ToolBarHandle <> NULL_PTR Then
+    Dim Success As Boolean, Handle As LongPtr, OldSize As SIZEAPI
     On Error Resume Next
     If IsObject(Value) Then
         If TypeName(Value) = "ImageList" Then
             Handle = Value.hImageList
-            Success = CBool(Err.Number = 0 And Handle <> 0)
+            Success = CBool(Err.Number = 0 And Handle <> NULL_PTR)
         End If
         If Success = True Then
             LSet OldSize = PressedImageListSize
@@ -1875,7 +1956,7 @@ If ToolBarHandle <> 0 Then
                 If CompareName = Value And Not CompareName = vbNullString Then
                     Err.Clear
                     Handle = ControlEnum.hImageList
-                    Success = CBool(Err.Number = 0 And Handle <> 0)
+                    Success = CBool(Err.Number = 0 And Handle <> NULL_PTR)
                     If Success = True Then
                         LSet OldSize = PressedImageListSize
                         ImageList_GetIconSize Handle, PressedImageListSize.CX, PressedImageListSize.CY
@@ -1905,10 +1986,10 @@ If ToolBarHandle <> 0 Then
     On Error GoTo 0
     If Success = False Then
         If ComCtlsSupportLevel() >= 2 Then If SendMessage(ToolBarHandle, TB_GETPRESSEDIMAGELIST, 0, ByVal 0&) <> 0 Then SendMessage ToolBarHandle, TB_SETPRESSEDIMAGELIST, 0, ByVal 0&
-        ToolBarPressedImageListObjectPointer = 0
+        ToolBarPressedImageListObjectPointer = NULL_PTR
         PropPressedImageListName = "(None)"
         PressedImageListSize.CX = 0: PressedImageListSize.CY = 0
-    ElseIf Handle = 0 Then
+    ElseIf Handle = NULL_PTR Then
         If ComCtlsSupportLevel() >= 2 Then If SendMessage(ToolBarHandle, TB_GETPRESSEDIMAGELIST, 0, ByVal 0&) <> 0 Then SendMessage ToolBarHandle, TB_SETPRESSEDIMAGELIST, 0, ByVal 0&
         PressedImageListSize.CX = 0: PressedImageListSize.CY = 0
     End If
@@ -1925,8 +2006,8 @@ End Property
 Public Property Let BackColor(ByVal Value As OLE_COLOR)
 PropBackColor = Value
 If ToolBarDesignMode = False Then
-    If ToolBarHandle <> 0 Then
-        If ToolBarBackColorBrush <> 0 Then DeleteObject ToolBarBackColorBrush
+    If ToolBarHandle <> NULL_PTR Then
+        If ToolBarBackColorBrush <> NULL_PTR Then DeleteObject ToolBarBackColorBrush
         ToolBarBackColorBrush = CreateSolidBrush(WinColor(PropBackColor))
     End If
 End If
@@ -1947,9 +2028,9 @@ Select Case Value
     Case Else
         Err.Raise 380
 End Select
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Dim dwStyle As Long
-    dwStyle = SendMessage(ToolBarHandle, TB_GETSTYLE, 0, ByVal 0&)
+    dwStyle = CLng(SendMessage(ToolBarHandle, TB_GETSTYLE, 0, ByVal 0&))
     Select Case PropStyle
         Case TbrStyleStandard
             If (dwStyle And TBSTYLE_FLAT) = TBSTYLE_FLAT Then
@@ -1980,9 +2061,9 @@ Select Case Value
     Case Else
         Err.Raise 380
 End Select
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Dim dwStyle As Long
-    dwStyle = SendMessage(ToolBarHandle, TB_GETSTYLE, 0, ByVal 0&)
+    dwStyle = CLng(SendMessage(ToolBarHandle, TB_GETSTYLE, 0, ByVal 0&))
     Select Case PropTextAlignment
         Case TbrTextAlignBottom
             If (dwStyle And TBSTYLE_LIST) = TBSTYLE_LIST Then Call ReCreateToolBar
@@ -2045,9 +2126,9 @@ End Property
 
 Public Property Let Divider(ByVal Value As Boolean)
 PropDivider = Value
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Dim dwStyle As Long
-    dwStyle = SendMessage(ToolBarHandle, TB_GETSTYLE, 0, ByVal 0&)
+    dwStyle = CLng(SendMessage(ToolBarHandle, TB_GETSTYLE, 0, ByVal 0&))
     If PropDivider = True Then
         If (dwStyle And CCS_NODIVIDER) = CCS_NODIVIDER Then
             SendMessage ToolBarHandle, TB_SETSTYLE, 0, ByVal dwStyle And Not CCS_NODIVIDER
@@ -2071,13 +2152,13 @@ End Property
 
 Public Property Let ShowTips(ByVal Value As Boolean)
 PropShowTips = Value
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Dim dwStyle As Long
-    dwStyle = SendMessage(ToolBarHandle, TB_GETSTYLE, 0, ByVal 0&)
+    dwStyle = CLng(SendMessage(ToolBarHandle, TB_GETSTYLE, 0, ByVal 0&))
     If PropShowTips = True Then
         If Not (dwStyle And TBSTYLE_TOOLTIPS) = TBSTYLE_TOOLTIPS Then
             SendMessage ToolBarHandle, TB_SETSTYLE, 0, ByVal dwStyle Or TBSTYLE_TOOLTIPS
-            If ToolBarToolTipHandle <> 0 Then
+            If ToolBarToolTipHandle <> NULL_PTR Then
                 SendMessage ToolBarHandle, TB_SETTOOLTIPS, ToolBarToolTipHandle, ByVal 0&
             Else
                 ToolBarToolTipHandle = SendMessage(ToolBarHandle, TB_GETTOOLTIPS, 0, ByVal 0&)
@@ -2101,9 +2182,9 @@ End Property
 
 Public Property Let Wrappable(ByVal Value As Boolean)
 PropWrappable = Value
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Dim dwStyle As Long
-    dwStyle = SendMessage(ToolBarHandle, TB_GETSTYLE, 0, ByVal 0&)
+    dwStyle = CLng(SendMessage(ToolBarHandle, TB_GETSTYLE, 0, ByVal 0&))
     If PropWrappable = True Then
         If Not (dwStyle And TBSTYLE_WRAPABLE) = TBSTYLE_WRAPABLE Then SendMessage ToolBarHandle, TB_SETSTYLE, 0, ByVal dwStyle Or TBSTYLE_WRAPABLE
     Else
@@ -2122,9 +2203,9 @@ End Property
 
 Public Property Let AllowCustomize(ByVal Value As Boolean)
 PropAllowCustomize = Value
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Dim dwStyle As Long
-    dwStyle = SendMessage(ToolBarHandle, TB_GETSTYLE, 0, ByVal 0&)
+    dwStyle = CLng(SendMessage(ToolBarHandle, TB_GETSTYLE, 0, ByVal 0&))
     If PropAllowCustomize = True Then
         If Not (dwStyle And CCS_ADJUSTABLE) = CCS_ADJUSTABLE Then SendMessage ToolBarHandle, TB_SETSTYLE, 0, ByVal dwStyle Or CCS_ADJUSTABLE
     Else
@@ -2141,9 +2222,9 @@ End Property
 
 Public Property Let AltDrag(ByVal Value As Boolean)
 PropAltDrag = Value
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Dim dwStyle As Long
-    dwStyle = SendMessage(ToolBarHandle, TB_GETSTYLE, 0, ByVal 0&)
+    dwStyle = CLng(SendMessage(ToolBarHandle, TB_GETSTYLE, 0, ByVal 0&))
     If PropAltDrag = True Then
         If Not (dwStyle And TBSTYLE_ALTDRAG) = TBSTYLE_ALTDRAG Then SendMessage ToolBarHandle, TB_SETSTYLE, 0, ByVal dwStyle Or TBSTYLE_ALTDRAG
     Else
@@ -2165,9 +2246,9 @@ End Property
 
 Public Property Get ButtonHeight() As Single
 Attribute ButtonHeight.VB_Description = "Returns/sets the height of the buttons."
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If SendMessage(ToolBarHandle, TB_BUTTONCOUNT, 0, ByVal 0&) > 0 Then
-        ButtonHeight = UserControl.ScaleY(HiWord(SendMessage(ToolBarHandle, TB_GETBUTTONSIZE, 0, ByVal 0&)), vbPixels, vbContainerSize)
+        ButtonHeight = UserControl.ScaleY(HiWord(CLng(SendMessage(ToolBarHandle, TB_GETBUTTONSIZE, 0, ByVal 0&))), vbPixels, vbContainerSize)
     Else
         ButtonHeight = UserControl.ScaleY(PropButtonHeight, vbPixels, vbContainerSize)
     End If
@@ -2192,16 +2273,16 @@ If Err.Number <> 0 Then IntValue = 0
 On Error GoTo 0
 PropButtonHeight = IntValue
 If PropButtonHeight < (22 * PixelsPerDIP_Y()) Then PropButtonHeight = (22 * PixelsPerDIP_Y())
-If ToolBarHandle <> 0 And ToolBarDesignMode = False Then SendMessage ToolBarHandle, TB_SETBUTTONSIZE, 0, ByVal MakeDWord(LoWord(SendMessage(ToolBarHandle, TB_GETBUTTONSIZE, 0, ByVal 0&)), PropButtonHeight)
+If ToolBarHandle <> NULL_PTR And ToolBarDesignMode = False Then SendMessage ToolBarHandle, TB_SETBUTTONSIZE, 0, ByVal MakeDWord(LoWord(CLng(SendMessage(ToolBarHandle, TB_GETBUTTONSIZE, 0, ByVal 0&))), PropButtonHeight)
 Call UserControl_Resize
 UserControl.PropertyChanged "ButtonHeight"
 End Property
 
 Public Property Get ButtonWidth() As Single
 Attribute ButtonWidth.VB_Description = "Returns/sets the width of the buttons."
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If SendMessage(ToolBarHandle, TB_BUTTONCOUNT, 0, ByVal 0&) > 0 Then
-        ButtonWidth = UserControl.ScaleX(LoWord(SendMessage(ToolBarHandle, TB_GETBUTTONSIZE, 0, ByVal 0&)), vbPixels, vbContainerSize)
+        ButtonWidth = UserControl.ScaleX(LoWord(CLng(SendMessage(ToolBarHandle, TB_GETBUTTONSIZE, 0, ByVal 0&))), vbPixels, vbContainerSize)
     Else
         ButtonWidth = UserControl.ScaleX(PropButtonWidth, vbPixels, vbContainerSize)
     End If
@@ -2226,7 +2307,7 @@ If Err.Number <> 0 Then IntValue = 0
 On Error GoTo 0
 PropButtonWidth = IntValue
 If PropButtonWidth < (24 * PixelsPerDIP_X()) Then PropButtonWidth = (24 * PixelsPerDIP_X())
-If ToolBarHandle <> 0 And ToolBarDesignMode = False Then SendMessage ToolBarHandle, TB_SETBUTTONSIZE, 0, ByVal MakeDWord(PropButtonWidth, HiWord(SendMessage(ToolBarHandle, TB_GETBUTTONSIZE, 0, ByVal 0&)))
+If ToolBarHandle <> NULL_PTR And ToolBarDesignMode = False Then SendMessage ToolBarHandle, TB_SETBUTTONSIZE, 0, ByVal MakeDWord(PropButtonWidth, HiWord(CLng(SendMessage(ToolBarHandle, TB_GETBUTTONSIZE, 0, ByVal 0&))))
 Call UserControl_Resize
 UserControl.PropertyChanged "ButtonWidth"
 End Property
@@ -2252,7 +2333,7 @@ ErrValue = Err.Number
 On Error GoTo 0
 If IntValue >= 0 And ErrValue = 0 Then
     PropMinButtonWidth = IntValue
-    If ToolBarHandle <> 0 Then
+    If ToolBarHandle <> NULL_PTR Then
         SendMessage ToolBarHandle, TB_SETBUTTONWIDTH, 0, ByVal MakeDWord(PropMinButtonWidth, PropMaxButtonWidth)
         Call ReCreateButtons
     End If
@@ -2289,7 +2370,7 @@ ErrValue = Err.Number
 On Error GoTo 0
 If IntValue >= 0 And ErrValue = 0 Then
     PropMaxButtonWidth = IntValue
-    If ToolBarHandle <> 0 Then
+    If ToolBarHandle <> NULL_PTR Then
         SendMessage ToolBarHandle, TB_SETBUTTONWIDTH, 0, ByVal MakeDWord(PropMinButtonWidth, PropMaxButtonWidth)
         Call ReCreateButtons
     End If
@@ -2312,7 +2393,7 @@ End Property
 
 Public Property Let InsertMarkColor(ByVal Value As OLE_COLOR)
 PropInsertMarkColor = Value
-If ToolBarHandle <> 0 Then SendMessage ToolBarHandle, TB_SETINSERTMARKCOLOR, 0, ByVal WinColor(PropInsertMarkColor)
+If ToolBarHandle <> NULL_PTR Then SendMessage ToolBarHandle, TB_SETINSERTMARKCOLOR, 0, ByVal WinColor(PropInsertMarkColor)
 UserControl.PropertyChanged "InsertMarkColor"
 End Property
 
@@ -2345,9 +2426,9 @@ End Property
 
 Public Property Let HideClippedButtons(ByVal Value As Boolean)
 PropHideClippedButtons = Value
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Dim dwExStyle As Long
-    dwExStyle = SendMessage(ToolBarHandle, TB_GETEXTENDEDSTYLE, 0, ByVal 0&)
+    dwExStyle = CLng(SendMessage(ToolBarHandle, TB_GETEXTENDEDSTYLE, 0, ByVal 0&))
     If PropHideClippedButtons = True Then
         If Not (dwExStyle And TBSTYLE_EX_HIDECLIPPEDBUTTONS) = TBSTYLE_EX_HIDECLIPPEDBUTTONS Then SendMessage ToolBarHandle, TB_SETEXTENDEDSTYLE, 0, ByVal dwExStyle Or TBSTYLE_EX_HIDECLIPPEDBUTTONS
     Else
@@ -2359,7 +2440,7 @@ End Property
 
 Public Property Get AnchorHot() As Boolean
 Attribute AnchorHot.VB_Description = "Returns/sets a value indicating if the currently hot button will remain hot even if the user moves the mouse out of the control."
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     AnchorHot = CBool(SendMessage(ToolBarHandle, TB_GETANCHORHIGHLIGHT, 0, ByVal 0&) <> 0)
 Else
     AnchorHot = PropAnchorHot
@@ -2368,7 +2449,7 @@ End Property
 
 Public Property Let AnchorHot(ByVal Value As Boolean)
 PropAnchorHot = Value
-If ToolBarHandle <> 0 Then SendMessage ToolBarHandle, TB_SETANCHORHIGHLIGHT, IIf(PropAnchorHot = True, 1, 0), ByVal 0&
+If ToolBarHandle <> NULL_PTR Then SendMessage ToolBarHandle, TB_SETANCHORHIGHLIGHT, IIf(PropAnchorHot = True, 1, 0), ByVal 0&
 UserControl.PropertyChanged "AnchorHot"
 End Property
 
@@ -2388,7 +2469,7 @@ If Value > 1 And PropTextAlignment = TbrTextAlignRight Then
     End If
 End If
 PropMaxTextRows = Value
-If ToolBarHandle <> 0 Then SendMessage ToolBarHandle, TB_SETMAXTEXTROWS, PropMaxTextRows, ByVal 0&
+If ToolBarHandle <> NULL_PTR Then SendMessage ToolBarHandle, TB_SETMAXTEXTROWS, PropMaxTextRows, ByVal 0&
 Call UserControl_Resize
 UserControl.PropertyChanged "MaxTextRows"
 End Property
@@ -2420,7 +2501,7 @@ Select Case Style
     Case TbrButtonStyleSeparator
         .fsStyle = BTNS_SEP
         .iBitmap = 0
-        .iString = 0
+        .iString = NULL_PTR
     Case TbrButtonStyleDropDown
         .fsStyle = BTNS_DROPDOWN
     Case TbrButtonStyleWholeDropDown
@@ -2430,7 +2511,7 @@ Select Case Style
 End Select
 .dwData = ObjPtr(NewButton)
 End With
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Call ResetCustomizeButtons
     If Index = 0 Then
         SendMessage ToolBarHandle, TB_ADDBUTTONS, 1, ByVal VarPtr(TBB)
@@ -2438,7 +2519,7 @@ If ToolBarHandle <> 0 Then
         SendMessage ToolBarHandle, TB_INSERTBUTTON, Index - 1, ByVal VarPtr(TBB)
     End If
     Dim Size As Long
-    Size = SendMessage(ToolBarHandle, TB_GETBUTTONSIZE, 0, ByVal 0&)
+    Size = CLng(SendMessage(ToolBarHandle, TB_GETBUTTONSIZE, 0, ByVal 0&))
     PropButtonWidth = LoWord(Size)
     PropButtonHeight = HiWord(Size)
 End If
@@ -2447,7 +2528,7 @@ UserControl.PropertyChanged "InitButtons"
 End Sub
 
 Friend Sub FButtonsRemove(ByVal ID As Long)
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Call ResetCustomizeButtons
     SendMessage ToolBarHandle, TB_DELETEBUTTON, SendMessage(ToolBarHandle, TB_COMMANDTOINDEX, ID, ByVal 0&), ByVal 0&
     Call ReCreateButtons
@@ -2457,7 +2538,7 @@ UserControl.PropertyChanged "InitButtons"
 End Sub
 
 Friend Sub FButtonsClear()
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Call ResetCustomizeButtons
     Do While SendMessage(ToolBarHandle, TB_DELETEBUTTON, 0, ByVal 0&) <> 0: Loop
     Me.Refresh
@@ -2466,7 +2547,7 @@ Call UserControl_Resize
 End Sub
 
 Friend Sub FButtonRedraw(ByVal ID As Long)
-If ToolBarHandle <> 0 And IsButtonAvailable(ID) = True Then
+If ToolBarHandle <> NULL_PTR And IsButtonAvailable(ID) = True Then
     Dim RC As RECT
     ' TB_GETITEMRECT fails for buttons whose state is set to TBSTATE_HIDDEN, thus no need to redraw then.
     If SendMessage(ToolBarHandle, TB_GETITEMRECT, SendMessage(ToolBarHandle, TB_COMMANDTOINDEX, ID, ByVal 0&), ByVal VarPtr(RC)) <> 0 Then
@@ -2478,7 +2559,7 @@ End If
 End Sub
 
 Friend Property Let FButtonCaption(ByVal ID As Long, ByVal Value As String)
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If IsButtonAvailable(ID) = True Then
         Call ResetCustomizeButtons
         Dim NewButton As ShadowButtonStruct
@@ -2491,7 +2572,7 @@ End If
 End Property
 
 Friend Property Get FButtonStyle(ByVal ID As Long, ByVal ImageIndex As Long) As TbrButtonStyleConstants
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If IsButtonAvailable(ID) = True Then
         Dim TBBI As TBBUTTONINFO
         With TBBI
@@ -2538,7 +2619,7 @@ End If
 End Property
 
 Friend Property Let FButtonStyle(ByVal ID As Long, ByVal ImageIndex As Long, ByVal Value As TbrButtonStyleConstants)
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If IsButtonAvailable(ID) = True Then
         Call ResetCustomizeButtons
         Dim OldButton As ShadowButtonStruct, NewButton As ShadowButtonStruct
@@ -2583,7 +2664,7 @@ End If
 End Property
 
 Friend Property Let FButtonImage(ByVal ID As Long, ByVal Value As Long)
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If IsButtonAvailable(ID) = True Then
         Dim TBBI As TBBUTTONINFO
         With TBBI
@@ -2609,7 +2690,7 @@ End If
 End Property
 
 Friend Property Get FButtonValue(ByVal ID As Long) As TbrButtonValueConstants
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If IsButtonAvailable(ID) = True Then
         Dim TBBI As TBBUTTONINFO
         With TBBI
@@ -2637,7 +2718,7 @@ End If
 End Property
 
 Friend Property Let FButtonValue(ByVal ID As Long, ByVal Value As TbrButtonValueConstants)
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If IsButtonAvailable(ID) = True Then
         Dim TBBI As TBBUTTONINFO
         With TBBI
@@ -2655,7 +2736,7 @@ End If
 End Property
 
 Friend Property Get FButtonEnabled(ByVal ID As Long) As Boolean
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If IsButtonAvailable(ID) = True Then
         FButtonEnabled = CBool(SendMessage(ToolBarHandle, TB_ISBUTTONENABLED, ID, ByVal 0&) <> 0)
     ElseIf ToolBarCustomizeButtonsCount > 0 Then
@@ -2670,7 +2751,7 @@ End If
 End Property
 
 Friend Property Let FButtonEnabled(ByVal ID As Long, ByVal Value As Boolean)
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If IsButtonAvailable(ID) = True Then SendMessage ToolBarHandle, TB_ENABLEBUTTON, ID, ByVal MakeDWord(IIf(Value = True, 1, 0), 0)
     If ToolBarCustomizeButtonsCount > 0 Then
         Dim i As Long
@@ -2690,7 +2771,7 @@ End If
 End Property
 
 Friend Property Get FButtonVisible(ByVal ID As Long) As Boolean
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If IsButtonAvailable(ID) = True Then
         FButtonVisible = CBool(SendMessage(ToolBarHandle, TB_ISBUTTONHIDDEN, ID, ByVal 0&) = 0)
     ElseIf ToolBarCustomizeButtonsCount > 0 Then
@@ -2705,7 +2786,7 @@ End If
 End Property
 
 Friend Property Let FButtonVisible(ByVal ID As Long, ByVal Value As Boolean)
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If IsButtonAvailable(ID) = True Then SendMessage ToolBarHandle, TB_HIDEBUTTON, ID, ByVal MakeDWord(IIf(Value = True, 0, 1), 0)
     If ToolBarCustomizeButtonsCount > 0 Then
         Dim i As Long
@@ -2725,7 +2806,7 @@ End If
 End Property
 
 Friend Property Get FButtonMixedState(ByVal ID As Long) As Boolean
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If IsButtonAvailable(ID) = True Then
         FButtonMixedState = CBool(SendMessage(ToolBarHandle, TB_ISBUTTONINDETERMINATE, ID, ByVal 0&) <> 0)
     ElseIf ToolBarCustomizeButtonsCount > 0 Then
@@ -2740,7 +2821,7 @@ End If
 End Property
 
 Friend Property Let FButtonMixedState(ByVal ID As Long, ByVal Value As Boolean)
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If IsButtonAvailable(ID) = True Then SendMessage ToolBarHandle, TB_INDETERMINATE, ID, ByVal MakeDWord(IIf(Value = True, 1, 0), 0)
     If ToolBarCustomizeButtonsCount > 0 Then
         Dim i As Long
@@ -2760,7 +2841,7 @@ End If
 End Property
 
 Friend Property Get FButtonHighLighted(ByVal ID As Long) As Boolean
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If IsButtonAvailable(ID) = True Then
         FButtonHighLighted = CBool(SendMessage(ToolBarHandle, TB_ISBUTTONHIGHLIGHTED, ID, ByVal 0&) <> 0)
     ElseIf ToolBarCustomizeButtonsCount > 0 Then
@@ -2775,7 +2856,7 @@ End If
 End Property
 
 Friend Property Let FButtonHighLighted(ByVal ID As Long, ByVal Value As Boolean)
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If IsButtonAvailable(ID) = True Then SendMessage ToolBarHandle, TB_MARKBUTTON, ID, ByVal MakeDWord(IIf(Value = True, 1, 0), 0)
     If ToolBarCustomizeButtonsCount > 0 Then
         Dim i As Long
@@ -2795,7 +2876,7 @@ End If
 End Property
 
 Friend Property Get FButtonNoImage(ByVal ID As Long, ByVal ImageIndex As Long) As Boolean
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If IsButtonAvailable(ID) = True Then
         Dim TBBI As TBBUTTONINFO
         With TBBI
@@ -2816,7 +2897,7 @@ End If
 End Property
 
 Friend Property Let FButtonNoImage(ByVal ID As Long, ByVal ImageIndex As Long, ByVal Value As Boolean)
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If IsButtonAvailable(ID) = True Then
         Dim NewButton As ShadowButtonStruct
         NewButton = GetShadowButton(ID)
@@ -2849,7 +2930,7 @@ End If
 End Property
 
 Friend Property Get FButtonNoPrefix(ByVal ID As Long) As Boolean
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If IsButtonAvailable(ID) = True Then
         Dim TBBI As TBBUTTONINFO
         With TBBI
@@ -2870,7 +2951,7 @@ End If
 End Property
 
 Friend Property Let FButtonNoPrefix(ByVal ID As Long, ByVal Value As Boolean)
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If IsButtonAvailable(ID) = True Then
         Dim NewButton As ShadowButtonStruct
         With NewButton
@@ -2903,7 +2984,7 @@ End If
 End Property
 
 Friend Property Get FButtonAutoSize(ByVal ID As Long) As Boolean
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If IsButtonAvailable(ID) = True Then
         Dim TBBI As TBBUTTONINFO
         With TBBI
@@ -2924,7 +3005,7 @@ End If
 End Property
 
 Friend Property Let FButtonAutoSize(ByVal ID As Long, ByVal Value As Boolean)
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If IsButtonAvailable(ID) = True Then
         Dim NewButton As ShadowButtonStruct
         NewButton = GetShadowButton(ID)
@@ -2958,7 +3039,7 @@ End If
 End Property
 
 Friend Property Get FButtonCustomWidth(ByVal ID As Long) As Single
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If IsButtonAvailable(ID) = True Then
         Dim TBBI As TBBUTTONINFO
         With TBBI
@@ -2987,7 +3068,7 @@ If Value < 0 Then
         Err.Raise 380
     End If
 End If
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If IsButtonAvailable(ID) = True Then
         Dim TBBI As TBBUTTONINFO
         With TBBI
@@ -3017,25 +3098,25 @@ End If
 End Property
 
 Friend Property Get FButtonPosition(ByVal ID As Long) As Long
-If ToolBarHandle <> 0 And IsButtonAvailable(ID) = True Then FButtonPosition = SendMessage(ToolBarHandle, TB_COMMANDTOINDEX, ID, ByVal 0&) + 1
+If ToolBarHandle <> NULL_PTR And IsButtonAvailable(ID) = True Then FButtonPosition = CLng(SendMessage(ToolBarHandle, TB_COMMANDTOINDEX, ID, ByVal 0&)) + 1
 End Property
 
 Friend Property Let FButtonPosition(ByVal ID As Long, ByVal Value As Long)
-If ToolBarHandle <> 0 And IsButtonAvailable(ID) = True Then If SendMessage(ToolBarHandle, TB_MOVEBUTTON, SendMessage(ToolBarHandle, TB_COMMANDTOINDEX, ID, ByVal 0&), ByVal Value - 1&) = 0 Then Err.Raise 380
+If ToolBarHandle <> NULL_PTR And IsButtonAvailable(ID) = True Then If SendMessage(ToolBarHandle, TB_MOVEBUTTON, SendMessage(ToolBarHandle, TB_COMMANDTOINDEX, ID, ByVal 0&), ByVal Value - 1&) = 0 Then Err.Raise 380
 End Property
 
 Friend Property Get FButtonHot(ByVal ID As Long) As Boolean
-If ToolBarHandle <> 0 And IsButtonAvailable(ID) = True Then
+If ToolBarHandle <> NULL_PTR And IsButtonAvailable(ID) = True Then
     Dim Index As Long
-    Index = SendMessage(ToolBarHandle, TB_GETHOTITEM, 0, ByVal 0&)
+    Index = CLng(SendMessage(ToolBarHandle, TB_GETHOTITEM, 0, ByVal 0&))
     If Index > -1 Then FButtonHot = CBool(ID = GetButtonID(Index + 1))
 End If
 End Property
 
 Friend Property Let FButtonHot(ByVal ID As Long, ByVal Value As Boolean)
-If ToolBarHandle <> 0 And IsButtonAvailable(ID) = True Then
+If ToolBarHandle <> NULL_PTR And IsButtonAvailable(ID) = True Then
     Dim Index As Long
-    Index = SendMessage(ToolBarHandle, TB_COMMANDTOINDEX, ID, ByVal 0&) + 1
+    Index = CLng(SendMessage(ToolBarHandle, TB_COMMANDTOINDEX, ID, ByVal 0&)) + 1
     If Index > 0 Then
         If Value = True Then
             SendMessage ToolBarHandle, TB_SETHOTITEM, Index - 1, ByVal 0&
@@ -3047,7 +3128,7 @@ End If
 End Property
 
 Friend Property Get FButtonWidth(ByVal ID As Long) As Single
-If ToolBarHandle <> 0 And IsButtonAvailable(ID) = True Then
+If ToolBarHandle <> NULL_PTR And IsButtonAvailable(ID) = True Then
     Dim RC As RECT
     SendMessage ToolBarHandle, TB_GETITEMRECT, SendMessage(ToolBarHandle, TB_COMMANDTOINDEX, ID, ByVal 0&), ByVal VarPtr(RC)
     FButtonWidth = UserControl.ScaleX((RC.Right - RC.Left), vbPixels, vbContainerSize)
@@ -3055,7 +3136,7 @@ End If
 End Property
 
 Friend Property Get FButtonHeight(ByVal ID As Long) As Single
-If ToolBarHandle <> 0 And IsButtonAvailable(ID) = True Then
+If ToolBarHandle <> NULL_PTR And IsButtonAvailable(ID) = True Then
     Dim RC As RECT
     SendMessage ToolBarHandle, TB_GETITEMRECT, SendMessage(ToolBarHandle, TB_COMMANDTOINDEX, ID, ByVal 0&), ByVal VarPtr(RC)
     FButtonHeight = UserControl.ScaleX((RC.Bottom - RC.Top), vbPixels, vbContainerSize)
@@ -3063,7 +3144,7 @@ End If
 End Property
 
 Friend Property Get FButtonLeft(ByVal ID As Long) As Single
-If ToolBarHandle <> 0 And IsButtonAvailable(ID) = True Then
+If ToolBarHandle <> NULL_PTR And IsButtonAvailable(ID) = True Then
     Dim RC As RECT
     SendMessage ToolBarHandle, TB_GETITEMRECT, SendMessage(ToolBarHandle, TB_COMMANDTOINDEX, ID, ByVal 0&), ByVal VarPtr(RC)
     FButtonLeft = UserControl.ScaleX(RC.Left, vbPixels, vbContainerSize)
@@ -3071,7 +3152,7 @@ End If
 End Property
 
 Friend Property Get FButtonTop(ByVal ID As Long) As Single
-If ToolBarHandle <> 0 And IsButtonAvailable(ID) = True Then
+If ToolBarHandle <> NULL_PTR And IsButtonAvailable(ID) = True Then
     Dim RC As RECT
     SendMessage ToolBarHandle, TB_GETITEMRECT, SendMessage(ToolBarHandle, TB_COMMANDTOINDEX, ID, ByVal 0&), ByVal VarPtr(RC)
     FButtonTop = UserControl.ScaleX(RC.Top, vbPixels, vbContainerSize)
@@ -3079,11 +3160,11 @@ End If
 End Property
 
 Friend Property Get FButtonMenuParent(ByVal ID As Long) As TbrButton
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If IsButtonAvailable(ID) = True Then
-        Dim Ptr As Long
+        Dim Ptr As LongPtr
         Ptr = GetButtonPtr(ID)
-        If Ptr <> 0 Then Set FButtonMenuParent = PtrToObj(Ptr)
+        If Ptr <> NULL_PTR Then Set FButtonMenuParent = PtrToObj(Ptr)
     ElseIf ToolBarCustomizeButtonsCount > 0 Then
         Dim i As Long
         For i = 1 To ToolBarCustomizeButtonsCount
@@ -3096,7 +3177,7 @@ End If
 End Property
 
 Private Sub CreateToolBar()
-If ToolBarHandle <> 0 Then Exit Sub
+If ToolBarHandle <> NULL_PTR Then Exit Sub
 Dim dwStyle As Long, dwExStyle As Long
 dwStyle = WS_CHILD Or WS_VISIBLE Or WS_CLIPSIBLINGS Or CCS_NORESIZE
 Dim Align As Integer
@@ -3125,8 +3206,8 @@ If ToolBarDesignMode = True Then
     dwStyle = dwStyle Or TBSTYLE_TRANSPARENT
     dwExStyle = dwExStyle Or WS_EX_TRANSPARENT
 End If
-ToolBarHandle = CreateWindowEx(dwExStyle, StrPtr("ToolbarWindow32"), 0, dwStyle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, 0, App.hInstance, ByVal 0&)
-If ToolBarHandle <> 0 Then
+ToolBarHandle = CreateWindowEx(dwExStyle, StrPtr("ToolbarWindow32"), NULL_PTR, dwStyle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, NULL_PTR, App.hInstance, ByVal NULL_PTR)
+If ToolBarHandle <> NULL_PTR Then
     Call ComCtlsShowAllUIStates(ToolBarHandle)
     Dim TBB As TBBUTTON
     SendMessage ToolBarHandle, TB_BUTTONSTRUCTSIZE, LenB(TBB), ByVal 0&
@@ -3140,10 +3221,10 @@ If ToolBarHandle <> 0 Then
     SendMessage ToolBarHandle, TB_SETBUTTONWIDTH, 0, ByVal MakeDWord(PropMinButtonWidth, PropMaxButtonWidth)
     SendMessage ToolBarHandle, TB_SETMAXTEXTROWS, PropMaxTextRows, ByVal 0&
     If PropRightToLeft = True And PropRightToLeftLayout = False Then
-        Dim Format As Long
-        Format = SendMessage(ToolBarHandle, TB_SETDRAWTEXTFLAGS, 0, ByVal 0&)
-        If Not (Format And DT_RTLREADING) = DT_RTLREADING Then Format = Format Or DT_RTLREADING
-        Format = SendMessage(ToolBarHandle, TB_SETDRAWTEXTFLAGS, Format, ByVal Format)
+        Dim DrawFlags As Long
+        DrawFlags = CLng(SendMessage(ToolBarHandle, TB_SETDRAWTEXTFLAGS, 0, ByVal 0&))
+        If Not (DrawFlags And DT_RTLREADING) = DT_RTLREADING Then DrawFlags = DrawFlags Or DT_RTLREADING
+        DrawFlags = CLng(SendMessage(ToolBarHandle, TB_SETDRAWTEXTFLAGS, DrawFlags, ByVal DrawFlags))
     End If
 End If
 Set Me.Font = PropFont
@@ -3153,8 +3234,8 @@ Me.InsertMarkColor = PropInsertMarkColor
 Me.HideClippedButtons = PropHideClippedButtons
 Me.AnchorHot = PropAnchorHot
 If ToolBarDesignMode = False Then
-    If ToolBarHandle <> 0 Then
-        If ToolBarBackColorBrush = 0 Then ToolBarBackColorBrush = CreateSolidBrush(WinColor(PropBackColor))
+    If ToolBarHandle <> NULL_PTR Then
+        If ToolBarBackColorBrush = NULL_PTR Then ToolBarBackColorBrush = CreateSolidBrush(WinColor(PropBackColor))
         Call ComCtlsSetSubclass(ToolBarHandle, Me, 1)
     End If
     Call ComCtlsSetSubclass(UserControl.hWnd, Me, 2)
@@ -3255,43 +3336,43 @@ If ReInitButtonsCount > 0 Then
         End With
     Next i
 End If
-If Locked = True Then LockWindowUpdate 0
+If Locked = True Then LockWindowUpdate NULL_PTR
 .Refresh
 End With
 End Sub
 
 Private Sub DestroyToolBar()
-If ToolBarHandle = 0 Then Exit Sub
+If ToolBarHandle = NULL_PTR Then Exit Sub
 Call ComCtlsRemoveSubclass(ToolBarHandle)
 Call ComCtlsRemoveSubclass(UserControl.hWnd)
 ShowWindow ToolBarHandle, SW_HIDE
-SetParent ToolBarHandle, 0
+SetParent ToolBarHandle, NULL_PTR
 DestroyWindow ToolBarHandle
-ToolBarHandle = 0
-ToolBarToolTipHandle = 0
-If ToolBarFontHandle <> 0 Then
+ToolBarHandle = NULL_PTR
+ToolBarToolTipHandle = NULL_PTR
+If ToolBarFontHandle <> NULL_PTR Then
     DeleteObject ToolBarFontHandle
-    ToolBarFontHandle = 0
+    ToolBarFontHandle = NULL_PTR
 End If
-If ToolBarTransparentBrush <> 0 Then
+If ToolBarTransparentBrush <> NULL_PTR Then
     DeleteObject ToolBarTransparentBrush
-    ToolBarTransparentBrush = 0
+    ToolBarTransparentBrush = NULL_PTR
 End If
-If ToolBarBackColorBrush <> 0 Then
+If ToolBarBackColorBrush <> NULL_PTR Then
     DeleteObject ToolBarBackColorBrush
-    ToolBarBackColorBrush = 0
+    ToolBarBackColorBrush = NULL_PTR
 End If
 End Sub
 
 Public Sub Refresh()
 Attribute Refresh.VB_Description = "Forces a complete repaint of a object."
 Attribute Refresh.VB_UserMemId = -550
-If ToolBarTransparentBrush <> 0 Then
+If ToolBarTransparentBrush <> NULL_PTR Then
     DeleteObject ToolBarTransparentBrush
-    ToolBarTransparentBrush = 0
+    ToolBarTransparentBrush = NULL_PTR
 End If
 UserControl.Refresh
-RedrawWindow UserControl.hWnd, 0, 0, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
+RedrawWindow UserControl.hWnd, NULL_PTR, NULL_PTR, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
 End Sub
 
 Public Property Get ContainedControls() As VBRUN.ContainedControls
@@ -3301,17 +3382,17 @@ End Property
 
 Public Sub Customize()
 Attribute Customize.VB_Description = "Invokes the customization dialog."
-If ToolBarHandle <> 0 Then SendMessage ToolBarHandle, TB_CUSTOMIZE, 0, ByVal 0&
+If ToolBarHandle <> NULL_PTR Then SendMessage ToolBarHandle, TB_CUSTOMIZE, 0, ByVal 0&
 End Sub
 
 Public Sub GetIdealSize(ByRef Width As Single, ByRef Height As Single)
 Attribute GetIdealSize.VB_Description = "Gets the ideal size to display all buttons."
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Width = 0
     Height = 0
     Dim dwStyle As Long, Count As Long, Size As SIZEAPI
-    dwStyle = SendMessage(ToolBarHandle, TB_GETSTYLE, 0, ByVal 0&)
-    Count = SendMessage(ToolBarHandle, TB_BUTTONCOUNT, 0, ByVal 0&)
+    dwStyle = CLng(SendMessage(ToolBarHandle, TB_GETSTYLE, 0, ByVal 0&))
+    Count = CLng(SendMessage(ToolBarHandle, TB_BUTTONCOUNT, 0, ByVal 0&))
     With UserControl
     If Count > 0 Then
         Dim i As Long, RC As RECT
@@ -3337,7 +3418,7 @@ End Sub
 
 Public Sub SaveToolBar(ByVal Key As String, ByVal SubKey As String, ByVal Value As String)
 Attribute SaveToolBar.VB_Description = "Saves a tool bar configuration."
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Const HKEY_CURRENT_USER As Long = &H80000001
     Dim TBSP As TBSAVEPARAMS, Buffer As String
     Buffer = Key & "\" & SubKey
@@ -3352,7 +3433,7 @@ End Sub
 
 Public Sub RestoreToolBar(ByVal Key As String, ByVal SubKey As String, ByVal Value As String)
 Attribute RestoreToolBar.VB_Description = "Restores a tool bar to its original state after being customized."
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Const HKEY_CURRENT_USER As Long = &H80000001
     Dim TBSP As TBSAVEPARAMS, Buffer As String
     Buffer = Key & "\" & SubKey
@@ -3367,10 +3448,10 @@ End Sub
 
 Public Function ContainerKeyDown(ByRef KeyCode As Integer, ByRef Shift As Integer) As TbrButton
 Attribute ContainerKeyDown.VB_Description = "Provides accelerator key access by forwarding the key down events of the container. The key preview property need to be set to true by a form container."
-If ToolBarHandle = 0 Or (Shift <> vbAltMask And Shift <> (vbAltMask Or vbShiftMask)) Then Exit Function
+If ToolBarHandle = NULL_PTR Or (Shift <> vbAltMask And Shift <> (vbAltMask Or vbShiftMask)) Then Exit Function
 If IsWindowEnabled(ToolBarHandle) = 0 Then Exit Function
 Dim ID As Long, Accel As Integer, Count As Long, TBBI As TBBUTTONINFO
-Count = SendMessage(ToolBarHandle, TB_BUTTONCOUNT, 0, ByVal 0&)
+Count = CLng(SendMessage(ToolBarHandle, TB_BUTTONCOUNT, 0, ByVal 0&))
 With TBBI
 .cbSize = LenB(TBBI)
 If Count > 0 Then
@@ -3420,7 +3501,7 @@ If ID > 0 Then
                 SendMessage ToolBarHandle, TB_PRESSBUTTON, ID, ByVal 0&
                 RaiseEvent ButtonClick(Button)
             Else
-                If ToolBarPopupMenuHandle = 0 Then
+                If ToolBarPopupMenuHandle = NULL_PTR Then
                     SendMessage ToolBarHandle, TB_PRESSBUTTON, ID, ByVal 1&
                     RaiseEvent ButtonDropDown(Button)
                     Dim MenuItem As Long
@@ -3440,16 +3521,16 @@ End Function
 
 Public Function FindMnemonic(ByVal CharCode As Long) As TbrButton
 Attribute FindMnemonic.VB_Description = "Returns a reference to the button object with an matching mnemonic character."
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     ' TB_MAPACCELERATOR matches either the mnemonic character or the first character in a button item.
     ' This behavior is undocumented and unwanted.
     ' The fix is to use the ID only when TB_MAPACCELERATOR returns a nonzero value.
     Dim ID As Long
     If SendMessage(ToolBarHandle, TB_MAPACCELERATOR, CharCode, ByVal VarPtr(ID)) <> 0 Then
         If IsButtonAvailable(ID) = True Then
-            Dim Ptr As Long
+            Dim Ptr As LongPtr
             Ptr = GetButtonPtr(ID)
-            If Ptr <> 0 Then Set FindMnemonic = PtrToObj(Ptr)
+            If Ptr <> NULL_PTR Then Set FindMnemonic = PtrToObj(Ptr)
         End If
     End If
 End If
@@ -3457,18 +3538,18 @@ End Function
 
 Public Function HitTest(ByVal X As Single, ByVal Y As Single) As TbrButton
 Attribute HitTest.VB_Description = "Returns a reference to the button object located at the coordinates of X and Y."
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Dim P As POINTAPI, Index As Long
     P.X = UserControl.ScaleX(X, vbContainerPosition, vbPixels)
     P.Y = UserControl.ScaleY(Y, vbContainerPosition, vbPixels)
-    Index = SendMessage(ToolBarHandle, TB_HITTEST, 0, ByVal VarPtr(P)) + 1
+    Index = CLng(SendMessage(ToolBarHandle, TB_HITTEST, 0, ByVal VarPtr(P))) + 1
     If Index > 0 Then
         Dim ID As Long
         ID = GetButtonID(Index)
         If IsButtonAvailable(ID) = True Then
-            Dim Ptr As Long
+            Dim Ptr As LongPtr
             Ptr = GetButtonPtr(ID)
-            If Ptr <> 0 Then Set HitTest = PtrToObj(Ptr)
+            If Ptr <> NULL_PTR Then Set HitTest = PtrToObj(Ptr)
         End If
     End If
 End If
@@ -3476,7 +3557,7 @@ End Function
 
 Public Function HitTestInsertMark(ByVal X As Single, ByVal Y As Single, Optional ByRef After As Boolean) As TbrButton
 Attribute HitTestInsertMark.VB_Description = "Returns a reference to the button object located at the coordinates of X and Y and retrieves a value that determines where the insertion point should appear."
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Dim P As POINTAPI, TBIM As TBINSERTMARK
     P.X = CLng(UserControl.ScaleX(X, vbContainerPosition, vbPixels))
     P.Y = CLng(UserControl.ScaleY(Y, vbContainerPosition, vbPixels))
@@ -3486,9 +3567,9 @@ If ToolBarHandle <> 0 Then
         Dim ID As Long
         ID = GetButtonID(.iButton + 1)
         If IsButtonAvailable(ID) = True Then
-            Dim Ptr As Long
+            Dim Ptr As LongPtr
             Ptr = GetButtonPtr(ID)
-            If Ptr <> 0 Then Set HitTestInsertMark = PtrToObj(Ptr)
+            If Ptr <> NULL_PTR Then Set HitTestInsertMark = PtrToObj(Ptr)
         End If
     End If
     After = CBool((.dwFlags And TBIMHT_AFTER) <> 0 And (.dwFlags And TBIMHT_BACKGROUND) = 0)
@@ -3499,7 +3580,7 @@ End Function
 Public Property Get InsertMark(Optional ByRef After As Boolean) As TbrButton
 Attribute InsertMark.VB_Description = "Returns/sets a reference to a button where an insertion mark is positioned."
 Attribute InsertMark.VB_MemberFlags = "400"
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Dim TBIM As TBINSERTMARK
     With TBIM
     SendMessage ToolBarHandle, TB_GETINSERTMARK, 0, ByVal VarPtr(TBIM)
@@ -3507,9 +3588,9 @@ If ToolBarHandle <> 0 Then
         Dim ID As Long
         ID = GetButtonID(.iButton + 1)
         If IsButtonAvailable(ID) = True Then
-            Dim Ptr As Long
+            Dim Ptr As LongPtr
             Ptr = GetButtonPtr(ID)
-            If Ptr <> 0 Then Set InsertMark = PtrToObj(Ptr)
+            If Ptr <> NULL_PTR Then Set InsertMark = PtrToObj(Ptr)
         End If
         After = CBool(.dwFlags = TBIMHT_AFTER)
     End If
@@ -3522,7 +3603,7 @@ Set Me.InsertMark(After) = Value
 End Property
 
 Public Property Set InsertMark(Optional ByRef After As Boolean, ByVal Value As TbrButton)
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Dim TBIM As TBINSERTMARK
     With TBIM
     If Value Is Nothing Then
@@ -3539,13 +3620,13 @@ End Property
 
 Public Property Get HotItem() As TbrButton
 Attribute HotItem.VB_Description = "Returns/sets a reference to the currently hot button."
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Dim Index As Long
-    Index = SendMessage(ToolBarHandle, TB_GETHOTITEM, 0, ByVal 0&) + 1
+    Index = CLng(SendMessage(ToolBarHandle, TB_GETHOTITEM, 0, ByVal 0&) + 1)
     If Index > 0 Then
-        Dim Ptr As Long
+        Dim Ptr As LongPtr
         Ptr = GetButtonPtr(GetButtonID(Index))
-        If Ptr <> 0 Then Set HotItem = PtrToObj(Ptr)
+        If Ptr <> NULL_PTR Then Set HotItem = PtrToObj(Ptr)
     End If
 End If
 End Property
@@ -3555,7 +3636,7 @@ Set Me.HotItem = Value
 End Property
 
 Public Property Set HotItem(ByVal Value As TbrButton)
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     If Not Value Is Nothing Then
         Value.Hot = True
     Else
@@ -3578,7 +3659,7 @@ IntValue = CInt(UserControl.ScaleY(Value, vbContainerSize, vbPixels))
 If Err.Number <> 0 Then IntValue = 0
 On Error GoTo 0
 ToolBarImageSize = MakeDWord(LoWord(ToolBarImageSize), IntValue)
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     SendMessage ToolBarHandle, TB_SETBITMAPSIZE, 0, ByVal ToolBarImageSize
     Call ReCreateButtons
 End If
@@ -3599,7 +3680,7 @@ IntValue = CInt(UserControl.ScaleX(Value, vbContainerSize, vbPixels))
 If Err.Number <> 0 Then IntValue = 0
 On Error GoTo 0
 ToolBarImageSize = MakeDWord(IntValue, HiWord(ToolBarImageSize))
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     SendMessage ToolBarHandle, TB_SETBITMAPSIZE, 0, ByVal ToolBarImageSize
     Call ReCreateButtons
 End If
@@ -3608,7 +3689,7 @@ End Property
 
 Private Sub ResetCustomizeButtons()
 If ToolBarCustomizeButtonsCount = 0 Then Exit Sub
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Do While SendMessage(ToolBarHandle, TB_DELETEBUTTON, 0, ByVal 0&) <> 0: Loop
     Dim TBB() As TBBUTTON, i As Long
     ReDim TBB(0 To (ToolBarCustomizeButtonsCount - 1)) As TBBUTTON
@@ -3634,9 +3715,9 @@ End Sub
 
 Private Sub AllocCustomizeButtons()
 If ToolBarCustomizeButtonsCount > 0 Then Exit Sub
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Erase ToolBarCustomizeButtons()
-    ToolBarCustomizeButtonsCount = SendMessage(ToolBarHandle, TB_BUTTONCOUNT, 0, ByVal 0&)
+    ToolBarCustomizeButtonsCount = CLng(SendMessage(ToolBarHandle, TB_BUTTONCOUNT, 0, ByVal 0&))
     If ToolBarCustomizeButtonsCount > 0 Then
         ReDim ToolBarCustomizeButtons(1 To ToolBarCustomizeButtonsCount) As ShadowButtonStruct
         Dim i As Long
@@ -3646,12 +3727,12 @@ End If
 End Sub
 
 Private Sub ModifyButton(ByVal ID As Long, ByRef NewButton As ShadowButtonStruct)
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Dim Index As Long
-    Index = SendMessage(ToolBarHandle, TB_COMMANDTOINDEX, ID, ByVal 0&) + 1
+    Index = CLng(SendMessage(ToolBarHandle, TB_COMMANDTOINDEX, ID, ByVal 0&)) + 1
     If Index > 0 Then
         Dim Count As Long, i As Long, NoText As Boolean
-        Count = SendMessage(ToolBarHandle, TB_BUTTONCOUNT, 0, ByVal 0&)
+        Count = CLng(SendMessage(ToolBarHandle, TB_BUTTONCOUNT, 0, ByVal 0&))
         NoText = True
         For i = 1 To Count
             If Not GetButtonText(GetButtonID(i)) = vbNullString Then NoText = False
@@ -3672,7 +3753,7 @@ If ToolBarHandle <> 0 Then
         End If
         End With
         Dim Size As Long
-        Size = SendMessage(ToolBarHandle, TB_GETBUTTONSIZE, 0, ByVal 0&)
+        Size = CLng(SendMessage(ToolBarHandle, TB_GETBUTTONSIZE, 0, ByVal 0&))
         PropButtonWidth = LoWord(Size)
         PropButtonHeight = HiWord(Size)
     End If
@@ -3680,9 +3761,9 @@ End If
 End Sub
 
 Private Sub ReCreateButtons()
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Dim Count As Long
-    Count = SendMessage(ToolBarHandle, TB_BUTTONCOUNT, 0, ByVal 0&)
+    Count = CLng(SendMessage(ToolBarHandle, TB_BUTTONCOUNT, 0, ByVal 0&))
     If Count > 0 Then
         Dim ReButtons() As ShadowButtonStruct
         ReDim ReButtons(1 To Count) As ShadowButtonStruct
@@ -3715,24 +3796,24 @@ If ToolBarHandle <> 0 Then
             End With
         Next i
         Dim Size As Long
-        Size = SendMessage(ToolBarHandle, TB_GETBUTTONSIZE, 0, ByVal 0&)
+        Size = CLng(SendMessage(ToolBarHandle, TB_GETBUTTONSIZE, 0, ByVal 0&))
         PropButtonWidth = LoWord(Size)
         PropButtonHeight = HiWord(Size)
     End If
-    InvalidateRect ToolBarHandle, ByVal 0&, 1
+    InvalidateRect ToolBarHandle, ByVal NULL_PTR, 1
 End If
 End Sub
 
 Private Function GetButtonID(ByVal Index As Long) As Long
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Dim TBB As TBBUTTON
     SendMessage ToolBarHandle, TB_GETBUTTON, Index - 1, ByVal VarPtr(TBB)
     GetButtonID = TBB.IDCommand
 End If
 End Function
 
-Private Function GetButtonPtr(ByVal ID As Long) As Long
-If ToolBarHandle <> 0 And IsButtonAvailable(ID) = True Then
+Private Function GetButtonPtr(ByVal ID As Long) As LongPtr
+If ToolBarHandle <> NULL_PTR And IsButtonAvailable(ID) = True Then
     Dim TBBI As TBBUTTONINFO
     With TBBI
     .cbSize = LenB(TBBI)
@@ -3744,9 +3825,9 @@ End If
 End Function
 
 Private Function GetButtonText(ByVal ID As Long) As String
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Dim Length As Long
-    Length = SendMessage(ToolBarHandle, TB_GETBUTTONTEXT, ID, ByVal 0&)
+    Length = CLng(SendMessage(ToolBarHandle, TB_GETBUTTONTEXT, ID, ByVal 0&))
     If Length > 0 Then
         Dim Buffer As String
         Buffer = String(Length, vbNullChar) & vbNullChar
@@ -3757,13 +3838,13 @@ End If
 End Function
 
 Private Function IsButtonAvailable(ByVal ID As Long) As Boolean
-If ToolBarHandle <> 0 Then IsButtonAvailable = CBool(SendMessage(ToolBarHandle, TB_COMMANDTOINDEX, ID, ByVal 0&) > -1)
+If ToolBarHandle <> NULL_PTR Then IsButtonAvailable = CBool(SendMessage(ToolBarHandle, TB_COMMANDTOINDEX, ID, ByVal 0&) > -1)
 End Function
 
 Private Function GetShadowButton(ByVal ID As Long) As ShadowButtonStruct
-If ToolBarHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
     Dim Index As Long
-    Index = SendMessage(ToolBarHandle, TB_COMMANDTOINDEX, ID, ByVal 0&) + 1
+    Index = CLng(SendMessage(ToolBarHandle, TB_COMMANDTOINDEX, ID, ByVal 0&)) + 1
     If Index > 0 Then
         With GetShadowButton
         SendMessage ToolBarHandle, TB_GETBUTTON, Index - 1, ByVal VarPtr(.TBB)
@@ -3779,8 +3860,8 @@ End If
 End Function
 
 Private Function ShowButtonMenuItems(ByVal Button As TbrButton, ByVal Keyboard As Boolean) As Long
-If ToolBarHandle <> 0 Then
-    If ToolBarPopupMenuHandle <> 0 Then
+If ToolBarHandle <> NULL_PTR Then
+    If ToolBarPopupMenuHandle <> NULL_PTR Then
         SendMessage ToolBarHandle, WM_CANCELMODE, 0, ByVal 0&
         Exit Function
     End If
@@ -3804,9 +3885,9 @@ If ToolBarHandle <> 0 Then
                     MII.dwTypeData = StrPtr(Text)
                     MII.cch = Len(Text)
                     If .Picture Is Nothing Then
-                        MII.hBmpItem = 0
-                    ElseIf .Picture.Handle = 0 Then
-                        MII.hBmpItem = 0
+                        MII.hBmpItem = NULL_PTR
+                    ElseIf .Picture.Handle = NULL_PTR Then
+                        MII.hBmpItem = NULL_PTR
                     Else
                         ' The menu theme is removed when some menu item has hBmpItem set to HBMMENU_CALLBACK.
                         ' Use 32-bit pre-multiplied alpha RGB bitmaps for best results.
@@ -3833,7 +3914,7 @@ If ToolBarHandle <> 0 Then
                     MII.fType = MFT_SEPARATOR
                     MII.dwTypeData = 0
                     MII.cch = 0
-                    MII.hBmpItem = 0
+                    MII.hBmpItem = NULL_PTR
                 End If
                 MII.wID = MenuItem
                 InsertMenuItem ToolBarPopupMenuHandle, 0, 0, MII
@@ -3865,7 +3946,7 @@ If ToolBarHandle <> 0 Then
             ShowButtonMenuItems = TrackPopupMenuEx(ToolBarPopupMenuHandle, Flags, P.X, P.Y, ToolBarHandle, TPMP)
         End If
         DestroyMenu ToolBarPopupMenuHandle
-        ToolBarPopupMenuHandle = 0
+        ToolBarPopupMenuHandle = NULL_PTR
         Set ToolBarPopupMenuButton = Nothing
         ToolBarPopupMenuKeyboard = False
     End If
@@ -3901,14 +3982,14 @@ For i = 1 To 4
 Next i
 End Function
 
-Private Function CreateTransparentBrush(ByVal hDC As Long) As Long
-Dim hDCBmp As Long
-Dim hBmp As Long, hBmpOld As Long
+Private Function CreateTransparentBrush(ByVal hDC As LongPtr) As LongPtr
+Dim hDCBmp As LongPtr
+Dim hBmp As LongPtr, hBmpOld As LongPtr
 With UserControl
 hDCBmp = CreateCompatibleDC(hDC)
-If hDCBmp <> 0 Then
+If hDCBmp <> NULL_PTR Then
     hBmp = CreateCompatibleBitmap(hDC, .ScaleWidth, .ScaleHeight)
-    If hBmp <> 0 Then
+    If hBmp <> NULL_PTR Then
         hBmpOld = SelectObject(hDCBmp, hBmp)
         Dim WndRect As RECT, P As POINTAPI
         GetWindowRect .hWnd, WndRect
@@ -3928,8 +4009,8 @@ End With
 End Function
 
 Private Sub SetVisualStylesToolTip()
-If ToolBarHandle <> 0 Then
-    If ToolBarToolTipHandle <> 0 And EnabledVisualStyles() = True Then
+If ToolBarHandle <> NULL_PTR Then
+    If ToolBarToolTipHandle <> NULL_PTR And EnabledVisualStyles() = True Then
         If PropVisualStyles = True Then
             ActivateVisualStyles ToolBarToolTipHandle
         Else
@@ -3940,22 +4021,26 @@ End If
 End Sub
 
 Private Function PropImageListControl() As Object
-If ToolBarImageListObjectPointer <> 0 Then Set PropImageListControl = PtrToObj(ToolBarImageListObjectPointer)
+If ToolBarImageListObjectPointer <> NULL_PTR Then Set PropImageListControl = PtrToObj(ToolBarImageListObjectPointer)
 End Function
 
 Private Function PropDisabledImageListControl() As Object
-If ToolBarDisabledImageListObjectPointer <> 0 Then Set PropDisabledImageListControl = PtrToObj(ToolBarDisabledImageListObjectPointer)
+If ToolBarDisabledImageListObjectPointer <> NULL_PTR Then Set PropDisabledImageListControl = PtrToObj(ToolBarDisabledImageListObjectPointer)
 End Function
 
 Private Function PropHotImageListControl() As Object
-If ToolBarHotImageListObjectPointer <> 0 Then Set PropHotImageListControl = PtrToObj(ToolBarHotImageListObjectPointer)
+If ToolBarHotImageListObjectPointer <> NULL_PTR Then Set PropHotImageListControl = PtrToObj(ToolBarHotImageListObjectPointer)
 End Function
 
 Private Function PropPressedImageListControl() As Object
-If ToolBarPressedImageListObjectPointer <> 0 Then Set PropPressedImageListControl = PtrToObj(ToolBarPressedImageListObjectPointer)
+If ToolBarPressedImageListObjectPointer <> NULL_PTR Then Set PropPressedImageListControl = PtrToObj(ToolBarPressedImageListObjectPointer)
 End Function
 
+#If VBA7 Then
+Private Function ISubclass_Message(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
+#Else
 Private Function ISubclass_Message(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal dwRefData As Long) As Long
+#End If
 Select Case dwRefData
     Case 1
         ISubclass_Message = WindowProcControl(hWnd, wMsg, wParam, lParam)
@@ -3966,12 +4051,12 @@ Select Case dwRefData
 End Select
 End Function
 
-Private Function WindowProcControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_SETCURSOR
-        If LoWord(lParam) = HTCLIENT Then
+        If LoWord(CLng(lParam)) = HTCLIENT Then
             If MousePointerID(PropMousePointer) <> 0 Then
-                SetCursor LoadCursor(0, MousePointerID(PropMousePointer))
+                SetCursor LoadCursor(NULL_PTR, MousePointerID(PropMousePointer))
                 WindowProcControl = 1
                 Exit Function
             ElseIf PropMousePointer = 99 Then
@@ -3983,18 +4068,18 @@ Select Case wMsg
             End If
         End If
     Case WM_ERASEBKGND
-        If PropDoubleBuffer = True And (ToolBarDoubleBufferEraseBkgDC <> wParam Or ToolBarDoubleBufferEraseBkgDC = 0) And WindowFromDC(wParam) = hWnd Then
+        If PropDoubleBuffer = True And (ToolBarDoubleBufferEraseBkgDC <> wParam Or ToolBarDoubleBufferEraseBkgDC = NULL_PTR) And WindowFromDC(wParam) = hWnd Then
             WindowProcControl = 0
             Exit Function
         Else
-            If ToolBarHandle <> 0 Then
-                If ToolBarBackColorBrush <> 0 And (SendMessage(ToolBarHandle, TB_GETEXTENDEDSTYLE, 0, ByVal 0&) And TBSTYLE_EX_DOUBLEBUFFER) = 0 Then
+            If ToolBarHandle <> NULL_PTR Then
+                If ToolBarBackColorBrush <> NULL_PTR And (SendMessage(ToolBarHandle, TB_GETEXTENDEDSTYLE, 0, ByVal 0&) And TBSTYLE_EX_DOUBLEBUFFER) = 0 Then
                     Dim RC As RECT
                     GetClientRect hWnd, RC
                     FillRect wParam, RC, ToolBarBackColorBrush
                     If PropTransparent = True Then
-                        If ToolBarTransparentBrush = 0 Then ToolBarTransparentBrush = CreateTransparentBrush(wParam)
-                        If ToolBarTransparentBrush <> 0 Then FillRect wParam, RC, ToolBarTransparentBrush
+                        If ToolBarTransparentBrush = NULL_PTR Then ToolBarTransparentBrush = CreateTransparentBrush(wParam)
+                        If ToolBarTransparentBrush <> NULL_PTR Then FillRect wParam, RC, ToolBarTransparentBrush
                     End If
                     WindowProcControl = 1
                     Exit Function
@@ -4003,22 +4088,22 @@ Select Case wMsg
         End If
     Case WM_PAINT
         If PropDoubleBuffer = True Then
-            Dim ClientRect As RECT, hDC As Long
-            Dim hDCBmp As Long
-            Dim hBmp As Long, hBmpOld As Long
+            Dim ClientRect As RECT, hDC As LongPtr
+            Dim hDCBmp As LongPtr
+            Dim hBmp As LongPtr, hBmpOld As LongPtr
             GetClientRect hWnd, ClientRect
             Dim PS As PAINTSTRUCT
             hDC = BeginPaint(hWnd, PS)
             With PS
             If wParam <> 0 Then hDC = wParam
             hDCBmp = CreateCompatibleDC(hDC)
-            If hDCBmp <> 0 Then
+            If hDCBmp <> NULL_PTR Then
                 hBmp = CreateCompatibleBitmap(hDC, ClientRect.Right - ClientRect.Left, ClientRect.Bottom - ClientRect.Top)
-                If hBmp <> 0 Then
+                If hBmp <> NULL_PTR Then
                     hBmpOld = SelectObject(hDCBmp, hBmp)
                     ToolBarDoubleBufferEraseBkgDC = hDCBmp
                     SendMessage hWnd, WM_PRINT, hDCBmp, ByVal PRF_CLIENT Or PRF_ERASEBKGND
-                    ToolBarDoubleBufferEraseBkgDC = 0
+                    ToolBarDoubleBufferEraseBkgDC = NULL_PTR
                     With PS.RCPaint
                     BitBlt hDC, .Left, .Top, .Right - .Left, .Bottom - .Top, hDCBmp, .Left, .Top, vbSrcCopy
                     End With
@@ -4033,19 +4118,19 @@ Select Case wMsg
             Exit Function
         End If
     Case WM_ENTERMENULOOP
-        If ToolBarPopupMenuHandle <> 0 And wParam = 1 And ToolBarPopupMenuKeyboard = True Then
+        If ToolBarPopupMenuHandle <> NULL_PTR And wParam = 1 And ToolBarPopupMenuKeyboard = True Then
             Const INPUT_KEYBOARD As Long = 1, KEYEVENTF_KEYUP As Long = &H2
-            Dim KEYBDI As KEYBDINPUT
-            With KEYBDI
-            .dwType = INPUT_KEYBOARD
+            Dim GI As GENERALINPUT
+            GI.dwType = INPUT_KEYBOARD
+            With GI.KEYBDI
             .wVKey = vbKeyDown
-            SendInput 1, KEYBDI, LenB(KEYBDI)
+            SendInput 1, GI, LenB(GI)
             .dwFlags = KEYEVENTF_KEYUP
-            SendInput 1, KEYBDI, LenB(KEYBDI)
+            SendInput 1, GI, LenB(GI)
             End With
         End If
     Case WM_MEASUREITEM, WM_DRAWITEM
-        If ToolBarPopupMenuHandle <> 0 And Not ToolBarPopupMenuButton Is Nothing Then
+        If ToolBarPopupMenuHandle <> NULL_PTR And Not ToolBarPopupMenuButton Is Nothing Then
             Dim MenuPicture As IPictureDisp, CX As Long, CY As Long
             Select Case wMsg
                 Case WM_MEASUREITEM
@@ -4075,13 +4160,13 @@ Select Case wMsg
                                 Call RenderPicture(MenuPicture, DIS.hDC, DIS.RCItem.Left, DIS.RCItem.Top + ((DIS.RCItem.Bottom - DIS.RCItem.Top - CY) / 2), CX, CY, 1)
                             Else
                                 If MenuPicture.Type = vbPicTypeIcon Then
-                                    DrawState DIS.hDC, 0, 0, MenuPicture.Handle, 0, DIS.RCItem.Left, DIS.RCItem.Top + ((DIS.RCItem.Bottom - DIS.RCItem.Top - CY) / 2), CX, CY, DST_ICON Or DSS_DISABLED
+                                    DrawState DIS.hDC, NULL_PTR, NULL_PTR, MenuPicture.Handle, 0, DIS.RCItem.Left, DIS.RCItem.Top + ((DIS.RCItem.Bottom - DIS.RCItem.Top - CY) / 2), CX, CY, DST_ICON Or DSS_DISABLED
                                 Else
-                                    Dim hImage As Long
+                                    Dim hImage As LongPtr
                                     hImage = BitmapHandleFromPicture(MenuPicture, vbWhite)
                                     ' The DrawState API with DSS_DISABLED will draw white as transparent.
                                     ' This will ensure GIF bitmaps or metafiles are better drawn.
-                                    DrawState DIS.hDC, 0, 0, hImage, 0, DIS.RCItem.Left, DIS.RCItem.Top + ((DIS.RCItem.Bottom - DIS.RCItem.Top - CY) / 2), CX, CY, DST_BITMAP Or DSS_DISABLED
+                                    DrawState DIS.hDC, NULL_PTR, NULL_PTR, hImage, 0, DIS.RCItem.Left, DIS.RCItem.Top + ((DIS.RCItem.Bottom - DIS.RCItem.Top - CY) / 2), CX, CY, DST_BITMAP Or DSS_DISABLED
                                     DeleteObject hImage
                                 End If
                             End If
@@ -4097,16 +4182,16 @@ Select Case wMsg
             With TBBI
             .cbSize = LenB(TBBI)
             .dwMask = TBIF_SIZE
-            .CX = lParam
+            .CX = CLng(lParam)
             End With
             SendMessage ToolBarHandle, TB_SETBUTTONINFO, wParam, ByVal VarPtr(TBBI)
         End If
     Case WM_UPDATEUISTATE
         ' When a ToolBar is hosted in a MDIForm it *can* happen that an MDIChild sets UISF_HIDEACCEL to it's owner.
         ' However, this ensures to circumvent such scenario.
-        If LoWord(wParam) = UIS_SET Then
+        If LoWord(CLng(wParam)) = UIS_SET Then
             Dim IntValue As Integer
-            IntValue = HiWord(wParam)
+            IntValue = HiWord(CLng(wParam))
             If (IntValue And UISF_HIDEACCEL) = UISF_HIDEACCEL Then
                 IntValue = IntValue And Not UISF_HIDEACCEL
                 wParam = MakeDWord(UIS_SET, IntValue)
@@ -4139,7 +4224,7 @@ Select Case wMsg
                 If PropHotTracking = True And PropStyle = TbrStyleStandard Then
                     P.X = Get_X_lParam(lParam)
                     P.Y = Get_Y_lParam(lParam)
-                    Index = SendMessage(ToolBarHandle, TB_HITTEST, 0, ByVal VarPtr(P)) + 1
+                    Index = CLng(SendMessage(ToolBarHandle, TB_HITTEST, 0, ByVal VarPtr(P))) + 1
                     If SendMessage(ToolBarHandle, TB_GETANCHORHIGHLIGHT, 0, ByVal 0&) = 0 Then
                         SendMessage ToolBarHandle, TB_SETHOTITEM, Index - 1, ByVal 0&
                     Else
@@ -4151,14 +4236,14 @@ Select Case wMsg
                     RaiseEvent MouseEnter
                     P.X = Get_X_lParam(lParam)
                     P.Y = Get_Y_lParam(lParam)
-                    ToolBarMouseOverIndex = SendMessage(ToolBarHandle, TB_HITTEST, 0, ByVal VarPtr(P)) + 1
+                    ToolBarMouseOverIndex = CLng(SendMessage(ToolBarHandle, TB_HITTEST, 0, ByVal VarPtr(P))) + 1
                     If ToolBarMouseOverIndex > 0 Then
                         Dim ID1 As Long
                         ID1 = GetButtonID(ToolBarMouseOverIndex)
                         If IsButtonAvailable(ID1) = True Then
-                            Dim Ptr1 As Long
+                            Dim Ptr1 As LongPtr
                             Ptr1 = GetButtonPtr(ID1)
-                            If Ptr1 <> 0 Then RaiseEvent ButtonMouseEnter(PtrToObj(Ptr1))
+                            If Ptr1 <> NULL_PTR Then RaiseEvent ButtonMouseEnter(PtrToObj(Ptr1))
                         End If
                     End If
                     Call ComCtlsRequestMouseLeave(hWnd)
@@ -4166,15 +4251,15 @@ Select Case wMsg
                 If ToolBarMouseOver = True And PropMouseTrack = True Then
                     P.X = Get_X_lParam(lParam)
                     P.Y = Get_Y_lParam(lParam)
-                    Index = SendMessage(ToolBarHandle, TB_HITTEST, 0, ByVal VarPtr(P)) + 1
+                    Index = CLng(SendMessage(ToolBarHandle, TB_HITTEST, 0, ByVal VarPtr(P))) + 1
                     If ToolBarMouseOverIndex <> Index Then
                         If ToolBarMouseOverIndex > 0 Then
                             Dim ID2 As Long
                             ID2 = GetButtonID(ToolBarMouseOverIndex)
                             If IsButtonAvailable(ID2) = True Then
-                                Dim Ptr2 As Long
+                                Dim Ptr2 As LongPtr
                                 Ptr2 = GetButtonPtr(ID2)
-                                If Ptr2 <> 0 Then RaiseEvent ButtonMouseLeave(PtrToObj(Ptr2))
+                                If Ptr2 <> NULL_PTR Then RaiseEvent ButtonMouseLeave(PtrToObj(Ptr2))
                             End If
                         End If
                         ToolBarMouseOverIndex = Index
@@ -4182,9 +4267,9 @@ Select Case wMsg
                             Dim ID3 As Long
                             ID3 = GetButtonID(ToolBarMouseOverIndex)
                             If IsButtonAvailable(ID3) = True Then
-                                Dim Ptr3 As Long
+                                Dim Ptr3 As LongPtr
                                 Ptr3 = GetButtonPtr(ID3)
-                                If Ptr3 <> 0 Then RaiseEvent ButtonMouseEnter(PtrToObj(Ptr3))
+                                If Ptr3 <> NULL_PTR Then RaiseEvent ButtonMouseEnter(PtrToObj(Ptr3))
                             End If
                         End If
                     End If
@@ -4211,9 +4296,9 @@ Select Case wMsg
                 Dim ID4 As Long
                 ID4 = GetButtonID(ToolBarMouseOverIndex)
                 If IsButtonAvailable(ID4) = True Then
-                    Dim Ptr4 As Long
+                    Dim Ptr4 As LongPtr
                     Ptr4 = GetButtonPtr(ID4)
-                    If Ptr4 <> 0 Then RaiseEvent ButtonMouseLeave(PtrToObj(Ptr4))
+                    If Ptr4 <> NULL_PTR Then RaiseEvent ButtonMouseLeave(PtrToObj(Ptr4))
                 End If
             End If
             RaiseEvent MouseLeave
@@ -4221,11 +4306,11 @@ Select Case wMsg
 End Select
 End Function
 
-Private Function WindowProcUserControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcUserControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_COMMAND
         Const BN_CLICKED As Long = 0
-        If lParam = ToolBarHandle And HiWord(wParam) = BN_CLICKED Then
+        If lParam = ToolBarHandle And HiWord(CLng(wParam)) = BN_CLICKED Then
             ' This notification is normally ignored by whole drop down buttons.
             ' Anyhow, it will be sent when pressing RBUTTONDOWN-LBUTTONDOWN-LBUTTONUP. (Bug?)
             ' Therefore it is necessary to check whether the style BTNS_WHOLEDROPDOWN is set or not.
@@ -4233,19 +4318,19 @@ Select Case wMsg
             With TBBI
             .cbSize = LenB(TBBI)
             .dwMask = TBIF_LPARAM Or TBIF_STYLE
-            SendMessage ToolBarHandle, TB_GETBUTTONINFO, LoWord(wParam), ByVal VarPtr(TBBI)
+            SendMessage ToolBarHandle, TB_GETBUTTONINFO, LoWord(CLng(wParam)), ByVal VarPtr(TBBI)
             If .lParam <> 0 And (.fsStyle And BTNS_WHOLEDROPDOWN) = 0 Then RaiseEvent ButtonClick(PtrToObj(.lParam))
             End With
         End If
     Case WM_ERASEBKGND
-        If ToolBarHandle <> 0 Then
-            If ToolBarBackColorBrush <> 0 And (SendMessage(ToolBarHandle, TB_GETEXTENDEDSTYLE, 0, ByVal 0&) And TBSTYLE_EX_DOUBLEBUFFER) = 0 Then
+        If ToolBarHandle <> NULL_PTR Then
+            If ToolBarBackColorBrush <> NULL_PTR And (SendMessage(ToolBarHandle, TB_GETEXTENDEDSTYLE, 0, ByVal 0&) And TBSTYLE_EX_DOUBLEBUFFER) = 0 Then
                 Dim RC As RECT
                 GetClientRect hWnd, RC
                 FillRect wParam, RC, ToolBarBackColorBrush
                 If PropTransparent = True Then
-                    If ToolBarTransparentBrush = 0 Then ToolBarTransparentBrush = CreateTransparentBrush(wParam)
-                    If ToolBarTransparentBrush <> 0 Then FillRect wParam, RC, ToolBarTransparentBrush
+                    If ToolBarTransparentBrush = NULL_PTR Then ToolBarTransparentBrush = CreateTransparentBrush(wParam)
+                    If ToolBarTransparentBrush <> NULL_PTR Then FillRect wParam, RC, ToolBarTransparentBrush
                 End If
                 WindowProcUserControl = 1
             End If
@@ -4286,7 +4371,7 @@ Select Case wMsg
                     Dim NMTBGIT As NMTBGETINFOTIP
                     CopyMemory NMTBGIT, ByVal lParam, LenB(NMTBGIT)
                     With NMTBGIT
-                    If .iItem > 0 And .lParam <> 0 And .pszText <> 0 Then
+                    If .iItem > 0 And .lParam <> 0 And .pszText <> NULL_PTR Then
                         Set Button = PtrToObj(.lParam)
                         Dim ToolTipText As String
                         ToolTipText = Button.ToolTipText
@@ -4327,12 +4412,12 @@ Select Case wMsg
                     Call AllocCustomizeButtons
                     RaiseEvent BeginCustomization
                 Case TBN_INITCUSTOMIZE
-                    Dim hDlg As Long, HideHelpButton As Boolean
+                    Dim hDlg32 As Long, HideHelpButton As Boolean
                     ' lParam points to a struct of this kind: (undocumented)
                     ' hdr As NMHDR
-                    ' hDlg As Long
-                    CopyMemory hDlg, ByVal UnsignedAdd(lParam, LenB(NM)), 4
-                    RaiseEvent InitCustomizationDialog(hDlg, HideHelpButton)
+                    ' hDlg As LongPtr
+                    CopyMemory hDlg32, ByVal UnsignedAdd(lParam, LenB(NM)), 4
+                    RaiseEvent InitCustomizationDialog(hDlg32, HideHelpButton)
                     If HideHelpButton = True Then
                         WindowProcUserControl = TBNRF_HIDEHELP
                     Else
@@ -4353,14 +4438,14 @@ Select Case wMsg
                 Case TBN_TOOLBARCHANGE
                     RaiseEvent CustomizationChange
                 Case TBN_RESET, TBN_CUSTHELP
-                    Dim hWndFocus As Long
+                    Dim hWndFocus As LongPtr
                     hWndFocus = GetFocus()
                     Select Case NM.Code
                         Case TBN_RESET
                             Call ResetCustomizeButtons
                             Dim CloseDialog As Boolean
                             RaiseEvent ResetCustomizations(CloseDialog)
-                            If GetFocus() <> hWndFocus And hWndFocus <> 0 Then SetFocusAPI hWndFocus
+                            If GetFocus() <> hWndFocus And hWndFocus <> NULL_PTR Then SetFocusAPI hWndFocus
                             If CloseDialog = True Then
                                 WindowProcUserControl = TBNRF_ENDCUSTOMIZE
                             Else
@@ -4369,7 +4454,7 @@ Select Case wMsg
                             Exit Function
                         Case TBN_CUSTHELP
                             RaiseEvent CustomizationHelp
-                            If GetFocus() <> hWndFocus And hWndFocus <> 0 Then SetFocusAPI hWndFocus
+                            If GetFocus() <> hWndFocus And hWndFocus <> NULL_PTR Then SetFocusAPI hWndFocus
                     End Select
                 Case TBN_ENDADJUST
                     RaiseEvent EndCustomization
@@ -4402,7 +4487,7 @@ Select Case wMsg
                     CopyMemory NMTTC, ByVal lParam, LenB(NMTTC)
                     If NMTTC.hdr.hWndFrom = ToolBarHandle Then
                         ToolBarToolTipHandle = NMTTC.hWndToolTips
-                        If ToolBarToolTipHandle <> 0 Then Call ComCtlsInitToolTip(ToolBarToolTipHandle)
+                        If ToolBarToolTipHandle <> NULL_PTR Then Call ComCtlsInitToolTip(ToolBarToolTipHandle)
                         Call SetVisualStylesToolTip
                     End If
             End Select
@@ -4411,7 +4496,7 @@ End Select
 WindowProcUserControl = ComCtlsDefaultProc(hWnd, wMsg, wParam, lParam)
 End Function
 
-Private Function WindowProcUserControlDesignMode(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcUserControlDesignMode(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 If wMsg = WM_NOTIFY Then
     Dim NM As NMHDR
     CopyMemory NM, ByVal lParam, LenB(NM)

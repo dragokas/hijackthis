@@ -19,6 +19,18 @@ Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
 Option Explicit
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
 #If False Then
 Private MvwViewMonth, MvwViewYear, MvwViewDecade, MvwViewCentury
 Private MvwHitResultNoWhere, MvwHitResultCalendarBack, MvwHitResultCalendarControl, MvwHitResultCalendarDate, MvwHitResultCalendarDateNext, MvwHitResultCalendarDatePrev, MvwHitResultCalendarDay, MvwHitResultCalendarWeekNum, MvwHitResultTitleBack, MvwHitResultTitleBtnNext, MvwHitResultTitleBtnPrev, MvwHitResultTitleMonth, MvwHitResultTitleYear, MvwHitResultTodayLink
@@ -66,8 +78,8 @@ wSecond As Integer
 wMilliseconds As Integer
 End Type
 Private Type NMHDR
-hWndFrom As Long
-IDFrom As Long
+hWndFrom As LongPtr
+IDFrom As LongPtr
 Code As Long
 End Type
 Private Type NMSELCHANGE
@@ -76,11 +88,11 @@ STSelStart As SYSTEMTIME
 STSelEnd As SYSTEMTIME
 End Type
 Private Type MONTHDAYSTATE
-LPMONTHDAYSTATE As Long
+LPMONTHDAYSTATE As LongPtr
 End Type
 Private Type NMDAYSTATE
 hdr As NMHDR
-stStart As SYSTEMTIME
+STStart As SYSTEMTIME
 cDayState As Long
 prgDayState As MONTHDAYSTATE
 End Type
@@ -150,6 +162,31 @@ Public Event OLESetData(Data As DataObject, DataFormat As Integer)
 Attribute OLESetData.VB_Description = "Occurs at the OLE drag/drop source control when the drop target requests data that was not provided to the DataObject during the OLEDragStart event."
 Public Event OLEStartDrag(Data As DataObject, AllowedEffects As Long)
 Attribute OLEStartDrag.VB_Description = "Occurs when an OLE drag/drop operation is initiated either manually or automatically."
+#If VBA7 Then
+Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
+Private Declare PtrSafe Function GetLocaleInfo Lib "kernel32" Alias "GetLocaleInfoW" (ByVal LCID As Long, ByVal LCType As Long, ByVal lpLCData As LongPtr, ByVal cchData As Long) As Long
+Private Declare PtrSafe Function GetSystemMetrics Lib "user32" (ByVal nIndex As Long) As Long
+Private Declare PtrSafe Function CreateWindowEx Lib "user32" Alias "CreateWindowExW" (ByVal dwExStyle As Long, ByVal lpClassName As LongPtr, ByVal lpWindowName As LongPtr, ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hWndParent As LongPtr, ByVal hMenu As LongPtr, ByVal hInstance As LongPtr, ByRef lpParam As Any) As LongPtr
+Private Declare PtrSafe Function FindWindowEx Lib "user32" Alias "FindWindowExW" (ByVal hWndParent As LongPtr, ByVal hWndChildAfter As LongPtr, ByVal lpszClass As LongPtr, ByVal lpszWindow As LongPtr) As LongPtr
+Private Declare PtrSafe Function DestroyWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
+Private Declare PtrSafe Function SetWindowLong Lib "user32" Alias "SetWindowLongW" (ByVal hWnd As LongPtr, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
+Private Declare PtrSafe Function GetWindowLong Lib "user32" Alias "GetWindowLongW" (ByVal hWnd As LongPtr, ByVal nIndex As Long) As Long
+Private Declare PtrSafe Function SetParent Lib "user32" (ByVal hWndChild As LongPtr, ByVal hWndNewParent As LongPtr) As LongPtr
+Private Declare PtrSafe Function SetFocusAPI Lib "user32" Alias "SetFocus" (ByVal hWnd As LongPtr) As LongPtr
+Private Declare PtrSafe Function GetFocus Lib "user32" () As LongPtr
+Private Declare PtrSafe Function MulDiv Lib "kernel32" (ByVal nNumber As Long, ByVal nNumerator As Long, ByVal nDenominator As Long) As Long
+Private Declare PtrSafe Function DeleteObject Lib "gdi32" (ByVal hObject As LongPtr) As Long
+Private Declare PtrSafe Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByRef lParam As Any) As LongPtr
+Private Declare PtrSafe Function PostMessage Lib "user32" Alias "PostMessageW" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByRef lParam As Any) As LongPtr
+Private Declare PtrSafe Function ShowWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal nCmdShow As Long) As Long
+Private Declare PtrSafe Function MoveWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint As Long) As Long
+Private Declare PtrSafe Function LockWindowUpdate Lib "user32" (ByVal hWndLock As LongPtr) As Long
+Private Declare PtrSafe Function EnableWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal fEnable As Long) As Long
+Private Declare PtrSafe Function RedrawWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal lprcUpdate As LongPtr, ByVal hrgnUpdate As LongPtr, ByVal fuRedraw As Long) As Long
+Private Declare PtrSafe Function ScreenToClient Lib "user32" (ByVal hWnd As LongPtr, ByRef lpPoint As POINTAPI) As Long
+Private Declare PtrSafe Function LoadCursor Lib "user32" Alias "LoadCursorW" (ByVal hInstance As LongPtr, ByVal lpCursorName As Any) As LongPtr
+Private Declare PtrSafe Function SetCursor Lib "user32" (ByVal hCursor As LongPtr) As LongPtr
+#Else
 Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
 Private Declare Function GetLocaleInfo Lib "kernel32" Alias "GetLocaleInfoW" (ByVal Locale As Long, ByVal LCType As Long, ByVal lpLCData As Long, ByVal cchData As Long) As Long
 Private Declare Function GetSystemMetrics Lib "user32" (ByVal nIndex As Long) As Long
@@ -173,6 +210,7 @@ Private Declare Function RedrawWindow Lib "user32" (ByVal hWnd As Long, ByVal lp
 Private Declare Function ScreenToClient Lib "user32" (ByVal hWnd As Long, ByRef lpPoint As POINTAPI) As Long
 Private Declare Function LoadCursor Lib "user32" Alias "LoadCursorW" (ByVal hInstance As Long, ByVal lpCursorName As Any) As Long
 Private Declare Function SetCursor Lib "user32" (ByVal hCursor As Long) As Long
+#End If
 Private Const ICC_DATE_CLASSES As Long = &H100
 Private Const RDW_UPDATENOW As Long = &H100, RDW_INVALIDATE As Long = &H1, RDW_ERASE As Long = &H4, RDW_ALLCHILDREN As Long = &H80
 Private Const GWL_STYLE As Long = (-16)
@@ -280,9 +318,9 @@ Implements ISubclass
 Implements OLEGuids.IObjectSafety
 Implements OLEGuids.IOleInPlaceActiveObjectVB
 Implements OLEGuids.IPerPropertyBrowsingVB
-Private MonthViewHandle As Long
+Private MonthViewHandle As LongPtr
 Private MonthViewReqWidth As Long, MonthViewReqHeight As Long
-Private MonthViewFontHandle As Long
+Private MonthViewFontHandle As LongPtr
 Private MonthViewCharCodeCache As Long
 Private MonthViewIsClick As Boolean
 Private MonthViewMouseOver As Boolean
@@ -326,10 +364,14 @@ End Sub
 Private Sub IObjectSafety_SetInterfaceSafetyOptions(ByRef riid As OLEGuids.OLECLSID, ByVal dwOptionsSetMask As Long, ByVal dwEnabledOptions As Long)
 End Sub
 
+#If VBA7 Then
+Private Sub IOleInPlaceActiveObjectVB_TranslateAccelerator(ByRef Handled As Boolean, ByRef RetVal As Long, ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal Shift As Long)
+#Else
 Private Sub IOleInPlaceActiveObjectVB_TranslateAccelerator(ByRef Handled As Boolean, ByRef RetVal As Long, ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal Shift As Long)
+#End If
 If wMsg = WM_KEYDOWN Or wMsg = WM_KEYUP Then
     Dim KeyCode As Integer, IsInputKey As Boolean
-    KeyCode = wParam And &HFF&
+    KeyCode = CLng(wParam) And &HFF&
     If wMsg = WM_KEYDOWN Then
         RaiseEvent PreviewKeyDown(KeyCode, IsInputKey)
     ElseIf wMsg = WM_KEYUP Then
@@ -555,7 +597,7 @@ If InProc = True Then Exit Sub
 InProc = True
 With UserControl
 If DPICorrectionFactor() <> 1 Then Call SyncObjectRectsToContainer(Me)
-If MonthViewHandle = 0 Then InProc = False: Exit Sub
+If MonthViewHandle = NULL_PTR Then InProc = False: Exit Sub
 If MonthViewReqWidth <> 0 And MonthViewReqHeight <> 0 Then
     Dim ExtraWidth As Long, ExtraHeight As Long
     If ComCtlsSupportLevel() <= 1 Then
@@ -728,14 +770,25 @@ Attribute ZOrder.VB_Description = "Places a specified object at the front or bac
 If IsMissing(Position) Then Extender.ZOrder Else Extender.ZOrder Position
 End Sub
 
+#If VBA7 Then
+Public Property Get hWnd() As LongPtr
+Attribute hWnd.VB_Description = "Returns a handle to a control."
+Attribute hWnd.VB_UserMemId = -515
+#Else
 Public Property Get hWnd() As Long
 Attribute hWnd.VB_Description = "Returns a handle to a control."
 Attribute hWnd.VB_UserMemId = -515
+#End If
 hWnd = MonthViewHandle
 End Property
 
+#If VBA7 Then
+Public Property Get hWndUserControl() As LongPtr
+Attribute hWndUserControl.VB_Description = "Returns a handle to a control."
+#Else
 Public Property Get hWndUserControl() As Long
 Attribute hWndUserControl.VB_Description = "Returns a handle to a control."
+#End If
 hWndUserControl = UserControl.hWnd
 End Property
 
@@ -751,23 +804,23 @@ End Property
 
 Public Property Set Font(ByVal NewFont As StdFont)
 If NewFont Is Nothing Then Set NewFont = Ambient.Font
-Dim OldFontHandle As Long
+Dim OldFontHandle As LongPtr
 Set PropFont = NewFont
 OldFontHandle = MonthViewFontHandle
 MonthViewFontHandle = CreateGDIFontFromOLEFont(PropFont)
-If MonthViewHandle <> 0 Then SendMessage MonthViewHandle, WM_SETFONT, MonthViewFontHandle, ByVal 1&
-If OldFontHandle <> 0 Then DeleteObject OldFontHandle
+If MonthViewHandle <> NULL_PTR Then SendMessage MonthViewHandle, WM_SETFONT, MonthViewFontHandle, ByVal 1&
+If OldFontHandle <> NULL_PTR Then DeleteObject OldFontHandle
 Call ComputeInternalControlSize(PropMonthColumns, PropMonthRows, MonthViewReqWidth, MonthViewReqHeight)
 Call UserControl_Resize
 UserControl.PropertyChanged "Font"
 End Property
 
 Private Sub PropFont_FontChanged(ByVal PropertyName As String)
-Dim OldFontHandle As Long
+Dim OldFontHandle As LongPtr
 OldFontHandle = MonthViewFontHandle
 MonthViewFontHandle = CreateGDIFontFromOLEFont(PropFont)
-If MonthViewHandle <> 0 Then SendMessage MonthViewHandle, WM_SETFONT, MonthViewFontHandle, ByVal 1&
-If OldFontHandle <> 0 Then DeleteObject OldFontHandle
+If MonthViewHandle <> NULL_PTR Then SendMessage MonthViewHandle, WM_SETFONT, MonthViewFontHandle, ByVal 1&
+If OldFontHandle <> NULL_PTR Then DeleteObject OldFontHandle
 Call ComputeInternalControlSize(PropMonthColumns, PropMonthRows, MonthViewReqWidth, MonthViewReqHeight)
 Call UserControl_Resize
 UserControl.PropertyChanged "Font"
@@ -780,7 +833,7 @@ End Property
 
 Public Property Let VisualStyles(ByVal Value As Boolean)
 PropVisualStyles = Value
-If MonthViewHandle <> 0 And EnabledVisualStyles() = True Then
+If MonthViewHandle <> NULL_PTR And EnabledVisualStyles() = True Then
     If PropVisualStyles = True Then
         ActivateVisualStyles MonthViewHandle
     Else
@@ -801,7 +854,7 @@ End Property
 
 Public Property Let Enabled(ByVal Value As Boolean)
 UserControl.Enabled = Value
-If MonthViewHandle <> 0 Then EnableWindow MonthViewHandle, IIf(Value = True, 1, 0)
+If MonthViewHandle <> NULL_PTR Then EnableWindow MonthViewHandle, IIf(Value = True, 1, 0)
 UserControl.PropertyChanged "Enabled"
 End Property
 
@@ -849,7 +902,7 @@ Public Property Set MouseIcon(ByVal Value As IPictureDisp)
 If Value Is Nothing Then
     Set PropMouseIcon = Nothing
 Else
-    If Value.Type = vbPicTypeIcon Or Value.Handle = 0 Then
+    If Value.Type = vbPicTypeIcon Or Value.Handle = NULL_PTR Then
         Set PropMouseIcon = Value
     Else
         If MonthViewDesignMode = True Then
@@ -887,7 +940,7 @@ Call ComCtlsCheckRightToLeft(PropRightToLeft, UserControl.RightToLeft, PropRight
 Dim dwMask As Long
 If PropRightToLeft = True And PropRightToLeftLayout = True Then dwMask = WS_EX_LAYOUTRTL
 If MonthViewDesignMode = False Then Call ComCtlsSetRightToLeft(UserControl.hWnd, dwMask)
-If MonthViewHandle <> 0 Then Call ComCtlsSetRightToLeft(MonthViewHandle, dwMask)
+If MonthViewHandle <> NULL_PTR Then Call ComCtlsSetRightToLeft(MonthViewHandle, dwMask)
 UserControl.PropertyChanged "RightToLeft"
 End Property
 
@@ -925,7 +978,7 @@ End Property
 
 Public Property Let BackColor(ByVal Value As OLE_COLOR)
 PropBackColor = Value
-If MonthViewHandle <> 0 Then SendMessage MonthViewHandle, MCM_SETCOLOR, MCSC_MONTHBK, ByVal WinColor(PropBackColor)
+If MonthViewHandle <> NULL_PTR Then SendMessage MonthViewHandle, MCM_SETCOLOR, MCSC_MONTHBK, ByVal WinColor(PropBackColor)
 UserControl.PropertyChanged "BackColor"
 End Property
 
@@ -936,7 +989,7 @@ End Property
 
 Public Property Let ForeColor(ByVal Value As OLE_COLOR)
 PropForeColor = Value
-If MonthViewHandle <> 0 Then SendMessage MonthViewHandle, MCM_SETCOLOR, MCSC_TEXT, ByVal WinColor(PropForeColor)
+If MonthViewHandle <> NULL_PTR Then SendMessage MonthViewHandle, MCM_SETCOLOR, MCSC_TEXT, ByVal WinColor(PropForeColor)
 UserControl.PropertyChanged "ForeColor"
 End Property
 
@@ -947,7 +1000,7 @@ End Property
 
 Public Property Let TitleBackColor(ByVal Value As OLE_COLOR)
 PropTitleBackColor = Value
-If MonthViewHandle <> 0 Then SendMessage MonthViewHandle, MCM_SETCOLOR, MCSC_TITLEBK, ByVal WinColor(PropTitleBackColor)
+If MonthViewHandle <> NULL_PTR Then SendMessage MonthViewHandle, MCM_SETCOLOR, MCSC_TITLEBK, ByVal WinColor(PropTitleBackColor)
 UserControl.PropertyChanged "TitleBackColor"
 End Property
 
@@ -958,7 +1011,7 @@ End Property
 
 Public Property Let TitleForeColor(ByVal Value As OLE_COLOR)
 PropTitleForeColor = Value
-If MonthViewHandle <> 0 Then SendMessage MonthViewHandle, MCM_SETCOLOR, MCSC_TITLETEXT, ByVal WinColor(PropTitleForeColor)
+If MonthViewHandle <> NULL_PTR Then SendMessage MonthViewHandle, MCM_SETCOLOR, MCSC_TITLETEXT, ByVal WinColor(PropTitleForeColor)
 UserControl.PropertyChanged "TitleForeColor"
 End Property
 
@@ -969,7 +1022,7 @@ End Property
 
 Public Property Let TrailingForeColor(ByVal Value As OLE_COLOR)
 PropTrailingForeColor = Value
-If MonthViewHandle <> 0 Then SendMessage MonthViewHandle, MCM_SETCOLOR, MCSC_TRAILINGTEXT, ByVal WinColor(PropTrailingForeColor)
+If MonthViewHandle <> NULL_PTR Then SendMessage MonthViewHandle, MCM_SETCOLOR, MCSC_TRAILINGTEXT, ByVal WinColor(PropTrailingForeColor)
 UserControl.PropertyChanged "TrailingForeColor"
 End Property
 
@@ -986,7 +1039,7 @@ Select Case Value
     Case Else
         Err.Raise 380
 End Select
-If MonthViewHandle <> 0 Then
+If MonthViewHandle <> NULL_PTR Then
     ' MCM_GETMINREQRECT will not be considered by a new border style. Thus it is necessary to recreate the month view control.
     Call ReCreateMonthView
 End If
@@ -995,7 +1048,7 @@ End Property
 
 Public Property Get MinDate() As Date
 Attribute MinDate.VB_Description = "Returns/sets the earliest date that can be displayed or accepted by the control."
-If MonthViewHandle <> 0 Then
+If MonthViewHandle <> NULL_PTR Then
     Dim ST(0 To 1) As SYSTEMTIME
     If (SendMessage(MonthViewHandle, MCM_GETRANGE, 0, ByVal VarPtr(ST(0))) And GDTR_MIN) = GDTR_MIN Then
         MinDate = DateSerial(ST(0).wYear, ST(0).wMonth, ST(0).wDay)
@@ -1029,7 +1082,7 @@ Select Case Value
         End If
 End Select
 If PropMinDate > PropValue Then PropValue = PropMinDate
-If MonthViewHandle <> 0 Then
+If MonthViewHandle <> NULL_PTR Then
     Dim ST(0 To 1) As SYSTEMTIME
     ST(0).wYear = VBA.Year(PropMinDate)
     ST(0).wMonth = VBA.Month(PropMinDate)
@@ -1044,7 +1097,7 @@ End Property
 
 Public Property Get MaxDate() As Date
 Attribute MaxDate.VB_Description = "Returns/sets the latest date that can be displayed or accepted by the control."
-If MonthViewHandle <> 0 Then
+If MonthViewHandle <> NULL_PTR Then
     Dim ST(0 To 1) As SYSTEMTIME
     If (SendMessage(MonthViewHandle, MCM_GETRANGE, 0, ByVal VarPtr(ST(0))) And GDTR_MAX) = GDTR_MAX Then
         MaxDate = DateSerial(ST(1).wYear, ST(1).wMonth, ST(1).wDay)
@@ -1078,7 +1131,7 @@ Select Case Value
         End If
 End Select
 If PropMaxDate < PropValue Then PropValue = PropMinDate
-If MonthViewHandle <> 0 Then
+If MonthViewHandle <> NULL_PTR Then
     Dim ST(0 To 1) As SYSTEMTIME
     ST(0).wYear = VBA.Year(PropMinDate)
     ST(0).wMonth = VBA.Month(PropMinDate)
@@ -1095,7 +1148,7 @@ Public Property Get Value() As Date
 Attribute Value.VB_Description = "Returns/sets the current date."
 Attribute Value.VB_UserMemId = 0
 Attribute Value.VB_MemberFlags = "103c"
-If MonthViewHandle <> 0 Then
+If MonthViewHandle <> NULL_PTR Then
     If PropMultiSelect = False Then
         Dim ST1 As SYSTEMTIME
         SendMessage MonthViewHandle, MCM_GETCURSEL, 0, ByVal VarPtr(ST1)
@@ -1123,7 +1176,7 @@ Else
 End If
 Dim Changed As Boolean
 Changed = CBool(Me.Value <> PropValue)
-If MonthViewHandle <> 0 Then
+If MonthViewHandle <> NULL_PTR Then
     If PropMultiSelect = False Then
         Dim ST1 As SYSTEMTIME
         With ST1
@@ -1249,7 +1302,7 @@ End Property
 
 Public Property Let ShowToday(ByVal Value As Boolean)
 PropShowToday = Value
-If MonthViewHandle <> 0 Then
+If MonthViewHandle <> NULL_PTR Then
     Dim dwStyle As Long
     dwStyle = GetWindowLong(MonthViewHandle, GWL_STYLE)
     If PropShowToday = False Then
@@ -1271,7 +1324,7 @@ End Property
 
 Public Property Let ShowTodayCircle(ByVal Value As Boolean)
 PropShowTodayCircle = Value
-If MonthViewHandle <> 0 Then
+If MonthViewHandle <> NULL_PTR Then
     Dim dwStyle As Long
     dwStyle = GetWindowLong(MonthViewHandle, GWL_STYLE)
     If PropShowTodayCircle = False Then
@@ -1293,7 +1346,7 @@ End Property
 
 Public Property Let ShowWeekNumbers(ByVal Value As Boolean)
 PropShowWeekNumbers = Value
-If MonthViewHandle <> 0 Then
+If MonthViewHandle <> NULL_PTR Then
     Dim dwStyle As Long
     dwStyle = GetWindowLong(MonthViewHandle, GWL_STYLE)
     If PropShowWeekNumbers = True Then
@@ -1315,7 +1368,7 @@ End Property
 
 Public Property Let ShowTrailingDates(ByVal Value As Boolean)
 PropShowTrailingDates = Value
-If MonthViewHandle <> 0 And ComCtlsSupportLevel() >= 2 Then
+If MonthViewHandle <> NULL_PTR And ComCtlsSupportLevel() >= 2 Then
     Dim dwStyle As Long
     dwStyle = GetWindowLong(MonthViewHandle, GWL_STYLE)
     If PropShowTrailingDates = True Then
@@ -1332,8 +1385,8 @@ End Property
 
 Public Property Get ScrollRate() As Long
 Attribute ScrollRate.VB_Description = "Returns/sets a value that determines the number of months that the control moves when the user clicks a scroll button. If this value is zero, the month delta is reset to the default, which is the number of months displayed."
-If MonthViewHandle <> 0 Then
-    ScrollRate = SendMessage(MonthViewHandle, MCM_GETMONTHDELTA, 0, ByVal 0&)
+If MonthViewHandle <> NULL_PTR Then
+    ScrollRate = CLng(SendMessage(MonthViewHandle, MCM_GETMONTHDELTA, 0, ByVal 0&))
 Else
     ScrollRate = PropScrollRate
 End If
@@ -1349,14 +1402,14 @@ If Value < 0 Then
     End If
 End If
 PropScrollRate = Value
-If MonthViewHandle <> 0 Then SendMessage MonthViewHandle, MCM_SETMONTHDELTA, PropScrollRate, ByVal 0&
+If MonthViewHandle <> NULL_PTR Then SendMessage MonthViewHandle, MCM_SETMONTHDELTA, PropScrollRate, ByVal 0&
 UserControl.PropertyChanged "ScrollRate"
 End Property
 
 Public Property Get StartOfWeek() As Integer
 Attribute StartOfWeek.VB_Description = "Returns/sets a value that determines the day of the week [Mon-Sun] displayed in the leftmost column of days."
-If MonthViewHandle <> 0 And MonthViewDesignMode = False Then
-    StartOfWeek = LoWord(SendMessage(MonthViewHandle, MCM_GETFIRSTDAYOFWEEK, 0, ByVal 0&)) + 1
+If MonthViewHandle <> NULL_PTR And MonthViewDesignMode = False Then
+    StartOfWeek = LoWord(CLng(SendMessage(MonthViewHandle, MCM_GETFIRSTDAYOFWEEK, 0, ByVal 0&))) + 1
 Else
     StartOfWeek = PropStartOfWeek
 End If
@@ -1369,8 +1422,8 @@ Select Case Value
     Case Else
         Err.Raise 380
 End Select
-If MonthViewHandle <> 0 Then
-    If (PropStartOfWeek = 0 And HiWord(SendMessage(MonthViewHandle, MCM_GETFIRSTDAYOFWEEK, 0, ByVal 0&)) <> 0) Or PropStartOfWeek > 0 Then
+If MonthViewHandle <> NULL_PTR Then
+    If (PropStartOfWeek = 0 And HiWord(CLng(SendMessage(MonthViewHandle, MCM_GETFIRSTDAYOFWEEK, 0, ByVal 0&))) <> 0) Or PropStartOfWeek > 0 Then
         Dim DayVal As Integer
         If PropStartOfWeek = 0 Then
             DayVal = Me.SystemStartOfWeek
@@ -1390,7 +1443,7 @@ End Property
 
 Public Property Let MultiSelect(ByVal Value As Boolean)
 PropMultiSelect = Value
-If MonthViewHandle <> 0 Then Call ReCreateMonthView
+If MonthViewHandle <> NULL_PTR Then Call ReCreateMonthView
 UserControl.PropertyChanged "MultiSelect"
 End Property
 
@@ -1401,14 +1454,14 @@ End Property
 
 Public Property Let DayState(ByVal Value As Boolean)
 PropDayState = Value
-If MonthViewHandle <> 0 Then Call ReCreateMonthView
+If MonthViewHandle <> NULL_PTR Then Call ReCreateMonthView
 UserControl.PropertyChanged "DayState"
 End Property
 
 Public Property Get MaxSelCount() As Integer
 Attribute MaxSelCount.VB_Description = "Returns/sets the limit on the number of dates that a user can multiselect. Only applicable if the multiselect property is true."
-If MonthViewHandle <> 0 And PropMultiSelect = True Then
-    MaxSelCount = SendMessage(MonthViewHandle, MCM_GETMAXSELCOUNT, 0, ByVal 0&)
+If MonthViewHandle <> NULL_PTR And PropMultiSelect = True Then
+    MaxSelCount = CLng(SendMessage(MonthViewHandle, MCM_GETMAXSELCOUNT, 0, ByVal 0&))
 Else
     MaxSelCount = PropMaxSelCount
 End If
@@ -1425,7 +1478,7 @@ Else
         Err.Raise 380
     End If
 End If
-If MonthViewHandle <> 0 Then SendMessage MonthViewHandle, MCM_SETMAXSELCOUNT, PropMaxSelCount, ByVal 0&
+If MonthViewHandle <> NULL_PTR Then SendMessage MonthViewHandle, MCM_SETMAXSELCOUNT, PropMaxSelCount, ByVal 0&
 UserControl.PropertyChanged "MaxSelCount"
 End Property
 
@@ -1461,7 +1514,7 @@ Else
         Err.Raise 380
     End If
 End If
-If MonthViewHandle <> 0 Then
+If MonthViewHandle <> NULL_PTR Then
     Call ComputeInternalControlSize(PropMonthColumns, PropMonthRows, MonthViewReqWidth, MonthViewReqHeight)
     Call UserControl_Resize
 End If
@@ -1500,7 +1553,7 @@ Else
         Err.Raise 380
     End If
 End If
-If MonthViewHandle <> 0 Then
+If MonthViewHandle <> NULL_PTR Then
     Call ComputeInternalControlSize(PropMonthColumns, PropMonthRows, MonthViewReqWidth, MonthViewReqHeight)
     Call UserControl_Resize
 End If
@@ -1509,10 +1562,10 @@ End Property
 
 Public Property Get View() As MvwViewConstants
 Attribute View.VB_Description = "Returns/sets the current view. Requires comctl32.dll version 6.1 or higher."
-If MonthViewHandle = 0 Or ComCtlsSupportLevel() <= 1 Then
+If MonthViewHandle = NULL_PTR Or ComCtlsSupportLevel() <= 1 Then
     View = PropView
 Else
-    View = SendMessage(MonthViewHandle, MCM_GETCURRENTVIEW, 0, ByVal 0&)
+    View = CLng(SendMessage(MonthViewHandle, MCM_GETCURRENTVIEW, 0, ByVal 0&))
 End If
 End Property
 
@@ -1523,7 +1576,7 @@ Select Case Value
     Case Else
         Err.Raise 380
 End Select
-If MonthViewHandle <> 0 And ComCtlsSupportLevel() >= 2 Then SendMessage MonthViewHandle, MCM_SETCURRENTVIEW, 0, ByVal PropView
+If MonthViewHandle <> NULL_PTR And ComCtlsSupportLevel() >= 2 Then SendMessage MonthViewHandle, MCM_SETCURRENTVIEW, 0, ByVal PropView
 UserControl.PropertyChanged "View"
 End Property
 
@@ -1534,7 +1587,7 @@ End Property
 
 Public Property Let UseShortestDayNames(ByVal Value As Boolean)
 PropUseShortestDayNames = Value
-If MonthViewHandle <> 0 And ComCtlsSupportLevel() >= 2 Then
+If MonthViewHandle <> NULL_PTR And ComCtlsSupportLevel() >= 2 Then
     Dim dwStyle As Long
     dwStyle = GetWindowLong(MonthViewHandle, GWL_STYLE)
     If PropUseShortestDayNames = True Then
@@ -1550,7 +1603,7 @@ UserControl.PropertyChanged "UseShortestDayNames"
 End Property
 
 Private Sub CreateMonthView()
-If MonthViewHandle <> 0 Then Exit Sub
+If MonthViewHandle <> NULL_PTR Then Exit Sub
 Dim dwStyle As Long, dwExStyle As Long
 dwStyle = WS_CHILD Or WS_VISIBLE
 If PropRightToLeft = True And PropRightToLeftLayout = True Then dwExStyle = dwExStyle Or WS_EX_LAYOUTRTL
@@ -1567,8 +1620,8 @@ If MonthViewDesignMode = False Then
     ' Thus it is necessary to subclass the parent before the control is created.
     Call ComCtlsSetSubclass(UserControl.hWnd, Me, 2)
 End If
-MonthViewHandle = CreateWindowEx(dwExStyle, StrPtr("SysMonthCal32"), 0, dwStyle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, 0, App.hInstance, ByVal 0&)
-If MonthViewHandle <> 0 And ComCtlsSupportLevel() >= 2 Then SendMessage MonthViewHandle, MCM_SETCALENDARBORDER, 1, ByVal 0&
+MonthViewHandle = CreateWindowEx(dwExStyle, StrPtr("SysMonthCal32"), NULL_PTR, dwStyle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, NULL_PTR, App.hInstance, ByVal NULL_PTR)
+If MonthViewHandle <> NULL_PTR And ComCtlsSupportLevel() >= 2 Then SendMessage MonthViewHandle, MCM_SETCALENDARBORDER, 1, ByVal 0&
 Set Me.Font = PropFont
 Me.VisualStyles = PropVisualStyles
 Me.Enabled = UserControl.Enabled
@@ -1586,7 +1639,7 @@ Me.StartOfWeek = PropStartOfWeek
 Me.MaxSelCount = PropMaxSelCount
 Me.View = PropView
 If MonthViewDesignMode = False Then
-    If MonthViewHandle <> 0 Then Call ComCtlsSetSubclass(MonthViewHandle, Me, 1)
+    If MonthViewHandle <> NULL_PTR Then Call ComCtlsSetSubclass(MonthViewHandle, Me, 1)
 End If
 End Sub
 
@@ -1597,7 +1650,7 @@ If MonthViewDesignMode = False Then
     Call DestroyMonthView
     Call CreateMonthView
     Call UserControl_Resize
-    If MonthViewHandle <> 0 And PropDayState = True Then
+    If MonthViewHandle <> NULL_PTR And PropDayState = True Then
         Dim ArraySize As Long
         Dim DayState() As Long, State() As Boolean
         ArraySize = SetDayState(DayState(), State())
@@ -1606,7 +1659,7 @@ If MonthViewDesignMode = False Then
     If ComCtlsSupportLevel() >= 2 Then
         If PropView <> MvwViewMonth Then Me.View = PropView
     End If
-    If Locked = True Then LockWindowUpdate 0
+    If Locked = True Then LockWindowUpdate NULL_PTR
     Me.Refresh
 Else
     Call DestroyMonthView
@@ -1616,16 +1669,16 @@ End If
 End Sub
 
 Private Sub DestroyMonthView()
-If MonthViewHandle = 0 Then Exit Sub
+If MonthViewHandle = NULL_PTR Then Exit Sub
 Call ComCtlsRemoveSubclass(MonthViewHandle)
 Call ComCtlsRemoveSubclass(UserControl.hWnd)
 ShowWindow MonthViewHandle, SW_HIDE
-SetParent MonthViewHandle, 0
+SetParent MonthViewHandle, NULL_PTR
 DestroyWindow MonthViewHandle
-MonthViewHandle = 0
-If MonthViewFontHandle <> 0 Then
+MonthViewHandle = NULL_PTR
+If MonthViewFontHandle <> NULL_PTR Then
     DeleteObject MonthViewFontHandle
-    MonthViewFontHandle = 0
+    MonthViewFontHandle = NULL_PTR
 End If
 End Sub
 
@@ -1669,10 +1722,10 @@ End Property
 Public Property Get CalendarCount() As Byte
 Attribute CalendarCount.VB_Description = "Returns the number of calendars currently displayed. The maximum number of allowed calendars is 12."
 Attribute CalendarCount.VB_MemberFlags = "400"
-If MonthViewHandle = 0 Or ComCtlsSupportLevel() <= 1 Then
+If MonthViewHandle = NULL_PTR Or ComCtlsSupportLevel() <= 1 Then
     CalendarCount = (PropMonthColumns * PropMonthRows)
 Else
-    CalendarCount = SendMessage(MonthViewHandle, MCM_GETCALENDARCOUNT, 0, ByVal 0&)
+    CalendarCount = CLng(SendMessage(MonthViewHandle, MCM_GETCALENDARCOUNT, 0, ByVal 0&))
 End If
 End Property
 
@@ -1680,7 +1733,7 @@ Public Property Get SelStart() As Date
 Attribute SelStart.VB_Description = "Returns/sets the start date for the current selection range."
 Attribute SelStart.VB_MemberFlags = "400"
 If PropMultiSelect = True Then
-    If MonthViewHandle <> 0 Then
+    If MonthViewHandle <> NULL_PTR Then
         Dim ST(0 To 1) As SYSTEMTIME
         SendMessage MonthViewHandle, MCM_GETSELRANGE, 0, ByVal VarPtr(ST(0))
         SelStart = DateSerial(ST(0).wYear, ST(0).wMonth, ST(0).wDay)
@@ -1698,7 +1751,7 @@ Public Property Get SelEnd() As Date
 Attribute SelEnd.VB_Description = "Returns/sets the end date for the current selection range."
 Attribute SelEnd.VB_MemberFlags = "400"
 If PropMultiSelect = True Then
-    If MonthViewHandle <> 0 Then
+    If MonthViewHandle <> NULL_PTR Then
         Dim ST(0 To 1) As SYSTEMTIME
         SendMessage MonthViewHandle, MCM_GETSELRANGE, 0, ByVal VarPtr(ST(0))
         SelEnd = DateSerial(ST(1).wYear, ST(1).wMonth, ST(1).wDay)
@@ -1721,7 +1774,7 @@ If Int(StartDate) >= Me.MinDate And Int(StartDate) <= Me.MaxDate And Int(EndDate
                 PropValue = Int(StartDate)
                 Dim Changed As Boolean
                 Changed = CBool(Me.SelStart <> Int(StartDate) Or Me.SelEnd <> Int(EndDate))
-                If MonthViewHandle <> 0 Then
+                If MonthViewHandle <> NULL_PTR Then
                     Dim ST(0 To 1) As SYSTEMTIME
                     With ST(0)
                     .wYear = VBA.Year(StartDate)
@@ -1773,7 +1826,7 @@ End Sub
 Public Property Get DayOfWeek() As Integer
 Attribute DayOfWeek.VB_Description = "Returns the day of the week [0-6] for the current date."
 Attribute DayOfWeek.VB_MemberFlags = "400"
-If MonthViewHandle <> 0 Then
+If MonthViewHandle <> NULL_PTR Then
     If PropMultiSelect = False Then
         Dim ST1 As SYSTEMTIME
         SendMessage MonthViewHandle, MCM_GETCURSEL, 0, ByVal VarPtr(ST1)
@@ -1790,7 +1843,7 @@ Public Sub Refresh()
 Attribute Refresh.VB_Description = "Forces a complete repaint of a object."
 Attribute Refresh.VB_UserMemId = -550
 UserControl.Refresh
-RedrawWindow UserControl.hWnd, 0, 0, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
+RedrawWindow UserControl.hWnd, NULL_PTR, NULL_PTR, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
 End Sub
 
 Public Property Get SystemStartOfWeek() As Integer
@@ -1806,14 +1859,14 @@ End Property
 
 Public Function GetMonthRange(ByVal IncludeTrailing As Boolean, Optional ByRef StartDate As Date, Optional ByRef EndDate As Date) As Long
 Attribute GetMonthRange.VB_Description = "Retrieves the high and low limits of the month calendar."
-If MonthViewHandle <> 0 Then
+If MonthViewHandle <> NULL_PTR Then
     Dim ST(0 To 1) As SYSTEMTIME, Flags As Long
     If IncludeTrailing = True Then
         Flags = GMR_DAYSTATE
     Else
         Flags = GMR_VISIBLE
     End If
-    GetMonthRange = SendMessage(MonthViewHandle, MCM_GETMONTHRANGE, Flags, ByVal VarPtr(ST(0)))
+    GetMonthRange = CLng(SendMessage(MonthViewHandle, MCM_GETMONTHRANGE, Flags, ByVal VarPtr(ST(0))))
     StartDate = DateSerial(ST(0).wYear, ST(0).wMonth, ST(0).wDay)
     EndDate = DateSerial(ST(1).wYear, ST(1).wMonth, ST(1).wDay)
 End If
@@ -1821,7 +1874,7 @@ End Function
 
 Public Function HitTest(ByVal X As Single, ByVal Y As Single, Optional ByRef HitDate As Date) As MvwHitResultConstants
 Attribute HitTest.VB_Description = "A method that returns a value which indicates the element located at the specified X and Y coordinates."
-If MonthViewHandle <> 0 Then
+If MonthViewHandle <> NULL_PTR Then
     Dim MCHT As MCHITTESTINFO
     With MCHT
     .cbSize = LenB(MCHT)
@@ -1868,7 +1921,7 @@ End Function
 Public Property Get Today() As Variant
 Attribute Today.VB_Description = "Returns/sets the date specified as 'today'."
 Attribute Today.VB_MemberFlags = "400"
-If MonthViewHandle <> 0 Then
+If MonthViewHandle <> NULL_PTR Then
     Dim ST As SYSTEMTIME
     SendMessage MonthViewHandle, MCM_GETTODAY, 0, ByVal VarPtr(ST)
     Today = DateSerial(ST.wYear, ST.wMonth, ST.wDay)
@@ -1883,7 +1936,7 @@ Select Case VarType(Value)
         Value = Null
 End Select
 If IsDate(Value) Then
-    If MonthViewHandle <> 0 Then
+    If MonthViewHandle <> NULL_PTR Then
         Dim ST As SYSTEMTIME
         With ST
         .wYear = VBA.Year(Value)
@@ -1898,7 +1951,7 @@ If IsDate(Value) Then
         SendMessage MonthViewHandle, MCM_SETTODAY, 0, ByVal VarPtr(ST)
     End If
 ElseIf IsNull(Value) Then
-    If MonthViewHandle <> 0 Then SendMessage MonthViewHandle, MCM_SETTODAY, 0, ByVal 0&
+    If MonthViewHandle <> NULL_PTR Then SendMessage MonthViewHandle, MCM_SETTODAY, 0, ByVal 0&
 Else
     Err.Raise 380
 End If
@@ -1927,7 +1980,7 @@ Height = (ModRect.Bottom - ModRect.Top)
 End Sub
 
 Private Sub GetReqRect(ByVal MonthColumns As Byte, ByVal MonthRows As Byte, ByRef ModRect As RECT)
-If MonthViewHandle <> 0 Then
+If MonthViewHandle <> NULL_PTR Then
     Dim WndRect As RECT, Buffer As Long
     SendMessage MonthViewHandle, MCM_GETMINREQRECT, 0, ByVal VarPtr(WndRect)
     Buffer = 6
@@ -1951,7 +2004,7 @@ If MonthViewHandle <> 0 Then
         End Select
         Dim TodayHeight As Long, TodayWidth As Long
         TodayHeight = MulDiv(CLng(PropFont.Size), DPI_Y(), 72)
-        If PropShowToday = True Then TodayWidth = SendMessage(MonthViewHandle, MCM_GETMAXTODAYWIDTH, 0, ByVal 0&)
+        If PropShowToday = True Then TodayWidth = CLng(SendMessage(MonthViewHandle, MCM_GETMAXTODAYWIDTH, 0, ByVal 0&))
         If TodayWidth > (WndRect.Right - WndRect.Left) Then WndRect.Right = WndRect.Left + TodayWidth
         ModRect.Left = WndRect.Left
         ModRect.Right = (WndRect.Right * MonthColumns) + ((MonthColumns - 1) * (Buffer * PixelsPerDIP_X()))
@@ -1966,7 +2019,11 @@ If MonthViewHandle <> 0 Then
 End If
 End Sub
 
+#If VBA7 Then
+Private Function ISubclass_Message(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
+#Else
 Private Function ISubclass_Message(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal dwRefData As Long) As Long
+#End If
 Select Case dwRefData
     Case 1
         ISubclass_Message = WindowProcControl(hWnd, wMsg, wParam, lParam)
@@ -1975,7 +2032,7 @@ Select Case dwRefData
 End Select
 End Function
 
-Private Function WindowProcControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_SETFOCUS
         If wParam <> UserControl.hWnd Then SetFocusAPI UserControl.hWnd: Exit Function
@@ -1985,9 +2042,9 @@ Select Case wMsg
     Case WM_LBUTTONDOWN
         If GetFocus() <> hWnd Then SetFocusAPI UserControl.hWnd ' UCNoSetFocusFwd not applicable
     Case WM_SETCURSOR
-        If LoWord(lParam) = HTCLIENT Then
+        If LoWord(CLng(lParam)) = HTCLIENT Then
             If MousePointerID(PropMousePointer) <> 0 Then
-                SetCursor LoadCursor(0, MousePointerID(PropMousePointer))
+                SetCursor LoadCursor(NULL_PTR, MousePointerID(PropMousePointer))
                 WindowProcControl = 1
                 Exit Function
             ElseIf PropMousePointer = 99 Then
@@ -2001,8 +2058,8 @@ Select Case wMsg
     Case WM_MOUSEWHEEL
         If ComCtlsSupportLevel() < 2 Then
             Static WheelDelta As Long, LastWheelDelta As Long
-            If Sgn(HiWord(wParam)) <> Sgn(LastWheelDelta) Then WheelDelta = 0
-            WheelDelta = WheelDelta + HiWord(wParam)
+            If Sgn(HiWord(CLng(wParam))) <> Sgn(LastWheelDelta) Then WheelDelta = 0
+            WheelDelta = WheelDelta + HiWord(CLng(wParam))
             If Abs(WheelDelta) >= 120 Then
                 If PropMultiSelect = False Then
                     Me.Value = DateAdd("m", -Sgn(WheelDelta), Me.Value)
@@ -2011,16 +2068,16 @@ Select Case wMsg
                 End If
                 WheelDelta = 0
             End If
-            LastWheelDelta = HiWord(wParam)
+            LastWheelDelta = HiWord(CLng(wParam))
             WindowProcControl = 0
             Exit Function
         End If
     Case WM_COMMAND
         Const EN_SETFOCUS As Long = &H100
-        If HiWord(wParam) = EN_SETFOCUS Then
-            Dim UpDownHandle As Long
-            UpDownHandle = FindWindowEx(MonthViewHandle, 0, StrPtr("msctls_updown32"), 0)
-            If UpDownHandle <> 0 And EnabledVisualStyles() = True Then
+        If HiWord(CLng(wParam)) = EN_SETFOCUS Then
+            Dim UpDownHandle As LongPtr
+            UpDownHandle = FindWindowEx(MonthViewHandle, NULL_PTR, StrPtr("msctls_updown32"), NULL_PTR)
+            If UpDownHandle <> NULL_PTR And EnabledVisualStyles() = True Then
                 If PropVisualStyles = True Then
                     ActivateVisualStyles UpDownHandle
                 Else
@@ -2030,7 +2087,7 @@ Select Case wMsg
         End If
     Case WM_KEYDOWN, WM_KEYUP, WM_SYSKEYDOWN, WM_SYSKEYUP
         Dim KeyCode As Integer
-        KeyCode = wParam And &HFF&
+        KeyCode = CLng(wParam) And &HFF&
         If wMsg = WM_KEYDOWN Or wMsg = WM_KEYUP Then
             If wMsg = WM_KEYDOWN Then
                 RaiseEvent KeyDown(KeyCode, GetShiftStateFromMsg())
@@ -2050,7 +2107,7 @@ Select Case wMsg
             KeyChar = CUIntToInt(MonthViewCharCodeCache And &HFFFF&)
             MonthViewCharCodeCache = 0
         Else
-            KeyChar = CUIntToInt(wParam And &HFFFF&)
+            KeyChar = CUIntToInt(CLng(wParam) And &HFFFF&)
         End If
         RaiseEvent KeyPress(KeyChar)
         wParam = CIntToUInt(KeyChar)
@@ -2059,7 +2116,7 @@ Select Case wMsg
             WindowProcControl = 1
         Else
             Dim UTF16 As String
-            UTF16 = UTF32CodePoint_To_UTF16(wParam)
+            UTF16 = UTF32CodePoint_To_UTF16(CLng(wParam))
             If Len(UTF16) = 1 Then
                 SendMessage hWnd, WM_CHAR, CIntToUInt(AscW(UTF16)), ByVal lParam
             ElseIf Len(UTF16) = 2 Then
@@ -2147,7 +2204,7 @@ Select Case wMsg
 End Select
 End Function
 
-Private Function WindowProcUserControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcUserControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_NOTIFY
         Dim NM As NMHDR
@@ -2187,7 +2244,7 @@ Select Case wMsg
                         CopyMemory ByVal lParam, NMDS, LenB(NMDS)
                     Else
                         ' At initialization, when the events are frozen, this must be done time delayed.
-                        If MonthViewHandle <> 0 Then PostMessage MonthViewHandle, UM_SETDAYSTATE, 0, ByVal 0&
+                        If MonthViewHandle <> NULL_PTR Then PostMessage MonthViewHandle, UM_SETDAYSTATE, 0, ByVal 0&
                     End If
                 Case MCN_VIEWCHANGE
                     Dim NMVC As NMVIEWCHANGE

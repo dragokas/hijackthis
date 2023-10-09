@@ -39,6 +39,7 @@ call :AddResource - 301 CUSTOM tools\PCRE2\pcre2-16.dll
 call :AddResource - 302 CUSTOM tools\ABR\abr.exe
 call :AddResource - 303 CUSTOM tools\ABR\restore.exe
 call :AddResource - 304 CUSTOM tools\ABR\restore_x64.exe
+call :AddResource - BUTTON CUSTOM ico\Themes\Button_1.bmp
 call :AddResource - ADSSPY       BITMAP ico\main\menu\ADSSpy.bmp
 call :AddResource - CROSS_RED    BITMAP ico\main\menu\cross.bmp
 call :AddResource - CROSS_BLACK  BITMAP ico\main\menu\Remove.bmp

@@ -11,6 +11,21 @@ Version history:
 ||||||||       1. HiJackThis: changelog         |||||||||||
 ===========================================================
 
+[3.2.0.2 Alpha] - Oct 09, 2023
+ - Fixed a bug with displaying the user group name.
+ - Fixed code looping on some interceptions.
+ - The "Hosts file manager" module has been rewritten with more reliable code; added "Reset" and "Update" buttons; The "Open" button now launches the default editor.
+ - The style of the main menu buttons has been replaced and unified to be identical in all OS versions. The buttons support themes, however so far only one theme has been drawn (dark).
+ - Removed the "Misc Tools" button.
+ - The "Online Guide" button has been renamed to "Tutorial & Support", and now opens a submenu with access to a choice of online/offline help and treatment forums.
+ - Renamed the "List of Backup" button to "Backups".
+ - Renamed the menu button "Help" - "Support" to "Report a bug".
+ - The "Do a system scan..." buttons are no longer disabled when scanning; pressing again will switch you to the results window.
+ - Fixed quality/cropped logo at DPI >= 150 (thanks to Eduardo and VanGoghGaming for help).
+ - References to Dr.Web were deleted because the company no longer uses HiJackThis for the treatment on forum.
+ - Minor corrections to the translation and the main project page.
+ - Improved debugging mode.
+
 [3.2.0.1 Alpha] - Sep 17, 2023
  - [new] Added detection of O7 - Policy: Bitcoin wallet address hijacker is present (no fix).
  - [new] Added section O27 - Account & Remote desktop protocol. Description can be found in menu Help - About - Sections.

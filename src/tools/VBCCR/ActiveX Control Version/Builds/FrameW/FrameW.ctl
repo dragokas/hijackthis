@@ -20,6 +20,18 @@ Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
 Option Explicit
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
 
 #Const ImplementThemedButton = True
 
@@ -68,6 +80,26 @@ Public Event OLESetData(Data As DataObject, DataFormat As Integer)
 Attribute OLESetData.VB_Description = "Occurs at the OLE drag/drop source control when the drop target requests data that was not provided to the DataObject during the OLEDragStart event."
 Public Event OLEStartDrag(Data As DataObject, AllowedEffects As Long)
 Attribute OLEStartDrag.VB_Description = "Occurs when an OLE drag/drop operation is initiated either manually or automatically."
+#If VBA7 Then
+Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
+Private Declare PtrSafe Function lstrlen Lib "kernel32" Alias "lstrlenW" (ByVal lpString As LongPtr) As Long
+Private Declare PtrSafe Function DrawText Lib "user32" Alias "DrawTextW" (ByVal hDC As LongPtr, ByVal lpchText As LongPtr, ByVal nCount As Long, ByRef lpRect As RECT, ByVal uFormat As Long) As Long
+Private Declare PtrSafe Function SetTextColor Lib "gdi32" (ByVal hDC As LongPtr, ByVal crColor As Long) As Long
+Private Declare PtrSafe Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByRef lParam As Any) As LongPtr
+Private Declare PtrSafe Function RedrawWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal lprcUpdate As LongPtr, ByVal hrgnUpdate As LongPtr, ByVal fuRedraw As Long) As Long
+Private Declare PtrSafe Function SetBkMode Lib "gdi32" (ByVal hDC As LongPtr, ByVal nBkMode As Long) As Long
+Private Declare PtrSafe Function GetClientRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As RECT) As Long
+Private Declare PtrSafe Function GetTextExtentPoint32 Lib "gdi32" Alias "GetTextExtentPoint32W" (ByVal hDC As LongPtr, ByVal lpsz As LongPtr, ByVal cbString As Long, ByRef lpSize As SIZEAPI) As Long
+Private Declare PtrSafe Function ExcludeClipRect Lib "gdi32" (ByVal hDC As LongPtr, ByVal X1 As Long, ByVal Y1 As Long, ByVal X2 As Long, ByVal Y2 As Long) As Long
+Private Declare PtrSafe Function SelectClipRgn Lib "gdi32" (ByVal hDC As LongPtr, ByVal hRgn As LongPtr) As Long
+Private Declare PtrSafe Function GetWindowRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As RECT) As Long
+Private Declare PtrSafe Function MapWindowPoints Lib "user32" (ByVal hWndFrom As LongPtr, ByVal hWndTo As LongPtr, ByRef lppt As Any, ByVal cPoints As Long) As Long
+Private Declare PtrSafe Function SetViewportOrgEx Lib "gdi32" (ByVal hDC As LongPtr, ByVal X As Long, ByVal Y As Long, ByRef lpPoint As POINTAPI) As Long
+Private Declare PtrSafe Function LoadCursor Lib "user32" Alias "LoadCursorW" (ByVal hInstance As LongPtr, ByVal lpCursorName As Any) As LongPtr
+Private Declare PtrSafe Function DrawEdge Lib "user32" (ByVal hDC As LongPtr, ByRef qRC As RECT, ByVal Edge As Long, ByVal grfFlags As Long) As Long
+Private Declare PtrSafe Function BitBlt Lib "gdi32" (ByVal hDestDC As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hSrcDC As LongPtr, ByVal XSrc As Long, ByVal YSrc As Long, ByVal dwRop As Long) As Long
+Private Declare PtrSafe Function RevokeDragDrop Lib "ole32" (ByVal hWnd As LongPtr) As Long
+#Else
 Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
 Private Declare Function lstrlen Lib "kernel32" Alias "lstrlenW" (ByVal lpString As Long) As Long
 Private Declare Function DrawText Lib "user32" Alias "DrawTextW" (ByVal hDC As Long, ByVal lpchText As Long, ByVal nCount As Long, ByRef lpRect As RECT, ByVal uFormat As Long) As Long
@@ -78,7 +110,7 @@ Private Declare Function SetBkMode Lib "gdi32" (ByVal hDC As Long, ByVal nBkMode
 Private Declare Function GetClientRect Lib "user32" (ByVal hWnd As Long, ByRef lpRect As RECT) As Long
 Private Declare Function GetTextExtentPoint32 Lib "gdi32" Alias "GetTextExtentPoint32W" (ByVal hDC As Long, ByVal lpsz As Long, ByVal cbString As Long, ByRef lpSize As SIZEAPI) As Long
 Private Declare Function ExcludeClipRect Lib "gdi32" (ByVal hDC As Long, ByVal X1 As Long, ByVal Y1 As Long, ByVal X2 As Long, ByVal Y2 As Long) As Long
-Private Declare Function RemoveClipRgn Lib "gdi32" Alias "SelectClipRgn" (ByVal hDC As Long, Optional ByVal hRgn As Long) As Long
+Private Declare Function SelectClipRgn Lib "gdi32" (ByVal hDC As Long, ByVal hRgn As Long) As Long
 Private Declare Function GetWindowRect Lib "user32" (ByVal hWnd As Long, ByRef lpRect As RECT) As Long
 Private Declare Function MapWindowPoints Lib "user32" (ByVal hWndFrom As Long, ByVal hWndTo As Long, ByRef lppt As Any, ByVal cPoints As Long) As Long
 Private Declare Function SetViewportOrgEx Lib "gdi32" (ByVal hDC As Long, ByVal X As Long, ByVal Y As Long, ByRef lpPoint As POINTAPI) As Long
@@ -86,6 +118,7 @@ Private Declare Function LoadCursor Lib "user32" Alias "LoadCursorW" (ByVal hIns
 Private Declare Function DrawEdge Lib "user32" (ByVal hDC As Long, ByRef qRC As RECT, ByVal Edge As Long, ByVal grfFlags As Long) As Long
 Private Declare Function BitBlt Lib "gdi32" (ByVal hDestDC As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hSrcDC As Long, ByVal XSrc As Long, ByVal YSrc As Long, ByVal dwRop As Long) As Long
 Private Declare Function RevokeDragDrop Lib "ole32" (ByVal hWnd As Long) As Long
+#End If
 
 #If ImplementThemedButton = True Then
 
@@ -116,19 +149,34 @@ iStateId As Long
 fApplyOverlay As Long
 iGlowSize As Long
 End Type
+#If VBA7 Then
+Private Declare PtrSafe Function GetThemeTextExtent Lib "uxtheme" (ByVal Theme As LongPtr, ByVal hDC As LongPtr, ByVal iPartId As Long, ByVal iStateId As Long, ByVal pszText As LongPtr, ByVal iCharCount As Long, ByVal dwTextFlags As Long, ByRef lpBoundingRect As RECT, ByRef lpExtentRect As RECT) As Long
+Private Declare PtrSafe Function DrawThemeText Lib "uxtheme" (ByVal Theme As LongPtr, ByVal hDC As LongPtr, ByVal iPartId As Long, ByVal iStateId As Long, ByVal pszText As LongPtr, ByVal iCharCount As Long, ByVal dwTextFlags As Long, ByVal dwTextFlags2 As Long, ByRef pRect As RECT) As Long
+Private Declare PtrSafe Function DrawThemeTextEx Lib "uxtheme" (ByVal Theme As LongPtr, ByVal hDC As LongPtr, ByVal iPartId As Long, ByVal iStateId As Long, ByVal pszText As LongPtr, ByVal iCharCount As Long, ByVal dwTextFlags As Long, ByRef lpRect As RECT, ByRef lpOptions As DTTOPTS) As Long
+Private Declare PtrSafe Function IsThemeBackgroundPartiallyTransparent Lib "uxtheme" (ByVal Theme As LongPtr, ByVal iPartId As Long, ByVal iStateId As Long) As Long
+Private Declare PtrSafe Function DrawThemeParentBackground Lib "uxtheme" (ByVal hWnd As LongPtr, ByVal hDC As LongPtr, ByRef pRect As RECT) As Long
+Private Declare PtrSafe Function DrawThemeBackground Lib "uxtheme" (ByVal Theme As LongPtr, ByVal hDC As LongPtr, ByVal iPartId As Long, ByVal iStateId As Long, ByRef pRect As RECT, ByRef pClipRect As RECT) As Long
+Private Declare PtrSafe Function OpenThemeData Lib "uxtheme" (ByVal hWnd As LongPtr, ByVal lpszClassList As LongPtr) As LongPtr
+Private Declare PtrSafe Function CloseThemeData Lib "uxtheme" (ByVal Theme As LongPtr) As Long
+#Else
 Private Declare Function GetThemeTextExtent Lib "uxtheme" (ByVal Theme As Long, ByVal hDC As Long, ByVal iPartId As Long, ByVal iStateId As Long, ByVal pszText As Long, ByVal iCharCount As Long, ByVal dwTextFlags As Long, ByRef lpBoundingRect As RECT, ByRef lpExtentRect As RECT) As Long
 Private Declare Function DrawThemeText Lib "uxtheme" (ByVal Theme As Long, ByVal hDC As Long, ByVal iPartId As Long, ByVal iStateId As Long, ByVal pszText As Long, ByVal iCharCount As Long, ByVal dwTextFlags As Long, ByVal dwTextFlags2 As Long, ByRef lpRect As RECT) As Long
 Private Declare Function DrawThemeTextEx Lib "uxtheme" (ByVal Theme As Long, ByVal hDC As Long, ByVal iPartId As Long, ByVal iStateId As Long, ByVal pszText As Long, ByVal iCharCount As Long, ByVal dwTextFlags As Long, ByRef lpRect As RECT, ByRef lpOptions As DTTOPTS) As Long
-Private Declare Function IsThemeBackgroundPartiallyTransparent Lib "uxtheme" (ByVal Theme As Long, iPartId As Long, iStateId As Long) As Long
+Private Declare Function IsThemeBackgroundPartiallyTransparent Lib "uxtheme" (ByVal Theme As Long, ByVal iPartId As Long, ByVal iStateId As Long) As Long
 Private Declare Function DrawThemeParentBackground Lib "uxtheme" (ByVal hWnd As Long, ByVal hDC As Long, ByRef pRect As RECT) As Long
 Private Declare Function DrawThemeBackground Lib "uxtheme" (ByVal Theme As Long, ByVal hDC As Long, ByVal iPartId As Long, ByVal iStateId As Long, ByRef pRect As RECT, ByRef pClipRect As RECT) As Long
-Private Declare Function OpenThemeData Lib "uxtheme" (ByVal hWnd As Long, ByVal pszClassList As Long) As Long
+Private Declare Function OpenThemeData Lib "uxtheme" (ByVal hWnd As Long, ByVal lpszClassList As Long) As Long
 Private Declare Function CloseThemeData Lib "uxtheme" (ByVal Theme As Long) As Long
+#End If
 
 #End If
 
 Private Const RDW_UPDATENOW As Long = &H100, RDW_INVALIDATE As Long = &H1, RDW_ERASE As Long = &H4, RDW_ALLCHILDREN As Long = &H80
+#If VBA7 Then
+Private Const HWND_DESKTOP As LongPtr = &H0
+#Else
 Private Const HWND_DESKTOP As Long = &H0
+#End If
 Private Const WM_GETTEXTLENGTH As Long = &HE
 Private Const WM_GETTEXT As Long = &HD
 Private Const WM_SETTEXT As Long = &HC
@@ -504,9 +552,15 @@ Attribute ZOrder.VB_Description = "Places a specified object at the front or bac
 If IsMissing(Position) Then Extender.ZOrder Else Extender.ZOrder Position
 End Sub
 
+#If VBA7 Then
+Public Property Get hWnd() As LongPtr
+Attribute hWnd.VB_Description = "Returns a handle to a control."
+Attribute hWnd.VB_UserMemId = -515
+#Else
 Public Property Get hWnd() As Long
 Attribute hWnd.VB_Description = "Returns a handle to a control."
 Attribute hWnd.VB_UserMemId = -515
+#End If
 hWnd = UserControl.hWnd
 End Property
 
@@ -640,7 +694,7 @@ If FrameDesignMode = False Then
             If PropMousePointer = vbCustom Then
                 Set UserControl.MouseIcon = PropMouseIcon
             Else
-                Set UserControl.MouseIcon = PictureFromHandle(LoadCursor(0, MousePointerID(PropMousePointer)), vbPicTypeIcon)
+                Set UserControl.MouseIcon = PictureFromHandle(LoadCursor(NULL_PTR, MousePointerID(PropMousePointer)), vbPicTypeIcon)
             End If
             UserControl.MousePointer = vbCustom
         Case Else
@@ -663,7 +717,7 @@ Public Property Set MouseIcon(ByVal Value As IPictureDisp)
 If Value Is Nothing Then
     Set PropMouseIcon = Nothing
 Else
-    If Value.Type = vbPicTypeIcon Or Value.Handle = 0 Then
+    If Value.Type = vbPicTypeIcon Or Value.Handle = NULL_PTR Then
         Set PropMouseIcon = Value
     Else
         If FrameDesignMode = True Then
@@ -841,7 +895,7 @@ Public Sub Refresh()
 Attribute Refresh.VB_Description = "Forces a complete repaint of a object."
 Attribute Refresh.VB_UserMemId = -550
 Call DrawFrame
-RedrawWindow UserControl.hWnd, 0, 0, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
+RedrawWindow UserControl.hWnd, NULL_PTR, NULL_PTR, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
 End Sub
 
 Public Property Get ContainedControls() As VBRUN.ContainedControls
@@ -864,222 +918,138 @@ If PropTransparent = True Then
     SetViewportOrgEx .hDC, P.X, P.Y, P
 End If
 If PropBorderStyle <> vbBSNone Then
-    Dim ClientRect As RECT, BoundingRect As RECT, ExtentRect As RECT, Format As Long, OldBkMode As Long
+    Dim ClientRect As RECT, BoundingRect As RECT, ExtentRect As RECT, DrawFlags As Long, OldBkMode As Long
     Dim TextRect As RECT, CX As Long
     GetClientRect .hWnd, ClientRect
     LSet BoundingRect = ClientRect
     BoundingRect.Left = (9 * PixelsPerDIP_X())
     BoundingRect.Right = BoundingRect.Right - BoundingRect.Left
-    Format = DT_NOCLIP Or DT_SINGLELINE
-    If PropRightToLeft = True Then Format = Format Or DT_RTLREADING
-    If PropUseMnemonic = False Then Format = Format Or DT_NOPREFIX
+    DrawFlags = DT_NOCLIP Or DT_SINGLELINE
+    If PropRightToLeft = True Then DrawFlags = DrawFlags Or DT_RTLREADING
+    If PropUseMnemonic = False Then DrawFlags = DrawFlags Or DT_NOPREFIX
     Select Case PropAlignment
         Case vbLeftJustify
-            Format = Format Or DT_LEFT
+            DrawFlags = DrawFlags Or DT_LEFT
         Case vbCenter
-            Format = Format Or DT_CENTER
+            DrawFlags = DrawFlags Or DT_CENTER
         Case vbRightJustify
-            Format = Format Or DT_RIGHT
+            DrawFlags = DrawFlags Or DT_RIGHT
     End Select
     OldBkMode = SetBkMode(.hDC, 1)
     Dim PictureWidth As Long, PictureHeight As Long
     Dim PictureLeft As Long, PictureTop As Long
     If Not PropPicture Is Nothing Then
-        If PropPicture.Handle <> 0 Then
+        If PropPicture.Handle <> NULL_PTR Then
             PictureWidth = CHimetricToPixel_X(PropPicture.Width)
             PictureHeight = CHimetricToPixel_Y(PropPicture.Height)
             PictureTop = BoundingRect.Top
         End If
     End If
+    Dim Theme As LongPtr
     
     #If ImplementThemedButton = True Then
-        
-        Dim Theme As Long
-        If EnabledVisualStyles() = True And PropVisualStyles = True Then Theme = OpenThemeData(.hWnd, StrPtr("Button"))
-        If Theme <> 0 Then
-            Dim ButtonPart As Long, GroupBoxState As Long
-            ButtonPart = BP_GROUPBOX
-            If .Enabled = True Then
-                GroupBoxState = GBS_NORMAL
-            Else
-                GroupBoxState = GBS_DISABLED
-            End If
-            GetThemeTextExtent Theme, .hDC, ButtonPart, GroupBoxState, StrPtr("A"), 1, Format, BoundingRect, ExtentRect
-            If PictureHeight <= (ExtentRect.Bottom - ExtentRect.Top) Then
-                ClientRect.Top = ClientRect.Top + ((ExtentRect.Bottom - ExtentRect.Top) / 2)
-            Else
-                ClientRect.Top = ClientRect.Top + (PictureHeight / 2)
-                BoundingRect.Top = BoundingRect.Top + ((PictureHeight - (ExtentRect.Bottom - ExtentRect.Top)) / 2)
-            End If
-            If Not PropCaption = vbNullString Then
-                GetThemeTextExtent Theme, .hDC, ButtonPart, GroupBoxState, StrPtr(PropCaption), Len(PropCaption), Format, BoundingRect, ExtentRect
-                LSet TextRect = BoundingRect
-                If PictureWidth > 0 And PictureHeight > 0 Then
-                    Select Case PropAlignment
-                        Case vbLeftJustify
-                            If PropPictureAlignment = CCLeftRightAlignmentLeft Then TextRect.Left = TextRect.Left + PictureWidth + (2 * PixelsPerDIP_X())
-                        Case vbCenter
-                            If PropPictureAlignment = CCLeftRightAlignmentLeft Then
-                                TextRect.Left = TextRect.Left + PictureWidth + (2 * PixelsPerDIP_X())
-                            ElseIf PropPictureAlignment = CCLeftRightAlignmentRight Then
-                                TextRect.Left = TextRect.Left - PictureWidth - (2 * PixelsPerDIP_X())
-                            End If
-                        Case vbRightJustify
-                            If PropPictureAlignment = CCLeftRightAlignmentRight Then TextRect.Right = TextRect.Right - PictureWidth - (2 * PixelsPerDIP_X())
-                    End Select
-                End If
-                If ComCtlsSupportLevel() >= 2 Then
-                    Dim DTTO As DTTOPTS
-                    DTTO.dwSize = LenB(DTTO)
-                    DTTO.dwFlags = DTT_TEXTCOLOR
-                    If .Enabled = True Then
-                        DTTO.crText = WinColor(.ForeColor)
-                    Else
-                        DTTO.crText = WinColor(vbGrayText)
-                    End If
-                    DrawThemeTextEx Theme, .hDC, ButtonPart, GroupBoxState, StrPtr(PropCaption), Len(PropCaption), Format, TextRect, DTTO
-                Else
-                    DrawThemeText Theme, .hDC, ButtonPart, GroupBoxState, StrPtr(PropCaption), Len(PropCaption), Format, 0, TextRect
-                End If
-                CX = (BoundingRect.Right - BoundingRect.Left) - (ExtentRect.Right - ExtentRect.Left)
-                Select Case PropAlignment
-                    Case vbCenter
-                        ExtentRect.Left = ExtentRect.Left + (CX / 2)
-                        ExtentRect.Right = ExtentRect.Right + (CX / 2)
-                    Case vbRightJustify
-                        ExtentRect.Left = ExtentRect.Left + CX
-                        ExtentRect.Right = ExtentRect.Right + CX
-                End Select
-                If PictureWidth > 0 And PictureHeight > 0 Then
-                    Select Case PropAlignment
-                        Case vbLeftJustify
-                            ExtentRect.Right = ExtentRect.Right + PictureWidth + (2 * PixelsPerDIP_X())
-                        Case vbCenter
-                            ExtentRect.Left = ExtentRect.Left - ((PictureWidth + (2 * PixelsPerDIP_X())) / 2)
-                            ExtentRect.Right = ExtentRect.Right + ((PictureWidth + (2 * PixelsPerDIP_X())) / 2)
-                        Case vbRightJustify
-                            ExtentRect.Left = ExtentRect.Left - PictureWidth - (2 * PixelsPerDIP_X())
-                    End Select
-                    If PictureHeight > ExtentRect.Bottom Then ExtentRect.Bottom = PictureHeight
-                    If PropPictureAlignment = CCLeftRightAlignmentLeft Then
-                        PictureLeft = ExtentRect.Left
-                    Else
-                        PictureLeft = ExtentRect.Right - PictureWidth
-                    End If
-                    Call RenderPicture(PropPicture, hDC, PictureLeft, PictureTop, PictureWidth, PictureHeight, FramePictureRenderFlag)
-                End If
-                ExcludeClipRect .hDC, ExtentRect.Left - (2 * PixelsPerDIP_X()), ExtentRect.Top, ExtentRect.Right + (2 * PixelsPerDIP_X()), ExtentRect.Bottom
-            ElseIf PictureWidth > 0 And PictureHeight > 0 Then
-                ExtentRect.Top = PictureTop
-                ExtentRect.Bottom = ExtentRect.Top + PictureHeight
-                Select Case PropAlignment
-                    Case vbLeftJustify
-                        ExtentRect.Left = BoundingRect.Left
-                        ExtentRect.Right = ExtentRect.Left + PictureWidth
-                    Case vbCenter
-                        ExtentRect.Left = BoundingRect.Left + ((BoundingRect.Right - BoundingRect.Left) / 2) - (PictureWidth / 2)
-                        ExtentRect.Right = ExtentRect.Left + PictureWidth
-                    Case vbRightJustify
-                        ExtentRect.Left = BoundingRect.Right - PictureWidth
-                        ExtentRect.Right = BoundingRect.Right
-                End Select
-                PictureLeft = ExtentRect.Left
-                Call RenderPicture(PropPicture, hDC, PictureLeft, PictureTop, PictureWidth, PictureHeight, FramePictureRenderFlag)
-                ExcludeClipRect .hDC, ExtentRect.Left - (2 * PixelsPerDIP_X()), ExtentRect.Top, ExtentRect.Right + (2 * PixelsPerDIP_X()), ExtentRect.Bottom
-            End If
-            If IsThemeBackgroundPartiallyTransparent(Theme, ButtonPart, GroupBoxState) <> 0 Then DrawThemeParentBackground .hWnd, .hDC, ClientRect
-            DrawThemeBackground Theme, .hDC, ButtonPart, GroupBoxState, ClientRect, ClientRect
-            RemoveClipRgn .hDC
-            CloseThemeData Theme
+    
+    If EnabledVisualStyles() = True And PropVisualStyles = True Then Theme = OpenThemeData(.hWnd, StrPtr("Button"))
+    If Theme <> NULL_PTR Then
+        Dim ButtonPart As Long, GroupBoxState As Long
+        ButtonPart = BP_GROUPBOX
+        If .Enabled = True Then
+            GroupBoxState = GBS_NORMAL
         Else
-            Dim Size As SIZEAPI
-            GetTextExtentPoint32 .hDC, ByVal StrPtr("A"), 1, Size
-            If PictureHeight <= Size.CY Then
-                ClientRect.Top = ClientRect.Top + (Size.CY / 2)
-            Else
-                ClientRect.Top = ClientRect.Top + (PictureHeight / 2)
-                BoundingRect.Top = BoundingRect.Top + ((PictureHeight - Size.CY) / 2)
-            End If
-            If Not PropCaption = vbNullString Then
-                GetTextExtentPoint32 .hDC, ByVal StrPtr(PropCaption), Len(PropCaption), Size
-                LSet ExtentRect = BoundingRect
-                ExtentRect.Right = ExtentRect.Left + Size.CX
-                ExtentRect.Bottom = ExtentRect.Top + Size.CY
-                LSet TextRect = BoundingRect
-                If PictureWidth > 0 And PictureHeight > 0 Then
-                    Select Case PropAlignment
-                        Case vbLeftJustify
-                            If PropPictureAlignment = CCLeftRightAlignmentLeft Then TextRect.Left = TextRect.Left + PictureWidth + (2 * PixelsPerDIP_X())
-                        Case vbCenter
-                            If PropPictureAlignment = CCLeftRightAlignmentLeft Then
-                                TextRect.Left = TextRect.Left + PictureWidth + (2 * PixelsPerDIP_X())
-                            ElseIf PropPictureAlignment = CCLeftRightAlignmentRight Then
-                                TextRect.Left = TextRect.Left - PictureWidth - (2 * PixelsPerDIP_X())
-                            End If
-                        Case vbRightJustify
-                            If PropPictureAlignment = CCLeftRightAlignmentRight Then TextRect.Right = TextRect.Right - PictureWidth - (2 * PixelsPerDIP_X())
-                    End Select
-                End If
-                Dim OldTextColor As Long
-                If .Enabled = True Then
-                    OldTextColor = SetTextColor(.hDC, WinColor(.ForeColor))
-                Else
-                    OldTextColor = SetTextColor(.hDC, WinColor(vbGrayText))
-                End If
-                DrawText .hDC, StrPtr(PropCaption), Len(PropCaption), TextRect, Format
-                SetTextColor .hDC, OldTextColor
-                CX = (BoundingRect.Right - BoundingRect.Left) - (ExtentRect.Right - ExtentRect.Left)
-                Select Case PropAlignment
-                    Case vbCenter
-                        ExtentRect.Left = ExtentRect.Left + (CX / 2)
-                        ExtentRect.Right = ExtentRect.Right + (CX / 2)
-                    Case vbRightJustify
-                        ExtentRect.Left = ExtentRect.Left + CX
-                        ExtentRect.Right = ExtentRect.Right + CX
-                End Select
-                If PictureWidth > 0 And PictureHeight > 0 Then
-                    Select Case PropAlignment
-                        Case vbLeftJustify
-                            ExtentRect.Right = ExtentRect.Right + PictureWidth + (2 * PixelsPerDIP_X())
-                        Case vbCenter
-                            ExtentRect.Left = ExtentRect.Left - ((PictureWidth + (2 * PixelsPerDIP_X())) / 2)
-                            ExtentRect.Right = ExtentRect.Right + ((PictureWidth + (2 * PixelsPerDIP_X())) / 2)
-                        Case vbRightJustify
-                            ExtentRect.Left = ExtentRect.Left - PictureWidth - (2 * PixelsPerDIP_X())
-                    End Select
-                    If PictureHeight > ExtentRect.Bottom Then ExtentRect.Bottom = PictureHeight
-                    If PropPictureAlignment = CCLeftRightAlignmentLeft Then
-                        PictureLeft = ExtentRect.Left
-                    Else
-                        PictureLeft = ExtentRect.Right - PictureWidth
-                    End If
-                    Call RenderPicture(PropPicture, hDC, PictureLeft, PictureTop, PictureWidth, PictureHeight, FramePictureRenderFlag)
-                End If
-                ExcludeClipRect .hDC, ExtentRect.Left - (2 * PixelsPerDIP_X()), ExtentRect.Top, ExtentRect.Right + (2 * PixelsPerDIP_X()), ExtentRect.Bottom
-            ElseIf PictureWidth > 0 And PictureHeight > 0 Then
-                ExtentRect.Top = PictureTop
-                ExtentRect.Bottom = ExtentRect.Top + PictureHeight
+            GroupBoxState = GBS_DISABLED
+        End If
+        GetThemeTextExtent Theme, .hDC, ButtonPart, GroupBoxState, StrPtr("A"), 1, DrawFlags, BoundingRect, ExtentRect
+        If PictureHeight <= (ExtentRect.Bottom - ExtentRect.Top) Then
+            ClientRect.Top = ClientRect.Top + ((ExtentRect.Bottom - ExtentRect.Top) / 2)
+        Else
+            ClientRect.Top = ClientRect.Top + (PictureHeight / 2)
+            BoundingRect.Top = BoundingRect.Top + ((PictureHeight - (ExtentRect.Bottom - ExtentRect.Top)) / 2)
+        End If
+        If Not PropCaption = vbNullString Then
+            GetThemeTextExtent Theme, .hDC, ButtonPart, GroupBoxState, StrPtr(PropCaption), Len(PropCaption), DrawFlags, BoundingRect, ExtentRect
+            LSet TextRect = BoundingRect
+            If PictureWidth > 0 And PictureHeight > 0 Then
                 Select Case PropAlignment
                     Case vbLeftJustify
-                        ExtentRect.Left = BoundingRect.Left
-                        ExtentRect.Right = ExtentRect.Left + PictureWidth
+                        If PropPictureAlignment = CCLeftRightAlignmentLeft Then TextRect.Left = TextRect.Left + PictureWidth + (2 * PixelsPerDIP_X())
                     Case vbCenter
-                        ExtentRect.Left = BoundingRect.Left + ((BoundingRect.Right - BoundingRect.Left) / 2) - (PictureWidth / 2)
-                        ExtentRect.Right = ExtentRect.Left + PictureWidth
+                        If PropPictureAlignment = CCLeftRightAlignmentLeft Then
+                            TextRect.Left = TextRect.Left + PictureWidth + (2 * PixelsPerDIP_X())
+                        ElseIf PropPictureAlignment = CCLeftRightAlignmentRight Then
+                            TextRect.Left = TextRect.Left - PictureWidth - (2 * PixelsPerDIP_X())
+                        End If
                     Case vbRightJustify
-                        ExtentRect.Left = BoundingRect.Right - PictureWidth
-                        ExtentRect.Right = BoundingRect.Right
+                        If PropPictureAlignment = CCLeftRightAlignmentRight Then TextRect.Right = TextRect.Right - PictureWidth - (2 * PixelsPerDIP_X())
                 End Select
-                PictureLeft = ExtentRect.Left
-                Call RenderPicture(PropPicture, hDC, PictureLeft, PictureTop, PictureWidth, PictureHeight, FramePictureRenderFlag)
-                ExcludeClipRect .hDC, ExtentRect.Left - (2 * PixelsPerDIP_X()), ExtentRect.Top, ExtentRect.Right + (2 * PixelsPerDIP_X()), ExtentRect.Bottom
             End If
-            DrawEdge .hDC, ClientRect, EDGE_ETCHED, BF_RECT Or IIf(.Appearance = CCAppearanceFlat, BF_MONO, 0)
-            RemoveClipRgn .hDC
+            If ComCtlsSupportLevel() >= 2 Then
+                Dim DTTO As DTTOPTS
+                DTTO.dwSize = LenB(DTTO)
+                DTTO.dwFlags = DTT_TEXTCOLOR
+                If .Enabled = True Then
+                    DTTO.crText = WinColor(.ForeColor)
+                Else
+                    DTTO.crText = WinColor(vbGrayText)
+                End If
+                DrawThemeTextEx Theme, .hDC, ButtonPart, GroupBoxState, StrPtr(PropCaption), Len(PropCaption), DrawFlags, TextRect, DTTO
+            Else
+                DrawThemeText Theme, .hDC, ButtonPart, GroupBoxState, StrPtr(PropCaption), Len(PropCaption), DrawFlags, 0, TextRect
+            End If
+            CX = (BoundingRect.Right - BoundingRect.Left) - (ExtentRect.Right - ExtentRect.Left)
+            Select Case PropAlignment
+                Case vbCenter
+                    ExtentRect.Left = ExtentRect.Left + (CX / 2)
+                    ExtentRect.Right = ExtentRect.Right + (CX / 2)
+                Case vbRightJustify
+                    ExtentRect.Left = ExtentRect.Left + CX
+                    ExtentRect.Right = ExtentRect.Right + CX
+            End Select
+            If PictureWidth > 0 And PictureHeight > 0 Then
+                Select Case PropAlignment
+                    Case vbLeftJustify
+                        ExtentRect.Right = ExtentRect.Right + PictureWidth + (2 * PixelsPerDIP_X())
+                    Case vbCenter
+                        ExtentRect.Left = ExtentRect.Left - ((PictureWidth + (2 * PixelsPerDIP_X())) / 2)
+                        ExtentRect.Right = ExtentRect.Right + ((PictureWidth + (2 * PixelsPerDIP_X())) / 2)
+                    Case vbRightJustify
+                        ExtentRect.Left = ExtentRect.Left - PictureWidth - (2 * PixelsPerDIP_X())
+                End Select
+                If PictureHeight > ExtentRect.Bottom Then ExtentRect.Bottom = PictureHeight
+                If PropPictureAlignment = CCLeftRightAlignmentLeft Then
+                    PictureLeft = ExtentRect.Left
+                Else
+                    PictureLeft = ExtentRect.Right - PictureWidth
+                End If
+                Call RenderPicture(PropPicture, hDC, PictureLeft, PictureTop, PictureWidth, PictureHeight, FramePictureRenderFlag)
+            End If
+            ExcludeClipRect .hDC, ExtentRect.Left - (2 * PixelsPerDIP_X()), ExtentRect.Top, ExtentRect.Right + (2 * PixelsPerDIP_X()), ExtentRect.Bottom
+        ElseIf PictureWidth > 0 And PictureHeight > 0 Then
+            ExtentRect.Top = PictureTop
+            ExtentRect.Bottom = ExtentRect.Top + PictureHeight
+            Select Case PropAlignment
+                Case vbLeftJustify
+                    ExtentRect.Left = BoundingRect.Left
+                    ExtentRect.Right = ExtentRect.Left + PictureWidth
+                Case vbCenter
+                    ExtentRect.Left = BoundingRect.Left + ((BoundingRect.Right - BoundingRect.Left) / 2) - (PictureWidth / 2)
+                    ExtentRect.Right = ExtentRect.Left + PictureWidth
+                Case vbRightJustify
+                    ExtentRect.Left = BoundingRect.Right - PictureWidth
+                    ExtentRect.Right = BoundingRect.Right
+            End Select
+            PictureLeft = ExtentRect.Left
+            Call RenderPicture(PropPicture, hDC, PictureLeft, PictureTop, PictureWidth, PictureHeight, FramePictureRenderFlag)
+            ExcludeClipRect .hDC, ExtentRect.Left - (2 * PixelsPerDIP_X()), ExtentRect.Top, ExtentRect.Right + (2 * PixelsPerDIP_X()), ExtentRect.Bottom
         End If
-        
-    #Else
-        
+        If IsThemeBackgroundPartiallyTransparent(Theme, ButtonPart, GroupBoxState) <> 0 Then DrawThemeParentBackground .hWnd, .hDC, ClientRect
+        DrawThemeBackground Theme, .hDC, ButtonPart, GroupBoxState, ClientRect, ClientRect
+        SelectClipRgn .hDC, NULL_PTR
+        CloseThemeData Theme
+    End If
+    
+    #End If
+    
+    If Theme = NULL_PTR Then
         Dim Size As SIZEAPI
         GetTextExtentPoint32 .hDC, ByVal StrPtr("A"), 1, Size
         If PictureHeight <= Size.CY Then
@@ -1114,7 +1084,7 @@ If PropBorderStyle <> vbBSNone Then
             Else
                 OldTextColor = SetTextColor(.hDC, WinColor(vbGrayText))
             End If
-            DrawText .hDC, StrPtr(PropCaption), Len(PropCaption), TextRect, Format
+            DrawText .hDC, StrPtr(PropCaption), Len(PropCaption), TextRect, DrawFlags
             SetTextColor .hDC, OldTextColor
             CX = (BoundingRect.Right - BoundingRect.Left) - (ExtentRect.Right - ExtentRect.Left)
             Select Case PropAlignment
@@ -1163,21 +1133,23 @@ If PropBorderStyle <> vbBSNone Then
             ExcludeClipRect .hDC, ExtentRect.Left - (2 * PixelsPerDIP_X()), ExtentRect.Top, ExtentRect.Right + (2 * PixelsPerDIP_X()), ExtentRect.Bottom
         End If
         DrawEdge .hDC, ClientRect, EDGE_ETCHED, BF_RECT Or IIf(.Appearance = CCAppearanceFlat, BF_MONO, 0)
-        RemoveClipRgn .hDC
-        
-    #End If
-    
+        SelectClipRgn .hDC, NULL_PTR
+    End If
     SetBkMode .hDC, OldBkMode
 End If
 Set .Picture = .Image
 End With
 End Sub
 
+#If VBA7 Then
+Private Function ISubclass_Message(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
+#Else
 Private Function ISubclass_Message(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal dwRefData As Long) As Long
+#End If
 ISubclass_Message = WindowProcUserControl(hWnd, wMsg, wParam, lParam)
 End Function
 
-Private Function WindowProcUserControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcUserControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_PRINTCLIENT
         Dim ClientRect As RECT
@@ -1193,7 +1165,7 @@ Select Case wMsg
         If wMsg = WM_GETTEXT Then
             If wParam > 0 And lParam <> 0 Then
                 Length = Len(PropCaption) + 1
-                If wParam < Length Then Length = wParam
+                If wParam < Length Then Length = CLng(wParam)
                 Text = Left$(PropCaption, Length - 1) & vbNullChar
                 CopyMemory ByVal lParam, ByVal StrPtr(Text), Length * 2
                 WindowProcUserControl = Length - 1

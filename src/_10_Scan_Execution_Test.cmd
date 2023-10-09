@@ -12,7 +12,7 @@ if /i "%ch%" neq "y" exit /b
 2>NUL del "HiJackThis.log"
 2>NUL del "HiJackThis_debug.log"
 
-start "" /w "HiJackThis.exe" /accepteula /silentautolog /default /skipIgnoreList /timeout:57 /debugtofile
+start "" /w "HiJackThis.exe" /accepteula /silentautolog /default /skipIgnoreList /timeout:120 /debugtofile
 
 echo.
 

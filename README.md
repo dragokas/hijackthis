@@ -29,7 +29,7 @@ HiJackThis+ is not a replacement of a classical antivirus. It doesn't provide a 
  * Run the scanning by clicking "Do a system scan only"
  * Add all items in the ignore-list
  * Set up boot-up scan in menu "File" - "Settings" - "Add HiJackThis to startup"
- * Next time when user logged in, HiJackThis will silently scan your OS and display UI if only new records in your system has been found.
+ * Next time when user logged in, HiJackThis will silently scan your OS and display UI if only new records in your system were found.
 
 ## Tutorial
 
@@ -47,19 +47,19 @@ HiJackThis+ is not a replacement of a classical antivirus. It doesn't provide a 
 
  * Short logs
  * Fast scans
- * No need to manually create fixing scripts
- * No need for Internet access or recurring database updates
+ * Not necessarily to create fixing scripts manually
+ * No need for internet access or recurring database updates
  * Already familiar to many people
  * Portable
 
-## New in version 3
+## New in version 2.6+
 
  * Detects several new hijacking methods
- * Fully supports new Windows versions
+ * Fully supports new versions of OS Windows 
  * New and updated supplementary tools
  * Improved interface, security and backups
 
-HiJackThis+ also comes with several useful tools for manually removing malware from a computer:
+HiJackThis+ also comes with several modules useful for specific analysis and removing malware from a computer:
  * StartupList 2 **(\*new\*)**
  * Process Manager
  * Uninstall Manager
@@ -79,9 +79,9 @@ You must exercise caution when using this tool. Avoid making changes to your com
 
 If you are not already an expert, we recommend submitting your case to an online help forum. Here are some suggestions:
 - English: [Our GitHub](https://github.com/dragokas/hijackthis/wiki/How-to-make-a-request-for-help-in-the-PC-cure-section%3F) ; [GeeksToGo](http://www.geekstogo.com/forum/topic/2852-malware-and-spyware-cleaning-guide/) ;  [BleepingComputer](https://www.bleepingcomputer.com/forums/t/34773/preparation-guide-for-use-before-using-malware-removal-tools-and-requesting-help/)
-- Russian: [SafeZone](https://safezone.cc/pravila/) ; [CyberForum](https://www.cyberforum.ru/viruses/thread49792.html) ; [OSZone](http://forum.oszone.net/thread-98169.html) ; [SoftBoard](https://softboard.ru/topic/51343-правила-подраздела/) ; [THG](http://www.thg.ru/forum/showthread.php?t=92236) ; [VirusInfo](https://virusinfo.info/showthread.php?t=1235) ; [KasperskyClub](https://forum.kasperskyclub.ru/index.php?showtopic=43640) ; [Dr.Web](https://forum.drweb.com/index.php?showtopic=313238)
+- Russian: [SafeZone](https://safezone.cc/pravila/) ; [CyberForum](https://www.cyberforum.ru/viruses/thread49792.html) ; [OSZone](http://forum.oszone.net/thread-98169.html) ; [SoftBoard](https://softboard.ru/topic/51343-правила-подраздела/) ; [THG](http://www.thg.ru/forum/showthread.php?t=92236) ; [VirusInfo](https://virusinfo.info/showthread.php?t=1235) ; [KasperskyClub](https://forum.kasperskyclub.ru/index.php?showtopic=43640)
 
-> Note: currently, only Russian-speaking anti-malware supporting team (e.g., [VIRUSNET association](https://github.com/VIRUSNET-Association)) can provide direct analysis of HiJackThis+ logs in [our github 'Issues' section](https://github.com/dragokas/hijackthis/wiki/How-to-make-a-request-for-help-in-the-PC-cure-section%3F). Please feel free to ask help there (English only).
+> Note: currently, only [VIRUSNET association](https://github.com/VIRUSNET-Association) can provide direct analysis of HiJackThis+ logs in [our github 'Issues' section](https://github.com/dragokas/hijackthis/wiki/How-to-make-a-request-for-help-in-the-PC-cure-section%3F). Please feel free to ask help there (English/Russian only).
 
 ## Technical support
 
@@ -92,10 +92,10 @@ If you are not already an expert, we recommend submitting your case to an online
  * Discussion and news are in [this topic](https://safezone.cc/threads/hijackthis-fork-i-voprosy-k-razrabotchikam.28770/) (in Russian) or on [GeeksToGo](https://www.geekstogo.com/forum/topic/361755-hijackthisfork-improvement-development-bug-reports/) (in English; access restricted to experts only) or on our [GitHub page](https://github.com/dragokas/hijackthis/discussions/137) (for everybody).
  * You can also freely ask questions, report bugs, or propose improvements by [creating an issue on GitHub](https://github.com/dragokas/hijackthis/issues)
 
-## System Requirements
+## System requirements
 
-Operating System
-  * Microsoft™ Windows™ 11 / 10 / 8.1 / 8 / 7 / Vista / XP / 2000 (32/64-bit desktop and server)
+Operating system
+  * Microsoft™ Windows™ 11 / 10 / 8.1 / 8 / 7 / Vista / XP (32/64-bit desktop and server)
 
 ## Copyrights
 
@@ -122,10 +122,11 @@ HiJackThis+ is distributed under the initial [GPLv2 license](https://github.com/
 **Note:** These mirrors belong to other companies. They are non-official.
 
 ### More references:
-// TODO
+[Wikipedia (EN)](https://en.wikipedia.org/wiki/HijackThis)
+[Wikipedia (RU)](https://ru.wikipedia.org/wiki/HijackThis)
+[LabRats - Intro to HijackThis (Video)](https://www.youtube.com/watch?v=oZU6mTkGgGY)
 
-https://en.wikipedia.org/wiki/HijackThis
-https://ru.wikipedia.org/wiki/HijackThis
+// TODO... Please, report more if you know :)
 
 ## Donate
 

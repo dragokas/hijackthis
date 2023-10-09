@@ -25,6 +25,18 @@ Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
 Option Explicit
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
 #If False Then
 Private UdnOrientationVertical, UdnOrientationHorizontal
 Private UdnNumberStyleDecimal, UdnNumberStyleHexadecimal
@@ -48,8 +60,8 @@ nSec As Long
 nInc As Long
 End Type
 Private Type NMHDR
-hWndFrom As Long
-IDFrom As Long
+hWndFrom As LongPtr
+IDFrom As LongPtr
 Code As Long
 End Type
 Private Type NMUPDOWN
@@ -90,6 +102,19 @@ Public Event OLESetData(Data As DataObject, DataFormat As Integer)
 Attribute OLESetData.VB_Description = "Occurs at the OLE drag/drop source control when the drop target requests data that was not provided to the DataObject during the OLEDragStart event."
 Public Event OLEStartDrag(Data As DataObject, AllowedEffects As Long)
 Attribute OLEStartDrag.VB_Description = "Occurs when an OLE drag/drop operation is initiated either manually or automatically."
+#If VBA7 Then
+Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
+Private Declare PtrSafe Function CreateWindowEx Lib "user32" Alias "CreateWindowExW" (ByVal dwExStyle As Long, ByVal lpClassName As LongPtr, ByVal lpWindowName As LongPtr, ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hWndParent As LongPtr, ByVal hMenu As LongPtr, ByVal hInstance As LongPtr, ByRef lpParam As Any) As LongPtr
+Private Declare PtrSafe Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByRef lParam As Any) As LongPtr
+Private Declare PtrSafe Function DestroyWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
+Private Declare PtrSafe Function SetParent Lib "user32" (ByVal hWndChild As LongPtr, ByVal hWndNewParent As LongPtr) As LongPtr
+Private Declare PtrSafe Function ShowWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal nCmdShow As Long) As Long
+Private Declare PtrSafe Function MoveWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint As Long) As Long
+Private Declare PtrSafe Function GetWindowRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As RECT) As Long
+Private Declare PtrSafe Function LockWindowUpdate Lib "user32" (ByVal hWndLock As LongPtr) As Long
+Private Declare PtrSafe Function EnableWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal fEnable As Long) As Long
+Private Declare PtrSafe Function RedrawWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal lprcUpdate As LongPtr, ByVal hrgnUpdate As LongPtr, ByVal fuRedraw As Long) As Long
+#Else
 Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
 Private Declare Function CreateWindowEx Lib "user32" Alias "CreateWindowExW" (ByVal dwExStyle As Long, ByVal lpClassName As Long, ByVal lpWindowName As Long, ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hWndParent As Long, ByVal hMenu As Long, ByVal hInstance As Long, ByRef lpParam As Any) As Long
 Private Declare Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByRef lParam As Any) As Long
@@ -101,6 +126,7 @@ Private Declare Function GetWindowRect Lib "user32" (ByVal hWnd As Long, ByRef l
 Private Declare Function LockWindowUpdate Lib "user32" (ByVal hWndLock As Long) As Long
 Private Declare Function EnableWindow Lib "user32" (ByVal hWnd As Long, ByVal fEnable As Long) As Long
 Private Declare Function RedrawWindow Lib "user32" (ByVal hWnd As Long, ByVal lprcUpdate As Long, ByVal hrgnUpdate As Long, ByVal fuRedraw As Long) As Long
+#End If
 Private Const ICC_UPDOWN_CLASS As Long = &H10
 Private Const RDW_UPDATENOW As Long = &H100, RDW_INVALIDATE As Long = &H1, RDW_ERASE As Long = &H4, RDW_ALLCHILDREN As Long = &H80
 Private Const WS_VISIBLE As Long = &H10000000
@@ -140,10 +166,10 @@ Private Const UDM_SETUNICODEFORMAT As Long = CCM_SETUNICODEFORMAT
 Implements ISubclass
 Implements OLEGuids.IObjectSafety
 Implements OLEGuids.IPerPropertyBrowsingVB
-Private UpDownHandle As Long
+Private UpDownHandle As LongPtr
 Private UpDownMouseOver As Boolean
 Private UpDownDesignMode As Boolean
-Private UpDownBuddyObjectPointer As Long
+Private UpDownBuddyObjectPointer As LongPtr
 Private DispIDBuddyControl As Long, BuddyControlArray() As String
 Private PropVisualStyles As Boolean
 Private PropMouseTrack As Boolean
@@ -338,7 +364,7 @@ If InProc = True Then Exit Sub
 InProc = True
 With UserControl
 If DPICorrectionFactor() <> 1 Then Call SyncObjectRectsToContainer(Me)
-If UpDownHandle = 0 Then InProc = False: Exit Sub
+If UpDownHandle = NULL_PTR Then InProc = False: Exit Sub
 Dim WndRect As RECT
 GetWindowRect UpDownHandle, WndRect
 Select Case PropOrientation
@@ -509,14 +535,25 @@ Attribute ZOrder.VB_Description = "Places a specified object at the front or bac
 If IsMissing(Position) Then Extender.ZOrder Else Extender.ZOrder Position
 End Sub
 
+#If VBA7 Then
+Public Property Get hWnd() As LongPtr
+Attribute hWnd.VB_Description = "Returns a handle to a control."
+Attribute hWnd.VB_UserMemId = -515
+#Else
 Public Property Get hWnd() As Long
 Attribute hWnd.VB_Description = "Returns a handle to a control."
 Attribute hWnd.VB_UserMemId = -515
+#End If
 hWnd = UpDownHandle
 End Property
 
+#If VBA7 Then
+Public Property Get hWndUserControl() As LongPtr
+Attribute hWndUserControl.VB_Description = "Returns a handle to a control."
+#Else
 Public Property Get hWndUserControl() As Long
 Attribute hWndUserControl.VB_Description = "Returns a handle to a control."
+#End If
 hWndUserControl = UserControl.hWnd
 End Property
 
@@ -527,7 +564,7 @@ End Property
 
 Public Property Let VisualStyles(ByVal Value As Boolean)
 PropVisualStyles = Value
-If UpDownHandle <> 0 And EnabledVisualStyles() = True Then
+If UpDownHandle <> NULL_PTR And EnabledVisualStyles() = True Then
     If PropVisualStyles = True Then
         ActivateVisualStyles UpDownHandle
     Else
@@ -546,7 +583,7 @@ End Property
 
 Public Property Let Enabled(ByVal Value As Boolean)
 UserControl.Enabled = Value
-If UpDownHandle <> 0 Then EnableWindow UpDownHandle, IIf(Value = True, 1, 0)
+If UpDownHandle <> NULL_PTR Then EnableWindow UpDownHandle, IIf(Value = True, 1, 0)
 UserControl.PropertyChanged "Enabled"
 End Property
 
@@ -588,7 +625,7 @@ Call ComCtlsCheckRightToLeft(PropRightToLeft, UserControl.RightToLeft, PropRight
 Dim dwMask As Long
 If PropRightToLeft = True And PropRightToLeftLayout = True Then dwMask = WS_EX_LAYOUTRTL
 If UpDownDesignMode = False Then Call ComCtlsSetRightToLeft(UserControl.hWnd, dwMask)
-If UpDownHandle <> 0 Then Call ComCtlsSetRightToLeft(UpDownHandle, dwMask)
+If UpDownHandle <> NULL_PTR Then Call ComCtlsSetRightToLeft(UpDownHandle, dwMask)
 UserControl.PropertyChanged "RightToLeft"
 End Property
 
@@ -638,7 +675,7 @@ End Property
 
 Public Property Let BuddyControl(ByVal Value As Variant)
 If UpDownDesignMode = False Then
-    If UpDownHandle <> 0 Then
+    If UpDownHandle <> NULL_PTR Then
         Dim Success As Boolean
         On Error Resume Next
         If IsObject(Value) Then
@@ -674,7 +711,7 @@ If UpDownDesignMode = False Then
         End If
         On Error GoTo 0
         If Success = False Then
-            UpDownBuddyObjectPointer = 0
+            UpDownBuddyObjectPointer = NULL_PTR
             PropBuddyName = "(None)"
             PropBuddyProperty = vbNullString
         End If
@@ -757,7 +794,7 @@ End Property
 
 Public Property Get Min() As Long
 Attribute Min.VB_Description = "Returns/sets the minimum value."
-If UpDownHandle <> 0 Then
+If UpDownHandle <> NULL_PTR Then
     SendMessage UpDownHandle, UDM_GETRANGE32, VarPtr(Min), ByVal 0&
 Else
     Min = PropMin
@@ -776,14 +813,14 @@ Else
         Err.Raise 380
     End If
 End If
-If UpDownHandle <> 0 Then SendMessage UpDownHandle, UDM_SETRANGE32, PropMin, ByVal PropMax
+If UpDownHandle <> NULL_PTR Then SendMessage UpDownHandle, UDM_SETRANGE32, PropMin, ByVal PropMax
 Me.Refresh
 UserControl.PropertyChanged "Min"
 End Property
 
 Public Property Get Max() As Long
 Attribute Max.VB_Description = "Returns/sets the maximum value."
-If UpDownHandle <> 0 Then
+If UpDownHandle <> NULL_PTR Then
     SendMessage UpDownHandle, UDM_GETRANGE32, 0, ByVal VarPtr(Max)
 Else
     Max = PropMax
@@ -802,7 +839,7 @@ Else
         Err.Raise 380
     End If
 End If
-If UpDownHandle <> 0 Then SendMessage UpDownHandle, UDM_SETRANGE32, PropMin, ByVal PropMax
+If UpDownHandle <> NULL_PTR Then SendMessage UpDownHandle, UDM_SETRANGE32, PropMin, ByVal PropMax
 Me.Refresh
 UserControl.PropertyChanged "Max"
 End Property
@@ -810,8 +847,8 @@ End Property
 Public Property Get Value() As Long
 Attribute Value.VB_Description = "Returns/sets the current position."
 Attribute Value.VB_UserMemId = 0
-If UpDownHandle <> 0 Then
-    Value = SendMessage(UpDownHandle, UDM_GETPOS32, 0, ByVal 0&)
+If UpDownHandle <> NULL_PTR Then
+    Value = CLng(SendMessage(UpDownHandle, UDM_GETPOS32, 0, ByVal 0&))
 Else
     Value = PropValue
 End If
@@ -826,7 +863,7 @@ End If
 Dim Changed As Boolean
 Changed = CBool(Me.Value <> NewValue)
 PropValue = NewValue
-If UpDownHandle <> 0 Then SendMessage UpDownHandle, UDM_SETPOS32, 0, ByVal PropValue
+If UpDownHandle <> NULL_PTR Then SendMessage UpDownHandle, UDM_SETPOS32, 0, ByVal PropValue
 UserControl.PropertyChanged "Value"
 Call SyncProperty(False)
 If Changed = True Then RaiseEvent Change
@@ -834,7 +871,7 @@ End Property
 
 Public Property Get Increment() As Long
 Attribute Increment.VB_Description = "Returns/sets the position change increment."
-If UpDownHandle <> 0 Then
+If UpDownHandle <> NULL_PTR Then
     Dim Accel As UDACCEL
     SendMessage UpDownHandle, UDM_GETACCEL, 1, Accel
     Increment = Accel.nInc
@@ -845,7 +882,7 @@ End Property
 
 Public Property Let Increment(ByVal Value As Long)
 PropIncrement = Value
-If UpDownHandle <> 0 Then
+If UpDownHandle <> NULL_PTR Then
     Dim Accel As UDACCEL
     Accel.nSec = 0
     Accel.nInc = PropIncrement
@@ -861,7 +898,7 @@ End Property
 
 Public Property Let Wrap(ByVal Value As Boolean)
 PropWrap = Value
-If UpDownHandle <> 0 Then Call ReCreateUpDown
+If UpDownHandle <> NULL_PTR Then Call ReCreateUpDown
 UserControl.PropertyChanged "Wrap"
 End Property
 
@@ -872,7 +909,7 @@ End Property
 
 Public Property Let HotTracking(ByVal Value As Boolean)
 PropHotTracking = Value
-If UpDownHandle <> 0 Then Call ReCreateUpDown
+If UpDownHandle <> NULL_PTR Then Call ReCreateUpDown
 UserControl.PropertyChanged "HotTracking"
 End Property
 
@@ -895,7 +932,7 @@ Select Case Value
     Case Else
         Err.Raise 380
 End Select
-If UpDownHandle <> 0 Then Call ReCreateUpDown
+If UpDownHandle <> NULL_PTR Then Call ReCreateUpDown
 UserControl.PropertyChanged "Orientation"
 End Property
 
@@ -925,15 +962,15 @@ UserControl.PropertyChanged "NumberStyle"
 End Property
 
 Private Sub CreateUpDown()
-If UpDownHandle <> 0 Then Exit Sub
+If UpDownHandle <> NULL_PTR Then Exit Sub
 Dim dwStyle As Long, dwExStyle As Long
 dwStyle = WS_CHILD Or WS_VISIBLE
 If PropRightToLeft = True And PropRightToLeftLayout = True Then dwExStyle = dwExStyle Or WS_EX_LAYOUTRTL
 If PropWrap = True Then dwStyle = dwStyle Or UDS_WRAP
 If PropHotTracking = True Then dwStyle = dwStyle Or UDS_HOTTRACK
 If PropOrientation = UdnOrientationHorizontal Then dwStyle = dwStyle Or UDS_HORZ
-UpDownHandle = CreateWindowEx(dwExStyle, StrPtr("msctls_updown32"), 0, dwStyle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, 0, App.hInstance, ByVal 0&)
-If UpDownHandle <> 0 Then
+UpDownHandle = CreateWindowEx(dwExStyle, StrPtr("msctls_updown32"), NULL_PTR, dwStyle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, NULL_PTR, App.hInstance, ByVal NULL_PTR)
+If UpDownHandle <> NULL_PTR Then
     SendMessage UpDownHandle, UDM_SETUNICODEFORMAT, 1, ByVal 0&
     SendMessage UpDownHandle, UDM_SETRANGE32, PropMin, ByVal PropMax
 End If
@@ -942,7 +979,7 @@ Me.Enabled = UserControl.Enabled
 Me.Value = PropValue
 Me.Increment = PropIncrement
 If UpDownDesignMode = False Then
-    If UpDownHandle <> 0 Then Call ComCtlsSetSubclass(UpDownHandle, Me, 1)
+    If UpDownHandle <> NULL_PTR Then Call ComCtlsSetSubclass(UpDownHandle, Me, 1)
     Call ComCtlsSetSubclass(UserControl.hWnd, Me, 2)
 End If
 End Sub
@@ -955,7 +992,7 @@ If UpDownDesignMode = False Then
     Call CreateUpDown
     Call UserControl_Resize
     If Not PropBuddyControl Is Nothing Then Set Me.BuddyControl = PropBuddyControl
-    If Locked = True Then LockWindowUpdate 0
+    If Locked = True Then LockWindowUpdate NULL_PTR
     Me.Refresh
 Else
     Call DestroyUpDown
@@ -965,20 +1002,20 @@ End If
 End Sub
 
 Private Sub DestroyUpDown()
-If UpDownHandle = 0 Then Exit Sub
+If UpDownHandle = NULL_PTR Then Exit Sub
 Call ComCtlsRemoveSubclass(UpDownHandle)
 Call ComCtlsRemoveSubclass(UserControl.hWnd)
 ShowWindow UpDownHandle, SW_HIDE
-SetParent UpDownHandle, 0
+SetParent UpDownHandle, NULL_PTR
 DestroyWindow UpDownHandle
-UpDownHandle = 0
+UpDownHandle = NULL_PTR
 End Sub
 
 Public Sub Refresh()
 Attribute Refresh.VB_Description = "Forces a complete repaint of a object."
 Attribute Refresh.VB_UserMemId = -550
 UserControl.Refresh
-RedrawWindow UserControl.hWnd, 0, 0, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
+RedrawWindow UserControl.hWnd, NULL_PTR, NULL_PTR, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
 End Sub
 
 Public Sub SyncFromBuddy()
@@ -988,7 +1025,7 @@ End Sub
 
 Private Sub SyncProperty(Optional ByVal FromBuddy As Boolean)
 Static InProc As Boolean
-If UpDownHandle = 0 Or PropBuddyProperty = vbNullString Or InProc = True Then Exit Sub
+If UpDownHandle = NULL_PTR Or PropBuddyProperty = vbNullString Or InProc = True Then Exit Sub
 If UpDownDesignMode = False Then
     Dim VarValue As Variant, LngValue As Long
     If Not PropBuddyControl Is Nothing Then
@@ -1092,10 +1129,14 @@ On Error GoTo 0
 End Function
 
 Private Function PropBuddyControl() As Object
-If UpDownBuddyObjectPointer <> 0 Then Set PropBuddyControl = PtrToObj(UpDownBuddyObjectPointer)
+If UpDownBuddyObjectPointer <> NULL_PTR Then Set PropBuddyControl = PtrToObj(UpDownBuddyObjectPointer)
 End Function
 
+#If VBA7 Then
+Private Function ISubclass_Message(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
+#Else
 Private Function ISubclass_Message(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal dwRefData As Long) As Long
+#End If
 Select Case dwRefData
     Case 1
         ISubclass_Message = WindowProcControl(hWnd, wMsg, wParam, lParam)
@@ -1104,7 +1145,7 @@ Select Case dwRefData
 End Select
 End Function
 
-Private Function WindowProcControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 WindowProcControl = ComCtlsDefaultProc(hWnd, wMsg, wParam, lParam)
 Select Case wMsg
     Case WM_LBUTTONDOWN, WM_MBUTTONDOWN, WM_RBUTTONDOWN, WM_MOUSEMOVE, WM_LBUTTONUP, WM_MBUTTONUP, WM_RBUTTONUP
@@ -1141,7 +1182,7 @@ Select Case wMsg
 End Select
 End Function
 
-Private Function WindowProcUserControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcUserControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_NOTIFY
         Dim NM As NMHDR
@@ -1166,7 +1207,7 @@ Select Case wMsg
         If lParam = UpDownHandle Then
             Call SyncProperty(False)
             Dim NewValue As Long
-            NewValue = SendMessage(UpDownHandle, UDM_GETPOS32, 0, ByVal 0&)
+            NewValue = CLng(SendMessage(UpDownHandle, UDM_GETPOS32, 0, ByVal 0&))
             If PropValue <> NewValue Then
                 PropValue = NewValue
                 RaiseEvent Change

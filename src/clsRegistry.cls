@@ -2249,7 +2249,6 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-
 Public Function RenameKey(hHive As ENUM_REG_HIVE, sKey As String, sKeyNewName As String, Optional bUseWow64 As Boolean) As Boolean
     On Error GoTo ErrorHandler:
 

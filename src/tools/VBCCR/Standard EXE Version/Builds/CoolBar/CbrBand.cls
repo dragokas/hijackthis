@@ -12,7 +12,19 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
-Private ShadowObjectPointer As Long
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
+Private ShadowObjectPointer As LongPtr
 Private PropIndex As Long, PropKey As String, PropID As Long
 Private PropTag As Variant
 Private PropChild As Variant
@@ -25,7 +37,7 @@ Private PropBackColor As OLE_COLOR
 Private PropForeColor As OLE_COLOR
 
 Private Function ShadowCoolBar() As CoolBar
-ComCtlsPtrToShadowObj ShadowCoolBar, ShadowObjectPointer
+ComCtlsObjSetAddRef ShadowCoolBar, ShadowObjectPointer
 End Function
 
 Private Sub Class_Initialize()

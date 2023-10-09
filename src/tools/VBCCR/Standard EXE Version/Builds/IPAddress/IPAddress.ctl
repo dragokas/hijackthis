@@ -22,6 +22,18 @@ Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
 
 #Const ImplementThemedBorder = True
 
@@ -53,7 +65,7 @@ End Type
 Private Type TRACKMOUSEEVENTSTRUCT
 cbSize As Long
 dwFlags As Long
-hWndTrack As Long
+hWndTrack As LongPtr
 dwHoverTime As Long
 End Type
 Public Event Click()
@@ -106,6 +118,36 @@ Public Event OLESetData(Data As DataObject, DataFormat As Integer)
 Attribute OLESetData.VB_Description = "Occurs at the OLE drag/drop source control when the drop target requests data that was not provided to the DataObject during the OLEDragStart event."
 Public Event OLEStartDrag(Data As DataObject, AllowedEffects As Long)
 Attribute OLEStartDrag.VB_Description = "Occurs when an OLE drag/drop operation is initiated either manually or automatically."
+#If VBA7 Then
+Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
+Private Declare PtrSafe Function CreateWindowEx Lib "user32" Alias "CreateWindowExW" (ByVal dwExStyle As Long, ByVal lpClassName As LongPtr, ByVal lpWindowName As LongPtr, ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hWndParent As LongPtr, ByVal hMenu As LongPtr, ByVal hInstance As LongPtr, ByRef lpParam As Any) As LongPtr
+Private Declare PtrSafe Function PostMessage Lib "user32" Alias "PostMessageW" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByRef lParam As Any) As LongPtr
+Private Declare PtrSafe Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByRef lParam As Any) As LongPtr
+Private Declare PtrSafe Function DestroyWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
+Private Declare PtrSafe Function SetParent Lib "user32" (ByVal hWndChild As LongPtr, ByVal hWndNewParent As LongPtr) As LongPtr
+Private Declare PtrSafe Function SetFocusAPI Lib "user32" Alias "SetFocus" (ByVal hWnd As LongPtr) As LongPtr
+Private Declare PtrSafe Function GetFocus Lib "user32" () As LongPtr
+Private Declare PtrSafe Function GetWindowRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As RECT) As Long
+Private Declare PtrSafe Function ShowWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal nCmdShow As Long) As Long
+Private Declare PtrSafe Function MoveWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint As Long) As Long
+Private Declare PtrSafe Function EnableWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal fEnable As Long) As Long
+Private Declare PtrSafe Function RedrawWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal lprcUpdate As LongPtr, ByVal hrgnUpdate As LongPtr, ByVal fuRedraw As Long) As Long
+Private Declare PtrSafe Function DeleteObject Lib "gdi32" (ByVal hObject As LongPtr) As Long
+Private Declare PtrSafe Function SetCursor Lib "user32" (ByVal hCursor As LongPtr) As LongPtr
+Private Declare PtrSafe Function LoadCursor Lib "user32" Alias "LoadCursorW" (ByVal hInstance As LongPtr, ByVal lpCursorName As Any) As LongPtr
+Private Declare PtrSafe Function MapWindowPoints Lib "user32" (ByVal hWndFrom As LongPtr, ByVal hWndTo As LongPtr, ByRef lppt As Any, ByVal cPoints As Long) As Long
+Private Declare PtrSafe Function TrackMouseEvent Lib "user32" (ByRef lpEventTrack As TRACKMOUSEEVENTSTRUCT) As Long
+Private Declare PtrSafe Function GetMessagePos Lib "user32" () As Long
+Private Declare PtrSafe Function WindowFromPoint Lib "user32" (ByVal XY As Currency) As Long
+Private Declare PtrSafe Function ScreenToClient Lib "user32" (ByVal hWnd As LongPtr, ByRef lpPoint As POINTAPI) As Long
+Private Declare PtrSafe Function GetTextExtentPoint32 Lib "gdi32" Alias "GetTextExtentPoint32W" (ByVal hDC As LongPtr, ByVal lpsz As LongPtr, ByVal cbString As Long, ByRef lpSize As SIZEAPI) As Long
+Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hWnd As LongPtr, ByVal hDC As LongPtr) As Long
+Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hWnd As LongPtr) As LongPtr
+Private Declare PtrSafe Function SelectObject Lib "gdi32" (ByVal hDC As LongPtr, ByVal hObject As LongPtr) As LongPtr
+Private Declare PtrSafe Function SetWindowPos Lib "user32" (ByVal hWnd As LongPtr, ByVal hWndInsertAfter As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal CX As Long, ByVal CY As Long, ByVal wFlags As Long) As Long
+Private Declare PtrSafe Function TextOut Lib "gdi32" Alias "TextOutW" (ByVal hDC As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal lpString As LongPtr, ByVal nCount As Long) As Long
+Private Declare PtrSafe Function SetViewportOrgEx Lib "gdi32" (ByVal hDC As LongPtr, ByVal X As Long, ByVal Y As Long, ByRef lpPoint As POINTAPI) As Long
+#Else
 Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
 Private Declare Function CreateWindowEx Lib "user32" Alias "CreateWindowExW" (ByVal dwExStyle As Long, ByVal lpClassName As Long, ByVal lpWindowName As Long, ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hWndParent As Long, ByVal hMenu As Long, ByVal hInstance As Long, ByRef lpParam As Any) As Long
 Private Declare Function PostMessage Lib "user32" Alias "PostMessageW" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByRef lParam As Any) As Long
@@ -125,7 +167,7 @@ Private Declare Function LoadCursor Lib "user32" Alias "LoadCursorW" (ByVal hIns
 Private Declare Function MapWindowPoints Lib "user32" (ByVal hWndFrom As Long, ByVal hWndTo As Long, ByRef lppt As Any, ByVal cPoints As Long) As Long
 Private Declare Function TrackMouseEvent Lib "user32" (ByRef lpEventTrack As TRACKMOUSEEVENTSTRUCT) As Long
 Private Declare Function GetMessagePos Lib "user32" () As Long
-Private Declare Function WindowFromPoint Lib "user32" (ByVal X As Long, ByVal Y As Long) As Long
+Private Declare Function WindowFromPoint Lib "user32" (ByVal XY As Currency) As Long
 Private Declare Function ScreenToClient Lib "user32" (ByVal hWnd As Long, ByRef lpPoint As POINTAPI) As Long
 Private Declare Function GetTextExtentPoint32 Lib "gdi32" Alias "GetTextExtentPoint32W" (ByVal hDC As Long, ByVal lpsz As Long, ByVal cbString As Long, ByRef lpSize As SIZEAPI) As Long
 Private Declare Function ReleaseDC Lib "user32" (ByVal hWnd As Long, ByVal hDC As Long) As Long
@@ -134,6 +176,7 @@ Private Declare Function SelectObject Lib "gdi32" (ByVal hDC As Long, ByVal hObj
 Private Declare Function SetWindowPos Lib "user32" (ByVal hWnd As Long, ByVal hWndInsertAfter As Long, ByVal X As Long, ByVal Y As Long, ByVal CX As Long, ByVal CY As Long, ByVal wFlags As Long) As Long
 Private Declare Function TextOut Lib "gdi32" Alias "TextOutW" (ByVal hDC As Long, ByVal X As Long, ByVal Y As Long, ByVal lpString As Long, ByVal nCount As Long) As Long
 Private Declare Function SetViewportOrgEx Lib "gdi32" (ByVal hDC As Long, ByVal X As Long, ByVal Y As Long, ByRef lpPoint As POINTAPI) As Long
+#End If
 
 #If ImplementThemedBorder = True Then
 
@@ -154,9 +197,23 @@ EPSN_HOT = 2
 EPSN_FOCUSED = 3
 EPSN_DISABLED = 4
 End Enum
-Private Declare Function OpenThemeData Lib "uxtheme" (ByVal hWnd As Long, ByVal pszClassList As Long) As Long
+#If VBA7 Then
+Private Declare PtrSafe Function OpenThemeData Lib "uxtheme" (ByVal hWnd As LongPtr, ByVal lpszClassList As LongPtr) As LongPtr
+Private Declare PtrSafe Function CloseThemeData Lib "uxtheme" (ByVal Theme As LongPtr) As Long
+Private Declare PtrSafe Function IsThemeBackgroundPartiallyTransparent Lib "uxtheme" (ByVal Theme As LongPtr, ByVal iPartId As Long, ByVal iStateId As Long) As Long
+Private Declare PtrSafe Function DrawThemeParentBackground Lib "uxtheme" (ByVal hWnd As LongPtr, ByVal hDC As LongPtr, ByRef pRect As RECT) As Long
+Private Declare PtrSafe Function DrawThemeBackground Lib "uxtheme" (ByVal Theme As LongPtr, ByVal hDC As LongPtr, ByVal iPartId As Long, ByVal iStateId As Long, ByRef pRect As RECT, ByRef pClipRect As RECT) As Long
+Private Declare PtrSafe Function SetRect Lib "user32" (ByRef lpRect As RECT, ByVal X1 As Long, ByVal Y1 As Long, ByVal X2 As Long, ByVal Y2 As Long) As Long
+Private Declare PtrSafe Function GetWindowDC Lib "user32" (ByVal hWnd As LongPtr) As LongPtr
+Private Declare PtrSafe Function GetDCEx Lib "user32" (ByVal hWnd As LongPtr, ByVal hRgnClip As LongPtr, ByVal fdwOptions As Long) As LongPtr
+Private Declare PtrSafe Function ExcludeClipRect Lib "gdi32" (ByVal hDC As LongPtr, ByVal X1 As Long, ByVal Y1 As Long, ByVal X2 As Long, ByVal Y2 As Long) As Long
+Private Declare PtrSafe Function CreateSolidBrush Lib "gdi32" (ByVal crColor As Long) As LongPtr
+Private Declare PtrSafe Function FillRect Lib "user32" (ByVal hDC As LongPtr, ByRef lpRect As RECT, ByVal hBrush As LongPtr) As Long
+Private Declare PtrSafe Function GetSystemMetrics Lib "user32" (ByVal nIndex As Long) As Long
+#Else
+Private Declare Function OpenThemeData Lib "uxtheme" (ByVal hWnd As Long, ByVal lpszClassList As Long) As Long
 Private Declare Function CloseThemeData Lib "uxtheme" (ByVal Theme As Long) As Long
-Private Declare Function IsThemeBackgroundPartiallyTransparent Lib "uxtheme" (ByVal Theme As Long, iPartId As Long, iStateId As Long) As Long
+Private Declare Function IsThemeBackgroundPartiallyTransparent Lib "uxtheme" (ByVal Theme As Long, ByVal iPartId As Long, ByVal iStateId As Long) As Long
 Private Declare Function DrawThemeParentBackground Lib "uxtheme" (ByVal hWnd As Long, ByVal hDC As Long, ByRef pRect As RECT) As Long
 Private Declare Function DrawThemeBackground Lib "uxtheme" (ByVal Theme As Long, ByVal hDC As Long, ByVal iPartId As Long, ByVal iStateId As Long, ByRef pRect As RECT, ByRef pClipRect As RECT) As Long
 Private Declare Function SetRect Lib "user32" (ByRef lpRect As RECT, ByVal X1 As Long, ByVal Y1 As Long, ByVal X2 As Long, ByVal Y2 As Long) As Long
@@ -166,12 +223,17 @@ Private Declare Function ExcludeClipRect Lib "gdi32" (ByVal hDC As Long, ByVal X
 Private Declare Function CreateSolidBrush Lib "gdi32" (ByVal crColor As Long) As Long
 Private Declare Function FillRect Lib "user32" (ByVal hDC As Long, ByRef lpRect As RECT, ByVal hBrush As Long) As Long
 Private Declare Function GetSystemMetrics Lib "user32" (ByVal nIndex As Long) As Long
+#End If
 
 #End If
 
 Private Const ICC_STANDARD_CLASSES As Long = &H4000
 Private Const RDW_UPDATENOW As Long = &H100, RDW_INVALIDATE As Long = &H1, RDW_ERASE As Long = &H4, RDW_ALLCHILDREN As Long = &H80, RDW_NOCHILDREN As Long = &H40, RDW_FRAME As Long = &H400
+#If VBA7 Then
+Private Const HWND_DESKTOP As LongPtr = &H0
+#Else
 Private Const HWND_DESKTOP As Long = &H0
+#End If
 Private Const SWP_FRAMECHANGED As Long = &H20
 Private Const SWP_DRAWFRAME As Long = SWP_FRAMECHANGED
 Private Const SWP_NOMOVE As Long = &H2
@@ -247,8 +309,8 @@ Implements ISubclass
 Implements OLEGuids.IObjectSafety
 Implements OLEGuids.IOleInPlaceActiveObjectVB
 Implements OLEGuids.IPerPropertyBrowsingVB
-Private IPAddressEditHandle(1 To 4) As Long
-Private IPAddressFontHandle As Long
+Private IPAddressEditHandle(1 To 4) As LongPtr
+Private IPAddressFontHandle As LongPtr
 Private IPAddressCharCodeCache As Long
 Private IPAddressIsClick As Boolean
 Private IPAddressMouseOver(0 To 1) As Boolean
@@ -259,7 +321,7 @@ Private IPAddressPadding As SIZEAPI
 Private IPAddressChangeFrozen As Boolean
 Private IPAddressRTLReading(1 To 4) As Boolean
 Private IPAddressEnabledVisualStyles As Boolean
-Private IPAddressEditFocusHwnd As Long
+Private IPAddressEditFocusHwnd As LongPtr
 Private IPAddressSelectedItem As Integer
 Private IPAddressMin(1 To 4) As Integer, IPAddressMax(1 To 4) As Integer
 Private UCNoSetFocusFwd As Boolean
@@ -285,10 +347,14 @@ End Sub
 Private Sub IObjectSafety_SetInterfaceSafetyOptions(ByRef riid As OLEGuids.OLECLSID, ByVal dwOptionsSetMask As Long, ByVal dwEnabledOptions As Long)
 End Sub
 
+#If VBA7 Then
+Private Sub IOleInPlaceActiveObjectVB_TranslateAccelerator(ByRef Handled As Boolean, ByRef RetVal As Long, ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal Shift As Long)
+#Else
 Private Sub IOleInPlaceActiveObjectVB_TranslateAccelerator(ByRef Handled As Boolean, ByRef RetVal As Long, ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal Shift As Long)
+#End If
 If wMsg = WM_KEYDOWN Or wMsg = WM_KEYUP Then
     Dim KeyCode As Integer, IsInputKey As Boolean
-    KeyCode = wParam And &HFF&
+    KeyCode = CLng(wParam) And &HFF&
     If wMsg = WM_KEYDOWN Then
         RaiseEvent PreviewKeyDown(KeyCode, IsInputKey)
     ElseIf wMsg = WM_KEYUP Then
@@ -487,13 +553,13 @@ X = IPAddressPadding.CX
 Y = IPAddressPadding.CY
 CX = ((UserControl.ScaleWidth - X) - (IPAddressDotSpacing * 3)) \ 4 ' Discard any remainder
 CY = UserControl.ScaleHeight - Y
-If IPAddressEditHandle(1) <> 0 Then MoveWindow IPAddressEditHandle(1), X, Y, CX, CY, 1
+If IPAddressEditHandle(1) <> NULL_PTR Then MoveWindow IPAddressEditHandle(1), X, Y, CX, CY, 1
 X = X + CX + IPAddressDotSpacing
-If IPAddressEditHandle(2) <> 0 Then MoveWindow IPAddressEditHandle(2), X, Y, CX, CY, 1
+If IPAddressEditHandle(2) <> NULL_PTR Then MoveWindow IPAddressEditHandle(2), X, Y, CX, CY, 1
 X = X + CX + IPAddressDotSpacing
-If IPAddressEditHandle(3) <> 0 Then MoveWindow IPAddressEditHandle(3), X, Y, CX, CY, 1
+If IPAddressEditHandle(3) <> NULL_PTR Then MoveWindow IPAddressEditHandle(3), X, Y, CX, CY, 1
 X = X + CX + IPAddressDotSpacing
-If IPAddressEditHandle(4) <> 0 Then MoveWindow IPAddressEditHandle(4), X, Y, CX, CY, 1
+If IPAddressEditHandle(4) <> NULL_PTR Then MoveWindow IPAddressEditHandle(4), X, Y, CX, CY, 1
 End With
 InProc = False
 End Sub
@@ -646,14 +712,25 @@ Attribute ZOrder.VB_Description = "Places a specified object at the front or bac
 If IsMissing(Position) Then Extender.ZOrder Else Extender.ZOrder Position
 End Sub
 
+#If VBA7 Then
+Public Property Get hWnd() As LongPtr
+Attribute hWnd.VB_Description = "Returns a handle to a control."
+Attribute hWnd.VB_UserMemId = -515
+#Else
 Public Property Get hWnd() As Long
 Attribute hWnd.VB_Description = "Returns a handle to a control."
 Attribute hWnd.VB_UserMemId = -515
+#End If
 hWnd = UserControl.hWnd
 End Property
 
+#If VBA7 Then
+Public Property Get hWndEdit(ByVal Index As Integer) As LongPtr
+Attribute hWndEdit.VB_Description = "Returns a handle to a control."
+#Else
 Public Property Get hWndEdit(ByVal Index As Integer) As Long
 Attribute hWndEdit.VB_Description = "Returns a handle to a control."
+#End If
 If Index > 4 Or Index < 1 Then Err.Raise Number:=35600, Description:="Index out of bounds"
 hWndEdit = IPAddressEditHandle(Index)
 End Property
@@ -670,47 +747,47 @@ End Property
 
 Public Property Set Font(ByVal NewFont As StdFont)
 If NewFont Is Nothing Then Set NewFont = Ambient.Font
-Dim OldFontHandle As Long
+Dim OldFontHandle As LongPtr
 Set PropFont = NewFont
 OldFontHandle = IPAddressFontHandle
 IPAddressFontHandle = CreateGDIFontFromOLEFont(PropFont)
-If IPAddressEditHandle(1) <> 0 Then SendMessage IPAddressEditHandle(1), WM_SETFONT, IPAddressFontHandle, ByVal 1&
-If IPAddressEditHandle(2) <> 0 Then SendMessage IPAddressEditHandle(2), WM_SETFONT, IPAddressFontHandle, ByVal 1&
-If IPAddressEditHandle(3) <> 0 Then SendMessage IPAddressEditHandle(3), WM_SETFONT, IPAddressFontHandle, ByVal 1&
-If IPAddressEditHandle(4) <> 0 Then SendMessage IPAddressEditHandle(4), WM_SETFONT, IPAddressFontHandle, ByVal 1&
-If OldFontHandle <> 0 Then DeleteObject OldFontHandle
-Dim hDCScreen As Long
-hDCScreen = GetDC(0)
-If hDCScreen <> 0 Then
-    Dim Size As SIZEAPI, hFontOld As Long
-    If IPAddressFontHandle <> 0 Then hFontOld = SelectObject(hDCScreen, IPAddressFontHandle)
+If IPAddressEditHandle(1) <> NULL_PTR Then SendMessage IPAddressEditHandle(1), WM_SETFONT, IPAddressFontHandle, ByVal 1&
+If IPAddressEditHandle(2) <> NULL_PTR Then SendMessage IPAddressEditHandle(2), WM_SETFONT, IPAddressFontHandle, ByVal 1&
+If IPAddressEditHandle(3) <> NULL_PTR Then SendMessage IPAddressEditHandle(3), WM_SETFONT, IPAddressFontHandle, ByVal 1&
+If IPAddressEditHandle(4) <> NULL_PTR Then SendMessage IPAddressEditHandle(4), WM_SETFONT, IPAddressFontHandle, ByVal 1&
+If OldFontHandle <> NULL_PTR Then DeleteObject OldFontHandle
+Dim hDCScreen As LongPtr
+hDCScreen = GetDC(NULL_PTR)
+If hDCScreen <> NULL_PTR Then
+    Dim Size As SIZEAPI, hFontOld As LongPtr
+    If IPAddressFontHandle <> NULL_PTR Then hFontOld = SelectObject(hDCScreen, IPAddressFontHandle)
     GetTextExtentPoint32 hDCScreen, StrPtr("."), 1, Size
     IPAddressDotSpacing = Size.CX
-    If hFontOld <> 0 Then SelectObject hDCScreen, hFontOld
-    ReleaseDC 0, hDCScreen
+    If hFontOld <> NULL_PTR Then SelectObject hDCScreen, hFontOld
+    ReleaseDC NULL_PTR, hDCScreen
 End If
 Call UserControl_Resize
 UserControl.PropertyChanged "Font"
 End Property
 
 Private Sub PropFont_FontChanged(ByVal PropertyName As String)
-Dim OldFontHandle As Long
+Dim OldFontHandle As LongPtr
 OldFontHandle = IPAddressFontHandle
 IPAddressFontHandle = CreateGDIFontFromOLEFont(PropFont)
-If IPAddressEditHandle(1) <> 0 Then SendMessage IPAddressEditHandle(1), WM_SETFONT, IPAddressFontHandle, ByVal 1&
-If IPAddressEditHandle(2) <> 0 Then SendMessage IPAddressEditHandle(2), WM_SETFONT, IPAddressFontHandle, ByVal 1&
-If IPAddressEditHandle(3) <> 0 Then SendMessage IPAddressEditHandle(3), WM_SETFONT, IPAddressFontHandle, ByVal 1&
-If IPAddressEditHandle(4) <> 0 Then SendMessage IPAddressEditHandle(4), WM_SETFONT, IPAddressFontHandle, ByVal 1&
-If OldFontHandle <> 0 Then DeleteObject OldFontHandle
-Dim hDCScreen As Long
-hDCScreen = GetDC(0)
-If hDCScreen <> 0 Then
-    Dim Size As SIZEAPI, hFontOld As Long
-    If IPAddressFontHandle <> 0 Then hFontOld = SelectObject(hDCScreen, IPAddressFontHandle)
+If IPAddressEditHandle(1) <> NULL_PTR Then SendMessage IPAddressEditHandle(1), WM_SETFONT, IPAddressFontHandle, ByVal 1&
+If IPAddressEditHandle(2) <> NULL_PTR Then SendMessage IPAddressEditHandle(2), WM_SETFONT, IPAddressFontHandle, ByVal 1&
+If IPAddressEditHandle(3) <> NULL_PTR Then SendMessage IPAddressEditHandle(3), WM_SETFONT, IPAddressFontHandle, ByVal 1&
+If IPAddressEditHandle(4) <> NULL_PTR Then SendMessage IPAddressEditHandle(4), WM_SETFONT, IPAddressFontHandle, ByVal 1&
+If OldFontHandle <> NULL_PTR Then DeleteObject OldFontHandle
+Dim hDCScreen As LongPtr
+hDCScreen = GetDC(NULL_PTR)
+If hDCScreen <> NULL_PTR Then
+    Dim Size As SIZEAPI, hFontOld As LongPtr
+    If IPAddressFontHandle <> NULL_PTR Then hFontOld = SelectObject(hDCScreen, IPAddressFontHandle)
     GetTextExtentPoint32 hDCScreen, StrPtr("."), 1, Size
     IPAddressDotSpacing = Size.CX
-    If hFontOld <> 0 Then SelectObject hDCScreen, hFontOld
-    ReleaseDC 0, hDCScreen
+    If hFontOld <> NULL_PTR Then SelectObject hDCScreen, hFontOld
+    ReleaseDC NULL_PTR, hDCScreen
 End If
 Call UserControl_Resize
 UserControl.PropertyChanged "Font"
@@ -726,15 +803,15 @@ PropVisualStyles = Value
 IPAddressEnabledVisualStyles = EnabledVisualStyles()
 If IPAddressEnabledVisualStyles = True Then
     If PropVisualStyles = True Then
-        If IPAddressEditHandle(1) <> 0 Then ActivateVisualStyles IPAddressEditHandle(1)
-        If IPAddressEditHandle(2) <> 0 Then ActivateVisualStyles IPAddressEditHandle(2)
-        If IPAddressEditHandle(3) <> 0 Then ActivateVisualStyles IPAddressEditHandle(3)
-        If IPAddressEditHandle(4) <> 0 Then ActivateVisualStyles IPAddressEditHandle(4)
+        If IPAddressEditHandle(1) <> NULL_PTR Then ActivateVisualStyles IPAddressEditHandle(1)
+        If IPAddressEditHandle(2) <> NULL_PTR Then ActivateVisualStyles IPAddressEditHandle(2)
+        If IPAddressEditHandle(3) <> NULL_PTR Then ActivateVisualStyles IPAddressEditHandle(3)
+        If IPAddressEditHandle(4) <> NULL_PTR Then ActivateVisualStyles IPAddressEditHandle(4)
     Else
-        If IPAddressEditHandle(1) <> 0 Then RemoveVisualStyles IPAddressEditHandle(1)
-        If IPAddressEditHandle(2) <> 0 Then RemoveVisualStyles IPAddressEditHandle(2)
-        If IPAddressEditHandle(3) <> 0 Then RemoveVisualStyles IPAddressEditHandle(3)
-        If IPAddressEditHandle(4) <> 0 Then RemoveVisualStyles IPAddressEditHandle(4)
+        If IPAddressEditHandle(1) <> NULL_PTR Then RemoveVisualStyles IPAddressEditHandle(1)
+        If IPAddressEditHandle(2) <> NULL_PTR Then RemoveVisualStyles IPAddressEditHandle(2)
+        If IPAddressEditHandle(3) <> NULL_PTR Then RemoveVisualStyles IPAddressEditHandle(3)
+        If IPAddressEditHandle(4) <> NULL_PTR Then RemoveVisualStyles IPAddressEditHandle(4)
     End If
     Me.Refresh
 End If
@@ -755,7 +832,7 @@ Me.Refresh
 
 If PropBorderStyle = CCBorderStyleSunken Then
     ' Redraw the border to consider the new back color for the themed border, if any.
-    RedrawWindow UserControl.hWnd, 0, 0, RDW_FRAME Or RDW_INVALIDATE Or RDW_UPDATENOW Or RDW_NOCHILDREN
+    RedrawWindow UserControl.hWnd, NULL_PTR, NULL_PTR, RDW_FRAME Or RDW_INVALIDATE Or RDW_UPDATENOW Or RDW_NOCHILDREN
 End If
 
 #End If
@@ -783,10 +860,10 @@ End Property
 
 Public Property Let Enabled(ByVal Value As Boolean)
 UserControl.Enabled = Value
-If IPAddressEditHandle(1) <> 0 Then EnableWindow IPAddressEditHandle(1), IIf(Value = True, 1, 0)
-If IPAddressEditHandle(2) <> 0 Then EnableWindow IPAddressEditHandle(2), IIf(Value = True, 1, 0)
-If IPAddressEditHandle(3) <> 0 Then EnableWindow IPAddressEditHandle(3), IIf(Value = True, 1, 0)
-If IPAddressEditHandle(4) <> 0 Then EnableWindow IPAddressEditHandle(4), IIf(Value = True, 1, 0)
+If IPAddressEditHandle(1) <> NULL_PTR Then EnableWindow IPAddressEditHandle(1), IIf(Value = True, 1, 0)
+If IPAddressEditHandle(2) <> NULL_PTR Then EnableWindow IPAddressEditHandle(2), IIf(Value = True, 1, 0)
+If IPAddressEditHandle(3) <> NULL_PTR Then EnableWindow IPAddressEditHandle(3), IIf(Value = True, 1, 0)
+If IPAddressEditHandle(4) <> NULL_PTR Then EnableWindow IPAddressEditHandle(4), IIf(Value = True, 1, 0)
 UserControl.PropertyChanged "Enabled"
 End Property
 
@@ -834,7 +911,7 @@ Public Property Set MouseIcon(ByVal Value As IPictureDisp)
 If Value Is Nothing Then
     Set PropMouseIcon = Nothing
 Else
-    If Value.Type = vbPicTypeIcon Or Value.Handle = 0 Then
+    If Value.Type = vbPicTypeIcon Or Value.Handle = NULL_PTR Then
         Set PropMouseIcon = Value
     Else
         If IPAddressDesignMode = True Then
@@ -871,10 +948,10 @@ UserControl.RightToLeft = PropRightToLeft
 Call ComCtlsCheckRightToLeft(PropRightToLeft, UserControl.RightToLeft, PropRightToLeftMode)
 Dim dwMask As Long
 If PropRightToLeft = True Then dwMask = WS_EX_RTLREADING Or WS_EX_LEFTSCROLLBAR
-If IPAddressEditHandle(1) <> 0 Then Call ComCtlsSetRightToLeft(IPAddressEditHandle(1), dwMask)
-If IPAddressEditHandle(2) <> 0 Then Call ComCtlsSetRightToLeft(IPAddressEditHandle(2), dwMask)
-If IPAddressEditHandle(3) <> 0 Then Call ComCtlsSetRightToLeft(IPAddressEditHandle(3), dwMask)
-If IPAddressEditHandle(4) <> 0 Then Call ComCtlsSetRightToLeft(IPAddressEditHandle(4), dwMask)
+If IPAddressEditHandle(1) <> NULL_PTR Then Call ComCtlsSetRightToLeft(IPAddressEditHandle(1), dwMask)
+If IPAddressEditHandle(2) <> NULL_PTR Then Call ComCtlsSetRightToLeft(IPAddressEditHandle(2), dwMask)
+If IPAddressEditHandle(3) <> NULL_PTR Then Call ComCtlsSetRightToLeft(IPAddressEditHandle(3), dwMask)
+If IPAddressEditHandle(4) <> NULL_PTR Then Call ComCtlsSetRightToLeft(IPAddressEditHandle(4), dwMask)
 UserControl.PropertyChanged "RightToLeft"
 End Property
 
@@ -917,10 +994,10 @@ Attribute Text.VB_Description = "Returns/sets the text contained in an object."
 Attribute Text.VB_UserMemId = 0
 Attribute Text.VB_MemberFlags = "200"
 Dim Length(1 To 4) As Long
-If IPAddressEditHandle(1) <> 0 Then Length(1) = SendMessage(IPAddressEditHandle(1), WM_GETTEXTLENGTH, 0, ByVal 0&)
-If IPAddressEditHandle(2) <> 0 Then Length(2) = SendMessage(IPAddressEditHandle(2), WM_GETTEXTLENGTH, 0, ByVal 0&)
-If IPAddressEditHandle(3) <> 0 Then Length(3) = SendMessage(IPAddressEditHandle(3), WM_GETTEXTLENGTH, 0, ByVal 0&)
-If IPAddressEditHandle(4) <> 0 Then Length(4) = SendMessage(IPAddressEditHandle(4), WM_GETTEXTLENGTH, 0, ByVal 0&)
+If IPAddressEditHandle(1) <> NULL_PTR Then Length(1) = CLng(SendMessage(IPAddressEditHandle(1), WM_GETTEXTLENGTH, 0, ByVal 0&))
+If IPAddressEditHandle(2) <> NULL_PTR Then Length(2) = CLng(SendMessage(IPAddressEditHandle(2), WM_GETTEXTLENGTH, 0, ByVal 0&))
+If IPAddressEditHandle(3) <> NULL_PTR Then Length(3) = CLng(SendMessage(IPAddressEditHandle(3), WM_GETTEXTLENGTH, 0, ByVal 0&))
+If IPAddressEditHandle(4) <> NULL_PTR Then Length(4) = CLng(SendMessage(IPAddressEditHandle(4), WM_GETTEXTLENGTH, 0, ByVal 0&))
 If Length(1) > 0 Or Length(2) > 0 Or Length(3) > 0 Or Length(4) > 0 Then
     Dim Buffer(1 To 4) As String
     If Length(1) > 0 Then
@@ -948,10 +1025,10 @@ Dim OldText As String
 OldText = Me.Text
 If Value = vbNullString Then
     IPAddressChangeFrozen = True
-    If IPAddressEditHandle(1) <> 0 Then SendMessage IPAddressEditHandle(1), WM_SETTEXT, 0, ByVal 0&
-    If IPAddressEditHandle(2) <> 0 Then SendMessage IPAddressEditHandle(2), WM_SETTEXT, 0, ByVal 0&
-    If IPAddressEditHandle(3) <> 0 Then SendMessage IPAddressEditHandle(3), WM_SETTEXT, 0, ByVal 0&
-    If IPAddressEditHandle(4) <> 0 Then SendMessage IPAddressEditHandle(4), WM_SETTEXT, 0, ByVal 0&
+    If IPAddressEditHandle(1) <> NULL_PTR Then SendMessage IPAddressEditHandle(1), WM_SETTEXT, 0, ByVal 0&
+    If IPAddressEditHandle(2) <> NULL_PTR Then SendMessage IPAddressEditHandle(2), WM_SETTEXT, 0, ByVal 0&
+    If IPAddressEditHandle(3) <> NULL_PTR Then SendMessage IPAddressEditHandle(3), WM_SETTEXT, 0, ByVal 0&
+    If IPAddressEditHandle(4) <> NULL_PTR Then SendMessage IPAddressEditHandle(4), WM_SETTEXT, 0, ByVal 0&
     IPAddressChangeFrozen = False
     If Not OldText = vbNullString Then RaiseEvent Change
 Else
@@ -996,7 +1073,7 @@ Else
                     Buffer(i) = CStr(IPAddressMax(i + 1))
                 End If
                 IPAddressChangeFrozen = True
-                If IPAddressEditHandle(i + 1) <> 0 Then SendMessage IPAddressEditHandle(i + 1), WM_SETTEXT, 0, ByVal StrPtr(Buffer(i))
+                If IPAddressEditHandle(i + 1) <> NULL_PTR Then SendMessage IPAddressEditHandle(i + 1), WM_SETTEXT, 0, ByVal StrPtr(Buffer(i))
                 IPAddressChangeFrozen = False
             Next i
             If Not OldText = Buffer(0) & "." & Buffer(1) & "." & Buffer(2) & "." & Buffer(3) Then RaiseEvent Change
@@ -1043,46 +1120,46 @@ End Property
 
 Public Property Let Locked(ByVal Value As Boolean)
 PropLocked = Value
-If IPAddressEditHandle(1) <> 0 Then SendMessage IPAddressEditHandle(1), EM_SETREADONLY, IIf(PropLocked = True, 1, 0), ByVal 0&
-If IPAddressEditHandle(2) <> 0 Then SendMessage IPAddressEditHandle(2), EM_SETREADONLY, IIf(PropLocked = True, 1, 0), ByVal 0&
-If IPAddressEditHandle(3) <> 0 Then SendMessage IPAddressEditHandle(3), EM_SETREADONLY, IIf(PropLocked = True, 1, 0), ByVal 0&
-If IPAddressEditHandle(4) <> 0 Then SendMessage IPAddressEditHandle(4), EM_SETREADONLY, IIf(PropLocked = True, 1, 0), ByVal 0&
+If IPAddressEditHandle(1) <> NULL_PTR Then SendMessage IPAddressEditHandle(1), EM_SETREADONLY, IIf(PropLocked = True, 1, 0), ByVal 0&
+If IPAddressEditHandle(2) <> NULL_PTR Then SendMessage IPAddressEditHandle(2), EM_SETREADONLY, IIf(PropLocked = True, 1, 0), ByVal 0&
+If IPAddressEditHandle(3) <> NULL_PTR Then SendMessage IPAddressEditHandle(3), EM_SETREADONLY, IIf(PropLocked = True, 1, 0), ByVal 0&
+If IPAddressEditHandle(4) <> NULL_PTR Then SendMessage IPAddressEditHandle(4), EM_SETREADONLY, IIf(PropLocked = True, 1, 0), ByVal 0&
 UserControl.PropertyChanged "Locked"
 End Property
 
 Private Sub CreateIPAddress()
-If IPAddressEditHandle(1) <> 0 Or IPAddressEditHandle(2) <> 0 Or IPAddressEditHandle(3) <> 0 Or IPAddressEditHandle(4) <> 0 Then Exit Sub
+If IPAddressEditHandle(1) <> NULL_PTR Or IPAddressEditHandle(2) <> NULL_PTR Or IPAddressEditHandle(3) <> NULL_PTR Or IPAddressEditHandle(4) <> NULL_PTR Then Exit Sub
 Dim dwStyle As Long, dwExStyle As Long
 dwStyle = WS_CHILD Or WS_VISIBLE Or ES_CENTER Or ES_AUTOHSCROLL Or ES_NUMBER
 If PropRightToLeft = True Then dwExStyle = WS_EX_RTLREADING Or WS_EX_LEFTSCROLLBAR
 IPAddressRTLReading(1) = CBool((dwExStyle And WS_EX_RTLREADING) = WS_EX_RTLREADING)
 If PropLocked = True Then dwStyle = dwStyle Or ES_READONLY
-IPAddressEditHandle(1) = CreateWindowEx(dwExStyle, StrPtr("Edit"), 0, dwStyle, 0, 0, 0, 0, UserControl.hWnd, 0, App.hInstance, ByVal 0&)
-If IPAddressEditHandle(1) <> 0 Then SendMessage IPAddressEditHandle(1), EM_SETLIMITTEXT, 3, ByVal 0&
+IPAddressEditHandle(1) = CreateWindowEx(dwExStyle, StrPtr("Edit"), NULL_PTR, dwStyle, 0, 0, 0, 0, UserControl.hWnd, NULL_PTR, App.hInstance, ByVal NULL_PTR)
+If IPAddressEditHandle(1) <> NULL_PTR Then SendMessage IPAddressEditHandle(1), EM_SETLIMITTEXT, 3, ByVal 0&
 IPAddressRTLReading(2) = IPAddressRTLReading(1)
-IPAddressEditHandle(2) = CreateWindowEx(dwExStyle, StrPtr("Edit"), 0, dwStyle, 0, 0, 0, 0, UserControl.hWnd, 0, App.hInstance, ByVal 0&)
-If IPAddressEditHandle(2) <> 0 Then SendMessage IPAddressEditHandle(2), EM_SETLIMITTEXT, 3, ByVal 0&
+IPAddressEditHandle(2) = CreateWindowEx(dwExStyle, StrPtr("Edit"), NULL_PTR, dwStyle, 0, 0, 0, 0, UserControl.hWnd, NULL_PTR, App.hInstance, ByVal NULL_PTR)
+If IPAddressEditHandle(2) <> NULL_PTR Then SendMessage IPAddressEditHandle(2), EM_SETLIMITTEXT, 3, ByVal 0&
 IPAddressRTLReading(3) = IPAddressRTLReading(1)
-IPAddressEditHandle(3) = CreateWindowEx(dwExStyle, StrPtr("Edit"), 0, dwStyle, 0, 0, 0, 0, UserControl.hWnd, 0, App.hInstance, ByVal 0&)
-If IPAddressEditHandle(3) <> 0 Then SendMessage IPAddressEditHandle(3), EM_SETLIMITTEXT, 3, ByVal 0&
+IPAddressEditHandle(3) = CreateWindowEx(dwExStyle, StrPtr("Edit"), NULL_PTR, dwStyle, 0, 0, 0, 0, UserControl.hWnd, NULL_PTR, App.hInstance, ByVal NULL_PTR)
+If IPAddressEditHandle(3) <> NULL_PTR Then SendMessage IPAddressEditHandle(3), EM_SETLIMITTEXT, 3, ByVal 0&
 IPAddressRTLReading(4) = IPAddressRTLReading(1)
-IPAddressEditHandle(4) = CreateWindowEx(dwExStyle, StrPtr("Edit"), 0, dwStyle, 0, 0, 0, 0, UserControl.hWnd, 0, App.hInstance, ByVal 0&)
-If IPAddressEditHandle(4) <> 0 Then SendMessage IPAddressEditHandle(4), EM_SETLIMITTEXT, 3, ByVal 0&
+IPAddressEditHandle(4) = CreateWindowEx(dwExStyle, StrPtr("Edit"), NULL_PTR, dwStyle, 0, 0, 0, 0, UserControl.hWnd, NULL_PTR, App.hInstance, ByVal NULL_PTR)
+If IPAddressEditHandle(4) <> NULL_PTR Then SendMessage IPAddressEditHandle(4), EM_SETLIMITTEXT, 3, ByVal 0&
 Set Me.Font = PropFont
 Me.VisualStyles = PropVisualStyles
 Me.Enabled = UserControl.Enabled
 Me.Text = PropText
 If IPAddressDesignMode = False Then
     Call ComCtlsSetSubclass(UserControl.hWnd, Me, 0)
-    If IPAddressEditHandle(1) <> 0 Then Call ComCtlsSetSubclass(IPAddressEditHandle(1), Me, 1)
-    If IPAddressEditHandle(2) <> 0 Then Call ComCtlsSetSubclass(IPAddressEditHandle(2), Me, 2)
-    If IPAddressEditHandle(3) <> 0 Then Call ComCtlsSetSubclass(IPAddressEditHandle(3), Me, 3)
-    If IPAddressEditHandle(4) <> 0 Then Call ComCtlsSetSubclass(IPAddressEditHandle(4), Me, 4)
+    If IPAddressEditHandle(1) <> NULL_PTR Then Call ComCtlsSetSubclass(IPAddressEditHandle(1), Me, 1)
+    If IPAddressEditHandle(2) <> NULL_PTR Then Call ComCtlsSetSubclass(IPAddressEditHandle(2), Me, 2)
+    If IPAddressEditHandle(3) <> NULL_PTR Then Call ComCtlsSetSubclass(IPAddressEditHandle(3), Me, 3)
+    If IPAddressEditHandle(4) <> NULL_PTR Then Call ComCtlsSetSubclass(IPAddressEditHandle(4), Me, 4)
 End If
 End Sub
 
 Private Sub DestroyIPAddress()
-If IPAddressEditHandle(1) = 0 And IPAddressEditHandle(2) = 0 And IPAddressEditHandle(3) = 0 And IPAddressEditHandle(4) = 0 Then Exit Sub
+If IPAddressEditHandle(1) = NULL_PTR And IPAddressEditHandle(2) = NULL_PTR And IPAddressEditHandle(3) = NULL_PTR And IPAddressEditHandle(4) = NULL_PTR Then Exit Sub
 Call ComCtlsRemoveSubclass(UserControl.hWnd)
 Call ComCtlsRemoveSubclass(IPAddressEditHandle(1))
 Call ComCtlsRemoveSubclass(IPAddressEditHandle(2))
@@ -1092,21 +1169,21 @@ ShowWindow IPAddressEditHandle(1), SW_HIDE
 ShowWindow IPAddressEditHandle(2), SW_HIDE
 ShowWindow IPAddressEditHandle(3), SW_HIDE
 ShowWindow IPAddressEditHandle(4), SW_HIDE
-SetParent IPAddressEditHandle(1), 0
-SetParent IPAddressEditHandle(2), 0
-SetParent IPAddressEditHandle(3), 0
-SetParent IPAddressEditHandle(4), 0
+SetParent IPAddressEditHandle(1), NULL_PTR
+SetParent IPAddressEditHandle(2), NULL_PTR
+SetParent IPAddressEditHandle(3), NULL_PTR
+SetParent IPAddressEditHandle(4), NULL_PTR
 DestroyWindow IPAddressEditHandle(1)
 DestroyWindow IPAddressEditHandle(2)
 DestroyWindow IPAddressEditHandle(3)
 DestroyWindow IPAddressEditHandle(4)
-IPAddressEditHandle(1) = 0
-IPAddressEditHandle(2) = 0
-IPAddressEditHandle(3) = 0
-IPAddressEditHandle(4) = 0
-If IPAddressFontHandle <> 0 Then
+IPAddressEditHandle(1) = NULL_PTR
+IPAddressEditHandle(2) = NULL_PTR
+IPAddressEditHandle(3) = NULL_PTR
+IPAddressEditHandle(4) = NULL_PTR
+If IPAddressFontHandle <> NULL_PTR Then
     DeleteObject IPAddressFontHandle
-    IPAddressFontHandle = 0
+    IPAddressFontHandle = NULL_PTR
 End If
 End Sub
 
@@ -1114,7 +1191,7 @@ Public Sub Refresh()
 Attribute Refresh.VB_Description = "Forces a complete repaint of a object."
 Attribute Refresh.VB_UserMemId = -550
 UserControl.Refresh
-RedrawWindow UserControl.hWnd, 0, 0, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
+RedrawWindow UserControl.hWnd, NULL_PTR, NULL_PTR, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
 End Sub
 
 Public Property Get SelectedItem() As Integer
@@ -1126,7 +1203,7 @@ End Property
 Public Property Let SelectedItem(ByVal Value As Integer)
 If Value > 4 Or Value < 1 Then Err.Raise 380
 IPAddressSelectedItem = Value
-If IPAddressEditFocusHwnd <> 0 Then
+If IPAddressEditFocusHwnd <> NULL_PTR Then
     UCNoSetFocusFwd = True: SetFocusAPI UserControl.hWnd: UCNoSetFocusFwd = False
     SetFocusAPI IPAddressEditHandle(IPAddressSelectedItem)
     SendMessage IPAddressEditHandle(IPAddressSelectedItem), EM_SETSEL, 0, ByVal -1&
@@ -1163,10 +1240,10 @@ Public Property Get Value() As Long
 Attribute Value.VB_Description = "Returns/sets a value which represents the text of all four items."
 Attribute Value.VB_MemberFlags = "400"
 Dim Length(1 To 4) As Long
-If IPAddressEditHandle(1) <> 0 Then Length(1) = SendMessage(IPAddressEditHandle(1), WM_GETTEXTLENGTH, 0, ByVal 0&)
-If IPAddressEditHandle(2) <> 0 Then Length(2) = SendMessage(IPAddressEditHandle(2), WM_GETTEXTLENGTH, 0, ByVal 0&)
-If IPAddressEditHandle(3) <> 0 Then Length(3) = SendMessage(IPAddressEditHandle(3), WM_GETTEXTLENGTH, 0, ByVal 0&)
-If IPAddressEditHandle(4) <> 0 Then Length(4) = SendMessage(IPAddressEditHandle(4), WM_GETTEXTLENGTH, 0, ByVal 0&)
+If IPAddressEditHandle(1) <> NULL_PTR Then Length(1) = CLng(SendMessage(IPAddressEditHandle(1), WM_GETTEXTLENGTH, 0, ByVal 0&))
+If IPAddressEditHandle(2) <> NULL_PTR Then Length(2) = CLng(SendMessage(IPAddressEditHandle(2), WM_GETTEXTLENGTH, 0, ByVal 0&))
+If IPAddressEditHandle(3) <> NULL_PTR Then Length(3) = CLng(SendMessage(IPAddressEditHandle(3), WM_GETTEXTLENGTH, 0, ByVal 0&))
+If IPAddressEditHandle(4) <> NULL_PTR Then Length(4) = CLng(SendMessage(IPAddressEditHandle(4), WM_GETTEXTLENGTH, 0, ByVal 0&))
 Dim Buffer(1 To 4) As String
 If Length(1) > 0 Then
     Buffer(1) = String$(Length(1), vbNullChar)
@@ -1207,23 +1284,23 @@ IPAddressChangeFrozen = True
 Dim Buffer As String, NewText As String
 Buffer = CStr(IntValue(1))
 NewText = Buffer & "."
-If IPAddressEditHandle(1) <> 0 Then SendMessage IPAddressEditHandle(1), WM_SETTEXT, 0, ByVal StrPtr(Buffer)
+If IPAddressEditHandle(1) <> NULL_PTR Then SendMessage IPAddressEditHandle(1), WM_SETTEXT, 0, ByVal StrPtr(Buffer)
 Buffer = CStr(IntValue(2))
 NewText = NewText & Buffer & "."
-If IPAddressEditHandle(2) <> 0 Then SendMessage IPAddressEditHandle(2), WM_SETTEXT, 0, ByVal StrPtr(Buffer)
+If IPAddressEditHandle(2) <> NULL_PTR Then SendMessage IPAddressEditHandle(2), WM_SETTEXT, 0, ByVal StrPtr(Buffer)
 Buffer = CStr(IntValue(3))
 NewText = NewText & Buffer & "."
-If IPAddressEditHandle(3) <> 0 Then SendMessage IPAddressEditHandle(3), WM_SETTEXT, 0, ByVal StrPtr(Buffer)
+If IPAddressEditHandle(3) <> NULL_PTR Then SendMessage IPAddressEditHandle(3), WM_SETTEXT, 0, ByVal StrPtr(Buffer)
 Buffer = CStr(IntValue(4))
 NewText = NewText & Buffer
-If IPAddressEditHandle(4) <> 0 Then SendMessage IPAddressEditHandle(4), WM_SETTEXT, 0, ByVal StrPtr(Buffer)
+If IPAddressEditHandle(4) <> NULL_PTR Then SendMessage IPAddressEditHandle(4), WM_SETTEXT, 0, ByVal StrPtr(Buffer)
 IPAddressChangeFrozen = False
 If Not OldText = NewText Then RaiseEvent Change
 End Property
 
-Private Sub DrawDots(ByVal hDC As Long)
-Dim hFontOld As Long
-If IPAddressFontHandle <> 0 Then hFontOld = SelectObject(hDC, IPAddressFontHandle)
+Private Sub DrawDots(ByVal hDC As LongPtr)
+Dim hFontOld As LongPtr
+If IPAddressFontHandle <> NULL_PTR Then hFontOld = SelectObject(hDC, IPAddressFontHandle)
 Dim X As Long, Y As Long, CX As Long
 X = IPAddressPadding.CX
 Y = IPAddressPadding.CY
@@ -1234,15 +1311,15 @@ X = X + IPAddressDotSpacing + CX
 TextOut hDC, X, Y, StrPtr("."), 1
 X = X + IPAddressDotSpacing + CX
 TextOut hDC, X, Y, StrPtr("."), 1
-If hFontOld <> 0 Then SelectObject hDC, hFontOld
+If hFontOld <> NULL_PTR Then SelectObject hDC, hFontOld
 End Sub
 
-Private Function CheckMinMaxFromWindow(ByVal hWnd As Long) As Boolean
+Private Function CheckMinMaxFromWindow(ByVal hWnd As LongPtr) As Boolean
 Dim Item As Integer
 Item = ItemFromWindow(hWnd)
 If Item > 0 Then
     Dim StrValue As String
-    StrValue = String(SendMessage(hWnd, WM_GETTEXTLENGTH, 0, ByVal 0&), vbNullChar)
+    StrValue = String$(CLng(SendMessage(hWnd, WM_GETTEXTLENGTH, 0, ByVal 0&)), vbNullChar)
     SendMessage hWnd, WM_GETTEXT, Len(StrValue) + 1, ByVal StrPtr(StrValue)
     If Not StrValue = vbNullString Then
         Dim LngValue As Long
@@ -1264,25 +1341,25 @@ End Function
 
 Private Function GetNonBlankCount() As Long
 Dim Count As Long
-If IPAddressEditHandle(1) <> 0 Then If SendMessage(IPAddressEditHandle(1), WM_GETTEXTLENGTH, 0, ByVal 0&) > 0 Then Count = Count + 1
-If IPAddressEditHandle(2) <> 0 Then If SendMessage(IPAddressEditHandle(2), WM_GETTEXTLENGTH, 0, ByVal 0&) > 0 Then Count = Count + 1
-If IPAddressEditHandle(3) <> 0 Then If SendMessage(IPAddressEditHandle(3), WM_GETTEXTLENGTH, 0, ByVal 0&) > 0 Then Count = Count + 1
-If IPAddressEditHandle(4) <> 0 Then If SendMessage(IPAddressEditHandle(4), WM_GETTEXTLENGTH, 0, ByVal 0&) > 0 Then Count = Count + 1
+If IPAddressEditHandle(1) <> NULL_PTR Then If SendMessage(IPAddressEditHandle(1), WM_GETTEXTLENGTH, 0, ByVal 0&) > 0 Then Count = Count + 1
+If IPAddressEditHandle(2) <> NULL_PTR Then If SendMessage(IPAddressEditHandle(2), WM_GETTEXTLENGTH, 0, ByVal 0&) > 0 Then Count = Count + 1
+If IPAddressEditHandle(3) <> NULL_PTR Then If SendMessage(IPAddressEditHandle(3), WM_GETTEXTLENGTH, 0, ByVal 0&) > 0 Then Count = Count + 1
+If IPAddressEditHandle(4) <> NULL_PTR Then If SendMessage(IPAddressEditHandle(4), WM_GETTEXTLENGTH, 0, ByVal 0&) > 0 Then Count = Count + 1
 GetNonBlankCount = Count
 End Function
 
 Private Function GetBlankItem() As Integer
 Dim NonBlank(1 To 4) As Boolean
-If IPAddressEditHandle(1) <> 0 Then
+If IPAddressEditHandle(1) <> NULL_PTR Then
     If SendMessage(IPAddressEditHandle(1), WM_GETTEXTLENGTH, 0, ByVal 0&) > 0 Then NonBlank(1) = True
 End If
-If IPAddressEditHandle(2) <> 0 Then
+If IPAddressEditHandle(2) <> NULL_PTR Then
     If SendMessage(IPAddressEditHandle(2), WM_GETTEXTLENGTH, 0, ByVal 0&) > 0 Then NonBlank(2) = True
 End If
-If IPAddressEditHandle(3) <> 0 Then
+If IPAddressEditHandle(3) <> NULL_PTR Then
     If SendMessage(IPAddressEditHandle(3), WM_GETTEXTLENGTH, 0, ByVal 0&) > 0 Then NonBlank(3) = True
 End If
-If IPAddressEditHandle(4) <> 0 Then
+If IPAddressEditHandle(4) <> NULL_PTR Then
     If SendMessage(IPAddressEditHandle(4), WM_GETTEXTLENGTH, 0, ByVal 0&) > 0 Then NonBlank(4) = True
 End If
 If NonBlank(1) = True And NonBlank(2) = True And NonBlank(3) = True And NonBlank(4) = True Then
@@ -1301,8 +1378,8 @@ Else
 End If
 End Function
 
-Private Function ItemFromWindow(ByVal hWnd As Long) As Integer
-If hWnd <> 0 Then
+Private Function ItemFromWindow(ByVal hWnd As LongPtr) As Integer
+If hWnd <> NULL_PTR Then
     Select Case hWnd
         Case IPAddressEditHandle(1)
             ItemFromWindow = 1
@@ -1316,7 +1393,11 @@ If hWnd <> 0 Then
 End If
 End Function
 
+#If VBA7 Then
+Private Function ISubclass_Message(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
+#Else
 Private Function ISubclass_Message(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal dwRefData As Long) As Long
+#End If
 Select Case dwRefData
     Case 0
         ISubclass_Message = WindowProcUserControl(hWnd, wMsg, wParam, lParam)
@@ -1325,17 +1406,17 @@ Select Case dwRefData
 End Select
 End Function
 
-Private Function WindowProcUserControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcUserControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_COMMAND
-        Select Case HiWord(wParam)
+        Select Case HiWord(CLng(wParam))
             Case EN_CHANGE
                 If IPAddressChangeFrozen = False Then RaiseEvent Change
         End Select
     Case WM_SETCURSOR
-        If LoWord(lParam) = HTCLIENT Then
+        If LoWord(CLng(lParam)) = HTCLIENT Then
             If MousePointerID(PropMousePointer) <> 0 Then
-                SetCursor LoadCursor(0, MousePointerID(PropMousePointer))
+                SetCursor LoadCursor(NULL_PTR, MousePointerID(PropMousePointer))
                 WindowProcUserControl = 1
                 Exit Function
             ElseIf PropMousePointer = 99 Then
@@ -1349,13 +1430,13 @@ Select Case wMsg
     Case WM_PRINTCLIENT
         SendMessage hWnd, WM_PAINT, wParam, ByVal 0&
         Call DrawDots(wParam)
-        Dim WndRect1 As RECT, P As POINTAPI, i As Long
+        Dim WndRect1 As RECT, P1 As POINTAPI, i As Long
         For i = 1 To 4
             GetWindowRect IPAddressEditHandle(i), WndRect1
             MapWindowPoints HWND_DESKTOP, UserControl.hWnd, WndRect1, 2
-            SetViewportOrgEx wParam, WndRect1.Left, WndRect1.Top, P
+            SetViewportOrgEx wParam, WndRect1.Left, WndRect1.Top, P1
             SendMessage IPAddressEditHandle(i), WM_PAINT, wParam, ByVal 0&
-            SetViewportOrgEx wParam, P.X, P.Y, P
+            SetViewportOrgEx wParam, P1.X, P1.Y, P1
         Next i
         WindowProcUserControl = 0
         Exit Function
@@ -1365,20 +1446,20 @@ Select Case wMsg
     Case WM_THEMECHANGED, WM_STYLECHANGED, WM_ENABLE
         If wMsg = WM_THEMECHANGED Then IPAddressEnabledVisualStyles = EnabledVisualStyles()
         If PropBorderStyle = CCBorderStyleSunken And PropVisualStyles = True Then
-            If IPAddressEnabledVisualStyles = True Then SetWindowPos hWnd, 0, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE Or SWP_NOOWNERZORDER Or SWP_NOZORDER Or SWP_DRAWFRAME
+            If IPAddressEnabledVisualStyles = True Then SetWindowPos hWnd, NULL_PTR, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE Or SWP_NOOWNERZORDER Or SWP_NOZORDER Or SWP_DRAWFRAME
         End If
     Case WM_NCPAINT
         If PropBorderStyle = CCBorderStyleSunken And PropVisualStyles = True And IPAddressEnabledVisualStyles = True Then
-            Dim Theme As Long
+            Dim Theme As LongPtr
             Theme = OpenThemeData(hWnd, StrPtr("Edit"))
-            If Theme <> 0 Then
-                Dim hDC As Long
+            If Theme <> NULL_PTR Then
+                Dim hDC As LongPtr
                 If wParam = 1 Then ' Alias for entire window
                     hDC = GetWindowDC(hWnd)
                 Else
                     hDC = GetDCEx(hWnd, wParam, DCX_WINDOW Or DCX_INTERSECTRGN Or DCX_USESTYLE)
                 End If
-                If hDC <> 0 Then
+                If hDC <> NULL_PTR Then
                     Dim BorderX As Long, BorderY As Long
                     Dim RC1 As RECT, RC2 As RECT, WndRect2 As RECT
                     Const SM_CXEDGE As Long = 45
@@ -1393,12 +1474,12 @@ Select Case wMsg
                     ExcludeClipRect hDC, RC1.Left, RC1.Top, RC1.Right, RC1.Bottom
                     Dim EditPart As Long, EditState As Long
                     EditPart = EP_EDITBORDER_NOSCROLL
-                    Dim Brush As Long
+                    Dim Brush As LongPtr
                     If Me.Enabled = False Then
                         EditState = EPSN_DISABLED
                         Brush = CreateSolidBrush(WinColor(vbButtonFace))
                     Else
-                        If IPAddressEditFocusHwnd <> 0 Then
+                        If IPAddressEditFocusHwnd <> NULL_PTR Then
                             EditState = EPSN_FOCUSED
                         Else
                             EditState = EPSN_NORMAL
@@ -1425,7 +1506,7 @@ Select Case wMsg
         Me.Text = vbNullString
         Exit Function
     Case IPM_SETADDRESS
-        Me.Value = lParam
+        Me.Value = CLng(lParam)
         Exit Function
     Case IPM_GETADDRESS
         Dim LngValue As Long
@@ -1437,9 +1518,9 @@ Select Case wMsg
         Select Case wParam
             Case 0 To 3
                 Dim IntValue As Integer
-                IntValue = LoWord(lParam)
-                Me.Min(wParam + 1) = LoByte(IntValue)
-                Me.Max(wParam + 1) = HiByte(IntValue)
+                IntValue = LoWord(CLng(lParam))
+                Me.Min(CLng(wParam) + 1) = LoByte(IntValue)
+                Me.Max(CLng(wParam) + 1) = HiByte(IntValue)
                 WindowProcUserControl = 1
             Case Else
                 WindowProcUserControl = 0
@@ -1460,7 +1541,7 @@ Select Case wMsg
                 Item = 1
         End Select
         If Item > 0 Then
-            If IPAddressEditHandle(Item) <> 0 Then
+            If IPAddressEditHandle(Item) <> NULL_PTR Then
                 UCNoSetFocusFwd = True: SetFocusAPI UserControl.hWnd: UCNoSetFocusFwd = False
                 SetFocusAPI IPAddressEditHandle(Item)
                 SendMessage IPAddressEditHandle(Item), EM_SETSEL, 0, ByVal -1&
@@ -1477,34 +1558,34 @@ Select Case wMsg
         If UCNoSetFocusFwd = False Then
             Select Case PropAutoSelect
                 Case IpaAutoSelectNone
-                    If IPAddressEditHandle(IPAddressSelectedItem) <> 0 Then
+                    If IPAddressEditHandle(IPAddressSelectedItem) <> NULL_PTR Then
                         SetFocusAPI IPAddressEditHandle(IPAddressSelectedItem)
                         SendMessage IPAddressEditHandle(IPAddressSelectedItem), EM_SETSEL, 0, ByVal -1&
                     End If
                 Case IpaAutoSelectFirst
-                    If IPAddressEditHandle(1) <> 0 Then
+                    If IPAddressEditHandle(1) <> NULL_PTR Then
                         SetFocusAPI IPAddressEditHandle(1)
                         SendMessage IPAddressEditHandle(1), EM_SETSEL, 0, ByVal -1&
                     End If
                 Case IpaAutoSelectSecond
-                    If IPAddressEditHandle(2) <> 0 Then
+                    If IPAddressEditHandle(2) <> NULL_PTR Then
                         SetFocusAPI IPAddressEditHandle(2)
                         SendMessage IPAddressEditHandle(2), EM_SETSEL, 0, ByVal -1&
                     End If
                 Case IpaAutoSelectThird
-                    If IPAddressEditHandle(3) <> 0 Then
+                    If IPAddressEditHandle(3) <> NULL_PTR Then
                         SetFocusAPI IPAddressEditHandle(3)
                         SendMessage IPAddressEditHandle(3), EM_SETSEL, 0, ByVal -1&
                     End If
                 Case IpaAutoSelectFourth
-                    If IPAddressEditHandle(4) <> 0 Then
+                    If IPAddressEditHandle(4) <> NULL_PTR Then
                         SetFocusAPI IPAddressEditHandle(4)
                         SendMessage IPAddressEditHandle(4), EM_SETSEL, 0, ByVal -1&
                     End If
                 Case IpaAutoSelectBlank
                     Dim BlankItem As Integer
                     BlankItem = GetBlankItem()
-                    If IPAddressEditHandle(BlankItem) <> 0 Then
+                    If IPAddressEditHandle(BlankItem) <> NULL_PTR Then
                         SetFocusAPI IPAddressEditHandle(BlankItem)
                         SendMessage IPAddressEditHandle(BlankItem), EM_SETSEL, 0, ByVal -1&
                     End If
@@ -1522,10 +1603,13 @@ Select Case wMsg
     Case WM_NCMOUSELEAVE
         IPAddressMouseOver(0) = False
         If IPAddressMouseOver(1) = True Then
-            Dim Pos As Long, hWndFromPoint As Long
+            Dim Pos As Long, P2 As POINTAPI, XY As Currency, hWndFromPoint As LongPtr
             Pos = GetMessagePos()
-            hWndFromPoint = WindowFromPoint(Get_X_lParam(Pos), Get_Y_lParam(Pos))
-            If (hWndFromPoint <> IPAddressEditHandle(1) Or IPAddressEditHandle(1) = 0) And (hWndFromPoint <> IPAddressEditHandle(2) Or IPAddressEditHandle(2) = 0) And (hWndFromPoint <> IPAddressEditHandle(3) Or IPAddressEditHandle(3) = 0) And (hWndFromPoint <> IPAddressEditHandle(4) Or IPAddressEditHandle(4) = 0) Then
+            P2.X = Get_X_lParam(Pos)
+            P2.Y = Get_Y_lParam(Pos)
+            CopyMemory ByVal VarPtr(XY), ByVal VarPtr(P2), 8
+            hWndFromPoint = WindowFromPoint(XY)
+            If (hWndFromPoint <> IPAddressEditHandle(1) Or IPAddressEditHandle(1) = NULL_PTR) And (hWndFromPoint <> IPAddressEditHandle(2) Or IPAddressEditHandle(2) = NULL_PTR) And (hWndFromPoint <> IPAddressEditHandle(3) Or IPAddressEditHandle(3) = NULL_PTR) And (hWndFromPoint <> IPAddressEditHandle(4) Or IPAddressEditHandle(4) = NULL_PTR) Then
                 IPAddressMouseOver(1) = False
                 RaiseEvent MouseLeave
             End If
@@ -1533,17 +1617,17 @@ Select Case wMsg
 End Select
 End Function
 
-Private Function WindowProcEdit(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal dwRefData As Long) As Long
+Private Function WindowProcEdit(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
 Dim SelStart As Long, SelEnd As Long
 Select Case wMsg
     Case WM_SETFOCUS
-        If wParam <> UserControl.hWnd And (wParam <> IPAddressEditHandle(1) Or IPAddressEditHandle(1) = 0) And (wParam <> IPAddressEditHandle(2) Or IPAddressEditHandle(2) = 0) And (wParam <> IPAddressEditHandle(3) Or IPAddressEditHandle(3) = 0) And (wParam <> IPAddressEditHandle(4) Or IPAddressEditHandle(4) = 0) Then SetFocusAPI UserControl.hWnd: Exit Function
+        If wParam <> UserControl.hWnd And (wParam <> IPAddressEditHandle(1) Or IPAddressEditHandle(1) = NULL_PTR) And (wParam <> IPAddressEditHandle(2) Or IPAddressEditHandle(2) = NULL_PTR) And (wParam <> IPAddressEditHandle(3) Or IPAddressEditHandle(3) = NULL_PTR) And (wParam <> IPAddressEditHandle(4) Or IPAddressEditHandle(4) = NULL_PTR) Then SetFocusAPI UserControl.hWnd: Exit Function
         Call ActivateIPAO(Me)
     Case WM_KILLFOCUS
         Call DeActivateIPAO
         CheckMinMaxFromWindow hWnd
     Case WM_LBUTTONDOWN
-        If IPAddressEditHandle(1) = 0 Or IPAddressEditHandle(2) = 0 Or IPAddressEditHandle(3) = 0 Or IPAddressEditHandle(4) = 0 Then
+        If IPAddressEditHandle(1) = NULL_PTR Or IPAddressEditHandle(2) = NULL_PTR Or IPAddressEditHandle(3) = NULL_PTR Or IPAddressEditHandle(4) = NULL_PTR Then
             If GetFocus() <> hWnd Then UCNoSetFocusFwd = True: SetFocusAPI UserControl.hWnd: UCNoSetFocusFwd = False
         Else
             Select Case GetFocus()
@@ -1554,7 +1638,7 @@ Select Case wMsg
         End If
     Case WM_KEYDOWN, WM_KEYUP, WM_SYSKEYDOWN, WM_SYSKEYUP
         Dim KeyCode As Integer
-        KeyCode = wParam And &HFF&
+        KeyCode = CLng(wParam) And &HFF&
         If wMsg = WM_KEYDOWN Or wMsg = WM_KEYUP Then
             If wMsg = WM_KEYDOWN Then
                 RaiseEvent KeyDown(KeyCode, GetShiftStateFromMsg())
@@ -1570,7 +1654,7 @@ Select Case wMsg
                         End Select
                         If SelStart = SelEnd Then
                             Dim Item As Integer
-                            Item = dwRefData
+                            Item = CInt(dwRefData)
                             Select Case KeyCode
                                 Case vbKeyUp, vbKeyLeft
                                     If Item > 1 Then
@@ -1609,7 +1693,7 @@ Select Case wMsg
                             End Select
                             If Item <> dwRefData Then
                                 If CheckMinMaxFromWindow(IPAddressEditHandle(dwRefData)) = False Then
-                                    If GetFocus() <> IPAddressEditHandle(Item) And IPAddressEditHandle(Item) <> 0 Then
+                                    If GetFocus() <> IPAddressEditHandle(Item) And IPAddressEditHandle(Item) <> NULL_PTR Then
                                         UCNoSetFocusFwd = True: SetFocusAPI UserControl.hWnd: UCNoSetFocusFwd = False
                                         SetFocusAPI IPAddressEditHandle(Item)
                                         Select Case KeyCode
@@ -1618,7 +1702,7 @@ Select Case wMsg
                                                     SendMessage IPAddressEditHandle(Item), EM_SETSEL, 0, ByVal -1&
                                                 Else
                                                     If IPAddressRTLReading(Item) = False Then
-                                                        SelEnd = SendMessage(IPAddressEditHandle(Item), WM_GETTEXTLENGTH, 0, ByVal 0&)
+                                                        SelEnd = CLng(SendMessage(IPAddressEditHandle(Item), WM_GETTEXTLENGTH, 0, ByVal 0&))
                                                         SendMessage IPAddressEditHandle(Item), EM_SETSEL, SelEnd, ByVal SelEnd
                                                     Else
                                                         SendMessage IPAddressEditHandle(Item), EM_SETSEL, 0, ByVal 0&
@@ -1631,17 +1715,17 @@ Select Case wMsg
                                                     If IPAddressRTLReading(Item) = False Then
                                                         SendMessage IPAddressEditHandle(Item), EM_SETSEL, 0, ByVal 0&
                                                     Else
-                                                        SelEnd = SendMessage(IPAddressEditHandle(Item), WM_GETTEXTLENGTH, 0, ByVal 0&)
+                                                        SelEnd = CLng(SendMessage(IPAddressEditHandle(Item), WM_GETTEXTLENGTH, 0, ByVal 0&))
                                                         SendMessage IPAddressEditHandle(Item), EM_SETSEL, SelEnd, ByVal SelEnd
                                                     End If
                                                 End If
                                             Case vbKeyHome
                                                 SendMessage IPAddressEditHandle(Item), EM_SETSEL, 0, ByVal 0&
                                             Case vbKeyEnd
-                                                SelEnd = SendMessage(IPAddressEditHandle(Item), WM_GETTEXTLENGTH, 0, ByVal 0&)
+                                                SelEnd = CLng(SendMessage(IPAddressEditHandle(Item), WM_GETTEXTLENGTH, 0, ByVal 0&))
                                                 SendMessage IPAddressEditHandle(Item), EM_SETSEL, SelEnd, ByVal SelEnd
                                             Case vbKeyBack
-                                                SelEnd = SendMessage(IPAddressEditHandle(Item), WM_GETTEXTLENGTH, 0, ByVal 0&)
+                                                SelEnd = CLng(SendMessage(IPAddressEditHandle(Item), WM_GETTEXTLENGTH, 0, ByVal 0&))
                                                 SendMessage IPAddressEditHandle(Item), EM_SETSEL, SelEnd, ByVal SelEnd
                                                 If SelEnd > 0 Then PostMessage IPAddressEditHandle(Item), WM_KEYDOWN, vbKeyBack, ByVal 0&
                                         End Select
@@ -1666,7 +1750,7 @@ Select Case wMsg
             KeyChar = CUIntToInt(IPAddressCharCodeCache And &HFFFF&)
             IPAddressCharCodeCache = 0
         Else
-            KeyChar = CUIntToInt(wParam And &HFFFF&)
+            KeyChar = CUIntToInt(CLng(wParam) And &HFFFF&)
         End If
         RaiseEvent KeyPress(KeyChar)
         If (wParam And &HFFFF&) <> 0 And KeyChar = 0 Then
@@ -1681,7 +1765,7 @@ Select Case wMsg
                     If dwRefData < 4 Then
                         ' CheckMinMaxFromWindow validation not necessary as no modification happens.
                         ' Just change focus to the next edit control.
-                        If GetFocus() <> IPAddressEditHandle(dwRefData + 1) And IPAddressEditHandle(dwRefData + 1) <> 0 Then
+                        If GetFocus() <> IPAddressEditHandle(dwRefData + 1) And IPAddressEditHandle(dwRefData + 1) <> NULL_PTR Then
                             UCNoSetFocusFwd = True: SetFocusAPI UserControl.hWnd: UCNoSetFocusFwd = False
                             SetFocusAPI IPAddressEditHandle(dwRefData + 1)
                             SendMessage IPAddressEditHandle(dwRefData + 1), EM_SETSEL, 0, ByVal -1&
@@ -1697,7 +1781,7 @@ Select Case wMsg
             WindowProcEdit = 1
         Else
             Dim UTF16 As String
-            UTF16 = UTF32CodePoint_To_UTF16(wParam)
+            UTF16 = UTF32CodePoint_To_UTF16(CLng(wParam))
             If Len(UTF16) = 1 Then
                 SendMessage hWnd, WM_CHAR, CIntToUInt(AscW(UTF16)), ByVal lParam
             ElseIf Len(UTF16) = 2 Then
@@ -1767,23 +1851,23 @@ Select Case wMsg
         #If ImplementThemedBorder = True Then
         
         If PropBorderStyle = CCBorderStyleSunken And PropVisualStyles = True Then
-            If IPAddressEnabledVisualStyles = True Then SetWindowPos UserControl.hWnd, 0, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE Or SWP_NOOWNERZORDER Or SWP_NOZORDER Or SWP_DRAWFRAME
+            If IPAddressEnabledVisualStyles = True Then SetWindowPos UserControl.hWnd, NULL_PTR, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE Or SWP_NOOWNERZORDER Or SWP_NOZORDER Or SWP_DRAWFRAME
         End If
         
         #End If
         
         If dwRefData <> IPAddressSelectedItem Then
-            IPAddressSelectedItem = dwRefData
+            IPAddressSelectedItem = CInt(dwRefData)
             RaiseEvent SelChange
         End If
     Case WM_KILLFOCUS
-        IPAddressEditFocusHwnd = 0
+        IPAddressEditFocusHwnd = NULL_PTR
         
         #If ImplementThemedBorder = True Then
         
         If PropBorderStyle = CCBorderStyleSunken And PropVisualStyles = True Then
             If wParam <> UserControl.hWnd Then ' Avoid flicker
-                If IPAddressEnabledVisualStyles = True Then SetWindowPos UserControl.hWnd, 0, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE Or SWP_NOOWNERZORDER Or SWP_NOZORDER Or SWP_DRAWFRAME
+                If IPAddressEnabledVisualStyles = True Then SetWindowPos UserControl.hWnd, NULL_PTR, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE Or SWP_NOOWNERZORDER Or SWP_NOZORDER Or SWP_DRAWFRAME
             End If
         End If
         
@@ -1796,7 +1880,7 @@ Select Case wMsg
                 If SelStart = 3 And SelEnd = 3 Then
                     If CheckMinMaxFromWindow(hWnd) = False Then
                         If dwRefData < 4 Then
-                            If GetFocus() <> IPAddressEditHandle(dwRefData + 1) And IPAddressEditHandle(dwRefData + 1) <> 0 Then
+                            If GetFocus() <> IPAddressEditHandle(dwRefData + 1) And IPAddressEditHandle(dwRefData + 1) <> NULL_PTR Then
                                 UCNoSetFocusFwd = True: SetFocusAPI UserControl.hWnd: UCNoSetFocusFwd = False
                                 SetFocusAPI IPAddressEditHandle(dwRefData + 1)
                                 SendMessage IPAddressEditHandle(dwRefData + 1), EM_SETSEL, 0, ByVal -1&
@@ -1853,10 +1937,13 @@ Select Case wMsg
     Case WM_MOUSELEAVE
         IPAddressEditMouseOver(dwRefData) = False
         If IPAddressMouseOver(1) = True Then
-            Dim Pos As Long, hWndFromPoint As Long
+            Dim Pos As Long, P As POINTAPI, XY As Currency, hWndFromPoint As LongPtr
             Pos = GetMessagePos()
-            hWndFromPoint = WindowFromPoint(Get_X_lParam(Pos), Get_Y_lParam(Pos))
-            If hWndFromPoint <> UserControl.hWnd And (hWndFromPoint <> IPAddressEditHandle(1) Or IPAddressEditHandle(1) = 0) And (hWndFromPoint <> IPAddressEditHandle(2) Or IPAddressEditHandle(2) = 0) And (hWndFromPoint <> IPAddressEditHandle(3) Or IPAddressEditHandle(3) = 0) And (hWndFromPoint <> IPAddressEditHandle(4) Or IPAddressEditHandle(4) = 0) Then
+            P.X = Get_X_lParam(Pos)
+            P.Y = Get_Y_lParam(Pos)
+            CopyMemory ByVal VarPtr(XY), ByVal VarPtr(P), 8
+            hWndFromPoint = WindowFromPoint(XY)
+            If hWndFromPoint <> UserControl.hWnd And (hWndFromPoint <> IPAddressEditHandle(1) Or IPAddressEditHandle(1) = NULL_PTR) And (hWndFromPoint <> IPAddressEditHandle(2) Or IPAddressEditHandle(2) = NULL_PTR) And (hWndFromPoint <> IPAddressEditHandle(3) Or IPAddressEditHandle(3) = NULL_PTR) And (hWndFromPoint <> IPAddressEditHandle(4) Or IPAddressEditHandle(4) = NULL_PTR) Then
                 IPAddressMouseOver(1) = False
                 RaiseEvent MouseLeave
             End If

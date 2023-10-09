@@ -103,7 +103,7 @@ echo Searching forgotten 'stop' statements ...
 if not defined bFast call _5_Check_Stop_Statements.cmd && echo OK.
 
 :: Checking for non-default conditional constant set and forgot
-< frmEULA.frm find /i "#Const" | find /i "= True" && (echo.& echo Non-default constant has been detected !!!& echo.& pause)
+< frmEULA.frm find /i "#Const" | find /i "= True" | find /v "AUTOLOGGER_DEBUG_TO_FILE" && (echo.& echo Non-default constant has been detected !!!& echo.& pause)
 
 :: Cleaning logs etc.
 call _4_Clear.cmd
@@ -322,6 +322,21 @@ if exist "%SignScript_1%" (
 )
 if not defined signed if exist "%SignScript_2%" call "%SignScript_2%" "%cd%\%AppName%" /silent
 
+:: Ensure it is correctly signed
+:: DISABLED: for some reason Sysinternals SigCheck causing freeze when piped
+::if "%OSBitness%"=="x32" (
+::  set "sigcheck=%cd%\tools\SigCheck\sigcheck.exe"
+::) else (
+::  set "sigcheck=%cd%\tools\SigCheck\sigcheck64.exe"
+::)
+set "sigcheck=%cd%\tools\SigCheck\VerifySign.exe"
+
+"%sigcheck%" "%cd%\%AppName%" | find "Publisher:" | find "Stanislav" || (
+  echo Digital signature check is failed!
+  echo.
+  pause
+)
+
 :: Checking debug. symbols for matching the image
 if /i "%CheckPDB%"=="true" (
   echo.
@@ -412,7 +427,7 @@ if exist "_%ExeName%_pass_clean.zip" del /f "_%ExeName%_pass_clean.zip"
 Tools\7zip\7za.exe a -mx1 -pinfected -y -o"%cd%" "_%ExeName%_pass_infected.zip" "%cd%\%ExeName%.%safe_ext%"
 Tools\7zip\7za.exe a -mx1 -pvirus -y -o"%cd%" "_%ExeName%_pass_virus.zip" "%cd%\%ExeName%.%safe_ext%"
 Tools\7zip\7za.exe a -mx1 -pclean -y -o"%cd%" "_%ExeName%_pass_clean.zip" "%cd%\%ExeName%.%safe_ext%"
-"%ProgramFiles%\WinRAR\rar.exe" a -y -m5 -pinfected "_%ExeName%_pass_infected.rar" "%cd%\%ExeName%.%safe_ext%"
+"%ProgramFiles%\WinRAR\rar.exe" a -y -m5 -pinfected "_%ExeName%_pass_infected.rar" "%ExeName%.%safe_ext%"
 del "%cd%\%ExeName%.%safe_ext%"
 :: Test
 Tools\7zip\7za.exe t -pinfected "%cd%\_%ExeName%_pass_infected.zip"

@@ -130,6 +130,18 @@ Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
 Option Explicit
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
 Private BuddyControlEnumerated As Boolean
 Private FreezeChanged As Boolean
 
@@ -179,10 +191,10 @@ For i = 0 To ComboMousePointer.ListCount - 1
     End If
 Next i
 If BuddyControlEnumerated = False Then
-    Dim ControlEnum As Object, Handle As Long
+    Dim ControlEnum As Object, Handle As LongPtr
     For Each ControlEnum In .ControlsEnum
         If ControlIsValid(ControlEnum, Handle) = True Then
-            If Handle <> 0 Then ComboBuddyControl.AddItem ProperControlName(ControlEnum)
+            If Handle <> NULL_PTR Then ComboBuddyControl.AddItem ProperControlName(ControlEnum)
         End If
     Next ControlEnum
     BuddyControlEnumerated = True
@@ -327,13 +339,13 @@ If FreezeChanged = True Then Exit Sub
 PropertyPage.Changed = True
 End Sub
 
-Private Function ControlIsValid(ByVal Control As Object, ByRef Handle As Long) As Boolean
+Private Function ControlIsValid(ByVal Control As Object, ByRef Handle As LongPtr) As Boolean
 On Error Resume Next
 Dim Container As Object
 Set Container = Control.Container
 ControlIsValid = CBool(Err.Number = 0 And Not Control Is PropertyPage.SelectedControls(0).ControlsExtender)
 On Error GoTo 0
-Handle = 0
+Handle = NULL_PTR
 If ControlIsValid = True Then
     On Error Resume Next
     Handle = Control.hWndOwner

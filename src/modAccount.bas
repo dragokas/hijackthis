@@ -153,6 +153,9 @@ Public Function GetLocalGroupNames() As String()
         If pBuf Then
             NetApiBufferFree pBuf
         End If
+        
+        If pBuf = 0 Or dwResumeHandle = 0 Then Exit Do
+        
     Loop While nStatus = ERROR_MORE_DATA
     
     AppendErrorLogCustom "GetLocalGroupNames - End"
@@ -236,6 +239,9 @@ Public Function GetLocalUserNames() As String()
         If pBuf Then
             NetApiBufferFree pBuf
         End If
+        
+        If pBuf = 0 Or dwResumeHandle = 0 Then Exit Do
+        
     Loop While nStatus = ERROR_MORE_DATA
 
     AppendErrorLogCustom "GetLocalUserNames - End"

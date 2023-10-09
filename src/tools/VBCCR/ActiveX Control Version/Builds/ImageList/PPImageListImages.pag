@@ -159,6 +159,18 @@ Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
 Option Explicit
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
 Private Type ShadowListImageStruct
 Key As String
 Tag As String
@@ -170,12 +182,21 @@ Top As Long
 Right As Long
 Bottom As Long
 End Type
+#If VBA7 Then
+Private Declare PtrSafe Function DrawEdge Lib "user32" (ByVal hDC As LongPtr, ByRef qRC As RECT, ByVal Edge As Long, ByVal grfFlags As Long) As Long
+Private Declare PtrSafe Function GetFocus Lib "user32" () As LongPtr
+Private Declare PtrSafe Function DrawFocusRect Lib "user32" (ByVal hDC As LongPtr, ByRef lpRect As RECT) As Long
+Private Declare PtrSafe Function FillRect Lib "user32" (ByVal hDC As LongPtr, ByRef lpRect As RECT, ByVal hBrush As LongPtr) As Long
+Private Declare PtrSafe Function CreateSolidBrush Lib "gdi32" (ByVal crColor As Long) As LongPtr
+Private Declare PtrSafe Function DeleteObject Lib "gdi32" (ByVal hObject As LongPtr) As Long
+#Else
 Private Declare Function DrawEdge Lib "user32" (ByVal hDC As Long, ByRef qRC As RECT, ByVal Edge As Long, ByVal grfFlags As Long) As Long
 Private Declare Function GetFocus Lib "user32" () As Long
 Private Declare Function DrawFocusRect Lib "user32" (ByVal hDC As Long, ByRef lpRect As RECT) As Long
 Private Declare Function FillRect Lib "user32" (ByVal hDC As Long, ByRef lpRect As RECT, ByVal hBrush As Long) As Long
 Private Declare Function CreateSolidBrush Lib "gdi32" (ByVal crColor As Long) As Long
 Private Declare Function DeleteObject Lib "gdi32" (ByVal hObject As Long) As Long
+#End If
 Private Const BF_LEFT As Long = 1
 Private Const BF_TOP As Long = 2
 Private Const BF_RIGHT As Long = 4
@@ -302,10 +323,10 @@ Call DrawImages
 End Sub
 
 Private Sub PictureImages_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
-Dim ImageListHandle As Long
+Dim ImageListHandle As LongPtr
 With PropertyPage.SelectedControls(0)
 ImageListHandle = .hImageList
-If ImageListHandle <> 0 Then
+If ImageListHandle <> NULL_PTR Then
     Dim SelIndex As Long
     If X >= 0 And X <= PictureImages.ScaleWidth Then
         If Y >= 0 And Y <= (PictureImages.ScaleHeight - HScroll.Height) Then
@@ -324,9 +345,9 @@ End With
 End Sub
 
 Private Sub EnsureVisible(ByVal iDir As Long)
-Dim ImageListHandle As Long
+Dim ImageListHandle As LongPtr
 ImageListHandle = PropertyPage.SelectedControls(0).hImageList
-If ImageListHandle <> 0 Then
+If ImageListHandle <> NULL_PTR Then
     Dim X As Long, Count As Long, Pos As Long
     X = 0
     Pos = CurrIndex - 1
@@ -362,14 +383,14 @@ End If
 End Sub
 
 Private Sub DrawImages()
-Dim ImageListHandle As Long, Count As Long
+Dim ImageListHandle As LongPtr, Count As Long
 PictureImages.Cls
 With PropertyPage.SelectedControls(0)
 ImageListHandle = .hImageList
-If ImageListHandle <> 0 Then
+If ImageListHandle <> NULL_PTR Then
     Dim RC As RECT, TRC As RECT
     Dim i As Long, X As Long
-    Dim Brush As Long, Max As Long
+    Dim Brush As LongPtr, Max As Long
     RC.Left = 0
     RC.Top = 0
     RC.Right = PictureImages.ScaleWidth

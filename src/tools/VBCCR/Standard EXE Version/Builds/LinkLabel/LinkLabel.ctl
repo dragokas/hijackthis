@@ -19,6 +19,18 @@ Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
 #If False Then
 Private LlbLinkActivateReasonClick, LlbLinkActivateReasonReturn
 #End If
@@ -57,16 +69,16 @@ End Type
 Private Type TOOLINFO
 cbSize As Long
 uFlags As Long
-hWnd As Long
-uId As Long
+hWnd As LongPtr
+uId As LongPtr
 RC As RECT
-hInst As Long
-lpszText As Long
-lParam As Long
+hInst As LongPtr
+lpszText As LongPtr
+lParam As LongPtr
 End Type
 Private Type NMHDR
-hWndFrom As Long
-IDFrom As Long
+hWndFrom As LongPtr
+IDFrom As LongPtr
 Code As Long
 End Type
 Private Const CDDS_PREPAINT As Long = &H1
@@ -78,11 +90,11 @@ Private Const CDRF_NOTIFYITEMDRAW As Long = &H20
 Private Type NMCUSTOMDRAW
 hdr As NMHDR
 dwDrawStage As Long
-hDC As Long
+hDC As LongPtr
 RC As RECT
-dwItemSpec As Long
+dwItemSpec As LongPtr
 uItemState As Long
-lItemlParam As Long
+lItemlParam As LongPtr
 End Type
 Private Type NMLINK
 hdr As NMHDR
@@ -90,11 +102,11 @@ Item As LITEM
 End Type
 Private Type NMTTDISPINFO
 hdr As NMHDR
-lpszText As Long
+lpszText As LongPtr
 szText(0 To ((80 * 2) - 1)) As Byte
-hInst As Long
+hInst As LongPtr
 uFlags As Long
-lParam As Long
+lParam As LongPtr
 End Type
 Public Event Click()
 Attribute Click.VB_Description = "Occurs when the user presses and then releases a mouse button over an object."
@@ -149,6 +161,40 @@ Public Event OLESetData(Data As DataObject, DataFormat As Integer)
 Attribute OLESetData.VB_Description = "Occurs at the OLE drag/drop source control when the drop target requests data that was not provided to the DataObject during the OLEDragStart event."
 Public Event OLEStartDrag(Data As DataObject, AllowedEffects As Long)
 Attribute OLEStartDrag.VB_Description = "Occurs when an OLE drag/drop operation is initiated either manually or automatically."
+#If VBA7 Then
+Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
+Private Declare PtrSafe Function CreateWindowEx Lib "user32" Alias "CreateWindowExW" (ByVal dwExStyle As Long, ByVal lpClassName As LongPtr, ByVal lpWindowName As LongPtr, ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hWndParent As LongPtr, ByVal hMenu As LongPtr, ByVal hInstance As LongPtr, ByRef lpParam As Any) As LongPtr
+Private Declare PtrSafe Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByRef lParam As Any) As LongPtr
+Private Declare PtrSafe Function DestroyWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
+Private Declare PtrSafe Function SetParent Lib "user32" (ByVal hWndChild As LongPtr, ByVal hWndNewParent As LongPtr) As LongPtr
+Private Declare PtrSafe Function SetFocusAPI Lib "user32" Alias "SetFocus" (ByVal hWnd As LongPtr) As LongPtr
+Private Declare PtrSafe Function GetFocus Lib "user32" () As LongPtr
+Private Declare PtrSafe Function ShowWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal nCmdShow As Long) As Long
+Private Declare PtrSafe Function MoveWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint As Long) As Long
+Private Declare PtrSafe Function LockWindowUpdate Lib "user32" (ByVal hWndLock As LongPtr) As Long
+Private Declare PtrSafe Function EnableWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal fEnable As Long) As Long
+Private Declare PtrSafe Function RedrawWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal lprcUpdate As LongPtr, ByVal hrgnUpdate As LongPtr, ByVal fuRedraw As Long) As Long
+Private Declare PtrSafe Function DeleteObject Lib "gdi32" (ByVal hObject As LongPtr) As Long
+Private Declare PtrSafe Function SetBkMode Lib "gdi32" (ByVal hDC As LongPtr, ByVal nBkMode As Long) As Long
+Private Declare PtrSafe Function CreateCompatibleDC Lib "gdi32" (ByVal hDC As LongPtr) As LongPtr
+Private Declare PtrSafe Function CreateCompatibleBitmap Lib "gdi32" (ByVal hDC As LongPtr, ByVal nWidth As Long, ByVal nHeight As Long) As LongPtr
+Private Declare PtrSafe Function SelectObject Lib "gdi32" (ByVal hDC As LongPtr, ByVal hObject As LongPtr) As LongPtr
+Private Declare PtrSafe Function DeleteDC Lib "gdi32" (ByVal hDC As LongPtr) As Long
+Private Declare PtrSafe Function CreatePatternBrush Lib "gdi32" (ByVal hBitmap As LongPtr) As LongPtr
+Private Declare PtrSafe Function GetWindowRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As RECT) As Long
+Private Declare PtrSafe Function GetClientRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As RECT) As Long
+Private Declare PtrSafe Function ScreenToClient Lib "user32" (ByVal hWnd As LongPtr, ByRef lpPoint As POINTAPI) As Long
+Private Declare PtrSafe Function MapWindowPoints Lib "user32" (ByVal hWndFrom As LongPtr, ByVal hWndTo As LongPtr, ByRef lppt As Any, ByVal cPoints As Long) As Long
+Private Declare PtrSafe Function SetViewportOrgEx Lib "gdi32" (ByVal hDC As LongPtr, ByVal X As Long, ByVal Y As Long, ByRef lpPoint As POINTAPI) As Long
+Private Declare PtrSafe Function LoadCursor Lib "user32" Alias "LoadCursorW" (ByVal hInstance As LongPtr, ByVal lpCursorName As Any) As LongPtr
+Private Declare PtrSafe Function SetCursor Lib "user32" (ByVal hCursor As LongPtr) As LongPtr
+Private Declare PtrSafe Function GetMessagePos Lib "user32" () As Long
+Private Declare PtrSafe Function WindowFromPoint Lib "user32" (ByVal XY As Currency) As LongPtr
+Private Declare PtrSafe Function GetTextAlign Lib "gdi32" (ByVal hDC As LongPtr) As Long
+Private Declare PtrSafe Function SetTextAlign Lib "gdi32" (ByVal hDC As LongPtr, ByVal fMode As Long) As Long
+Private Declare PtrSafe Function GetTextColor Lib "gdi32" (ByVal hDC As LongPtr) As Long
+Private Declare PtrSafe Function SetTextColor Lib "gdi32" (ByVal hDC As LongPtr, ByVal crColor As Long) As Long
+#Else
 Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
 Private Declare Function CreateWindowEx Lib "user32" Alias "CreateWindowExW" (ByVal dwExStyle As Long, ByVal lpClassName As Long, ByVal lpWindowName As Long, ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hWndParent As Long, ByVal hMenu As Long, ByVal hInstance As Long, ByRef lpParam As Any) As Long
 Private Declare Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByRef lParam As Any) As Long
@@ -176,15 +222,20 @@ Private Declare Function SetViewportOrgEx Lib "gdi32" (ByVal hDC As Long, ByVal 
 Private Declare Function LoadCursor Lib "user32" Alias "LoadCursorW" (ByVal hInstance As Long, ByVal lpCursorName As Any) As Long
 Private Declare Function SetCursor Lib "user32" (ByVal hCursor As Long) As Long
 Private Declare Function GetMessagePos Lib "user32" () As Long
-Private Declare Function WindowFromPoint Lib "user32" (ByVal X As Long, ByVal Y As Long) As Long
+Private Declare Function WindowFromPoint Lib "user32" (ByVal XY As Currency) As Long
 Private Declare Function GetTextAlign Lib "gdi32" (ByVal hDC As Long) As Long
 Private Declare Function SetTextAlign Lib "gdi32" (ByVal hDC As Long, ByVal fMode As Long) As Long
 Private Declare Function GetTextColor Lib "gdi32" (ByVal hDC As Long) As Long
 Private Declare Function SetTextColor Lib "gdi32" (ByVal hDC As Long, ByVal crColor As Long) As Long
+#End If
 Private Const ICC_LINK_CLASS As Long = &H8000&
 Private Const ICC_TAB_CLASSES As Long = &H8
 Private Const RDW_UPDATENOW As Long = &H100, RDW_INVALIDATE As Long = &H1, RDW_ERASE As Long = &H4, RDW_ALLCHILDREN As Long = &H80
+#If VBA7 Then
+Private Const HWND_DESKTOP As LongPtr = &H0
+#Else
 Private Const HWND_DESKTOP As Long = &H0
+#End If
 Private Const TA_RTLREADING = &H100
 Private Const WS_VISIBLE As Long = &H10000000
 Private Const WS_CHILD As Long = &H40000000
@@ -249,7 +300,11 @@ Private Const NM_CUSTOMDRAW As Long = (NM_FIRST - 12)
 Private Const TTM_ADDTOOLA As Long = (WM_USER + 4)
 Private Const TTM_ADDTOOLW As Long = (WM_USER + 50)
 Private Const TTM_ADDTOOL As Long = TTM_ADDTOOLW
+#If VBA7 Then
+Private Const LPSTR_TEXTCALLBACK As LongPtr = (-1)
+#Else
 Private Const LPSTR_TEXTCALLBACK As Long = (-1)
+#End If
 Private Const TTF_SUBCLASS As Long = &H10
 Private Const TTF_PARSELINKS As Long = &H1000
 Private Const TTF_RTLREADING As Long = &H4
@@ -263,9 +318,9 @@ Implements ISubclass
 Implements OLEGuids.IObjectSafety
 Implements OLEGuids.IOleInPlaceActiveObjectVB
 Implements OLEGuids.IPerPropertyBrowsingVB
-Private LinkLabelHandle As Long, LinkLabelToolTipHandle As Long
-Private LinkLabelTransparentBrush As Long
-Private LinkLabelFontHandle As Long, LinkLabelUnderlineFontHandle As Long
+Private LinkLabelHandle As LongPtr, LinkLabelToolTipHandle As LongPtr
+Private LinkLabelTransparentBrush As LongPtr
+Private LinkLabelFontHandle As LongPtr, LinkLabelUnderlineFontHandle As LongPtr
 Private LinkLabelCharCodeCache As Long
 Private LinkLabelMouseOver(0 To 3) As Boolean, LinkLabelMouseOverIndex As Long
 Private LinkLabelDesignMode As Boolean
@@ -300,10 +355,14 @@ End Sub
 Private Sub IObjectSafety_SetInterfaceSafetyOptions(ByRef riid As OLEGuids.OLECLSID, ByVal dwOptionsSetMask As Long, ByVal dwEnabledOptions As Long)
 End Sub
 
+#If VBA7 Then
+Private Sub IOleInPlaceActiveObjectVB_TranslateAccelerator(ByRef Handled As Boolean, ByRef RetVal As Long, ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal Shift As Long)
+#Else
 Private Sub IOleInPlaceActiveObjectVB_TranslateAccelerator(ByRef Handled As Boolean, ByRef RetVal As Long, ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal Shift As Long)
+#End If
 If wMsg = WM_KEYDOWN Or wMsg = WM_KEYUP Then
     Dim KeyCode As Integer, IsInputKey As Boolean
-    KeyCode = wParam And &HFF&
+    KeyCode = CLng(wParam) And &HFF&
     If wMsg = WM_KEYDOWN Then
         RaiseEvent PreviewKeyDown(KeyCode, IsInputKey)
     ElseIf wMsg = WM_KEYUP Then
@@ -382,7 +441,7 @@ PropUseMnemonic = True
 PropTransparent = False
 PropShowTips = False
 Call CreateLinkLabel
-If LinkLabelHandle = 0 And ComCtlsSupportLevel() = 0 And LinkLabelDesignMode = True Then
+If LinkLabelHandle = NULL_PTR And ComCtlsSupportLevel() = 0 And LinkLabelDesignMode = True Then
     MsgBox "The LinkLabel control requires at least version 6.0 of comctl32.dll." & vbLf & _
     "In order to use it, you have to define a manifest file for your application." & vbLf & _
     "For using the control in the VB6 IDE, define a manifest file for VB6.EXE.", vbCritical + vbOKOnly
@@ -446,7 +505,7 @@ End With
 End Sub
 
 Private Sub UserControl_Paint()
-If LinkLabelHandle = 0 Then
+If LinkLabelHandle = NULL_PTR Then
     Dim i As Long
     For i = 8 To (UserControl.ScaleHeight + UserControl.ScaleWidth) Step 8
         UserControl.Line (-1, i)-(i, -1), vbBlack
@@ -489,14 +548,14 @@ If InProc = True Then Exit Sub
 InProc = True
 With UserControl
 If DPICorrectionFactor() <> 1 Then Call SyncObjectRectsToContainer(Me)
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     If PropTransparent = True Then
         MoveWindow LinkLabelHandle, 0, 0, .ScaleWidth, .ScaleHeight, 0
-        If LinkLabelTransparentBrush <> 0 Then
+        If LinkLabelTransparentBrush <> NULL_PTR Then
             DeleteObject LinkLabelTransparentBrush
-            LinkLabelTransparentBrush = 0
+            LinkLabelTransparentBrush = NULL_PTR
         End If
-        RedrawWindow LinkLabelHandle, 0, 0, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE
+        RedrawWindow LinkLabelHandle, NULL_PTR, NULL_PTR, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE
     Else
         MoveWindow LinkLabelHandle, 0, 0, .ScaleWidth, .ScaleHeight, 1
     End If
@@ -657,14 +716,25 @@ Attribute ZOrder.VB_Description = "Places a specified object at the front or bac
 If IsMissing(Position) Then Extender.ZOrder Else Extender.ZOrder Position
 End Sub
 
+#If VBA7 Then
+Public Property Get hWnd() As LongPtr
+Attribute hWnd.VB_Description = "Returns a handle to a control."
+Attribute hWnd.VB_UserMemId = -515
+#Else
 Public Property Get hWnd() As Long
 Attribute hWnd.VB_Description = "Returns a handle to a control."
 Attribute hWnd.VB_UserMemId = -515
+#End If
 hWnd = LinkLabelHandle
 End Property
 
+#If VBA7 Then
+Public Property Get hWndUserControl() As LongPtr
+Attribute hWndUserControl.VB_Description = "Returns a handle to a control."
+#Else
 Public Property Get hWndUserControl() As Long
 Attribute hWndUserControl.VB_Description = "Returns a handle to a control."
+#End If
 hWndUserControl = UserControl.hWnd
 End Property
 
@@ -680,7 +750,7 @@ End Property
 
 Public Property Set Font(ByVal NewFont As StdFont)
 If NewFont Is Nothing Then Set NewFont = Ambient.Font
-Dim OldFontHandle As Long, OldUnderlineFontHandle As Long
+Dim OldFontHandle As LongPtr, OldUnderlineFontHandle As LongPtr
 Dim TempFont As StdFont
 Set PropFont = NewFont
 OldFontHandle = LinkLabelFontHandle
@@ -689,17 +759,17 @@ LinkLabelFontHandle = CreateGDIFontFromOLEFont(PropFont)
 Set TempFont = CloneOLEFont(PropFont)
 TempFont.Underline = True
 LinkLabelUnderlineFontHandle = CreateGDIFontFromOLEFont(TempFont)
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     SendMessage LinkLabelHandle, WM_SETFONT, LinkLabelFontHandle, ByVal 0&
-    RedrawWindow LinkLabelHandle, 0, 0, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE
+    RedrawWindow LinkLabelHandle, NULL_PTR, NULL_PTR, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE
 End If
-If OldFontHandle <> 0 Then DeleteObject OldFontHandle
-If OldUnderlineFontHandle <> 0 Then DeleteObject OldUnderlineFontHandle
+If OldFontHandle <> NULL_PTR Then DeleteObject OldFontHandle
+If OldUnderlineFontHandle <> NULL_PTR Then DeleteObject OldUnderlineFontHandle
 UserControl.PropertyChanged "Font"
 End Property
 
 Private Sub PropFont_FontChanged(ByVal PropertyName As String)
-Dim OldFontHandle As Long, OldUnderlineFontHandle As Long
+Dim OldFontHandle As LongPtr, OldUnderlineFontHandle As LongPtr
 Dim TempFont As StdFont
 OldFontHandle = LinkLabelFontHandle
 OldUnderlineFontHandle = LinkLabelUnderlineFontHandle
@@ -707,12 +777,12 @@ LinkLabelFontHandle = CreateGDIFontFromOLEFont(PropFont)
 Set TempFont = CloneOLEFont(PropFont)
 TempFont.Underline = True
 LinkLabelUnderlineFontHandle = CreateGDIFontFromOLEFont(TempFont)
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     SendMessage LinkLabelHandle, WM_SETFONT, LinkLabelFontHandle, ByVal 0&
-    RedrawWindow LinkLabelHandle, 0, 0, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE
+    RedrawWindow LinkLabelHandle, NULL_PTR, NULL_PTR, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE
 End If
-If OldFontHandle <> 0 Then DeleteObject OldFontHandle
-If OldUnderlineFontHandle <> 0 Then DeleteObject OldUnderlineFontHandle
+If OldFontHandle <> NULL_PTR Then DeleteObject OldFontHandle
+If OldUnderlineFontHandle <> NULL_PTR Then DeleteObject OldUnderlineFontHandle
 UserControl.PropertyChanged "Font"
 End Sub
 
@@ -723,7 +793,7 @@ End Property
 
 Public Property Let VisualStyles(ByVal Value As Boolean)
 PropVisualStyles = Value
-If LinkLabelHandle <> 0 And EnabledVisualStyles() = True Then
+If LinkLabelHandle <> NULL_PTR And EnabledVisualStyles() = True Then
     If PropVisualStyles = True Then
         ActivateVisualStyles LinkLabelHandle
     Else
@@ -767,7 +837,7 @@ End Property
 
 Public Property Let Enabled(ByVal Value As Boolean)
 UserControl.Enabled = Value
-If LinkLabelHandle <> 0 Then EnableWindow LinkLabelHandle, IIf(Value = True, 1, 0)
+If LinkLabelHandle <> NULL_PTR Then EnableWindow LinkLabelHandle, IIf(Value = True, 1, 0)
 UserControl.PropertyChanged "Enabled"
 End Property
 
@@ -815,7 +885,7 @@ Public Property Set MouseIcon(ByVal Value As IPictureDisp)
 If Value Is Nothing Then
     Set PropMouseIcon = Nothing
 Else
-    If Value.Type = vbPicTypeIcon Or Value.Handle = 0 Then
+    If Value.Type = vbPicTypeIcon Or Value.Handle = NULL_PTR Then
         Set PropMouseIcon = Value
     Else
         If LinkLabelDesignMode = True Then
@@ -852,7 +922,7 @@ UserControl.RightToLeft = PropRightToLeft
 Call ComCtlsCheckRightToLeft(PropRightToLeft, UserControl.RightToLeft, PropRightToLeftMode)
 Dim dwMask As Long
 If PropRightToLeft = True Then dwMask = WS_EX_RTLREADING Else dwMask = 0
-If LinkLabelToolTipHandle <> 0 Then Call ComCtlsSetRightToLeft(LinkLabelToolTipHandle, dwMask)
+If LinkLabelToolTipHandle <> NULL_PTR Then Call ComCtlsSetRightToLeft(LinkLabelToolTipHandle, dwMask)
 Me.Refresh
 UserControl.PropertyChanged "RightToLeft"
 End Property
@@ -886,7 +956,7 @@ Select Case Value
     Case Else
         Err.Raise 380
 End Select
-If LinkLabelHandle <> 0 Then Call ComCtlsChangeBorderStyle(LinkLabelHandle, PropBorderStyle)
+If LinkLabelHandle <> NULL_PTR Then Call ComCtlsChangeBorderStyle(LinkLabelHandle, PropBorderStyle)
 UserControl.PropertyChanged "BorderStyle"
 End Property
 
@@ -895,8 +965,8 @@ Attribute Caption.VB_Description = "Returns/sets the text displayed in an object
 Attribute Caption.VB_ProcData.VB_Invoke_Property = "PPLinkLabelGeneral"
 Attribute Caption.VB_UserMemId = -518
 Attribute Caption.VB_MemberFlags = "121c"
-If LinkLabelHandle <> 0 Then
-    Caption = String(SendMessage(LinkLabelHandle, WM_GETTEXTLENGTH, 0, ByVal 0&), vbNullChar)
+If LinkLabelHandle <> NULL_PTR Then
+    Caption = String$(CLng(SendMessage(LinkLabelHandle, WM_GETTEXTLENGTH, 0, ByVal 0&)), vbNullChar)
     SendMessage LinkLabelHandle, WM_GETTEXT, Len(Caption) + 1, ByVal StrPtr(Caption)
 Else
     Caption = PropCaption
@@ -905,7 +975,7 @@ End Property
 
 Public Property Let Caption(ByVal Value As String)
 PropCaption = Value
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     SendMessage LinkLabelHandle, WM_SETTEXT, 0, ByVal StrPtr(PropCaption)
     If PropUseMnemonic = False And ComCtlsSupportLevel() >= 2 Then
         UserControl.AccessKeys = vbNullString
@@ -933,7 +1003,7 @@ Select Case Value
     Case Else
         Err.Raise 380
 End Select
-If LinkLabelHandle <> 0 And ComCtlsSupportLevel() >= 2 Then Call ReCreateLinkLabel
+If LinkLabelHandle <> NULL_PTR And ComCtlsSupportLevel() >= 2 Then Call ReCreateLinkLabel
 UserControl.PropertyChanged "Alignment"
 End Property
 
@@ -976,7 +1046,7 @@ End Property
 
 Public Property Let UseMnemonic(ByVal Value As Boolean)
 PropUseMnemonic = Value
-If LinkLabelHandle <> 0 And ComCtlsSupportLevel() >= 2 Then Call ReCreateLinkLabel
+If LinkLabelHandle <> NULL_PTR And ComCtlsSupportLevel() >= 2 Then Call ReCreateLinkLabel
 UserControl.PropertyChanged "UseMnemonic"
 End Property
 
@@ -998,7 +1068,7 @@ End Property
 
 Public Property Let ShowTips(ByVal Value As Boolean)
 PropShowTips = Value
-If LinkLabelHandle <> 0 And LinkLabelDesignMode = False Then
+If LinkLabelHandle <> NULL_PTR And LinkLabelDesignMode = False Then
     Call DestroyToolTip
     If PropShowTips = True Then Call CreateToolTip
 End If
@@ -1015,7 +1085,7 @@ Set Links = PropLinks
 End Property
 
 Friend Function FLinksCount() As Long
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     Dim Item As LITEM
     With Item
     .iLink = 0
@@ -1029,7 +1099,7 @@ End If
 End Function
 
 Friend Property Get FLinkURL(ByVal Index As Long) As String
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     Dim Item As LITEM
     With Item
     .iLink = Index - 1
@@ -1042,7 +1112,7 @@ End If
 End Property
 
 Friend Property Let FLinkURL(ByVal Index As Long, ByVal Value As String)
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     Dim Item As LITEM, Buffer As String
     With Item
     .iLink = Index - 1
@@ -1055,7 +1125,7 @@ End If
 End Property
 
 Friend Property Get FLinkIDName(ByVal Index As Long) As String
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     Dim Item As LITEM
     With Item
     .iLink = Index - 1
@@ -1068,7 +1138,7 @@ End If
 End Property
 
 Friend Property Let FLinkIDName(ByVal Index As Long, ByVal Value As String)
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     Dim Item As LITEM, Buffer As String
     With Item
     .iLink = Index - 1
@@ -1081,7 +1151,7 @@ End If
 End Property
 
 Friend Property Get FLinkCaption(ByVal Index As Long) As String
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     Dim Item As LITEM
     With Item
     .iLink = Index - 1
@@ -1108,7 +1178,7 @@ End If
 End Property
 
 Friend Property Let FLinkCaption(ByVal Index As Long, ByVal Value As String)
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     Dim Item As LITEM
     With Item
     .iLink = Index - 1
@@ -1139,7 +1209,7 @@ End If
 End Property
 
 Friend Property Get FLinkSelected(ByVal Index As Long) As Boolean
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     Dim Item As LITEM
     With Item
     .iLink = Index - 1
@@ -1153,7 +1223,7 @@ End If
 End Property
 
 Friend Property Let FLinkSelected(ByVal Index As Long, ByVal Value As Boolean)
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     Dim Item As LITEM
     With Item
     .iLink = Index - 1
@@ -1170,7 +1240,7 @@ End If
 End Property
 
 Friend Property Get FLinkEnabled(ByVal Index As Long) As Boolean
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     Dim Item As LITEM
     With Item
     .iLink = Index - 1
@@ -1184,7 +1254,7 @@ End If
 End Property
 
 Friend Property Let FLinkEnabled(ByVal Index As Long, ByVal Value As Boolean)
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     Dim Item As LITEM
     With Item
     .iLink = Index - 1
@@ -1201,7 +1271,7 @@ End If
 End Property
 
 Friend Property Get FLinkVisited(ByVal Index As Long) As Boolean
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     Dim Item As LITEM
     With Item
     .iLink = Index - 1
@@ -1215,7 +1285,7 @@ End If
 End Property
 
 Friend Property Let FLinkVisited(ByVal Index As Long, ByVal Value As Boolean)
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     Dim Item As LITEM
     With Item
     .iLink = Index - 1
@@ -1232,7 +1302,7 @@ End If
 End Property
 
 Friend Property Get FLinkHot(ByVal Index As Long) As Boolean
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     Dim Item As LITEM
     With Item
     .iLink = Index - 1
@@ -1246,7 +1316,7 @@ End If
 End Property
 
 Friend Property Let FLinkHot(ByVal Index As Long, ByVal Value As Boolean)
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     Dim Item As LITEM
     With Item
     .iLink = Index - 1
@@ -1263,7 +1333,7 @@ End If
 End Property
 
 Friend Property Get FLinkLeft(ByVal Index As Long) As Single
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     Dim RC As RECT
     Call GetLinkRect(Index, RC)
     FLinkLeft = UserControl.ScaleX(RC.Left, vbPixels, vbContainerPosition)
@@ -1271,7 +1341,7 @@ End If
 End Property
 
 Friend Property Get FLinkTop(ByVal Index As Long) As Single
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     Dim RC As RECT
     Call GetLinkRect(Index, RC)
     FLinkTop = UserControl.ScaleY(RC.Top, vbPixels, vbContainerPosition)
@@ -1279,7 +1349,7 @@ End If
 End Property
 
 Friend Property Get FLinkWidth(ByVal Index As Long) As Single
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     Dim RC As RECT
     Call GetLinkRect(Index, RC)
     FLinkWidth = UserControl.ScaleX((RC.Right - RC.Left), vbPixels, vbContainerSize)
@@ -1287,7 +1357,7 @@ End If
 End Property
 
 Friend Property Get FLinkHeight(ByVal Index As Long) As Single
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     Dim RC As RECT
     Call GetLinkRect(Index, RC)
     FLinkHeight = UserControl.ScaleY((RC.Bottom - RC.Top), vbPixels, vbContainerSize)
@@ -1295,7 +1365,7 @@ End If
 End Property
 
 Private Sub CreateLinkLabel()
-If LinkLabelHandle <> 0 Or ComCtlsSupportLevel() = 0 Then Exit Sub
+If LinkLabelHandle <> NULL_PTR Or ComCtlsSupportLevel() = 0 Then Exit Sub
 Dim dwStyle As Long, dwExStyle As Long
 dwStyle = WS_CHILD Or WS_VISIBLE Or WS_TABSTOP
 ' According to MSDN:
@@ -1304,14 +1374,14 @@ dwStyle = WS_CHILD Or WS_VISIBLE Or WS_TABSTOP
 Call ComCtlsInitBorderStyle(dwStyle, dwExStyle, PropBorderStyle)
 If PropAlignment = CCLeftRightAlignmentRight And ComCtlsSupportLevel() >= 2 Then dwStyle = dwStyle Or LWS_RIGHT
 If PropUseMnemonic = False And ComCtlsSupportLevel() >= 2 Then dwStyle = dwStyle Or LWS_NOPREFIX
-LinkLabelHandle = CreateWindowEx(dwExStyle, StrPtr("SysLink"), 0, dwStyle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, 0, App.hInstance, ByVal 0&)
+LinkLabelHandle = CreateWindowEx(dwExStyle, StrPtr("SysLink"), NULL_PTR, dwStyle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, NULL_PTR, App.hInstance, ByVal NULL_PTR)
 Set Me.Font = PropFont
 Me.VisualStyles = PropVisualStyles
 Me.Enabled = UserControl.Enabled
 Me.Caption = PropCaption
 If LinkLabelDesignMode = False Then
-    If LinkLabelHandle <> 0 Then Call ComCtlsSetSubclass(LinkLabelHandle, Me, 1)
-    If LinkLabelHandle <> 0 Then
+    If LinkLabelHandle <> NULL_PTR Then Call ComCtlsSetSubclass(LinkLabelHandle, Me, 1)
+    If LinkLabelHandle <> NULL_PTR Then
         ' This trick allows the usage of the GetLinkRect method at initialization time.
         ' Must be called after WM_SETTEXT is processed.
         ' Only after this the 'ShowTips' property can be set.
@@ -1327,16 +1397,16 @@ Private Sub CreateToolTip()
 Static Done As Boolean
 Dim Count As Long, dwExStyle As Long
 Count = Me.FLinksCount
-If LinkLabelToolTipHandle <> 0 Or Count = 0 Or LinkLabelToolTipReady = False Then Exit Sub
+If LinkLabelToolTipHandle <> NULL_PTR Or Count = 0 Or LinkLabelToolTipReady = False Then Exit Sub
 If Done = False Then
     Call ComCtlsInitCC(ICC_TAB_CLASSES)
     Done = True
 End If
 dwExStyle = WS_EX_TOOLWINDOW Or WS_EX_TOPMOST
-LinkLabelToolTipHandle = CreateWindowEx(dwExStyle, StrPtr("tooltips_class32"), StrPtr("Tool Tip"), WS_POPUP Or TTS_ALWAYSTIP Or TTS_NOPREFIX, 0, 0, 0, 0, UserControl.hWnd, 0, App.hInstance, ByVal 0&)
-If LinkLabelToolTipHandle <> 0 Then Call ComCtlsInitToolTip(LinkLabelToolTipHandle)
+LinkLabelToolTipHandle = CreateWindowEx(dwExStyle, StrPtr("tooltips_class32"), StrPtr("Tool Tip"), WS_POPUP Or TTS_ALWAYSTIP Or TTS_NOPREFIX, 0, 0, 0, 0, UserControl.hWnd, NULL_PTR, App.hInstance, ByVal NULL_PTR)
+If LinkLabelToolTipHandle <> NULL_PTR Then Call ComCtlsInitToolTip(LinkLabelToolTipHandle)
 Call SetVisualStylesToolTip
-If LinkLabelToolTipHandle <> 0 Then
+If LinkLabelToolTipHandle <> NULL_PTR Then
     Dim TI As TOOLINFO, i As Long
     With TI
     .cbSize = LenB(TI)
@@ -1360,7 +1430,7 @@ If LinkLabelDesignMode = False Then
     Call DestroyLinkLabel
     Call CreateLinkLabel
     Call UserControl_Resize
-    If Locked = True Then LockWindowUpdate 0
+    If Locked = True Then LockWindowUpdate NULL_PTR
     Me.Refresh
 Else
     Call DestroyLinkLabel
@@ -1370,48 +1440,48 @@ End If
 End Sub
 
 Private Sub DestroyLinkLabel()
-If LinkLabelHandle = 0 Then Exit Sub
+If LinkLabelHandle = NULL_PTR Then Exit Sub
 Call ComCtlsRemoveSubclass(LinkLabelHandle)
 Call ComCtlsRemoveSubclass(UserControl.hWnd)
 Call DestroyToolTip
 ShowWindow LinkLabelHandle, SW_HIDE
-SetParent LinkLabelHandle, 0
+SetParent LinkLabelHandle, NULL_PTR
 DestroyWindow LinkLabelHandle
-LinkLabelHandle = 0
-If LinkLabelFontHandle <> 0 Then
+LinkLabelHandle = NULL_PTR
+If LinkLabelFontHandle <> NULL_PTR Then
     DeleteObject LinkLabelFontHandle
-    LinkLabelFontHandle = 0
+    LinkLabelFontHandle = NULL_PTR
 End If
-If LinkLabelUnderlineFontHandle <> 0 Then
+If LinkLabelUnderlineFontHandle <> NULL_PTR Then
     DeleteObject LinkLabelUnderlineFontHandle
-    LinkLabelUnderlineFontHandle = 0
+    LinkLabelUnderlineFontHandle = NULL_PTR
 End If
-If LinkLabelTransparentBrush <> 0 Then
+If LinkLabelTransparentBrush <> NULL_PTR Then
     DeleteObject LinkLabelTransparentBrush
-    LinkLabelTransparentBrush = 0
+    LinkLabelTransparentBrush = NULL_PTR
 End If
 End Sub
 
 Private Sub DestroyToolTip()
-If LinkLabelToolTipHandle = 0 Then Exit Sub
+If LinkLabelToolTipHandle = NULL_PTR Then Exit Sub
 DestroyWindow LinkLabelToolTipHandle
-LinkLabelToolTipHandle = 0
+LinkLabelToolTipHandle = NULL_PTR
 End Sub
 
 Public Sub Refresh()
 Attribute Refresh.VB_Description = "Forces a complete repaint of a object."
 Attribute Refresh.VB_UserMemId = -550
-If LinkLabelTransparentBrush <> 0 Then
+If LinkLabelTransparentBrush <> NULL_PTR Then
     DeleteObject LinkLabelTransparentBrush
-    LinkLabelTransparentBrush = 0
+    LinkLabelTransparentBrush = NULL_PTR
 End If
 UserControl.Refresh
-RedrawWindow UserControl.hWnd, 0, 0, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
+RedrawWindow UserControl.hWnd, NULL_PTR, NULL_PTR, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
 End Sub
 
 Public Function HitTest(ByVal X As Single, ByVal Y As Single) As LlbLink
 Attribute HitTest.VB_Description = "Returns a reference to the link item object located at the coordinates of X and Y."
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     Dim LHTI As LHITTESTINFO
     With LHTI
     .PT.X = UserControl.ScaleX(X, vbContainerPosition, vbPixels)
@@ -1426,7 +1496,7 @@ End Function
 Public Property Get SelectedItem() As LlbLink
 Attribute SelectedItem.VB_Description = "Returns/sets a reference to the currently selected link item."
 Attribute SelectedItem.VB_MemberFlags = "400"
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     Dim Item As LITEM
     With Item
     .iLink = 0
@@ -1448,7 +1518,7 @@ Set Me.SelectedItem = Value
 End Property
 
 Public Property Set SelectedItem(ByVal Value As LlbLink)
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     If Not Value Is Nothing Then
         Value.Selected = True
     Else
@@ -1471,11 +1541,11 @@ End Property
 
 Public Function GetIdealHeight() As Single
 Attribute GetIdealHeight.VB_Description = "Gets the ideal height of the control."
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     Dim RC(0 To 1) As RECT, RetVal As Long
     GetWindowRect LinkLabelHandle, RC(0)
     GetClientRect LinkLabelHandle, RC(1)
-    RetVal = SendMessage(LinkLabelHandle, LM_GETIDEALHEIGHT, 0, ByVal 0&)
+    RetVal = CLng(SendMessage(LinkLabelHandle, LM_GETIDEALHEIGHT, 0, ByVal 0&))
     RetVal = RetVal + ((RC(0).Bottom - RC(0).Top) - (RC(1).Bottom - RC(1).Top))
     With UserControl
     GetIdealHeight = .ScaleY(RetVal, vbPixels, vbContainerSize)
@@ -1485,7 +1555,7 @@ End Function
 
 Public Sub GetIdealSize(ByRef Width As Single, ByRef Height As Single)
 Attribute GetIdealSize.VB_Description = "Gets the ideal size of the control. Requires comctl32.dll version 6.1 or higher."
-If LinkLabelHandle <> 0 And ComCtlsSupportLevel() >= 2 Then
+If LinkLabelHandle <> NULL_PTR And ComCtlsSupportLevel() >= 2 Then
     Width = 0
     Height = 0
     Dim RC(0 To 1) As RECT
@@ -1503,7 +1573,7 @@ End If
 End Sub
 
 Private Sub GetLinkRect(ByVal Index As Long, ByRef RC As RECT)
-If LinkLabelHandle <> 0 Then
+If LinkLabelHandle <> NULL_PTR Then
     Dim LHTI As LHITTESTINFO, ClientRect As RECT, Success As Boolean
     Dim X1 As Long, Y1 As Long, X2 As Long, Y2 As Long
     GetClientRect LinkLabelHandle, ClientRect
@@ -1550,8 +1620,8 @@ End If
 End Sub
 
 Private Sub SetVisualStylesToolTip()
-If LinkLabelHandle <> 0 Then
-    If LinkLabelToolTipHandle <> 0 And EnabledVisualStyles() = True Then
+If LinkLabelHandle <> NULL_PTR Then
+    If LinkLabelToolTipHandle <> NULL_PTR And EnabledVisualStyles() = True Then
         If PropVisualStyles = True Then
             ActivateVisualStyles LinkLabelToolTipHandle
         Else
@@ -1561,7 +1631,11 @@ If LinkLabelHandle <> 0 Then
 End If
 End Sub
 
+#If VBA7 Then
+Private Function ISubclass_Message(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
+#Else
 Private Function ISubclass_Message(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal dwRefData As Long) As Long
+#End If
 Select Case dwRefData
     Case 1
         ISubclass_Message = WindowProcControl(hWnd, wMsg, wParam, lParam)
@@ -1570,7 +1644,7 @@ Select Case dwRefData
 End Select
 End Function
 
-Private Function WindowProcControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_SETFOCUS
         If wParam <> UserControl.hWnd Then SetFocusAPI UserControl.hWnd: Exit Function
@@ -1579,7 +1653,7 @@ Select Case wMsg
         Call DeActivateIPAO
     Case WM_KEYDOWN, WM_KEYUP, WM_SYSKEYDOWN, WM_SYSKEYUP
         Dim KeyCode As Integer
-        KeyCode = wParam And &HFF&
+        KeyCode = CLng(wParam) And &HFF&
         If wMsg = WM_KEYDOWN Or wMsg = WM_KEYUP Then
             If wMsg = WM_KEYDOWN Then
                 RaiseEvent KeyDown(KeyCode, GetShiftStateFromMsg())
@@ -1599,7 +1673,7 @@ Select Case wMsg
             KeyChar = CUIntToInt(LinkLabelCharCodeCache And &HFFFF&)
             LinkLabelCharCodeCache = 0
         Else
-            KeyChar = CUIntToInt(wParam And &HFFFF&)
+            KeyChar = CUIntToInt(CLng(wParam) And &HFFFF&)
         End If
         RaiseEvent KeyPress(KeyChar)
         wParam = CIntToUInt(KeyChar)
@@ -1608,7 +1682,7 @@ Select Case wMsg
             WindowProcControl = 1
         Else
             Dim UTF16 As String
-            UTF16 = UTF32CodePoint_To_UTF16(wParam)
+            UTF16 = UTF32CodePoint_To_UTF16(CLng(wParam))
             If Len(UTF16) = 1 Then
                 SendMessage hWnd, WM_CHAR, CIntToUInt(AscW(UTF16)), ByVal lParam
             ElseIf Len(UTF16) = 2 Then
@@ -1671,28 +1745,28 @@ Select Case wMsg
         End If
     Case WM_CONTEXTMENU
         If wParam = LinkLabelHandle Then
-            Dim P As POINTAPI
-            P.X = Get_X_lParam(lParam)
-            P.Y = Get_Y_lParam(lParam)
-            If P.X = -1 And P.Y = -1 Then
+            Dim P1 As POINTAPI
+            P1.X = Get_X_lParam(lParam)
+            P1.Y = Get_Y_lParam(lParam)
+            If P1.X = -1 And P1.Y = -1 Then
                 ' If the user types SHIFT + F10 then the X and Y coordinates are -1.
                 RaiseEvent ContextMenu(-1, -1)
             Else
-                ScreenToClient LinkLabelHandle, P
-                RaiseEvent ContextMenu(UserControl.ScaleX(P.X, vbPixels, vbContainerPosition), UserControl.ScaleY(P.Y, vbPixels, vbContainerPosition))
+                ScreenToClient LinkLabelHandle, P1
+                RaiseEvent ContextMenu(UserControl.ScaleX(P1.X, vbPixels, vbContainerPosition), UserControl.ScaleY(P1.Y, vbPixels, vbContainerPosition))
             End If
         End If
     Case WM_NOTIFY
         Dim NM As NMHDR
         CopyMemory NM, ByVal lParam, LenB(NM)
-        If NM.hWndFrom = LinkLabelToolTipHandle And LinkLabelToolTipHandle <> 0 Then
+        If NM.hWndFrom = LinkLabelToolTipHandle And LinkLabelToolTipHandle <> NULL_PTR Then
             Select Case NM.Code
                 Case TTN_GETDISPINFO
                     Dim NMTTDI As NMTTDISPINFO
                     CopyMemory NMTTDI, ByVal lParam, LenB(NMTTDI)
                     With NMTTDI
                     Dim Text As String
-                    RaiseEvent LinkGetTipText(Me.Links(NM.IDFrom), Text)
+                    RaiseEvent LinkGetTipText(Me.Links(CLng(NM.IDFrom)), Text)
                     If Not Text = vbNullString Then
                         If Len(Text) <= 80 Then
                             Text = Left$(Text & vbNullChar, 80)
@@ -1700,7 +1774,7 @@ Select Case wMsg
                         Else
                             .lpszText = StrPtr(Text)
                         End If
-                        .hInst = 0
+                        .hInst = NULL_PTR
                         CopyMemory ByVal lParam, NMTTDI, LenB(NMTTDI)
                     End If
                     End With
@@ -1708,7 +1782,7 @@ Select Case wMsg
         End If
     Case WM_NOTIFYFORMAT
         Const NF_QUERY As Long = 3
-        If wParam = LinkLabelToolTipHandle And LinkLabelToolTipHandle <> 0 And lParam = NF_QUERY Then
+        If wParam = LinkLabelToolTipHandle And LinkLabelToolTipHandle <> NULL_PTR And lParam = NF_QUERY Then
             Const NFR_ANSI As Long = 1
             Const NFR_UNICODE As Long = 2
             WindowProcControl = NFR_UNICODE
@@ -1794,9 +1868,12 @@ Select Case wMsg
             If LinkLabelMouseOverIndex > 0 Then RaiseEvent LinkMouseLeave(Me.Links(LinkLabelMouseOverIndex))
         End If
         If LinkLabelMouseOver(3) = True Then
-            Dim Pos As Long
+            Dim Pos As Long, P2 As POINTAPI, XY As Currency
             Pos = GetMessagePos()
-            If WindowFromPoint(Get_X_lParam(Pos), Get_Y_lParam(Pos)) <> UserControl.hWnd Then
+            P2.X = Get_X_lParam(Pos)
+            P2.Y = Get_Y_lParam(Pos)
+            CopyMemory ByVal VarPtr(XY), ByVal VarPtr(P2), 8
+            If WindowFromPoint(XY) <> UserControl.hWnd Then
                 LinkLabelMouseOver(3) = False
                 RaiseEvent MouseLeave
             End If
@@ -1804,7 +1881,7 @@ Select Case wMsg
 End Select
 End Function
 
-Private Function WindowProcUserControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcUserControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_NOTIFY
         Dim NM As NMHDR
@@ -1826,9 +1903,9 @@ Select Case wMsg
                             Exit Function
                         Case CDDS_ITEMPREPAINT
                             If NMCD.dwItemSpec > -1 Then
-                                Dim FontHandle As Long, RGBColor As Long, OldColor As Long
+                                Dim FontHandle As LongPtr, RGBColor As Long, OldColor As Long
                                 FontHandle = LinkLabelFontHandle
-                                If Me.FLinkHot(NMCD.dwItemSpec + 1) = False Then
+                                If Me.FLinkHot(CLng(NMCD.dwItemSpec) + 1) = False Then
                                     If PropUnderlineCold = True Then FontHandle = LinkLabelUnderlineFontHandle
                                 Else
                                     If PropUnderlineHot = True Then FontHandle = LinkLabelUnderlineFontHandle
@@ -1837,7 +1914,7 @@ Select Case wMsg
                                 If ComCtlsSupportLevel >= 2 Then
                                     RGBColor = GetTextColor(NMCD.hDC)
                                     OldColor = RGBColor
-                                    RaiseEvent LinkForeColor(Me.Links(NMCD.dwItemSpec + 1), RGBColor)
+                                    RaiseEvent LinkForeColor(Me.Links(CLng(NMCD.dwItemSpec) + 1), RGBColor)
                                     If OldColor <> RGBColor Then SetTextColor NMCD.hDC, RGBColor
                                 End If
                                 WindowProcUserControl = CDRF_NEWFONT
@@ -1877,9 +1954,9 @@ Select Case wMsg
             End Select
         End If
     Case WM_SETCURSOR
-        If LoWord(lParam) = HTCLIENT Then
+        If LoWord(CLng(lParam)) = HTCLIENT Then
             If MousePointerID(PropMousePointer) <> 0 Then
-                SetCursor LoadCursor(0, MousePointerID(PropMousePointer))
+                SetCursor LoadCursor(NULL_PTR, MousePointerID(PropMousePointer))
                 WindowProcUserControl = 1
                 Exit Function
             ElseIf PropMousePointer = 99 Then
@@ -1894,23 +1971,23 @@ Select Case wMsg
         WindowProcUserControl = ComCtlsDefaultProc(hWnd, wMsg, wParam, lParam)
         If PropTransparent = True Then
             SetBkMode wParam, 1
-            Dim hDCBmp As Long
-            Dim hBmp As Long, hBmpOld As Long
+            Dim hDCBmp As LongPtr
+            Dim hBmp As LongPtr, hBmpOld As LongPtr
             With UserControl
-            If LinkLabelTransparentBrush = 0 Then
+            If LinkLabelTransparentBrush = NULL_PTR Then
                 hDCBmp = CreateCompatibleDC(wParam)
-                If hDCBmp <> 0 Then
+                If hDCBmp <> NULL_PTR Then
                     hBmp = CreateCompatibleBitmap(wParam, .ScaleWidth, .ScaleHeight)
-                    If hBmp <> 0 Then
+                    If hBmp <> NULL_PTR Then
                         hBmpOld = SelectObject(hDCBmp, hBmp)
-                        Dim WndRect As RECT, P As POINTAPI
+                        Dim WndRect As RECT, P1 As POINTAPI
                         GetWindowRect .hWnd, WndRect
                         MapWindowPoints HWND_DESKTOP, .ContainerHwnd, WndRect, 2
-                        P.X = WndRect.Left
-                        P.Y = WndRect.Top
-                        SetViewportOrgEx hDCBmp, -P.X, -P.Y, P
+                        P1.X = WndRect.Left
+                        P1.Y = WndRect.Top
+                        SetViewportOrgEx hDCBmp, -P1.X, -P1.Y, P1
                         SendMessage .ContainerHwnd, WM_PAINT, hDCBmp, ByVal 0&
-                        SetViewportOrgEx hDCBmp, P.X, P.Y, P
+                        SetViewportOrgEx hDCBmp, P1.X, P1.Y, P1
                         LinkLabelTransparentBrush = CreatePatternBrush(hBmp)
                         SelectObject hDCBmp, hBmpOld
                         DeleteObject hBmp
@@ -1919,7 +1996,7 @@ Select Case wMsg
                 End If
             End If
             End With
-            If LinkLabelTransparentBrush <> 0 Then WindowProcUserControl = LinkLabelTransparentBrush
+            If LinkLabelTransparentBrush <> NULL_PTR Then WindowProcUserControl = LinkLabelTransparentBrush
         End If
         Exit Function
 End Select
@@ -1969,9 +2046,12 @@ Select Case wMsg
     Case WM_MOUSELEAVE
         LinkLabelMouseOver(2) = False
         If LinkLabelMouseOver(3) = True Then
-            Dim Pos As Long
+            Dim Pos As Long, P2 As POINTAPI, XY As Currency
             Pos = GetMessagePos()
-            If WindowFromPoint(Get_X_lParam(Pos), Get_Y_lParam(Pos)) <> LinkLabelHandle Or LinkLabelHandle = 0 Then
+            P2.X = Get_X_lParam(Pos)
+            P2.Y = Get_Y_lParam(Pos)
+            CopyMemory ByVal VarPtr(XY), ByVal VarPtr(P2), 8
+            If WindowFromPoint(XY) <> LinkLabelHandle Or LinkLabelHandle = NULL_PTR Then
                 LinkLabelMouseOver(3) = False
                 RaiseEvent MouseLeave
             End If

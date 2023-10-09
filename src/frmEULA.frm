@@ -2,15 +2,15 @@ VERSION 5.00
 Begin VB.Form frmEULA 
    BorderStyle     =   4  'Fixed ToolWindow
    ClientHeight    =   3240
-   ClientLeft      =   4788
-   ClientTop       =   4836
-   ClientWidth     =   6708
+   ClientLeft      =   4785
+   ClientTop       =   4830
+   ClientWidth     =   6705
    Icon            =   "frmEULA.frx":0000
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
    ScaleHeight     =   3240
-   ScaleWidth      =   6708
+   ScaleWidth      =   6705
    StartUpPosition =   2  'CenterScreen
    Begin VB.TextBox txtEULA 
       Height          =   732
@@ -26,7 +26,7 @@ Begin VB.Form frmEULA
       Caption         =   "I Do Not Accept"
       BeginProperty Font 
          Name            =   "Tahoma"
-         Size            =   8.4
+         Size            =   8.25
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -43,7 +43,7 @@ Begin VB.Form frmEULA
       Caption         =   "I Accept"
       BeginProperty Font 
          Name            =   "Tahoma"
-         Size            =   8.4
+         Size            =   8.25
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -62,7 +62,7 @@ Begin VB.Form frmEULA
       Caption         =   $"frmEULA.frx":4B2A
       BeginProperty Font 
          Name            =   "Tahoma"
-         Size            =   8.4
+         Size            =   8.25
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -113,12 +113,18 @@ Attribute VB_Exposed = False
 
 Option Explicit
 
+'by default = false
 #Const bDebugMode = False       ' /debug key analogue
-#Const bDebugToFile = False     ' /bDebugToFile key analogue
+#Const bDebugToFile = False     ' /DebugToFile key analogue
 #Const SilentAutoLog = False    ' /silentautolog key analogue
 #Const DoCrash = False          ' crash the program (test reason)
+#Const DoFreeze = False         ' emulate app freeze at initialization stage
 #Const CryptDisable = False     ' disable encryption of ignore list and several other settings
 #Const NoSelfSignTest = False   ' whether I should disable the checking of own signature
+#Const AutologgerMode = False   ' keys combination used within AutoLogger (which is: /accepteula /silentautolog /default /skipIgnoreList /timeout:120 /debugtofile)
+
+'by default = true
+#Const AUTOLOGGER_DEBUG_TO_FILE = True 'auto-activate /DebugToFile if app ran within Autologger
 
 Private Declare Function GetProcAddress Lib "kernel32.dll" (ByVal hModule As Long, ByVal lpProcName As String) As Long
 
@@ -126,8 +132,13 @@ Private Const ICC_STANDARD_CLASSES As Long = &H4000&
 
 Private ControlsEvent As clsEvents
 
+
 Private Sub Form_Initialize()
     On Error GoTo ErrorHandler:
+    
+    Debug.Assert MakeTrue(inIDE)
+    
+    Perf.StartTime = GetTickCount()
     
     MAX_PATH_W_BUF = String$(MAX_PATH_W, 0&)
     
@@ -136,9 +147,11 @@ Private Sub Form_Initialize()
     bPolymorph = (InStr(1, AppExeName(), "_poly", 1) <> 0) Or (StrComp(GetExtensionName(AppExeName(True)), ".pif", 1) = 0)
     
     Dim argc As Long
-    g_sCommandLine = Command$()
-    ParseCommandLine g_sCommandLine, argc, g_sCommandLineArg()
-
+    If Not inIDE Then
+        g_sCommandLine = StringFromPtrW(GetCommandLine())
+    End If
+    ParseCommandLine g_sCommandLine, argc, g_sCommandLineArg(), True
+    
     Dim ICC         As tagINITCOMMONCONTROLSEX
     Dim lr          As Long
     Dim hModShell   As Long
@@ -223,8 +236,6 @@ Private Sub Form_Initialize()
     If HasCommandLineKey("autolog") Then bAutoLog = True
     '/silentautolog
     If HasCommandLineKey("silentautolog") Then bAutoLog = True: bAutoLogSilent = True
-    
-    If bAutoLog Then Perf.StartTime = GetTickCount()
     
     Set Reg = New clsRegistry
     Set ErrLogCustomText = New clsStringBuilder 'tracing
@@ -342,9 +353,33 @@ Private Sub Form_Initialize()
     If HasCommandLineKey("DebugToFile") Then
         bDebugToFile = True
     End If
-    If bDebugMode Then
+    
+    #If AUTOLOGGER_DEBUG_TO_FILE Then
+        If InStr(1, AppPath(), "\AutoLogger\", 1) <> 0 Then
+            bDebugToFile = True
+        End If
+    #End If
+    
+    #If AutologgerMode Then
+        bAutoLogSilent = True
+        bAutoLog = True
+        bLoadDefaults = True
+        bSkipIgnoreList = True
+        bDebugToFile = True
+        Perf.MAX_TimeOut = 120
+        bAcceptEula = True
+    #End If
+    
+    If bDebugMode Or bDebugToFile Then
+        bDebugToFile = True ' /debug also initiate /bDebugToFile
         OpenDebugLogHandle
     End If
+    
+    #If DoFreeze Then
+        Do: DoEvents: Loop
+    #End If
+    
+    AppendErrorLogCustom "Command line: " & g_sCommandLine
     
     Exit Sub
 ErrorHandler:
@@ -374,11 +409,9 @@ Private Sub Form_Load()
     End If
     
     'header of tracing log
-    AppendErrorLogCustom vbCrLf & vbCrLf & "Logfile ( tracing ) of HiJackThis+ v." & AppVerString & vbCrLf & vbCrLf & _
+    AppendErrorLogCustom "Logfile ( tracing ) of HiJackThis+ v." & AppVerString & vbCrLf & vbCrLf & _
         "Command line: " & AppPath(True) & " " & g_sCommandLine & vbCrLf & vbCrLf & MakeLogHeader()
     
-    'Me.Caption = Me.Caption & AppVerString
-
     bForceRU = InStr(1, AppExeName(), "_RU", 1) Or HasCommandLineKey("langRU")  '/langRU
     bForceEN = InStr(1, AppExeName(), "_EN", 1) Or HasCommandLineKey("langEN")  '/langEN
     bForceUA = InStr(1, AppExeName(), "_UA", 1) Or HasCommandLineKey("langUA")  '/langUA
@@ -394,7 +427,8 @@ Private Sub Form_Load()
     '/accepteula /uninstall
     If HasCommandLineKey("accepteula") Or _
         HasCommandLineKey("uninstall") Or _
-        Reg.KeyExists(HKEY_LOCAL_MACHINE, "Software\TrendMicro\HiJackThisFork") Then
+        Reg.KeyExists(HKEY_LOCAL_MACHINE, "Software\TrendMicro\HiJackThisFork") Or bAcceptEula Then
+            bAcceptEula = True
             EULA_Agree
             Me.Hide
             'frmMain.Show vbModeless
@@ -549,3 +583,8 @@ End Function
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
     Set ControlsEvent = Nothing
 End Sub
+
+Private Function MakeTrue(Value As Boolean) As Boolean
+    Value = True
+    MakeTrue = True
+End Function

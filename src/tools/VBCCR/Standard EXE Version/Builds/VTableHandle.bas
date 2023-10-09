@@ -1,5 +1,17 @@
 Attribute VB_Name = "VTableHandle"
 Option Explicit
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
 
 ' Required:
 
@@ -14,13 +26,13 @@ VTableInterfaceControl = 2
 VTableInterfacePerPropertyBrowsing = 3
 End Enum
 Private Type VTableIPAODataStruct
-VTable As Long
+VTable As LongPtr
 RefCount As Long
 OriginalIOleIPAO As OLEGuids.IOleInPlaceActiveObject
 IOleIPAO As OLEGuids.IOleInPlaceActiveObjectVB
 End Type
 Private Type VTableEnumVARIANTDataStruct
-VTable As Long
+VTable As LongPtr
 RefCount As Long
 Enumerable As Object
 Index As Long
@@ -28,6 +40,16 @@ Count As Long
 End Type
 Public Const CTRLINFO_EATS_RETURN As Long = 1
 Public Const CTRLINFO_EATS_ESCAPE As Long = 2
+#If VBA7 Then
+Private Declare PtrSafe Sub CoTaskMemFree Lib "ole32" (ByVal hMem As LongPtr)
+Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
+Private Declare PtrSafe Sub SetLastError Lib "kernel32" (ByVal dwErrCode As Long)
+Private Declare PtrSafe Function CoTaskMemAlloc Lib "ole32" (ByVal cBytes As Long) As LongPtr
+Private Declare PtrSafe Function SysAllocString Lib "oleaut32" (ByVal lpString As LongPtr) As LongPtr
+Private Declare PtrSafe Function DispCallFunc Lib "oleaut32" (ByVal lpvInstance As LongPtr, ByVal oVft As LongPtr, ByVal CallConv As Long, ByVal vtReturn As Integer, ByVal cActuals As Long, ByVal prgvt As LongPtr, ByVal prgpvarg As LongPtr, ByRef pvargResult As Variant) As Long
+Private Declare PtrSafe Function VariantCopyToPtr Lib "oleaut32" Alias "VariantCopy" (ByVal pvargDest As LongPtr, ByRef pvargSrc As Variant) As Long
+Private Declare PtrSafe Function CLSIDFromString Lib "ole32" (ByVal lpszProgID As LongPtr, ByRef pCLSID As Any) As Long
+#Else
 Private Declare Sub CoTaskMemFree Lib "ole32" (ByVal hMem As Long)
 Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
 Private Declare Sub SetLastError Lib "kernel32" (ByVal dwErrCode As Long)
@@ -36,6 +58,7 @@ Private Declare Function SysAllocString Lib "oleaut32" (ByVal lpString As Long) 
 Private Declare Function DispCallFunc Lib "oleaut32" (ByVal lpvInstance As Long, ByVal oVft As Long, ByVal CallConv As Long, ByVal vtReturn As Integer, ByVal cActuals As Long, ByVal prgvt As Long, ByVal prgpvarg As Long, ByRef pvargResult As Variant) As Long
 Private Declare Function VariantCopyToPtr Lib "oleaut32" Alias "VariantCopy" (ByVal pvargDest As Long, ByRef pvargSrc As Variant) As Long
 Private Declare Function CLSIDFromString Lib "ole32" (ByVal lpszProgID As Long, ByRef pCLSID As Any) As Long
+#End If
 Private Const CC_STDCALL As Long = 4
 Private Const E_OUTOFMEMORY As Long = &H8007000E
 Private Const E_INVALIDARG As Long = &H80070057
@@ -44,10 +67,10 @@ Private Const E_NOINTERFACE As Long = &H80004002
 Private Const E_POINTER As Long = &H80004003
 Private Const S_FALSE As Long = &H1
 Private Const S_OK As Long = &H0
-Private VTableIPAO(0 To 9) As Long, VTableIPAOData As VTableIPAODataStruct
-Private VTableControl(0 To 6) As Long, OriginalVTableControl As Long
-Private VTablePPB(0 To 6) As Long, OriginalVTablePPB As Long, StringsOutArray() As String, CookiesOutArray() As Long
-Private VTableEnumVARIANT(0 To 6) As Long
+Private VTableIPAO(0 To 9) As LongPtr, VTableIPAOData As VTableIPAODataStruct
+Private VTableControl(0 To 6) As LongPtr, OriginalVTableControl As LongPtr
+Private VTablePPB(0 To 6) As LongPtr, OriginalVTablePPB As LongPtr, StringsOutArray() As String, CookiesOutArray() As Long
+Private VTableEnumVARIANT(0 To 6) As LongPtr
 
 Public Function SetVTableHandling(ByVal This As Object, ByVal OLEInterface As VTableInterfaceConstants) As Boolean
 Select Case OLEInterface
@@ -114,35 +137,39 @@ End Select
 CATCH_EXCEPTION:
 End Function
 
+#If VBA7 Then
+Public Function VTableCall(ByVal RetType As VbVarType, ByVal InterfacePointer As LongPtr, ByVal Entry As LongPtr, ParamArray ArgList() As Variant) As Variant
+#Else
 Public Function VTableCall(ByVal RetType As VbVarType, ByVal InterfacePointer As Long, ByVal Entry As Long, ParamArray ArgList() As Variant) As Variant
-Debug.Assert Not (Entry < 1 Or InterfacePointer = 0)
+#End If
+Debug.Assert Not (Entry < 1 Or InterfacePointer = NULL_PTR)
 Dim VarArgList As Variant, HResult As Long
 VarArgList = ArgList
 If UBound(VarArgList) > -1 Then
-    Dim i As Long, ArrVarType() As Integer, ArrVarPtr() As Long
+    Dim i As Long, ArrVarType() As Integer, ArrVarPtr() As LongPtr
     ReDim ArrVarType(LBound(VarArgList) To UBound(VarArgList)) As Integer
-    ReDim ArrVarPtr(LBound(VarArgList) To UBound(VarArgList)) As Long
+    ReDim ArrVarPtr(LBound(VarArgList) To UBound(VarArgList)) ' As LongPtr
     For i = LBound(VarArgList) To UBound(VarArgList)
         ArrVarType(i) = VarType(VarArgList(i))
         ArrVarPtr(i) = VarPtr(VarArgList(i))
     Next i
-    HResult = DispCallFunc(InterfacePointer, (Entry - 1) * 4, CC_STDCALL, RetType, i, VarPtr(ArrVarType(0)), VarPtr(ArrVarPtr(0)), VTableCall)
+    HResult = DispCallFunc(InterfacePointer, (Entry - 1) * PTR_SIZE, CC_STDCALL, RetType, i, VarPtr(ArrVarType(0)), VarPtr(ArrVarPtr(0)), VTableCall)
 Else
-    HResult = DispCallFunc(InterfacePointer, (Entry - 1) * 4, CC_STDCALL, RetType, 0, 0, 0, VTableCall)
+    HResult = DispCallFunc(InterfacePointer, (Entry - 1) * PTR_SIZE, CC_STDCALL, RetType, 0, 0, 0, VTableCall)
 End If
 SetLastError HResult ' S_OK will clear the last error code, if any.
 End Function
 
 Public Function VTableInterfaceSupported(ByVal This As OLEGuids.IUnknownUnrestricted, ByVal IIDString As String) As Boolean
 Debug.Assert Not (This Is Nothing)
-Dim HResult As Long, IID As OLEGuids.OLECLSID, ObjectPointer As Long
+Dim HResult As Long, IID As OLEGuids.OLECLSID, ObjectPointer As LongPtr
 CLSIDFromString StrPtr(IIDString), IID
 HResult = This.QueryInterface(VarPtr(IID), ObjectPointer)
 If ObjectPointer <> 0 Then
     Dim IUnk As OLEGuids.IUnknownUnrestricted
-    CopyMemory IUnk, ObjectPointer, 4
+    CopyMemory IUnk, ObjectPointer, PTR_SIZE
     IUnk.Release
-    CopyMemory IUnk, 0&, 4
+    CopyMemory IUnk, NULL_PTR, PTR_SIZE
 End If
 VTableInterfaceSupported = CBool(HResult = S_OK)
 End Function
@@ -180,15 +207,15 @@ If VTableIPAOData.RefCount > 0 Then
     Set .OriginalIOleIPAO = This
     Set .IOleIPAO = This
     End With
-    CopyMemory ByVal VarPtr(PropOleInPlaceActiveObject), VarPtr(VTableIPAOData), 4
+    CopyMemory ByVal VarPtr(PropOleInPlaceActiveObject), VarPtr(VTableIPAOData), PTR_SIZE
     PropOleInPlaceActiveObject.AddRef
 Else
     Set PropOleInPlaceActiveObject = This
 End If
 Set PropOleInPlaceSite = PropOleObject.GetClientSite
 PropOleInPlaceSite.GetWindowContext PropOleInPlaceFrame, PropOleInPlaceUIWindow, VarPtr(PosRect), VarPtr(ClipRect), VarPtr(FrameInfo)
-PropOleInPlaceFrame.SetActiveObject PropOleInPlaceActiveObject, vbNullString
-If Not PropOleInPlaceUIWindow Is Nothing Then PropOleInPlaceUIWindow.SetActiveObject PropOleInPlaceActiveObject, vbNullString
+PropOleInPlaceFrame.SetActiveObject PropOleInPlaceActiveObject, NULL_PTR
+If Not PropOleInPlaceUIWindow Is Nothing Then PropOleInPlaceUIWindow.SetActiveObject PropOleInPlaceActiveObject, NULL_PTR
 CATCH_EXCEPTION:
 End Sub
 
@@ -205,15 +232,15 @@ Dim FrameInfo As OLEGuids.OLEINPLACEFRAMEINFO
 Set PropOleObject = VTableIPAOData.OriginalIOleIPAO
 Set PropOleInPlaceSite = PropOleObject.GetClientSite
 PropOleInPlaceSite.GetWindowContext PropOleInPlaceFrame, PropOleInPlaceUIWindow, VarPtr(PosRect), VarPtr(ClipRect), VarPtr(FrameInfo)
-PropOleInPlaceFrame.SetActiveObject Nothing, vbNullString
-If Not PropOleInPlaceUIWindow Is Nothing Then PropOleInPlaceUIWindow.SetActiveObject Nothing, vbNullString
+PropOleInPlaceFrame.SetActiveObject Nothing, NULL_PTR
+If Not PropOleInPlaceUIWindow Is Nothing Then PropOleInPlaceUIWindow.SetActiveObject Nothing, NULL_PTR
 CATCH_EXCEPTION:
 Set VTableIPAOData.OriginalIOleIPAO = Nothing
 Set VTableIPAOData.IOleIPAO = Nothing
 End Sub
 
-Private Function GetVTableIPAO() As Long
-If VTableIPAO(0) = 0 Then
+Private Function GetVTableIPAO() As LongPtr
+If VTableIPAO(0) = NULL_PTR Then
     VTableIPAO(0) = ProcPtr(AddressOf IOleIPAO_QueryInterface)
     VTableIPAO(1) = ProcPtr(AddressOf IOleIPAO_AddRef)
     VTableIPAO(2) = ProcPtr(AddressOf IOleIPAO_Release)
@@ -228,8 +255,8 @@ End If
 GetVTableIPAO = VarPtr(VTableIPAO(0))
 End Function
 
-Private Function IOleIPAO_QueryInterface(ByRef This As VTableIPAODataStruct, ByRef IID As OLEGuids.OLECLSID, ByRef pvObj As Long) As Long
-If VarPtr(pvObj) = 0 Then
+Private Function IOleIPAO_QueryInterface(ByRef This As VTableIPAODataStruct, ByRef IID As OLEGuids.OLECLSID, ByRef pvObj As LongPtr) As Long
+If VarPtr(pvObj) = NULL_PTR Then
     IOleIPAO_QueryInterface = E_POINTER
     Exit Function
 End If
@@ -256,7 +283,7 @@ Private Function IOleIPAO_Release(ByRef This As VTableIPAODataStruct) As Long
 IOleIPAO_Release = This.OriginalIOleIPAO.Release
 End Function
 
-Private Function IOleIPAO_GetWindow(ByRef This As VTableIPAODataStruct, ByRef hWnd As Long) As Long
+Private Function IOleIPAO_GetWindow(ByRef This As VTableIPAODataStruct, ByRef hWnd As LongPtr) As Long
 IOleIPAO_GetWindow = This.OriginalIOleIPAO.GetWindow(hWnd)
 End Function
 
@@ -265,7 +292,7 @@ IOleIPAO_ContextSensitiveHelp = This.OriginalIOleIPAO.ContextSensitiveHelp(Enter
 End Function
 
 Private Function IOleIPAO_TranslateAccelerator(ByRef This As VTableIPAODataStruct, ByRef Msg As OLEGuids.OLEACCELMSG) As Long
-If VarPtr(Msg) = 0 Then
+If VarPtr(Msg) = NULL_PTR Then
     IOleIPAO_TranslateAccelerator = E_INVALIDARG
     Exit Function
 End If
@@ -296,12 +323,12 @@ IOleIPAO_EnableModeless = This.OriginalIOleIPAO.EnableModeless(Enable)
 End Function
 
 Private Sub ReplaceIOleControl(ByVal This As OLEGuids.IOleControl)
-If OriginalVTableControl = 0 Then CopyMemory OriginalVTableControl, ByVal ObjPtr(This), 4
-CopyMemory ByVal ObjPtr(This), ByVal VarPtr(GetVTableControl()), 4
+If OriginalVTableControl = NULL_PTR Then CopyMemory OriginalVTableControl, ByVal ObjPtr(This), PTR_SIZE
+CopyMemory ByVal ObjPtr(This), ByVal VarPtr(GetVTableControl()), PTR_SIZE
 End Sub
 
 Private Sub RestoreIOleControl(ByVal This As OLEGuids.IOleControl)
-If OriginalVTableControl <> 0 Then CopyMemory ByVal ObjPtr(This), OriginalVTableControl, 4
+If OriginalVTableControl <> NULL_PTR Then CopyMemory ByVal ObjPtr(This), OriginalVTableControl, PTR_SIZE
 End Sub
 
 Public Sub OnControlInfoChanged(ByVal This As Object, Optional ByVal OnFocus As Boolean)
@@ -315,10 +342,10 @@ If OnFocus = True Then PropOleControlSite.OnFocus 1
 CATCH_EXCEPTION:
 End Sub
 
-Private Function GetVTableControl() As Long
-If VTableControl(0) = 0 Then
-    If OriginalVTableControl <> 0 Then
-        CopyMemory VTableControl(0), ByVal OriginalVTableControl, 12
+Private Function GetVTableControl() As LongPtr
+If VTableControl(0) = NULL_PTR Then
+    If OriginalVTableControl <> NULL_PTR Then
+        CopyMemory VTableControl(0), ByVal OriginalVTableControl, 3 * PTR_SIZE
     Else
         VTableControl(0) = ProcPtr(AddressOf IOleControl_QueryInterface)
         VTableControl(1) = ProcPtr(AddressOf IOleControl_AddRef)
@@ -327,8 +354,8 @@ If VTableControl(0) = 0 Then
     VTableControl(3) = ProcPtr(AddressOf IOleControl_GetControlInfo)
     VTableControl(4) = ProcPtr(AddressOf IOleControl_OnMnemonic)
     VTableControl(5) = ProcPtr(AddressOf IOleControl_OnAmbientPropertyChange)
-    If OriginalVTableControl <> 0 Then
-        CopyMemory VTableControl(6), ByVal UnsignedAdd(OriginalVTableControl, 24), 4
+    If OriginalVTableControl <> NULL_PTR Then
+        CopyMemory VTableControl(6), ByVal UnsignedAdd(OriginalVTableControl, 6 * PTR_SIZE), PTR_SIZE
     Else
         VTableControl(6) = ProcPtr(AddressOf IOleControl_FreezeEvents)
     End If
@@ -336,45 +363,45 @@ End If
 GetVTableControl = VarPtr(VTableControl(0))
 End Function
 
-Private Function IOleControl_QueryInterface(ByRef This As Long, ByRef IID As OLEGuids.OLECLSID, ByRef pvObj As Long) As Long
-If VarPtr(pvObj) = 0 Then
+Private Function IOleControl_QueryInterface(ByRef This As LongPtr, ByRef IID As OLEGuids.OLECLSID, ByRef pvObj As LongPtr) As Long
+If VarPtr(pvObj) = NULL_PTR Then
     IOleControl_QueryInterface = E_POINTER
     Exit Function
 End If
-If OriginalVTableControl <> 0 Then
+If OriginalVTableControl <> NULL_PTR Then
     Dim IUnk As OLEGuids.IUnknownUnrestricted
     This = OriginalVTableControl
-    CopyMemory IUnk, VarPtr(This), 4
+    CopyMemory IUnk, VarPtr(This), PTR_SIZE
     IOleControl_QueryInterface = IUnk.QueryInterface(VarPtr(IID), pvObj)
-    CopyMemory IUnk, 0&, 4
+    CopyMemory IUnk, NULL_PTR, PTR_SIZE
     This = GetVTableControl()
 End If
 End Function
 
-Private Function IOleControl_AddRef(ByRef This As Long) As Long
-If OriginalVTableControl <> 0 Then
+Private Function IOleControl_AddRef(ByRef This As LongPtr) As Long
+If OriginalVTableControl <> NULL_PTR Then
     Dim IUnk As OLEGuids.IUnknownUnrestricted
     This = OriginalVTableControl
-    CopyMemory IUnk, VarPtr(This), 4
+    CopyMemory IUnk, VarPtr(This), PTR_SIZE
     IOleControl_AddRef = IUnk.AddRef()
-    CopyMemory IUnk, 0&, 4
+    CopyMemory IUnk, NULL_PTR, PTR_SIZE
     This = GetVTableControl()
 End If
 End Function
 
-Private Function IOleControl_Release(ByRef This As Long) As Long
-If OriginalVTableControl <> 0 Then
+Private Function IOleControl_Release(ByRef This As LongPtr) As Long
+If OriginalVTableControl <> NULL_PTR Then
     Dim IUnk As OLEGuids.IUnknownUnrestricted
     This = OriginalVTableControl
-    CopyMemory IUnk, VarPtr(This), 4
+    CopyMemory IUnk, VarPtr(This), PTR_SIZE
     IOleControl_Release = IUnk.Release()
-    CopyMemory IUnk, 0&, 4
+    CopyMemory IUnk, NULL_PTR, PTR_SIZE
     This = GetVTableControl()
 End If
 End Function
 
-Private Function IOleControl_GetControlInfo(ByRef This As Long, ByRef CI As OLEGuids.OLECONTROLINFO) As Long
-If VarPtr(CI) = 0 Then
+Private Function IOleControl_GetControlInfo(ByRef This As LongPtr, ByRef CI As OLEGuids.OLECONTROLINFO) As Long
+If VarPtr(CI) = NULL_PTR Then
     IOleControl_GetControlInfo = E_POINTER
     Exit Function
 End If
@@ -386,7 +413,7 @@ ShadowIOleControlVB.GetControlInfo Handled, CI.cAccel, CI.hAccel, CI.dwFlags
 If Handled = False Then
     IOleControl_GetControlInfo = Original_IOleControl_GetControlInfo(This, CI)
 Else
-    If CI.cAccel > 0 And CI.hAccel = 0 Then
+    If CI.cAccel > 0 And CI.hAccel = NULL_PTR Then
         IOleControl_GetControlInfo = E_OUTOFMEMORY
     Else
         IOleControl_GetControlInfo = S_OK
@@ -397,8 +424,8 @@ CATCH_EXCEPTION:
 IOleControl_GetControlInfo = Original_IOleControl_GetControlInfo(This, CI)
 End Function
 
-Private Function IOleControl_OnMnemonic(ByRef This As Long, ByRef Msg As OLEGuids.OLEACCELMSG) As Long
-If VarPtr(Msg) = 0 Then
+Private Function IOleControl_OnMnemonic(ByRef This As LongPtr, ByRef Msg As OLEGuids.OLEACCELMSG) As Long
+If VarPtr(Msg) = NULL_PTR Then
     IOleControl_OnMnemonic = E_INVALIDARG
     Exit Function
 End If
@@ -416,60 +443,60 @@ CATCH_EXCEPTION:
 IOleControl_OnMnemonic = Original_IOleControl_OnMnemonic(This, Msg)
 End Function
 
-Private Function IOleControl_OnAmbientPropertyChange(ByRef This As Long, ByVal DispID As Long) As Long
+Private Function IOleControl_OnAmbientPropertyChange(ByRef This As LongPtr, ByVal DispID As Long) As Long
 IOleControl_OnAmbientPropertyChange = Original_IOleControl_OnAmbientPropertyChange(This, DispID)
 End Function
 
-Private Function IOleControl_FreezeEvents(ByRef This As Long, ByVal bFreeze As Long) As Long
+Private Function IOleControl_FreezeEvents(ByRef This As LongPtr, ByVal bFreeze As Long) As Long
 IOleControl_FreezeEvents = Original_IOleControl_FreezeEvents(This, bFreeze)
 End Function
 
-Private Function Original_IOleControl_GetControlInfo(ByRef This As Long, ByRef CI As OLEGuids.OLECONTROLINFO) As Long
-If OriginalVTableControl <> 0 Then
+Private Function Original_IOleControl_GetControlInfo(ByRef This As LongPtr, ByRef CI As OLEGuids.OLECONTROLINFO) As Long
+If OriginalVTableControl <> NULL_PTR Then
     Dim ShadowIOleControl As OLEGuids.IOleControl
     This = OriginalVTableControl
-    CopyMemory ShadowIOleControl, VarPtr(This), 4
+    CopyMemory ShadowIOleControl, VarPtr(This), PTR_SIZE
     Original_IOleControl_GetControlInfo = ShadowIOleControl.GetControlInfo(CI)
-    CopyMemory ShadowIOleControl, 0&, 4
+    CopyMemory ShadowIOleControl, NULL_PTR, PTR_SIZE
     This = GetVTableControl()
 Else
     Original_IOleControl_GetControlInfo = E_NOTIMPL
 End If
 End Function
 
-Private Function Original_IOleControl_OnMnemonic(ByRef This As Long, ByRef Msg As OLEGuids.OLEACCELMSG) As Long
-If OriginalVTableControl <> 0 Then
+Private Function Original_IOleControl_OnMnemonic(ByRef This As LongPtr, ByRef Msg As OLEGuids.OLEACCELMSG) As Long
+If OriginalVTableControl <> NULL_PTR Then
     Dim ShadowIOleControl As OLEGuids.IOleControl
     This = OriginalVTableControl
-    CopyMemory ShadowIOleControl, VarPtr(This), 4
+    CopyMemory ShadowIOleControl, VarPtr(This), PTR_SIZE
     Original_IOleControl_OnMnemonic = ShadowIOleControl.OnMnemonic(Msg)
-    CopyMemory ShadowIOleControl, 0&, 4
+    CopyMemory ShadowIOleControl, NULL_PTR, PTR_SIZE
     This = GetVTableControl()
 Else
     Original_IOleControl_OnMnemonic = E_NOTIMPL
 End If
 End Function
 
-Private Function Original_IOleControl_OnAmbientPropertyChange(ByRef This As Long, ByVal DispID As Long) As Long
-If OriginalVTableControl <> 0 Then
+Private Function Original_IOleControl_OnAmbientPropertyChange(ByRef This As LongPtr, ByVal DispID As Long) As Long
+If OriginalVTableControl <> NULL_PTR Then
     Dim ShadowIOleControl As OLEGuids.IOleControl
     This = OriginalVTableControl
-    CopyMemory ShadowIOleControl, VarPtr(This), 4
+    CopyMemory ShadowIOleControl, VarPtr(This), PTR_SIZE
     ShadowIOleControl.OnAmbientPropertyChange DispID
-    CopyMemory ShadowIOleControl, 0&, 4
+    CopyMemory ShadowIOleControl, NULL_PTR, PTR_SIZE
     This = GetVTableControl()
 End If
 ' This function returns S_OK in all cases.
 Original_IOleControl_OnAmbientPropertyChange = S_OK
 End Function
 
-Private Function Original_IOleControl_FreezeEvents(ByRef This As Long, ByVal bFreeze As Long) As Long
-If OriginalVTableControl <> 0 Then
+Private Function Original_IOleControl_FreezeEvents(ByRef This As LongPtr, ByVal bFreeze As Long) As Long
+If OriginalVTableControl <> NULL_PTR Then
     Dim ShadowIOleControl As OLEGuids.IOleControl
     This = OriginalVTableControl
-    CopyMemory ShadowIOleControl, VarPtr(This), 4
+    CopyMemory ShadowIOleControl, VarPtr(This), PTR_SIZE
     ShadowIOleControl.FreezeEvents bFreeze
-    CopyMemory ShadowIOleControl, 0&, 4
+    CopyMemory ShadowIOleControl, NULL_PTR, PTR_SIZE
     This = GetVTableControl()
 End If
 ' This function returns S_OK in all cases.
@@ -477,32 +504,32 @@ Original_IOleControl_FreezeEvents = S_OK
 End Function
 
 Private Sub ReplaceIPPB(ByVal This As OLEGuids.IPerPropertyBrowsing)
-If OriginalVTablePPB = 0 Then CopyMemory OriginalVTablePPB, ByVal ObjPtr(This), 4
-CopyMemory ByVal ObjPtr(This), ByVal VarPtr(GetVTablePPB()), 4
+If OriginalVTablePPB = NULL_PTR Then CopyMemory OriginalVTablePPB, ByVal ObjPtr(This), PTR_SIZE
+CopyMemory ByVal ObjPtr(This), ByVal VarPtr(GetVTablePPB()), PTR_SIZE
 End Sub
 
 Private Sub RestoreIPPB(ByVal This As OLEGuids.IPerPropertyBrowsing)
-If OriginalVTablePPB <> 0 Then CopyMemory ByVal ObjPtr(This), OriginalVTablePPB, 4
+If OriginalVTablePPB <> NULL_PTR Then CopyMemory ByVal ObjPtr(This), OriginalVTablePPB, PTR_SIZE
 End Sub
 
 Public Function GetDispID(ByVal This As Object, ByRef MethodName As String) As Long
 Dim IDispatch As OLEGuids.IDispatch, IID_NULL As OLEGuids.OLECLSID
 Set IDispatch = This
-IDispatch.GetIDsOfNames IID_NULL, MethodName, 1, 0, GetDispID
+IDispatch.GetIDsOfNames IID_NULL, StrPtr(MethodName), 1, 0, GetDispID
 End Function
 
-Private Function GetVTablePPB() As Long
-If VTablePPB(0) = 0 Then
-    If OriginalVTablePPB <> 0 Then
-        CopyMemory VTablePPB(0), ByVal OriginalVTablePPB, 12
+Private Function GetVTablePPB() As LongPtr
+If VTablePPB(0) = NULL_PTR Then
+    If OriginalVTablePPB <> NULL_PTR Then
+        CopyMemory VTablePPB(0), ByVal OriginalVTablePPB, 3 * PTR_SIZE
     Else
         VTablePPB(0) = ProcPtr(AddressOf IPPB_QueryInterface)
         VTablePPB(1) = ProcPtr(AddressOf IPPB_AddRef)
         VTablePPB(2) = ProcPtr(AddressOf IPPB_Release)
     End If
     VTablePPB(3) = ProcPtr(AddressOf IPPB_GetDisplayString)
-    If OriginalVTablePPB <> 0 Then
-        CopyMemory VTablePPB(4), ByVal UnsignedAdd(OriginalVTablePPB, 16), 4
+    If OriginalVTablePPB <> NULL_PTR Then
+        CopyMemory VTablePPB(4), ByVal UnsignedAdd(OriginalVTablePPB, 4 * PTR_SIZE), PTR_SIZE
     Else
         VTablePPB(4) = ProcPtr(AddressOf IPPB_MapPropertyToPage)
     End If
@@ -512,45 +539,45 @@ End If
 GetVTablePPB = VarPtr(VTablePPB(0))
 End Function
 
-Private Function IPPB_QueryInterface(ByRef This As Long, ByRef IID As OLEGuids.OLECLSID, ByRef pvObj As Long) As Long
-If VarPtr(pvObj) = 0 Then
+Private Function IPPB_QueryInterface(ByRef This As LongPtr, ByRef IID As OLEGuids.OLECLSID, ByRef pvObj As LongPtr) As Long
+If VarPtr(pvObj) = NULL_PTR Then
     IPPB_QueryInterface = E_POINTER
     Exit Function
 End If
-If OriginalVTablePPB <> 0 Then
+If OriginalVTablePPB <> NULL_PTR Then
     Dim IUnk As OLEGuids.IUnknownUnrestricted
     This = OriginalVTablePPB
-    CopyMemory IUnk, VarPtr(This), 4
+    CopyMemory IUnk, VarPtr(This), PTR_SIZE
     IPPB_QueryInterface = IUnk.QueryInterface(VarPtr(IID), pvObj)
-    CopyMemory IUnk, 0&, 4
+    CopyMemory IUnk, NULL_PTR, PTR_SIZE
     This = GetVTablePPB()
 End If
 End Function
 
-Private Function IPPB_AddRef(ByRef This As Long) As Long
-If OriginalVTablePPB <> 0 Then
+Private Function IPPB_AddRef(ByRef This As LongPtr) As Long
+If OriginalVTablePPB <> NULL_PTR Then
     Dim IUnk As OLEGuids.IUnknownUnrestricted
     This = OriginalVTablePPB
-    CopyMemory IUnk, VarPtr(This), 4
+    CopyMemory IUnk, VarPtr(This), PTR_SIZE
     IPPB_AddRef = IUnk.AddRef()
-    CopyMemory IUnk, 0&, 4
+    CopyMemory IUnk, NULL_PTR, PTR_SIZE
     This = GetVTablePPB()
 End If
 End Function
 
-Private Function IPPB_Release(ByRef This As Long) As Long
-If OriginalVTablePPB <> 0 Then
+Private Function IPPB_Release(ByRef This As LongPtr) As Long
+If OriginalVTablePPB <> NULL_PTR Then
     Dim IUnk As OLEGuids.IUnknownUnrestricted
     This = OriginalVTablePPB
-    CopyMemory IUnk, VarPtr(This), 4
+    CopyMemory IUnk, VarPtr(This), PTR_SIZE
     IPPB_Release = IUnk.Release()
-    CopyMemory IUnk, 0&, 4
+    CopyMemory IUnk, NULL_PTR, PTR_SIZE
     This = GetVTablePPB()
 End If
 End Function
 
-Private Function IPPB_GetDisplayString(ByRef This As Long, ByVal DispID As Long, ByRef pDisplayName As Long) As Long
-If VarPtr(pDisplayName) = 0 Then
+Private Function IPPB_GetDisplayString(ByRef This As LongPtr, ByVal DispID As Long, ByRef lpDisplayName As LongPtr) As Long
+If VarPtr(lpDisplayName) = NULL_PTR Then
     IPPB_GetDisplayString = E_POINTER
     Exit Function
 End If
@@ -559,22 +586,22 @@ Dim ShadowIPerPropertyBrowsingVB As OLEGuids.IPerPropertyBrowsingVB, Handled As 
 Set ShadowIPerPropertyBrowsingVB = PtrToObj(VarPtr(This))
 ShadowIPerPropertyBrowsingVB.GetDisplayString Handled, DispID, DisplayName
 If Handled = False Then
-    IPPB_GetDisplayString = Original_IPPB_GetDisplayString(This, DispID, pDisplayName)
+    IPPB_GetDisplayString = Original_IPPB_GetDisplayString(This, DispID, lpDisplayName)
 Else
-    pDisplayName = SysAllocString(StrPtr(DisplayName))
+    lpDisplayName = SysAllocString(StrPtr(DisplayName))
     IPPB_GetDisplayString = S_OK
 End If
 Exit Function
 CATCH_EXCEPTION:
-IPPB_GetDisplayString = Original_IPPB_GetDisplayString(This, DispID, pDisplayName)
+IPPB_GetDisplayString = Original_IPPB_GetDisplayString(This, DispID, lpDisplayName)
 End Function
 
-Private Function IPPB_MapPropertyToPage(ByRef This As Long, ByVal DispID As Long, ByRef pCLSID As OLEGuids.OLECLSID) As Long
+Private Function IPPB_MapPropertyToPage(ByRef This As LongPtr, ByVal DispID As Long, ByRef pCLSID As OLEGuids.OLECLSID) As Long
 IPPB_MapPropertyToPage = Original_IPPB_MapPropertyToPage(This, DispID, pCLSID)
 End Function
 
-Private Function IPPB_GetPredefinedStrings(ByRef This As Long, ByVal DispID As Long, ByRef pCaStringsOut As OLEGuids.OLECALPOLESTR, ByRef pCaCookiesOut As OLEGuids.OLECADWORD) As Long
-If VarPtr(pCaStringsOut) = 0 Or VarPtr(pCaCookiesOut) = 0 Then
+Private Function IPPB_GetPredefinedStrings(ByRef This As LongPtr, ByVal DispID As Long, ByRef pCaStringsOut As OLEGuids.OLECALPOLESTR, ByRef pCaCookiesOut As OLEGuids.OLECADWORD) As Long
+If VarPtr(pCaStringsOut) = NULL_PTR Or VarPtr(pCaCookiesOut) = NULL_PTR Then
     IPPB_GetPredefinedStrings = E_POINTER
     Exit Function
 End If
@@ -587,18 +614,18 @@ ShadowIPerPropertyBrowsingVB.GetPredefinedStrings Handled, DispID, StringsOutArr
 If Handled = False Or UBound(StringsOutArray()) = 0 Then
     IPPB_GetPredefinedStrings = Original_IPPB_GetPredefinedStrings(This, DispID, pCaStringsOut, pCaCookiesOut)
 Else
-    Dim cElems As Long, pElems As Long, nElemCount As Long
-    Dim Buffer As String, lpString As Long
+    Dim cElems As Long, pElems As LongPtr, nElemCount As Long
+    Dim Buffer As String, lpString As LongPtr
     cElems = UBound(StringsOutArray())
     If Not UBound(CookiesOutArray()) = cElems Then ReDim Preserve CookiesOutArray(cElems) As Long
-    pElems = CoTaskMemAlloc(cElems * 4)
+    pElems = CoTaskMemAlloc(cElems * PTR_SIZE)
     pCaStringsOut.cElems = cElems
     pCaStringsOut.pElems = pElems
     For nElemCount = 0 To cElems - 1
         Buffer = StringsOutArray(nElemCount) & vbNullChar
         lpString = CoTaskMemAlloc(LenB(Buffer))
         CopyMemory ByVal lpString, ByVal StrPtr(Buffer), LenB(Buffer)
-        CopyMemory ByVal UnsignedAdd(pElems, nElemCount * 4), ByVal VarPtr(lpString), 4
+        CopyMemory ByVal UnsignedAdd(pElems, nElemCount * PTR_SIZE), ByVal VarPtr(lpString), PTR_SIZE
     Next nElemCount
     pElems = CoTaskMemAlloc(cElems * 4)
     pCaCookiesOut.cElems = cElems
@@ -613,8 +640,8 @@ CATCH_EXCEPTION:
 IPPB_GetPredefinedStrings = Original_IPPB_GetPredefinedStrings(This, DispID, pCaStringsOut, pCaCookiesOut)
 End Function
 
-Private Function IPPB_GetPredefinedValue(ByRef This As Long, ByVal DispID As Long, ByVal dwCookie As Long, ByRef pVarOut As Variant) As Long
-If VarPtr(pVarOut) = 0 Then
+Private Function IPPB_GetPredefinedValue(ByRef This As LongPtr, ByVal DispID As Long, ByVal dwCookie As Long, ByRef pVarOut As Variant) As Long
+If VarPtr(pVarOut) = NULL_PTR Then
     IPPB_GetPredefinedValue = E_POINTER
     Exit Function
 End If
@@ -632,46 +659,46 @@ CATCH_EXCEPTION:
 IPPB_GetPredefinedValue = Original_IPPB_GetPredefinedValue(This, DispID, dwCookie, pVarOut)
 End Function
 
-Private Function Original_IPPB_GetDisplayString(ByRef This As Long, ByVal DispID As Long, ByRef pDisplayName As Long) As Long
-If OriginalVTablePPB <> 0 Then
+Private Function Original_IPPB_GetDisplayString(ByRef This As LongPtr, ByVal DispID As Long, ByRef lpDisplayName As LongPtr) As Long
+If OriginalVTablePPB <> NULL_PTR Then
     Dim ShadowIPPB As OLEGuids.IPerPropertyBrowsing
     This = OriginalVTablePPB
-    CopyMemory ShadowIPPB, VarPtr(This), 4
-    Original_IPPB_GetDisplayString = ShadowIPPB.GetDisplayString(DispID, pDisplayName)
-    CopyMemory ShadowIPPB, 0&, 4
+    CopyMemory ShadowIPPB, VarPtr(This), PTR_SIZE
+    Original_IPPB_GetDisplayString = ShadowIPPB.GetDisplayString(DispID, lpDisplayName)
+    CopyMemory ShadowIPPB, NULL_PTR, PTR_SIZE
     This = GetVTablePPB()
 End If
 End Function
 
-Private Function Original_IPPB_MapPropertyToPage(ByRef This As Long, ByVal DispID As Long, ByRef pCLSID As OLEGuids.OLECLSID) As Long
-If OriginalVTablePPB <> 0 Then
+Private Function Original_IPPB_MapPropertyToPage(ByRef This As LongPtr, ByVal DispID As Long, ByRef pCLSID As OLEGuids.OLECLSID) As Long
+If OriginalVTablePPB <> NULL_PTR Then
     Dim ShadowIPPB As OLEGuids.IPerPropertyBrowsing
     This = OriginalVTablePPB
-    CopyMemory ShadowIPPB, VarPtr(This), 4
+    CopyMemory ShadowIPPB, VarPtr(This), PTR_SIZE
     Original_IPPB_MapPropertyToPage = ShadowIPPB.MapPropertyToPage(DispID, pCLSID)
-    CopyMemory ShadowIPPB, 0&, 4
+    CopyMemory ShadowIPPB, NULL_PTR, PTR_SIZE
     This = GetVTablePPB()
 End If
 End Function
 
-Private Function Original_IPPB_GetPredefinedStrings(ByRef This As Long, ByVal DispID As Long, ByRef pCaStringsOut As OLEGuids.OLECALPOLESTR, ByRef pCaCookiesOut As OLEGuids.OLECADWORD) As Long
-If OriginalVTablePPB <> 0 Then
+Private Function Original_IPPB_GetPredefinedStrings(ByRef This As LongPtr, ByVal DispID As Long, ByRef pCaStringsOut As OLEGuids.OLECALPOLESTR, ByRef pCaCookiesOut As OLEGuids.OLECADWORD) As Long
+If OriginalVTablePPB <> NULL_PTR Then
     Dim ShadowIPPB As OLEGuids.IPerPropertyBrowsing
     This = OriginalVTablePPB
-    CopyMemory ShadowIPPB, VarPtr(This), 4
+    CopyMemory ShadowIPPB, VarPtr(This), PTR_SIZE
     Original_IPPB_GetPredefinedStrings = ShadowIPPB.GetPredefinedStrings(DispID, pCaStringsOut, pCaCookiesOut)
-    CopyMemory ShadowIPPB, 0&, 4
+    CopyMemory ShadowIPPB, NULL_PTR, PTR_SIZE
     This = GetVTablePPB()
 End If
 End Function
 
-Private Function Original_IPPB_GetPredefinedValue(ByRef This As Long, ByVal DispID As Long, ByVal dwCookie As Long, ByRef pVarOut As Variant) As Long
-If OriginalVTablePPB <> 0 Then
+Private Function Original_IPPB_GetPredefinedValue(ByRef This As LongPtr, ByVal DispID As Long, ByVal dwCookie As Long, ByRef pVarOut As Variant) As Long
+If OriginalVTablePPB <> NULL_PTR Then
     Dim ShadowIPPB As OLEGuids.IPerPropertyBrowsing
     This = OriginalVTablePPB
-    CopyMemory ShadowIPPB, VarPtr(This), 4
+    CopyMemory ShadowIPPB, VarPtr(This), PTR_SIZE
     Original_IPPB_GetPredefinedValue = ShadowIPPB.GetPredefinedValue(DispID, dwCookie, pVarOut)
-    CopyMemory ShadowIPPB, 0&, 4
+    CopyMemory ShadowIPPB, NULL_PTR, PTR_SIZE
     This = GetVTablePPB()
 End If
 End Function
@@ -684,18 +711,18 @@ With VTableEnumVARIANTData
 Set .Enumerable = This
 .Index = Lower
 .Count = Upper
-Dim hMem As Long
+Dim hMem As LongPtr
 hMem = CoTaskMemAlloc(LenB(VTableEnumVARIANTData))
-If hMem <> 0 Then
+If hMem <> NULL_PTR Then
     CopyMemory ByVal hMem, VTableEnumVARIANTData, LenB(VTableEnumVARIANTData)
-    CopyMemory ByVal VarPtr(GetNewEnum), hMem, 4
-    CopyMemory ByVal VarPtr(.Enumerable), 0&, 4
+    CopyMemory ByVal VarPtr(GetNewEnum), hMem, PTR_SIZE
+    CopyMemory ByVal VarPtr(.Enumerable), NULL_PTR, PTR_SIZE
 End If
 End With
 End Function
 
-Private Function GetVTableEnumVARIANT() As Long
-If VTableEnumVARIANT(0) = 0 Then
+Private Function GetVTableEnumVARIANT() As LongPtr
+If VTableEnumVARIANT(0) = NULL_PTR Then
     VTableEnumVARIANT(0) = ProcPtr(AddressOf IEnumVARIANT_QueryInterface)
     VTableEnumVARIANT(1) = ProcPtr(AddressOf IEnumVARIANT_AddRef)
     VTableEnumVARIANT(2) = ProcPtr(AddressOf IEnumVARIANT_Release)
@@ -707,8 +734,8 @@ End If
 GetVTableEnumVARIANT = VarPtr(VTableEnumVARIANT(0))
 End Function
 
-Private Function IEnumVARIANT_QueryInterface(ByRef This As VTableEnumVARIANTDataStruct, ByRef IID As OLEGuids.OLECLSID, ByRef pvObj As Long) As Long
-If VarPtr(pvObj) = 0 Then
+Private Function IEnumVARIANT_QueryInterface(ByRef This As VTableEnumVARIANTDataStruct, ByRef IID As OLEGuids.OLECLSID, ByRef pvObj As LongPtr) As Long
+If VarPtr(pvObj) = NULL_PTR Then
     IEnumVARIANT_QueryInterface = E_POINTER
     Exit Function
 End If
@@ -741,8 +768,8 @@ If IEnumVARIANT_Release = 0 Then
 End If
 End Function
 
-Private Function IEnumVARIANT_Next(ByRef This As VTableEnumVARIANTDataStruct, ByVal VntCount As Long, ByVal VntArrPtr As Long, ByRef pcvFetched As Long) As Long
-If VntArrPtr = 0 Then
+Private Function IEnumVARIANT_Next(ByRef This As VTableEnumVARIANTDataStruct, ByVal VntCount As Long, ByVal VntArrPtr As LongPtr, ByRef pcvFetched As Long) As Long
+If VntArrPtr = NULL_PTR Then
     IEnumVARIANT_Next = E_INVALIDARG
     Exit Function
 End If
@@ -763,10 +790,10 @@ If Fetched = VntCount Then
 Else
     IEnumVARIANT_Next = S_FALSE
 End If
-If VarPtr(pcvFetched) <> 0 Then pcvFetched = Fetched
+If VarPtr(pcvFetched) <> NULL_PTR Then pcvFetched = Fetched
 Exit Function
 CATCH_EXCEPTION:
-If VarPtr(pcvFetched) <> 0 Then pcvFetched = 0
+If VarPtr(pcvFetched) <> NULL_PTR Then pcvFetched = 0
 IEnumVARIANT_Next = E_NOTIMPL
 End Function
 

@@ -26,6 +26,18 @@ Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
 Option Explicit
+#If (VBA7 = 0) Then
+Private Enum LongPtr
+[_]
+End Enum
+#End If
+#If Win64 Then
+Private Const NULL_PTR As LongPtr = 0
+Private Const PTR_SIZE As Long = 8
+#Else
+Private Const NULL_PTR As Long = 0
+Private Const PTR_SIZE As Long = 4
+#End If
 #If False Then
 Private PgrOrientationVertical, PgrOrientationHorizontal
 Private PgrDirectionUp, PgrDirectionDown, PgrDirectionLeft, PgrDirectionRight
@@ -71,8 +83,8 @@ Right As Long
 Bottom As Long
 End Type
 Private Type NMHDR
-hWndFrom As Long
-IDFrom As Long
+hWndFrom As LongPtr
+IDFrom As LongPtr
 Code As Long
 End Type
 Private Type NMPGCALCSIZE
@@ -130,6 +142,24 @@ Public Event OLESetData(Data As DataObject, DataFormat As Integer)
 Attribute OLESetData.VB_Description = "Occurs at the OLE drag/drop source control when the drop target requests data that was not provided to the DataObject during the OLEDragStart event."
 Public Event OLEStartDrag(Data As DataObject, AllowedEffects As Long)
 Attribute OLEStartDrag.VB_Description = "Occurs when an OLE drag/drop operation is initiated either manually or automatically."
+#If VBA7 Then
+Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
+Private Declare PtrSafe Function CreateWindowEx Lib "user32" Alias "CreateWindowExW" (ByVal dwExStyle As Long, ByVal lpClassName As LongPtr, ByVal lpWindowName As LongPtr, ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hWndParent As LongPtr, ByVal hMenu As LongPtr, ByVal hInstance As LongPtr, ByRef lpParam As Any) As LongPtr
+Private Declare PtrSafe Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByRef lParam As Any) As LongPtr
+Private Declare PtrSafe Function DestroyWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
+Private Declare PtrSafe Function SetWindowLong Lib "user32" Alias "SetWindowLongW" (ByVal hWnd As LongPtr, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
+Private Declare PtrSafe Function GetWindowLong Lib "user32" Alias "GetWindowLongW" (ByVal hWnd As LongPtr, ByVal nIndex As Long) As Long
+Private Declare PtrSafe Function SetParent Lib "user32" (ByVal hWndChild As LongPtr, ByVal hWndNewParent As LongPtr) As LongPtr
+Private Declare PtrSafe Function ShowWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal nCmdShow As Long) As Long
+Private Declare PtrSafe Function MoveWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint As Long) As Long
+Private Declare PtrSafe Function LockWindowUpdate Lib "user32" (ByVal hWndLock As LongPtr) As Long
+Private Declare PtrSafe Function EnableWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal fEnable As Long) As Long
+Private Declare PtrSafe Function RedrawWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal lprcUpdate As LongPtr, ByVal hrgnUpdate As LongPtr, ByVal fuRedraw As Long) As Long
+Private Declare PtrSafe Function LoadCursor Lib "user32" Alias "LoadCursorW" (ByVal hInstance As LongPtr, ByVal lpCursorName As Any) As LongPtr
+Private Declare PtrSafe Function SetCursor Lib "user32" (ByVal hCursor As LongPtr) As LongPtr
+Private Declare PtrSafe Function GetAncestor Lib "user32" (ByVal hWnd As LongPtr, ByVal gaFlags As Long) As LongPtr
+Private Declare PtrSafe Function GetSystemMetrics Lib "user32" (ByVal nIndex As Long) As Long
+#Else
 Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
 Private Declare Function CreateWindowEx Lib "user32" Alias "CreateWindowExW" (ByVal dwExStyle As Long, ByVal lpClassName As Long, ByVal lpWindowName As Long, ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hWndParent As Long, ByVal hMenu As Long, ByVal hInstance As Long, ByRef lpParam As Any) As Long
 Private Declare Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByRef lParam As Any) As Long
@@ -146,6 +176,7 @@ Private Declare Function LoadCursor Lib "user32" Alias "LoadCursorW" (ByVal hIns
 Private Declare Function SetCursor Lib "user32" (ByVal hCursor As Long) As Long
 Private Declare Function GetAncestor Lib "user32" (ByVal hWnd As Long, ByVal gaFlags As Long) As Long
 Private Declare Function GetSystemMetrics Lib "user32" (ByVal nIndex As Long) As Long
+#End If
 Private Const ICC_PAGESCROLLER_CLASS As Long = &H1000
 Private Const RDW_UPDATENOW As Long = &H100, RDW_INVALIDATE As Long = &H1, RDW_ERASE As Long = &H4, RDW_ALLCHILDREN As Long = &H80
 Private Const GWL_STYLE As Long = (-16)
@@ -198,14 +229,14 @@ Private Const PGK_MENU As Long = 4
 Implements ISubclass
 Implements OLEGuids.IObjectSafety
 Implements OLEGuids.IPerPropertyBrowsingVB
-Private PagerHandle As Long
+Private PagerHandle As LongPtr
 Private PagerIsClick As Boolean
 Private PagerMouseOver As Boolean
 Private PagerDesignMode As Boolean
 Private PagerHotItemChangePrevFlags As Long
 Private PagerAlignable As Boolean
-Private PagerBuddyControlHandle As Long, PagerBuddyControlPrevParent As Long
-Private PagerBuddyObjectPointer As Long
+Private PagerBuddyControlHandle As LongPtr, PagerBuddyControlPrevParent As LongPtr
+Private PagerBuddyObjectPointer As LongPtr
 Private DispIDMousePointer As Long
 Private DispIDBuddyControl As Long, BuddyControlArray() As String
 Private PropMousePointer As Integer, PropMouseIcon As IPictureDisp
@@ -246,7 +277,7 @@ If DispID = DispIDMousePointer Then
     Handled = True
 ElseIf DispID = DispIDBuddyControl Then
     On Error GoTo CATCH_EXCEPTION
-    Dim ControlEnum As Object, PropUBound As Long, Handle As Long
+    Dim ControlEnum As Object, PropUBound As Long, Handle As LongPtr
     PropUBound = UBound(StringsOut())
     ReDim Preserve StringsOut(PropUBound + 1) As String
     ReDim Preserve CookiesOut(PropUBound + 1) As Long
@@ -254,7 +285,7 @@ ElseIf DispID = DispIDBuddyControl Then
     CookiesOut(PropUBound) = PropUBound
     For Each ControlEnum In UserControl.ParentControls
         If ControlIsValid(ControlEnum, Handle) = True Then
-            If Handle <> 0 Then
+            If Handle <> NULL_PTR Then
                 PropUBound = UBound(StringsOut())
                 ReDim Preserve StringsOut(PropUBound + 1) As String
                 ReDim Preserve CookiesOut(PropUBound + 1) As Long
@@ -403,7 +434,7 @@ InProc = True
 With UserControl.Extender
 Dim Align As Integer
 If PagerAlignable = True Then Align = .Align Else Align = vbAlignNone
-Select Case Align
+Select Case .Align
     Case LastAlign
     Case vbAlignNone
     Case vbAlignTop, vbAlignBottom
@@ -419,11 +450,11 @@ Select Case Align
 End Select
 LastHeight = .Height
 LastWidth = .Width
-LastAlign = Align
+LastAlign = .Align
 End With
 With UserControl
 If DPICorrectionFactor() <> 1 Then Call SyncObjectRectsToContainer(Me)
-If PagerHandle <> 0 Then MoveWindow PagerHandle, 0, 0, .ScaleWidth, .ScaleHeight, 1
+If PagerHandle <> NULL_PTR Then MoveWindow PagerHandle, 0, 0, .ScaleWidth, .ScaleHeight, 1
 End With
 InProc = False
 End Sub
@@ -589,14 +620,25 @@ Attribute ZOrder.VB_Description = "Places a specified object at the front or bac
 If IsMissing(Position) Then Extender.ZOrder Else Extender.ZOrder Position
 End Sub
 
+#If VBA7 Then
+Public Property Get hWnd() As LongPtr
+Attribute hWnd.VB_Description = "Returns a handle to a control."
+Attribute hWnd.VB_UserMemId = -515
+#Else
 Public Property Get hWnd() As Long
 Attribute hWnd.VB_Description = "Returns a handle to a control."
 Attribute hWnd.VB_UserMemId = -515
+#End If
 hWnd = PagerHandle
 End Property
 
+#If VBA7 Then
+Public Property Get hWndUserControl() As LongPtr
+Attribute hWndUserControl.VB_Description = "Returns a handle to a control."
+#Else
 Public Property Get hWndUserControl() As Long
 Attribute hWndUserControl.VB_Description = "Returns a handle to a control."
+#End If
 hWndUserControl = UserControl.hWnd
 End Property
 
@@ -608,7 +650,7 @@ End Property
 
 Public Property Let BackColor(ByVal Value As OLE_COLOR)
 PropBackColor = Value
-If PagerHandle <> 0 Then SendMessage PagerHandle, PGM_SETBKCOLOR, 0, ByVal WinColor(PropBackColor)
+If PagerHandle <> NULL_PTR Then SendMessage PagerHandle, PGM_SETBKCOLOR, 0, ByVal WinColor(PropBackColor)
 UserControl.PropertyChanged "BackColor"
 End Property
 
@@ -620,7 +662,7 @@ End Property
 
 Public Property Let Enabled(ByVal Value As Boolean)
 UserControl.Enabled = Value
-If PagerHandle <> 0 Then EnableWindow PagerHandle, IIf(Value = True, 1, 0)
+If PagerHandle <> NULL_PTR Then EnableWindow PagerHandle, IIf(Value = True, 1, 0)
 UserControl.PropertyChanged "Enabled"
 End Property
 
@@ -646,7 +688,7 @@ End Property
 
 Public Property Let OLEDragDropScroll(ByVal Value As Boolean)
 PropOLEDragDropScroll = Value
-If PagerHandle <> 0 Then Call ReCreatePager
+If PagerHandle <> NULL_PTR Then Call ReCreatePager
 UserControl.PropertyChanged "OLEDragDropScroll"
 End Property
 
@@ -679,7 +721,7 @@ Public Property Set MouseIcon(ByVal Value As IPictureDisp)
 If Value Is Nothing Then
     Set PropMouseIcon = Nothing
 Else
-    If Value.Type = vbPicTypeIcon Or Value.Handle = 0 Then
+    If Value.Type = vbPicTypeIcon Or Value.Handle = NULL_PTR Then
         Set PropMouseIcon = Value
     Else
         If PagerDesignMode = True Then
@@ -717,7 +759,7 @@ Call ComCtlsCheckRightToLeft(PropRightToLeft, UserControl.RightToLeft, PropRight
 Dim dwMask As Long
 If PropRightToLeft = True And PropRightToLeftLayout = True Then dwMask = WS_EX_LAYOUTRTL
 If PagerDesignMode = False Then Call ComCtlsSetRightToLeft(UserControl.hWnd, dwMask)
-If PagerHandle <> 0 Then Call ComCtlsSetRightToLeft(PagerHandle, dwMask)
+If PagerHandle <> NULL_PTR Then Call ComCtlsSetRightToLeft(PagerHandle, dwMask)
 UserControl.PropertyChanged "RightToLeft"
 End Property
 
@@ -751,7 +793,7 @@ End Property
 Public Property Get BuddyControl() As Variant
 Attribute BuddyControl.VB_Description = "Returns/sets the buddy control."
 If PagerDesignMode = False Then
-    If PropBuddyControlInit = False And PagerBuddyObjectPointer = 0 Then
+    If PropBuddyControlInit = False And PagerBuddyObjectPointer = NULL_PTR Then
         If Not PropBuddyName = "(None)" Then Me.BuddyControl = PropBuddyName
         PropBuddyControlInit = True
     End If
@@ -767,14 +809,14 @@ End Property
 
 Public Property Let BuddyControl(ByVal Value As Variant)
 If PagerDesignMode = False Then
-    If PagerHandle <> 0 Then
-        Dim Success As Boolean, Handle As Long
+    If PagerHandle <> NULL_PTR Then
+        Dim Success As Boolean, Handle As LongPtr
         On Error Resume Next
         If IsObject(Value) Then
             If ControlIsValid(Value, Handle) = True Then
-                Success = CBool(Handle <> 0)
+                Success = CBool(Handle <> NULL_PTR)
                 If Success = True Then
-                    If PagerBuddyControlHandle <> 0 Then
+                    If PagerBuddyControlHandle <> NULL_PTR Then
                         SendMessage PagerHandle, PGM_SETCHILD, 0, ByVal 0&
                         SetParent PagerBuddyControlHandle, PagerBuddyControlPrevParent
                     End If
@@ -792,9 +834,9 @@ If PagerDesignMode = False Then
                 If ControlIsValid(ControlEnum, Handle) = True Then
                     CompareName = ProperControlName(ControlEnum)
                     If CompareName = Value And Not CompareName = vbNullString Then
-                        Success = CBool(Handle <> 0)
+                        Success = CBool(Handle <> NULL_PTR)
                         If Success = True Then
-                            If PagerBuddyControlHandle <> 0 Then
+                            If PagerBuddyControlHandle <> NULL_PTR Then
                                 SendMessage PagerHandle, PGM_SETCHILD, 0, ByVal 0&
                                 SetParent PagerBuddyControlHandle, PagerBuddyControlPrevParent
                             End If
@@ -812,13 +854,13 @@ If PagerDesignMode = False Then
         End If
         On Error GoTo 0
         If Success = False Then
-            If PagerBuddyControlHandle <> 0 Then
+            If PagerBuddyControlHandle <> NULL_PTR Then
                 SendMessage PagerHandle, PGM_SETCHILD, 0, ByVal 0&
                 SetParent PagerBuddyControlHandle, PagerBuddyControlPrevParent
-                PagerBuddyControlHandle = 0
-                PagerBuddyControlPrevParent = 0
+                PagerBuddyControlHandle = NULL_PTR
+                PagerBuddyControlPrevParent = NULL_PTR
             End If
-            PagerBuddyObjectPointer = 0
+            PagerBuddyObjectPointer = NULL_PTR
             PropBuddyName = "(None)"
         End If
     End If
@@ -840,7 +882,7 @@ Select Case Value
     Case Else
         Err.Raise 380
 End Select
-If PagerHandle <> 0 Then Call ReCreatePager
+If PagerHandle <> NULL_PTR Then Call ReCreatePager
 UserControl.PropertyChanged "Orientation"
 End Property
 
@@ -865,7 +907,7 @@ ErrValue = Err.Number
 On Error GoTo 0
 If IntValue >= 0 And ErrValue = 0 Then
     PropBorderWidth = IntValue
-    If PagerHandle <> 0 Then
+    If PagerHandle <> NULL_PTR Then
         SendMessage PagerHandle, PGM_SETBORDER, 0, ByVal PropBorderWidth
         Me.Refresh
     End If
@@ -887,7 +929,7 @@ End Property
 
 Public Property Let AutoScroll(ByVal Value As Boolean)
 PropAutoScroll = Value
-If PagerHandle <> 0 Then
+If PagerHandle <> NULL_PTR Then
     Dim dwStyle As Long
     dwStyle = GetWindowLong(PagerHandle, GWL_STYLE)
     If PropAutoScroll = True Then
@@ -902,7 +944,7 @@ End Property
 
 Public Property Get ButtonSize() As Single
 Attribute ButtonSize.VB_Description = "Returns/sets the current button size. A value of -1 indicates that the default system size will be used."
-If PagerHandle <> 0 And PagerDesignMode = False Then
+If PagerHandle <> NULL_PTR And PagerDesignMode = False Then
     Select Case PropOrientation
         Case PgrOrientationVertical
             ButtonSize = UserControl.ScaleY(SendMessage(PagerHandle, PGM_GETBUTTONSIZE, 0, ByVal 0&), vbPixels, vbContainerSize)
@@ -955,7 +997,7 @@ If (LngValue < 0 And Not LngValue = -1) Or ErrValue <> 0 Then
     End If
 Else
     PropButtonSize = LngValue
-    If PagerHandle <> 0 Then
+    If PagerHandle <> NULL_PTR Then
         If PropButtonSize = -1 Then
             ' By default, the pager control sets its button size to three-fourths of the width of the scroll bar.
             Const SM_CXVSCROLL As Long = 2, SM_CYHSCROLL As Long = 3
@@ -970,7 +1012,7 @@ Else
             ' There is a minimum size to the pager button, currently 12 pixels.
             ' However, this can change so you should not depend on this value.
             SendMessage PagerHandle, PGM_SETBUTTONSIZE, 0, ByVal PropButtonSize
-            PropButtonSize = SendMessage(PagerHandle, PGM_GETBUTTONSIZE, 0, ByVal 0&)
+            PropButtonSize = CLng(SendMessage(PagerHandle, PGM_GETBUTTONSIZE, 0, ByVal 0&))
         End If
     End If
 End If
@@ -978,7 +1020,7 @@ UserControl.PropertyChanged "ButtonSize"
 End Property
 
 Private Sub CreatePager()
-If PagerHandle <> 0 Then Exit Sub
+If PagerHandle <> NULL_PTR Then Exit Sub
 Dim dwStyle As Long, dwExStyle As Long
 dwStyle = WS_CHILD Or WS_VISIBLE
 If PropRightToLeft = True And PropRightToLeftLayout = True Then dwExStyle = dwExStyle Or WS_EX_LAYOUTRTL
@@ -990,15 +1032,15 @@ Select Case PropOrientation
         dwStyle = dwStyle Or PGS_HORZ
 End Select
 If PropAutoScroll = True Then dwStyle = dwStyle Or PGS_AUTOSCROLL
-PagerHandle = CreateWindowEx(dwExStyle, StrPtr("SysPager"), 0, dwStyle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, 0, App.hInstance, ByVal 0&)
-If PagerHandle <> 0 Then
+PagerHandle = CreateWindowEx(dwExStyle, StrPtr("SysPager"), NULL_PTR, dwStyle, 0, 0, UserControl.ScaleWidth, UserControl.ScaleHeight, UserControl.hWnd, NULL_PTR, App.hInstance, ByVal NULL_PTR)
+If PagerHandle <> NULL_PTR Then
     SendMessage PagerHandle, PGM_FORWARDMOUSE, 1, ByVal 0&
     SendMessage PagerHandle, PGM_SETBORDER, 0, ByVal PropBorderWidth
     If Not PropButtonSize = -1 Then SendMessage PagerHandle, PGM_SETBUTTONSIZE, 0, ByVal PropButtonSize
 End If
 Me.BackColor = PropBackColor
 If PagerDesignMode = False Then
-    If PagerHandle <> 0 Then Call ComCtlsSetSubclass(PagerHandle, Me, 1)
+    If PagerHandle <> NULL_PTR Then Call ComCtlsSetSubclass(PagerHandle, Me, 1)
     Call ComCtlsSetSubclass(UserControl.hWnd, Me, 2)
 End If
 End Sub
@@ -1007,17 +1049,17 @@ Private Sub ReCreatePager()
 If PagerDesignMode = False Then
     Dim Locked As Boolean
     Locked = CBool(LockWindowUpdate(UserControl.hWnd) <> 0)
-    If PagerHandle <> 0 And PagerBuddyControlHandle <> 0 Then
+    If PagerHandle <> NULL_PTR And PagerBuddyControlHandle <> NULL_PTR Then
         SendMessage PagerHandle, PGM_SETCHILD, 0, ByVal 0&
         SetParent PagerBuddyControlHandle, PagerBuddyControlPrevParent
-        PagerBuddyControlHandle = 0
-        PagerBuddyControlPrevParent = 0
+        PagerBuddyControlHandle = NULL_PTR
+        PagerBuddyControlPrevParent = NULL_PTR
     End If
     Call DestroyPager
     Call CreatePager
     Call UserControl_Resize
     If Not PropBuddyControl Is Nothing Then Set Me.BuddyControl = PropBuddyControl
-    If Locked = True Then LockWindowUpdate 0
+    If Locked = True Then LockWindowUpdate NULL_PTR
     Me.Refresh
 Else
     Call DestroyPager
@@ -1027,38 +1069,38 @@ End If
 End Sub
 
 Private Sub DestroyPager()
-If PagerHandle = 0 Then Exit Sub
+If PagerHandle = NULL_PTR Then Exit Sub
 Call ComCtlsRemoveSubclass(PagerHandle)
 Call ComCtlsRemoveSubclass(UserControl.hWnd)
-If PagerBuddyControlHandle <> 0 Then
+If PagerBuddyControlHandle <> NULL_PTR Then
     SendMessage PagerHandle, PGM_SETCHILD, 0, ByVal 0&
     SetParent PagerBuddyControlHandle, PagerBuddyControlPrevParent
-    PagerBuddyControlHandle = 0
-    PagerBuddyControlPrevParent = 0
+    PagerBuddyControlHandle = NULL_PTR
+    PagerBuddyControlPrevParent = NULL_PTR
 End If
 ShowWindow PagerHandle, SW_HIDE
-SetParent PagerHandle, 0
+SetParent PagerHandle, NULL_PTR
 DestroyWindow PagerHandle
-PagerHandle = 0
+PagerHandle = NULL_PTR
 End Sub
 
 Public Sub Refresh()
 Attribute Refresh.VB_Description = "Forces a complete repaint of a object."
 Attribute Refresh.VB_UserMemId = -550
 UserControl.Refresh
-RedrawWindow UserControl.hWnd, 0, 0, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
+RedrawWindow UserControl.hWnd, NULL_PTR, NULL_PTR, RDW_UPDATENOW Or RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN
 End Sub
 
 Public Sub ReCalcSize()
 Attribute ReCalcSize.VB_Description = "Forces the pager control to recalculate the size of the buddy control."
-If PagerHandle <> 0 Then SendMessage PagerHandle, PGM_RECALCSIZE, 0, ByVal 0&
+If PagerHandle <> NULL_PTR Then SendMessage PagerHandle, PGM_RECALCSIZE, 0, ByVal 0&
 End Sub
 
 Public Function GetButtonState(ByVal Button As PgrButtonConstants) As PgrButtonStateConstants
 Attribute GetButtonState.VB_Description = "Retrieves the state of the specified button. The return value can be a combination of values using a bitwise OR."
 Select Case Button
     Case PgrButtonTopOrLeft, PgrButtonBottomOrRight
-        If PagerHandle <> 0 Then GetButtonState = SendMessage(PagerHandle, PGM_GETBUTTONSTATE, 0, ByVal CLng(Button))
+        If PagerHandle <> NULL_PTR Then GetButtonState = CLng(SendMessage(PagerHandle, PGM_GETBUTTONSTATE, 0, ByVal CLng(Button)))
     Case Else
         Err.Raise 380
 End Select
@@ -1068,7 +1110,7 @@ Public Property Get Value() As Single
 Attribute Value.VB_Description = "Returns/sets the current position."
 Attribute Value.VB_UserMemId = 0
 Attribute Value.VB_MemberFlags = "400"
-If PagerHandle <> 0 Then
+If PagerHandle <> NULL_PTR Then
     Select Case PropOrientation
         Case PgrOrientationVertical
             Value = UserControl.ScaleY(SendMessage(PagerHandle, PGM_GETPOS, 0, ByVal 0&), vbPixels, vbContainerPosition)
@@ -1091,19 +1133,19 @@ End Select
 If Err.Number <> 0 Then LngValue = 0
 On Error GoTo 0
 If LngValue >= 0 Then
-    If PagerHandle <> 0 Then SendMessage PagerHandle, PGM_SETPOS, 0, ByVal LngValue
+    If PagerHandle <> NULL_PTR Then SendMessage PagerHandle, PGM_SETPOS, 0, ByVal LngValue
 Else
     Err.Raise 380
 End If
 End Property
 
-Private Function ControlIsValid(ByVal Control As Object, ByRef Handle As Long) As Boolean
+Private Function ControlIsValid(ByVal Control As Object, ByRef Handle As LongPtr) As Boolean
 On Error Resume Next
 Dim Container As Object
 Set Container = Control.Container
 ControlIsValid = CBool(Err.Number = 0 And Not Control Is Extender)
 On Error GoTo 0
-Handle = 0
+Handle = NULL_PTR
 If ControlIsValid = True Then
     On Error Resume Next
     Handle = Control.hWndUserControl
@@ -1113,10 +1155,14 @@ End If
 End Function
 
 Private Function PropBuddyControl() As Object
-If PagerBuddyObjectPointer <> 0 Then Set PropBuddyControl = PtrToObj(PagerBuddyObjectPointer)
+If PagerBuddyObjectPointer <> NULL_PTR Then Set PropBuddyControl = PtrToObj(PagerBuddyObjectPointer)
 End Function
 
+#If VBA7 Then
+Private Function ISubclass_Message(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
+#Else
 Private Function ISubclass_Message(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long, ByVal dwRefData As Long) As Long
+#End If
 Select Case dwRefData
     Case 1
         ISubclass_Message = WindowProcControl(hWnd, wMsg, wParam, lParam)
@@ -1125,12 +1171,12 @@ Select Case dwRefData
 End Select
 End Function
 
-Private Function WindowProcControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_SETCURSOR
-        If LoWord(lParam) = HTCLIENT Then
+        If LoWord(CLng(lParam)) = HTCLIENT Then
             If MousePointerID(PropMousePointer) <> 0 Then
-                SetCursor LoadCursor(0, MousePointerID(PropMousePointer))
+                SetCursor LoadCursor(NULL_PTR, MousePointerID(PropMousePointer))
                 WindowProcControl = 1
                 Exit Function
             ElseIf PropMousePointer = 99 Then
@@ -1188,7 +1234,7 @@ Select Case wMsg
 End Select
 End Function
 
-Private Function WindowProcUserControl(ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function WindowProcUserControl(ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 Select Case wMsg
     Case WM_NOTIFY
         Dim NM As NMHDR

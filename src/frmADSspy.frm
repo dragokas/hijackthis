@@ -1,13 +1,13 @@
 VERSION 5.00
 Begin VB.Form frmADSspy 
    Caption         =   "ADS Spy [] fork - written by Merijn"
-   ClientHeight    =   6768
+   ClientHeight    =   6765
    ClientLeft      =   60
-   ClientTop       =   348
+   ClientTop       =   345
    ClientWidth     =   8340
    BeginProperty Font 
       Name            =   "Tahoma"
-      Size            =   8.4
+      Size            =   8.25
       Charset         =   204
       Weight          =   400
       Underline       =   0   'False
@@ -17,14 +17,14 @@ Begin VB.Form frmADSspy
    Icon            =   "frmADSspy.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   ScaleHeight     =   6768
+   ScaleHeight     =   6765
    ScaleWidth      =   8340
    Begin VB.PictureBox picStatus 
       AutoRedraw      =   -1  'True
       Height          =   255
       Left            =   120
-      ScaleHeight     =   204
-      ScaleWidth      =   6684
+      ScaleHeight     =   195
+      ScaleWidth      =   6675
       TabIndex        =   17
       Top             =   6480
       Width           =   6735
@@ -360,7 +360,7 @@ Private Declare Function GetDriveType Lib "kernel32.dll" Alias "GetDriveTypeA" (
 Private Declare Function DeleteFile Lib "kernel32.dll" Alias "DeleteFileW" (ByVal lpFileName As Long) As Long
 'Private Declare Function SHFileExists Lib "shell32.dll" Alias "#45" (ByVal szPath As String) As Long
 'Private Declare Sub Sleep Lib "kernel32.dll" (ByVal dwMilliseconds As Long)
-Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" (ByVal hwnd As Long, ByVal lpOperation As String, ByVal lpFile As String, ByVal lpParameters As String, ByVal lpDirectory As String, ByVal nShowCmd As Long) As Long
+Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" (ByVal hWnd As Long, ByVal lpOperation As String, ByVal lpFile As String, ByVal lpParameters As String, ByVal lpDirectory As String, ByVal nShowCmd As Long) As Long
 
 Private Declare Function RegCloseKey Lib "Advapi32.dll" (ByVal hKey As Long) As Long
 Private Declare Function RegOpenKeyEx Lib "Advapi32.dll" Alias "RegOpenKeyExA" (ByVal hKey As Long, ByVal lpSubKey As String, ByVal ulOptions As Long, ByVal samDesired As Long, phkResult As Long) As Long
@@ -377,7 +377,7 @@ Private Declare Function RegQueryValueEx Lib "Advapi32.dll" Alias "RegQueryValue
 'Private Declare Function lstrcat Lib "kernel32.dll" Alias "lstrcatA" (ByVal lpString1 As String, ByVal lpString2 As String) As Long
 Private Declare Function SHBrowseForFolder Lib "shell32.dll" Alias "SHBrowseForFolderW" (lpbi As BrowseInfo) As Long
 'Private Declare Function SHGetPathFromIDList Lib "shell32.dll" Alias "SHGetPathFromIDListW" (ByVal pidList As Long, ByVal lpBuffer As Long) As Long
-Private Declare Function SetWindowTheme Lib "UxTheme.dll" (ByVal hwnd As Long, ByVal pszSubAppName As Long, ByVal pszSubIdList As Long) As Long
+Private Declare Function SetWindowTheme Lib "UxTheme.dll" (ByVal hWnd As Long, ByVal pszSubAppName As Long, ByVal pszSubIdList As Long) As Long
 'Private Declare Function lstrlen Lib "kernel32.dll" Alias "lstrlenW" (ByVal lpString As Long) As Long
 'Private Declare Function lstrcpy Lib "kernel32.dll" Alias "lstrcpyW" (ByVal lpStrDest As Long, ByVal lpStrSrc As Long) As Long
 
@@ -477,7 +477,7 @@ Private Sub cmdScanFolder_Click()
     Dim sPath$, sNTFSDrives$(), i&
     'Select a folder to scan:
     'sPath = BrowseForFolder(Translate(194))
-    sPath = OpenFolderDialog(Translate(194), Desktop, Me.hwnd)
+    sPath = OpenFolderDialog(Translate(194), Desktop, Me.hWnd)
     If sPath <> vbNullString Then
         sNTFSDrives = Split(GetNTFSDrives(), "|")
         For i = 0 To UBound(sNTFSDrives)
@@ -562,16 +562,16 @@ Private Sub Form_Load()
         For Each Ctl In Me.Controls
             If TypeName(Ctl) = "OptionButton" Then
                 Set OptB = Ctl
-                SetWindowTheme OptB.hwnd, StrPtr(" "), StrPtr(" ")
+                SetWindowTheme OptB.hWnd, StrPtr(" "), StrPtr(" ")
             ElseIf TypeName(Ctl) = "CommandButton" Then
                 Set Btn = Ctl
-                SetWindowTheme Btn.hwnd, StrPtr(" "), StrPtr(" ")
+                SetWindowTheme Btn.hWnd, StrPtr(" "), StrPtr(" ")
             End If
         Next
         Set OptB = Nothing
     End If
     
-    SubClassTextbox Me.txtScanFolder.hwnd, True
+    SubClassTextbox Me.txtScanFolder.hWnd, True
 End Sub
 
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
@@ -583,7 +583,7 @@ Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
         Cancel = True 'user click -> don't unload
     Else
         bQueryUnload = True
-        SubClassTextbox Me.txtScanFolder.hwnd, False
+        SubClassTextbox Me.txtScanFolder.hWnd, False
     End If
 End Sub
 
@@ -645,7 +645,7 @@ Private Sub cmdViewEdit_Click()
     sStream = lstADSFound.List(lstADSFound.ListIndex)
     sStream = Replace$(sStream, " : ", ":")
     sStream = Left$(sStream, InStr(sStream, "  (") - 1)
-    ShellExecute Me.hwnd, "open", sWordpadPath, """" & PathX64(sStream) & """", vbNullString, 1
+    ShellExecute Me.hWnd, "open", sWordpadPath, """" & PathX64(sStream) & """", vbNullString, 1
     'Ready.
     status Translate(209), "2"
 End Sub
@@ -667,7 +667,7 @@ Private Sub cmdViewSave_Click()
     sFilename = SaveFileDialog(Translate(2202), AppPath(), GetFileNameAndExt(sStream) & "." & GetStreamName(sStream) & ".bin", _
         Translate(2203) & " (*.bin)|*.bin|" & _
         Translate(2204) & " (*.txt)|*.txt|" & _
-        Translate(2205) & " (*.*)|*.*", Me.hwnd)
+        Translate(2205) & " (*.*)|*.*", Me.hWnd)
     
     If Len(sFilename) <> 0 Then
         'Note: FileCopyW is not supported here
@@ -711,8 +711,8 @@ Private Sub cmdScan_Click()
     bCalcHash = IIf(chkCalcMD5.Value = 1, True, False)
     
     'Abort scan
-    cmdScan.Caption = Translate(2208)
-    cmdScan.Tag = "2"
+    cmdScan.Caption = Translate(2208): cmdScan.Tag = "2"
+    
     If bQuickScan Then
         If InStr(1, GetNTFSDrives, Left$(sWinDir, 2), vbTextCompare) = 0 Then
             '"Unable to scan the Windows folder, because the volume " & _
@@ -766,8 +766,7 @@ Private Sub cmdScan_Click()
     If bQueryUnload Then Exit Sub
     
     'Scan the system for alternate data streams
-    cmdScan.Caption = Translate(2210)
-    cmdScan.Tag = "1"
+    cmdScan.Caption = Translate(2210): cmdScan.Tag = "1"
     lTicks = GetTickCount() - lTicks
     If IsRunningInIDE() Then
         If bAbortScanNow Then
@@ -1006,7 +1005,7 @@ Private Sub lstADSFound_KeyDown(KeyCode As Integer, Shift As Integer)
     If KeyCode = 27 Then bAbortScanNow = True: Me.Hide
 End Sub
 
-Private Sub lstADSFound_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub lstADSFound_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     If Button = 2 And lstADSFound.ListCount > 0 Then PopupMenu mnuPopup
 End Sub
 
@@ -1019,7 +1018,7 @@ Private Sub mnuPopupSave_Click()
     'Save scan results to disk...
     sFilename = SaveFileDialog(Translate(203), AppPath(), "Streams.txt", _
         Translate(2204) & " (*.txt)|*.txt|" & _
-        Translate(2205) & " (*.*)|*.*", Me.hwnd)
+        Translate(2205) & " (*.*)|*.*", Me.hWnd)
         
     If Len(sFilename) = 0 Then Exit Sub
     
@@ -1151,7 +1150,7 @@ End Function
 Private Function BrowseForFolder$(sPrompt$)
     Dim uBI As BrowseInfo, lIDList&, sPath$
     With uBI
-        .hWndOwner = Me.hwnd
+        .hWndOwner = Me.hWnd
         .lpszTitle = StrPtr(sPrompt)
         .ulFlags = BIF_RETURNONLYFSDIRS
     End With

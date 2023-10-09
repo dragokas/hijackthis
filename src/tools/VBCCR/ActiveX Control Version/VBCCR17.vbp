@@ -1,6 +1,6 @@
 Type=Control
 Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#C:\Windows\SysWOW64\stdole2.tlb#OLE Automation
-Reference=*\G{5A2B9220-BF07-11E6-9598-0800200C9A66}#1.0#0#..\..\..\Sources\CommonControls\Krool\ComCtlsDemo\OLEGuids\OLEGuids.tlb#OLE Guid and interface definitions
+Reference=*\G{5A2B9220-BF07-11E6-9598-0800200C9A66}#1.0#0#..\Standard EXE Version\OLEGuids\OLEGuids.tlb#OLE Guid and interface definitions
 Module=Common; Common\Common.bas
 Module=VisualStyles; Common\VisualStyles.bas
 Class=CommonDialog; Builds\CommonDialog.cls
@@ -118,7 +118,7 @@ Description="VB Common Controls Replacement 1.7 Library"
 CompatibleMode="0"
 MajorVer=1
 MinorVer=7
-RevisionVer=55
+RevisionVer=69
 AutoIncrementVer=0
 ServerSupportFiles=0
 CondComp="VBCCR_OCX = 1"

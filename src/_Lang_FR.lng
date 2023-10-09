@@ -18,7 +18,7 @@
 ;
 0001=Bienvenue dans HiJackThis+
      Ce programme va générer un rapport d'éléments non usuels (modifications du registre,
-     de fichiers, etc...) des zones les plus vulnérables du Système d'exploitation, souvent modifiées par des logiciels officiels ou malveillants.
+     de fichiers, etc...) des zones les plus vulnérables du Système d'exploitation, souvent modifiées par des logiciels officiels ou malveillants
 
 0002=HiJackThis est déja en cours d'exécution.
      Voulez-vous vraiment lancer une autre copie?
@@ -39,7 +39,6 @@
 0015=   Autres actions
 0016=Aide
 0017=Retour
-0018=Paramètres
 0019=Rapport
 0020=Ajouter les éléments cochés à la liste 'Ignorer'
 0021=Modules chargés
@@ -100,6 +99,10 @@
 1070=Ligne de commande
 1080=Taille de l'adresse
 1081=caractères
+;main menu
+1088=Paramètres
+;scan results menu
+1089=Paramètres
 ;
 ; ============== EULA ============
 ;
@@ -129,6 +132,9 @@ et enregistrer un rapport
 1117=Ne rien faire, démarrer simplement le programme
 1118=Ne plus afficher ce menu au démarrage du programme
 1119=Langue:
+1120=Tutoriel en ligne
+1121=Manuel hors ligne
+1122=Forums de guérison
 ;
 ; ================ Context menu ==============
 ;
@@ -199,7 +205,7 @@ et enregistrer un rapport
 1223=Néerlandais [obsolète]
 1224=Vérifier les mises à jour
 1225=A propos du programme...
-1226=Support
+1226=Rapport sur un bug
 1227=Descriptions de section
 1228=Touches de ligne de commande
 1229=Registre
@@ -375,7 +381,7 @@ et enregistrer un rapport
      Systèmes compatibles
      -------------------------
      
-      * Microsoft™ Windows™ 11 / 10 / 8.1 / 8 / 7 / Vista / XP / 2000 et les éditions Serveurs en 32 et 64-bits.
+      * Microsoft™ Windows™ 11 / 10 / 8.1 / 8 / 7 / Vista / XP et les éditions Serveurs en 32 et 64-bits.
 
 
      Auteurs et copyrights
@@ -798,8 +804,11 @@ HiJackThis+ est une modification du programme HiJackThis original de Trend Micro
      Voulez-vous créer un nouveau fichier hosts par défaut ?
 0281=Aucun fichier hosts trouvé.
 0282=Le fichier hosts est verrouillé en lecture et ne peut pas être modifié.
-     Assurez-vous d'avoir les droits administratifs pour modifier le fichier hosts et qu'aucun programme ne le protège contre toute modification.
-0303=HiJackThis n'a pas pu écrire les modifications sélectionnées dans votre fichier hosts. Un autre programme peut en refuser l'accès ou votre compte d'utilisateur peut ne pas disposer de droits suffisants pour y accéder.
+0284=Assurez-vous d'avoir les droits administratifs pour modifier le fichier hosts et qu'aucun programme ne le protège contre toute modification.
+0300=Réinitialiser
+0301=Êtes-vous vraiment sûr de réinitialiser le contenu du fichier hosts aux valeurs par défaut?
+0302=Rafraîchir la liste
+0303=N'a pas pu écrire les modifications sélectionnées dans votre fichier hosts. Un autre programme peut en refuser l'accès ou votre compte d'utilisateur peut ne pas disposer de droits suffisants pour y accéder.
 ;
 ; =========== Digital signature checker ==========
 ;
@@ -1313,7 +1322,7 @@ HiJackThis+ est une modification du programme HiJackThis original de Trend Micro
       - pour (Hidden): affiche le compte d'utilisateur à partir de l'écran de connexion.
       - pour (RDP Group): annule l'appartenance de l'utilisateur au groupe RDP.
       - pour (Missing): l'entrée SID de l'utilisateur sera supprimée du registre. La branche HKEY_USERS\<SID> n'est pas traitée.
-      - pour (Port): désactive la règle de pare-feu qui autorise les connexions entrantes au port 3389 de svchost.exe.
+      - pour (Port): désactive la règle de pare-feu qui autorise les connexions entrantes au port 3389.
       - pour (Other): l'entrée de registre est définie sur les valeurs par défaut.
 ; [O28]
 0437=
@@ -1867,4 +1876,4 @@ HiJackThis+ est une modification du programme HiJackThis original de Trend Micro
 ; ========= Empty ========
 ;
 ; (2500 - ...)
-;                                                                   
+;                                                                    

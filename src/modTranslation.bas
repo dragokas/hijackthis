@@ -398,17 +398,21 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     Case "1052": .FraFixing.Caption = Translation
                     Case "1053": .FraInterface.Caption = Translation
                     
+                    'Main menu buttons
                     Case "1110": .fraN00b.Caption = Translation
                     Case "0001": .lblInfo(0).Caption = Translation
                     Case "1111": .lblInfo(4).Caption = Translation
                     Case "1112": .cmdN00bLog.Caption = Translation
                     Case "1113": .cmdN00bScan.Caption = Translation
                     Case "1114": .cmdN00bBackups.Caption = Translation
-                    Case "1115": .cmdN00bTools.Caption = Translation
+                    Case "1115": .cmdFixing.Caption = Translation
                     Case "1116": .cmdN00bHJTQuickStart.Caption = Translation
                     'Case "1117": .cmdN00bClose.Caption = Translation
                     Case "1118": .chkSkipIntroFrame.Caption = Translation
                     Case "1119": .lblInfo(9).Caption = Translation
+                    Case "1120": .mnuSupportOnline.Caption = Translation
+                    Case "1121": .mnuSupportOffline.Caption = Translation
+                    Case "1122": .mnuSupportCure.Caption = Translation
                     
                     '; ============ Scan results window =====================
                     
@@ -424,9 +428,8 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     Case "0015": .fraOther.Caption = Translation
                     Case "0016": If .cmdHelp.Tag = "0" Then .cmdHelp.Caption = Translation 'Help
                     Case "0017": If .cmdHelp.Tag = "1" Then .cmdHelp.Caption = Translation 'Back
-                    Case "0018":
-                        If .cmdConfig.Tag = "0" Then .cmdConfig.Caption = Translation 'Settings
-                        .cmdSettings.Caption = Translation
+                    Case "1088": .cmdSettings.Caption = Translation
+                    Case "1089": If .cmdConfig.Tag = "0" Then .cmdConfig.Caption = Translation 'Settings
                     Case "0019": If .cmdConfig.Tag = "1" Then .cmdConfig.Caption = Translation 'Report
                     Case "0020": .cmdSaveDef.Caption = Translation
                     Case "1000": .cmdAnalyze.Caption = Translation
@@ -486,7 +489,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     
                     Case "1224": SetMenuCaptionByMenu .mnuHelpUpdate, Translation
                     Case "1225": SetMenuCaptionByMenu .mnuHelpAbout, Translation
-                    Case "1226": SetMenuCaptionByMenu .mnuHelpSupport, Translation
+                    Case "1226": SetMenuCaptionByMenu .mnuHelpReportBug, Translation
                     Case "1227": SetMenuCaptionByMenu .mnuHelpManualSections, Translation
                     Case "1228": SetMenuCaptionByMenu .mnuHelpManualCmdKeys, Translation
                     Case "1229": SetMenuCaptionByMenu .mnuToolsReg, Translation
@@ -654,8 +657,9 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     Case "0272": .cmdHostsManDel.Caption = Translation
                     Case "0273": .cmdHostsManToggle.Caption = Translation
                     Case "0274": .cmdHostsManOpen.Caption = Translation
-                    Case "0275": .cmdHostsManBack.Caption = Translation
                     Case "0276": .lblHostsTip2.Caption = Translation
+                    Case "0300": .cmdHostsManReset.Caption = Translation
+                    Case "0302": .cmdHostsManRefreshList.Caption = Translation
                     
                     '; === Other ===
                     'Case "9999": SetCharSet CInt(Translation)
@@ -1109,7 +1113,7 @@ Public Function IsFormForeground(frm As Form) As Boolean
     Dim hActiveWnd As Long
     If IsFormInit(frm) Then
         hActiveWnd = GetForegroundWindow()
-        If hActiveWnd = frm.hwnd Then IsFormForeground = True
+        If hActiveWnd = frm.hWnd Then IsFormForeground = True
     End If
 End Function
 
