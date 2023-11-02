@@ -1,4 +1,5 @@
 VERSION 5.00
+Object = "{317589D1-37C8-47D9-B5B0-1C995741F353}#1.0#0"; "VBCCR17.OCX"
 Begin VB.Form frmUnlockRegKey 
    Caption         =   "Registry Key Unlocker"
    ClientHeight    =   3240
@@ -10,7 +11,7 @@ Begin VB.Form frmUnlockRegKey
    LinkTopic       =   "Form1"
    ScaleHeight     =   3240
    ScaleWidth      =   8448
-   Begin VB.CommandButton cmdJump 
+   Begin VBCCR17.CommandButtonW cmdJump 
       Caption         =   "Open in Regedit"
       Height          =   450
       Left            =   6600
@@ -18,7 +19,7 @@ Begin VB.Form frmUnlockRegKey
       Top             =   60
       Width           =   1692
    End
-   Begin VB.CommandButton cmdGo 
+   Begin VBCCR17.CommandButtonW cmdGo 
       Caption         =   "Go"
       Height          =   495
       Left            =   3960
@@ -26,7 +27,7 @@ Begin VB.Form frmUnlockRegKey
       Top             =   2520
       Width           =   1575
    End
-   Begin VB.CheckBox chkRecur 
+   Begin VBCCR17.CheckBoxW chkRecur 
       Caption         =   "Recursively (process keys and all subkeys)"
       Height          =   495
       Left            =   240
@@ -35,7 +36,7 @@ Begin VB.Form frmUnlockRegKey
       Value           =   1  'Checked
       Width           =   3615
    End
-   Begin VB.TextBox txtKeys 
+   Begin VBCCR17.TextBoxW txtKeys 
       Height          =   1815
       Left            =   240
       MultiLine       =   -1  'True
@@ -44,7 +45,7 @@ Begin VB.Form frmUnlockRegKey
       Top             =   600
       Width           =   8055
    End
-   Begin VB.Label lblWhatToDo 
+   Begin VBCCR17.LabelW lblWhatToDo 
       Caption         =   "Enter Registry Key(s) to unlock and reset access:"
       Height          =   252
       Left            =   240

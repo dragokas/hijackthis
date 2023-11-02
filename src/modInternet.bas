@@ -225,7 +225,7 @@ Public Sub CheckForUpdate(bSilentIfNoUpdates As Boolean, bSilentReplace As Boole
             'Unable to connect to the Internet. Do you want to open download page?
             If MsgBoxW(Translate(1005) & vbCrLf & _
                 "(Code: " & lReturnCode & ", msg: " & sErrorMsg & ")" & vbCrLf & vbCrLf & _
-                Translate(1015), vbYesNo Or vbExclamation, "HiJackThis") = vbNo Then
+                Translate(1015), vbYesNo Or vbExclamation, g_AppName) = vbNo Then
                     Exit Sub
             End If
         End If
@@ -236,19 +236,19 @@ Public Sub CheckForUpdate(bSilentIfNoUpdates As Boolean, bSilentReplace As Boole
         If ConvertVersionToNumber(sThisVersion) >= ConvertVersionToNumber(sNewVersion) Then
             If Not bSilentIfNoUpdates Then
                 'You have the most fresh version.
-                MsgBoxW Translate(1013), vbInformation, "HiJackThis"
+                MsgBoxW Translate(1013), vbInformation, g_AppName
             End If
             Exit Sub
         Else
             If Not bSilentIfNoUpdates Then
                 If bSilentReplace Then
                     'Update is available. Do you want to close and update the program?
-                    If MsgBoxW(Translate(1014) & vbCrLf & Translate(1028), vbYesNo Or vbInformation, "HiJackThis") = vbNo Then
+                    If MsgBoxW(Translate(1014) & vbCrLf & Translate(1028), vbYesNo Or vbInformation, g_AppName) = vbNo Then
                         Exit Sub
                     End If
                 Else
                     'Update is available. Do you want to open download page?
-                    If MsgBoxW(Translate(1014) & vbCrLf & Translate(1015), vbYesNo Or vbInformation, "HiJackThis") = vbNo Then
+                    If MsgBoxW(Translate(1014) & vbCrLf & Translate(1015), vbYesNo Or vbInformation, g_AppName) = vbNo Then
                         Exit Sub
                     End If
                 End If
@@ -257,9 +257,9 @@ Public Sub CheckForUpdate(bSilentIfNoUpdates As Boolean, bSilentReplace As Boole
     End If
     
     If bUseTestVersion Then
-        sUpdateUrl = "https://dragokas.com/tools/HiJackThis_test.zip"
+        sUpdateUrl = "https://dragokas.com/tools/" & Caes_Decode("IlOhlvawzLtQDTW.aR[") 'HiJackThis_test.zip
     Else
-        sUpdateUrl = "https://dragokas.com/tools/HiJackThis.zip"
+        sUpdateUrl = "https://dragokas.com/tools/" & Caes_Decode("IlOhlvawzL.WHQ") 'HiJackThis.zip"
     End If
     
     Dbg "Query ZIP update URL: " & sUpdateUrl
@@ -560,38 +560,40 @@ Public Sub AddTriageObj(sName$, sType$, sFile$, Optional sCLSID$, Optional sCode
 End Sub
 
 Public Function GetTriage$()
-    Dim hInternet&, hConnect&, sURL$, sUserAgent$, sPost$
-    Dim hRequest&, sResponse$, sBuffer$, lBufferLen&, sHeaders$
-    sURL = "https://www.spywareguide.com/report/triage.php"
-    sUserAgent = "StartupList v" & AppVerString
-    sPost = mid$(URLEncode(Join(sTriageObj, "&")), 2)
-    If sPost = vbNullString Then Exit Function
-    sHeaders = "Accept: text/html,text/plain" & vbCrLf & _
-               "Accept-Charset: ISO-8859-1,utf-8" & vbCrLf & _
-               "Content-Type: application/x-www-form-urlencoded" & vbCrLf & _
-               "Content-Length: " & Len(sPost)
-    
-    hInternet = InternetOpen(StrPtr(sUserAgent), INTERNET_OPEN_TYPE_DIRECT, 0&, 0&, 0)
-    If hInternet = 0 Then Exit Function
+'Dead service!
 
-    hConnect = InternetConnect(hInternet, StrPtr("www.spywareguide.com"), 80, 0&, 0&, INTERNET_SERVICE_HTTP, 0, 0)
-    If hConnect > 0 Then
-        hRequest = HttpOpenRequest(hConnect, StrPtr("POST"), StrPtr("/report/triage.php"), StrPtr("HTTP/1.1"), 0&, ByVal 0, INTERNET_FLAG_RELOAD, 0)
-        If hRequest > 0 Then
-            HttpSendRequest hRequest, StrPtr(sHeaders), Len(sHeaders), ByVal StrPtr(sPost), Len(sPost)
-            sResponse = vbNullString
-            Do
-                sBuffer = Space$(1024)
-                InternetReadFileString hRequest, sBuffer, Len(sBuffer), lBufferLen
-                sBuffer = Left$(sBuffer, lBufferLen)
-                sResponse = sResponse & sBuffer
-            Loop Until lBufferLen = 0
-            GetTriage = sResponse
-            InternetCloseHandle hRequest
-        End If
-        InternetCloseHandle hConnect
-    End If
-    InternetCloseHandle hInternet
+'    Dim hInternet&, hConnect&, sURL$, sUserAgent$, sPost$
+'    Dim hRequest&, sResponse$, sBuffer$, lBufferLen&, sHeaders$
+'    sURL = "https://www.spywareguide.com/report/triage.php"
+'    sUserAgent = "StartupList v" & AppVerString
+'    sPost = mid$(URLEncode(Join(sTriageObj, "&")), 2)
+'    If sPost = vbNullString Then Exit Function
+'    sHeaders = "Accept: text/html,text/plain" & vbCrLf & _
+'               "Accept-Charset: ISO-8859-1,utf-8" & vbCrLf & _
+'               "Content-Type: application/x-www-form-urlencoded" & vbCrLf & _
+'               "Content-Length: " & Len(sPost)
+'
+'    hInternet = InternetOpen(StrPtr(sUserAgent), INTERNET_OPEN_TYPE_DIRECT, 0&, 0&, 0)
+'    If hInternet = 0 Then Exit Function
+'
+'    hConnect = InternetConnect(hInternet, StrPtr("www.spywareguide.com"), 80, 0&, 0&, INTERNET_SERVICE_HTTP, 0, 0)
+'    If hConnect > 0 Then
+'        hRequest = HttpOpenRequest(hConnect, StrPtr("POST"), StrPtr("/report/triage.php"), StrPtr("HTTP/1.1"), 0&, ByVal 0, INTERNET_FLAG_RELOAD, 0)
+'        If hRequest > 0 Then
+'            HttpSendRequest hRequest, StrPtr(sHeaders), Len(sHeaders), ByVal StrPtr(sPost), Len(sPost)
+'            sResponse = vbNullString
+'            Do
+'                sBuffer = Space$(1024)
+'                InternetReadFileString hRequest, sBuffer, Len(sBuffer), lBufferLen
+'                sBuffer = Left$(sBuffer, lBufferLen)
+'                sResponse = sResponse & sBuffer
+'            Loop Until lBufferLen = 0
+'            GetTriage = sResponse
+'            InternetCloseHandle hRequest
+'        End If
+'        InternetCloseHandle hConnect
+'    End If
+'    InternetCloseHandle hInternet
 End Function
 
 Public Function DownloadFile(sURL$, sTarget$, Optional bSilent As Boolean) As Boolean
@@ -817,7 +819,7 @@ Public Function DownloadAndUpdateSelf(ZipURL As String, bSilent As Boolean) As B
                 bDownloaded = True
             Else
                 If Not bSilent Then
-                    MsgBoxW "Cannot open file to write: " & ArcPath, vbExclamation, "HiJackThis"
+                    MsgBoxW "Cannot open file to write: " & ArcPath, vbExclamation, g_AppName
                 End If
             End If
         End If
@@ -872,7 +874,7 @@ Public Function DownloadAndUpdateSelf(ZipURL As String, bSilent As Boolean) As B
                         DownloadAndUpdateSelf = True
                     Else
                         If Not bSilent Then
-                            MsgBoxW "Cannot move updated file on self!", vbExclamation, "HiJackThis"
+                            MsgBoxW "Cannot move updated file on self!", vbExclamation, g_AppName
                         End If
                         'revert own filename
                         Call MoveFile(StrPtr(AppPath(True) & ".bak"), StrPtr(AppPath(True)))
@@ -880,17 +882,17 @@ Public Function DownloadAndUpdateSelf(ZipURL As String, bSilent As Boolean) As B
                 End If
             Else
                 If Not bSilent Then
-                    MsgBoxW "Unpacked file is damaged! Try update again.", vbExclamation, "HiJackThis"
+                    MsgBoxW "Unpacked file is damaged! Try update again.", vbExclamation, g_AppName
                 End If
             End If
         Else
             If Not bSilent Then
-                MsgBoxW "Cannot unpack the update! HiJackThis.exe is missing. Try again.", vbExclamation, "HiJackThis"
+                MsgBoxW "Cannot unpack the update! HiJackThis.exe is missing. Try again.", vbExclamation, g_AppName
             End If
         End If
     Else
         If Not bSilent Then
-            MsgBoxW "Failed to download the update! Try again.", vbExclamation, "HiJackThis"
+            MsgBoxW "Failed to download the update! Try again.", vbExclamation, g_AppName
         End If
     End If
     

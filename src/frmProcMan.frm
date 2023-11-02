@@ -1,13 +1,14 @@
 VERSION 5.00
+Object = "{317589D1-37C8-47D9-B5B0-1C995741F353}#1.0#0"; "VBCCR17.OCX"
 Begin VB.Form frmProcMan 
    Caption         =   "Process Manager"
-   ClientHeight    =   6672
+   ClientHeight    =   6675
    ClientLeft      =   60
    ClientTop       =   -240
-   ClientWidth     =   8616
+   ClientWidth     =   8610
    BeginProperty Font 
       Name            =   "Tahoma"
-      Size            =   8.4
+      Size            =   8.25
       Charset         =   204
       Weight          =   400
       Underline       =   0   'False
@@ -17,128 +18,149 @@ Begin VB.Form frmProcMan
    Icon            =   "frmProcMan.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   ScaleHeight     =   6672
-   ScaleWidth      =   8616
-   Begin VB.Frame fraProcessManager 
-      Caption         =   "Itty Bitty Process Manager v."
-      BeginProperty Font 
+   ScaleHeight     =   6675
+   ScaleWidth      =   8610
+   Begin VBCCR17.FrameW fraProcessManager 
+      Height          =   3975
+      Left            =   120
+      TabIndex        =   0
+      Top             =   120
+      Width           =   8415
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
          Name            =   "Tahoma"
-         Size            =   8.4
+         Size            =   8.25
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   3975
-      Left            =   120
-      TabIndex        =   0
-      Top             =   120
-      Width           =   8415
-      Begin VB.CommandButton cmdProcManRefresh 
-         Caption         =   "Re&fresh"
+      Caption         =   "Itty Bitty Process Manager v."
+      Begin VBCCR17.CommandButtonW cmdProcManRefresh 
          Height          =   495
          Left            =   1440
          TabIndex        =   7
          Top             =   3360
          Width           =   1215
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Re&fresh"
       End
-      Begin VB.CommandButton cmdProcManExit 
+      Begin VBCCR17.CommandButtonW cmdProcManExit 
          Cancel          =   -1  'True
-         Caption         =   "E&xit"
          Height          =   495
          Left            =   4440
          TabIndex        =   6
          Top             =   3360
          Width           =   1215
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "E&xit"
       End
-      Begin VB.CommandButton cmdProcManRun 
-         Caption         =   "&Run..."
+      Begin VBCCR17.CommandButtonW cmdProcManRun 
          Height          =   495
          Left            =   2760
          TabIndex        =   5
          Top             =   3360
          Width           =   1215
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "&Run..."
       End
-      Begin VB.CommandButton cmdProcManKill 
-         Caption         =   "&Kill process"
+      Begin VBCCR17.CommandButtonW cmdProcManKill 
          Height          =   495
          Left            =   120
          TabIndex        =   4
          Top             =   3360
          Width           =   1215
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "&Kill process"
       End
-      Begin VB.ListBox lstProcessManager 
+      Begin VBCCR17.ListBoxW lstProcessManager 
          Height          =   1185
-         IntegralHeight  =   0   'False
-         ItemData        =   "frmProcMan.frx":1CFA
          Left            =   120
-         List            =   "frmProcMan.frx":1CFC
-         MultiSelect     =   2  'Extended
          TabIndex        =   3
          Top             =   600
          Width           =   8175
+         _ExtentX        =   0
+         _ExtentY        =   0
+         IntegralHeight  =   0   'False
+         MultiSelect     =   2
       End
-      Begin VB.CheckBox chkProcManShowDLLs 
-         Caption         =   "Show &DLLs"
+      Begin VBCCR17.CheckBoxW chkProcManShowDLLs 
          Height          =   255
          Left            =   3480
          TabIndex        =   2
          Top             =   330
          Width           =   1935
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Show &DLLs"
       End
-      Begin VB.ListBox lstProcManDLLs 
+      Begin VBCCR17.ListBoxW lstProcManDLLs 
          Height          =   1140
-         IntegralHeight  =   0   'False
          Left            =   120
          TabIndex        =   1
          Top             =   2040
          Visible         =   0   'False
          Width           =   8175
+         _ExtentX        =   0
+         _ExtentY        =   0
+         IntegralHeight  =   0   'False
       End
-      Begin VB.Label lblConfigInfo 
-         AutoSize        =   -1  'True
-         Caption         =   "Loaded DLL libraries by selected process:"
+      Begin VBCCR17.LabelW lblConfigInfo 
          Height          =   195
          Index           =   9
          Left            =   240
          TabIndex        =   10
          Top             =   1800
          Width           =   2955
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Loaded DLL libraries by selected process:"
+         AutoSize        =   -1  'True
       End
       Begin VB.Image imgProcManCopy 
-         Height          =   288
+         Height          =   360
          Left            =   2400
-         Picture         =   "frmProcMan.frx":1CFE
+         Picture         =   "frmProcMan.frx":1CFA
          ToolTipText     =   "Copy process list to clipboard"
-         Top             =   216
-         Width           =   288
+         Top             =   210
+         Width           =   360
       End
-      Begin VB.Label lblProcManDblClick 
-         Caption         =   "Double-click a file to view its properties."
+      Begin VBCCR17.LabelW lblProcManDblClick 
          Height          =   390
          Left            =   5760
          TabIndex        =   9
          Top             =   3330
          Width           =   2295
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Double-click a file to view its properties."
+         WordWrap        =   -1  'True
       End
-      Begin VB.Label lblConfigInfo 
-         AutoSize        =   -1  'True
-         Caption         =   "Running processes:"
+      Begin VBCCR17.LabelW lblConfigInfo 
          Height          =   195
          Index           =   8
          Left            =   240
          TabIndex        =   8
          Top             =   360
          Width           =   1410
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Running processes:"
+         AutoSize        =   -1  'True
       End
       Begin VB.Image imgProcManSave 
-         Height          =   288
+         Height          =   360
          Left            =   2880
-         Picture         =   "frmProcMan.frx":21C1
+         Picture         =   "frmProcMan.frx":21BD
          ToolTipText     =   "Save process list to file.."
-         Top             =   216
-         Width           =   288
+         Top             =   210
+         Width           =   360
       End
    End
    Begin VB.Menu mnuProcMan 
@@ -224,7 +246,7 @@ Public Function ProcManDLLsHasFocus() As Boolean
     ProcManDLLsHasFocus = lstProcManDLLsHasFocus
 End Function
 
-Public Sub RefreshProcessList(objList As ListBox)
+Public Sub RefreshProcessList(objList As VBCCR17.ListBoxW)
     Dim hSnap&, uPE32 As PROCESSENTRY32W
     Dim sExeFile$
 
@@ -244,7 +266,7 @@ Public Sub RefreshProcessList(objList As ListBox)
     CloseHandle hSnap
 End Sub
 
-Public Sub RefreshProcessListNT(objList As ListBox)
+Public Sub RefreshProcessListNT(objList As VBCCR17.ListBoxW)
         Dim lNumProcesses As Long, i As Long
         Dim sProcessName As String
         Dim Process() As MY_PROC_ENTRY
@@ -272,7 +294,7 @@ Public Sub RefreshProcessListNT(objList As ListBox)
         End If
 End Sub
 
-Public Sub RefreshDLLList(lPID&, objList As ListBox)
+Public Sub RefreshDLLList(lPID&, objList As VBCCR17.ListBoxW)
     objList.Clear
     If lPID = 0 Then Exit Sub
     
@@ -288,12 +310,12 @@ Public Sub RefreshDLLList(lPID&, objList As ListBox)
     End If
 End Sub
 
-Public Sub SaveProcessList(objProcess As ListBox, objDLL As ListBox, Optional bDoDLLs As Boolean = False)
+Public Sub SaveProcessList(objProcess As VBCCR17.ListBoxW, objDLL As VBCCR17.ListBoxW, Optional bDoDLLs As Boolean = False)
     Dim sFilename$, i&, sProcess$, sModule$, hFile As Long
     Dim sList As clsStringBuilder
     
     'Save process list to file.., Text files, All files
-    sFilename = SaveFileDialog(Translate(166), AppPath(), "processlist.txt", Translate(167) & " (*.txt)|*.txt|" & Translate(168) & " (*.*)|*.*", Me.hwnd)
+    sFilename = SaveFileDialog(Translate(166), AppPath(), "processlist.txt", Translate(167) & " (*.txt)|*.txt|" & Translate(168) & " (*.*)|*.*", Me.hWnd)
     If Len(sFilename) = 0 Then Exit Sub
     
     cmdProcManRefresh_Click
@@ -302,7 +324,7 @@ Public Sub SaveProcessList(objProcess As ListBox, objDLL As ListBox, Optional bD
     
     'Header
     sList.Append ChrW$(-257)
-    sList.AppendLine "Logfile of Itty Bitty Process Manager v." & ProcManVer & " (HiJackThis+ v." & AppVerString & ")"
+    sList.AppendLine "Logfile of Itty Bitty Process Manager v." & ProcManVer & " (HijackThis+ v." & AppVerString & ")"
     sList.AppendLine
     sList.Append MakeLogHeader()
     sList.AppendLine
@@ -356,7 +378,7 @@ Public Sub SaveProcessList(objProcess As ListBox, objDLL As ListBox, Optional bD
     Set sList = Nothing
 End Sub
 
-Public Sub CopyProcessList(objProcess As ListBox, objDLL As ListBox, Optional bDoDLLs As Boolean = False)
+Public Sub CopyProcessList(objProcess As VBCCR17.ListBoxW, objDLL As VBCCR17.ListBoxW, Optional bDoDLLs As Boolean = False)
     Dim i&, sList$, sProcess$, sModule$
     
     'Process list saved on [*DateTime*]
@@ -365,7 +387,7 @@ Public Sub CopyProcessList(objProcess As ListBox, objDLL As ListBox, Optional bD
     '[file version]
     '[company name]
     
-    sList = "Logfile of Itty Bitty Process Manager v." & ProcManVer & " (HiJackThis+ v." & AppVerString & ")" & vbCrLf & vbCrLf & MakeLogHeader() & vbCrLf & _
+    sList = "Logfile of Itty Bitty Process Manager v." & ProcManVer & " (HijackThis+ v." & AppVerString & ")" & vbCrLf & vbCrLf & MakeLogHeader() & vbCrLf & _
             "[pid]" & vbTab & Translate(186) & vbTab & vbTab & Translate(187) & vbTab & Translate(188) & vbCrLf
     For i = 0 To objProcess.ListCount - 1
         sProcess = objProcess.List(i)
@@ -401,11 +423,11 @@ Public Sub CopyProcessList(objProcess As ListBox, objDLL As ListBox, Optional bD
     End If
 End Sub
 
-Private Sub SetListBoxColumns(objListBox As ListBox)
+Private Sub SetListBoxColumns(objListBox As VBCCR17.ListBoxW)
     Dim lTabStop&(1)
     lTabStop(0) = 40
     lTabStop(1) = 0
-    SendMessage objListBox.hwnd, LB_SETTABSTOPS, UBound(lTabStop) + 1, lTabStop(0)
+    SendMessage objListBox.hWnd, LB_SETTABSTOPS, UBound(lTabStop) + 1, lTabStop(0)
 End Sub
 
 Private Sub chkProcManShowDLLs_Click()
@@ -488,10 +510,10 @@ End Sub
 
 Private Sub cmdProcManRun_Click()
     If Not bIsWinNT Then
-        SHRunDialog Me.hwnd, 0, 0, Translate(181), Translate(182), 0
+        SHRunDialog Me.hWnd, 0, 0, Translate(181), Translate(182), 0
         'SHRunDialog Me.hWnd, 0, 0, "Run", "Type the name of a program, folder, document or Internet resource, and Windows will open it for you.", 0
     Else
-        SHRunDialog Me.hwnd, 0, 0, StrConv(Translate(181), vbUnicode), StrConv(Translate(182), vbUnicode), 0
+        SHRunDialog Me.hWnd, 0, 0, StrConv(Translate(181), vbUnicode), StrConv(Translate(182), vbUnicode), 0
         'SHRunDialog Me.hWnd, 0, 0, StrConv("Run", vbUnicode), StrConv("Type the name of a program, folder, document or Internet resource, and Windows will open it for you.", vbUnicode), 0
     End If
     SleepNoLock 1000
@@ -509,7 +531,7 @@ Private Sub Form_Load()
     LoadWindowPos Me, SETTINGS_SECTION_PROCMAN
     
     'Process Manager
-    Me.Caption = Translate(170)
+    SetWindowTitleText Me.hWnd, Translate(170)
     cmdProcManRefresh_Click
     'Itty Bitty Process Manager - v
     fraProcessManager.Caption = Translate(160) & ProcManVer 'App.Major & "." & format$(App.Minor, "00") & "." & App.Revision
@@ -517,7 +539,7 @@ Private Sub Form_Load()
     AddHorizontalScrollBarToResults lstProcessManager
 End Sub
 
-Private Sub Form_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Form_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
 '    If Button = 1 Then
 '        ReleaseCapture
 '        SendMessage Me.hwnd, WM_NCLBUTTONDOWN, HTCAPTION, 0
@@ -608,7 +630,7 @@ Private Sub lstProcessManager_DblClick()
         s = lstProcessManager.List(lstProcessManager.ListIndex)
     End If
     s = mid$(s, InStr(s, vbTab) + 1)
-    ShowFileProperties s, Me.hwnd
+    ShowFileProperties s, Me.hWnd
 End Sub
 
 Private Sub lstProcManDLLs_DblClick()
@@ -619,7 +641,7 @@ Private Sub lstProcManDLLs_DblClick()
         s = lstProcManDLLs.List(lstProcManDLLs.ListIndex)
     End If
     s = mid$(s, InStr(s, vbTab) + 1)
-    ShowFileProperties s, Me.hwnd
+    ShowFileProperties s, Me.hWnd
 End Sub
 
 Private Sub lstProcManDLLs_KeyDown(KeyCode As Integer, Shift As Integer)
@@ -634,7 +656,7 @@ Private Sub lstProcessManager_KeyDown(KeyCode As Integer, Shift As Integer)
     End Select
 End Sub
 
-Private Sub lstProcessManager_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub lstProcessManager_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     If Button = 1 Then
         If lstProcManDLLs.Visible = False Then Exit Sub
         Dim sPID$
@@ -649,7 +671,7 @@ Private Sub lstProcessManager_MouseUp(Button As Integer, Shift As Integer, X As 
     End If
 End Sub
 
-Private Sub lstProcManDLLs_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub lstProcManDLLs_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     If Button = 2 Then
         mnuProcManKill.Enabled = False
         PopupMenu mnuProcMan, , , , mnuProcManProps
@@ -668,9 +690,9 @@ End Sub
 Private Sub lstProcessManager_LostFocus()
     lstProcessManagerHasFocus = False
 End Sub
-Private Sub lstProcessManager_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub lstProcessManager_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
     If Not lstProcessManagerHasFocus Then
-        If GetForegroundWindow() = lstProcessManager.Parent.hwnd Then
+        If GetForegroundWindow() = lstProcessManager.Parent.hWnd Then
             lstProcessManagerHasFocus = True
             If lstProcessManager.Visible And lstProcessManager.Enabled Then
                 lstProcessManager.SetFocus
@@ -694,9 +716,9 @@ End Sub
 Private Sub lstProcManDLLs_LostFocus()
     lstProcManDLLsHasFocus = False
 End Sub
-Private Sub lstProcManDLLs_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub lstProcManDLLs_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
     If Not lstProcManDLLsHasFocus Then
-        If GetForegroundWindow() = lstProcManDLLs.Parent.hwnd Then
+        If GetForegroundWindow() = lstProcManDLLs.Parent.hWnd Then
             lstProcManDLLsHasFocus = True
             If lstProcManDLLs.Visible And lstProcManDLLs.Enabled Then
                 lstProcManDLLs.SetFocus

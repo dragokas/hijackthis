@@ -1,4 +1,5 @@
 VERSION 5.00
+Object = "{317589D1-37C8-47D9-B5B0-1C995741F353}#1.0#0"; "VBCCR17.OCX"
 Begin VB.Form frmRegTypeChecker 
    AutoRedraw      =   -1  'True
    Caption         =   "Registry Key Type Checker"
@@ -20,144 +21,15 @@ Begin VB.Form frmRegTypeChecker
    LinkTopic       =   "Form1"
    ScaleHeight     =   6585
    ScaleWidth      =   12480
-   Begin VB.Frame fraArea 
-      Caption         =   "Area"
-      BeginProperty Font 
-         Name            =   "Tahoma"
-         Size            =   7.5
-         Charset         =   204
-         Weight          =   700
-         Underline       =   0   'False
-         Italic          =   0   'False
-         Strikethrough   =   0   'False
-      EndProperty
+   Begin VBCCR17.FrameW fraArea 
       Height          =   3612
       Left            =   5400
       TabIndex        =   26
       Top             =   2880
       Width           =   3132
-      Begin VB.CheckBox chkNullKey 
-         Caption         =   "Hidden keys (Null)"
-         Height          =   204
-         Left            =   240
-         TabIndex        =   40
-         Top             =   3240
-         Value           =   1  'Checked
-         Visible         =   0   'False
-         Width           =   1692
-      End
-      Begin VB.CheckBox chkClass 
-         Caption         =   "Class name"
-         Height          =   252
-         Left            =   240
-         TabIndex        =   38
-         Top             =   3000
-         Value           =   1  'Checked
-         Width           =   2772
-      End
-      Begin VB.CheckBox chkSecurityDescriptor 
-         Caption         =   "Security descriptor"
-         Height          =   252
-         Left            =   240
-         TabIndex        =   37
-         Top             =   2760
-         Value           =   1  'Checked
-         Width           =   2772
-      End
-      Begin VB.CheckBox chkSymlink 
-         Caption         =   "Symlink"
-         Height          =   252
-         Left            =   240
-         TabIndex        =   36
-         Top             =   2520
-         Value           =   1  'Checked
-         Width           =   2652
-      End
-      Begin VB.CheckBox chkVolatility 
-         Caption         =   "Volatility"
-         Height          =   252
-         Left            =   240
-         TabIndex        =   35
-         Top             =   2280
-         Value           =   1  'Checked
-         Width           =   2652
-      End
-      Begin VB.CheckBox chkFlags 
-         Caption         =   "Flags"
-         Height          =   252
-         Left            =   240
-         TabIndex        =   34
-         Top             =   2040
-         Value           =   1  'Checked
-         Width           =   2652
-      End
-      Begin VB.CheckBox chkVirtualization 
-         Caption         =   "Virtualization"
-         Height          =   252
-         Left            =   240
-         TabIndex        =   33
-         Top             =   1800
-         Value           =   1  'Checked
-         Width           =   2652
-      End
-      Begin VB.CheckBox chkRedirection 
-         Caption         =   "Redirection"
-         Height          =   252
-         Left            =   240
-         TabIndex        =   32
-         Top             =   1560
-         Value           =   1  'Checked
-         Width           =   2652
-      End
-      Begin VB.CheckBox chkKeyLength 
-         Caption         =   "Key/Values max length"
-         Height          =   252
-         Left            =   240
-         TabIndex        =   31
-         Top             =   1320
-         Value           =   1  'Checked
-         Width           =   2652
-      End
-      Begin VB.CheckBox chkKeysCount 
-         Caption         =   "Keys count"
-         Height          =   252
-         Left            =   240
-         TabIndex        =   30
-         Top             =   1080
-         Value           =   1  'Checked
-         Width           =   2652
-      End
-      Begin VB.CheckBox chkDateModif 
-         Caption         =   "Date of modification"
-         Height          =   252
-         Left            =   240
-         TabIndex        =   29
-         Top             =   840
-         Value           =   1  'Checked
-         Width           =   2652
-      End
-      Begin VB.CheckBox chkNativeName 
-         Caption         =   "Native name"
-         Height          =   252
-         Left            =   240
-         TabIndex        =   28
-         Top             =   600
-         Value           =   1  'Checked
-         Width           =   2652
-      End
-      Begin VB.CheckBox chkSelectAll 
-         Caption         =   "Select all"
-         Height          =   252
-         Left            =   240
-         TabIndex        =   27
-         Top             =   240
-         Value           =   1  'Checked
-         Width           =   2652
-      End
-   End
-   Begin VB.Frame fraMode 
-      Caption         =   "Mode"
-      BeginProperty Font 
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
          Name            =   "Tahoma"
          Size            =   7.5
          Charset         =   204
@@ -166,88 +38,230 @@ Begin VB.Form frmRegTypeChecker
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
+      Caption         =   "Area"
+      Begin VBCCR17.CheckBoxW chkNullKey 
+         Height          =   204
+         Left            =   240
+         TabIndex        =   40
+         Top             =   3240
+         Visible         =   0   'False
+         Width           =   1692
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   1
+         Caption         =   "Hidden keys (Null)"
+      End
+      Begin VBCCR17.CheckBoxW chkClass 
+         Height          =   252
+         Left            =   240
+         TabIndex        =   38
+         Top             =   3000
+         Width           =   2772
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   1
+         Caption         =   "Class name"
+      End
+      Begin VBCCR17.CheckBoxW chkSecurityDescriptor 
+         Height          =   252
+         Left            =   240
+         TabIndex        =   37
+         Top             =   2760
+         Width           =   2772
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   1
+         Caption         =   "Security descriptor"
+      End
+      Begin VBCCR17.CheckBoxW chkSymlink 
+         Height          =   252
+         Left            =   240
+         TabIndex        =   36
+         Top             =   2520
+         Width           =   2652
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   1
+         Caption         =   "Symlink"
+      End
+      Begin VBCCR17.CheckBoxW chkVolatility 
+         Height          =   252
+         Left            =   240
+         TabIndex        =   35
+         Top             =   2280
+         Width           =   2652
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   1
+         Caption         =   "Volatility"
+      End
+      Begin VBCCR17.CheckBoxW chkFlags 
+         Height          =   252
+         Left            =   240
+         TabIndex        =   34
+         Top             =   2040
+         Width           =   2652
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   1
+         Caption         =   "Flags"
+      End
+      Begin VBCCR17.CheckBoxW chkVirtualization 
+         Height          =   252
+         Left            =   240
+         TabIndex        =   33
+         Top             =   1800
+         Width           =   2652
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   1
+         Caption         =   "Virtualization"
+      End
+      Begin VBCCR17.CheckBoxW chkRedirection 
+         Height          =   252
+         Left            =   240
+         TabIndex        =   32
+         Top             =   1560
+         Width           =   2652
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   1
+         Caption         =   "Redirection"
+      End
+      Begin VBCCR17.CheckBoxW chkKeyLength 
+         Height          =   252
+         Left            =   240
+         TabIndex        =   31
+         Top             =   1320
+         Width           =   2652
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   1
+         Caption         =   "Key/Values max length"
+      End
+      Begin VBCCR17.CheckBoxW chkKeysCount 
+         Height          =   252
+         Left            =   240
+         TabIndex        =   30
+         Top             =   1080
+         Width           =   2652
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   1
+         Caption         =   "Keys count"
+      End
+      Begin VBCCR17.CheckBoxW chkDateModif 
+         Height          =   252
+         Left            =   240
+         TabIndex        =   29
+         Top             =   840
+         Width           =   2652
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   1
+         Caption         =   "Date of modification"
+      End
+      Begin VBCCR17.CheckBoxW chkNativeName 
+         Height          =   252
+         Left            =   240
+         TabIndex        =   28
+         Top             =   600
+         Width           =   2652
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   1
+         Caption         =   "Native name"
+      End
+      Begin VBCCR17.CheckBoxW chkSelectAll 
+         Height          =   252
+         Left            =   240
+         TabIndex        =   27
+         Top             =   240
+         Width           =   2652
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   1
+         Caption         =   "Select all"
+      End
+   End
+   Begin VBCCR17.FrameW fraMode 
       Height          =   1572
       Left            =   8640
       TabIndex        =   19
       Top             =   4320
       Width           =   3735
-      Begin VB.CheckBox chkCreateKey 
-         Caption         =   "Create key if not exists"
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
+         Name            =   "Tahoma"
+         Size            =   7.5
+         Charset         =   204
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Caption         =   "Mode"
+      Begin VBCCR17.CheckBoxW chkCreateKey 
          Height          =   252
          Left            =   240
          TabIndex        =   41
          Top             =   720
          Width           =   3252
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Create key if not exists"
       End
-      Begin VB.CheckBox chkQueryX32 
-         Caption         =   "Query x32 view (additionally)"
+      Begin VBCCR17.CheckBoxW chkQueryX32 
          Height          =   492
          Left            =   240
          TabIndex        =   21
          Top             =   960
          Width           =   3372
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Query x32 view (additionally)"
       End
-      Begin VB.CheckBox chkRecurse 
-         Caption         =   "Recurse"
+      Begin VBCCR17.CheckBoxW chkRecurse 
          Height          =   252
          Left            =   240
          TabIndex        =   20
          Top             =   360
          Width           =   3252
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Recurse"
       End
    End
-   Begin VB.CommandButton cmdClear 
-      Caption         =   "Clear list"
+   Begin VBCCR17.CommandButtonW cmdClear 
       Height          =   492
       Left            =   10800
       TabIndex        =   11
       Top             =   120
       Width           =   1572
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Caption         =   "Clear list"
    End
-   Begin VB.CommandButton cmdExit 
-      Caption         =   "Close"
+   Begin VBCCR17.CommandButtonW cmdExit 
       Height          =   492
       Left            =   11040
       TabIndex        =   10
       Top             =   6000
       Width           =   1332
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Caption         =   "Close"
    End
-   Begin VB.Frame fraReportFormat 
-      Caption         =   "Report format"
-      BeginProperty Font 
-         Name            =   "Tahoma"
-         Size            =   7.5
-         Charset         =   204
-         Weight          =   700
-         Underline       =   0   'False
-         Italic          =   0   'False
-         Strikethrough   =   0   'False
-      EndProperty
+   Begin VBCCR17.FrameW fraReportFormat 
       Height          =   1332
       Left            =   8640
       TabIndex        =   7
       Top             =   2880
       Width           =   3735
-      Begin VB.OptionButton OptCSV 
-         Caption         =   "CSV (Full log in ANSI)"
-         Height          =   432
-         Left            =   120
-         TabIndex        =   9
-         Top             =   720
-         Value           =   -1  'True
-         Width           =   2895
-      End
-      Begin VB.OptionButton optPlainText 
-         Caption         =   "Plain Text (Short log in Unicode)"
-         Height          =   492
-         Left            =   120
-         TabIndex        =   8
-         Top             =   240
-         Width           =   3495
-      End
-   End
-   Begin VB.Frame fraBeauty 
-      BeginProperty Font 
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
          Name            =   "Tahoma"
          Size            =   7.5
          Charset         =   204
@@ -256,149 +270,223 @@ Begin VB.Form frmRegTypeChecker
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
+      Caption         =   "Report format"
+      Begin VBCCR17.OptionButtonW OptCSV 
+         Height          =   432
+         Left            =   120
+         TabIndex        =   9
+         Top             =   720
+         Width           =   2895
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   -1  'True
+         Caption         =   "CSV (Full log in ANSI)"
+      End
+      Begin VBCCR17.OptionButtonW optPlainText 
+         Height          =   492
+         Left            =   120
+         TabIndex        =   8
+         Top             =   240
+         Width           =   3495
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Plain Text (Short log in Unicode)"
+      End
+   End
+   Begin VBCCR17.FrameW fraBeauty 
       Height          =   3612
       Left            =   240
       TabIndex        =   3
       Top             =   2880
       Width           =   5055
-      Begin VB.CheckBox chkMatchCase 
-         Caption         =   "Match case"
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
+         Name            =   "Tahoma"
+         Size            =   7.5
+         Charset         =   204
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Begin VBCCR17.CheckBoxW chkMatchCase 
          Height          =   204
          Left            =   1920
          TabIndex        =   39
          Top             =   2640
          Width           =   2172
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Match case"
       End
-      Begin VB.CheckBox chkRegExp 
-         Caption         =   "Regular expressions"
+      Begin VBCCR17.CheckBoxW chkRegExp 
          Height          =   204
          Left            =   360
          TabIndex        =   25
          Top             =   3000
          Width           =   2652
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Regular expressions"
       End
-      Begin VB.CheckBox chkOnce 
-         Caption         =   "Once"
+      Begin VBCCR17.CheckBoxW chkOnce 
          Height          =   204
          Left            =   360
          TabIndex        =   24
          Top             =   2640
-         Value           =   1  'Checked
          Width           =   1572
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   1
+         Caption         =   "Once"
       End
-      Begin VB.CommandButton cmdBeauty 
-         Caption         =   "Extract"
+      Begin VBCCR17.CommandButtonW cmdBeauty 
          Height          =   492
          Left            =   3360
          TabIndex        =   18
          Top             =   3000
          Width           =   1452
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Extract"
       End
-      Begin VB.TextBox txtReplaceInto 
+      Begin VBCCR17.TextBoxW txtReplaceInto 
          Height          =   285
          Left            =   3840
          TabIndex        =   16
-         Text            =   "\"
          Top             =   2280
          Width           =   972
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Text            =   "frmRegKeyChecker.frx":F14B
       End
-      Begin VB.TextBox txtReplaceWhat 
+      Begin VBCCR17.TextBoxW txtReplaceWhat 
          Height          =   285
          Left            =   2160
          TabIndex        =   15
-         Text            =   "', '"
          Top             =   2280
          Width           =   972
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Text            =   "frmRegKeyChecker.frx":F16D
       End
-      Begin VB.TextBox txtBeautyEnd 
+      Begin VBCCR17.TextBoxW txtBeautyEnd 
          Height          =   285
          Left            =   2160
          TabIndex        =   14
-         Text            =   "'"
          Top             =   1680
          Width           =   972
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Text            =   "frmRegKeyChecker.frx":F195
       End
-      Begin VB.CheckBox chkReplace 
-         Caption         =   "Also replace:"
+      Begin VBCCR17.CheckBoxW chkReplace 
          Height          =   252
          Left            =   120
          TabIndex        =   13
          Top             =   2280
-         Value           =   1  'Checked
          Width           =   1932
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   1
+         Caption         =   "Also replace:"
       End
-      Begin VB.CheckBox chkBeautyEnd 
-         Caption         =   "Ends with:"
+      Begin VBCCR17.CheckBoxW chkBeautyEnd 
          Height          =   255
          Left            =   120
          TabIndex        =   6
          Top             =   1680
-         Value           =   1  'Checked
          Width           =   2172
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   1
+         Caption         =   "Ends with:"
       End
-      Begin VB.CheckBox chkBeautyBegin 
-         Caption         =   "Starts with:"
+      Begin VBCCR17.CheckBoxW chkBeautyBegin 
          Height          =   255
          Left            =   120
          TabIndex        =   5
          Top             =   1320
-         Value           =   1  'Checked
          Width           =   2052
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   1
+         Caption         =   "Starts with:"
       End
-      Begin VB.TextBox txtBeautyBegin 
+      Begin VBCCR17.TextBoxW txtBeautyBegin 
          Height          =   285
          Left            =   2160
          TabIndex        =   4
-         Text            =   "'"
          Top             =   1320
          Width           =   972
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Text            =   "frmRegKeyChecker.frx":F1B7
       End
-      Begin VB.Label lblBeautyDesc1 
-         Caption         =   "You can paste keys in dirty format, then apply a parser with options below:"
+      Begin VBCCR17.LabelW lblBeautyDesc1 
          Height          =   492
          Left            =   120
          TabIndex        =   22
          Top             =   240
          Width           =   4812
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "You can paste keys in dirty format, then apply a parser with options below:"
+         WordWrap        =   -1  'True
       End
-      Begin VB.Label lblWith 
-         Caption         =   "with"
+      Begin VBCCR17.LabelW lblWith 
          Height          =   252
          Left            =   3240
          TabIndex        =   17
          Top             =   2280
          Width           =   372
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "with"
       End
-      Begin VB.Label lblBeautyDesc2 
-         Caption         =   "Extract registry key from complex text/script, where key:"
+      Begin VBCCR17.LabelW lblBeautyDesc2 
          Height          =   492
          Left            =   120
          TabIndex        =   12
          Top             =   840
          Width           =   4812
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Extract registry key from complex text/script, where key:"
+         WordWrap        =   -1  'True
       End
    End
-   Begin VB.CommandButton cmdGo 
-      Caption         =   "Go"
+   Begin VBCCR17.CommandButtonW cmdGo 
       Height          =   480
       Left            =   8640
       TabIndex        =   2
       Top             =   6000
       Width           =   1452
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Caption         =   "Go"
    End
-   Begin VB.TextBox txtKeys 
+   Begin VBCCR17.TextBoxW txtKeys 
       Height          =   2055
       Left            =   240
-      MultiLine       =   -1  'True
-      ScrollBars      =   3  'Both
       TabIndex        =   0
       Top             =   720
       Width           =   12132
+      _ExtentX        =   0
+      _ExtentY        =   0
+      MultiLine       =   -1  'True
+      ScrollBars      =   3
    End
-   Begin VB.Label lblProgress 
-      Alignment       =   2  'Center
-      Caption         =   "100 %"
-      BeginProperty Font 
+   Begin VBCCR17.LabelW lblProgress 
+      Height          =   252
+      Left            =   10200
+      TabIndex        =   23
+      Top             =   6120
+      Width           =   732
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
          Name            =   "Tahoma"
          Size            =   10.5
          Charset         =   204
@@ -407,22 +495,21 @@ Begin VB.Form frmRegTypeChecker
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      ForeColor       =   &H00C00000&
-      Height          =   252
-      Left            =   10200
-      TabIndex        =   23
-      Top             =   6120
-      Width           =   732
+      ForeColor       =   12582912
+      Alignment       =   2
+      Caption         =   "100 %"
    End
-   Begin VB.Label lblThisTool 
-      AutoSize        =   -1  'True
-      BackStyle       =   0  'Transparent
-      Caption         =   "This tool creates report about registry keys such as: redirection type, volatility, virtualization and other"
+   Begin VBCCR17.LabelW lblThisTool 
       Height          =   408
       Left            =   240
       TabIndex        =   1
       Top             =   204
       Width           =   6972
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BackStyle       =   0
+      Caption         =   "This tool creates report about registry keys such as: redirection type, volatility, virtualization and other"
+      AutoSize        =   -1  'True
       WordWrap        =   -1  'True
    End
 End
@@ -1007,31 +1094,18 @@ Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
 End Sub
 
 Private Sub Form_Load()
-    Dim OptB As OptionButton
-    Dim Ctl As Control
-
     LoadWindowPos Me, SETTINGS_SECTION_REGKEYTYPECHECKER
 
     SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold
     Call ReloadLanguage(True)
 
-    If bIsWinXP Then
-        For Each Ctl In Me.Controls
-            If TypeName(Ctl) = "OptionButton" Then
-                Set OptB = Ctl
-                SetWindowTheme OptB.hwnd, StrPtr(" "), StrPtr(" ")
-            End If
-        Next
-        Set OptB = Nothing
-    End If
-    
     If OSver.IsWin32 Then
         chkQueryX32.Value = vbUnchecked
         chkQueryX32.Enabled = False
     End If
     lblProgress.Caption = vbNullString
     
-    SubClassTextbox Me.txtKeys.hwnd, True
+    SubClassTextbox Me.txtKeys.hWnd, True
 End Sub
 
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
@@ -1048,7 +1122,7 @@ Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
             Me.Hide
         End If
     Else
-        SubClassTextbox Me.txtKeys.hwnd, False
+        SubClassTextbox Me.txtKeys.hWnd, False
     End If
 End Sub
 

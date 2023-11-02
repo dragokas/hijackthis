@@ -370,7 +370,7 @@ Public Sub ScalePictureDPI(pict As PictureBox)
         stretchMode = SetStretchBltMode(.hdc, HALFTONE)
         StretchBlt .hdc, 0, 0, .ScaleWidth, .ScaleHeight, memDC, 0, 0, bmBitmap.bmWidth, bmBitmap.bmHeight, vbSrcCopy
         SetStretchBltMode .hdc, stretchMode
-        Set .Picture = .Image
+        Set .Picture = .image
     End With
     
     SelectObject memDC, lOldBitmap
@@ -393,4 +393,8 @@ Public Sub MakeWindowForegroundByProcessHandle(hProcess As Long)
         SetActiveWindow hWindows(i)
         SetFocus2 hWindows(i)
     Next
+End Sub
+
+Public Sub SetWindowTitleText(hWnd As Long, sText As String)
+    SendMessage hWnd, WM_SETTEXT, ByVal 0&, ByVal StrPtr(sText)
 End Sub

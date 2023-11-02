@@ -1,13 +1,13 @@
 VERSION 5.00
 Begin VB.Form frmSysTray 
    Caption         =   "Form1"
-   ClientHeight    =   3024
-   ClientLeft      =   192
-   ClientTop       =   816
+   ClientHeight    =   3030
+   ClientLeft      =   225
+   ClientTop       =   855
    ClientWidth     =   4560
    BeginProperty Font 
       Name            =   "Tahoma"
-      Size            =   8.4
+      Size            =   8.25
       Charset         =   204
       Weight          =   400
       Underline       =   0   'False
@@ -15,7 +15,7 @@ Begin VB.Form frmSysTray
       Strikethrough   =   0   'False
    EndProperty
    LinkTopic       =   "Form1"
-   ScaleHeight     =   3024
+   ScaleHeight     =   3030
    ScaleWidth      =   4560
    ShowInTaskbar   =   0   'False
    StartUpPosition =   3  'Windows Default
@@ -49,7 +49,7 @@ Attribute VB_Exposed = False
 
 Option Explicit
 
-Private Declare Function SetForegroundWindow Lib "user32.dll" (ByVal hwnd As Long) As Long
+Private Declare Function SetForegroundWindow Lib "user32.dll" (ByVal hWnd As Long) As Long
 Private Declare Function Shell_NotifyIcon Lib "shell32.dll" Alias "Shell_NotifyIconA" (ByVal dwMessage As Long, pnid As NOTIFYICONDATA) As Boolean
 
 Private Const NIM_ADD = &H0
@@ -69,7 +69,7 @@ Private Const WM_MBUTTONUP = &H208
 
 Private Type NOTIFYICONDATA
     cbSize As Long
-    hwnd As Long
+    hWnd As Long
     uID As Long
     uFlags As Long
     uCallbackMessage As Long
@@ -113,18 +113,18 @@ Private Sub Form_Load()
     SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold
     ReloadLanguage True
     Me.Visible = False
-    Tooltip = "HiJackThis v. " & AppVerString
+    Tooltip = g_AppName & " v. " & AppVerString
     UpdateIcon NIM_ADD
 End Sub
 
-Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Form_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
    Dim msg As Long
    
    ' The Form_MouseMove is intercepted to give systray mouse events.
    If Me.ScaleMode = vbPixels Then
-      msg = X
+      msg = x
    Else
-      msg = X / Screen.TwipsPerPixelX
+      msg = x / Screen.TwipsPerPixelX
    End If
       
    Select Case msg
@@ -134,7 +134,7 @@ Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, Y A
          RaiseEvent Click("RBUTTONDOWN")
       Case WM_RBUTTONUP
          ' Popup menu: selectively enable items dependent on context.
-         SetForegroundWindow FSys.hwnd
+         SetForegroundWindow FSys.hWnd
          RaiseEvent Click("RBUTTONUP")
          PopupMenu mPopupMenu
       Case WM_LBUTTONDBLCLK
@@ -179,14 +179,14 @@ Private Sub Restore_Window()
    ' Restore LastWindowState
    FSys.WindowState = LastWindowState
    FSys.Visible = True
-   SetForegroundWindow FSys.hwnd
+   SetForegroundWindow FSys.hWnd
 End Sub
 
 Private Sub UpdateIcon(Value As Long)
    ' Used to add, modify and delete icon.
    With nid
       .cbSize = Len(nid)
-      .hwnd = Me.hwnd
+      .hWnd = Me.hWnd
       .uID = vbNull
       .uFlags = NIM_DELETE Or NIF_TIP Or NIM_MODIFY
       .uCallbackMessage = WM_MOUSEMOVE

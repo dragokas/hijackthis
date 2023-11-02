@@ -3,7 +3,7 @@ Begin VB.Form frmError
    Caption         =   "ERROR"
    ClientHeight    =   5040
    ClientLeft      =   120
-   ClientTop       =   456
+   ClientTop       =   450
    ClientWidth     =   7080
    Icon            =   "frmError.frx":0000
    LinkTopic       =   "Form1"
@@ -14,8 +14,8 @@ Begin VB.Form frmError
    Begin VB.PictureBox Picture1 
       Height          =   735
       Left            =   120
-      ScaleHeight     =   684
-      ScaleWidth      =   684
+      ScaleHeight     =   675
+      ScaleWidth      =   675
       TabIndex        =   4
       Top             =   240
       Width           =   735
@@ -67,7 +67,7 @@ Option Explicit
 
 Private Declare Function MessageBeep Lib "user32.dll" (ByVal uType As Long) As Long
 Private Declare Function LoadIcon Lib "user32.dll" Alias "LoadIconW" (ByVal hInstance As Long, ByVal lpIconName As Long) As Long
-Private Declare Function DrawIcon Lib "user32.dll" (ByVal hdc As Long, ByVal X As Long, ByVal Y As Long, ByVal hIcon As Long) As Long
+Private Declare Function DrawIcon Lib "user32.dll" (ByVal hdc As Long, ByVal x As Long, ByVal y As Long, ByVal hIcon As Long) As Long
 
 'Private Const IDI_ASTERISK      As Long = 32516&    'Information
 'Private Const IDI_EXCLAMATION   As Long = 32515&    'Exclamation
@@ -99,17 +99,17 @@ End Sub
 Private Sub Form_Load()
     Dim Icon As Long
     
-    SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold
+    'SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold
     'ReloadLanguage
     
     With Me
         If AryItems(TranslateNative) Then
-            .Caption = TranslateNative(550)
+            SetWindowTitleText .hWnd, TranslateNative(550)
             .chkNoMoreErrors.Caption = TranslateNative(551)
             .cmdYes.Caption = TranslateNative(552)
             .cmdNo.Caption = TranslateNative(553)
         Else
-            .Caption = "ERROR"
+            SetWindowTitleText .hWnd, "ERROR"
             .chkNoMoreErrors.Caption = "Do not show this message again"
             .cmdYes.Caption = "Yes"
             .cmdNo.Caption = "No"

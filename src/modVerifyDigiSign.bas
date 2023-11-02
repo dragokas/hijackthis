@@ -449,7 +449,7 @@ Private Declare Function CryptCATAdminReleaseCatalogContext Lib "Wintrust.dll" (
 Private Declare Function CryptCATOpen Lib "Wintrust.dll" (ByVal pwszFileName As Long, ByVal fdwOpenFlags As Long, ByVal hProv As Long, ByVal dwPublicVersion As Long, ByVal dwEncodingType As Long) As Long
 Private Declare Function CryptCATClose Lib "Wintrust.dll" (ByVal hCatalog As Long) As Long
 Private Declare Function CryptCATEnumerateMember Lib "Wintrust.dll" (ByVal hCatalog As Long, ByVal pPrevMember As Long) As Long
-Private Declare Function WinVerifyTrust Lib "Wintrust.dll" (ByVal hwnd As Long, pgActionID As GUID, ByVal pWVTData As Long) As Long
+Private Declare Function WinVerifyTrust Lib "Wintrust.dll" (ByVal hWnd As Long, pgActionID As GUID, ByVal pWVTData As Long) As Long
 'Signer info extractor
 Private Declare Function WTHelperProvDataFromStateData Lib "Wintrust.dll" (ByVal StateData As Long) As Long
 Private Declare Function WTHelperGetProvSignerFromChain Lib "Wintrust.dll" (ByVal pProvData As Long, ByVal idxSigner As Long, ByVal fCounterSigner As Long, ByVal idxCounterSigner As Long) As Long
@@ -1017,6 +1017,16 @@ Public Function SignVerify( _
     
     'redir. OFF
     ToggleWow64FSRedirection False, sFilePath, bOldRedir
+    
+    Dim iAttr As Long
+    iAttr = GetFileAttributes(StrPtr(sFilePath))
+    If iAttr = INVALID_FILE_ATTRIBUTES Or (0 <> (iAttr And FILE_ATTRIBUTE_DIRECTORY)) Then
+        ToggleWow64FSRedirection bOldRedir
+        SignResult.ApiErrorCode = 2
+        SignResult.FullMessage = ErrMessageText(SignResult.ApiErrorCode)
+        GoTo Finalize
+    End If
+    
     'opening the file
     hFile = CreateFile(StrPtr(sFilePath), FILE_READ_ATTRIBUTES Or FILE_READ_DATA Or STANDARD_RIGHTS_READ, FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, ByVal 0&, OPEN_EXISTING, g_FileBackupFlag, ByVal 0&)
     
@@ -1930,6 +1940,7 @@ Finalize:
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "SignVerify", sFilePath
+    ToggleWow64FSRedirection False, sFilePath, bOldRedir
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -3471,7 +3482,7 @@ Public Sub WinTrustVerifyChildNodes(sKey$)
     On Error GoTo ErrorHandler:
     If bSL_Abort Then Exit Sub
     If Not NodeExists(sKey) Then Exit Sub
-    Dim nodFirst As Node, nodCurr As Node
+    Dim nodFirst As TvwNode, nodCurr As TvwNode
     Set nodFirst = frmStartupList2.tvwMain.Nodes(sKey).Child
     Set nodCurr = nodFirst
     If Not (nodCurr Is Nothing) Then
@@ -3481,7 +3492,7 @@ Public Sub WinTrustVerifyChildNodes(sKey$)
             WinTrustVerifyNode nodCurr.Key
         
             If nodCurr = nodFirst.LastSibling Then Exit Do
-            Set nodCurr = nodCurr.Next
+            Set nodCurr = nodCurr.NextSibling
             If bSL_Abort Then Exit Sub
         Loop
     End If

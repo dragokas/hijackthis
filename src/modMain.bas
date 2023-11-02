@@ -400,8 +400,8 @@ Public Enum FIX_ITEM_STATE
 End Enum
 
 Public Type SCAN_RESULT
-    HitLineW        As String
     HitLineA        As String
+    HitLineW        As String
     Section         As String
     Alias           As String
     Name            As String
@@ -441,6 +441,9 @@ Private Type DICTIONARIES
     dSafeProtocols  As clsTrickHashTable
     dSafeFilters    As clsTrickHashTable
     dLoLBin         As clsTrickHashTable
+    dSafeSvcPath    As clsTrickHashTable
+    dSafeSvcFilename As clsTrickHashTable
+    DriverMapped    As clsTrickHashTable
 End Type
 
 Private Type IPSEC_FILTER_RECORD    '36 bytes
@@ -507,11 +510,10 @@ Public oDictFileExist       As clsTrickHashTable
 Private dFontDefault        As clsTrickHashTable
 Private aFontDefProp()      As FONT_PROPERTY
 
-Public Scan()   As SCAN_RESULT    '// Dragokas. Used instead of parsing lines from result screen (like it was in original HJT 2.0.5).
-                                  '// User type structures of arrays is filled together with using of method frmMain.lstResults.AddItem
-                                  '// It is much efficiently and have Unicode support (native vb6 ListBox is ANSI only).
-                                  '// Result screen will be replaced with CommonControls unicode aware controls by Krool (vbforums.com) in the nearest update,
-                                  '// as well as StartupList2 by Merijn that currently use separate Microsoft MSCOMCTL.OCX library file.
+Public Scan()   As SCAN_RESULT    '// Dragokas. Used instead of parsing lines from result screen directly (like it was in original HJT 2.0.5).
+                                  '// User type structures of arrays is filled together - using method frmMain.lstResults.AddItem
+                                  '// It is much efficiently and have Unicode support (native vb6 ListBox is ANSI only,
+                                  '// until we finally replaced it with Krool's CommonControls).
 
 Public Perf     As TYPE_PERFORMANCE
 
@@ -519,13 +521,13 @@ Public OSver    As clsOSInfo
 Public Proc     As clsProcess
 Public cMath    As clsMath
 
-Private oDictSRV As clsTrickHashTable
 Private oDictProcAvail As clsTrickHashTable
 
 Private Declare Function SysAllocStringByteLen Lib "oleaut32.dll" (ByVal pszStrPtr As Long, ByVal Length As Long) As String
 
-
-'it map ANSI scan result string from ListBox to Unicode string that is stored in memory (SCAN_RESULT structure)
+'maps scan result string from ListBox to SCAN_RESULT structure associated with it
+'previously it is used to find appropriate mapping beetween Ansi -> Unicode
+'atm, leave it as is just in case some possible distortions in listbox
 Public Function GetScanResults(HitLineA As String, result As SCAN_RESULT, Optional out_idx As Long) As Boolean
     Dim i As Long
     For i = 1 To UBound(Scan)
@@ -1050,33 +1052,16 @@ Public Sub GetHosts()
     End If
 End Sub
 
-Public Sub UpdateIE_RegVals()
+Public Sub LoadDatabase()
     On Error GoTo ErrorHandler:
-
+    
+    Static bInit As Boolean
+    If bInit Then Exit Sub
+    bInit = True
+    
+    AppendErrorLogCustom "LoadDatabase - Begin"
+    
     Dim i As Long
-    
-    ReLoadIE_RegVals
-    
-    For i = 0 To UBound(sRegVals)
-        If sRegVals(i) = vbNullString Then Exit For
-        sRegVals(i) = Replace$(sRegVals(i), "$DEFSTARTPAGE", g_DEFSTARTPAGE)
-        sRegVals(i) = Replace$(sRegVals(i), "$DEFSEARCHPAGE", g_DEFSEARCHPAGE)
-        sRegVals(i) = Replace$(sRegVals(i), "$DEFSEARCHASS", g_DEFSEARCHASS)
-        sRegVals(i) = Replace$(sRegVals(i), "$DEFSEARCHCUST", g_DEFSEARCHCUST)
-        
-        'sRegVals(i) = replace$(sRegVals(i), "$WINSYSDIR", sWinSysDir)
-        'sRegVals(i) = replace$(sRegVals(i), "$WINDIR", sWinDir)
-        sRegVals(i) = EnvironW(sRegVals(i))
-    Next i
-    
-    Exit Sub
-ErrorHandler:
-    ErrorMsg Err, "UpdateIE_RegVals"
-    If inIDE Then Stop: Resume Next
-End Sub
-
-Private Sub ReLoadIE_RegVals()
-    On Error GoTo ErrorHandler:
 
     '=== LOAD REGVALS ===
     'syntax:
@@ -1092,106 +1077,21 @@ Private Sub ReLoadIE_RegVals()
     'R1 - value being present is considered bad, delete value
     'R2 - key being present is considered bad, delete key (not used)
     
-    Dim i As Long
-    Dim colRegIE As Collection
-    Set colRegIE = New Collection
+    sRegVals = LoadEncryptedResFileAsArray("database\R_Section.txt", 108)
     
-    Dim Hive
-    Dim Default_Page_URL$: Default_Page_URL = "http://go.microsoft.com/fwlink/p/?LinkId=255141"
-    Dim Default_Search_URL$: Default_Search_URL = "http://go.microsoft.com/fwlink/?LinkId=54896"
-    
-    With colRegIE
-    
-        .Add "Software\Microsoft\Internet Explorer,Default_Page_URL," & Default_Page_URL & "|,"
-        .Add "Software\Microsoft\Internet Explorer\Main,Default_Page_URL," & Default_Page_URL & "|http://www.msn.com|res://iesetup.dll/HardAdmin.htm|res://iesetup.dll/SoftAdmin.htm|res://shdoclc.dll/softAdmin.htm|,"
-        .Add "Software\Microsoft\Internet Explorer\Search,Default_Page_URL," & Default_Page_URL & "|,"
-        
-        .Add "Software\Microsoft\Internet Explorer,Default_Search_URL," & Default_Search_URL & "|,"
-        .Add "Software\Microsoft\Internet Explorer\Main,Default_Search_URL," & Default_Search_URL & "|,"
-        .Add "Software\Microsoft\Internet Explorer\Search,Default_Search_URL," & Default_Search_URL & "|,"
-        
-        .Add "Software\Microsoft\Internet Explorer,SearchAssistant,,"
-        .Add "Software\Microsoft\Internet Explorer,CustomizeSearch,,"
-        .Add "Software\Microsoft\Internet Explorer,Search,,"
-        .Add "Software\Microsoft\Internet Explorer,Search Bar,,"
-        .Add "Software\Microsoft\Internet Explorer,Search Page,,"
-        .Add "Software\Microsoft\Internet Explorer,Start Page,,"
-        .Add "Software\Microsoft\Internet Explorer,SearchURL,,"
-        .Add "Software\Microsoft\Internet Explorer,(Default),,"
-        .Add "Software\Microsoft\Internet Explorer,www,,"
-        
-        .Add "Software\Microsoft\Internet Explorer\Main,SearchAssistant,,"
-        .Add "Software\Microsoft\Internet Explorer\Main,CustomizeSearch,,"
-        .Add "Software\Microsoft\Internet Explorer\Main,Search Bar,http://ie.search.msn.com/{SUB_RFC1766}/srchasst/srchasst.htm|Preserve|,"
-        .Add "Software\Microsoft\Internet Explorer\Main,Search Page,http://www.microsoft.com/isapi/redir.dll?prd=ie&ar=iesearch|www.bing.com|,"
-        .Add "Software\Microsoft\Internet Explorer\Main,Start Page,$DEFSTARTPAGE|http://www.microsoft.com/isapi/redir.dll?prd=ie&ar=msnhome|http://www.microsoft.com/isapi/redir.dll?prd={SUB_PRD}&clcid={SUB_CLSID}&pver={SUB_PVER}&ar=home|res://iesetup.dll/HardAdmin.htm|res://iesetup.dll/SoftAdmin.htm|about:Tabs|about:NewsFeed|,"
-        .Add "Software\Microsoft\Internet Explorer\Main,SearchURL,,"
-        .Add "Software\Microsoft\Internet Explorer\Main,Start Page Redirect Cache,http://ru.msn.com/?ocid=iehp|,"
-        
-        .Add "Software\Microsoft\Internet Explorer\Search,SearchAssistant,$DEFSEARCHASS|,"
-        .Add "Software\Microsoft\Internet Explorer\Search,CustomizeSearch,$DEFSEARCHCUST|,"
-        .Add "Software\Microsoft\Internet Explorer\Search,(Default),,"
-        
-        .Add "Software\Microsoft\Internet Explorer\SearchURL,(Default),,"
-        .Add "Software\Microsoft\Internet Explorer\SearchURL,SearchURL,,"
-        
-        .Add "Software\Microsoft\Internet Explorer\Main,Startpagina,,"
-        .Add "Software\Microsoft\Internet Explorer\Main,First Home Page,|res://iesetup.dll/HardAdmin.htm|res://iesetup.dll/SoftAdmin.htm,"
-        .Add "Software\Microsoft\Internet Explorer\Main,Local Page,%SystemRoot%\System32\blank.htm|%SystemRoot%\SysWOW64\blank.htm|%11%\blank.htm|,"
-        .Add "Software\Microsoft\Internet Explorer\Main,Start Page_bak,,"
-        .Add "Software\Microsoft\Internet Explorer\Main,HomeOldSP,,"
-        .Add "Software\Microsoft\Internet Explorer\Main,Window Title,,"
-        
-        .Add "Software\Microsoft\Internet Explorer\Main,Extensions Off Page,about:NoAdd-ons|,"
-        .Add "Software\Microsoft\Internet Explorer\Main,Security Risk Page,about:SecurityRisk|,"
-        
-        .Add "Software\Microsoft\Internet Explorer\AboutURLs,blank,res://mshtml.dll/blank.htm|,"
-        .Add "Software\Microsoft\Internet Explorer\AboutURLs,DesktopItemNavigationFailure,res://ieframe.dll/navcancl.htm|res://shdoclc.dll/navcancl.htm|,"
-        .Add "Software\Microsoft\Internet Explorer\AboutURLs,InPrivate,res://ieframe.dll/inprivate.htm|res://ieframe.dll/inprivate_win7.htm|,"
-        .Add "Software\Microsoft\Internet Explorer\AboutURLs,NavigationCanceled,res://ieframe.dll/navcancl.htm|res://shdoclc.dll/navcancl.htm|,"
-        .Add "Software\Microsoft\Internet Explorer\AboutURLs,NavigationFailure,res://ieframe.dll/navcancl.htm|res://shdoclc.dll/navcancl.htm|,"
-        .Add "Software\Microsoft\Internet Explorer\AboutURLs,NoAdd-ons,res://ieframe.dll/noaddon.htm|,"
-        .Add "Software\Microsoft\Internet Explorer\AboutURLs,NoAdd-onsInfo,res://ieframe.dll/noaddoninfo.htm|,"
-        .Add "Software\Microsoft\Internet Explorer\AboutURLs,PostNotCached,res://ieframe.dll/repost.htm|res://mshtml.dll/repost.htm|,"
-        .Add "Software\Microsoft\Internet Explorer\AboutURLs,SecurityRisk,res://ieframe.dll/securityatrisk.htm|,"
-
-        .Add "Software\Microsoft\Internet Connection Wizard,ShellNext,|http://windowsupdate.microsoft.com/,"
-        
-        .Add "Software\Microsoft\Internet Explorer\Toolbar,LinksFolderName,Links|" & STR_CONST.RU_LINKS & "|," 'Ссылки
-        
-        .Add "Software\Microsoft\Windows\CurrentVersion\Internet Settings,AutoConfigURL,,"
-        .Add "Software\Microsoft\Windows\CurrentVersion\Internet Settings,ProxyServer,,"
-        .Add "Software\Microsoft\Windows\CurrentVersion\Internet Settings,ProxyOverride,,"
-
-        'Only short hive names permitted here !
-        
-        .Add "HKLM\System\CurrentControlSet\services\NlaSvc\Parameters\Internet\ManualProxies,(Default),,"
-        .Add "HKLM\SOFTWARE\Clients\StartMenuInternet\IEXPLORE.EXE\shell\open\command,(Default)," & _
+    'Only short hive names permitted here !
+    ArrayAddStr sRegVals, "HKLM\SOFTWARE\Clients\StartMenuInternet\IEXPLORE.EXE\shell\open\command,(Default)," & _
             IIf(bIsWin64, "%ProgramW6432%", "%ProgramFiles%") & "\Internet Explorer\iexplore.exe" & _
             IIf(bIsWin64, "|%ProgramFiles(x86)%\Internet Explorer\iexplore.exe", vbNullString) & _
             "|" & """" & "%ProgramFiles%\Internet Explorer\iexplore.exe" & """" & _
             IIf(OSver.MajorMinor <= 5, "|", vbNullString) & _
             "|iexplore.exe" & _
             ","
-        
-    End With
-    ReDim sRegVals(colRegIE.Count - 1)
-    For i = 1 To colRegIE.Count
-        sRegVals(i - 1) = colRegIE.Item(i)
-    Next
     
-    Exit Sub
-ErrorHandler:
-    ErrorMsg Err, "ReLoadIE_RegVals"
-    If inIDE Then Stop: Resume Next
-End Sub
-
-Public Sub LoadStuff()
-    On Error GoTo ErrorHandler:
+    For i = 0 To UBound(sRegVals)
+        sRegVals(i) = EnvironW(sRegVals(i))
+    Next i
     
-    AppendErrorLogCustom "LoadStuff - Begin"
-    
-    Dim i As Long
     
     '=== LOAD FILEVALS ===
     'syntax:
@@ -1225,28 +1125,21 @@ Public Sub LoadStuff()
     End With
     ReDim sFileVals(colFileVals.Count - 1)
     For i = 1 To colFileVals.Count
-        sFileVals(i - 1) = colFileVals.Item(i)
+        sFileVals(i - 1) = EnvironW(colFileVals.Item(i))
     Next
 
     '//TODO:
     '
     'What are ShellInfrastructure, VMApplet under winlogon ?
     'there are also 2 dll-s that may be interesting under \Windows (NaturalInputHandler, IconServiceLib)
-    
-
-    'R0, R1
-    
-    ReLoadIE_RegVals
 
     
-    'R4 database
+    'LOAD R4 SEARCH URLS
     
     'HKCU\Software\Microsoft\Internet Explorer\SearchScopes
     'HKLM\Software\Microsoft\Internet Explorer\SearchScopes
     
     Dim aHives() As String, sHive$, j&
-    
-    'GetBrowsersInfo
     
     GetHives aHives, addService:=False
     
@@ -1300,223 +1193,70 @@ Public Sub LoadStuff()
         End If
     Next
     
+    
     ' === LOAD SAFE O5 CONTROL PANEL DISABLED ITEMS
     
     If OSver.IsWindows10OrGreater Then
-        sSafeO5Items_HKLM = "appwiz.cpl|bthprops.cpl|desk.cpl|Firewall.cpl|hdwwiz.cpl|inetcpl.cpl|intl.cpl|irprops.cpl|joy.cpl|main.cpl|mmsys.cpl|ncpa.cpl|powercfg.cpl|sysdm.cpl|tabletpc.cpl|telephon.cpl|timedate.cpl"
-        sSafeO5Items_HKLM_32 = "appwiz.cpl|bthprops.cpl|desk.cpl|Firewall.cpl|hdwwiz.cpl|inetcpl.cpl|intl.cpl|irprops.cpl|joy.cpl|main.cpl|mmsys.cpl|ncpa.cpl|powercfg.cpl|sysdm.cpl|telephon.cpl|timedate.cpl"
+        '"appwiz.cpl|bthprops.cpl|desk.cpl|Firewall.cpl|hdwwiz.cpl|inetcpl.cpl|intl.cpl|irprops.cpl|joy.cpl|main.cpl|mmsys.cpl|ncpa.cpl|powercfg.cpl|sysdm.cpl|tabletpc.cpl|telephon.cpl|timedate.cpl"
+        sSafeO5Items_HKLM = Caes_Decode("bsuDrK.rGE|ySISWVY^.Ra_|[^nh.dsq|OtEtNtGI.DSQ|QOdfZm.Zig|hohyjyw.rGE|FMUO.JYW|Xccgfin.bqo|qxJ.rGE|JzJQ.JYW|\^fnj.^mk|qhwj.pEC|KLVFUHMP.P_]|hpl_j.dsq|CloAvMKz.DSQ|]PYTa[de.^mk|wntnonIv.xMK")
+        '"appwiz.cpl|bthprops.cpl|desk.cpl|Firewall.cpl|hdwwiz.cpl|inetcpl.cpl|intl.cpl|irprops.cpl|joy.cpl|main.cpl|mmsys.cpl|ncpa.cpl|powercfg.cpl|sysdm.cpl|telephon.cpl|timedate.cpl"
+        sSafeO5Items_HKLM_32 = Caes_Decode("bsuDrK.rGE|ySISWVY^.Ra_|[^nh.dsq|OtEtNtGI.DSQ|QOdfZm.Zig|hohyjyw.rGE|FMUO.JYW|Xccgfin.bqo|qxJ.rGE|JzJQ.JYW|\^fnj.^mk|qhwj.pEC|KLVFUHMP.P_]|hpl_j.dsq|CpytGAJK.DSQ|]TZTUTi\.^mk")
     ElseIf OSver.IsWindows8OrGreater Then
-        sSafeO5Items_HKLM = "sysdm.cpl|inetcpl.cpl|ncpa.cpl|tabletpc.cpl|joy.cpl|powercfg.cpl|Firewall.cpl|telephon.cpl|irprops.cpl|intl.cpl|timedate.cpl|hdwwiz.cpl|mmsys.cpl|desk.cpl|main.cpl|appwiz.cpl|bthprops.cpl"
-        sSafeO5Items_HKLM_32 = "sysdm.cpl|inetcpl.cpl|ncpa.cpl|Firewall.cpl|telephon.cpl|powercfg.cpl|irprops.cpl|joy.cpl|intl.cpl|timedate.cpl|hdwwiz.cpl|mmsys.cpl|main.cpl|desk.cpl|appwiz.cpl|bthprops.cpl"
+        '"sysdm.cpl|inetcpl.cpl|ncpa.cpl|tabletpc.cpl|joy.cpl|powercfg.cpl|Firewall.cpl|telephon.cpl|irprops.cpl|intl.cpl|timedate.cpl|hdwwiz.cpl|mmsys.cpl|desk.cpl|main.cpl|appwiz.cpl|bthprops.cpl"
+        sSafeO5Items_HKLM = Caes_Decode("tBxkv.pEC|DKDUFUS.N][|aXgZ.`om|yhkwrIGv.zOM|OVb.P_]|efp`obgj.jyw|UzKzTzMO.JYW|cV_Zgajk.dsq|rCCGFIN.BQO|PW_Y.Tca|mdjdedyl.nCA|AyTVJ].JYW|\^fnj.^mk|gjzt.pEC|HxHO.HWU|N_aj^q.^mk|eyoyCBEJ.xMK")
+        '"sysdm.cpl|inetcpl.cpl|ncpa.cpl|Firewall.cpl|telephon.cpl|powercfg.cpl|irprops.cpl|joy.cpl|intl.cpl|timedate.cpl|hdwwiz.cpl|mmsys.cpl|main.cpl|desk.cpl|appwiz.cpl|bthprops.cpl"
+        sSafeO5Items_HKLM_32 = Caes_Decode("tBxkv.pEC|DKDUFUS.N][|aXgZ.`om|KpApJpCE.zOM|YLUP]W`a.Zig|opzjylqt.tIG|HSSWVY^.Ra_|aht.bqo|pwEy.tIG|SJPJKJ_R.Tca|a_tvjC.jyw|BDLTP.DSQ|VLV].Vec|_brl.hwu|nEGPDW.DSQ|K_U_cbej.^mk")
     ElseIf (OSver.MajorMinor = 6.1 And OSver.IsServer) Then '2008 Server R2
-        sSafeO5Items_HKLM = "hdwwiz.cpl|telephon.cpl|appwiz.cpl|ncpa.cpl|sysdm.cpl|desk.cpl|inetcpl.cpl|joy.cpl|mmsys.cpl|Firewall.cpl|powercfg.cpl|intl.cpl|timedate.cpl|main.cpl|tabletpc.cpl|infocardcpl.cpl"
-        sSafeO5Items_HKLM_32 = "hdwwiz.cpl|telephon.cpl|appwiz.cpl|ncpa.cpl|sysdm.cpl|desk.cpl|inetcpl.cpl|joy.cpl|mmsys.cpl|Firewall.cpl|powercfg.cpl|intl.cpl|timedate.cpl|main.cpl|tabletpc.cpl|infocardcpl.cpl"
+        '"hdwwiz.cpl|telephon.cpl|appwiz.cpl|ncpa.cpl|sysdm.cpl|desk.cpl|inetcpl.cpl|joy.cpl|mmsys.cpl|Firewall.cpl|powercfg.cpl|intl.cpl|timedate.cpl|main.cpl|tabletpc.cpl|infocardcpl.cpl"
+        sSafeO5Items_HKLM = Caes_Decode("igBDrK.rGE|QDMHUOXY.Ra_|XikthA.hwu|ArGt.zOM|X`\OZ.Tca|]`pj.fus|tAtKvKI.DSQ|SZf.Tca|fhpxt.hwu|SxIxRxKM.HWU|]^hXgZ_b.bqo|pwEy.tIG|SJPJKJ_R.Tca|f\fm.fus|EnqCxOMB.FUS|T[U`VVi]^mk.fus")
+        '"hdwwiz.cpl|telephon.cpl|appwiz.cpl|ncpa.cpl|sysdm.cpl|desk.cpl|inetcpl.cpl|joy.cpl|mmsys.cpl|Firewall.cpl|powercfg.cpl|intl.cpl|timedate.cpl|main.cpl|tabletpc.cpl|infocardcpl.cpl"
+        sSafeO5Items_HKLM_32 = Caes_Decode("igBDrK.rGE|QDMHUOXY.Ra_|XikthA.hwu|ArGt.zOM|X`\OZ.Tca|]`pj.fus|tAtKvKI.DSQ|SZf.Tca|fhpxt.hwu|SxIxRxKM.HWU|]^hXgZ_b.bqo|pwEy.tIG|SJPJKJ_R.Tca|f\fm.fus|EnqCxOMB.FUS|T[U`VVi]^mk.fus")
     ElseIf OSver.IsWindows7OrGreater Then
-        sSafeO5Items_HKLM = "hdwwiz.cpl|telephon.cpl|appwiz.cpl|ncpa.cpl|sysdm.cpl|desk.cpl|inetcpl.cpl|joy.cpl|mmsys.cpl|Firewall.cpl|powercfg.cpl|intl.cpl|timedate.cpl|main.cpl|collab.cpl|irprops.cpl|tabletpc.cpl|infocardcpl.cpl|bthprops.cpl"
-        sSafeO5Items_HKLM_32 = "hdwwiz.cpl|telephon.cpl|appwiz.cpl|ncpa.cpl|sysdm.cpl|desk.cpl|inetcpl.cpl|joy.cpl|mmsys.cpl|Firewall.cpl|powercfg.cpl|intl.cpl|timedate.cpl|main.cpl|collab.cpl|irprops.cpl|infocardcpl.cpl|bthprops.cpl"
+        '"hdwwiz.cpl|telephon.cpl|appwiz.cpl|ncpa.cpl|sysdm.cpl|desk.cpl|inetcpl.cpl|joy.cpl|mmsys.cpl|Firewall.cpl|powercfg.cpl|intl.cpl|timedate.cpl|main.cpl|collab.cpl|irprops.cpl|tabletpc.cpl|infocardcpl.cpl|bthprops.cpl"
+        sSafeO5Items_HKLM = Caes_Decode("igBDrK.rGE|QDMHUOXY.Ra_|XikthA.hwu|ArGt.zOM|X`\OZ.Tca|]`pj.fus|tAtKvKI.DSQ|SZf.Tca|fhpxt.hwu|SxIxRxKM.HWU|]^hXgZ_b.bqo|pwEy.tIG|SJPJKJ_R.Tca|f\fm.fus|nBACtw.BQO|P[[_^af.Zig|sbeqlCAp.tIG|HOITJJ]QRa_.Zig|aukuyxAF.tIG")
+        '"hdwwiz.cpl|telephon.cpl|appwiz.cpl|ncpa.cpl|sysdm.cpl|desk.cpl|inetcpl.cpl|joy.cpl|mmsys.cpl|Firewall.cpl|powercfg.cpl|intl.cpl|timedate.cpl|main.cpl|collab.cpl|irprops.cpl|infocardcpl.cpl|bthprops.cpl"
+        sSafeO5Items_HKLM_32 = Caes_Decode("igBDrK.rGE|QDMHUOXY.Ra_|XikthA.hwu|ArGt.zOM|X`\OZ.Tca|]`pj.fus|tAtKvKI.DSQ|SZf.Tca|fhpxt.hwu|SxIxRxKM.HWU|]^hXgZ_b.bqo|pwEy.tIG|SJPJKJ_R.Tca|f\fm.fus|nBACtw.BQO|P[[_^af.Zig|hoitjjCqrGE.zOM|G[Q[_^af.Zig")
     ElseIf OSver.IsWindowsVistaOrGreater Then
-        sSafeO5Items_HKLM = "hdwwiz.cpl|appwiz.cpl|ncpa.cpl|sysdm.cpl|desk.cpl|Firewall.cpl|powercfg.cpl|infocardcpl.cpl|bthprops.cpl"
-        sSafeO5Items_HKLM_32 = "ncpa.cpl|sysdm.cpl|desk.cpl|hdwwiz.cpl|Firewall.cpl|powercfg.cpl|appwiz.cpl|infocardcpl.cpl|bthprops.cpl"
+        '"hdwwiz.cpl|appwiz.cpl|ncpa.cpl|sysdm.cpl|desk.cpl|Firewall.cpl|powercfg.cpl|infocardcpl.cpl|bthprops.cpl"
+        sSafeO5Items_HKLM = Caes_Decode("igBDrK.rGE|xOQZNa.N][|aXgZ.`om|xFBoz.tIG|CFVP.L[Y|q\g\p\ik.fus|ABLvKxCF.FUS|T[U`VVi]^mk.fus|mGwGKJMR.FUS")
+        '"ncpa.cpl|sysdm.cpl|desk.cpl|hdwwiz.cpl|Firewall.cpl|powercfg.cpl|appwiz.cpl|infocardcpl.cpl|bthprops.cpl"
+        sSafeO5Items_HKLM_32 = Caes_Decode("ofuh.nCA|LTPCN.HWU|QTd^.Zig|gezBpI.pEC|[FQFZFSU.P_]|efp`obgj.jyw|pGIRFY.FUS|T[U`VVi]^mk.fus|mGwGKJMR.FUS")
     ElseIf OSver.IsWindowsXPOrGreater Then
-        sSafeO5Items_HKU = "ncpa.cpl|odbccp32.cpl"
-        sSafeO5Items_HKLM = "speech.cpl|infocardcpl.cpl"
+        '"ncpa.cpl|odbccp32.cpl"
+        sSafeO5Items_HKU = Caes_Decode("ofuh.nCA|HyyBDS45.N][")
+        '"speech.cpl|infocardcpl.cpl"
+        sSafeO5Items_HKLM = Caes_Decode("tsjlls.rGE|FMGRHH[OP_].Xge")
     Else
-        sSafeO5Items_HKU = "ncpa.cpl|odbccp32.cpl"
+        '"ncpa.cpl|odbccp32.cpl"
+        sSafeO5Items_HKU = Caes_Decode("ofuh.nCA|HyyBDS45.N][")
     End If
     
     
-    ' === LOAD NONSTANDARD-BUT-SAFE-DOMAINS LIST ===
+    ' === LOAD NONSTANDARD-BUT-SAFE-DOMAINS LIST === (R0, R1, O15)
     
-    Dim colSafeRegDomains As Collection
-    Set colSafeRegDomains = New Collection
+    aSafeRegDomains = LoadEncryptedResFileAsArray("database\SafeDomains.txt", 109)
     
-    With colSafeRegDomains
-        .Add "http://www.microsoft.com"
-        .Add "http://home.microsoft.com"
-        .Add "http://www.msn.com"
-        .Add "http://search.msn.com"
-        .Add "http://ie.search.msn.com"
-        .Add "ie.search.msn.com"
-        .Add "<local>"
-        .Add "http://www.google.com"
-        .Add "127.0.0.1;localhost"
-        .Add "about:blank"
-        .Add "http://go.microsoft.com"
-        .Add "www.microsoft.com"
-        .Add "microsoft.com"
-        .Add "http://windowsupdate.com"
-        .Add "http://runonce.msn.com"
-        .Add "http://*.update.microsoft.com"
-        .Add "https://*.update.microsoft.com"
-        ' "iexplore"
-        ' "http://www.aol.com"
-    End With
-    ReDim aSafeRegDomains(colSafeRegDomains.Count - 1)
-    For i = 1 To colSafeRegDomains.Count
-        aSafeRegDomains(i - 1) = colSafeRegDomains.Item(i)
-    Next
-    
-    ' === LOAD LSP PROVIDERS SAFELIST ===
-    'asterisk is used for filename separation, because.
-    'did you ever see a filename with an asterisk?
-    sSafeLSPFiles = "*A2antispamlsp.dll*Adlsp.dll*Agbfilt.dll*Antiyfilter.dll*Ao2lsp.dll*Aphish.dll*Asdns.dll*Aslsp.dll*Asnsp.dll*Avgfwafu.dll*Avsda.dll*Betsp.dll*Biolsp.dll*Bmi_lsp.dll*Caslsp.dll*Cavemlsp.dll*Cdnns.dll*Connwsp.dll*Cplsp.dll*Csesck32.dll*Cslsp.dll*Cssp.al*Ctxlsp.dll*Ctxnsp.dll*Cwhook.dll*Cwlsp.dll*Dcsws2.dll*Disksearchservicestub.dll*Drwebsp.dll*Drwhook.dll*Espsock2.dll*Farlsp.dll*Fbm.dll*Fbm_lsp.dll*Fortilsp.dll*Fslsp.dll*Fwcwsp.dll*Fwtunnellsp.dll*Gapsp.dll*Googledesktopnetwork1.dll*Hclsock5.dll*Iapplsp.dll*Iapp_lsp.dll*Ickgw32i.dll*Ictload.dll*Idmmbc.dll*Iga.dll*Imon.dll*Imslsp.dll*Inetcntrl.dll*Ippsp.dll*Ipsp.dll*Iss_clsp.dll*Iss_slsp.dll*Kvwsp.dll*Kvwspxp.dll*Lslsimon.dll*Lsp32.dll*" & _
-        "Lspcs.dll*Mclsp.dll*Mdnsnsp.dll*Msafd.dll*Msniffer.dll*Mswsock.dll*Mswsosp.dll*Mwtsp.dll*Mxavlsp.dll*Napinsp.dll*Nblsp.dll*Ndpwsspr.dll*Netd.dll*Nihlsp.dll*Nlaapi.dll*Nl_lsp.dll*Nnsp.dll*Normanpf.dll*Nutafun4.dll*Nvappfilter.dll*Nwws2nds.dll*Nwws2sap.dll*Nwws2slp.dll*Odsp.dll*Pavlsp.dll*Pclsp.dll*Pctlsp.dll*Pfftsp.dll*Pgplsp.dll*Pidlsp.dll*Pnrpnsp.dll*Prifw.dll*Proxy.dll*Prplsf.dll*Pxlsp.dll*Rnr20.dll*Rsvpsp.dll*S5spi.dll*Samnsp.dll*Sarah.dll*Scopinet.dll*Skysocks.dll*Sliplsp.dll*Smnsp.dll*Spacklsp.dll*Spampallsp.dll*Spi.dll*Spidll.dll*Spishare.dll*Spsublsp.dll*Sselsp.dll*Stplayer.dll*Syspy.dll*Tasi.dll*Tasp.dll*Tcpspylsp.dll*Ua_lsp.dll*Ufilter.dll*Vblsp.dll*Vetredir.dll*Vlsp.dll*Vnsp.dll*" & _
-        "Wglsp.dll*Whllsp.dll*Whlnsp.dll*Winrnr.dll*Wins4f.dll*Winsflt.dll*WinSysAM.dll*Wps.dll*Wshbth.dll*Wspirda.dll*Wspwsp.dll*Xfilter.dll*xfire_lsp.dll*Xnetlsp.dll*Ypclsp.dll*Zklspr.dll*_Easywall.dll*_Handywall.dll*vsocklib.dll*wlidnsp.dll*nlansp_c.dll*"
     
     ' === LOAD PROTOCOL SAFELIST === (O18)
     
-    Set oDict.dSafeProtocols = New clsTrickHashTable
-    oDict.dSafeProtocols.CompareMode = vbTextCompare
-
     '//TODO: O18 - add file path checking to database
-
-    With oDict.dSafeProtocols
-        .Add "ms-itss", "{0A9007C0-4076-11D3-8789-0000F8105754}"
-        .Add "about", "{3050F406-98B5-11CF-BB82-00AA00BDCE0B}"
-        .Add "belarc", "{6318E0AB-2E93-11D1-B8ED-00608CC9A71F}"
-        .Add "BPC", "{3A1096B3-9BFA-11D1-AE77-00C04FBBDEBC}"
-        .Add "CDL", "{3DD53D40-7B8B-11D0-B013-00AA0059CE02}"
-        .Add "cdo", "{CD00020A-8B95-11D1-82DB-00C04FB1625D}"
-        .Add "copernicagentcache", "{AAC34CFD-274D-4A9D-B0DC-C74C05A67E1D}"
-        .Add "copernicagent", "{A979B6BD-E40B-4A07-ABDD-A62C64A4EBF6}"
-        .Add "dodots", "{9446C008-3810-11D4-901D-00B0D04158D2}"
-        .Add "DVD", "{12D51199-0DB5-46FE-A120-47A3D7D937CC}"
-        .Add "file", "{79EAC9E7-BAF9-11CE-8C82-00AA004BA90B}"
-        .Add "ftp", "{79EAC9E3-BAF9-11CE-8C82-00AA004BA90B}"
-        .Add "gopher", "{79EAC9E4-BAF9-11CE-8C82-00AA004BA90B}"
-        .Add "https", "{79EAC9E5-BAF9-11CE-8C82-00AA004BA90B}"
-        .Add "http", "{79EAC9E2-BAF9-11CE-8C82-00AA004BA90B}"
-        .Add "ic32pp", "{BBCA9F81-8F4F-11D2-90FF-0080C83D3571}"
-        .Add "ipp", vbNullString
-        .Add "its", "{9D148291-B9C8-11D0-A4CC-0000F80149F6}"
-        .Add "javascript", "{3050F3B2-98B5-11CF-BB82-00AA00BDCE0B}" '","<SysRoot>\System32\mshtml.dll
-        .Add "junomsg", "{C4D10830-379D-11D4-9B2D-00C04F1579A5}"
-        .Add "lid", "{5C135180-9973-46D9-ABF4-148267CBB8BF}"
-        .Add "local", "{79EAC9E7-BAF9-11CE-8C82-00AA004BA90B}"
-        .Add "mailto", "{3050F3DA-98B5-11CF-BB82-00AA00BDCE0B}"
-        .Add "mctp", "{D7B95390-B1C5-11D0-B111-0080C712FE82}"
-        .Add "mhtml", "{05300401-BCBC-11D0-85E3-00C04FD85AB4}"
-        .Add "mk", "{79EAC9E6-BAF9-11CE-8C82-00AA004BA90B}"
-        .Add "ms-its50", "{F8606A00-F5CF-11D1-B6BB-0000F80149F6}"
-        .Add "ms-its51", "{F6F1E82D-DE4D-11D2-875C-0000F8105754}"
-        .Add "ms-its", "{9D148291-B9C8-11D0-A4CC-0000F80149F6}"
-        .Add "mso-offdap", "{3D9F03FA-7A94-11D3-BE81-0050048385D1}"
-        .Add "ndwiat", "{13F3EA8B-91D7-4F0A-AD76-D2853AC8BECE}"
-        .Add "res", "{3050F3BC-98B5-11CF-BB82-00AA00BDCE0B}"
-        .Add "sysimage", "{76E67A63-06E9-11D2-A840-006008059382}"
-        .Add "tve-trigger", "{CBD30859-AF45-11D2-B6D6-00C04FBBDE6E}"
-        .Add "tv", "{CBD30858-AF45-11D2-B6D6-00C04FBBDE6E}"
-        .Add "vbscript", "{3050F3B2-98B5-11CF-BB82-00AA00BDCE0B}"
-        .Add "vnd.ms.radio", "{3DA2AA3B-3D96-11D2-9BD2-204C4F4F5020}"
-        .Add "wia", "{13F3EA8B-91D7-4F0A-AD76-D2853AC8BECE}"
-        .Add "mso-offdap11", "{32505114-5902-49B2-880A-1F7738E5A384}"
-        .Add "DirectDVD", "{85A81A02-336B-43FF-998B-FE8E194FBA4D}"
-        .Add "pcn", "{D540F040-F3D9-11D0-95BE-00C04FD93CA5}"
-        .Add "msencarta", "{74D92DF3-6D9D-11D1-8B38-006097DBED7A}"
-        .Add "msero", "{B0D92A71-886B-453B-A649-1B91F93801E7}"
-        .Add "msref", "{74D92DF3-6D9D-11D1-8B38-006097DBED7A}"
-        .Add "df2", "{219A97F3-D661-4766-B658-646A771AE49E}"
-        .Add "df3", "{219A97F3-D661-4766-B658-646A771AE49E}"
-        .Add "df4", "{219A97F3-D661-4766-B658-646A771AE49E}"
-        .Add "df5", "{219A97F3-D661-4766-B658-646A771AE49E}"
-        .Add "df23chat", "{219A97F3-D661-4766-B658-646A771AE49E}"
-        .Add "df5demo", "{219A97F3-D661-4766-B658-646A771AE49E}"
-        .Add "ofpjoin", "{219A97F3-D661-4766-B658-646A771AE49E}"
-        .Add "saphtmlp", "{D1F8BD1E-7967-11D2-B43A-006094B9EADB}"
-        .Add "sapr3", "{D1F8BD1E-7967-11D2-B43A-006094B9EADB}"
-        .Add "lbxfile", "{56831180-F115-11D2-B6AA-00104B2B9943}"
-        .Add "lbxres", "{24508F1B-9E94-40EE-9759-9AF5795ADF52}"
-        .Add "cetihpz", "{CF184AD3-CDCB-4168-A3F7-8E447D129300}"
-        .Add "aim", "{3050F406-98B5-11CF-BB82-00AA00BDCE0B}"
-        .Add "shell", "{3050F406-98B5-11CF-BB82-00AA00BDCE0B}"
-        .Add "asp", "{8D32BA61-D15B-11D4-894B-000000000000}"
-        .Add "hsp", "{8D32BA61-D15B-11D4-894B-000000000000}"
-        .Add "x-asp", "{8D32BA61-D15B-11D4-894B-000000000000}"
-        .Add "x-hsp", "{8D32BA61-D15B-11D4-894B-000000000000}"
-        .Add "x-zip", "{8D32BA61-D15B-11D4-894B-000000000000}"
-        .Add "zip", "{8D32BA61-D15B-11D4-894B-000000000000}"
-        .Add "bega", "{A57721C9-B905-49B3-8BCA-B99FBB8C627E}"
-        .Add "bt2", "{1730B77B-F429-498F-9B15-4514D83C8294}"
-        .Add "copernicdesktopsearch", "{D9656C75-5090-45C3-B27E-436FBC7ACFA7}"
-        .Add "crick", "{B861500A-A326-11D3-A248-0080C8F7DE1E}"
-        .Add "dadb", "{82D6F09F-4AC2-11D3-8BD9-0080ADB8683C}"
-        .Add "dialux", "{8352FA4C-39C6-11D3-ADBA-00A0244FB1A2}"
-        .Add "emistp", "{0EFAEA2E-11C9-11D3-88E3-0000E867A001}"
-        .Add "ezstor", "{6344A3A0-96A7-11D4-88CC-000000000000}"
-        .Add "flowto", "{C7101FB0-28FB-11D5-883A-204C4F4F5020}"
-        .Add "g7ps", "{9EACF0FB-4FC7-436E-989B-3197142AD979}"
-        .Add "intu-res", "{9CE7D474-16F9-4889-9BB9-53E2008EAE8A}"
-        .Add "iwd", "{EA5F5649-A6C7-11D4-9E3C-0020AF0FFB56}"
-        .Add "mavencache", "{DB47FDC2-8C38-4413-9C78-D1A68BF24EED}"
-        .Add "ms-help", "{314111C7-A502-11D2-BBCA-00C04F8EC294}"
-        .Add "msnim", "{828030A1-22C1-4009-854F-8E305202313F}"
-        .Add "myrm", "{4D034FC3-013F-4B95-B544-44D49ABE3E76}"
-        .Add "nbso", "{DF700763-3EAD-4B64-9626-22BEEFF3EA47}"
-        .Add "nim", "{3D206AE2-3039-413B-B748-3ACC562EC22A}"
-        .Add "OWC11.mso-offdap", "{32505114-5902-49B2-880A-1F7738E5A384}"
-        .Add "pcl", "{182D0C85-206F-4103-B4FA-DCC1FB0A0A44}"
-        .Add "pure-go", "{4746C79A-2042-4332-8650-48966E44ABA8}"
-        .Add "qrev", "{9DE24BAC-FC3C-42C4-9FC4-76B3FAFDBD90}"
-        .Add "rmh", "{23C585BB-48FF-4865-8934-185F0A7EB84C}"
-        .Add "SafeAuthenticate", "{8125919B-9BE9-4213-A1D6-75188A22D21E}"
-        .Add "sds", "{79E0F14C-9C52-4218-89A7-7C4B0563D121}"
-        .Add "siteadvisor", "{3A5DC592-7723-4EAA-9EE6-AF4222BCF879}"
-        .Add "smscrd", "{FA3F5003-93D4-11D2-8E48-00A0C98BD8C3}"
-        .Add "stibo", "{FFAD3420-6D61-44F6-BA25-293F17152D79}"
-        .Add "textwareilluminatorbase", "{CE5CD329-1650-414A-8DB0-4CBF72FAED87}"
-        .Add "widimg", "{EE7C2AFF-5742-44FF-BD0E-E521B0D3C3BA}"
-        .Add "wlmailhtml", "{03C514A3-1EFB-4856-9F99-10D7BE1653C0}"
-        .Add "x-atng", "{7E8717B0-D862-11D5-8C9E-00010304F989}"
-        .Add "x-excid", "{9D6CC632-1337-4A33-9214-2DA092E776F4}"
-        .Add "x-mem1", "{C3719F83-7EF8-4BA0-89B0-3360C7AFB7CC}"
-        .Add "x-mem3", "{4F6D06DD-44AB-4F89-BF13-9027B505B15A}"
-        .Add "ct", "{774E529C-2458-48A2-8F57-3ED3105D8612}"
-        .Add "cw", "{774E529C-2458-48A2-8F57-3ED3105D8612}"
-        .Add "eti", "{3AAE7392-E7AA-11D2-969E-00105A088846}"
-        .Add "livecall", "{828030A1-22C1-4009-854F-8E305202313F}"
-        .Add "tbauth", "{14654CA6-5711-491D-B89A-58E571679951}"
-        .Add "windows.tbauth", "{14654CA6-5711-491D-B89A-58E571679951}"
-        .Add "msdaipp", "{E1D2BF40-A96B-11D1-9C6B-0000F875AC61}|{E1D2BF42-A96B-11D1-9C6B-0000F875AC61}"
-    End With
-        
+    Set oDict.dSafeProtocols = LoadEncryptedResFileAsDictionary("database\SafeProtocols.txt", 110, ",", False)
+    
+    
     ' === LOAD FILTER SAFELIST === (O18)
     
-    Set oDict.dSafeFilters = New clsTrickHashTable
-    oDict.dSafeFilters.CompareMode = vbTextCompare
-
-    With oDict.dSafeFilters
-        .Add "application/octet-stream", "{1E66F26B-79EE-11D2-8710-00C04F79ED0D}|{F969FE8E-1937-45AD-AF42-8A4D11CBDC2A}"
-        .Add "application/x-msdownload", "{1E66F26B-79EE-11D2-8710-00C04F79ED0D}"
-        .Add "application/vnd-backup-octet-stream", "{1E66F26B-79EE-11D2-8710-00C04F79ED0D}"
-        .Add "application/x-complus", "{1E66F26B-79EE-11D2-8710-00C04F79ED0D}"
-        .Add "Class Install Handler", "{32B533BB-EDAE-11d0-BD5A-00AA00B92AF1}"
-        .Add "deflate", "{8f6b0360-b80d-11d0-a9b3-006097942311}"
-        .Add "gzip", "{8f6b0360-b80d-11d0-a9b3-006097942311}"
-        .Add "lzdhtml", "{8f6b0360-b80d-11d0-a9b3-006097942311}"
-        .Add "text/webviewhtml", "{733AC4CB-F1A4-11d0-B951-00A0C90312E1}"
-        .Add "text/xml", "{807553E5-5146-11D5-A672-00B0D022E945}|{807563E5-5146-11D5-A672-00B0D022E945}|{32F66A26-7614-11D4-BD11-00104BD3F987}"
-        .Add "application/x-icq", "{db40c160-09a1-11d3-baf2-000000000000}"
-        .Add "application/msword", "{DFF82902-0B96-3B98-6F62-D655E146A23A}"
-        .Add "application/vnd.ms-excel", "{DFF82902-0B96-3B98-6F62-D655E146A23A}"
-        .Add "application/vnd.ms-powerpoint", "{DFF82902-0B96-3B98-6F62-D655E146A23A}"
-        .Add "application/x-microsoft-rpmsg-message", "{DFF82902-0B96-3B98-6F62-D655E146A23A}"
-        .Add "application/vnd-viewer", "{CD4527E8-4FC7-48DB-9806-10537B501237}"
-        .Add "application/x-bt2", "{6E1DDCE8-76BC-4390-9488-806E8FB1AD77}"
-        .Add "application/x-internet-signup", "{A173B69A-1F9B-4823-9FDA-412F641E65D6}"
-        .Add "text/html", "{8D42AD12-D7A1-4797-BCB7-AD89E5FCE4F7}|{F79B2338-A6E7-46D4-9201-422AA6E74F43}"
-        .Add "text/x-mrml", "{C51721BE-858B-4A66-A8BF-D2882FF49820}"
-        .Add "application/xhtml+xml", "{32F66A26-7614-11D4-BD11-00104BD3F987}"
-    End With
+    Set oDict.dSafeFilters = LoadEncryptedResFileAsDictionary("database\SafeFilters.txt", 111, ",", False)
 
 
     'LOAD APPINIT_DLLS SAFELIST (O20)
-    sSafeAppInit = "*aakah.dll*akdllnt.dll*ROUSRNT.DLL*ssohook*KATRACK.DLL*APITRAP.DLL*UmxSbxExw.dll*sockspy.dll*scorillont.dll*wbsys.dll*NVDESK32.DLL*hplun.dll*mfaphook.dll*PAVWAIT.DLL*OCMAPIHK.DLL*MsgPlusLoader.dll*IconCodecService.dll*wl_hook.dll*Google\GOOGLE~1\GOEC62~1.DLL*adialhk.dll*wmfhotfix.dll*interceptor.dll*qaphooks.dll*RMProcessLink.dll*msgrmate.dll*wxvault.dll*ctu33.dll*ati2evxx.dll*vsmvhk.dll*"
+    
+    '*aakah.dll*akdllnt.dll*ROUSRNT.DLL*ssohook*KATRACK.DLL*APITRAP.DLL*UmxSbxExw.dll*sockspy.dll*scorillont.dll*wbsys.dll*NVDESK32.DLL*hplun.dll*mfaphook.dll*PAVWAIT.DLL*OCMAPIHK.DLL*MsgPlusLoader.dll*IconCodecService.dll*wl_hook.dll*Google\GOOGLE~1\GOEC62~1.DLL*adialhk.dll*wmfhotfix.dll*interceptor.dll*qaphooks.dll*RMProcessLink.dll*msgrmate.dll*wxvault.dll*ctu33.dll*ati2evxx.dll*vsmvhk.dll*
+    sSafeAppInit = Caes_Decode("*dfrjs.sCE*xJEOQU].Q[]*GFNNOMU.ISU*FHFAJLJ*h`uufjt.qAC*vMHUUFW.OY[*hHUlC[d_`.Q[]*hf\fpoz.isu*FrFKDIKPQY.MWY*hUhpl.akm*S]MP`Z23.[eg*MWU`[.U_a*fa^oirtr.oyA*cVmp\fs.gqs*zpBrIDEJ.GQS*XFvaEPPePDIL[.Q[]*xZhiznehhZnCIxtx.AKM*\SHS\^\.Yce*DnpjqleR\^X_Z~0wdnff75~8.sCE*^cjdqot.qAC*RJEIRYMRc.S]_*`gobqdhuAxC.sCE*NzQKTVT^.S]_*IFKondhxzUtAz.wGI*NVLYVLaT.Wac*ruubxqA.oyA*vOR46.ISU*NcZ3Zmqs.cmo*CBxIwB.yIK*")
+    
     
     'LOAD SSODL SAFELIST (O21)
     
-    Dim colSafeSSODL As Collection
-    Set colSafeSSODL = New Collection
-        
+    Dim colSafeSSODL As New Collection
     With colSafeSSODL
         .Add "{E6FB5E20-DE35-11CF-9C87-00AA005127ED}"  'WebCheck: C:\WINDOWS\System32\webcheck.dll (WinAll)
         .Add "{35CEC8A3-2BE6-11D2-8773-92E220524153}"  'SysTray: C:\WINDOWS\System32\stobject.dll (Win2k/XP)
@@ -1532,16 +1272,14 @@ Public Sub LoadStuff()
         .Add "{6D972050-A934-44D7-AC67-7C9E0B264220}" 'EnhancedDialog   enhdlginit.dll  EnhancedDialog by Stardock
     End With
     'BE AWARE: SHELL32.dll - sometimes this file is patched (e.g. seen in Simplix)
-    ReDim aSafeSSODL(colSafeSSODL.Count - 1)
-    For i = 1 To colSafeSSODL.Count
-        aSafeSSODL(i - 1) = colSafeSSODL.Item(i)
-    Next
+    aSafeSSODL = ConvertCollectionToArray(colSafeSSODL)
+    
     
     'LOAD SIOI SAFELIST (O21)
     
     Dim colSafeSIOI As Collection
     Set colSafeSIOI = New Collection
-        
+    
     With colSafeSIOI
 '        .Add "{D9144DCD-E998-4ECA-AB6A-DCD83CCBA16D}"  'EnhancedStorageShell: C:\Windows\system32\EhStorShell.dll (Win7)
 '        .Add "{4E77131D-3629-431c-9818-C5679DC83E81}"  'Offline Files: C:\Windows\System32\cscui.dll (Win7)
@@ -1552,11 +1290,17 @@ Public Sub LoadStuff()
 '        .Add "{0CA2640D-5B9C-4c59-A5FB-2DA61A7437CF}" 'StorageProviderError: C:\Windows\System32\shell32.dll, C:\Windows\SysWOW64\shell32.dll (Win 8.1)
 '        .Add "{0A30F902-8398-4ee8-86F7-4CFB589F04D1}" 'StorageProviderSyncing: C:\Windows\System32\shell32.dll, C:\Windows\SysWOW64\shell32.dll (Win 8.1)
 
-        .Add "<SysRoot>\system32\EhStorShell.dll"
-        .Add "<SysRoot>\system32\cscui.dll"
-        .Add "<SysRoot>\system32\ntshrui.dll"
-        .Add "<SysRoot>\system32\SHELL32.dll"
-        .Add "<SysRoot>\SysWOW64\shell32.dll"
+        '<SysRoot>\system32\EhStorShell.dll
+        .Add Caes_Decode("<VDz[zBI>oNVRUHR67GlWDgdiLcbkm.isu")
+        '<SysRoot>\system32\cscui.dll
+        .Add Caes_Decode("<VDz[zBI>oNVRUHR67GPbTh^.]gi")
+        '<SysRoot>\system32\ntshrui.dll
+        .Add Caes_Decode("<VDz[zBI>oNVRUHR67G[cd[glb.akm")
+        '<SysRoot>\system32\SHELL32.dll
+        .Add Caes_Decode("<VDz[zBI>oNVRUHR67GzqpyA23.akm")
+        '<SysRoot>\SysWOW64\shell32.dll
+        .Add Caes_Decode("<VDz[zBI>ohVRrlv99G`WV_a23.akm")
+        
         '.Add "<SysRoot>\system32\mscoree.dll" 'adware
     End With
     ReDim aSafeSIOI(colSafeSIOI.Count - 1)
@@ -1564,13 +1308,15 @@ Public Sub LoadStuff()
         aSafeSIOI(i - 1) = Replace(colSafeSIOI.Item(i), "<SysRoot>", sWinDir, 1, -1, vbTextCompare)
     Next
     
+    
     'LOAD ShellExecuteHooks (SEH) SAFELIST (O21)
     
     Dim colSafeSEH As Collection
     Set colSafeSEH = New Collection
-        
+    
     With colSafeSEH
-        .Add "<SysRoot>\system32\shell32.dll"
+        '<SysRoot>\system32\shell32.dll
+        .Add Caes_Decode("<VDz[zBI>oNVRUHR67G`WV_a23.akm")
     End With
     ReDim aSafeSEH(colSafeSEH.Count - 1)
     For i = 1 To colSafeSEH.Count
@@ -1578,297 +1324,41 @@ Public Sub LoadStuff()
     Next
     
     
-    'LOAD WINLOGON NOTIFY SAFELIST (O20)
-    'second line added in HJT 1.99.2 final
-    sSafeWinlogonNotify = "*crypt32chain*cryptnet*cscdll*ScCertProp*Schedule*SensLogn*termsrv*wlballoon*igfxcui*AtiExtEvent*wzcnotif*" & _
-                          "ActiveSync*atmgrtok*avldr*Caveo*ckpNotify*Command AntiVirus Download*ComPlusSetup*CwWLEvent*dimsntfy*DPWLN*EFS*FolderGuard*GoToMyPC*IfxWlxEN*igfxcui*IntelWireless*klogon*LBTServ*LBTWlgn*LMIinit*loginkey*MCPClient*MetaFrame*NavLogon*NetIdentity Notification*nwprovau*OdysseyClient*OPXPGina*PCANotify*pcsinst*PFW*PixVue*ppeclt*PRISMAPI.DLL*PRISMGNA.DLL*psfus*QConGina*RAinit*RegCompact*SABWinLogon*SDNotify*Sebring*STOPzilla*sunotify*SymcEventMonitors*T3Notify*TabBtnWL*Timbuktu Pro*tpfnf2*tpgwlnotify*tphotkey*VESWinlogon*WB*WBSrv*WgaLogon*wintask*WLogon*WRNotifier*Zboard*zsnotify*sclgntfy*"
+    'LOAD DEBUGGER SAFELIST (O26)
     
-    sSafeIfeVerifier = "*vrfcore.dll*vfbasics.dll*vfcompat.dll*vfluapriv.dll*vfprint.dll*vfnet.dll*vfntlmless.dll*vfnws.dll*vfcuzz.dll*"
+    '*vrfcore.dll*vfbasics.dll*vfcompat.dll*vfluapriv.dll*vfprint.dll*vfnet.dll*vfntlmless.dll*vfnws.dll*vfcuzz.dll*
+    sSafeIfeVerifier = Caes_Decode("*ywmlzEt.wGI*WIGH\TPb.Wac*qcbppuhC.qAC*QCKVDUYRa.S]_*m_kohow.kuw*KwGzQ.EOQ*_Q[c]`a\ln.cmo*CoyJH.wGI*WIH\ce.S]_*")
     
-    'Loading Safe DNS list
-    'https://www.comss.ru/list.php?c=securedns
+    
+    'LOAD SAFE DNS LIST (O17)
     
     'These are checked with nslookup
+    'https://www.comss.ru/list.php?c=securedns
     
-    With colSafeDNS
-        .Add "Google", "8.8.8.8"
-        .Add "Google", "8.8.4.4"
-        .Add "Verisign", "64.6.64.6"
-        .Add "Verisign", "64.6.65.6"
-        .Add "SkyDNS", "193.58.251.251"
-        .Add "Cisco Umbrella", "208.67.222.222"
-        .Add "Cisco Umbrella", "208.67.222.123"
-        .Add "Cisco Umbrella", "208.67.222.220"
-        .Add "Cisco Umbrella", "208.67.220.220"
-        .Add "Cisco Umbrella", "208.67.220.123"
-        .Add "Cisco Umbrella", "208.67.220.222"
-        .Add "Cisco Umbrella", "208.67.221.76"
-        .Add "Cisco Umbrella", "208.67.223.76"
-        .Add "Norton ConnectSafe", "199.85.126.10"
-        .Add "Norton ConnectSafe", "199.85.127.10"
-        .Add "Norton ConnectSafe", "199.85.126.20"
-        .Add "Norton ConnectSafe", "199.85.127.20"
-        .Add "Norton ConnectSafe", "199.85.126.30"
-        .Add "Norton ConnectSafe", "199.85.127.30"
-        .Add "Norton ConnectSafe", "198.153.192.1"
-        .Add "Norton ConnectSafe", "198.153.194.1"
-        .Add "Norton ConnectSafe", "198.153.192.40"
-        .Add "Norton ConnectSafe", "198.153.194.40"
-        .Add "Norton ConnectSafe", "198.153.192.50"
-        .Add "Norton ConnectSafe", "198.153.194.50"
-        .Add "Norton ConnectSafe", "198.153.192.60"
-        .Add "Norton ConnectSafe", "198.153.194.60"
-        .Add "Adguard DNS", "176.103.130.130"
-        .Add "Adguard DNS", "176.103.130.131"
-        .Add "Adguard DNS", "176.103.130.132"
-        .Add "Adguard DNS", "176.103.130.134"
-        .Add "Adguard DNS", "176.103.130.136"
-        .Add "Adguard DNS", "176.103.130.137"
-        .Add "Adguard DNS", "94.140.14.14"
-        .Add "Adguard DNS", "94.140.15.15"
-        .Add "Adguard DNS", "94.140.14.15"
-        .Add "Adguard DNS", "94.140.15.16"
-        .Add "Adguard DNS", "94.140.14.140"
-        .Add "Adguard DNS", "94.140.14.141"
-        .Add "Yandex.DNS", "77.88.8.8"
-        .Add "Yandex.DNS", "77.88.8.1"
-        .Add "Yandex.DNS", "77.88.8.88"
-        .Add "Yandex.DNS", "77.88.8.2"
-        .Add "Yandex.DNS", "77.88.8.7"
-        .Add "Yandex.DNS", "77.88.8.3"
-        .Add "Comodo Secure DNS", "8.26.56.26"
-        .Add "Comodo Secure DNS", "8.20.247.20"
-        .Add "Comodo Secure DNS", "8.26.56.10"
-        .Add "Comodo Secure DNS", "8.20.247.10"
-        .Add "Verizon / Level 3 Communications", "209.244.0.3"
-        .Add "Verizon / Level 3 Communications", "209.244.0.4"
-        .Add "Verizon / Level 3 Communications", "4.2.2.1"
-        .Add "Verizon / Level 3 Communications", "4.2.2.2"
-        .Add "Verizon / Level 3 Communications", "4.2.2.3"
-        .Add "Verizon / Level 3 Communications", "4.2.2.4"
-        .Add "Verizon / Level 3 Communications", "4.2.2.5"
-        .Add "Verizon / Level 3 Communications", "4.2.2.6"
-        .Add "DNS.WATCH", "84.200.69.80"
-        .Add "DNS.WATCH", "84.200.70.40"
-        .Add "SafeDNS", "195.46.39.39"
-        .Add "SafeDNS", "195.46.39.40"
-        .Add "Dyn", "216.146.35.35"
-        .Add "Dyn", "216.146.36.36"
-        .Add "FreeDNS", "37.235.1.174"
-        .Add "FreeDNS", "37.235.1.177"
-        .Add "FreeDNS", "172.104.237.57"
-        .Add "FreeDNS", "172.104.49.100"
-        .Add "FreeDNS", "45.33.97.5"
-        .Add "Alternate DNS", "198.101.242.72"
-        .Add "Alternate DNS", "23.253.163.53"
-        .Add "Alternate DNS", "76.76.19.19"
-        .Add "Alternate DNS", "76.223.122.150"
-        .Add "Rejector", "95.154.128.32"
-        .Add "Rejector", "78.46.36.8"
-        .Add "SmartViper", "208.76.50.50"
-        .Add "SmartViper", "208.76.51.51"
-        .Add "Neustar UltraDNS", "156.154.70.1"
-        .Add "Neustar UltraDNS", "156.154.71.1"
-        .Add "Neustar UltraDNS", "156.154.70.5"
-        .Add "Neustar UltraDNS", "156.154.71.5"
-        .Add "Neustar UltraDNS", "156.154.70.2"
-        .Add "Neustar UltraDNS", "156.154.71.2"
-        .Add "Neustar UltraDNS", "156.154.70.3"
-        .Add "Neustar UltraDNS", "156.154.71.3"
-        .Add "GreenTeamDNS", "81.218.119.11"
-        .Add "GreenTeamDNS", "209.88.198.133"
-        .Add "GTE", "192.76.85.133"
-        .Add "GTE", "206.124.64.1"
-        .Add "Hurricane Electric", "74.82.42.42"
-        .Add "puntCAT", "109.69.8.51"
-        .Add "Sprintlink General DNS", "204.117.214.10"
-        .Add "Sprintlink General DNS", "199.2.252.10"
-        .Add "Sprintlink General DNS", "204.97.212.10"
-        .Add "Chaos Computer Club", "194.150.168.168"
-        .Add "Chaos Computer Club", "213.73.91.35"
-        .Add "Chaos Computer Club", "85.214.20.141"
-        .Add "CensurfriDNS", "89.233.43.71"
-        .Add "CensurfriDNS", "91.239.100.100"
-        .Add "CyberGhost", "38.132.106.139"
-        .Add "CyberGhost", "194.187.251.67"
-        .Add "CyberGhost", "185.93.180.131"
-        .Add "CyberGhost", "209.58.179.186"
-        .Add "CyberGhost", "27.50.70.139"
-        .Add "DNSReactor", "45.55.155.25"
-        .Add "DNSReactor", "104.236.210.29"
-        .Add "FDN", "80.67.169.12"
-        .Add "FDN", "80.67.169.40"
-        .Add "Lightning Wire Labs", "81.3.27.54"
-        .Add "Lightning Wire Labs", "74.113.60.185"
-        .Add "Freenom", "80.80.80.80"
-        .Add "Freenom", "80.80.81.81"
-        .Add "Quad9", "9.9.9.9"
-        .Add "Quad9", "9.9.9.10"
-        .Add "Quad9", "9.9.9.11"
-        .Add "Quad9", "149.112.112.112"
-        .Add "Quad9", "149.112.112.11"
-        .Add "Quad9", "149.112.112.10"
-        .Add "Xiala", "77.109.148.136"
-        .Add "Xiala", "77.109.148.137"
-        .Add "Cloudflare / APNIC", "1.1.1.1"
-        .Add "Cloudflare / APNIC", "1.0.0.1"
-        .Add "Cloudflare / APNIC", "1.1.1.2"
-        .Add "Cloudflare / APNIC", "1.0.0.2"
-        .Add "Cloudflare / APNIC", "1.1.1.3"
-        .Add "Cloudflare / APNIC", "1.0.0.3"
-        .Add "CleanBrowsing", "185.228.168.9"
-        .Add "CleanBrowsing", "185.228.168.10"
-        .Add "CleanBrowsing", "185.228.168.168"
-        .Add "CleanBrowsing", "185.228.169.168"
-        .Add "CleanBrowsing", "185.228.169.11"
-        .Add "CleanBrowsing", "185.228.169.9"
-        .Add "CenturyLink", "205.171.3.66"
-        .Add "CenturyLink", "205.171.3.26"
-        .Add "CenturyLink", "205.171.202.166"
-        .Add "CenturyLink", "205.171.2.26"
-        .Add "OpenNIC", "192.71.245.208"
-        .Add "OpenNIC", "94.247.43.254"
-        .Add "OpenNIC", "51.15.98.97"
-        .Add "OpenNIC", "195.10.195.195"
-        .Add "OpenNIC", "58.6.115.42"
-        .Add "OpenNIC", "58.6.115.43"
-        .Add "OpenNIC", "119.31.230.42"
-        .Add "OpenNIC", "200.252.98.162"
-        .Add "OpenNIC", "217.79.186.148"
-        .Add "OpenNIC", "81.89.98.6"
-        .Add "OpenNIC", "78.159.101.37"
-        .Add "OpenNIC", "203.167.220.153"
-        .Add "OpenNIC", "82.229.244.191"
-        .Add "OpenNIC", "216.87.84.211"
-        .Add "OpenNIC", "66.244.95.20"
-        .Add "OpenNIC", "207.192.69.155"
-        .Add "OpenNIC", "72.14.189.120"
-        .Add "Fourth Estate", "45.77.165.194"
-        .Add "Fourth Estate", "45.32.36.36"
-        .Add "Safe Surfer", "104.197.28.121"
-        .Add "Safe Surfer", "104.155.237.225"
-        .Add "Comss.one", "92.38.152.163"
-        .Add "Comss.one", "93.115.24.204"
-        .Add "Comss.one", "92.223.109.31"
-        .Add "Comss.one", "91.230.211.67"
-        .Add "BlockAid", "205.204.88.60"
-        .Add "BlockAid", "178.21.23.150"
-        .Add "Christoph Hochstatter", "209.59.210.167"
-        .Add "Christoph Hochstatter", "85.214.117.11"
-        .Add "ClaraNet", "212.82.225.7"
-        .Add "ClaraNet", "212.82.226.212"
-        .Add "FoeBud", "85.214.73.63"
-        .Add "FoolDNS", "87.118.111.215"
-        .Add "FoolDNS", "213.187.11.62"
-        .Add "German Privacy Foundation", "87.118.100.175"
-        .Add "German Privacy Foundation", "94.75.228.29"
-        .Add "German Privacy Foundation", "85.25.251.254"
-        .Add "German Privacy Foundation", "62.141.58.13"
-        .Add "New Nations", "5.45.96.220"
-        .Add "New Nations", "185.82.22.133"
-        .Add "PowerNS", "194.145.226.26"
-        .Add "PowerNS", "177.220.232.44"
-        .Add "ValiDOM", "78.46.89.147"
-        .Add "ValiDOM", "88.198.75.145"
-        .Add "Gcore", "95.85.95.85"
-        .Add "Gcore", "2.56.220.2"
-        .Add "DNSFilter", "103.247.36.36"
-        .Add "DNSFilter", "103.247.37.37"
-        .Add "ControlD", "76.76.2.0"
-        .Add "ControlD", "76.76.10.0"
-    End With
+    Set colSafeDNS = LoadEncryptedResFileAsCollection("database\SafeDNS.txt", 112, ",")
     
-    With colDisallowedCert
-        .Add "Microsoft Enforced Licensing Registration Authority CA (SHA1)", "FA6660A94AB45F6A88C0D7874D89A863D74DEE97"
-        .Add "DigiNotar Services 1024 CA", "F8A54E03AADC5692B850496A4C4630FFEAA29D83"
-        .Add "login.yahoo.com", "D018B62DC518907247DF50925BB09ACF4A5CB3AD"
-        .Add "login.live.com", "CEA586B2CE593EC7D939898337C57814708AB2BE"
-        .Add "DigiNotar Root CA", "C060ED44CBD881BD0EF86C0BA287DDCF8167478C"
-        .Add "DigiNotar Cyber CA", "B86E791620F759F17B8D25E38CA8BE32E7D5EAC2"
-        .Add "DigiNotar PKIoverheid CA Overheid", "B533345D06F64516403C00DA03187D3BFEF59156"
-        .Add "DigiNotar Cyber CA", "9845A431D51959CAF225322B4A4FE9F223CE6D15"
-        .Add "Digisign Server ID - (Enrich)", "8E5BD50D6AE686D65252F843A9D4B96D197730AB"
-        .Add "DigiNotar Root CA", "86E817C81A5CA672FE000F36F878C19518D6F844"
-        .Add "login.yahoo.com", "80962AE4D6C5B442894E95A13E4A699E07D694CF"
-        .Add "Microsoft Corporation", "7D7F4414CCEF168ADF6BF40753B5BECD78375931"
-        .Add "mail.google.com", "6431723036FD26DEA502792FA595922493030F97"
-        .Add "login.yahoo.com", "63FEAE960BAA91E343CE2BD8B71798C76BDB77D0"
-        .Add "Microsoft Corporation", "637162CC59A3A1E25956FA5FA8F60D2E1C52EAC6"
-        .Add "global trustee", "61793FCBFA4F9008309BBA5FF12D2CB29CD4151A"
-        .Add "DigiNotar PKIoverheid CA Organisatie - G2", "5DE83EE82AC5090AEA9D6AC4E7A6E213F946E179"
-        .Add "Digisign Server ID (Enrich)", "51C3247D60F356C7CA3BAF4C3F429DAC93EE7B74"
-        .Add "login.skype.com", "471C949A8143DB5AD5CDF1C972864A2504FA23C9"
-        .Add "DigiNotar Root CA G2", "43D9BCB568E039D073A74A71D8511F7476089CC3"
-        .Add "DigiNotar PKIoverheid CA Overheid en Bedrijven", "40AA38731BD189F9CDB5B9DC35E2136F38777AF4"
-        .Add "Microsoft Enforced Licensing Intermediate PCA", "3A850044D8A195CD401A680C012CB0A3B5F8DC08"
-        .Add "DigiNotar Root CA", "367D4B3B4FCBBC0B767B2EC0CDB2A36EAB71A4EB"
-        .Add "addons.mozilla.org", "305F8BD17AA2CBC483A4C41B19A39A0C75DA39D6"
-        .Add "DigiNotar Cyber CA", "2B84BFBB34EE2EF949FE1CBE30AA026416EB2216"
-        .Add "Microsoft Enforced Licensing Intermediate PCA", "2A83E9020591A55FC6DDAD3FB102794C52B24E70"
-        .Add "www.google.com", "1916A2AF346D399F50313C393200F14140456616"
-        .Add "e-islem.kktcmerkezbankasi.org", "F92BE5266CC05DB2DC0DC3F2DC74E02DEFD949CB"
-        .Add "Microsoft Online Svcs BPOS CA2", "F5A874F3987EB0A9961A564B669A9050F770308A"
-        .Add "Microsoft Online Svcs BPOS EMEA CA2", "E9809E023B4512AA4D4D53F40569C313C1D0294D"
-        .Add "Microsoft Online Svcs BPOS APAC CA3", "E95DD86F32C771F0341743EBD75EC33C74A3DED9"
-        .Add "Microsoft Genuine Windows Phone Public Preview CA01", "E38A2B7663B86796436D8DF5898D9FAA6835B238"
-        .Add "Microsoft Online Svcs BPOS APAC CA2", "D8CE8D07F9F19D2569C2FB854401BC99C1EB7C3B"
-        .Add "Microsoft Online Svcs BPOS APAC CA1", "D43153C8C25F0041287987250F1E3CABAC8C2177"
-        .Add "Microsoft Online Svcs BPOS APAC CA5", "D0BB3E3DFBFB86C0EEE2A047E328609E6E1F185E"
-        .Add "*.EGO.GOV.TR", "C69F28C825139E65A646C434ACA5A1D200295DB1"
-        .Add "Microsoft IPTVe CA", "BED412B1334D7DFCEBA3015E5F9F905D571C45CF"
-        .Add "Microsoft Online Svcs CA5", "A81706D31E6F5C791CD9D3B1B9C63464954BA4F5"
-        .Add "Microsoft Online Svcs BPOS EMEA CA3", "A7B5531DDC87129E2C3BB14767953D6745FB14A6"
-        .Add "Microsoft Online Svcs BPOS EMEA CA1", "A35A8C727E88BCCA40A3F9679CE8CA00C26789FD"
-        .Add "Microsoft Online Svcs CA1", "A221D360309B5C3C4097C44CC779ACC5A9845B66"
-        .Add "Microsoft Online CA001", "A1505D9843C826DD67ED4EA5209804BDBB0DF502"
-        .Add "Microsoft Online Svcs CA3", "8977E8569D2A633AF01D0394851681CE122683A6"
-        .Add "Microsoft Online Svcs BPOS EMEA CA6", "838FFD509DE868F481C29819992E38A4F7082873"
-        .Add "Microsoft Online Svcs BPOS CA1", "7613BF0BA261006CAC3ED2DDBEF343425357F18B"
-        .Add "Microsoft Online Svcs CA4", "6690C02B922CBD3FF0D0A5994DBD336592887E3F"
-        .Add "Microsoft Online Svcs CA4", "5D5185DF1EB7DC76015422EC8138A5724BEE2886"
-        .Add "AC DG Tresor SSL", "5CE339465F41A1E423149F65544095404DE6EBE2"
-        .Add "Microsoft Online Svcs BPOS CA2", "587B59FB52D8A683CBE1CA00E6393D7BB923BC92"
-        .Add "Microsoft Online Svcs BPOS CA2", "4ED8AA06D1BC72CA64C47B1DFE05ACC8D51FC76F"
-        .Add "Microsoft Online Svcs CA5", "4DF13947493CFF69CDE554881C5F114E97C3D03B"
-        .Add "*.google.com", "4D8547B7F864132A7F62D9B75B068521F10B68E3"
-        .Add "CN=Microsoft Online Svcs BPOS APAC CA4", "3A26012171855D4020C973BEC3F4F9DA45BD2B83"
-        .Add "Microsoft Online Svcs CA3", "374D5B925B0BD83494E656EB8087127275DB83CE"
-        .Add "Microsoft Online Svcs BPOS EMEA CA4", "330D8D3FD325A0E5FDDDA27013A2E75E7130165F"
-        .Add "Microsoft Online Svcs CA1", "23EF3384E21F70F034C467D4CBA6EB61429F174E"
-        .Add "Microsoft Online Svcs CA6", "09FF2CC86CEEFA8A8BB3F2E3E84D6DA3FABBF63E"
-        .Add "Microsoft Online Svcs BPOS EMEA CA5", "09271DD621EBD3910C2EA1D059F99B8181405A17"
-        .Add "Microsoft Online Svcs BPOS APAC CA6", "08738A96A4853A52ACEF23F782E8E1FEA7BCED02"
-        .Add "DSDTestProvider", "02C2D931062D7B1DC2A5C7F5F0685064081FB221"
-        .Add "www.live.fi", "08E4987249BC450748A4A78133CBF041A3510033"
-        .Add "D-LINK CORPORATION", "3EB44E5FFE6DC72DED703E99902722DB38FFD1CB"
-        .Add "NIC Certifying Authority", "4822824ECE7ED1450C039AA077DC1F8AE3489BBF"
-        .Add "Alpha Networks Inc.", "7311E77EC400109D6A5326D8F6696204FD59AA3B"
-        .Add "*.xboxlive.com", "8B2E65A5DA17FCCCBCDE7EF87B0C0ED5D0701F9F"
-        .Add "KEEBOX, INC", "915A478DB939925DA8D9AEA12D8BBA140D26599C"
-        .Add "eDellRoot", "98A04E4163357790C4A79E6D713FF0AF51FE6927"
-        .Add "NIC CA 2011", "C6796490CDEEAAB31AED798752ECD003E6866CB2"
-        .Add "NIC CA 2014", "D2DBF71823B2B8E78F5958096150BFCB97CC388A"
-        .Add "TRENDnet, Inc.", "DB5042ED256FF426867B332887ECCE2D95E79614"
-        .Add "MCSHOLDING TEST", "E1F3591E769865C4E447ACC37EAFC9E2BFE4C576"
-        .Add "DarkMatter High Assurance CA", "D3FD325D0F2259F693DD789430E3A9430BB59B98"
-        .Add "127.0.0.1", "C597D4E7FF9CE5BD3EC321C11827FCA9294A6BA1"
-        .Add "DarkMatter Assured CA", "9FEB091E053D1C453C789E8E9C446D31CB177ED9"
-        .Add "DarkMatter High Assurance CA", "8835437D387BBB1B58FF5A0FF8D003D8FE04AED4"
-        .Add "DarkMatter Assured CA", "6B6FA65B1BDC2A0F3A7E66B590F93297B8EB56B9"
-        .Add "DarkMatter Secure CA", "6A2C691767C2F1999B8C020CBAB44756A99A0C41"
-        .Add "DarkMatter Secure CA", "3AD010247A8F1E991F8DDE5D47989CB5202E5614"
-        .Add "SenncomRootCA", "1990649205B55EAB5D692E9EDB1BE0DDD3B037DE"
-        .Add "Information Security Certification Authority CA", "EE45853E5C81DB8FDBB7F92C18B20972C744911C"
-        .Add "Solarwinds Worldwide, LLC", "47D92D49E6F7F296260DA1AF355F941EB25360C4"
-    End With
     
-    LoadLoLBinList
+    'LOAD DISALLOWED CERTIFICATES (O7)
     
-    AppendErrorLogCustom "LoadStuff - End"
+    Set colDisallowedCert = LoadEncryptedResFileAsCollection("database\DisallowedCert.txt", 113, ";")
+    
+    
+    'LOAD WINDOWS SERVICE (O23 - Service)
+    'Note: this list is only used to improve scan speed
+    
+    Set oDict.dSafeSvcPath = LoadEncryptedResFileAsDictionary("database\ServicePath.txt", 115, ",", True)
+    Set oDict.dSafeSvcFilename = LoadEncryptedResFileAsDictionary("database\ServiceFilename.txt", 116, vbNullString, False)
+    
+    
+    'LOAD MAPPED DRIVERS (O23 - Drivers)
+    
+    Set oDict.DriverMapped = LoadEncryptedResFileAsDictionary("database\DriverMapped.txt", 117, vbNullString, True)
+    
+    
+    AppendErrorLogCustom "LoadDatabase - End"
     Exit Sub
-    
 ErrorHandler:
-    ErrorMsg Err, "modMain_LoadStuff"
+    ErrorMsg Err, "LoadDatabase"
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -1901,6 +1391,8 @@ Public Sub StartScan()
             Call GetProcesses(gProcess)
         End If
     End If
+    
+    LoadDatabase
     
     Dim i&
     'load ignore list
@@ -3912,7 +3404,8 @@ Public Sub FlushDNS()
     On Error GoTo ErrorHandler:
     If GetServiceRunState("dnscache") <> SERVICE_RUNNING Then StartService "dnscache"
 
-    If Proc.ProcessRun(BuildPath(sSysNativeDir, "ipconfig.exe"), "/flushdns", , vbHide) Then
+    'ipconfig.exe
+    If Proc.ProcessRun(BuildPath(sSysNativeDir, Caes_Decode("jshvwqvv.xSB")), "/flushdns", , vbHide) Then
         Proc.WaitForTerminate , , , 15000
     End If
     
@@ -4433,7 +3926,7 @@ Sub CheckO4_RegRuns()
             
             sData = Reg.GetData(HE.Hive, HE.Key, aValue(i), HE.Redirected)
             
-            If OSver.MajorMinor >= 6.2 Then  ' Win 8+
+            If OSver.IsWindows8OrGreater Then
                 
                 If StrComp(HE.Key, "SOFTWARE\Microsoft\Windows\CurrentVersion\Run", 1) = 0 Then
                     
@@ -4485,8 +3978,6 @@ Sub CheckO4_RegRuns()
                     
                     '//TODO: narrow down to services' SID only: S-1-5-19 + S-1-5-20 + 'UpdatusUser' (NVIDIA)
                     
-                    'If InStr(1, sFile, "SecurityHealth", 1) <> 0 Then Stop
-                    
                     'Note: For services only
                     If StrComp(sFile, PF_64 & "\Windows Sidebar\Sidebar.exe", 1) = 0 And sArgs = "/autoRun" Then
                         If IsMicrosoftFile(sFile) Then bSafe = True
@@ -4498,30 +3989,30 @@ Sub CheckO4_RegRuns()
                         If IsMicrosoftFile(sFile) Then bSafe = True
                     End If
                     
-                    If OSver.MajorMinor = 5 And OSver.IsServer Then '2000 server
-                        If aDes(HE.KeyIndex) = "RunOnce" Then
-                            If WhiteListed(sFile, PF_32 & "\Internet Explorer\Connection Wizard\icwconn1.exe") And sArgs = "/desktop" Then bSafe = True
-                        End If
-                    End If
+'                    If OSver.IsWindows2000 Then
+'                        If WhiteListed(sFile, sWinDir & "\system32\internat.exe") And Len(sArgs) = 0 Then bSafe = True
+'                    End If
+'                    If OSver.IsWindows2000 And OSver.IsServer Then
+'                        If aDes(HE.KeyIndex) = "RunOnce" Then
+'                            If WhiteListed(sFile, PF_32 & "\Internet Explorer\Connection Wizard\icwconn1.exe") And sArgs = "/desktop" Then bSafe = True
+'                        End If
+'                    End If
                     
                     If OSver.MajorMinor <= 6.1 Then 'Win2k-Win7
                         If WhiteListed(sFile, sWinDir & "\system32\CTFMON.EXE") And Len(sArgs) = 0 Then bSafe = True
                     End If
 
-                    If OSver.MajorMinor = 6 Then 'Vista/2008
+                    If OSver.IsWindowsVista Then 'Vista/2008
                         If WhiteListed(sFile, sWinDir & "\system32\rundll32.exe") And sArgs = "oobefldr.dll,ShowWelcomeCenter" Then
                             If IsMicrosoftFile(sWinDir & "\system32\oobefldr.dll") Then bSafe = True
                         End If
-                    
                         If WhiteListed(sFile, PF_64 & "\Windows Sidebar\sidebar.exe") And (sArgs = "/autoRun" Or sArgs = "/detectMem") Then bSafe = True
+                        '\MSASCui.exe
+                        If WhiteListed(sFile, PF_64 & "\" & STR_CONST.WINDOWS_DEFENDER & Caes_Decode("]PXH\NHx.xSB")) And sArgs = "-hide" Then bSafe = True
                     End If
                     
-                    If OSver.MajorMinor = 5 Then
-                        If WhiteListed(sFile, sWinDir & "\system32\internat.exe") And Len(sArgs) = 0 Then bSafe = True
-                    End If
-                    
-                    If OSver.MajorMinor >= 6.2 Then
-                        If WhiteListed(sFile, PF_64 & "\Windows Defender\MSASCuiL.exe") And Len(sArgs) = 0 Then bSafe = True
+                    If OSver.IsWindows8OrGreater Then
+                        If WhiteListed(sFile, PF_64 & "\" & STR_CONST.WINDOWS_DEFENDER & "\MSASCuiL.exe") And Len(sArgs) = 0 Then bSafe = True
                     End If
 
                 End If
@@ -5029,6 +4520,7 @@ Sub CheckO4_RegRuns()
                             'or
                             'remove MountPoints2\Letter
                             AddRegToFix .Reg, REMOVE_KEY, HE.Hive, HE.Key & "\" & aSubKey(i), , , HE.Redirected
+                            AddJumpFile .Jump, JUMP_FILE, sFile
                             .CureType = REGISTRY_BASED
                         End With
                         AddToScanResults result
@@ -5655,6 +5147,11 @@ Sub CheckO4_ActiveSetup() 'Thanks to Helge Klein for explanations
     dWhitelist.Add BuildPath(sWinSysDir, "unregmp2.exe /FirstLogon /Shortcuts /RegBrowsers /ResetMUI"), ""
     dWhitelist.Add BuildPath(sWinSysDir, "unregmp2.exe /ShowWMP"), ""
     dWhitelist.Add BuildPath(sWinSysDir, "unregmp2.exe /FirstLogon"), ""
+    If OSver.IsWindowsVista Then
+        dWhitelist.Add BuildPath(sWinSysDir, "ie4uinit.exe -BaseSettings"), ""
+        dWhitelist.Add BuildPath(sWinSysDir, "ie4uinit.exe -UserIconConfig"), ""
+        dWhitelist.Add BuildPath(sWinSysDir, "RunDLL32.exe IEDKCS32.DLL,BrandIE4 SIGNUP"), ""
+    End If
     
     Dim HE As clsHiveEnum: Set HE = New clsHiveEnum
     HE.Init HE_HIVE_HKLM
@@ -6199,7 +5696,7 @@ Public Sub CheckKnownFoldersHKCU()
     
     aKey(0) = "SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"
     
-    If OSver.IsWindowsVistaOrGreater Then
+    If OSver.IsWindows7OrGreater Then
         aParam(0) = "{1B3EA5DC-B587-4786-B4EF-BD1DC332AEAE}"
         aValue(0) = "%UserProfile%\AppData\Roaming\Microsoft\Windows\Libraries"
         
@@ -6220,7 +5717,9 @@ Public Sub CheckKnownFoldersHKCU()
         
         aParam(6) = "{BFB9D5E0-C6A9-404C-B2B2-AE6DB6AF4968}"
         aValue(6) = "%UserProfile%\Links"
-    
+    End If
+        
+    If OSver.IsWindowsVistaOrGreater Then
         aParam(7) = "Administrative Tools"
         aValue(7) = "%UserProfile%\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Administrative Tools"
     End If
@@ -6707,7 +6206,7 @@ Public Sub CheckEnvVarOther()
     
     ' %PSModulePath% - according to "Missing list"
     
-    If OSver.IsWindowsVistaOrGreater Then
+    If OSver.IsWindows7OrGreater Then
     
         sKeyFull = "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment"
         
@@ -7575,7 +7074,8 @@ Public Sub CheckPolicies()
     HE.AddKey "Software\Microsoft\Windows\CurrentVersion\Group Policy Objects\LocalUser\Software\Microsoft\Windows\CurrentVersion\Policies\System" 'Shared
     HE.AddKey "Software\Microsoft\Windows NT\CurrentVersion\Winlogon" 'WOW
     
-    aValue = Split("DisableRegistryTools|DisableTaskMgr", "|")
+    'DisableRegistryTools|DisableTaskMgr
+    aValue = Split(Caes_Decode("ElxhkwravzDPSS\sVXW`|o\hX[gbSbvpTpC"), "|")
     
     Do While HE.MoveNext
         For i = 0 To UBound(aValue)
@@ -7755,8 +7255,8 @@ Public Sub CheckPolicies()
     
     'Check Windows Defender policies
     HE.Init HE_HIVE_ALL, , HE_REDIR_NO_WOW
-    HE.AddKey Caesar_Decode("TrkAFlEtm`DzQPVTM]GDX_Wdnl AdghsknCiavtG-mJPJ s]\cVVi`hi") ' "Software\Microsoft\Windows Defender\Real-Time Protection"
-    aValue = Split(Caesar_Decode("EsfKrDnqCxy|]JVFIUPyTR_i`f`JnolyvAtAv"), "|") '"DpaDisabled|DisableRealtimeMonitoring"
+    HE.AddKey Caes_Decode("TrkAFlEtm`DzQPVTM]GDX_Wdnl AdghsknCiavtG-mJPJ s]\cVVi`hi") ' "Software\Microsoft\Windows Defender\Real-Time Protection"
+    aValue = Split(Caes_Decode("EsfKrDnqCxy|]JVFIUPyTR_i`f`JnolyvAtAv"), "|") '"DpaDisabled|DisableRealtimeMonitoring"
     Do While HE.MoveNext
         For i = 0 To UBound(aValue)
             lData = Reg.GetDword(HE.Hive, HE.Key, aValue(i))
@@ -7782,9 +7282,9 @@ Public Sub CheckPolicies()
         Next
     Loop
     HE.Init HE_HIVE_ALL, , HE_REDIR_NO_WOW
-    HE.AddKey Caesar_Decode("TrkAFlEtm`DzQPVTM]GDX_Wdnl AdghsknC") '"Software\Microsoft\Windows Defender"
-    HE.AddKey Caesar_Decode("TrkAFlEtmcJIHDLJZErVRcbhf_oYVjqivFD SvyzKCFU") '"Software\Policies\Microsoft\Windows Defender"
-    aValue = Split(Caesar_Decode("ElxhkwrPEMDjOZZFYN|kXdTWc^vksjYnyDD"), "|") '"DisableAntiSpyware|DisableAntiVirus"
+    HE.AddKey Caes_Decode("TrkAFlEtm`DzQPVTM]GDX_Wdnl AdghsknC") '"Software\Microsoft\Windows Defender"
+    HE.AddKey Caes_Decode("TrkAFlEtmcJIHDLJZErVRcbhf_oYVjqivFD SvyzKCFU") '"Software\Policies\Microsoft\Windows Defender"
+    aValue = Split(Caes_Decode("ElxhkwrPEMDjOZZFYN|kXdTWc^vksjYnyDD"), "|") '"DisableAntiSpyware|DisableAntiVirus"
     Do While HE.MoveNext
         For i = 0 To UBound(aValue)
             lData = Reg.GetDword(HE.Hive, HE.Key, aValue(i))
@@ -7811,8 +7311,8 @@ Public Sub CheckPolicies()
     Loop
     If OSver.IsWindows10OrGreater And OSver.Build >= 18362 Then
         sHit = vbNullString
-        sKey = Caesar_Decode("INQTe^BuKPvODwjNJ[Z`^WgQNbianxv KnqrCuxMs_FDY\[P`") '"HKLM\Software\Microsoft\Windows Defender\Features"
-        sValue = Caesar_Decode("UdrwnC]GFMzzSJRS") '"TamperProtection"
+        sKey = Caes_Decode("INQTe^BuKPvODwjNJ[Z`^WgQNbianxv KnqrCuxMs_FDY\[P`") '"HKLM\Software\Microsoft\Windows Defender\Features"
+        sValue = Caes_Decode("UdrwnC]GFMzzSJRS") '"TamperProtection"
         lData = Reg.GetDword(HKEY_ANY, sKey, sValue)
         If Reg.StatusCode <> ERROR_SUCCESS Then
             sHit = "O7 - Policy: " & sKey & ": [" & sValue & "] = " & Reg.StatusCodeDesc()
@@ -7857,7 +7357,7 @@ Public Sub CheckPolicyUAC()
     HE.AddKey "SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" 'key - x64 Shared
     
     DC.AddValueData "ConsentPromptBehaviorAdmin", Array(2, 5)
-    DC.AddValueData "ConsentPromptBehaviorUser", 3
+    DC.AddValueData "ConsentPromptBehaviorUser", IIf(OSver.IsWindowsVista, 1, 3)
     DC.AddValueData "EnableLUA", 1
     DC.AddValueData "PromptOnSecureDesktop", 1
     DC.AddValueData "EnableUIADesktopToggle", 0
@@ -9049,7 +8549,7 @@ Public Sub RunCleanMgr()
     cKeys.Add 2, "Temporary Setup Files"
     cKeys.Add 2, "Thumbnail Cache"
     cKeys.Add 2, "Update Cleanup"
-    cKeys.Add 2, "Windows Defender" '8/10
+    cKeys.Add 2, STR_CONST.WINDOWS_DEFENDER '8/10
     cKeys.Add 2, "User file versions" '8/10
     cKeys.Add 2, "Upgrade Discarded Files"
     cKeys.Add 2, "WebClient and WebPublisher Cache" 'XP
@@ -9701,14 +9201,14 @@ Public Sub CheckO14Item()
     
     'SearchAssistant = http://ie.search.msn.com/{SUB_RFC1766}/srchasst/srchasst.htm
     If (sSearchAssis <> "http://ie.search.msn.com/{SUB_RFC1766}/srchasst/srchasst.htm" And _
-      sSearchAssis <> g_DEFSEARCHASS And Len(sSearchAssis) <> 0) Or Not bHideMicrosoft Then
+      Len(sSearchAssis) <> 0) Or Not bHideMicrosoft Then
         sHit = "O14 - IERESET.INF: SearchAssistant = " & sSearchAssis
         If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O14", sHit
     End If
     
     'CustomizeSearch = http://ie.search.msn.com/{SUB_RFC1766}/srchasst/srchcust.htm
     If (sCustSearch <> "http://ie.search.msn.com/{SUB_RFC1766}/srchasst/srchcust.htm" And _
-      sCustSearch <> g_DEFSEARCHCUST And Len(sCustSearch) <> 0) Or Not bHideMicrosoft Then
+      Len(sCustSearch) <> 0) Or Not bHideMicrosoft Then
         sHit = "O14 - IERESET.INF: CustomizeSearch = " & sCustSearch
         If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O14", sHit
     End If
@@ -9716,8 +9216,7 @@ Public Sub CheckO14Item()
     'SEARCH_PAGE_URL = http://www.microsoft.com/isapi/redir.dll?prd=ie&ar=iesearch
     If (sSearchPage <> "http://www.microsoft.com/isapi/redir.dll?prd=ie&ar=iesearch" And _
       sSearchPage <> "http://www.msn.com" And _
-      sSearchPage <> "https://www.msn.com" And _
-      sSearchPage <> g_DEFSEARCHPAGE) Or Not bHideMicrosoft Then
+      sSearchPage <> "https://www.msn.com") Or Not bHideMicrosoft Then
         sHit = "O14 - IERESET.INF: [Strings] SEARCH_PAGE_URL = " & sSearchPage
         If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O14", sHit
     End If
@@ -9728,8 +9227,7 @@ Public Sub CheckO14Item()
     If (sStartPage <> "http://www.msn.com" And _
        sStartPage <> "https://www.msn.com" And _
        sStartPage <> "http://www.microsoft.com/isapi/redir.dll?prd=ie&pver=5.5&ar=msnhome" And _
-       sStartPage <> "http://www.microsoft.com/isapi/redir.dll?prd=ie&pver=6&ar=msnhome" And _
-       sStartPage <> g_DEFSTARTPAGE) Or Not bHideMicrosoft Then
+       sStartPage <> "http://www.microsoft.com/isapi/redir.dll?prd=ie&pver=6&ar=msnhome") Or Not bHideMicrosoft Then
         sHit = "O14 - IERESET.INF: [Strings] START_PAGE_URL = " & sStartPage
         If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O14", sHit
     End If
@@ -9740,8 +9238,7 @@ Public Sub CheckO14Item()
         If (sMsStartPage <> "http://www.msn.com" And _
            sMsStartPage <> "https://www.msn.com" And _
            sMsStartPage <> "http://www.microsoft.com/isapi/redir.dll?prd=ie&pver=5.5&ar=msnhome" And _
-           sMsStartPage <> "http://www.microsoft.com/isapi/redir.dll?prd=ie&pver=6&ar=msnhome" And _
-           sMsStartPage <> g_DEFSTARTPAGE) Or Not bHideMicrosoft Then
+           sMsStartPage <> "http://www.microsoft.com/isapi/redir.dll?prd=ie&pver=6&ar=msnhome") Or Not bHideMicrosoft Then
             sHit = "O14 - IERESET.INF: [Strings] MS_START_PAGE_URL = " & sMsStartPage
             If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O14", sHit
         End If
@@ -9777,19 +9274,16 @@ Public Sub FixO14Item(sItem$, result As SCAN_RESULT)
 
             If InStr(sLine, "SearchAssistant") > 0 Then
                 sFixedIeResetInf = sFixedIeResetInf & "HKLM,""Software\Microsoft\Internet Explorer\Search"",""SearchAssistant"",0,""" & _
-                    IIf(Len(g_DEFSEARCHASS) <> 0, g_DEFSEARCHASS, vbNullString) & """" & vbCrLf
+                    vbNullString & """" & vbCrLf
             ElseIf InStr(sLine, "CustomizeSearch") > 0 Then
                 sFixedIeResetInf = sFixedIeResetInf & "HKLM,""Software\Microsoft\Internet Explorer\Search"",""CustomizeSearch"",0,""" & _
-                    IIf(Len(g_DEFSEARCHCUST) <> 0, g_DEFSEARCHCUST, vbNullString) & """" & vbCrLf
+                    vbNullString & """" & vbCrLf
             ElseIf InStr(sLine, "START_PAGE_URL=") = 1 Then
-                sFixedIeResetInf = sFixedIeResetInf & "START_PAGE_URL=""" & _
-                    IIf(Len(g_DEFSTARTPAGE) <> 0, g_DEFSTARTPAGE, "https://www.msn.com") & """" & vbCrLf
+                sFixedIeResetInf = sFixedIeResetInf & "START_PAGE_URL=""" & "https://www.msn.com" & """" & vbCrLf
             ElseIf InStr(sLine, "SEARCH_PAGE_URL=") = 1 Then
-                sFixedIeResetInf = sFixedIeResetInf & "SEARCH_PAGE_URL=""" & _
-                    IIf(Len(g_DEFSEARCHPAGE) <> 0, g_DEFSEARCHPAGE, "https://www.msn.com") & """" & vbCrLf
+                sFixedIeResetInf = sFixedIeResetInf & "SEARCH_PAGE_URL=""" & "https://www.msn.com" & """" & vbCrLf
             ElseIf InStr(sLine, "MS_START_PAGE_URL=") = 1 Then
-                sFixedIeResetInf = sFixedIeResetInf & "MS_START_PAGE_URL=""" & _
-                    IIf(Len(g_DEFSTARTPAGE) <> 0, g_DEFSTARTPAGE, "https://www.msn.com") & """" & vbCrLf
+                sFixedIeResetInf = sFixedIeResetInf & "MS_START_PAGE_URL=""" & "https://www.msn.com" & """" & vbCrLf
             Else
                 sFixedIeResetInf = sFixedIeResetInf & sLine & vbCrLf
             End If
@@ -11028,14 +10522,12 @@ Public Sub CheckO20Item()
         sSubkeys = Split(Reg.EnumSubKeys(HKEY_LOCAL_MACHINE, sWinLogon, Wow6432Redir), "|")
         If UBound(sSubkeys) <> -1 Then
             For i = 0 To UBound(sSubkeys)
-                If (InStr(1, "*" & sSafeWinlogonNotify & "*", "*" & sSubkeys(i) & "*", vbTextCompare) = 0) Or bIgnoreAllWhitelists Then
-                    sFile = Reg.GetString(HKEY_LOCAL_MACHINE, sWinLogon & "\" & sSubkeys(i), "DllName", Wow6432Redir)
-                    
-                    sFile = FormatFileMissing(sFile)
-                    SignVerifyJack sFile, result.SignResult
-                    
+                sFile = Reg.GetString(HKEY_LOCAL_MACHINE, sWinLogon & "\" & sSubkeys(i), "DllName", Wow6432Redir)
+                sFile = FormatFileMissing(sFile)
+                SignVerifyJack sFile, result.SignResult
+                
+                If (Not result.SignResult.isMicrosoftSign) Or (Not bHideMicrosoft) Or bIgnoreAllWhitelists Then
                     'O20 - Winlogon Notify:
-                    'O20-32 - Winlogon Notify:
                     sHit = IIf(bIsWin32, "O20", IIf(Wow6432Redir, "O20-32", "O20")) & " - HKLM\..\Winlogon\Notify\" & sSubkeys(i) & _
                         ": [DllName] = " & sFile & FormatSign(result.SignResult)
                     If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
@@ -11063,9 +10555,6 @@ End Sub
 Public Sub FixO20Item(sItem$, result As SCAN_RESULT)
     'O20 - AppInit_DLLs: file.dll
     'O20 - Winlogon Notify: bladibla - c:\file.dll
-    '
-    '* clear appinit regval (don't delete it)
-    '* kill regkey (for winlogon notify)
     
     FixIt result
 End Sub
@@ -11983,20 +11472,11 @@ Public Sub CheckO23Item_Drivers(sServices() As String, dLegitService As clsTrick
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "CheckO23Item_Drivers - Begin"
     
-    'Device drivers
-    
-    'Похоже, нужно дорабатывать процесс проверки ЭЦП
-    'У драйверов Microsoft в основном идёт подпись только по сертификатам, внутренней нет.
-    'У остальных - стоит кросс-подпись Microsoft, следовательно её нужно отфильтровать, и смотреть есть ли сторонняя подпись.
-    'Если есть, то выводить в лог + её получателя.
-    '
     '+ нужно определяться, каким методом производить удаление драйвера.
     'Судя по анализу разницы между логами, полученными через NtQuerySystemInformation и чтение реестра,
     'по всей видимости некоторые из драйверов подгрузили другие драйвера, и в этом случае непонятно как их удалять.
     'Т.е. для этих записей удаление через ветку служб отпадает.
-    
-    'Да и вообще, есть ли смысл получать список драйверов с помощью программы, у которой нет механизма антируткита ???
-    
+    '
     ' Uninstall Devices
     '
     'https://docs.microsoft.com/en-us/windows-hardware/drivers/install/using-setupapi-to-uninstall-devices-and-driver-packages
@@ -12005,31 +11485,6 @@ Public Sub CheckO23Item_Drivers(sServices() As String, dLegitService As clsTrick
     ' Uninstall Drivers
     '
     'http://www.cyberforum.ru/drivers-programming/thread1300444.html#post6857698
-    
-    'List of mapped driver filenames:
-    
-    Dim dMapped As clsTrickHashTable
-    Set dMapped = New clsTrickHashTable
-    dMapped.CompareMode = vbTextCompare
-    dMapped.Add BuildPath(sWinSysDir, "DRIVERS\DUMP_DUMPFVE.SYS"), 0&
-    dMapped.Add BuildPath(sWinSysDir, "DRIVERS\DUMP_DISKDUMP.SYS"), 0&
-    dMapped.Add BuildPath(sWinSysDir, "DRIVERS\DUMP_ATAPI.SYS"), 0&
-    dMapped.Add BuildPath(sWinSysDir, "DRIVERS\DUMP_DUMPATA.SYS"), 0&
-    dMapped.Add BuildPath(sWinSysDir, "DRIVERS\DUMP_IASTORA.SYS"), 0&
-    dMapped.Add BuildPath(sWinSysDir, "DRIVERS\DUMP_MSAHCI.SYS"), 0&
-    dMapped.Add BuildPath(sWinSysDir, "DRIVERS\DUMP_STORAHCI.SYS"), 0&
-    dMapped.Add BuildPath(sWinSysDir, "DRIVERS\DUMP_AMDSATA.SYS"), 0&
-    dMapped.Add BuildPath(sWinSysDir, "DRIVERS\DUMP_AMD_SATA.SYS"), 0&
-    dMapped.Add BuildPath(sWinSysDir, "Drivers\dump_pvscsi.sys"), 0&
-    dMapped.Add BuildPath(sWinSysDir, "Drivers\dump_vmscsi.sys"), 0&
-    dMapped.Add BuildPath(sWinSysDir, "Drivers\dump_megasas.sys"), 0&
-    dMapped.Add BuildPath(sWinSysDir, "Drivers\DUMP_MEGASAS2.sys"), 0&
-    dMapped.Add BuildPath(sWinSysDir, "Drivers\dump_LSI_SCSI.sys"), 0& 'Win10
-    dMapped.Add BuildPath(sWinSysDir, "Drivers\dump_LSI_SAS.sys"), 0&  'Win10
-    dMapped.Add BuildPath(sWinSysDir, "Drivers\dump_WMILIB.SYS"), 0&  'WinXP
-    dMapped.Add BuildPath(sWinSysDir, "Drivers\DUMP_FTOIIS.SYS"), 0&
-    dMapped.Add BuildPath(sWinSysDir, "Drivers\dump_dumpstorport.sys"), 0& 'Win10
-    dMapped.Add BuildPath(sWinSysDir, "Drivers\dump_stornvme.sys"), 0& 'Win10
     
     'Enum Drivers via NtQuerySystemInformation:
     
@@ -12203,7 +11658,7 @@ Continue2:
             bSafe = False
             'skip Microsoft drivers mapped to non-existent filename
             If Not FileExists(sFile) Then
-                If dMapped.Exists(sFile) Then
+                If oDict.DriverMapped.Exists(sFile) Then
                     bSafe = True
                 End If
             End If
@@ -12249,439 +11704,28 @@ Public Function IsWinServiceFileName(sFilePath As String, Optional sArgument As 
     
     On Error GoTo ErrorHandler:
     
-    Static isInit As Boolean
     Dim sFilename As String
-    Dim sArgBase As String
+    Dim sArgDB As String
     
-    If Not isInit Then
-        Dim vKey, prefix$
-        isInit = True
-        Set oDictSRV = New clsTrickHashTable
-        
-        'Note: this list is used to improve scan speed
-        
-        With oDictSRV
-            .CompareMode = TextCompare
-            .Add "<PF32>\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe", 0&
-            .Add "<PF32>\Common Files\Microsoft Shared\OFFICE12\ODSERV.EXE", 0&
-            .Add "<PF32>\Common Files\Microsoft Shared\Phone Tools\CoreCon\11.0\bin\IpOverUsbSvc.exe", 0&
-            .Add "<PF32>\Common Files\Microsoft Shared\Source Engine\OSE.exe", 0&
-            .Add "<PF32>\Common Files\Microsoft Shared\VS7DEBUG\MDM.exe", 0&
-            .Add "<PF32>\Microsoft Office\Office12\GrooveAuditService.exe", 0&
-            .Add "<PF32>\Microsoft Office\Office14\GROOVE.EXE", 0&
-            .Add "<PF32>\Microsoft Application Virtualization Client\sftvsa.exe", 0&
-            .Add "<PF32>\Microsoft Visual Studio\Shared\Common\DiagnosticsHub.Collection.Service\StandardCollector.Service.exe", 0&
-            .Add "<PF32>\Windows Kits\8.1\App Certification Kit\fussvc.exe", 0&
-            .Add "<PF32>\Skype\Updater\Updater.exe", 0&
-            .Add "<PF32>\Microsoft\EdgeUpdate\MicrosoftEdgeUpdate.exe", 0&
-            .Add "<PF64>\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe", 0&
-            .Add "<PF64>\Common Files\Microsoft Shared\OFFICE12\ODSERV.EXE", 0&
-            .Add "<PF64>\Common Files\Microsoft Shared\OfficeSoftwareProtectionPlatform\OSPPSVC.exe", 0&
-            .Add "<PF64>\Common Files\Microsoft Shared\Windows Live\WLIDSVC.EXE", 0&
-            .Add "<PF64>\Microsoft Office\Office12\GrooveAuditService.exe", 0&
-            .Add "<PF64>\Microsoft Office\Office14\GROOVE.EXE", 0&
-            .Add "<PF64>\Microsoft SQL Server\90\Shared\sqlwriter.exe", 0&
-            .Add "<PF64>\Microsoft Update Health Tools\uhssvc.exe", 0&
-            .Add "<PF64>\rempl\sedsvc.exe", 0&
-            .Add "<PF64>\Windows Live\Mesh\wlcrasvc.exe", 0&
-            .Add "<PF64>\Windows Media Player\wmpnetwk.exe", 0&
-            .Add "<SysRoot>\ehome\ehRecvr.exe", 0&
-            .Add "<SysRoot>\ehome\ehsched.exe", 0&
-            .Add "<SysRoot>\ehome\ehstart.dll", 0&
-            .Add "<SysRoot>\Microsoft.NET\Framework64\v3.0\Windows Communication Foundation\infocard.exe", 0&
-            .Add "<SysRoot>\Microsoft.Net\Framework64\v3.0\WPF\PresentationFontCache.exe", 0&
-            .Add "<SysRoot>\PCHealth\HelpCtr\Binaries\pchsvc.dll", 0&
-            .Add "<SysRoot>\servicing\TrustedInstaller.exe", 0&
-            .Add "<SysRoot>\system32\spool\drivers\W32X86\3\PrintConfig.dll", 0&
-            .Add "<SysRoot>\System32\advapi32.dll", 0&
-            .Add "<SysRoot>\System32\aelupsvc.dll", 0&
-            .Add "<SysRoot>\System32\AJRouter.dll", 0&
-            .Add "<SysRoot>\System32\alg.exe", 0&
-            .Add "<SysRoot>\System32\APHostService.dll", 0&
-            .Add "<SysRoot>\System32\appidsvc.dll", 0&
-            .Add "<SysRoot>\System32\appinfo.dll", 0&
-            .Add "<SysRoot>\System32\appmgmts.dll", 0&
-            .Add "<SysRoot>\System32\AppReadiness.dll", 0&
-            .Add "<SysRoot>\System32\appxdeploymentserver.dll", 0&
-            .Add "<SysRoot>\System32\AudioEndpointBuilder.dll", 0&
-            .Add "<SysRoot>\System32\Audiosrv.dll", 0&
-            .Add "<SysRoot>\System32\AxInstSV.dll", 0&
-            .Add "<SysRoot>\System32\bdesvc.dll", 0&
-            .Add "<SysRoot>\System32\bfe.dll", 0&
-            .Add "<SysRoot>\System32\bisrv.dll", 0&
-            .Add "<SysRoot>\System32\browser.dll", 0&
-            .Add "<SysRoot>\System32\BthHFSrv.dll", 0&
-            .Add "<SysRoot>\System32\bthserv.dll", 0&
-            .Add "<SysRoot>\System32\CDPSvc.dll", 0&
-            .Add "<SysRoot>\System32\CDPUserSvc.dll", 0&
-            .Add "<SysRoot>\System32\certprop.dll", 0&
-            .Add "<SysRoot>\System32\cisvc.exe", 0&
-            .Add "<SysRoot>\System32\ClipSVC.dll", 0&
-            .Add "<SysRoot>\System32\coremessaging.dll", 0&
-            .Add "<SysRoot>\System32\cryptsvc.dll", 0&
-            .Add "<SysRoot>\System32\cscsvc.dll", 0&
-            .Add "<SysRoot>\System32\das.dll", 0&
-            .Add "<SysRoot>\System32\dcpsvc.dll", 0&
-            .Add "<SysRoot>\System32\defragsvc.dll", 0&
-            .Add "<SysRoot>\System32\DeviceSetupManager.dll", 0&
-            .Add "<SysRoot>\System32\DevQueryBroker.dll", 0&
-            .Add "<SysRoot>\System32\DFSR.exe", 0&
-            .Add "<SysRoot>\System32\dhcpcore.dll", 0&
-            .Add "<SysRoot>\System32\dhcpcsvc.dll", 0&
-            .Add "<SysRoot>\System32\DiagSvcs\DiagnosticsHub.StandardCollector.Service.exe", 0&
-            .Add "<SysRoot>\System32\diagtrack.dll", 0&
-            .Add "<SysRoot>\System32\dllhost.exe", 0&
-            .Add "<SysRoot>\System32\dmadmin.exe", 0&
-            .Add "<SysRoot>\System32\dmserver.dll", 0&
-            .Add "<SysRoot>\System32\dmwappushsvc.dll", 0&
-            .Add "<SysRoot>\System32\dnsrslvr.dll", 0&
-            .Add "<SysRoot>\System32\dot3svc.dll", 0&
-            .Add "<SysRoot>\System32\dps.dll", 0&
-            .Add "<SysRoot>\System32\DsSvc.dll", 0&
-            .Add "<SysRoot>\System32\eapsvc.dll", 0&
-            .Add "<SysRoot>\System32\efssvc.dll", 0&
-            .Add "<SysRoot>\System32\embeddedmodesvc.dll", 0&
-            .Add "<SysRoot>\System32\emdmgmt.dll", 0&
-            .Add "<SysRoot>\System32\EnterpriseAppMgmtSvc.dll", 0&
-            .Add "<SysRoot>\System32\ersvc.dll", 0&
-            .Add "<SysRoot>\System32\es.dll", 0&
-            .Add "<SysRoot>\System32\fdPHost.dll", 0&
-            .Add "<SysRoot>\System32\fdrespub.dll", 0&
-            .Add "<SysRoot>\System32\fhsvc.dll", 0&
-            .Add "<SysRoot>\System32\flightsettings.dll", 0&
-            .Add "<SysRoot>\System32\FntCache.dll", 0&
-            .Add "<SysRoot>\System32\FrameServer.dll", 0&
-            .Add "<SysRoot>\System32\fxssvc.exe", 0&
-            .Add "<SysRoot>\System32\GeofenceMonitorService.dll", 0&
-            .Add "<SysRoot>\System32\gpsvc.dll", 0&
-            .Add "<SysRoot>\System32\hidserv.dll", 0&
-            .Add "<SysRoot>\System32\hvhostsvc.dll", 0&
-            .Add "<SysRoot>\System32\icsvc.dll", 0&
-            .Add "<SysRoot>\System32\icsvcext.dll", 0&
-            .Add "<SysRoot>\System32\IEEtwCollector.exe", 0&
-            .Add "<SysRoot>\System32\ikeext.dll", 0&
-            .Add "<SysRoot>\System32\imapi.exe", 0&
-            .Add "<SysRoot>\System32\ipbusenum.dll", 0&
-            .Add "<SysRoot>\System32\iphlpsvc.dll", 0&
-            .Add "<SysRoot>\System32\ipnathlp.dll", 0&
-            .Add "<SysRoot>\System32\ipsecsvc.dll", 0&
-            .Add "<SysRoot>\System32\irmon.dll", 0&
-            .Add "<SysRoot>\System32\iscsiexe.dll", 0&
-            .Add "<SysRoot>\System32\keyiso.dll", 0&
-            .Add "<SysRoot>\System32\kmsvc.dll", 0&
-            .Add "<SysRoot>\System32\lfsvc.dll", 0&
-            .Add "<SysRoot>\System32\LicenseManagerSvc.dll", 0&
-            .Add "<SysRoot>\System32\ListSvc.dll", 0&
-            .Add "<SysRoot>\System32\lltdsvc.dll", 0&
-            .Add "<SysRoot>\System32\lmhsvc.dll", 0&
-            .Add "<SysRoot>\System32\locator.exe", 0&
-            .Add "<SysRoot>\System32\lsass.exe", 0&
-            .Add "<SysRoot>\System32\lsm.dll", 0&
-            .Add "<SysRoot>\System32\MessagingService.dll", 0&
-            .Add "<SysRoot>\System32\mmcss.dll", 0&
-            .Add "<SysRoot>\System32\mnmsrvc.exe", 0&
-            .Add "<SysRoot>\System32\moshost.dll", 0&
-            .Add "<SysRoot>\System32\mpssvc.dll", 0&
-            .Add "<SysRoot>\System32\msdtc.exe", 0&
-            .Add "<SysRoot>\System32\msdtckrm.dll", 0&
-            .Add "<SysRoot>\System32\msiexec.exe", "/V"
-            .Add "<SysRoot>\System32\mspmsnsv.dll", 0&
-            .Add "<SysRoot>\System32\mswsock.dll", 0&
-            .Add "<SysRoot>\System32\ncasvc.dll", 0&
-            .Add "<SysRoot>\System32\ncbservice.dll", 0&
-            .Add "<SysRoot>\System32\NcdAutoSetup.dll", 0&
-            .Add "<SysRoot>\System32\netlogon.dll", 0&
-            .Add "<SysRoot>\System32\netman.dll", 0&
-            .Add "<SysRoot>\System32\netprofm.dll", 0&
-            .Add "<SysRoot>\System32\netprofmsvc.dll", 0&
-            .Add "<SysRoot>\System32\NetSetupSvc.dll", 0&
-            .Add "<SysRoot>\System32\NgcCtnrSvc.dll", 0&
-            .Add "<SysRoot>\System32\ngcsvc.dll", 0&
-            .Add "<SysRoot>\System32\nlasvc.dll", 0&
-            .Add "<SysRoot>\System32\nsisvc.dll", 0&
-            .Add "<SysRoot>\System32\ntmssvc.dll", 0&
-            .Add "<SysRoot>\System32\osrss.dll", 0&
-            .Add "<SysRoot>\System32\p2psvc.dll", 0&
-            .Add "<SysRoot>\System32\pcasvc.dll", 0&
-            .Add "<SysRoot>\System32\peerdistsvc.dll", 0&
-            .Add "<SysRoot>\System32\PhoneService.dll", 0&
-            .Add "<SysRoot>\System32\PimIndexMaintenance.dll", 0&
-            .Add "<SysRoot>\System32\pla.dll", 0&
-            .Add "<SysRoot>\System32\pnrpauto.dll", 0&
-            .Add "<SysRoot>\System32\pnrpsvc.dll", 0&
-            .Add "<SysRoot>\System32\profsvc.dll", 0&
-            .Add "<SysRoot>\System32\provsvc.dll", 0&
-            .Add "<SysRoot>\System32\qagentRT.dll", 0&
-            .Add "<SysRoot>\System32\qmgr.dll", 0&
-            .Add "<SysRoot>\System32\qwave.dll", 0&
-            .Add "<SysRoot>\System32\rasauto.dll", 0&
-            .Add "<SysRoot>\System32\rasmans.dll", 0&
-            .Add "<SysRoot>\System32\RDXService.dll", 0&
-            .Add "<SysRoot>\System32\regsvc.dll", 0&
-            .Add "<SysRoot>\System32\RMapi.dll", 0&
-            .Add "<SysRoot>\System32\RpcEpMap.dll", 0&
-            .Add "<SysRoot>\System32\rpcss.dll", 0&
-            .Add "<SysRoot>\System32\rsvp.exe", 0&
-            .Add "<SysRoot>\System32\SCardSvr.dll", 0&
-            .Add "<SysRoot>\System32\SCardSvr.exe", 0&
-            .Add "<SysRoot>\System32\ScDeviceEnum.dll", 0&
-            .Add "<SysRoot>\System32\schedsvc.dll", 0&
-            .Add "<SysRoot>\System32\SDRSVC.dll", 0&
-            .Add "<SysRoot>\System32\SearchIndexer.exe", 0&
-            .Add "<SysRoot>\System32\seclogon.dll", 0&
-            .Add "<SysRoot>\System32\sens.dll", 0&
-            .Add "<SysRoot>\System32\SensorDataService.exe", 0&
-            .Add "<SysRoot>\System32\SensorService.dll", 0&
-            .Add "<SysRoot>\System32\sensrsvc.dll", 0&
-            .Add "<SysRoot>\System32\services.exe", 0&
-            .Add "<SysRoot>\System32\sessenv.dll", 0&
-            .Add "<SysRoot>\System32\sessmgr.exe", 0&
-            .Add "<SysRoot>\System32\SgrmBroker.exe", 0&
-            .Add "<SysRoot>\System32\shsvcs.dll", 0&
-            .Add "<SysRoot>\System32\SLsvc.exe", 0&
-            .Add "<SysRoot>\System32\SLUINotify.dll", 0&
-            .Add "<SysRoot>\System32\smlogsvc.exe", 0&
-            .Add "<SysRoot>\System32\smphost.dll", 0&
-            .Add "<SysRoot>\System32\SmsRouterSvc.dll", 0&
-            .Add "<SysRoot>\System32\snmptrap.exe", 0&
-            .Add "<SysRoot>\System32\spool\drivers\x64\3\PrintConfig.dll", 0&
-            .Add "<SysRoot>\System32\spoolsv.exe", 0&
-            .Add "<SysRoot>\System32\sppsvc.exe", 0&
-            .Add "<SysRoot>\System32\sppuinotify.dll", 0&
-            .Add "<SysRoot>\System32\srsvc.dll", 0&
-            .Add "<SysRoot>\System32\srvsvc.dll", 0&
-            .Add "<SysRoot>\System32\ssdpsrv.dll", 0&
-            .Add "<SysRoot>\System32\sstpsvc.dll", 0&
-            .Add "<SysRoot>\System32\storsvc.dll", 0&
-            .Add "<SysRoot>\System32\svchost.exe", 0&
-            .Add "<SysRoot>\System32\svsvc.dll", 0&
-            .Add "<SysRoot>\System32\swprv.dll", 0&
-            .Add "<SysRoot>\System32\sysmain.dll", 0&
-            .Add "<SysRoot>\System32\SystemEventsBrokerServer.dll", 0&
-            .Add "<SysRoot>\System32\TabSvc.dll", 0&
-            .Add "<SysRoot>\System32\tapisrv.dll", 0&
-            .Add "<SysRoot>\System32\tbssvc.dll", 0&
-            .Add "<SysRoot>\System32\termsrv.dll", 0&
-            .Add "<SysRoot>\System32\tetheringservice.dll", 0&
-            .Add "<SysRoot>\System32\themeservice.dll", 0&
-            .Add "<SysRoot>\System32\TieringEngineService.exe", 0&
-            .Add "<SysRoot>\System32\tileobjserver.dll", 0&
-            .Add "<SysRoot>\System32\TimeBrokerServer.dll", 0&
-            .Add "<SysRoot>\System32\trkwks.dll", 0&
-            .Add "<SysRoot>\System32\UI0Detect.exe", 0&
-            .Add "<SysRoot>\System32\umpnpmgr.dll", 0&
-            .Add "<SysRoot>\System32\umpo.dll", 0&
-            .Add "<SysRoot>\System32\umrdp.dll", 0&
-            .Add "<SysRoot>\System32\unistore.dll", 0&
-            .Add "<SysRoot>\System32\upnphost.dll", 0&
-            .Add "<SysRoot>\System32\ups.exe", 0&
-            .Add "<SysRoot>\System32\userdataservice.dll", 0&
-            .Add "<SysRoot>\System32\usermgr.dll", 0&
-            .Add "<SysRoot>\System32\usocore.dll", 0&
-            .Add "<SysRoot>\System32\uxsms.dll", 0&
-            .Add "<SysRoot>\System32\vaultsvc.dll", 0&
-            .Add "<SysRoot>\System32\vds.exe", 0&
-            .Add "<SysRoot>\System32\vssvc.exe", 0&
-            .Add "<SysRoot>\System32\w32time.dll", 0&
-            .Add "<SysRoot>\System32\w3ssl.dll", 0&
-            .Add "<SysRoot>\System32\WalletService.dll", 0&
-            .Add "<SysRoot>\System32\Wat\WatAdminSvc.exe", 0&
-            .Add "<SysRoot>\System32\wbem\WmiApSrv.exe", 0&
-            .Add "<SysRoot>\System32\wbem\WMIsvc.dll", 0&
-            .Add "<SysRoot>\System32\wbengine.exe", 0&
-            .Add "<SysRoot>\System32\wbiosrvc.dll", 0&
-            .Add "<SysRoot>\System32\wcmsvc.dll", 0&
-            .Add "<SysRoot>\System32\wcncsvc.dll", 0&
-            .Add "<SysRoot>\System32\WcsPlugInService.dll", 0&
-            .Add "<SysRoot>\System32\wdi.dll", 0&
-            .Add "<SysRoot>\System32\webclnt.dll", 0&
-            .Add "<SysRoot>\System32\wecsvc.dll", 0&
-            .Add "<SysRoot>\System32\wephostsvc.dll", 0&
-            .Add "<SysRoot>\System32\wercplsupport.dll", 0&
-            .Add "<SysRoot>\System32\WerSvc.dll", 0&
-            .Add "<SysRoot>\System32\wiarpc.dll", 0&
-            .Add "<SysRoot>\System32\wiaservc.dll", 0&
-            .Add "<SysRoot>\System32\Windows.Internal.Management.dll", 0&
-            .Add "<SysRoot>\System32\windows.staterepository.dll", 0&
-            .Add "<SysRoot>\System32\winhttp.dll", 0&
-            .Add "<SysRoot>\System32\wkssvc.dll", 0&
-            .Add "<SysRoot>\System32\wlansvc.dll", 0&
-            .Add "<SysRoot>\System32\wlidsvc.dll", 0&
-            .Add "<SysRoot>\System32\workfolderssvc.dll", 0&
-            .Add "<SysRoot>\System32\wpcsvc.dll", 0&
-            .Add "<SysRoot>\System32\wpdbusenum.dll", 0&
-            .Add "<SysRoot>\System32\WpnService.dll", 0&
-            .Add "<SysRoot>\System32\WpnUserService.dll", 0&
-            .Add "<SysRoot>\System32\wscsvc.dll", 0&
-            .Add "<SysRoot>\System32\WsmSvc.dll", 0&
-            .Add "<SysRoot>\System32\WSService.dll", 0&
-            .Add "<SysRoot>\System32\wuaueng.dll", 0&
-            .Add "<SysRoot>\System32\wuaueng2.dll", 0&
-            .Add "<SysRoot>\System32\wuauserv.dll", 0&
-            .Add "<SysRoot>\System32\WUDFSvc.dll", 0&
-            .Add "<SysRoot>\System32\wwansvc.dll", 0&
-            .Add "<SysRoot>\System32\wzcsvc.dll", 0&
-            .Add "<SysRoot>\System32\XblAuthManager.dll", 0&
-            .Add "<SysRoot>\System32\XblGameSave.dll", 0&
-            .Add "<SysRoot>\System32\XboxNetApiSvc.dll", 0&
-            .Add "<SysRoot>\System32\xmlprov.dll", 0&
-            .Add "<SysRoot>\SysWow64\perfhost.exe", 0&
-            .Add "<SysRoot>\SysWow64\svchost.exe", 0&
-            .Add "<SysRoot>\Microsoft.NET\Framework\v3.0\Windows Communication Foundation\infocard.exe", 0&
-            .Add "<SysRoot>\Microsoft.Net\Framework\v3.0\WPF\PresentationFontCache.exe", 0&
-            .Add "<SysRoot>\Microsoft.NET\Framework64\v4.0.30319\SMSvcHost.exe", 0&
-            .Add "<SysRoot>\system32\lserver.exe", 0&
-            .Add "<SysRoot>\system32\mprdim.dll", 0&
-            .Add "<SysRoot>\system32\wdfmgr.exe", 0&
-            .Add "<SysRoot>\system32\sacsvr.dll", 0&
-            .Add "<SysRoot>\system32\RSoPProv.exe", 0&
-            .Add "<SysRoot>\system32\Dfssvc.exe", 0&
-            .Add "<SysRoot>\system32\ntfrs.exe", 0&
-            .Add "<SysRoot>\System32\dusmsvc.dll", 0&
-            .Add "<SysRoot>\system32\SEMgrSvc.dll", 0&
-            .Add "<SysRoot>\System32\SshBroker.dll", 0&
-            .Add "<SysRoot>\System32\SshProxy.dll", 0&
-            .Add "<SysRoot>\System32\TokenBroker.dll", 0&
-            .Add "<SysRoot>\System32\debugregsvc.dll", 0&
-            .Add "<SysRoot>\System32\assignedaccessmanagersvc.dll", 0&
-            .Add "<SysRoot>\system32\CapabilityAccessManager.dll", 0&
-            .Add "<SysRoot>\System32\DeveloperToolsSvc.exe", 0&
-            .Add "<SysRoot>\System32\DevicesFlowBroker.dll", 0&
-            .Add "<SysRoot>\system32\DiagSvc.dll", 0&
-            .Add "<SysRoot>\System32\GraphicsPerfSvc.dll", 0&
-            .Add "<SysRoot>\System32\IpxlatCfg.dll", 0&
-            .Add "<SysRoot>\System32\lpasvc.dll", 0&
-            .Add "<SysRoot>\System32\NaturalAuth.dll", 0&
-            .Add "<SysRoot>\System32\PrintWorkflowService.dll", 0&
-            .Add "<SysRoot>\System32\SharedRealitySvc.dll", 0&
-            .Add "<SysRoot>\System32\Windows.WARP.JITService.dll", 0&
-            .Add "<SysRoot>\System32\wfdsconmgrsvc.dll", 0&
-            .Add "<SysRoot>\system32\spectrum.exe", 0&
-            .Add "<SysRoot>\system32\PushToInstall.dll", 0&
-            .Add "<SysRoot>\system32\InstallService.dll", 0&
-            .Add "<SysRoot>\System32\XboxGipSvc.dll", 0&
-            .Add "<SysRoot>\system32\xbgmsvc.exe", 0&
-            .Add "<SysRoot>\System32\dns.exe", 0&
-            .Add "<SysRoot>\System32\wins.exe", 0&
-            .Add "<SysRoot>\System32\WBEM\WinMgmt.exe", 0&
-            .Add "<SysRoot>\system32\RsSub.exe", 0&
-            .Add "<SysRoot>\system32\RsEng.exe", 0&
-            .Add "<SysRoot>\system32\Windows Media\Server\nsum.exe", 0&
-            .Add "<SysRoot>\system32\MSTask.exe", 0&
-            .Add "<SysRoot>\system32\tcpsvcs.exe", 0&
-            .Add "<SysRoot>\system32\inetsrv\inetinfo.exe", 0&
-            .Add "<SysRoot>\system32\sfmprint.exe", 0&
-            .Add "<SysRoot>\System32\snmp.exe", 0&
-            .Add "<SysRoot>\System32\ias.dll", 0&
-            .Add "<SysRoot>\system32\Windows Media\Server\nspm.exe", 0&
-            .Add "<SysRoot>\system32\Windows Media\Server\nspmon.exe", 0&
-            .Add "<SysRoot>\system32\Windows Media\Server\nscm.exe", 0&
-            .Add "<SysRoot>\system32\regsvc.exe", 0&
-            .Add "<SysRoot>\System32\llssrv.exe", 0&
-            .Add "<SysRoot>\System32\termsrv.exe", 0&
-            .Add "<SysRoot>\system32\RsFsa.exe", 0&
-            .Add "<SysRoot>\system32\sfmsvc.exe", 0&
-            .Add "<SysRoot>\system32\tlntsvr.exe", 0&
-            .Add "<SysRoot>\system32\grovel.exe", 0&
-            .Add "<SysRoot>\system32\netdde.exe", 0&
-            .Add "<SysRoot>\System32\UtilMan.exe", 0&
-            .Add "<SysRoot>\system32\clipsrv.exe", 0&
-            .Add "<SysRoot>\system32\Windows Media\NSLite\nslservice.exe", 0&
-            .Add "<SysRoot>\system32\faxsvc.exe", 0&
-            .Add "<SysRoot>\system32\tftpd.exe", 0&
-            .Add "<SysRoot>\system32\vmicsvc.exe", 0&
-            .Add "<SysRoot>\SysWow64\mnmsrvc.exe", 0&
-            .Add "<SysRoot>\WindowsMobile\wcescomm.dll", 0&
-            .Add "<SysRoot>\WindowsMobile\rapimgr.dll", 0&
-            .Add "<SysRoot>\System32\RpcProxy\LBService.dll", 0&
-            
-            'Windows Defender
-            .Add "<PF64>\Windows Defender\mpsvc.dll", 0&
-            .Add "<PF64>\Windows Defender\NisSrv.exe", 0&
-            .Add "<PF64>\Windows Defender\MsMpEng.exe", 0&
-            .Add "<PF64>\Microsoft Security Client\MsMpEng.exe", 0&
-            .Add "<PF64>\Microsoft Security Client\NisSrv.exe", 0&
-            .Add "<PF64>\Windows Defender Advanced Threat Protection\MsSense.exe", 0&
-            
-            For Each vKey In .Keys
-                prefix = Left$(vKey, InStr(vKey, "\") - 1)
-                Select Case prefix
-                    Case "<SysRoot>"
-                        .Add Replace$(vKey, prefix, sWinDir), 0&
-                    Case "<PF64>"
-                        .Add Replace$(vKey, prefix, PF_64), 0&
-                    Case "<PF32>"
-                        If OSver.IsWin64 Then
-                            .Add Replace$(vKey, prefix, PF_32), 0&
-                        End If
-                End Select
-            Next
-        End With
-    End If
-    
-    If oDictSRV.Exists(sFilePath) Then
-        sArgBase = oDictSRV(sFilePath)
-        If sArgBase = 0 Then
-            'no arguments defined in database
-            IsWinServiceFileName = True
+    If oDict.dSafeSvcPath.Exists(sFilePath) Then
+        If Len(sArgument) = 0 Then
+            IsWinServiceFileName = True: Exit Function
         Else
-            'check also an argument
-            If StrComp(sArgument, sArgBase, 1) = 0 Then IsWinServiceFileName = True
+            sArgDB = oDict.dSafeSvcPath(sFilePath)
+            If StrComp(sArgument, sArgDB, 1) = 0 Then IsWinServiceFileName = True: Exit Function
         End If
     End If
     
-    If Not IsWinServiceFileName Then
-        'by filename
-        Dim colFN As Collection
-        Set colFN = New Collection
-        
-        colFN.Add "aspnet_state.exe"
-        'random folder name
-        'C:\ProgramData\Microsoft\Windows Defender\platform\4.18.1806.18062-0\MsMpEng.exe
-        'C:\ProgramData\Microsoft\Windows Defender\platform\4.18.1806.18062-0\NisSrv.exe
-        colFN.Add "MsMpEng.exe"
-        colFN.Add "NisSrv.exe"
-        colFN.Add "MpCmdRun.exe" 'task
-        'C:\WINDOWS\Microsoft.NET\Framework\v4.0.30319\WPF\WPFFontCache_v0400.exe
-        colFN.Add "WPFFontCache_v0400.exe" 'XP
-        colFN.Add "elevation_service.exe" 'Microsoft Edge
-        colFN.Add "mscorsvw.exe" 'Net Framework
-        
-        sFilename = GetFileNameAndExt(sFilePath)
-        
-        If isCollectionItemExists(sFilename, colFN) Then IsWinServiceFileName = True
-        Set colFN = Nothing
-    End If
+    'by filename
+    sFilename = GetFileNameAndExt(sFilePath)
+    If oDict.dSafeSvcFilename.Exists(sFilename) Then IsWinServiceFileName = True: Exit Function
     
-    If Not IsWinServiceFileName Then
-        If StrBeginWith(sFilePath, PF_64 & "\" & "Microsoft\Exchange Server") Then IsWinServiceFileName = True
-    End If
+    If StrBeginWith(sFilePath, PF_64 & "\" & "Microsoft\Exchange Server") Then IsWinServiceFileName = True: Exit Function
     
     'if service file is not in list, check if it protected by SFC, excepting AV / Firewall services
     'also, separate blacklist nedeed to identify dangerous host-files like cmd.exe / powershell e.t.c.
-    
-    If Not IsWinServiceFileName Then
-    
-'        If Not (StrComp(sFilePath, PF_64 & "\Windows Defender\mpsvc.dll", 1) = 0) _
-'          And Not (StrComp(sFilePath, PF_64 & "\Windows Defender\NisSrv.exe", 1) = 0) _
-'          And Not (StrComp(sFilePath, PF_64 & "\Windows Defender\MsMpEng.exe", 1) = 0) _
-'          And Not (StrComp(sFilePath, PF_64 & "\Microsoft Security Client\MsMpEng.exe", 1) = 0) _
-'          And Not (StrComp(sFilePath, PF_64 & "\Microsoft Security Client\NisSrv.exe", 1) = 0) _
-'          And Not (StrComp(sFilePath, PF_64 & "\Windows Defender Advanced Threat Protection\MsSense.exe", 1) = 0) Then
-
-'            If Not IsSecurityProductName(sServiceName) Then
-'
-'                sCompany = GetFilePropCompany(sFilePath)
-'                If InStr(1, sCompany, "Microsoft", 1) > 0 Or InStr(1, sCompany, "Корпорация Майкрософт", 1) > 0 Then
-'                    IsWinServiceFileName = True
-'                End If
-'            End If
-            
-            If IsFileSFC(sFilePath) Then
-                If Not IsLoLBin(sFilePath) Then IsWinServiceFileName = True
-            End If
-
-        'End If
+    If IsFileSFC(sFilePath) Then
+        If Not IsLoLBin(sFilePath) Then IsWinServiceFileName = True: Exit Function
     End If
     
     Exit Function
@@ -12932,7 +11976,7 @@ Public Sub ErrorMsg(ErrObj As ErrObject, sProcedure$, ParamArray vCodeModule())
     End If
     If 0 = Len(sErrHeader) Then
         ' Emergency mode (if translation module is not initialized yet)
-        sErrHeader = "Please help us improve HiJackThis by reporting this error." & _
+        sErrHeader = "Please help us improve HijackThis+ by reporting this error." & _
             vbCrLf & vbCrLf & "Error message has been copied to clipboard." & _
             vbCrLf & "Click 'Yes' to submit." & _
             vbCrLf & vbCrLf & "Error Details: " & _
@@ -13038,6 +12082,9 @@ Public Function ClipboardSetText(sText As String) As Boolean
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "ClipboardSetText - Begin"
     
+    Dim LangNonUnicodeCode As Long
+    LangNonUnicodeCode = GetSystemDefaultLCID Mod &H10000
+    
     Dim hMem As Long
     Dim ptr As Long
     If OpenClipboard(g_HwndMain) Then
@@ -13047,7 +12094,7 @@ Public Function ClipboardSetText(sText As String) As Boolean
             If hMem <> 0 Then
                 ptr = GlobalLock(hMem)
                 If ptr <> 0 Then
-                    GetMem4 OSver.LangNonUnicodeCode, ByVal ptr
+                    GetMem4 LangNonUnicodeCode, ByVal ptr
                     GlobalUnlock hMem
                     If SetClipboardData(CF_LOCALE, hMem) = 0 Then
                         GlobalFree hMem
@@ -13346,15 +12393,15 @@ Public Sub SetAllFontCharset(frm As Form, Optional sFontName As String, Optional
     AppendErrorLogCustom "SetAllFontCharset - Begin"
 
     Dim Ctl         As Control
-    Dim ctlBtn      As CommandButton
-    Dim ctlOptBtn   As OptionButton
-    Dim ctlCheckBox As CheckBox
-    Dim ctlTxtBox   As TextBox
-    Dim ctlLstBox   As ListBox
-    Dim CtlLbl      As Label
-    Dim CtlFrame    As frame
-    Dim CtlCombo    As ComboBox
-    Dim CtlTree     As TreeView
+    Dim ctlBtn      As VBCCR17.CommandButtonW
+    Dim ctlOptBtn   As VBCCR17.OptionButtonW
+    Dim ctlCheckBox As VBCCR17.CheckBoxW
+    Dim ctlTxtBox   As VBCCR17.TextBoxW
+    Dim ctlLstBox   As VBCCR17.ListBoxW
+    Dim CtlLbl      As VBCCR17.LabelW
+    Dim CtlFrame    As VBCCR17.FrameW
+    Dim CtlCombo    As VBCCR17.ComboBoxW
+    Dim CtlTree     As VBCCR17.TreeView
     Dim CtlPict     As PictureBox
     Dim iOldTop     As Long
     Dim iOldSel     As Long
@@ -13370,30 +12417,30 @@ Public Sub SetAllFontCharset(frm As Form, Optional sFontName As String, Optional
     
     For Each Ctl In frm.Controls
         Select Case TypeName(Ctl)
-            Case "CommandButton"
+            Case "CommandButtonW"
                 Set ctlBtn = Ctl
                 SetFontCharSet ctlBtn, sFontName, sFontSize, bFontBold
-            Case "OptionButton"
+            Case "OptionButtonW"
                 Set ctlOptBtn = Ctl
                 SetFontCharSet ctlOptBtn, sFontName, sFontSize, bFontBold
-            Case "TextBox"
+            Case "TextBoxW"
                 Set ctlTxtBox = Ctl
                 SetFontCharSet ctlTxtBox, sFontName, sFontSize, bFontBold
-            Case "ListBox"
+            Case "ListBoxW"
                 Set ctlLstBox = Ctl
                 SetFontCharSet ctlLstBox, sFontName, sFontSize, bFontBold
-            Case "Label"
+            Case "LabelW"
                 Set CtlLbl = Ctl
                 SetFontCharSet CtlLbl, sFontName, sFontSize, bFontBold
-            Case "CheckBox"
+            Case "CheckBoxW"
                 Set ctlCheckBox = Ctl
                 'If ctlCheckBox.Name <> "chkConfigTabs" Then
                     SetFontCharSet ctlCheckBox, sFontName, sFontSize, bFontBold
                 'End If
-            Case "Frame"
+            Case "FrameW"
                 Set CtlFrame = Ctl
                 SetFontCharSet CtlFrame, sFontName, sFontSize, bFontBold
-            Case "ComboBox"
+            Case "ComboBoxW"
                 Set CtlCombo = Ctl
                 If CtlCombo.Name <> "cmbFont" And CtlCombo.Name <> "cmbFontSize" Then
                     SetFontCharSet CtlCombo, sFontName, sFontSize, bFontBold
@@ -13631,7 +12678,6 @@ Public Function CheckForStartedFromTempDir() As Boolean
     'meaning a reboot or cache clean could delete it, as well any backups
     'made. Also the user won't be able to find the exe anymore :P
     
-    'fixed - 2.0.7
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "CheckForStartedFromTempDir - Begin"
     
@@ -13689,7 +12735,7 @@ Public Function CheckForStartedFromTempDir() As Boolean
             'msgboxW "Запуск из архива запрещен !" & vbCrLf & "Распаковать на рабочий стол для Вас ?", vbExclamation, AppName
             If MsgBoxW(sMsg, vbExclamation Or vbYesNo, g_AppName) = vbYes Then
                 Dim NewFile As String
-                NewFile = Desktop & "\HiJackThis\" & AppExeName(True)
+                NewFile = Desktop & "\HijackThis+\" & AppExeName(True)
                 MkDirW NewFile, True
                 If FileExists(NewFile) Then     ', Cache:=NO_CACHE
                     SetFileAttributes StrPtr(NewFile), GetFileAttributes(StrPtr(NewFile)) And Not FILE_ATTRIBUTE_READONLY
@@ -13752,7 +12798,8 @@ Public Function RestartSystem(Optional sExtraPrompt$, Optional bSilent As Boolea
         End If
         If lret = 0 Then
             If RunWMI_Service(bWait:=True, bAskBeforeLaunch:=False, bSilent:=bSilent) Then
-                Set OpSysSet = GetObject("winmgmts:{(Shutdown)}//./root/cimv2").ExecQuery("select * from Win32_OperatingSystem where Primary=true")
+                'select * from Win32_OperatingSystem where Primary=true
+                Set OpSysSet = GetObject("winmgmts:{(Shutdown)}//./root/cimv2").ExecQuery(Caes_Decode("thqllE * yMLL tNU89LxaXgXmdkfTBxAnx LyxMB kUNTJ]f=eej\"))
                 For Each OpSys In OpSysSet
                     RestartSystem = (0 = OpSys.Reboot())
                 Next
@@ -14069,13 +13116,37 @@ Public Sub InitVariables()
     
     CRCinit
     
-    'Init user type array of scan results
-    ReInitScanResults
+    Set oDictFileExist = New clsTrickHashTable  'file exists cache
+    oDictFileExist.CompareMode = 1
     
     Dim lr As Long, i As Long, nChars As Long
     Dim Path As String, dwBufSize As Long
     
     g_bIsReflectionSupported = IsProcedureAvail("RegQueryReflectionKey", "Advapi32.dll")
+    
+    sWinSysDir = Environ$("SystemRoot") & "\System32"
+    
+    If OSver.MajorMinor >= 5.1 And OSver.MajorMinor <= 5.2 Then bIsWinXP = True
+    If OSver.MajorMinor = 5 Then bIsWin2k = True
+    
+    With OSver
+        bIsWinVistaAndNewer = .Major >= 6
+        bIsWin7AndNewer = .MajorMinor >= 6.1
+        
+        Select Case .PlatformID
+            Case 0: bIsWin9x = True: bIsWinNT = False 'Win3x
+            Case 1: bIsWin9x = True: bIsWinNT = False
+            Case 2: bIsWinNT = True: bIsWin9x = False
+        End Select
+        
+        If bIsWin9x Then
+            If .Major = 4 Then
+                If .Minor = 90 Then 'Windows Millennium Edition
+                    bIsWinME = True
+                End If
+            End If
+        End If
+    End With
     
     SysDisk = String$(MAX_PATH, 0)
     lr = GetSystemWindowsDirectory(StrPtr(SysDisk), MAX_PATH)
@@ -14089,6 +13160,9 @@ Public Sub InitVariables()
     sWinSysDir = sWinDir & "\" & IIf(bIsWinNT, "System32", "System")
     sSysDir = sWinSysDir
     sWinSysDirWow64 = sWinDir & "\SysWOW64"
+    
+    'enable redirector (just in case)
+    If bIsWin64 Then ToggleWow64FSRedirection True
     
     If bIsWin64 And FolderExists(sWinDir & "\sysnative") And OSver.MajorMinor >= 6 Then
         sSysNativeDir = sWinDir & "\SysNative"
@@ -14317,10 +13391,6 @@ Public Sub InitVariables()
     Set cMath = New clsMath
     'Set oRegexp = New cRegExp
     
-    LIST_BACKUP_FILE = BuildPath(AppPath(), "Backups\List.ini")
-    
-    InitBackupIni
-    
     If OSver.MajorMinor >= 6.1 Then
         Set TaskBar = New TaskbarList
     End If
@@ -14331,12 +13401,14 @@ Public Sub InitVariables()
     'Call CLSIDFromString(StrPtr(FOLDERID_ComputerFolderStr), FOLDERID_ComputerFolder)
     
     'Load ru phrases
-    STR_CONST.RU_LINKS = LoadResString(600)
     STR_CONST.RU_NO = LoadResString(601)
-    STR_CONST.UA_CANT_LOAD_LANG = Replace$(LoadResString(602), "\n", vbCrLf)
-    STR_CONST.RU_CANT_LOAD_LANG = Replace$(LoadResString(603), "\n", vbCrLf)
     STR_CONST.RU_MICROSOFT = LoadResString(604)
     STR_CONST.RU_PC = LoadResString(605)
+    STR_CONST.SHA1_PCRE2 = LoadResString(700)
+    STR_CONST.SHA1_ABR = LoadResString(701)
+    STR_CONST.WINDOWS_DEFENDER = Caes_Decode("XlskxHF UxABMEHW") 'Windows Defender
+    STR_CONST.VIRUSTOTAL = Caes_Decode("WlwBB_BIrE") 'VirusTotal
+    STR_CONST.AUTORUNS = Caes_Decode("BxyvAFAH") 'Autoruns
     
     AppendErrorLogCustom "InitVariables - End"
     
@@ -14712,8 +13784,8 @@ Public Function LoadWindowPos(frm As Form, IdSection As SETTINGS_SECTION) As Boo
     If IdSection <> SETTINGS_SECTION_MAIN Then
     
         Dim iHeight As Long, iWidth As Long
-        iHeight = CLng(RegReadHJT("WinHeight", "-1", , IdSection))
-        iWidth = CLng(RegReadHJT("WinWidth", "-1", , IdSection))
+        iHeight = CLng(RegReadHJT("WinHeight", "-1", IdSection))
+        iWidth = CLng(RegReadHJT("WinWidth", "-1", IdSection))
         
         If iHeight = -1 Or iWidth = -1 Then LoadWindowPos = False
         
@@ -14730,8 +13802,8 @@ Public Function LoadWindowPos(frm As Form, IdSection As SETTINGS_SECTION) As Boo
     End If
     
     Dim iTop As Long, iLeft As Long
-    iTop = CLng(RegReadHJT("WinTop", "-1", , IdSection))
-    iLeft = CLng(RegReadHJT("WinLeft", "-1", , IdSection))
+    iTop = CLng(RegReadHJT("WinTop", "-1", IdSection))
+    iLeft = CLng(RegReadHJT("WinLeft", "-1", IdSection))
     
     If iTop = -1 Or iLeft = -1 Then
     
@@ -14747,7 +13819,7 @@ Public Function LoadWindowPos(frm As Form, IdSection As SETTINGS_SECTION) As Boo
         frm.Left = iLeft
     End If
     
-    If CLng(RegReadHJT("WinState", "0", , IdSection)) = vbMaximized Then frm.WindowState = vbMaximized
+    If CLng(RegReadHJT("WinState", "0", IdSection)) = vbMaximized Then frm.WindowState = vbMaximized
 End Function
 
 Public Sub SaveWindowPos(frm As Form, IdSection As SETTINGS_SECTION)
@@ -15070,22 +14142,28 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Public Function UnpackResource(ResourceID As Long, DestinationPath As String) As Boolean
+Public Function UnpackCryptedFile(ResourceID As Long, DestinationPath As String) As Boolean
     On Error GoTo ErrorHandler:
-    AppendErrorLogCustom "UnpackResource - Begin", "ID: " & ResourceID, "Destination: " & DestinationPath
-    Dim hFile   As Long
+    AppendErrorLogCustom "UnpackCryptedFile - Begin", "ID: " & ResourceID, "Destination: " & DestinationPath
+    
     Dim b()     As Byte
-    UnpackResource = True
+    Dim hFile   As Long
+    Dim lBytesWrote As Long
+    
     b = LoadResData(ResourceID, "CUSTOM")
-    If OpenW(DestinationPath, FOR_OVERWRITE_CREATE, hFile) Then
-        PutW hFile, 1, VarPtr(b(0)), UBound(b) + 1, False
-        CloseW hFile
+    Caes_DecodeBin b
+    
+    hFile = CreateFile(StrPtr(DestinationPath), GENERIC_WRITE, FILE_SHARE_READ, ByVal 0&, CREATE_ALWAYS, FILE_ATTRIBUTE_ARCHIVE, ByVal 0&)
+    
+    If hFile <> INVALID_HANDLE_VALUE Then
+        If WriteFile(hFile, VarPtr(b(0)), UBound(b) + 1, lBytesWrote, 0&) Then UnpackCryptedFile = True
+        CloseHandle hFile
     End If
-    AppendErrorLogCustom "UnpackResource - End"
+    AppendErrorLogCustom "UnpackCryptedFile - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "UnpackResource", "ID: " & ResourceID, "Destination path: " & DestinationPath
-    UnpackResource = False
+    ErrorMsg Err, "UnpackCryptedFile", "ID: " & ResourceID, "Destination path: " & DestinationPath
+    UnpackCryptedFile = False
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -15094,7 +14172,7 @@ Public Sub Terminate_HJT()
     End
 End Sub
 
-Public Sub AddHorizontalScrollBarToResults(lstControl As ListBox)
+Public Sub AddHorizontalScrollBarToResults(lstControl As VBCCR17.ListBoxW)
     'Adds a horizontal scrollbar to the results display if it is needed (after the scan)
     Dim x As Long, s$
     Dim idx As Long
@@ -15840,7 +14918,7 @@ MakeLog:
     sLog.Append MakeLogHeader()
     
     Dim tmp$
-    With BROWSERS   'MY_BROWSERS (look at modUtils.GetBrowsersInfo())
+    With GetBrowsersInfo() 'BROWSERS_VERSION_INFO
         tmp = .Opera.Version
         If Len(tmp) Then sLog.Append "Opera:   " & tmp & vbCrLf
         tmp = .Chrome.Version
@@ -17559,9 +16637,10 @@ Public Function SFC_RestoreFile(sHijacker As String, Optional bAsync As Boolean 
     Dim sHashNew As String
     Dim bNoOldFile As Boolean
     If OSver.IsWin64 And FolderExists(sWinDir & "\sysnative") Then 'Vista+
-        SFC = EnvironW("%SystemRoot%") & "\sysnative\sfc.exe"
+        'sfc.exe
+        SFC = EnvironW("%SystemRoot%") & "\sysnative\" & Caes_Decode("tih.nIr")
     Else
-        SFC = EnvironW("%SystemRoot%") & "\System32\sfc.exe"
+        SFC = EnvironW("%SystemRoot%") & "\System32\" & Caes_Decode("tih.nIr")
     End If
     If FileExists(SFC) Then
         bNoOldFile = Not FileExists(sHijacker)
@@ -17735,10 +16814,8 @@ Public Function CheckIntegrityHJT() As Boolean
                     If Not IsDragokasSign(SignResult) Then
                         'not a developer machine ?
                         dModif = GetFileDate(AppPath(True), DATE_MODIFIED)
-                        If (GetDateAtMidnight(dModif) <> GetDateAtMidnight(Now()) And InStr(AppPath(), "_AVZ") = 0) Then
+                        If (GetDateAtMidnight(dModif) <> GetDateAtMidnight(Now()) And InStr(AppPath(), Caes_Decode("`D[a")) = 0) Then '_AVZ
                             If (DateDiff("n", Now(), dModif) > 10) Or (DateDiff("n", Now(), dModif) < 0) Then
-                                'Warning! Integrity of HiJackThis program is corrupted. Perhaps, file is patched or infected by file virus.
-                                ErrReport = ErrReport & vbCrLf & Translate(1023) & vbCrLf
                                 CheckIntegrityHJT = False
                             End If
                         End If
@@ -17886,7 +16963,7 @@ Public Function InstallHJT( _
                 CreateHJTShortcutDesktop HJT_LocationExe
             Else
                 'Installation is completed. Do you want to create shortcut in Desktop?
-                If MsgBoxW(Translate(69), vbYesNo, "HiJackThis") = vbYes Then
+                If MsgBoxW(Translate(69), vbYesNo, g_AppName) = vbYes Then
                     CreateHJTShortcutDesktop HJT_LocationExe
                 End If
             End If
@@ -17933,7 +17010,7 @@ Public Function InstallAutorunHJT( _
         End If
         'To increase system loading speed it is recommended to set a delay
         'before launching HiJackThis on user logon. Specify the delay (in seconds):
-        Delay = InputBox(Translate(1403), "HiJackThis", "60")
+        Delay = InputBox(Translate(1403), g_AppName, "60")
         If Not IsNumeric(Delay) Then Delay = "60"
         If CLng(Delay) < 0 Then Delay = "60"
     End If
@@ -18279,22 +17356,22 @@ Public Function WhiteListed(sFile As String, sWhiteListedPath As String, Optiona
     End If
 End Function
 
-Public Function SplitByMultiDelims(ByVal sLine As String, bFirstMatchOnly As Boolean, s_out_UsedDelim As String, ParamArray Delims()) As String()
+Public Function SplitByMultiDelims(ByVal sLine As String, bFirstMatchOnly As Boolean, s_out_UsedDelim As String, ParamArray delims()) As String()
     On Error GoTo ErrorHandler
     Dim i As Long
     If Not bFirstMatchOnly Then
         'replace all delimiters by first one
-        For i = 1 To UBound(Delims)
-            sLine = Replace$(sLine, Delims(i), Delims(0))
+        For i = 1 To UBound(delims)
+            sLine = Replace$(sLine, delims(i), delims(0))
         Next
-        s_out_UsedDelim = Delims(0)
-        SplitByMultiDelims = SplitSafe(sLine, CStr(Delims(0)))
+        s_out_UsedDelim = delims(0)
+        SplitByMultiDelims = SplitSafe(sLine, CStr(delims(0)))
     Else
-        For i = 0 To UBound(Delims)
+        For i = 0 To UBound(delims)
             'substitute each delimiter
-            If InStr(sLine, Delims(i)) <> 0 Then
-                SplitByMultiDelims = SplitSafe(sLine, CStr(Delims(i)))
-                s_out_UsedDelim = Delims(i)
+            If InStr(sLine, delims(i)) <> 0 Then
+                SplitByMultiDelims = SplitSafe(sLine, CStr(delims(i)))
+                s_out_UsedDelim = delims(i)
                 Exit Function
             End If
         Next

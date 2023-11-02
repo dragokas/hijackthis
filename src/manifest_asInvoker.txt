@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3">
+    <assemblyIdentity
+        version="3.0.0.0"
+        processorArchitecture="*"
+        name="AlexDragokas.HiJackThis+"
+        type="win32">
+    </assemblyIdentity>
+    <description>HiJackThis+ creates a report of non-standard parameters of registry and file system for selectively removal of items related to the activities of malware and security risks</description>
+    <dependency>
+        <dependentAssembly>
+            <assemblyIdentity
+                type="win32"
+                name="Microsoft.Windows.Common-Controls"
+                version="6.0.0.0"
+                processorArchitecture="X86"
+                publicKeyToken="6595b64144ccf1df"
+                language="*"
+             />
+        </dependentAssembly>
+    </dependency>
+    <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+        <security>
+            <requestedPrivileges>
+                <requestedExecutionLevel
+                    level="asInvoker"
+                    uiAccess="false">
+                </requestedExecutionLevel>
+            </requestedPrivileges>
+        </security>
+    </trustInfo>
+    <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+        <application>
+            <supportedOS Id="{e2011457-1546-43c5-a5fe-008deee3d3f0}"/>
+            <supportedOS Id="{35138b9a-5d96-4fbd-8e2d-a2440225f93a}"/>
+            <supportedOS Id="{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}"/>
+            <supportedOS Id="{1f676c76-80e1-4239-95bb-83d0f6d0da78}"/>
+            <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}"/>
+        </application>
+    </compatibility>
+    <asmv3:application>
+        <asmv3:windowsSettings>
+            <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true/pm</dpiAware>
+            <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
+			<disableWindowFiltering xmlns="http://schemas.microsoft.com/SMI/2011/WindowsSettings">true</disableWindowFiltering>
+			<longPathAware xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">true</longPathAware>
+        </asmv3:windowsSettings>
+    </asmv3:application>
+    <file name="apps\VBCCR17.OCX">
+        <typelib tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" version="1.0" flags="control,hasdiskimage" helpdir="" />
+        <comClass clsid="{042F1268-8B13-4D7B-AA15-D5B5EBF1F21F}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.CommonDialog" threadingModel="Apartment" />
+        <comClass clsid="{9EE8071C-8630-43BC-9BDC-E5C4B1665002}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.Animation" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,setclientsitefirst" />
+        <comClass clsid="{5F9EBD85-B04E-4AA4-AA3D-69E6E4907F0C}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{1579D8C5-B1CF-456F-A3B8-A589B787D432}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.CheckBoxW" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,setclientsitefirst" />
+        <comClass clsid="{41EEB434-6F7A-4B22-B9BF-40181A2535B1}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.ComboBoxW" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,setclientsitefirst" />
+        <comClass clsid="{05463CED-FCDF-461D-BEA3-B96632C35D52}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.CommandButtonW" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,actslikebutton,setclientsitefirst" />
+        <comClass clsid="{4BD27D65-D9AB-48FE-9B5C-9C5A7E6C56FC}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.CommandLink" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,actslikebutton,setclientsitefirst" />
+        <comClass clsid="{411CD79C-A9AC-4EC1-ACA4-78B498451C2D}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{E9A1CFDD-5731-41AE-9459-7D63AB950674}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.CoolBar" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,nouiactivate,alignable,simpleframe,setclientsitefirst" />
+        <comClass clsid="{350904B2-D309-4BCF-B2CC-9D6D1ACC9276}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{54D9F036-7680-4662-8522-80A6248F6152}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{F44A38F6-26DF-45FD-83C5-A946604EA050}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.DTPicker" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,setclientsitefirst" />
+        <comClass clsid="{8750E231-7127-496B-8B4B-4E0D2649B7D2}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{32DA47C7-15AE-4968-998F-58F5098463ED}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.FontCombo" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,setclientsitefirst" />
+        <comClass clsid="{96F7C043-3F33-4AA3-86EC-F6672AE47642}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.FrameW" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,actslikelabel,nouiactivate,simpleframe,setclientsitefirst" />
+        <comClass clsid="{9E5557EF-BE94-4252-8C8A-DE6F4EBDBFC4}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.HotKey" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,setclientsitefirst" />
+        <comClass clsid="{99196394-701A-4BE5-8A61-08870A67A637}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.ImageCombo" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,setclientsitefirst" />
+        <comClass clsid="{A5A80D80-EC9E-4C8C-A261-23D590447CB9}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{C03FF81F-C85A-426D-9244-8A4C3FCBF6FF}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.ImageList" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,invisibleatruntime,nouiactivate,setclientsitefirst" />
+        <comClass clsid="{8E93DA99-1F35-4958-9A77-91409C295511}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{2315F54D-2BA6-4F31-89DA-2E42B54019CC}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{3595FBF7-B19E-49F2-A1F0-D203F87B6E8B}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.IPAddress" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,setclientsitefirst" />
+        <comClass clsid="{0468A6A1-7BC7-4DFC-BCAC-6D6F5B2C4DFB}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{FE668553-1974-4FA7-AE2F-1F0B25DC07AF}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.LabelW" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,actslikelabel,nouiactivate,setclientsitefirst" />
+        <comClass clsid="{B771A9F5-D5E1-42C2-964F-10F696996EA9}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.LinkLabel" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,setclientsitefirst" />
+        <comClass clsid="{A5EC0F6F-9951-4889-A26B-AB86EC409BA6}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{86F0D911-EA8D-424D-989B-9A25727AB08F}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.ListBoxW" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,setclientsitefirst" />
+        <comClass clsid="{130429A3-E864-4AC2-BB46-FBCA68019050}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.ListView" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,setclientsitefirst" />
+        <comClass clsid="{617EB302-8BD6-4409-871E-991AEFD94B11}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{6B8A1D1B-D28F-4F82-B2FC-F395F3D931B5}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{582A77DD-9160-49B8-9CC1-178A932A08F8}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{BF81810B-F8A9-4F64-8AAB-62429CB95C43}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.MCIWnd" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,setclientsitefirst" />
+        <comClass clsid="{229029CF-623E-4CFF-9004-04F442B94BFF}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.MonthView" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,setclientsitefirst" />
+        <comClass clsid="{C854453F-C359-4EB0-8E96-B28FA336FEC2}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{AAF8D2A5-E74D-48B4-AA0A-0BD0B811B533}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.OptionButtonW" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,setclientsitefirst" />
+        <comClass clsid="{3D943B18-E59C-4BFC-928F-CAD9AE497245}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.Pager" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,nouiactivate,alignable,setclientsitefirst" />
+        <comClass clsid="{7D68656B-DB69-493E-AD00-CA4108AD8694}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{F62D5FA5-CA7C-457C-9BA4-DA0BDC7DF6A2}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.ProgressBar" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,nouiactivate,alignable,setclientsitefirst" />
+        <comClass clsid="{FF8599FD-7BA9-4EFC-A5B8-02A8B801F570}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{D9217418-43E3-4D9A-B460-6AFBFD4F8DDD}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.RichTextBox" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,setclientsitefirst" />
+        <comClass clsid="{E59524F9-09CE-4E0F-BC1E-3A3B6FCEAEB7}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{B9F30C33-7F14-446D-8100-42FD61237D0F}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.Slider" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,setclientsitefirst" />
+        <comClass clsid="{2FC4A4C2-A55E-4D91-9C2A-6299D8346F27}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{910596CC-9F14-4E9E-B971-7DF49CD51FD2}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{61FAE0E4-CFBA-4750-9E09-7E73F88859FB}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.SpinBox" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,setclientsitefirst" />
+        <comClass clsid="{30EBBC20-0F22-4FC1-83D8-C20DE097A80F}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{B738093A-4CC9-4EBD-95B2-B441B56A46E5}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.StatusBar" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,nouiactivate,alignable,setclientsitefirst" />
+        <comClass clsid="{5C5E3EC6-5035-4CD6-86E4-8D80E00B5B98}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{4F734EA5-F277-4C92-946A-07A32E8706CF}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{A54AC5BE-C889-4F5C-BB83-76F352BD164D}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.SysInfo" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,invisibleatruntime,nouiactivate,setclientsitefirst" />
+        <comClass clsid="{9AD2B687-DDC1-4B86-869B-1794A4AF3F3F}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.TabStrip" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,setclientsitefirst" />
+        <comClass clsid="{13576314-0343-4376-A2EF-BE161E47FC9D}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{3A45E936-7F2C-4E1E-AEF2-ED0D12C2A526}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{21084E5D-9163-475F-83BC-CCE6FB70715D}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.TextBoxW" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,setclientsitefirst" />
+        <comClass clsid="{F716D8CC-1EF0-4273-AF69-C625DFBE5AFC}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{07634335-20A0-40DD-BBE0-D29FE3A29B62}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.ToolBar" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,nouiactivate,alignable,simpleframe,setclientsitefirst" />
+        <comClass clsid="{989AA295-5738-4999-822B-4CAB8ACD8D03}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{FB672524-E1B3-45DB-BC59-F8D45F9317ED}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{98F27383-CBE6-4C24-876F-AB865939B821}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.TreeView" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,alignable,setclientsitefirst" />
+        <comClass clsid="{7A973BAD-D621-408D-A61E-0215C02166F5}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{C3995138-68B3-40F2-96B4-60AA2F0BB251}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.UpDown" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,nouiactivate,setclientsitefirst" />
+        <comClass clsid="{ADAEFFED-EB48-4DAB-AD43-A0A4C10A6C82}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" threadingModel="Apartment" />
+        <comClass clsid="{CE4B3B61-868F-4EB7-A0B1-00271BE5FF1D}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.VirtualCombo" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,setclientsitefirst" />
+        <comClass clsid="{44CCD540-DE2E-4D16-BD84-7A932C76C45D}" tlbid="{317589D1-37C8-47D9-B5B0-1C995741F353}" progid="VBCCR17.VListBox" threadingModel="Apartment" miscStatus="" miscStatusContent="recomposeonresize,cantlinkinside,insideout,activatewhenvisible,setclientsitefirst" />
+    </file>
+</assembly> 

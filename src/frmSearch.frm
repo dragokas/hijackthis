@@ -1,184 +1,224 @@
 VERSION 5.00
+Object = "{317589D1-37C8-47D9-B5B0-1C995741F353}#1.0#0"; "VBCCR17.OCX"
 Begin VB.Form frmSearch 
    AutoRedraw      =   -1  'True
    BorderStyle     =   4  'Fixed ToolWindow
    Caption         =   "Find"
-   ClientHeight    =   3156
-   ClientLeft      =   48
-   ClientTop       =   312
-   ClientWidth     =   5568
+   ClientHeight    =   3150
+   ClientLeft      =   45
+   ClientTop       =   315
+   ClientWidth     =   5565
    Icon            =   "frmSearch.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   3156
-   ScaleWidth      =   5568
+   ScaleHeight     =   3150
+   ScaleWidth      =   5565
    ShowInTaskbar   =   0   'False
    StartUpPosition =   3  'Windows Default
    Visible         =   0   'False
-   Begin VB.Frame Frame1 
+   Begin VBCCR17.FrameW Frame1 
       Height          =   1692
       Left            =   120
       TabIndex        =   17
       Top             =   480
       Width           =   2532
-      Begin VB.CheckBox chkEscSeq 
-         Caption         =   "Esc-sequences"
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Begin VBCCR17.CheckBoxW chkEscSeq 
          Height          =   255
          Left            =   120
          TabIndex        =   11
          Top             =   1100
          Width           =   2292
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Esc-sequences"
       End
-      Begin VB.CheckBox chkRegExp 
-         Caption         =   "Regular expressions"
+      Begin VBCCR17.CheckBoxW chkRegExp 
          Height          =   255
          Left            =   120
          TabIndex        =   10
          Top             =   790
          Width           =   2292
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Regular expressions"
       End
-      Begin VB.CheckBox chkWholeWord 
-         Caption         =   "Whole word"
+      Begin VBCCR17.CheckBoxW chkWholeWord 
          Height          =   255
          Left            =   120
          TabIndex        =   9
          Top             =   480
          Width           =   2292
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Whole word"
       End
-      Begin VB.CheckBox chkMatchCase 
-         Caption         =   "Match case"
+      Begin VBCCR17.CheckBoxW chkMatchCase 
          Height          =   255
          Left            =   120
          TabIndex        =   3
          Top             =   170
          Width           =   2292
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Match case"
       End
-      Begin VB.Label lblEscSeq 
-         Caption         =   "\[0020], \\,  \n,  \t"
+      Begin VBCCR17.LabelW lblEscSeq 
          Height          =   252
          Left            =   360
          TabIndex        =   18
          Top             =   1320
          Width           =   2052
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "\[0020], \\,  \n,  \t"
       End
    End
-   Begin VB.Frame frDisplay 
-      Caption         =   "Display"
+   Begin VBCCR17.FrameW frDisplay 
       Height          =   972
       Left            =   120
       TabIndex        =   14
       Top             =   2160
       Width           =   5412
-      Begin VB.CheckBox chkMarkInstant 
-         Caption         =   "Instantly mark items found"
-         Enabled         =   0   'False
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Caption         =   "Display"
+      Begin VBCCR17.CheckBoxW chkMarkInstant 
          Height          =   252
          Left            =   240
          TabIndex        =   16
          Top             =   600
          Width           =   4572
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Enabled         =   0   'False
+         Caption         =   "Instantly mark items found"
       End
-      Begin VB.CheckBox chkFiltration 
-         Caption         =   "Filtration mode"
+      Begin VBCCR17.CheckBoxW chkFiltration 
          Height          =   192
          Left            =   240
          TabIndex        =   15
          Top             =   360
          Width           =   2292
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Filtration mode"
       End
       Begin VB.Image imgSave 
-         Height          =   372
+         Height          =   360
          Left            =   5040
+         Picture         =   "frmSearch.frx":000C
          Top             =   120
-         Width           =   372
+         Width           =   360
       End
    End
-   Begin VB.CommandButton CmdFind 
-      Caption         =   "Find Next"
+   Begin VBCCR17.CommandButtonW CmdFind 
       Default         =   -1  'True
-      Enabled         =   0   'False
       Height          =   375
       Left            =   3720
       TabIndex        =   13
       Top             =   0
       Width           =   1335
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Enabled         =   0   'False
+      Caption         =   "Find Next"
    End
-   Begin VB.CommandButton cmdCancel 
+   Begin VBCCR17.CommandButtonW cmdCancel 
       Cancel          =   -1  'True
-      Caption         =   "Cancel"
       Height          =   375
       Left            =   6240
       TabIndex        =   12
       Top             =   840
       Width           =   1455
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Caption         =   "Cancel"
    End
-   Begin VB.Frame frDir 
-      Caption         =   "Direction"
+   Begin VBCCR17.FrameW frDir 
       Height          =   1695
       Left            =   2760
       TabIndex        =   4
       Top             =   480
       Width           =   2775
-      Begin VB.OptionButton optDirEnd 
-         Caption         =   "Ending"
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Caption         =   "Direction"
+      Begin VBCCR17.OptionButtonW optDirEnd 
          Height          =   195
          Left            =   360
          TabIndex        =   8
          Top             =   1320
          Width           =   1935
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Ending"
       End
-      Begin VB.OptionButton optDirBegin 
-         Caption         =   "Beginning"
+      Begin VBCCR17.OptionButtonW optDirBegin 
          Height          =   195
          Left            =   360
          TabIndex        =   7
          Top             =   960
-         Value           =   -1  'True
          Width           =   1935
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   -1  'True
+         Caption         =   "Beginning"
       End
-      Begin VB.OptionButton optDirUp 
-         Caption         =   "Up"
+      Begin VBCCR17.OptionButtonW optDirUp 
          Height          =   255
          Left            =   360
          TabIndex        =   6
          Top             =   600
          Width           =   1935
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Up"
       End
-      Begin VB.OptionButton optDirDown 
-         Caption         =   "Down"
+      Begin VBCCR17.OptionButtonW optDirDown 
          Height          =   375
          Left            =   360
          TabIndex        =   5
          Top             =   240
          Width           =   1935
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Down"
       End
    End
-   Begin VB.CommandButton CmdMore 
+   Begin VBCCR17.CommandButtonW CmdMore 
       Height          =   375
       Left            =   5160
-      Picture         =   "frmSearch.frx":000C
-      Style           =   1  'Graphical
       TabIndex        =   2
       ToolTipText     =   "Settings"
       Top             =   0
       Width           =   375
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Picture         =   "frmSearch.frx":070E
+      Style           =   1
    End
-   Begin VB.ComboBox cmbSearch 
+   Begin VBCCR17.ComboBoxW cmbSearch 
       Height          =   315
       Left            =   840
       TabIndex        =   1
       Top             =   30
       Width           =   2775
+      _ExtentX        =   0
+      _ExtentY        =   0
    End
-   Begin VB.Label lblWhat 
-      Caption         =   "What:"
+   Begin VBCCR17.LabelW lblWhat 
       Height          =   255
       Left            =   120
       TabIndex        =   0
       Top             =   80
       Width           =   615
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Caption         =   "What:"
    End
 End
 Attribute VB_Name = "frmSearch"
@@ -344,25 +384,11 @@ Private Sub SetWindowHeight()
 End Sub
 
 Private Sub Form_Load()
-    Dim OptB As OptionButton
-    Dim Ctl As Control
-    
     'CenterForm Me
     SetWindowHeight
     SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold
     Call ReloadLanguage(True)
-    
-    ' if Win XP -> disable all window styles from option buttons
-    If bIsWinXP Then
-        For Each Ctl In Me.Controls
-            If TypeName(Ctl) = "OptionButton" Then
-                Set OptB = Ctl
-                SetWindowTheme OptB.hwnd, StrPtr(" "), StrPtr(" ")
-            End If
-        Next
-        Set OptB = Nothing
-    End If
-    
+
     m_iCompareMethod = vbTextCompare
     F_DIR = DIR_BEGIN
     ResetCursor
@@ -376,7 +402,7 @@ Private Sub Form_Load()
     If SAVE_OPT And SAVE_OPTION_FILTRATION Then chkFiltration.Value = 1
     If SAVE_OPT And SAVE_OPTION_INSTANT_MARK Then chkMarkInstant.Value = 1
     
-    Me.imgSave = frmProcMan.imgProcManSave.Picture
+    'Me.imgSave = frmProcMan.imgProcManSave.Picture
 
     Me.Visible = False
 End Sub
@@ -615,8 +641,8 @@ Private Sub CmdFind_Click()
     Dim iLength         As Long
     Dim sLine           As String
     Dim iPos            As Long
-    Dim lst             As ListBox
-    Dim txb             As TextBox
+    Dim lst             As VBCCR17.ListBoxW
+    Dim txb             As VBCCR17.TextBoxW
     Dim Ctl             As Control
     
     cmbSearch.SetFocus
@@ -634,7 +660,7 @@ Private Sub CmdFind_Click()
         
         If Not SetupRegexpMode(sSearch, False) Then Exit Sub
         
-        If TypeOf Ctl Is ListBox Then
+        If TypeOf Ctl Is VBCCR17.ListBoxW Then
             Set lst = Ctl
             
             If lst.ListCount = 0 Then
@@ -715,7 +741,7 @@ Private Sub CmdFind_Click()
                 End If
             Next
         
-        ElseIf TypeOf Ctl Is TextBox Then
+        ElseIf TypeOf Ctl Is VBCCR17.TextBoxW Then
             
             Set txb = Ctl
             iLength = Len(txb.Text)
@@ -893,7 +919,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Private Function ComboboxContains(cmb As ComboBox, sStr As String) As Boolean
+Private Function ComboboxContains(cmb As VBCCR17.ComboBoxW, sStr As String) As Boolean
     Dim i As Long
     For i = 0 To cmb.ListCount - 1
         If cmb.List(i) = sStr Then
@@ -903,14 +929,14 @@ Private Function ComboboxContains(cmb As ComboBox, sStr As String) As Boolean
     Next
 End Function
 
-Private Sub UnselAllListIndex(lst As ListBox)
+Private Sub UnselAllListIndex(lst As VBCCR17.ListBoxW)
     Dim i As Long
     For i = 0 To lst.ListCount - 1
         lst.Selected(i) = False
     Next
 End Sub
 
-Private Function GetListSelectedItem(lst As ListBox) As Long
+Private Function GetListSelectedItem(lst As VBCCR17.ListBoxW) As Long
     Dim i As Long
     GetListSelectedItem = -1
     For i = 0 To lst.ListCount - 1
@@ -1071,13 +1097,13 @@ Function GetActiveFormName(Optional frmExplicit As Form) As String
         hActiveWnd = GetForegroundWindow()
         
         For Each frm In Forms
-            If frm.hwnd = hActiveWnd Then sActiveFrm = frm.Name: Exit For
+            If frm.hWnd = hActiveWnd Then sActiveFrm = frm.Name: Exit For
         Next
         
         If sActiveFrm = "frmSearch" Then ' if search windows is already on top, get owner
             hActiveWnd = GetWindow(hActiveWnd, GW_OWNER)
             For Each frm In Forms
-                If frm.hwnd = hActiveWnd Then sActiveFrm = frm.Name: Exit For
+                If frm.hWnd = hActiveWnd Then sActiveFrm = frm.Name: Exit For
             Next
         End If
     End If

@@ -18,7 +18,7 @@ Option Explicit
 ' Registry functions class by Alex Dragokas
 '
 
-'Revision 3.10 (29.06.2023)
+'Revision 3.11 (19.10.2023)
 
 'Private Const MAX_PATH       As Long = 260&
 'Private Const MAX_PATH_W     As Long = 32767&
@@ -311,6 +311,8 @@ Private Const HKEY_CURRENT_CONFIG_SHORT_STR As String = "HKCC"
 Private Const HKEY_PERFORMANCE_DATA_SHORT_STR As String = "HKPD"
 Private Const HKEY_DYN_DATA_SHORT_STR As String = "HKDD"
 
+Private m_RegGetValue_Available As Boolean
+
 
 Private m_StatusCode As Long
 
@@ -362,6 +364,30 @@ Public Function GetHiveNameByHandle(Handle As ENUM_REG_HIVE) As String
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "GetHiveNameByHandle", Handle
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function GetHiveNameShortByHandle(Handle As ENUM_REG_HIVE) As String
+    On Error GoTo ErrorHandler:
+    Select Case Handle
+        Case HKEY_CLASSES_ROOT
+            GetHiveNameShortByHandle = HKEY_CLASSES_ROOT_SHORT_STR
+        Case HKEY_CURRENT_USER
+            GetHiveNameShortByHandle = HKEY_CURRENT_USER_SHORT_STR
+        Case HKEY_LOCAL_MACHINE
+            GetHiveNameShortByHandle = HKEY_LOCAL_MACHINE_SHORT_STR
+        Case HKEY_USERS
+            GetHiveNameShortByHandle = HKEY_USERS_SHORT_STR
+        Case HKEY_PERFORMANCE_DATA
+            GetHiveNameShortByHandle = HKEY_PERFORMANCE_DATA_SHORT_STR
+        Case HKEY_CURRENT_CONFIG
+            GetHiveNameShortByHandle = HKEY_CURRENT_CONFIG_SHORT_STR
+        Case HKEY_DYN_DATA
+            GetHiveNameShortByHandle = HKEY_DYN_DATA_SHORT_STR
+    End Select
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetHiveNameShortByHandle", Handle
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -667,7 +693,7 @@ Public Function GetMultiSZ(hHive As ENUM_REG_HIVE, ByVal KeyName As String, Opti
     
     If ordType = REG_MULTI_SZ Then
         If cData > 2 Then
-            sData = String$(cData \ 2, vbNullChar)
+            sData = String$(cData \ 2 + 2, vbNullChar) '+2 bytes -> not guaranteed to be null-terminated
             
             lret = RegQueryValueEx(hKey, StrPtr(ValueName), 0&, ordType, StrPtr(sData), cData)
             If lret = ERROR_SUCCESS Then
@@ -766,7 +792,7 @@ Public Function GetData(hHive As ENUM_REG_HIVE, ByVal KeyName As String, Optiona
 '                    lret = RegGetValue(hKey, ByVal 0&, StrPtr(ValueName), RRF_RT_ANY, ByVal 0&, StrPtr(sData), cData)
 '                End If
 
-                sData = String$(cData \ 2 + 1, vbNullChar)  ' (this API doesn't ensure that result buffer will contain null char, so I'll add extra 2 bytes)
+                sData = String$(cData \ 2 + 2, vbNullChar)  ' (this API doesn't ensure that result buffer will contain null char, so I'll add extra 2 bytes)
                 
                 lret = RegQueryValueEx(hKey, StrPtr(ValueName), 0&, ordType, StrPtr(sData), cData)
                 If lret = ERROR_SUCCESS Then
@@ -778,31 +804,28 @@ Public Function GetData(hHive As ENUM_REG_HIVE, ByVal KeyName As String, Optiona
             If cData > 1 Then
                 Dim bRegGetValueUsed As Boolean
             
-                'RegGetValue - Win 2003 SP1 +
                 If bDoNotExpand Then
-                    If OSver.MajorMinor >= 5.2 Then
-                        If IsProcedureAvail("RegGetValueW", "Advapi32.dll") Then
+                    If m_RegGetValue_Available Then 'Win 2003 SP1 +
+                        sData = String$(cData - 1&, vbNullChar)
+                        lret = RegGetValue(hKey, ByVal 0&, StrPtr(ValueName), RRF_RT_ANY Or RRF_NOEXPAND, ByVal 0&, StrPtr(sData), cData)
+
+                        'Note: if you don't set RRF_NOEXPAND flag, you should prepare a bit bigger buffer in case of REG_EXPAND_SZ type,
+                        'because it must be large enought to get string with expanded environment variables. And also anyway, be ready to get ERROR_MORE_DATA error.
+
+                        If lret = ERROR_MORE_DATA Then
                             sData = String$(cData - 1&, vbNullChar)
                             lret = RegGetValue(hKey, ByVal 0&, StrPtr(ValueName), RRF_RT_ANY Or RRF_NOEXPAND, ByVal 0&, StrPtr(sData), cData)
-
-                            'Note: if you don't set RRF_NOEXPAND flag, you should prepare a bit bigger buffer in case of REG_EXPAND_SZ type,
-                            'because it must be large enought to get string with expanded environment variables. And also anyway, be ready to get ERROR_MORE_DATA error.
-
-                            If lret = ERROR_MORE_DATA Then
-                                sData = String$(cData - 1&, vbNullChar)
-                                lret = RegGetValue(hKey, ByVal 0&, StrPtr(ValueName), RRF_RT_ANY Or RRF_NOEXPAND, ByVal 0&, StrPtr(sData), cData)
-                            End If
-                            
-                            vValue = Left$(sData, lstrlen(StrPtr(sData)))
-                            bRegGetValueUsed = True
                         End If
+                        
+                        vValue = Left$(sData, lstrlen(StrPtr(sData)))
+                        bRegGetValueUsed = True
                     End If
                 End If
                 
                 If Not bRegGetValueUsed Then
-                    sData = String$(cData \ 2 + 1, vbNullChar)  ' (this API doesn't ensure that result buffer will contain null char, so I'll add extra 2 bytes)
+                    sData = String$(cData \ 2 + 2, vbNullChar)  ' (this API doesn't ensure that result buffer will contain null char, so I'll add extra 2 bytes)
                 
-                    lret = RegQueryValueEx(hKey, StrPtr(ValueName), 0&, ordType, StrPtr(sData), cData)
+                    lret = RegQueryValueEx(hKey, StrPtr(ValueName), 0&, ByVal 0&, StrPtr(sData), cData)
                     If lret = ERROR_SUCCESS Then
                         vValue = ExpandEnvStr(Left$(sData, lstrlen(StrPtr(sData))))
                     End If
@@ -818,19 +841,14 @@ Public Function GetData(hHive As ENUM_REG_HIVE, ByVal KeyName As String, Optiona
             'MSDN Note: Although \0\0 is technically not allowed in a REG_MULTI_SZ node, it can because the file is considered to be renamed to a null name.
         
             If cData > 2 Then
-                'RegGetValue - Win 2003 SP1 +
-'                sData = String$(cData - 1&, vbNullChar)
-'                lret = RegGetValue(hKey, ByVal 0&, StrPtr(ValueName), RRF_RT_ANY, ByVal 0&, StrPtr(sData), cData)
-                
-                sData = String$(cData \ 2, vbNullChar)
+                sData = String$(cData \ 2 + 2, vbNullChar)
                 
                 lret = RegQueryValueEx(hKey, StrPtr(ValueName), 0&, ordType, StrPtr(sData), cData)
+                'Possible bytes:
+                'item1 nul item2 nul ... itemN nul nul
+                'item1 nul
                 If lret = ERROR_SUCCESS Then
-                    If Right$(sData, 2) = vbNullChar & vbNullChar Then  'struct is: item1 nul item2 nul ... itemN nul nul
-                        vValue = Left$(sData, Len(sData) - 2)
-                    ElseIf Right$(sData, 1) = vbNullChar Then           'struct is: item1 nul
-                        vValue = Left$(sData, Len(sData) - 1)
-                    End If
+                    vValue = RTrimNull(sData)
                 End If
             End If
         
@@ -1026,25 +1044,24 @@ Public Function EnumValuesAndData(hHive As ENUM_REG_HIVE, ByVal KeyName As Strin
                     Select Case lType
                 
                     Case REG_SZ
-                        sData = String$(lDataSize \ 2, vbNullChar)
+                        sData = String$(lDataSize \ 2 + 1, vbNullChar)
                         memcpy ByVal StrPtr(sData), ByVal VarPtr(bData(0)), lDataSize
                         aDataValues(CurValueN) = Left$(sData, lstrlen(StrPtr(sData)))
                     
                     Case REG_EXPAND_SZ
-                        sData = String$(lDataSize \ 2, vbNullChar)
+                        sData = String$(lDataSize \ 2 + 1, vbNullChar)
                         memcpy ByVal StrPtr(sData), ByVal VarPtr(bData(0)), lDataSize
+                        sData = Left$(sData, lstrlen(StrPtr(sData)))
                         If bExpandValues Then
-                            aDataValues(CurValueN) = ExpandEnvStr(Left$(sData, lstrlen(StrPtr(sData))))
+                            aDataValues(CurValueN) = ExpandEnvStr(sData)
+                        Else
+                            aDataValues(CurValueN) = sData
                         End If
                     
                     Case REG_MULTI_SZ
-                        sData = String$(lDataSize \ 2, vbNullChar)
+                        sData = String$(lDataSize \ 2 + 1, vbNullChar)
                         memcpy ByVal StrPtr(sData), ByVal VarPtr(bData(0)), lDataSize
-                        If Right$(sData, 2) = vbNullChar & vbNullChar Then  'struct is: item1 nul item2 nul ... itemN nul nul
-                            aDataValues(CurValueN) = Left$(sData, Len(sData) - 2)
-                        ElseIf Right$(sData, 1) = vbNullChar Then           'struct is: item1 nul
-                            aDataValues(CurValueN) = Left$(sData, Len(sData) - 1)
-                        End If
+                        aDataValues(CurValueN) = RTrimNull(sData)
                     
                     Case REG_DWORD, REG_DWORDLittleEndian
 '                        GetMem4 ByVal VarPtr(bData(0)), ByVal VarPtr(lData)
@@ -1154,8 +1171,13 @@ Public Function SetExpandStringVal(hHive As ENUM_REG_HIVE, ByVal sKey$, sValue$,
             lret = RegOpenKeyEx(hHive, StrPtr(sKey), 0&, KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
         End If
     End If
+    
     If hKey <> 0 Then
-        lret = RegSetValueEx(hKey, StrPtr(sValue), 0&, REG_EXPAND_SZ, ByVal StrPtr(sData), Len(sData) * 2 + 2)
+        If Len(sData) = 0 Then
+            lret = RegSetValueEx(hKey, StrPtr(sValue), 0&, REG_EXPAND_SZ, ByVal 0&, 0&)
+        Else
+            lret = RegSetValueEx(hKey, StrPtr(sValue), 0&, REG_EXPAND_SZ, ByVal StrPtr(sData), Len(sData) * 2 + 2)
+        End If
         SetExpandStringVal = (ERROR_SUCCESS = lret)
         RegCloseKey hKey
     End If
@@ -2279,7 +2301,216 @@ Public Function RenameKey(hHive As ENUM_REG_HIVE, sKey As String, sKeyNewName As
     AppendErrorLogCustom "RenameKey - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "RenameKey", hHive, "hKey:", "Key:", sKey, "NewKey:", sKeyNewName, "Wow64:", bUseWow64
+    ErrorMsg Err, "RenameKey", hHive, "hKey:", hKey, "Key:", sKey, "NewKey:", sKeyNewName, "Wow64:", bUseWow64
+    If inIDE Then Stop: Resume Next
+End Function
+
+
+Public Function CopyKey(hHiveSource As ENUM_REG_HIVE, sKeySource As String, bUseWow64Source As Boolean, _
+    hHiveTarget As ENUM_REG_HIVE, sKeyTarget As String, bUseWow64Target As Boolean, _
+    Optional bRecursively As Boolean = True, _
+    Optional bOverwriteValues As Boolean = True) As Boolean
+    On Error GoTo ErrorHandler:
+    
+    AppendErrorLogCustom "CopyKey - Begin", sKeySource, sKeyTarget
+    
+    Dim cNameMax     As Long
+    Dim cDataMax     As Long
+    Dim hKeySource   As Long
+    Dim hKeyTarget   As Long
+    Dim lIndex       As Long
+    Dim lNameSize    As Long
+    Dim lDataSize    As Long
+    Dim lret         As Long
+    Dim lretTarget   As Long
+    Dim sName        As String
+    Dim sData        As String
+    Dim ValuesCnt    As Long
+    Dim lType        As Long
+    Dim bData()      As Byte
+    Dim bValueSet    As Boolean
+    Dim bKeyExisted  As Boolean
+    Dim bDoWrite     As Boolean
+    
+    Call NormalizeKeyNameAndHiveHandle(hHiveSource, sKeySource)
+    Call NormalizeKeyNameAndHiveHandle(hHiveTarget, sKeyTarget)
+    
+    If Reg.KeyExists(hHiveTarget, sKeyTarget, bUseWow64Target) Then
+        bKeyExisted = True
+    Else
+        Reg.CreateKey hHiveTarget, sKeyTarget, bUseWow64Target
+    End If
+    
+    Dim i&, aSubKeys() As String
+    
+    If bRecursively Then
+        For i = 1 To Reg.EnumSubKeysToArray(hHiveSource, sKeySource, aSubKeys(), bUseWow64Source, False, True)
+            CopyKey hHiveSource, aSubKeys(i), bUseWow64Source, _
+                hHiveTarget, sKeyTarget & mid$(aSubKeys(i), Len(sKeySource) + 1), bUseWow64Target, False, bOverwriteValues
+        Next
+    End If
+    
+    lret = RegOpenKeyEx(hHiveSource, StrPtr(sKeySource), 0&, KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64Source), hKeySource)
+    
+    If lret <> ERROR_SUCCESS Then
+        m_StatusCode = lret
+        Exit Function
+    Else
+    
+        'Open target key
+        lretTarget = RegOpenKeyEx(hHiveTarget, StrPtr(sKeyTarget), 0&, KEY_QUERY_VALUE Or KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64Target), hKeyTarget)
+        If lretTarget <> ERROR_SUCCESS Then
+            If lretTarget = ERROR_ACCESS_DENIED Then
+                modPermissions.RegKeyResetDACL hHiveTarget, sKeyTarget, bUseWow64Target, False
+                lretTarget = RegOpenKeyEx(hHiveTarget, StrPtr(sKeyTarget), 0&, KEY_QUERY_VALUE Or KEY_SET_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64Target), hKeyTarget)
+                If lretTarget <> ERROR_SUCCESS Then
+                    m_StatusCode = lretTarget
+                    Exit Function
+                End If
+            End If
+        End If
+        
+        'Copy default value
+        If bOverwriteValues Or ((Not bOverwriteValues) And (Not bKeyExisted)) Then
+            bValueSet = False
+            lDataSize = 0
+            lret = RegQueryValueEx(hKeySource, StrPtr(""), 0&, lType, ByVal 0&, lDataSize)
+            If lDataSize > 1 Then
+                m_RegGetValue_Available = False
+                If m_RegGetValue_Available Then 'Win 2003 SP1 +
+                    ReDim bData(lDataSize - 1)
+                    lret = RegGetValue(hKeySource, ByVal 0&, StrPtr(""), RRF_RT_ANY Or RRF_NOEXPAND, ByVal 0&, VarPtr(bData(0)), lDataSize)
+                    If lret = ERROR_MORE_DATA Then
+                        ReDim bData(lDataSize - 1)
+                        lret = RegGetValue(hKeySource, ByVal 0&, StrPtr(""), RRF_RT_ANY Or RRF_NOEXPAND, ByVal 0&, VarPtr(bData(0)), lDataSize)
+                    End If
+                Else
+                    If lType = REG_EXPAND_SZ Then
+                        sData = String$(lDataSize \ 2 + 2, vbNullChar)  ' (this API doesn't ensure that result buffer will contain null char, so I'll add extra 2 bytes)
+                        
+                        lret = RegQueryValueEx(hKeySource, StrPtr(""), 0&, ByVal 0&, StrPtr(sData), lDataSize)
+                        If lret = ERROR_SUCCESS Then
+                            sData = Left$(sData, lstrlen(StrPtr(sData)))
+                        End If
+                        sData = EnvironUnexpand(sData, False)
+                        
+                        lretTarget = RegSetValueEx(hKeyTarget, StrPtr(""), 0&, REG_EXPAND_SZ, ByVal StrPtr(sData), Len(sData) * 2 + 2)
+                        bValueSet = True
+                    Else
+                        ReDim bData(lDataSize + 1)  ' (this API doesn't ensure that result buffer will contain null char, so I'll add extra 2 bytes)
+                        
+                        lret = RegQueryValueEx(hKeySource, StrPtr(""), 0&, ByVal 0&, ByVal VarPtr(bData(0)), lDataSize)
+                    End If
+                End If
+                If lret = ERROR_SUCCESS And Not bValueSet Then
+                    lretTarget = RegSetValueEx(hKeyTarget, StrPtr(""), 0&, lType, ByVal VarPtr(bData(0)), lDataSize)
+                End If
+            End If
+        End If
+        
+        'Enumerate other values
+        ValuesCnt = 0
+        lret = RegQueryInfoKey(hKeySource, ByVal 0&, ByVal 0&, 0&, ByVal 0&, ByVal 0&, ByVal 0&, ValuesCnt, cNameMax, cDataMax, ByVal 0&, ByVal 0&)
+        
+        If ValuesCnt > 0 Then
+        
+          If cNameMax = 0 Then cNameMax = MAX_VALUENAME
+          If cDataMax = 0 Then cDataMax = MAX_VALUENAME
+        
+          lNameSize = cNameMax
+          lDataSize = cDataMax
+        
+          sName = String$(lNameSize, vbNullChar)
+          ReDim bData(lDataSize - 1)
+        
+          lret = RegEnumValue(hKeySource, lIndex, StrPtr(sName), lNameSize, 0&, lType, VarPtr(bData(0)), lDataSize)
+        
+          cNameMax = cNameMax + 1   'Nul
+          cDataMax = cDataMax + 2   '2x Nul (REG_MULTI_SZ)
+        
+          Do
+            
+            lNameSize = cNameMax
+            lDataSize = cDataMax
+            
+            sName = String$(lNameSize, vbNullChar)
+            ReDim bData(lDataSize - 1)
+            
+            lret = RegEnumValue(hKeySource, lIndex, StrPtr(sName), lNameSize, 0&, lType, VarPtr(bData(0)), lDataSize)
+            
+            If lret = ERROR_MORE_DATA Then
+                lNameSize = MAX_VALUENAME
+                
+                sName = String$(lNameSize, vbNullChar)
+                ReDim bData(lDataSize - 1)
+                
+                lret = RegEnumValue(hKeySource, lIndex, StrPtr(sName), lNameSize, 0&, lType, VarPtr(bData(0)), lDataSize)
+            End If
+            
+            If (lret = ERROR_SUCCESS) Then
+            
+                If lDataSize <> 0 Then ReDim Preserve bData(lDataSize - 1)
+            
+                sName = Left$(sName, lstrlen(StrPtr(sName)))
+                
+                bDoWrite = False
+                
+                If bOverwriteValues Then
+                    bDoWrite = True
+                Else
+                    lretTarget = RegQueryValueEx(hKeyTarget, StrPtr(sName), 0&, ByVal 0&, ByVal 0&, ByVal 0&)
+                    If lretTarget = ERROR_FILE_NOT_FOUND Then
+                        bDoWrite = True
+                    End If
+                End If
+                
+                If bDoWrite Then
+                    If lDataSize > 0 Then
+                        lretTarget = RegSetValueEx(hKeyTarget, StrPtr(sName), 0&, lType, ByVal VarPtr(bData(0)), lDataSize)
+                    Else
+                        lretTarget = RegSetValueEx(hKeyTarget, StrPtr(sName), 0&, lType, ByVal 0&, 0&)
+                    End If
+                End If
+            End If
+            
+            lIndex = lIndex + 1
+        
+          Loop While lret = ERROR_SUCCESS
+        End If
+    End If
+    
+    If hKeySource <> 0 Then RegCloseKey hKeySource
+    If hKeyTarget <> 0 Then RegCloseKey hKeyTarget
+    
+    CopyKey = True
+    m_StatusCode = lretTarget
+    AppendErrorLogCustom "CopyKey - End"
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "CopyKey", "Source", hHiveSource, sKeySource, bUseWow64Source, _
+        "NewKey: ", hHiveTarget, sKeyTarget, bUseWow64Target
+    If inIDE Then Stop: Resume Next
+End Function
+
+
+Public Function MoveKey(hHiveSource As ENUM_REG_HIVE, sKeySource As String, bUseWow64Source As Boolean, _
+    hHiveTarget As ENUM_REG_HIVE, sKeyTarget As String, bUseWow64Target As Boolean, _
+    Optional bOverwriteValues As Boolean = True) As Boolean
+    On Error GoTo ErrorHandler:
+    
+    Dim bSuccess As Long
+    bSuccess = CopyKey(hHiveSource, sKeySource, bUseWow64Source, _
+        hHiveTarget, sKeyTarget, bUseWow64Target, True, bOverwriteValues)
+    
+    If bSuccess Then
+        bSuccess = bSuccess And Reg.DelKey(hHiveSource, sKeySource, bUseWow64Source)
+    End If
+    
+    MoveKey = bSuccess
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "MoveKey", "Source", hHiveSource, sKeySource, bUseWow64Source, _
+        "NewKey: ", hHiveTarget, sKeyTarget, bUseWow64Target
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -2638,6 +2869,8 @@ Public Function WrapNtOpenKeyEx( _
     
     On Error GoTo ErrorHandler:
     
+    If Not OSver.IsWindows7OrGreater Then Exit Function
+    
     Dim OA              As OBJECT_ATTRIBUTES
     Dim UniStr          As UNICODE_STRING
     Dim lret            As Long
@@ -2782,9 +3015,8 @@ Public Function IsKeySymLink(hHive As ENUM_REG_HIVE, ByVal sKey As String, Optio
                 lret = RegQueryValueEx(hKeyLink, StrPtr("SymbolicLinkValue"), 0&, ByVal 0&, StrPtr(out_KeyTarget), cData)
                 
                 If ERROR_SUCCESS = lret Then
-                    out_KeyTarget = Left$(out_KeyTarget, lstrlen(StrPtr(out_KeyTarget)))
-                    '// TODO.
-                    'add RegMapNtNameToHive
+                    sNtKey = Left$(out_KeyTarget, lstrlen(StrPtr(out_KeyTarget)))
+                    out_KeyTarget = MapNtNameToWin32NameShort(sNtKey)
                 Else
                     out_KeyTarget = vbNullString
                 End If
@@ -3191,7 +3423,7 @@ Public Function RegGetKeyInfoNameEx(hKey As Long) As String
         lret = NtQueryKey(hKey, KeyNameInformation, ByVal VarPtr(buf(0)), cchBuf, reqSize)
         
         If lret = STATUS_SUCCESS Then
-            strLength = buf(0)
+            strLength = ALIGN_DOWN(buf(0), 2)
             If strLength <> 0 Then
                 sKeyName = String$(strLength \ 2, 0)
                 memcpy ByVal StrPtr(sKeyName), buf(1), strLength
@@ -3510,6 +3742,9 @@ Private Sub Class_Initialize()
     NTKEY_LOCAL_MACHINE_STR = MapHiveToNtName_Direct(HKEY_LOCAL_MACHINE)
     NTKEY_USERS_STR = MapHiveToNtName_Direct(HKEY_USERS)
     NTKEY_CURRENT_CONFIG_STR = MapHiveToNtName_Direct(HKEY_CURRENT_CONFIG)
+    If OSver.MajorMinor >= 5.2 Then
+        If IsProcedureAvail("RegGetValueW", "Advapi32.dll") Then m_RegGetValue_Available = True
+    End If
 End Sub
 
 Public Property Get CurrentUserSID() As String
@@ -3517,3 +3752,7 @@ Public Property Get CurrentUserSID() As String
     sSid = mid$(NTKEY_CURRENT_USER_STR, 16) '\REGISTRY\USER\S-1-5-21-xxx
     If StrBeginWith(sSid, "S-") Then CurrentUserSID = sSid
 End Property
+
+Private Function ALIGN_DOWN(iSize As Long, iGranularity As Long) As Long
+    ALIGN_DOWN = iSize - (iSize Mod iGranularity)
+End Function

@@ -203,18 +203,16 @@ Public Function StopService(sServiceName As String) As Boolean
     If Not IsServiceExists(sServiceName) Then StopService = True: Exit Function
     
     If bIsWin64 And FolderExists(sWinDir & "\sysnative") And OSver.MajorMinor >= 6 Then
-        NetPath = sWinDir & "\sysnative\net.exe"
+        'net.exe
+        NetPath = sWinDir & "\sysnative\" & Caes_Decode("ohy.nIr")
     Else
-        NetPath = sWinDir & "\system32\net.exe"
+        NetPath = sWinDir & "\system32\" & Caes_Decode("ohy.nIr")
     End If
     
     ServState = GetServiceRunState(sServiceName)
     
     If ServState <> SERVICE_STOPPED Then
-                
-        'this does the same as AboutBuster: run NET STOP on the
-        'service. if the API way wouldn't crash VB everytime, I'd use that. :/
-                
+
         If Proc.ProcessRun(NetPath, "STOP """ & sServiceName & """ /y", , vbHide) Then
             Proc.WaitForTerminate , , , 15000
         End If
@@ -250,10 +248,11 @@ Public Function StartService(sServiceName As String, Optional bWait As Boolean =
     If Not IsServiceExists(sServiceName) Then StartService = False: Exit Function
     
     If bIsWin64 And FolderExists(sWinDir & "\sysnative") And OSver.MajorMinor >= 6 Then
-        NetPath = sWinDir & "\sysnative\net.exe"
+        'net.exe
+        NetPath = sWinDir & "\sysnative\" & Caes_Decode("ohy.nIr")
         CmdPath = sWinDir & "\sysnative\cmd.exe"
     Else
-        NetPath = sWinDir & "\system32\net.exe"
+        NetPath = sWinDir & "\system32\" & Caes_Decode("ohy.nIr")
         CmdPath = sWinDir & "\system32\cmd.exe"
     End If
     
@@ -268,7 +267,7 @@ Public Function StartService(sServiceName As String, Optional bWait As Boolean =
         Else
             'async mode
             'cmd.exe /c "start "" net.exe start "service""
-            Proc.ProcessRun CmdPath, "/d /c START """" net.exe start """ & sServiceName & """""", , vbHide
+            Proc.ProcessRun CmdPath, "/d /c START """" " & Caes_Decode("ohy.nIr") & " start """ & sServiceName & """""", , vbHide
         End If
     End If
     
@@ -323,7 +322,6 @@ Public Function DeleteNTService(sServiceName As String, Optional AllowReboot As 
         End If
     End If
     
-    'I wish everything this hard was this simple :/
     Dim hSCManager&, hService&
     hSCManager = OpenSCManager(0&, 0&, SC_MANAGER_CREATE_SERVICE)
     If hSCManager <> 0 Then

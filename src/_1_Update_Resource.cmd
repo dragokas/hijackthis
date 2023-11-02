@@ -5,7 +5,13 @@ SetLocal EnableExtensions EnableDelayedExpansion
 :: http://www.vbaccelerator.com/home/VB/Code/Libraries/Resources/Using_RC_EXE/article.asp
 :: http://www.thevbzone.com/l_res.htm
 
-set "TaskName=Run HJT Project"
+if "%~1"=="" (
+  cmd /c "%~f0" 1
+  goto :eof
+)
+
+:: To encrypt text resources
+set ResEncoder=tools\Caesar_Encoder\ResEncoder\ResEncoder.exe
 
 :CheckRun
 tasklist /v /FI "IMAGENAME eq VB6.exe" 2>NUL|>NUL find /i "HiJackThis" && (
@@ -23,22 +29,33 @@ if "%OSBitness%"=="x32" (set "PF=%ProgramFiles%") else (set "PF=%ProgramFiles(x8
 cd /d "%~dp0"
 set ResCnt=0
 
-::Note: type "+" if file requires 4-byte alignment
-
-call :AddResource + 1 #24 manifest.txt
-call :AddResource + 101 CUSTOM TasksWhite.csv
-call :AddResource - 102 CUSTOM MSCOMCTL.OCX.res
-call :AddResource + 103 CUSTOM _ChangeLog_en.txt
-call :AddResource + 104 CUSTOM _ChangeLog_ru.txt
-call :AddResource + 201 CUSTOM _Lang_EN.lng
-call :AddResource + 202 CUSTOM _Lang_RU.lng
-call :AddResource + 203 CUSTOM _Lang_UA.lng
-call :AddResource + 204 CUSTOM _Lang_FR.lng
-call :AddResource + 205 CUSTOM _Lang_SP.lng
-call :AddResource - 301 CUSTOM tools\PCRE2\pcre2-16.dll
-call :AddResource - 302 CUSTOM tools\ABR\abr.exe
-call :AddResource - 303 CUSTOM tools\ABR\restore.exe
-call :AddResource - 304 CUSTOM tools\ABR\restore_x64.exe
+call :AddResource a 1 #24 manifest.txt
+call :AddResource ae 101 CUSTOM database\TasksWhite.csv
+::call :AddResource - 102 CUSTOM MSCOMCTL.OCX.res
+call :AddResource ae 103 CUSTOM _ChangeLog_en.txt
+call :AddResource ae 104 CUSTOM _ChangeLog_ru.txt
+call :AddResource ae 105 CUSTOM database\hosts_xp
+call :AddResource ae 106 CUSTOM database\hosts_vista
+call :AddResource ae 107 CUSTOM database\hosts_7-11
+call :AddResource ae 108 CUSTOM database\R_Section.txt
+call :AddResource ae 109 CUSTOM database\SafeDomains.txt
+call :AddResource ae 110 CUSTOM database\SafeProtocols.txt
+call :AddResource ae 111 CUSTOM database\SafeFilters.txt
+call :AddResource ae 112 CUSTOM database\SafeDNS.txt
+call :AddResource ae 113 CUSTOM database\DisallowedCert.txt
+call :AddResource ae 114 CUSTOM database\LoLBin.txt
+call :AddResource ae 115 CUSTOM database\ServicePath.txt
+call :AddResource ae 116 CUSTOM database\ServiceFilename.txt
+call :AddResource ae 117 CUSTOM database\DriverMapped.txt
+call :AddResource ae 201 CUSTOM _Lang_EN.lng
+call :AddResource ae 202 CUSTOM _Lang_RU.lng
+call :AddResource ae 203 CUSTOM _Lang_UA.lng
+call :AddResource ae 204 CUSTOM _Lang_FR.lng
+call :AddResource ae 205 CUSTOM _Lang_SP.lng
+call :AddResource e 301 CUSTOM tools\PCRE2\pcre2-16.dll
+call :AddResource e 302 CUSTOM tools\ABR\abr.exe
+call :AddResource e 303 CUSTOM tools\ABR\restore.exe
+call :AddResource e 304 CUSTOM tools\ABR\restore_x64.exe
 call :AddResource - BUTTON CUSTOM ico\Themes\Button_1.bmp
 call :AddResource - ADSSPY       BITMAP ico\main\menu\ADSSpy.bmp
 call :AddResource - CROSS_RED    BITMAP ico\main\menu\cross.bmp
@@ -58,31 +75,51 @@ call :AddResource - UPDATE       BITMAP ico\main\menu\update.bmp
 call :AddResource - LNKCHECK     BITMAP ico\main\menu\LnkChecker.bmp
 call :AddResource - LNKCLEAN     BITMAP ico\main\menu\LnkCleaner.bmp
 
+:: Prepare "apps" folder
+copy /y tools\ABR\abr.exe apps\
+
 2>NUL del /f /a 1.RC
 
 For /L %%C in (1 1 %ResCnt%) do (
   if defined Res[%%C] (
     for /f "tokens=1-3*" %%a in ("!Res[%%C]!") do (
-      set "Align=%%a"
+	  set Align=
+	  set Encrypt=
+	  set "Flags=%%a"
+	  if "!Flags!"=="a" set Align=+
+	  if "!Flags!"=="e" set Encrypt=+
+	  if "!Flags!"=="ae" (
+	    set Align=+
+		set Encrypt=+
+	  )
       set "ID=%%b"
       set "type=%%c"
       set "file=%%~d"
-      if !Align!==+ Tools\Align4byte\Align4byte.exe "!file!"
-      set "file=!file:\=\\!"
       >NUL copy /y "!file!" "!file!.tmp" || (
         echo Error occured during creation resource from: "!file!.tmp"
         pause
       )
+	  rem for /f "delims=" %%Z in ("!file!") do echo [RES] Adding resource !Res[%%C]! ^(size=%%~zZ^)
+	  
+	  if !Align!==+ Tools\Align4byte\Align4byte.exe "!file!.tmp"
+	  if !Encrypt!==+ call :encrypt_res binary "!file!.tmp"
+	  set "file=!file:\=\\!"
       echo !ID! !type! LOADONCALL DISCARDABLE "!file!.tmp">> 1.RC
     )
   )
 )
 
+:PrepStrTable
 :: Adding string table
+call :GetFileSha1 "tools\PCRE2\pcre2-16.dll" ShaPCRE
+call :GetFileSha1 "apps\abr.exe" ShaABR
 set StrN=0
 set Label=STRINGS
 for /f "delims=[]" %%a in ('^< "%~f0" find /n ":%Label%"') do set StrN=%%a
 if "%StrN%" neq "0" more /E +%StrN% < "%~f0" >> 1.RC
+echo 700, 	"%ShaPCRE%">> 1.RC
+echo 701, 	"%ShaABR%">> 1.RC
+echo END>>1.RC
 
 :: preparing multilingual VerInfo section
 call :Make_VerInfo_res
@@ -112,7 +149,11 @@ For /L %%C in (1 1 %ResCnt%) do (
 
 exit /b
 
-:AddResource [4-byte alignment required (+/-)] [ID name] [Resource type] [path]
+::@Flags
+::"a" - if the file requires 4-byte alignment
+::"e" - if the file requires encryption
+::"ae" - if the file requires 4-byte alignment and encryption
+:AddResource [Flags] [ID name] [Resource type] [path] 
   set /a ResCnt+=1
   set Res[%ResCnt%]=%*
 Exit /b
@@ -210,6 +251,31 @@ Exit /B
   ren tools\ReplaceByRegular\Regular.txt.bak Regular.txt
 exit /b
 
+:GetFileSha1 [file] [out_var]
+  for /f "delims=" %%a in ('certutil -hashfile "%~1" SHA1 ^| find /v "hash"') do set "t=%%a"
+  set "t=%t: =%"
+  set "%~2=%t%"
+  if "%t%"=="" (echo Error in calculation Sha1 of file "%~1" & pause)
+exit /b
+
+:encrypt_res [text/binary] [file]
+  "%ResEncoder%" encrypt %~1 "%~2" "%~2.enc"
+  if errorlevel 1 (
+    echo Error in encryption resource file: "%~2"
+    pause
+  )
+  ::verify can we get decrypted file to match with original hash
+  "%ResEncoder%" decrypt %~1 "%~2.enc" "%~2.dec" >nul
+  call :GetFileSha1 "%~2" HashOrig
+  call :GetFileSha1 "%~2.dec" HashDecrypted
+  if "%HashOrig%" neq "%HashDecrypted%" (
+    echo Mismatched hash in attempt to encrypt resource file: "%~2"
+	pause
+  )
+  del "%~2.dec"
+  move /y "%~2.enc" "%~2" >NUL
+exit /b
+
 :STRINGS
 
 STRINGTABLE
@@ -246,13 +312,12 @@ BEGIN
 504, 	"Unable to protect memory"
 505, 	"LoadLibrary failed"
 506, 	"Process information not found"
-600,	"Ссылки"
 601,	"(Нет)"
-602,	"Не можу обрати цю мову!\nСпершу Вам необхідно обрати мову для програм, що не підтримують Юнікод, - Українську\nчерез Панель керування -> Регіональні стандарти."
-603,	"Не могу выбрать этот язык!\nСперва Вам необходимо выставить язык для программ, не поддерживающих Юникод, на Русский\nчерез Панель управления -> Региональные стандарты."
 604,	"Корпорация Майкрософт"
 605,	"Компьютер\"
 606,	"Рабочий стол"
 607,	"Руководство пользователя"
 608,	"Руководство пользователя (дополнение)"
-END 
+//700 PCRE2 Sha1
+//701 ABR Sha1
+//See details at :PrepStrTable label

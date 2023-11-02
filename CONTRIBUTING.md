@@ -11,9 +11,9 @@ Some points about structure of the project
 
 After downloading the project, you have to open it with bat-file "_0_Open Project Elevated  - !!! - .cmd"
 
-The entry point is a form: frmEULA.frm
+The entry point is Sub Main() in: modInit.bas
 
-After initialization, form frmMain.frm has been started.
+After initialization, form frmEULA.frm or frmMain.frm has been started.
 
 Functions call stack while system scanning is looking like this:
 

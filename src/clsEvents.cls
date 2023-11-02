@@ -19,13 +19,13 @@ Attribute VB_Exposed = False
 
 Option Explicit
 
-Public WithEvents BtnInArr      As CommandButton
+Public WithEvents BtnInArr      As VBCCR17.CommandButtonW
 Attribute BtnInArr.VB_VarHelpID = -1
-Public WithEvents lstBoxInArr   As ListBox
+Public WithEvents lstBoxInArr   As VBCCR17.ListBoxW
 Attribute lstBoxInArr.VB_VarHelpID = -1
-Public WithEvents txtBoxInArr   As TextBox
+Public WithEvents txtBoxInArr   As VBCCR17.TextBoxW
 Attribute txtBoxInArr.VB_VarHelpID = -1
-Public WithEvents chkBoxInArr   As CheckBox
+Public WithEvents chkBoxInArr   As VBCCR17.CheckBoxW
 Attribute chkBoxInArr.VB_VarHelpID = -1
 
 Private ControlHasFocus As Boolean
@@ -33,7 +33,7 @@ Private ControlHasFocus As Boolean
 
 ' ================ Buttons =================
 
-Private Sub BtnInArr_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub BtnInArr_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     'убирает фокус с кнопки (позволяет убрать артифакт черного прямоугольника, который налазит на слова, особенно в русском переводе - окно Config)
     With frmMain.cmdHidden
         If Not (BtnInArr.Name = "cmdStartupList") And _
@@ -47,7 +47,7 @@ End Sub
 
 ' ================ CheckBoxes ==============
 
-Private Sub chkBoxInArr_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub chkBoxInArr_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     'убирает фокус с чекбокса (позволяет убрать рамку выделения, которая часто съедает край первых букв надписи чекбокса
     'With frmMain.cmdMainMenu
     With frmMain.cmdHidden
@@ -61,10 +61,10 @@ End Sub
 Private Sub txtBoxInArr_LostFocus()
     ControlHasFocus = False
 End Sub
-Private Sub txtBoxInArr_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub txtBoxInArr_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
     If Not ControlHasFocus Then
         'If txtBoxInArr.Name <> "txtHelp" Then
-            If GetForegroundWindow() = txtBoxInArr.Parent.hwnd Then
+            If GetForegroundWindow() = txtBoxInArr.Parent.hWnd Then
                 ControlHasFocus = True
                 If txtBoxInArr.Visible And txtBoxInArr.Enabled Then
                     txtBoxInArr.SetFocus
@@ -80,9 +80,9 @@ End Sub
 Private Sub lstBoxInArr_LostFocus()
     ControlHasFocus = False
 End Sub
-Private Sub lstBoxInArr_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub lstBoxInArr_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
     If Not ControlHasFocus Then
-        If GetForegroundWindow() = lstBoxInArr.Parent.hwnd Then
+        If GetForegroundWindow() = lstBoxInArr.Parent.hWnd Then
             ControlHasFocus = True
             If Not bGlobalDontFocusListBox Then
                 If lstBoxInArr.Visible And lstBoxInArr.Enabled Then

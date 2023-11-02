@@ -564,6 +564,9 @@ Public Function ProcessRun( _
     Dim CMDLine     As String
     Dim argc        As Long
     Dim argv()      As String
+    Dim iLastErr    As Long
+    
+    AppendErrorLogCustom "Parsing command line"
     
     If Len(FileName) <> 0 Then
     
@@ -597,7 +600,11 @@ Public Function ProcessRun( _
         Attr.lpSecurityDescriptor = 0
         Attr.bInheritHandle = True
         
+        AppendErrorLogCustom "CreatePipe1"
+        
         If CreatePipe(PipeIn.hRead, PipeIn.hWrite, Attr, PIPE_BUFFER_SIZE) <> 0 Then
+    
+            AppendErrorLogCustom "CreatePipe2"
     
             If CreatePipe(PipeOut.hRead, PipeOut.hWrite, Attr, PIPE_BUFFER_SIZE) <> 0 Then
       
@@ -608,6 +615,8 @@ Public Function ProcessRun( _
             End If
         End If
     End If
+    
+    AppendErrorLogCustom "CreateProcess"
     
     If si.hStdOutput <> 0 Then
     
@@ -621,6 +630,8 @@ Public Function ProcessRun( _
                 StrPtr(CurrentDirectory), _
                 si, _
                 pi)
+        
+        iLastErr = Err.LastDllError
         
         If PipeOut.hWrite <> 0 Then
             CloseHandle PipeOut.hWrite: PipeOut.hWrite = 0
@@ -637,6 +648,8 @@ Public Function ProcessRun( _
                     StrPtr(CurrentDirectory), _
                     si, _
                     pi)
+                    
+        iLastErr = Err.LastDllError
     End If
     
     ProcessRun = CBool(lr)    ' not 0 is SUCCESS
@@ -647,7 +660,7 @@ Public Function ProcessRun( _
         If pi.hThread <> 0 Then CloseHandle pi.hThread: pi.hThread = 0
     End If
     
-    AppendErrorLogCustom "ProcessRun - End"
+    AppendErrorLogCustom "ProcessRun - End. Return: " & lr & ". LastError = " & iLastErr
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "clsProcess_ProcessRun", "FileName:", FileName, "CommandLine:", CommandLine
@@ -898,7 +911,7 @@ Private Sub ParseCommandLine(Line As String, argc As Long, argv() As String)
         argv(Index) = Space$(strLen)
         lstrcpyn StrPtr(argv(Index)), strAdr, strLen + 1
     Next
-    GlobalFree ptr
+    LocalFree ptr
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "clsProcess_ParseCommandLine", "Line:", Line

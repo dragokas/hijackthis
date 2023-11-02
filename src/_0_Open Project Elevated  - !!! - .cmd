@@ -62,7 +62,7 @@ goto :eof
     call :RegTLib "%SystemRoot%\System32\msdatsrc.tlb"
     call :RegTLib "%~dp0tools\VBCCR\Standard EXE Version\OLEGuids\OLEGuids.tlb"
   )
-  regsvr32.exe /s MSCOMCTL.OCX
+  ::regsvr32.exe /s MSCOMCTL.OCX
   regsvr32.exe /s /u "tools\VBCCR\ActiveX Control Version\Bin\VBCCR17.OCX"
   timeout /t 2
   regsvr32.exe /s "tools\VBCCR\ActiveX Control Version\Bin\VBCCR17.OCX"

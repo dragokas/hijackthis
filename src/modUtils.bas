@@ -12,7 +12,7 @@ Private Type BROWSER_INFO
     'Path    As String  'future use
 End Type
 
-Public Type MY_BROWSERS
+Public Type BROWSERS_VERSION_INFO
     Edge    As BROWSER_INFO
     IE      As BROWSER_INFO
     Firefox As BROWSER_INFO
@@ -32,8 +32,6 @@ Public Enum SETTINGS_SECTION
     SETTINGS_SECTION_FILEUNLOCKER
     SETTINGS_SECTION_REGKEYTYPECHECKER
 End Enum
-
-Public BROWSERS As MY_BROWSERS
 
 Public hLibPcre2        As Long
 Public oRegexp          As IRegExp
@@ -411,11 +409,8 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Sub GetBrowsersInfo()
+Public Function GetBrowsersInfo() As BROWSERS_VERSION_INFO
     AppendErrorLogCustom "GetBrowsersInfo - Begin"
-    Static isInit As Boolean
-    If isInit Then Exit Sub
-    isInit = True
     
     Dim Cmd As String
     Dim FriendlyName As String
@@ -428,7 +423,7 @@ Public Sub GetBrowsersInfo()
         SplitIntoPathAndArgs Cmd, Path, Arguments
     End If
     
-    With BROWSERS
+    With GetBrowsersInfo
         .Edge.Version = GetEdgeVersion()
         .IE.Version = GetMSIEVersion()
         .Chrome.Version = GetChromeVersion()
@@ -437,7 +432,7 @@ Public Sub GetBrowsersInfo()
         .Default = Cmd & IIf(Path = "(AppID)", " " & FriendlyName, IIf(Len(FriendlyName) <> 0, " (" & FriendlyName & ")", vbNullString))
     End With
     AppendErrorLogCustom "GetBrowsersInfo - End"
-End Sub
+End Function
 
 Public Function GetEdgeVersion() As String
     AppendErrorLogCustom "GetEdgeVersion - Begin"
@@ -728,7 +723,7 @@ Public Function AppPath(Optional bGetFullPath As Boolean) As String
         End If
     End If
     
-    If App.LogMode = 0 Then
+    If inIDE Then
         If bGetFullPath Then
             AppPath = GetDOSFilename(App.Path, bReverse:=True) & "\" & GetValueFromVBP(BuildPath(App.Path, App.ExeName & ".vbp"), "ExeName32")
             ProcPathFull = AppPath
@@ -1060,67 +1055,20 @@ Private Function BuildPath$(sPath$, sFile$)
     End If
 End Function
 
-Public Function GetWindowsVersion() As String    'Init by Form_load.
-    
-    AppendErrorLogCustom "modUtils.GetWindowsVersion - Begin"
-    
-    On Error GoTo ErrorHandler:
-    
+Public Function GetWindowsVersionTitle() As String
     Static isInit As Boolean
     Static sWinVer As String
-    
     If isInit Then
-        GetWindowsVersion = sWinVer
+        GetWindowsVersionTitle = sWinVer
         Exit Function
     Else
         isInit = True
+        With OSver
+            sWinVer = .OSName & " " & .Edition & " SP" & .SPVer & " " & _
+                "(Windows " & .Platform & " " & .Major & "." & .Minor & "." & .Build & "." & .Revision & ")"
+        End With
     End If
-    
-    'already in form_initialize (frmEULA)
-    'Set OSver = New clsOSInfo
-    
-    bIsWin64 = (OSver.IsWin64)
-    bIsWOW64 = bIsWin64 ' mean VB6 app-s are always x32 bit.
-    bIsWin32 = Not bIsWin64
-    
-    sWinSysDir = Environ$("SystemRoot") & "\System32"
-    
-    'enable redirector (just in case)
-    If bIsWin64 Then ToggleWow64FSRedirection True
-
-    If OSver.MajorMinor >= 5.1 And OSver.MajorMinor <= 5.2 Then bIsWinXP = True
-    If OSver.MajorMinor = 5 Then bIsWin2k = True
-
-    With OSver
-        bIsWinVistaAndNewer = .Major >= 6
-        bIsWin7AndNewer = .MajorMinor >= 6.1
-        
-        Select Case .PlatformID
-            Case 0: bIsWin9x = True: bIsWinNT = False 'Win3x
-            Case 1: bIsWin9x = True: bIsWinNT = False
-            Case 2: bIsWinNT = True: bIsWin9x = False
-        End Select
-        
-        If bIsWin9x Then
-            If .Major = 4 Then
-                If .Minor = 90 Then 'Windows Millennium Edition
-                    bIsWinME = True
-                End If
-            End If
-        End If
-
-        sWinVer = OSver.OSName & " " & OSver.Edition & " SP" & OSver.SPVer & " " & _
-            "(Windows " & OSver.Platform & " " & .Major & "." & .Minor & "." & .Build & "." & .Revision & ")"
-
-    End With
-    
-    GetWindowsVersion = sWinVer
-
-    AppendErrorLogCustom "modUtils.GetWindowsVersion - End"
-    Exit Function
-ErrorHandler:
-    ErrorMsg Err, "GetWindowsVersion"
-    If inIDE Then Stop: Resume Next
+    GetWindowsVersionTitle = sWinVer
 End Function
 
 Public Sub PictureBoxRgn(pict As PictureBox, ByVal lMaskColor As Long)
@@ -1804,7 +1752,7 @@ Public Sub CreateUninstallKey(bCreate As Boolean, Optional EXE_Location As Strin
         If Len(EXE_Location) = 0 Then EXE_Location = AppPath(True)
         
         Reg.CreateKey HKEY_LOCAL_MACHINE, Setup_Key
-        Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "DisplayName", "HiJackThis+ " & AppVerString
+        Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "DisplayName", g_AppName & " " & AppVerString
         Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "UninstallString", """" & EXE_Location & """ /uninstall"
         Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "QuietUninstallString", """" & EXE_Location & """ /silentuninstall"
         Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "DisplayIcon", EXE_Location & ",0"
@@ -1848,9 +1796,9 @@ Public Function RegSaveHJT(sName$, sData$, Optional IdSection As SETTINGS_SECTIO
     If sName Like "Ignore#*" Or sName = "ProxyPass" Then
         Dim aData() As Byte
         aData = sData
-        Reg.SetBinaryVal HKEY_LOCAL_MACHINE, "Software\TrendMicro\HiJackThisFork" & sSubSection, sName, aData
+        Reg.SetBinaryVal HKEY_LOCAL_MACHINE, g_SettingsRegKey & sSubSection, sName, aData
     Else
-        Reg.SetStringVal HKEY_LOCAL_MACHINE, "Software\TrendMicro\HiJackThisFork" & sSubSection, sName, sData
+        Reg.SetStringVal HKEY_LOCAL_MACHINE, g_SettingsRegKey & sSubSection, sName, sData
     End If
     
     RegSaveHJT = True
@@ -1864,7 +1812,6 @@ End Function
 Public Function RegReadHJT( _
     sName$, _
     Optional sDefault$, _
-    Optional bUseOldKey As Boolean, _
     Optional IdSection As SETTINGS_SECTION) As String
     
     On Error GoTo ErrorHandler:
@@ -1875,11 +1822,8 @@ Public Function RegReadHJT( _
     If Len(sSubSection) <> 0 Then sSubSection = "\" & sSubSection
     
     Dim sKeyHJT As String
-    If bUseOldKey Then
-        sKeyHJT = "Software\TrendMicro\HiJackThis"
-    Else
-        sKeyHJT = "Software\TrendMicro\HiJackThisFork" & sSubSection
-    End If
+    sKeyHJT = g_SettingsRegKey & sSubSection
+    
     If sName Like "Ignore#*" Or sName = "ProxyPass" Then
         Dim aData() As Byte
         aData = Reg.GetBinary(HKEY_LOCAL_MACHINE, sKeyHJT, sName)
@@ -1905,7 +1849,7 @@ Public Function RegDelHJT(sName$, Optional IdSection As SETTINGS_SECTION) As Boo
     
     If Len(sSubSection) <> 0 Then sSubSection = "\" & sSubSection
     
-    Reg.DelVal HKEY_LOCAL_MACHINE, "Software\TrendMicro\HiJackThisFork" & sSubSection, sName
+    Reg.DelVal HKEY_LOCAL_MACHINE, g_SettingsRegKey & sSubSection, sName
     
     RegDelHJT = True
     
@@ -1927,7 +1871,7 @@ Public Function isCLSID(sStr As String) As Boolean
     End If
 End Function
 
-Public Sub AlignCommandButtonText(Button As CommandButton, Style As BUTTON_ALIGNMENT)
+Public Sub AlignCommandButtonText(Button As VBCCR17.CommandButtonW, Style As BUTTON_ALIGNMENT)
     Dim lOldStyle As Long
     Dim lret As Long
     lOldStyle = GetWindowLong(Button.hWnd, GWL_STYLE)
@@ -2488,8 +2432,8 @@ End Sub
 
 Sub ControlSelectAll(Optional frmExplicit As Form)
     Dim out_Control As Control
-    Dim lst As ListBox
-    Dim txb As TextBox
+    Dim lst As VBCCR17.ListBoxW
+    Dim txb As VBCCR17.TextBoxW
     Dim bCanSearch As Boolean
     Dim i As Long
 
@@ -2556,12 +2500,12 @@ Sub ControlSelectAll(Optional frmExplicit As Form)
     End Select
     
     If bCanSearch Then
-        If TypeOf out_Control Is ListBox Then
+        If TypeOf out_Control Is VBCCR17.ListBoxW Then
             Set lst = out_Control
             For i = 0 To lst.ListCount - 1
                 lst.Selected(i) = True
             Next
-        ElseIf TypeOf out_Control Is TextBox Then
+        ElseIf TypeOf out_Control Is VBCCR17.TextBoxW Then
             Set txb = out_Control
             txb.SelStart = 0
             txb.SelLength = Len(txb.Text)
@@ -2858,7 +2802,7 @@ Public Function DerefWord(ptr As Long) As Integer
     If ptr <> 0 Then GetMem2 ByVal ptr, DerefWord
 End Function
 
-Public Sub ComboSetValue(cmb As ComboBox, sValue As String)
+Public Sub ComboSetValue(cmb As VBCCR17.ComboBoxW, sValue As String)
     Dim i As Long
     For i = 0 To cmb.ListCount - 1
         If cmb.List(i) = sValue Then
@@ -2925,6 +2869,9 @@ Public Sub OpenInTextEditor(sTextFile As String)
         .cbSize = Len(uSEI)
         .lpVerb = StrPtr("open")
         .lpFile = StrPtr(editorPath)
+        .lpParameters = StrPtr(sTextFile)
+        .lpDirectory = StrPtr(GetParentDir(sTextFile))
+        .hWnd = g_HwndMain
         .fMask = SEE_MASK_NOCLOSEPROCESS
         .nShow = SW_SHOWNORMAL
     End With
@@ -2942,3 +2889,13 @@ ErrorHandler:
     ErrorMsg Err, "OpenInTextEditor"
     If inIDE Then Stop: Resume Next
 End Sub
+
+Public Function ConvertCollectionToArray(col As Collection) As String()
+    Dim i As Long
+    Dim a() As String
+    ReDim a(col.Count - 1)
+    For i = 1 To col.Count
+        a(i - 1) = col.Item(i)
+    Next
+    ConvertCollectionToArray = a
+End Function

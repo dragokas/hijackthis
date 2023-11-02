@@ -7,14 +7,14 @@ Attribute VB_Name = "modHosts"
 
 Option Explicit
 
-Public Sub ListHostsFile(objList As ListBox)
+Public Sub ListHostsFile(objList As VBCCR17.ListBoxW)
     On Error GoTo ErrorHandler:
 
     Dim sAttr$, iAttr&, aContent() As String, i&
     
     objList.Clear
     
-    Dim objInfo As Label
+    Dim objInfo As VBCCR17.LabelW
     Set objInfo = frmMain.lblHostsTip1
     
     'objInfo.Caption = "Loading hosts file, please wait..."
@@ -91,91 +91,16 @@ Public Function HostsReset() As Boolean
 End Function
 
 Public Function GetDefaultHostsContents() As String
-  Dim DefaultContent$
-
-  If OSver.MajorMinor < 6 Then
-    
-    'XP
-    DefaultContent = _
-    "# Copyright (c) 1993-1999 Microsoft Corp." & vbCrLf & _
-    "#" & vbCrLf & _
-    "# This is a sample HOSTS file used by Microsoft TCP/IP for Windows." & vbCrLf & _
-    "#" & vbCrLf & _
-    "# This file contains the mappings of IP addresses to host names. Each" & vbCrLf & _
-    "# entry should be kept on an individual line. The IP address should" & vbCrLf & _
-    "# be placed in the first column followed by the corresponding host name." & vbCrLf & _
-    "# The IP address and the host name should be separated by at least one" & vbCrLf & _
-    "# space." & vbCrLf & _
-    "#" & vbCrLf & _
-    "# Additionally, comments (such as these) may be inserted on individual" & vbCrLf & _
-    "# lines or following the machine name denoted by a '#' symbol." & vbCrLf & _
-    "#" & vbCrLf & _
-    "# For example:" & vbCrLf & _
-    "#" & vbCrLf & _
-    "#      102.54.94.97     rhino.acme.com          # source server" & vbCrLf & _
-    "#       38.25.63.10     x.acme.com              # x client host" & vbCrLf & _
-    vbCrLf & _
-    "127.0.0.1       localhost"
-    
-  ElseIf OSver.MajorMinor < 6.1 Then
-    
-    'Vista
-    DefaultContent = _
-    "# Copyright (c) 1993-2006 Microsoft Corp." & vbCrLf & _
-    "#" & vbCrLf & _
-    "# This is a sample HOSTS file used by Microsoft TCP/IP for Windows." & vbCrLf & _
-    "#" & vbCrLf & _
-    "# This file contains the mappings of IP addresses to host names. Each" & vbCrLf & _
-    "# entry should be kept on an individual line. The IP address should" & vbCrLf & _
-    "# be placed in the first column followed by the corresponding host name." & vbCrLf & _
-    "# The IP address and the host name should be separated by at least one" & vbCrLf & _
-    "# space." & vbCrLf & _
-    "#" & vbCrLf & _
-    "# Additionally, comments (such as these) may be inserted on individual" & vbCrLf & _
-    "# lines or following the machine name denoted by a '#' symbol." & vbCrLf & _
-    "#" & vbCrLf & _
-    "# For example:" & vbCrLf & _
-    "#" & vbCrLf & _
-    "#      102.54.94.97     rhino.acme.com          # source server" & vbCrLf & _
-    "#       38.25.63.10     x.acme.com              # x client host" & vbCrLf & _
-    vbCrLf & _
-    "127.0.0.1       localhost" & vbCrLf & _
-    "::1             localhost"
-  
-  Else
-  
-    '7 and higher (Win 10 checked)
-    DefaultContent = _
-    "# Copyright (c) 1993-2009 Microsoft Corp." & vbCrLf & _
-    "#" & vbCrLf & _
-    "# This is a sample HOSTS file used by Microsoft TCP/IP for Windows." & vbCrLf & _
-    "#" & vbCrLf & _
-    "# This file contains the mappings of IP addresses to host names. Each" & vbCrLf & _
-    "# entry should be kept on an individual line. The IP address should" & vbCrLf & _
-    "# be placed in the first column followed by the corresponding host name." & vbCrLf & _
-    "# The IP address and the host name should be separated by at least one" & vbCrLf & _
-    "# space." & vbCrLf & _
-    "#" & vbCrLf & _
-    "# Additionally, comments (such as these) may be inserted on individual" & vbCrLf & _
-    "# lines or following the machine name denoted by a '#' symbol." & vbCrLf & _
-    "#" & vbCrLf & _
-    "# For example:" & vbCrLf & _
-    "#" & vbCrLf & _
-    "#      102.54.94.97     rhino.acme.com          # source server" & vbCrLf & _
-    "#       38.25.63.10     x.acme.com              # x client host" & vbCrLf & _
-    vbCrLf & _
-    "# localhost name resolution is handled within DNS itself." & vbCrLf & _
-    "#" & vbTab & "127.0.0.1       localhost" & vbCrLf & _
-    "#" & vbTab & "::1             localhost"
-    
-  End If
-
-  GetDefaultHostsContents = DefaultContent
-
+    If OSver.MajorMinor < 6 Then
+        GetDefaultHostsContents = LoadEncryptedResFile("database\hosts_xp", 105, Not inIDE)
+    ElseIf OSver.MajorMinor < 6.1 Then
+        GetDefaultHostsContents = LoadEncryptedResFile("database\hosts_vista", 106, Not inIDE)
+    Else
+        GetDefaultHostsContents = LoadEncryptedResFile("database\hosts_7-11", 107, Not inIDE)
+    End If
 End Function
 
-
-Public Sub HostsDeleteLine(objList As ListBox)
+Public Sub HostsDeleteLine(objList As VBCCR17.ListBoxW)
     On Error GoTo ErrorHandler:
 
     'delete the line in hosts file
@@ -219,7 +144,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Public Sub HostsToggleLine(objList As ListBox)
+Public Sub HostsToggleLine(objList As VBCCR17.ListBoxW)
     On Error GoTo ErrorHandler:
 
     'enable/disable the line in hosts file

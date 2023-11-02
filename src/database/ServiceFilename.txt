@@ -1,0 +1,7 @@
+aspnet_state.exe
+MsMpEng.exe
+NisSrv.exe
+MpCmdRun.exe
+WPFFontCache_v0400.exe
+elevation_service.exe
+mscorsvw.exe

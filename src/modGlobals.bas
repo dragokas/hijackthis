@@ -11,7 +11,7 @@ Public Const LAST_CHECK_OTHER_SECTION_NUMBER As Long = 27
 
 Public Const MAX_TIMEOUT_DEFAULT As Long = 180 'Standard scan timeout
 
-Public Const g_AppName As String = "HiJackThis+"
+Public Const g_AppName As String = "HijackThis+"
 
 Public Const g_Backup_Do_Every_Days As Long = 7
 Public Const g_Backup_Erase_Every_Days As Long = 28
@@ -181,6 +181,7 @@ Public Enum HASH_TYPE
     HASH_TYPE_SHA256
 End Enum
 
+Public Declare Function GetSystemDefaultLCID Lib "kernel32.dll" () As Long
 Public Declare Sub InitCommonControls Lib "comctl32.dll" ()
 Public Declare Function InitCommonControlsEx Lib "comctl32.dll" (lpInitCtrls As tagINITCOMMONCONTROLSEX) As Long
 Public Declare Function SetCurrentProcessExplicitAppUserModelID Lib "shell32.dll" (ByVal pAppID As Long) As Long
@@ -219,6 +220,8 @@ Public Declare Function SetLayeredWindowAttributes Lib "user32.dll" (ByVal hWnd 
 Public Declare Function SetStretchBltMode Lib "gdi32.dll" (ByVal hdc As Long, ByVal nStretchMode As Long) As Long
 Public Declare Function StretchBlt Lib "gdi32.dll" (ByVal hdc As Long, ByVal x As Long, ByVal y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hSrcDC As Long, ByVal xSrc As Long, ByVal ySrc As Long, ByVal nSrcWidth As Long, ByVal nSrcHeight As Long, ByVal dwRop As Long) As Long
 
+Public Const ICC_STANDARD_CLASSES As Long = &H4000&
+
 Public Const IMAGE_ICON        As Long = 1
 Public Const ICON_SMALL        As Long = 0
 Public Const ICON_BIG          As Long = 1
@@ -247,11 +250,11 @@ Public Const LWA_COLORKEY      As Long = &H1&
 
 Public Reg          As clsRegistry
 
-Public colSafeDNS   As New Collection
-Public colDisallowedCert  As New Collection
-Public cReg4vals    As New Collection
-Public sRegVals()   As String
-Public sFileVals()  As String
+Public colSafeDNS           As New Collection
+Public colDisallowedCert    As New Collection
+Public cReg4vals            As New Collection
+Public sRegVals()           As String
+Public sFileVals()          As String
 
 Public g_sCommandLine   As String
 Public g_sCommandLineArg() As String
@@ -278,7 +281,6 @@ Public bPolymorph       As Boolean
 Public bCheckForUpdates As Boolean
 Public bUpdateToTest    As Boolean
 Public bUpdateSilently  As Boolean
-Public bFirstRun        As Boolean
 Public bFirstRebootScan As Boolean
 Public bStartupScan     As Boolean
 Public gNotUserClick    As Boolean
@@ -295,7 +297,6 @@ Public g_FontOnInterface As Boolean
 Public g_sLogFile       As String
 Public g_sDebugLogFile  As String
 Public g_hMutex         As Long
-Public g_bComctlExtracted As Boolean
 Public g_CurFrame       As FRAME_ALIAS
 Public g_bDelModePending As Boolean
 Public g_bAutoFixVT     As Boolean
@@ -375,7 +376,6 @@ Public envCurUser       As String
 Public ProgramData      As String
 Public colProfiles      As Collection ' profile's path
 Public colProfilesUser  As Collection ' profile's user name
-Public sWinVersion      As String
 
 Public bRebootRequired              As Boolean
 Public bNeedRebuildPolicyChain      As Boolean
@@ -386,13 +386,12 @@ Public bmnuExit_Clicked             As Boolean
 Public bNoWriteAccess               As Boolean
 Public bSeenLSPWarning              As Boolean
 
-Public sSafeLSPFiles        As String
+Public aSafeLSPFiles()      As String
 Public aSafeRegDomains()    As String
 Public aSafeSSODL()         As String
 Public aSafeSIOI()          As String
 Public aSafeSEH()           As String
 Public sSafeAppInit         As String
-Public sSafeWinlogonNotify  As String
 Public sSafeIfeVerifier     As String
 Public sSafeO5Items_HKLM    As String
 Public sSafeO5Items_HKLM_32 As String
@@ -425,14 +424,11 @@ Public bAcceptEula          As Boolean
 Public g_bDelmodeDisabling  As Boolean
 Public g_iCpuUsage          As Long
 Public g_bIsReflectionSupported As Boolean
+Public g_SettingsRegKey     As String
 
 Public bSeenHostsFileAccessDeniedWarning As Boolean
 Public bGlobalDontFocusListBox As Boolean
 
-Public g_DEFSTARTPAGE       As String
-Public g_DEFSEARCHPAGE      As String
-Public g_DEFSEARCHASS       As String
-Public g_DEFSEARCHCUST      As String
 Public g_UninstallState     As Boolean  'HJT is beeing uninstalled
 Public g_ProgressMaxTags    As Long     'last progressbar tag number (count of items)
 Public g_HJT_Items_Count    As Long
@@ -944,6 +940,7 @@ Public Declare Function NtClose Lib "ntdll.dll" (ByVal Handle As Long) As Long
 Public Declare Function LockFileEx Lib "kernel32.dll" (ByVal hFile As Long, ByVal dwFlags As Long, ByVal dwReserved As Long, ByVal nNumberOfBytesToLockLow As Long, ByVal nNumberOfBytesToLockHigh As Long, ByVal lpOverlapped As Long) As Long
 Public Declare Function UnlockFileEx Lib "kernel32.dll" (ByVal hFile As Long, ByVal dwReserved As Long, ByVal nNumberOfBytesToUnlockLow As Long, ByVal nNumberOfBytesToUnlockHigh As Long, ByVal lpOverlapped As Long) As Long
 Public Declare Function EmptyArray Lib "oleaut32.dll" Alias "SafeArrayCreateVector" (Optional ByVal VT As VbVarType = vbString, Optional ByVal lLow As Long = 0, Optional ByVal lCount As Long = 0) As String()
+Public Declare Function EmptyByteArray Lib "oleaut32.dll" Alias "SafeArrayCreateVector" (Optional ByVal VT As VbVarType = vbByte, Optional ByVal lLow As Long = 0, Optional ByVal lCount As Long = 0) As Byte()
 Public Declare Function NtCreateFile Lib "ntdll.dll" (ByRef FileHandle As Long, ByVal DesiredAccess As Long, ObjectAttributes As OBJECT_ATTRIBUTES, IoStatusBlock As IO_STATUS_BLOCK, AllocationSize As Any, ByVal FileAttributes As Long, ByVal ShareAccess As Long, ByVal CreateDisposition As Long, ByVal CreateOptions As Long, EaBuffer As Any, ByVal EaLength As Long) As Long
 Public Declare Function NtWriteFile Lib "ntdll.dll" (ByVal FileHandle As Long, EventArg As Any, APCRoutine As Long, APCContext As Any, IoStatusBlock As IO_STATUS_BLOCK, ByVal Buffer As Long, ByVal Length As Long, ByteOffset As Long, Key As Long) As Long
 Public Declare Function OpenFile Lib "kernel32.dll" (ByVal FileName As String, ByVal OFs As Long, ByVal Flags As Long) As Long
@@ -1690,7 +1687,6 @@ Public Type MY_PROC_ENTRY
     Name        As String
     Path        As String
     pid         As Long
-    ParentPID   As Long
     Threads     As Long
     Priority    As Long
     SessionID   As Long
@@ -2469,12 +2465,14 @@ Public Const PAGE_READWRITE = &H4
 Public Const LVIS_FOCUSED = 1
 
 Private Type STRING_CONSTANTS 'to support DBCS
-    RU_LINKS            As String
     RU_NO               As String
-    UA_CANT_LOAD_LANG   As String
-    RU_CANT_LOAD_LANG   As String
     RU_MICROSOFT        As String
     RU_PC               As String
+    SHA1_PCRE2          As String
+    SHA1_ABR            As String
+    WINDOWS_DEFENDER    As String
+    VIRUSTOTAL          As String
+    AUTORUNS            As String
 End Type
 
 Public STR_CONST As STRING_CONSTANTS

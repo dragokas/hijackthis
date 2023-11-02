@@ -9,9 +9,9 @@
 
 _(this is alpha-version - major changes are in progress; some functions may work unstable; the plus+ means smooth introduction of detection of modern malware and step-by-step moving to replace some modules on C++ to access 64-bit processes in normal way and multi-threading; it is also a differentiation among other possible forks around)_
 
-# HiJackThis+
+# HijackThis+
 
-**HiJackThis+ (Plus)** (previously called: HiJackThis Fork v3) is a fork and a continuation of the original [Trend Micro HiJackThis by Merijn Bellekom](https://sourceforge.net/projects/hjt/) development, once a well-known tool.
+**HijackThis+ (Plus)** (previously called: HiJackThis Fork v3) is a fork and a continuation of the original [Trend Micro HijackThis by Merijn Bellekom](https://sourceforge.net/projects/hjt/) development, once a well-known tool.
 
 At the moment, it is a step-by-step 100% rewritten source code of the original engine, aimed to provide a full compatiblity with the most recent Windows OS and a balance beetween compiling very fast results in logfile and combatting with the most popular malware, inluding the one not known to other antiviruses.
 
@@ -19,17 +19,17 @@ It is made by Alex Dragokas - a lawyer, security observer and malware researcher
 
 ## Overview
 
-HiJackThis+ is a free utility for Microsoft Windows that scans your computer for settings changed by adware, spyware, malware and other unwanted programs. Shortly, consider it like Sysinternals [Autoruns](https://learn.microsoft.com/en-us/sysinternals/downloads/autoruns).
+HijackThis+ is a free utility for Microsoft Windows that scans your computer for settings changed by adware, spyware, malware and other unwanted programs. Shortly, consider it like Sysinternals [Autoruns](https://learn.microsoft.com/en-us/sysinternals/downloads/autoruns).
 
-The difference from classical antiviruses is the ability to function without constant database updates, because HiJackThis+ primarily detects **hijacking methods** rather than comparing items against a pre-built database (signatures). This allows it to detect new or previously unknown malware - but it also makes **no distinction** between safe and unsafe items. Users are expected to research all scanned items manually, and only remove items from their PC when absolutely appropriate.
+The difference from classical antiviruses is the ability to function without constant database updates, because HijackThis+ primarily detects **hijacking methods** rather than comparing items against a pre-built database (signatures). This allows it to detect new or previously unknown malware - but it also makes **no distinction** between safe and unsafe items. Users are expected to research all scanned items manually, and only remove items from their PC when absolutely appropriate.
 
 Therefore, FALSE POSITIVES ARE LIKELY. If you are ever unsure, you should consult with a knowledgeable expert BEFORE deleting anything.
 
-HiJackThis+ is not a replacement of a classical antivirus. It doesn't provide a real-time protection, because it is a passive scanner only. Consider it as an addition. However, you can use it in form of boot-up automatical scanner in the following way: 
+HijackThis+ is not a replacement of a classical antivirus. It doesn't provide a real-time protection, because it is a passive scanner only. Consider it as an addition. However, you can use it in form of boot-up automatical scanner in the following way: 
  * Run the scanning by clicking "Do a system scan only"
  * Add all items in the ignore-list
- * Set up boot-up scan in menu "File" - "Settings" - "Add HiJackThis to startup"
- * Next time when user logged in, HiJackThis will silently scan your OS and display UI if only new records in your system were found.
+ * Set up boot-up scan in menu "File" - "Settings" - "Add HijackThis to startup"
+ * Next time when user logged in, HijackThis will silently scan your OS and display UI if only new records in your system were found.
 
 ## Tutorial
 
@@ -59,7 +59,7 @@ HiJackThis+ is not a replacement of a classical antivirus. It doesn't provide a 
  * New and updated supplementary tools
  * Improved interface, security and backups
 
-HiJackThis+ also comes with several modules useful for specific analysis and removing malware from a computer:
+HijackThis+ also comes with several modules useful for specific analysis and removing malware from a computer:
  * StartupList 2 **(\*new\*)**
  * Process Manager
  * Uninstall Manager
@@ -74,14 +74,14 @@ HiJackThis+ also comes with several modules useful for specific analysis and rem
 
 ## Log analysis
 
-**IMPORTANT**: HiJackThis+ does not make value-based calls on what is considered good or bad.
+**IMPORTANT**: HijackThis+ does not make value-based calls on what is considered good or bad.
 You must exercise caution when using this tool. Avoid making changes to your computer settings without thoroughly studying the consequences of each change.
 
 If you are not already an expert, we recommend submitting your case to an online help forum. Here are some suggestions:
 - English: [Our GitHub](https://github.com/dragokas/hijackthis/wiki/How-to-make-a-request-for-help-in-the-PC-cure-section%3F) ; [GeeksToGo](http://www.geekstogo.com/forum/topic/2852-malware-and-spyware-cleaning-guide/) ;  [BleepingComputer](https://www.bleepingcomputer.com/forums/t/34773/preparation-guide-for-use-before-using-malware-removal-tools-and-requesting-help/)
 - Russian: [SafeZone](https://safezone.cc/pravila/) ; [CyberForum](https://www.cyberforum.ru/viruses/thread49792.html) ; [OSZone](http://forum.oszone.net/thread-98169.html) ; [SoftBoard](https://softboard.ru/topic/51343-правила-подраздела/) ; [THG](http://www.thg.ru/forum/showthread.php?t=92236) ; [VirusInfo](https://virusinfo.info/showthread.php?t=1235) ; [KasperskyClub](https://forum.kasperskyclub.ru/index.php?showtopic=43640)
 
-> Note: currently, only [VIRUSNET association](https://github.com/VIRUSNET-Association) can provide direct analysis of HiJackThis+ logs in [our github 'Issues' section](https://github.com/dragokas/hijackthis/wiki/How-to-make-a-request-for-help-in-the-PC-cure-section%3F). Please feel free to ask help there (English/Russian only).
+> Note: currently, only [VIRUSNET association](https://github.com/VIRUSNET-Association) can provide direct analysis of HijackThis+ logs in [our github 'Issues' section](https://github.com/dragokas/hijackthis/wiki/How-to-make-a-request-for-help-in-the-PC-cure-section%3F). Please feel free to ask help there (English/Russian only).
 
 ## Technical support
 
@@ -110,8 +110,8 @@ Operating system
  * **Fernando Mercês** { [@merces](https://github.com/merces) } (Trend Micro) - coordinator of original HJT, for the tips, suggestions and promotion
  * **Loucif Kharouni** { [@loucifkharouni](https://github.com/loucifkharouni) } (Trend Micro) - coordinator of original HJT, for the tips & suggestions
 
-HiJackThis+ by Alex Dragokas is a continuation of Trend Micro HiJackThis development, based on [v.2.0.6](https://sourceforge.net/p/hjt/code/HEAD/tree/beta/2.0.6/) branch and 100% rewritten at the moment. HiJackThis+ was initially supported by Trend Micro, but they have since refused support and closed its GitHub repository.
-HiJackThis+ is distributed under the initial [GPLv2 license](https://github.com/dragokas/hijackthis/blob/devel/LICENSE.md). It also includes several tools and plugins available as freeware.
+HijackThis+ by Alex Dragokas is a continuation of Trend Micro HijackThis development, based on [v.2.0.6](https://sourceforge.net/p/hjt/code/HEAD/tree/beta/2.0.6/) branch and 100% rewritten at the moment. HijackThis+ was initially supported by Trend Micro, but they have since refused support and closed its GitHub repository.
+HijackThis+ is distributed under the initial [GPLv2 license](https://github.com/dragokas/hijackthis/blob/devel/LICENSE.md). It also includes several tools and plugins available as freeware.
 
 ## Reviews & Mirrors
 (clickable)
@@ -127,14 +127,6 @@ HiJackThis+ is distributed under the initial [GPLv2 license](https://github.com/
 [LabRats - Intro to HijackThis (Video)](https://www.youtube.com/watch?v=oZU6mTkGgGY)
 
 // TODO... Please, report more if you know :)
-
-## Donate
-
-I have maintained this project in my free time for more than seven years.
-If you find it useful, you can support me for further inspiration by donating any amount to:
- * [Patreon](https://www.patreon.com/dragokas)
- * BTC: bc1q64nfkruds9mx0pfxflwlamua39purrw6smnjy6
- * Ethereum: 0xDe296f6d8d8031AB729c6085E464047242E4cB78
 
 ## Other projects
 

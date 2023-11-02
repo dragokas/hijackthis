@@ -1,0 +1,17 @@
+http://www.microsoft.com
+http://home.microsoft.com
+http://www.msn.com
+http://search.msn.com
+http://ie.search.msn.com
+ie.search.msn.com
+<local>
+http://www.google.com
+127.0.0.1;localhost
+about:blank
+http://go.microsoft.com
+www.microsoft.com
+microsoft.com
+http://windowsupdate.com
+http://runonce.msn.com
+http://*.update.microsoft.com
+https://*.update.microsoft.com

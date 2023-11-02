@@ -664,7 +664,10 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
                 
                 'not yet verified
                 If Len(result.SignResult.FilePathVerified) = 0 Then
-                    SignVerifyJack te(j).RunObj, result.SignResult
+                    te(j).FileMissing = Not FileExists(te(j).RunObj)
+                    If Not te(j).FileMissing Then
+                        SignVerifyJack te(j).RunObj, result.SignResult
+                    End If
                 End If
                 
                 sAlias = IIf(IsX64, "O22", "O22-32")
@@ -813,7 +816,6 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
                 End If
                 
                 If Not isSafe Then
-                    
                     If StrBeginWith(DirXml, "\MicrosoftEdgeUpdateTaskMachine") Then
                         If StrComp(te(j).RunObj, PF_32 & "\Microsoft\EdgeUpdate\MicrosoftEdgeUpdate.exe", 1) = 0 Then
                             If SignVerifyJack(te(j).RunObj, result.SignResult) And result.SignResult.isMicrosoftSign Then
@@ -821,15 +823,15 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
                                 result.SignResult.isMicrosoftSign = True
                             End If
                         End If
-                    ElseIf StrComp(DirXml, "\Microsoft\Windows\Windows Defender\Windows Defender Scheduled Scan", 1) = 0 Then
-                        If StrComp(sRunFilename, "MpCmdRun.exe", 1) = 0 Then
+                    ElseIf StrComp(DirXml, "\Microsoft\Windows\" & STR_CONST.WINDOWS_DEFENDER & "\" & STR_CONST.WINDOWS_DEFENDER & " Scheduled Scan", 1) = 0 Then
+                        'MpCmdRun.exe
+                        If StrComp(sRunFilename, Caes_Decode("NsHtm]HC.xSB"), 1) = 0 Then
                             If SignVerifyJack(te(j).RunObj, result.SignResult) And result.SignResult.isMicrosoftSign Then
                                 isSafe = True
                                 result.SignResult.isMicrosoftSign = True
                             End If
                         End If
                     End If
-                    
                 End If
                 
                 'If InStr(1, DirParent, "Setup", 1) <> 0 Then
@@ -892,7 +894,10 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
                   
                   'not yet verified
                   If Len(result.SignResult.FilePathVerified) = 0 Then
-                      SignVerifyJack te(j).RunObj, result.SignResult
+                      te(j).FileMissing = Not FileExists(te(j).RunObj)
+                      If Not te(j).FileMissing Then
+                          SignVerifyJack te(j).RunObj, result.SignResult
+                      End If
                   End If
                   
                   sAlias = IIf(IsX64, "O22", "O22-32")

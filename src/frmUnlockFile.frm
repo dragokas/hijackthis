@@ -1,4 +1,5 @@
 VERSION 5.00
+Object = "{317589D1-37C8-47D9-B5B0-1C995741F353}#1.0#0"; "VBCCR17.OCX"
 Begin VB.Form frmUnlockFile 
    Caption         =   "Files Unlocker"
    ClientHeight    =   3240
@@ -10,7 +11,7 @@ Begin VB.Form frmUnlockFile
    LinkTopic       =   "Form1"
    ScaleHeight     =   3240
    ScaleWidth      =   8448
-   Begin VB.CommandButton cmdAddFile 
+   Begin VBCCR17.CommandButtonW cmdAddFile 
       Caption         =   "Add File(s)..."
       Height          =   492
       Left            =   6720
@@ -18,7 +19,7 @@ Begin VB.Form frmUnlockFile
       Top             =   600
       Width           =   1572
    End
-   Begin VB.CommandButton cmdAddFolder 
+   Begin VBCCR17.CommandButtonW cmdAddFolder 
       Caption         =   "Add Folder(s)..."
       Height          =   492
       Left            =   6720
@@ -26,7 +27,7 @@ Begin VB.Form frmUnlockFile
       Top             =   1200
       Width           =   1572
    End
-   Begin VB.CommandButton cmdJump 
+   Begin VBCCR17.CommandButtonW cmdJump 
       Caption         =   "Open in Explorer"
       Height          =   456
       Left            =   6720
@@ -34,7 +35,7 @@ Begin VB.Form frmUnlockFile
       Top             =   1920
       Width           =   1572
    End
-   Begin VB.CommandButton cmdGo 
+   Begin VBCCR17.CommandButtonW cmdGo 
       BackColor       =   &H00C0FFC0&
       Caption         =   "Go"
       Height          =   495
@@ -43,7 +44,7 @@ Begin VB.Form frmUnlockFile
       Top             =   2520
       Width           =   1575
    End
-   Begin VB.CheckBox chkRecur 
+   Begin VBCCR17.CheckBoxW chkRecur 
       Caption         =   "Recursively (process files and all subfolders)"
       Height          =   495
       Left            =   240
@@ -52,7 +53,7 @@ Begin VB.Form frmUnlockFile
       Value           =   1  'Checked
       Width           =   3615
    End
-   Begin VB.TextBox txtInput 
+   Begin VBCCR17.TextBoxW txtInput 
       Height          =   1815
       Left            =   240
       MultiLine       =   -1  'True
@@ -61,7 +62,7 @@ Begin VB.Form frmUnlockFile
       Top             =   600
       Width           =   6372
    End
-   Begin VB.Label lblWhatToDo 
+   Begin VBCCR17.LabelW lblWhatToDo 
       Caption         =   "Enter file(s) and folder(s) to unlock and reset access:"
       Height          =   252
       Left            =   240

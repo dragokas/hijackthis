@@ -1,4 +1,5 @@
 VERSION 5.00
+Object = "{317589D1-37C8-47D9-B5B0-1C995741F353}#1.0#0"; "VBCCR17.OCX"
 Begin VB.Form frmADSspy 
    Caption         =   "ADS Spy [] fork - written by Merijn"
    ClientHeight    =   6765
@@ -29,66 +30,65 @@ Begin VB.Form frmADSspy
       Top             =   6480
       Width           =   6735
    End
-   Begin VB.Frame fraMain 
+   Begin VBCCR17.FrameW fraMain 
       Height          =   2175
       Left            =   120
       TabIndex        =   7
       Top             =   1800
       Width           =   8175
-      Begin VB.CommandButton cmdSave 
-         Caption         =   "Save log..."
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Begin VBCCR17.CommandButtonW cmdSave 
          Height          =   492
          Left            =   2220
          TabIndex        =   19
          Tag             =   "1"
          Top             =   1620
          Width           =   1695
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Save log..."
       End
-      Begin VB.CommandButton cmdExit 
+      Begin VBCCR17.CommandButtonW cmdExit 
          Cancel          =   -1  'True
-         Caption         =   "Exit"
          Height          =   480
          Left            =   7080
          TabIndex        =   18
          Top             =   1620
          Width           =   990
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Exit"
       End
-      Begin VB.CommandButton cmdScanFolder 
-         Caption         =   "Choose..."
+      Begin VBCCR17.CommandButtonW cmdScanFolder 
          Height          =   285
          Left            =   6840
          TabIndex        =   16
          Top             =   720
          Width           =   1215
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Choose..."
       End
-      Begin VB.TextBox txtScanFolder 
+      Begin VBCCR17.TextBoxW txtScanFolder 
          Height          =   285
          Left            =   2880
          TabIndex        =   15
          Top             =   720
          Width           =   3855
+         _ExtentX        =   0
+         _ExtentY        =   0
       End
-      Begin VB.OptionButton optScanLocation 
-         Caption         =   "Scan only this folder:"
-         BeginProperty Font 
-            Name            =   "Tahoma"
-            Size            =   9
-            Charset         =   204
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
+      Begin VBCCR17.OptionButtonW optScanLocation 
          Height          =   255
          Index           =   2
          Left            =   120
          TabIndex        =   14
          Top             =   720
          Width           =   3015
-      End
-      Begin VB.OptionButton optScanLocation 
-         Caption         =   "Full scan (all NTFS, ReFS drives)"
-         BeginProperty Font 
+         _ExtentX        =   0
+         _ExtentY        =   0
+         BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
             Name            =   "Tahoma"
             Size            =   9
             Charset         =   204
@@ -97,16 +97,18 @@ Begin VB.Form frmADSspy
             Italic          =   0   'False
             Strikethrough   =   0   'False
          EndProperty
+         Caption         =   "Scan only this folder:"
+      End
+      Begin VBCCR17.OptionButtonW optScanLocation 
          Height          =   255
          Index           =   1
          Left            =   120
          TabIndex        =   13
          Top             =   480
          Width           =   7215
-      End
-      Begin VB.OptionButton optScanLocation 
-         Caption         =   "Quick scan (Windows base folder only)"
-         BeginProperty Font 
+         _ExtentX        =   0
+         _ExtentY        =   0
+         BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
             Name            =   "Tahoma"
             Size            =   9
             Charset         =   204
@@ -115,120 +117,155 @@ Begin VB.Form frmADSspy
             Italic          =   0   'False
             Strikethrough   =   0   'False
          EndProperty
+         Caption         =   "Full scan (all NTFS, ReFS drives)"
+      End
+      Begin VBCCR17.OptionButtonW optScanLocation 
          Height          =   255
          Index           =   0
          Left            =   120
          TabIndex        =   12
          Top             =   240
-         Value           =   -1  'True
          Width           =   7215
+         _ExtentX        =   0
+         _ExtentY        =   0
+         BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
+            Name            =   "Tahoma"
+            Size            =   9
+            Charset         =   204
+            Weight          =   400
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Value           =   -1  'True
+         Caption         =   "Quick scan (Windows base folder only)"
       End
-      Begin VB.CommandButton cmdScan 
-         Caption         =   "Scan"
+      Begin VBCCR17.CommandButtonW cmdScan 
          Height          =   492
          Left            =   120
          TabIndex        =   11
          Tag             =   "1"
          Top             =   1620
          Width           =   1815
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Scan"
       End
-      Begin VB.CommandButton cmdRemove 
-         Caption         =   "Remove selected streams"
+      Begin VBCCR17.CommandButtonW cmdRemove 
          Height          =   492
          Left            =   4200
          TabIndex        =   10
          Top             =   1620
          Width           =   2535
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Remove selected streams"
       End
-      Begin VB.CheckBox chkIgnoreEncryptable 
-         Caption         =   "Ignore safe system info data streams"
+      Begin VBCCR17.CheckBoxW chkIgnoreEncryptable 
          Height          =   255
          Left            =   120
          TabIndex        =   9
          Top             =   1020
-         Value           =   1  'Checked
          Width           =   7935
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   1
+         Caption         =   "Ignore safe system info data streams"
       End
-      Begin VB.CheckBox chkCalcMD5 
-         Caption         =   "Calculate MD5 checksums of streams' contents"
+      Begin VBCCR17.CheckBoxW chkCalcMD5 
          Height          =   255
          Left            =   120
          TabIndex        =   8
          Top             =   1320
          Width           =   7935
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Calculate MD5 checksums of streams' contents"
       End
    End
-   Begin VB.ListBox lstADSFound 
+   Begin VBCCR17.ListBoxW lstADSFound 
       Height          =   1605
-      IntegralHeight  =   0   'False
       Left            =   120
-      Sorted          =   -1  'True
-      Style           =   1  'Checkbox
       TabIndex        =   0
       Top             =   4080
       Width           =   6735
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BackColor       =   -2147483643
+      Sorted          =   -1  'True
+      IntegralHeight  =   0   'False
+      Style           =   1
    End
-   Begin VB.TextBox txtUselessBlabber 
-      BackColor       =   &H8000000F&
-      BorderStyle     =   0  'None
+   Begin VBCCR17.TextBoxW txtUselessBlabber 
       Height          =   1575
       Left            =   120
-      Locked          =   -1  'True
-      MultiLine       =   -1  'True
-      ScrollBars      =   2  'Vertical
       TabIndex        =   6
-      Text            =   "frmADSspy.frx":1CFA
       Top             =   120
       Width           =   8055
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BackColor       =   -2147483633
+      BorderStyle     =   0
+      Locked          =   -1  'True
+      MultiLine       =   -1  'True
    End
-   Begin VB.CommandButton cmdViewSave 
-      Caption         =   "Save to disk..."
+   Begin VBCCR17.CommandButtonW cmdViewSave 
       Height          =   470
       Left            =   1440
       TabIndex        =   3
       Top             =   5880
       Visible         =   0   'False
       Width           =   1695
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Caption         =   "Save to disk..."
    End
-   Begin VB.CommandButton cmdViewBack 
-      Caption         =   "Back"
+   Begin VBCCR17.CommandButtonW cmdViewBack 
       Height          =   470
       Left            =   5160
       TabIndex        =   5
       Top             =   5880
       Visible         =   0   'False
       Width           =   1215
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Caption         =   "Back"
    End
-   Begin VB.CommandButton cmdViewEdit 
-      Caption         =   "Edit in Wordpad"
+   Begin VBCCR17.CommandButtonW cmdViewEdit 
       Height          =   470
       Left            =   3240
       TabIndex        =   4
       Top             =   5880
       Visible         =   0   'False
       Width           =   1815
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Caption         =   "Edit in Wordpad"
    End
-   Begin VB.CommandButton cmdViewCopy 
-      Caption         =   "Copy"
+   Begin VBCCR17.CommandButtonW cmdViewCopy 
       Height          =   470
       Left            =   120
       TabIndex        =   2
       Top             =   5880
       Visible         =   0   'False
       Width           =   1215
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Caption         =   "Copy"
    End
-   Begin VB.TextBox txtADSContent 
-      BackColor       =   &H8000000F&
+   Begin VBCCR17.TextBoxW txtADSContent 
       Height          =   1815
-      HideSelection   =   0   'False
       Left            =   120
-      Locked          =   -1  'True
-      MultiLine       =   -1  'True
-      ScrollBars      =   2  'Vertical
       TabIndex        =   1
       Top             =   4080
       Visible         =   0   'False
       Width           =   6255
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Locked          =   -1  'True
+      HideSelection   =   0   'False
+      MultiLine       =   -1  'True
+      ScrollBars      =   2
    End
    Begin VB.Menu mnuPopup 
       Caption         =   "PopupMenu"
@@ -377,7 +414,6 @@ Private Declare Function RegQueryValueEx Lib "Advapi32.dll" Alias "RegQueryValue
 'Private Declare Function lstrcat Lib "kernel32.dll" Alias "lstrcatA" (ByVal lpString1 As String, ByVal lpString2 As String) As Long
 Private Declare Function SHBrowseForFolder Lib "shell32.dll" Alias "SHBrowseForFolderW" (lpbi As BrowseInfo) As Long
 'Private Declare Function SHGetPathFromIDList Lib "shell32.dll" Alias "SHGetPathFromIDListW" (ByVal pidList As Long, ByVal lpBuffer As Long) As Long
-Private Declare Function SetWindowTheme Lib "UxTheme.dll" (ByVal hWnd As Long, ByVal pszSubAppName As Long, ByVal pszSubIdList As Long) As Long
 'Private Declare Function lstrlen Lib "kernel32.dll" Alias "lstrlenW" (ByVal lpString As Long) As Long
 'Private Declare Function lstrcpy Lib "kernel32.dll" Alias "lstrcpyW" (ByVal lpStrDest As Long, ByVal lpStrSrc As Long) As Long
 
@@ -503,7 +539,7 @@ Private Sub Form_Load()
     ReloadLanguage True
 
     'ADS Spy v[] - written by Merijn
-    Me.Caption = Replace$(Translate(190), "[]", ADSspyVer)
+    SetWindowTitleText Me.hWnd, Replace$(Translate(190), "[]", ADSspyVer)
     
 '    txtUselessBlabber.Text = "Alternate Data Streams (ADS) are pieces of " & _
 '      "info hidden as metadata on files on NTFS drives. They are not visible in Explorer " & _
@@ -550,26 +586,8 @@ Private Sub Form_Load()
     sSafeStreams(8) = ":OECustomProperty:$DATA"
     'Ready.
     status Translate(209), "2"
-    
-    Dim OptB As OptionButton
-    Dim Btn As CommandButton
-    Dim Ctl As Control
-    
+
     LoadWindowPos Me, SETTINGS_SECTION_ADSSPY
-    
-    ' if Win XP -> disable all window styles from option buttons
-    If OSver.MajorMinor >= 5.1 And OSver.MajorMinor <= 5.2 Then
-        For Each Ctl In Me.Controls
-            If TypeName(Ctl) = "OptionButton" Then
-                Set OptB = Ctl
-                SetWindowTheme OptB.hWnd, StrPtr(" "), StrPtr(" ")
-            ElseIf TypeName(Ctl) = "CommandButton" Then
-                Set Btn = Ctl
-                SetWindowTheme Btn.hWnd, StrPtr(" "), StrPtr(" ")
-            End If
-        Next
-        Set OptB = Nothing
-    End If
     
     SubClassTextbox Me.txtScanFolder.hWnd, True
 End Sub
@@ -1026,7 +1044,7 @@ Private Sub mnuPopupSave_Click()
     
     'Header
     sList.Append ChrW$(-257)
-    sList.AppendLine "Logfile of ADS Spy v." & ADSspyVer & " (HiJackThis+ v." & AppVerString & ")"
+    sList.AppendLine "Logfile of ADS Spy v." & ADSspyVer & " (HijackThis+ v." & AppVerString & ")"
     sList.AppendLine
     sList.Append MakeLogHeader()
     sList.AppendLine

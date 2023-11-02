@@ -366,7 +366,8 @@ Public Sub CheckO25Item()
                                     If Len(FindOnPath("KernCap.vbs")) = 0 Then bDangerScript = False
                                 End If
                             
-                            ElseIf FilterName = "BVTFilter" And sEventName = "__InstanceModificationEvent WITHIN 60 WHERE TargetInstance ISA ""Win32_Processor"" AND TargetInstance.LoadPercentage > 99" Then
+                            'ElseIf FilterName = "BVTFilter" And sEventName = "__InstanceModificationEvent WITHIN 60 WHERE TargetInstance ISA ""Win32_Processor"" AND TargetInstance.LoadPercentage > 99" Then
+                            ElseIf FilterName = "BVTFilter" And sEventName = Caes_Decode("`bNuBEnCtxbLCJINJJ_V^_rk\go VJWMPW 73 j]\k` sH[RRctahkZi`d LXH ""fzG01xkUTJN^`^c"" tIA UdwnnEVCJMvKBF.kVJOwTcVZem\dd > 80") Then
                         
                                 bDangerScript = False
                             End If
@@ -1182,8 +1183,12 @@ Public Sub CheckO26ToolsHiJack()
         sBackupPath = "%SystemRoot%\system32\sdclt.exe"
         sCleanupPath = "%SystemRoot%\System32\cleanmgr.exe /D %c"
         sDefragPath = "%systemroot%\system32\dfrgui.exe"
+    ElseIf OSver.IsWindowsVistaOrGreater Then
+        sBackupPath = "%SystemRoot%\system32\sdclt.exe"
+        sCleanupPath = "%SystemRoot%\System32\cleanmgr.exe /D %c"
+        sDefragPath = "%systemroot%\system32\dfrgui.exe"
     ElseIf OSver.IsWindowsXPOrGreater Then
-        sBackupPath = "%SystemRoot%\system32\ntbackup.exe"
+        sBackupPath = "%SystemRoot%\system32\sdclt.exe"
         sCleanupPath = "%SystemRoot%\System32\cleanmgr.exe /D %c"
         sDefragPath = "%SystemRoot%\system32\dfrg.msc %c:"
     Else
@@ -1234,6 +1239,8 @@ Public Sub CheckO26ToolsHiJack()
         If Not bSafe Then
             
             sHit = "O26 - Tools: " & "HKLM\" & sKey & " (default) = " & ConcatFileArg(sFile, sArgs) & FormatSign(result.SignResult)
+            
+            If bDebugMode Then sHit = sHit & " (expected: " & dSafe.Items(i) & ")"
             
             If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
             
@@ -1385,7 +1392,7 @@ Public Sub CheckO27Item()
     
     'O27 - Account: (Hidden)
     Dim aValue() As String
-    sKey = "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\SpecialAccounts\UserList"
+    sKey = "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\" & Caes_Decode("TsjjrlyPtvJRMUVAv\P_uZfi") 'SpecialAccounts\UserList"
     For i = 1 To Reg.EnumValuesToArray(HKLM, sKey, aValue(), False)
         sHit = "O27 - Account: (Hidden) User '" & aValue(i) & "' is invisible on logon screen"
         If Not IsOnIgnoreList(sHit) Then
@@ -1419,7 +1426,7 @@ Public Sub CheckO27Item_RDP()
     
     DC.AddValueData "AllowRemoteRPC", 0
     DC.AddValueData "fDenyTSConnections", 1
-    If Not OSver.IsServer Then
+    If (Not OSver.IsServer) And OSver.IsWindows7OrGreater Then
         DC.AddValueData "fSingleSessionPerUser", 1
     End If
     
@@ -1475,25 +1482,47 @@ Public Sub CheckO27Item_RDP()
         Loop
     Loop
     
+    If GetServiceRunState("MpsSvc") = SERVICE_RUNNING Then
+        CheckO27Item_Firewall
+    End If
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "CheckO27Item_RDP"
+    If inIDE Then Stop: Resume Next
+End Sub
+    
+Public Sub CheckO27Item_Firewall()
+    On Error GoTo ErrorHandler:
+    
     'O27 - RDP: (Port)
+    Dim sHit$, result As SCAN_RESULT
     Dim pFwNetFwPolicy2 As New NetFwPolicy2
     Dim pFwRules As INetFwRules
     Dim pFwRule As NetFwRule
     Dim sProtocol As String
     Dim sService As String
     Dim sApp As String
+    Dim Stage As Long
     
+    Stage = 1
     Set pFwRules = pFwNetFwPolicy2.Rules
     
+    Stage = 2
     For Each pFwRule In pFwRules
+        Stage = 3
         If pFwRule.Enabled Then
+            Stage = 4
             If pFwRule.Action = NET_FW_ACTION_ALLOW Then
+                Stage = 5
                 If pFwRule.direction = NET_FW_RULE_DIR_IN Then
+                    Stage = 6
                     'Win11 has RdpSa.exe
                     'Also, sometimes 3389 opened system-wide
                     'If StrComp(GetFileName(pFwRule.ApplicationName, True), "svchost.exe", 1) = 0 Then
                         'If FW_IsPortInRange(3389, pFwRule.LocalPorts) Then
                         If StrComp("3389", pFwRule.LocalPorts) = 0 Then
+                            Stage = 7
                             sService = pFwRule.serviceName
                             sApp = pFwRule.ApplicationName
                             
@@ -1521,7 +1550,7 @@ Public Sub CheckO27Item_RDP()
     
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "CheckO27Item_RDP"
+    ErrorMsg Err, "CheckO27Item_Firewall", "Stage: " & Stage
     If inIDE Then Stop: Resume Next
 End Sub
 

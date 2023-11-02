@@ -21,7 +21,7 @@ End Enum
     Dim CP_WIN, CP_DOS, CP_KOI, CP_ISO, CP_UTF8, CP_UTF16LE
 #End If
 
-'Private Declare Function GetUserDefaultUILanguage Lib "kernel32.dll" () As Long
+Private Declare Function GetUserDefaultUILanguage Lib "kernel32.dll" () As Long
 'Private Declare Function GetSystemDefaultUILanguage Lib "kernel32.dll" () As Long
 'Private Declare Function GetSystemDefaultLCID Lib "kernel32.dll" () As Long
 'Private Declare Function GetUserDefaultLCID Lib "kernel32.dll" () As Long
@@ -97,7 +97,7 @@ Sub ExtractLanguage(sLangFileContents As String, Optional sFilename As String) '
                         MsgBoxW "The language file '" & sFilename & "' is invalid (ambiguous id numbers).", vbCritical
                     End If
                     'Unload frmMain
-                    LoadDefaultLanguage UseResource:=True 'emergency mode
+                    LoadDefaultLanguage True, True  'emergency mode
                     Exit Sub
                 Else
                     pos = InStr(Lines(i), "=")
@@ -115,113 +115,81 @@ ErrorHandler:
 End Sub
 
 '// update program language by specified locale code
-Public Sub LoadLanguage(lCode As Long, Force As Boolean, Optional PreLoadNativeLang As Boolean)
+Public Sub LoadLanguage( _
+    lCode As Long, _
+    Force As Boolean, _
+    Optional PreLoadNativeLang As Boolean = False, _
+    Optional LoadChangelog As Boolean = True)
+    
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "LoadLanguage - Begin", "Code: " & lCode, "Force? " & Force
-
-    Dim HasSupportSlavian As Boolean
-    Dim NotSupportedByCP As Boolean
+    
+    Dim LangDisplayCode As Long
+    LangDisplayCode = GetUserDefaultUILanguage Mod &H10000
     
     ReDim Translate(MAX_LOCALE_LINES)
     ReDim TranslateNative(MAX_LOCALE_LINES)
     
-    'If the language for programs that do not support Unicode controls set such
-    'that does not contain Cyrillic, we need to use the English localization
-    HasSupportSlavian = IsSlavianCultureCode(OSver.LangNonUnicodeCode)
-    
-    If lCode = 0 Then lCode = OSver.LangDisplayCode
+    If lCode = 0 Then lCode = LangDisplayCode
     
     ' https://docs.microsoft.com/en-us/windows/desktop/intl/language-identifier-constants-and-strings
     
-    ' Force choosing of language: no checks for non-Unicode language settings
+    ' Force choosing of language defined by "lCode" argument
     If Force Then
         Select Case lCode
         Case &H422& 'Ukrainian
-            LangUA
+            LangUA False, LoadChangelog
         Case &H419&, &H423&  'Russian, Belarusian
-            LangRU
+            LangRU False, LoadChangelog
         Case &H40C&, &H80C&, &HC0C&, &H140C&, &H180C&, &H100C&  'French
-            LangFR
+            LangFR False, LoadChangelog
         Case &H40A&, &HC0A&  'Spanish
-            LangSP
+            LangSP False, LoadChangelog
         Case &H409& 'English
-            LoadDefaultLanguage
+            LoadDefaultLanguage False, LoadChangelog
         Case Else
-            LoadDefaultLanguage
+            LoadDefaultLanguage True, LoadChangelog
         End Select
         
         ReloadLanguageNative    'force flag defined by command line keys mean that any text should consist of one particular language
         
     Else
         ' first load native system language strings for special purposes
-    
-        Select Case OSver.LangDisplayCode
+        
+        Dim bUseResourcePriority As Boolean
+        bUseResourcePriority = Not inIDE
+        
+        Select Case LangDisplayCode
         Case &H419&, &H423&  'Russian, Belarusian
-            If HasSupportSlavian Or PreLoadNativeLang Then
-                LangRU
-            Else
-                LoadDefaultLanguage
-            End If
+            LangRU bUseResourcePriority, LoadChangelog
         Case &H422& 'Ukrainian
-            If HasSupportSlavian Or PreLoadNativeLang Then
-                LangUA
-            Else
-                LoadDefaultLanguage
-            End If
+            LangUA bUseResourcePriority, LoadChangelog
         Case &H40C&, &H80C&, &HC0C&, &H140C&, &H180C&, &H100C& 'French
-            LangFR
+            LangFR bUseResourcePriority, LoadChangelog
         Case &H40A&, &HC0A&  'Spanish
-            LangSP
+            LangSP bUseResourcePriority, LoadChangelog
         Case &H409& 'English
-            LoadDefaultLanguage
+            LoadDefaultLanguage bUseResourcePriority, LoadChangelog
         Case Else
-            LoadDefaultLanguage
+            LoadDefaultLanguage bUseResourcePriority, LoadChangelog
         End Select
     
         ReloadLanguageNative    'fill TranlateNative() array
     
-        Select Case lCode 'OSVer.LangDisplayCode
+        Select Case lCode
         Case &H419&, &H423& 'Russian, Belarusian
-            If HasSupportSlavian Or PreLoadNativeLang Then
-                LangRU
-            Else
-                NotSupportedByCP = True
-            End If
+            LangRU bUseResourcePriority, LoadChangelog
         Case &H422& 'Ukrainian
-            If HasSupportSlavian Or PreLoadNativeLang Then
-                LangUA
-            Else
-                NotSupportedByCP = True
-            End If
+            LangUA bUseResourcePriority, LoadChangelog
         Case &H40C&, &H80C&, &HC0C&, &H140C&, &H180C&, &H100C& 'French
-            LangFR
+            LangFR bUseResourcePriority, LoadChangelog
         Case &H40A&, &HC0A&  'Spanish
-            LangSP
+            LangSP bUseResourcePriority, LoadChangelog
         Case &H409& 'English
-            LoadDefaultLanguage
+            LoadDefaultLanguage bUseResourcePriority, LoadChangelog
         Case Else
-            LoadDefaultLanguage
+            LoadDefaultLanguage bUseResourcePriority, LoadChangelog
         End Select
-        
-        If NotSupportedByCP Then
-            'If Not bAutoLog Then MsgBoxW "Cannot set Russian language!" & vbCrLf & _
-                "First, you must set language for non-Unicode programs to Russian" & vbCrLf & _
-                "through the Control panel -> system language settings.", vbCritical
-            If Not bAutoLog Then
-                If lCode = &H422& Then
-                  'MsgBoxW "Не можу обрати цю мову!" & vbCrLf & _
-                  '  "Спершу Вам необхідно обрати мову для програм, що не підтримують Юнікод, - Українську" & vbCrLf & _
-                  '  "через Панель керування -> Регіональні стандарти.", vbCritical
-                  MsgBoxW STR_CONST.UA_CANT_LOAD_LANG, vbCritical
-                Else
-                  'MsgBoxW "Не могу выбрать этот язык!" & vbCrLf & _
-                  '  "Сперва Вам необходимо выставить язык для программ, не поддерживающих Юникод, на Русский" & vbCrLf & _
-                  '  "через Панель управления -> Региональные стандарты.", vbCritical
-                  MsgBoxW STR_CONST.RU_CANT_LOAD_LANG, vbCritical
-                End If
-            End If
-            LoadDefaultLanguage
-        End If
     End If
     
     If Not PreLoadNativeLang Then
@@ -235,53 +203,86 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
+Public Sub PreloadNativeLanguage()
+    'pre-loading native OS UI language
+    If bForceEN Then
+        LoadLanguage &H409, True, PreLoadNativeLang:=True, LoadChangelog:=False
+    ElseIf bForceRU Then
+        LoadLanguage &H419, True, PreLoadNativeLang:=True, LoadChangelog:=False
+    ElseIf bForceUA Then
+        LoadLanguage &H422, True, PreLoadNativeLang:=True, LoadChangelog:=False
+    ElseIf bForceFR Then
+        LoadLanguage &H40C, True, PreLoadNativeLang:=True, LoadChangelog:=False
+    ElseIf bForceSP Then
+        LoadLanguage &H40A, True, PreLoadNativeLang:=True, LoadChangelog:=False
+    Else
+        LoadLanguage 0, False, PreLoadNativeLang:=True, LoadChangelog:=False
+    End If
+End Sub
+
 '------------------------------------------------------------------
 '        Reading File or resource -> gLines() temp array
 '------------------------------------------------------------------
 
 '// English
-Public Sub LoadDefaultLanguage(Optional UseResource As Boolean)
-    LoadLangFile "_Lang_EN.lng", 201, UseResource
-    g_VersionHistory = LoadResFile("_ChangeLog_en.txt", 103, UseResource)
+Public Sub LoadDefaultLanguage(UseResourceInPriority As Boolean, LoadChangelog As Boolean)
+    LoadEncryptedLangFile "_Lang_EN.lng", 201, UseResourceInPriority
+    If LoadChangelog Then
+        g_VersionHistory = LoadEncryptedResFile("_ChangeLog_en.txt", 103, Not inIDE)
+    End If
 End Sub
 
 '// Russian
-Public Sub LangRU()
-    LoadLangFile "_Lang_RU.lng", 202
-    g_VersionHistory = LoadResFile("_ChangeLog_ru.txt", 104)
+Public Sub LangRU(UseResourceInPriority As Boolean, LoadChangelog As Boolean)
+    LoadEncryptedLangFile "_Lang_RU.lng", 202, UseResourceInPriority
+    If LoadChangelog Then
+        g_VersionHistory = LoadEncryptedResFile("_ChangeLog_ru.txt", 104, Not inIDE)
+    End If
 End Sub
 
 '// Ukrainian
-Public Sub LangUA()
-    LoadLangFile "_Lang_UA.lng", 203
-    g_VersionHistory = LoadResFile("_ChangeLog_ru.txt", 104)
+Public Sub LangUA(UseResourceInPriority As Boolean, LoadChangelog As Boolean)
+    LoadEncryptedLangFile "_Lang_UA.lng", 203, UseResourceInPriority
+    If LoadChangelog Then
+        g_VersionHistory = LoadEncryptedResFile("_ChangeLog_ru.txt", 104, Not inIDE)
+    End If
 End Sub
 
 '// French
-Public Sub LangFR()
-    LoadLangFile "_Lang_FR.lng", 204
-    g_VersionHistory = LoadResFile("_ChangeLog_en.txt", 103)
+Public Sub LangFR(UseResourceInPriority As Boolean, LoadChangelog As Boolean)
+    LoadEncryptedLangFile "_Lang_FR.lng", 204, UseResourceInPriority
+    If LoadChangelog Then
+        g_VersionHistory = LoadEncryptedResFile("_ChangeLog_en.txt", 103, Not inIDE)
+    End If
 End Sub
 
 '// Spanish
-Public Sub LangSP()
-    LoadLangFile "_Lang_SP.lng", 205
-    g_VersionHistory = LoadResFile("_ChangeLog_en.txt", 103)
+Public Sub LangSP(UseResourceInPriority As Boolean, LoadChangelog As Boolean)
+    LoadEncryptedLangFile "_Lang_SP.lng", 205, UseResourceInPriority
+    If LoadChangelog Then
+        g_VersionHistory = LoadEncryptedResFile("_ChangeLog_en.txt", 103, Not inIDE)
+    End If
 End Sub
 
-Sub LoadLangFile(sFilename As String, Optional ResID As Long, Optional UseResource As Boolean)
+Private Sub LoadLangFile(sFilename As String, Optional ResID As Long, Optional UseResourceInPriority As Boolean)
     On Error GoTo ErrorHandler:
 
-    AppendErrorLogCustom "LoadLangFile - Begin", "File: " & sFilename, "ResID: " & ResID, "UseResource? " & UseResource
+    AppendErrorLogCustom "LoadLangFile - Begin", "File: " & sFilename, "ResID: " & ResID, "UseResource? " & UseResourceInPriority
     
-    Dim sPath As String, sText As String
+    Dim sPath As String, sText As String, bReadInternal As Boolean
     sPath = BuildPath(AppPath(), sFilename)
     
     If 0 = AryItems(Translate) Then ReDim Translate(MAX_LOCALE_LINES)
     If 0 = AryItems(TranslateNative) Then ReDim TranslateNative(MAX_LOCALE_LINES)
     
-    ' read text as raw utf8
-    If FileExists(sPath) And Not UseResource Then
+    If UseResourceInPriority Then
+        bReadInternal = True
+    Else
+        If Not FileExists(sPath) Then bReadInternal = True
+    End If
+    
+    'load as row utf8
+    If Not bReadInternal Then
         sText = ReadFileContents(sPath, isUnicode:=True)
     Else
         If ResID <> 0 Then
@@ -299,18 +300,63 @@ ErrorHandler:
     ErrorMsg Err, "LoadLangFile"
     If inIDE Then Stop: Resume Next
 End Sub
-'------------------------------------------------------------------
 
-Function LoadResFile(sFilename As String, Optional ResID As Long, Optional UseResource As Boolean) As String
+Public Sub LoadEncryptedLangFile(sFilename As String, Optional ResID As Long, Optional UseResourceInPriority As Boolean)
     On Error GoTo ErrorHandler:
 
-    AppendErrorLogCustom "LoadResFile - Begin", "File: " & sFilename, "ResID: " & ResID, "UseResource? " & UseResource
-
-    Dim sPath As String, sText As String
+    AppendErrorLogCustom "LoadEncryptedLangFile - Begin", "File: " & sFilename, "ResID: " & ResID, "UseResource? " & UseResourceInPriority
+    
+    Dim sPath As String, sText As String, b() As Byte, bReadInternal As Boolean
     sPath = BuildPath(AppPath(), sFilename)
     
+    If 0 = AryItems(Translate) Then ReDim Translate(MAX_LOCALE_LINES)
+    If 0 = AryItems(TranslateNative) Then ReDim TranslateNative(MAX_LOCALE_LINES)
+    
+    If UseResourceInPriority Then
+        bReadInternal = True
+    Else
+        If Not FileExists(sPath) Then bReadInternal = True
+    End If
+    
     'load as row utf8
-    If FileExists(sPath) And Not UseResource Then
+    If Not bReadInternal Then
+        'external files aren't encrypted
+        Call LoadLangFile(sFilename, ResID, False)
+    Else
+        If ResID <> 0 Then
+            b = LoadResData(ResID, "CUSTOM")
+            Caes_DecodeBin b
+            sText = b
+            sText = ConvertCodePage(StrPtr(sText), CP_UTF8)
+            ExtractLanguage sText, sFilename  ' parse sText -> gLines()
+        End If
+    End If
+    
+    AppendErrorLogCustom "LoadEncryptedLangFile - End"
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "LoadEncryptedLangFile"
+    If inIDE Then Stop: Resume Next
+End Sub
+'------------------------------------------------------------------
+
+Private Function LoadResFile(sFilename As String, Optional ResID As Long, Optional UseResourceInPriority As Boolean) As String
+    On Error GoTo ErrorHandler:
+
+    AppendErrorLogCustom "LoadResFile - Begin", "File: " & sFilename, "ResID: " & ResID, "UseResource? " & UseResourceInPriority
+
+    Dim sPath As String, sText As String, bReadInternal As Boolean
+    sPath = BuildPath(AppPath(), sFilename)
+    
+    If UseResourceInPriority Then
+        bReadInternal = True
+    Else
+        If Not FileExists(sPath) Then bReadInternal = True
+    End If
+    
+    'load as row utf8
+    If Not bReadInternal Then
         sText = ReadFileContents(sPath, isUnicode:=True)
     Else
         If ResID <> 0 Then
@@ -330,6 +376,174 @@ Function LoadResFile(sFilename As String, Optional ResID As Long, Optional UseRe
 ErrorHandler:
     ErrorMsg Err, "LoadResFile"
     If inIDE Then Stop: Resume Next
+End Function
+
+Public Function LoadEncryptedResFileAsBinary(sFilename As String, Optional ResID As Long, Optional UseResourceInPriority As Boolean) As Byte()
+    On Error GoTo ErrorHandler:
+    
+    AppendErrorLogCustom "LoadEncryptedResFileAsBinary - Begin", "File: " & sFilename, "ResID: " & ResID, "UseResource? " & UseResourceInPriority
+    
+    Dim sPath As String, bReadInternal As Boolean
+    sPath = BuildPath(AppPath(), sFilename)
+    
+    If UseResourceInPriority Then
+        bReadInternal = True
+    Else
+        If Not FileExists(sPath) Then bReadInternal = True
+    End If
+    
+    If Not bReadInternal Then
+        'external files aren't encrypted
+        LoadEncryptedResFileAsBinary = LoadResData(ResID, "CUSTOM")
+    Else
+        If ResID <> 0 Then
+            LoadEncryptedResFileAsBinary = LoadResData(ResID, "CUSTOM")
+            Caes_DecodeBin LoadEncryptedResFileAsBinary
+        End If
+    End If
+    
+    AppendErrorLogCustom "LoadEncryptedResFileAsBinary - End"
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "LoadEncryptedResFile"
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function LoadEncryptedResFile(sFilename As String, Optional ResID As Long, Optional UseResourceInPriority As Boolean) As String
+    On Error GoTo ErrorHandler:
+
+    AppendErrorLogCustom "LoadEncryptedResFile - Begin", "File: " & sFilename, "ResID: " & ResID, "UseResource? " & UseResourceInPriority
+
+    Dim sPath As String, sText As String, b() As Byte, bReadInternal As Boolean
+    sPath = BuildPath(AppPath(), sFilename)
+    
+    If UseResourceInPriority Then
+        bReadInternal = True
+    Else
+        If Not FileExists(sPath) Then bReadInternal = True
+    End If
+    
+    'load as row utf8
+    If Not bReadInternal Then
+        'external files aren't encrypted
+        LoadEncryptedResFile = LoadResFile(sFilename, ResID, False)
+    Else
+        If ResID <> 0 Then
+            b = LoadResData(ResID, "CUSTOM")
+            Caes_DecodeBin b
+            sText = b
+            LoadEncryptedResFile = ConvertCodePage(StrPtr(sText), CP_UTF8)
+            
+            If AscW(Left$(LoadEncryptedResFile, 1)) = -257 Then
+                LoadEncryptedResFile = mid$(LoadEncryptedResFile, 2)
+            End If
+        End If
+    End If
+    
+    AppendErrorLogCustom "LoadEncryptedResFile - End"
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "LoadEncryptedResFile"
+    If inIDE Then Stop: Resume Next
+End Function
+
+'1 line is 1 element (delimiter = vbCrLf)
+Public Function LoadEncryptedResFileAsArray(sFilename As String, ResID As Long) As String()
+    LoadEncryptedResFileAsArray = Split(LoadEncryptedResFile(sFilename, ResID, Not inIDE), vbCrLf, , vbBinaryCompare)
+End Function
+
+Public Function LoadEncryptedResFileAsCollection(sFilename As String, ResID As Long, Optional delim As String = "") As Collection
+    Dim col As Collection
+    Set col = New Collection
+    Dim aLines() As String
+    Dim doSplit As Boolean
+    Dim i As Long, pos As Long
+    
+    doSplit = (Len(delim) <> 0)
+    
+    aLines = Split(LoadEncryptedResFile(sFilename, ResID, Not inIDE), vbCrLf, , vbBinaryCompare)
+    For i = 0 To UBound(aLines)
+        If doSplit Then
+            pos = InStr(1, aLines(i), delim)
+            If pos <> 0 Then
+                col.Add Left$(aLines(i), pos - 1), mid$(aLines(i), pos + 1)
+            End If
+        Else
+            col.Add aLines(i)
+        End If
+    Next
+    Set LoadEncryptedResFileAsCollection = col
+End Function
+
+Private Function EnvironExtendedW(sPath As String) As String
+    If Left$(sPath, 1) = "<" Then
+        Dim prefix As String
+        Dim pos As Long
+        pos = InStr(sPath, "\")
+        If pos <> 0 Then
+            prefix = Left$(sPath, pos - 1)
+        Else
+            prefix = sPath
+            pos = 1
+        End If
+        Select Case prefix
+            Case "<SysRoot>"
+                EnvironExtendedW = sWinDir & mid$(sPath, pos)
+            Case "<PF64>"
+                EnvironExtendedW = PF_64 & mid$(sPath, pos)
+            Case "<PF32>"
+                EnvironExtendedW = PF_32 & mid$(sPath, pos)
+            Case Else
+                ErrorMsg Err, "Invalid prefix in database: " & sPath
+        End Select
+    Else
+        EnvironExtendedW = EnvironW(sPath)
+    End If
+End Function
+
+Public Function LoadEncryptedResFileAsDictionary(sFilename As String, ResID As Long, delim As String, expandEnvVars As Boolean) As clsTrickHashTable
+    Dim doSplit As Boolean
+    Dim dict As clsTrickHashTable
+    Dim aLines() As String
+    Dim i As Long
+    Dim pos As Long
+    Dim sValue As String
+    Dim bHasSplitter As Boolean
+    
+    doSplit = (Len(delim) <> 0)
+    Set dict = New clsTrickHashTable
+    dict.CompareMode = vbTextCompare
+    
+    aLines = Split(LoadEncryptedResFile(sFilename, ResID, Not inIDE), vbCrLf, , vbBinaryCompare)
+    For i = 0 To UBound(aLines)
+        bHasSplitter = False
+        If doSplit Then
+            pos = InStr(1, aLines(i), delim)
+            bHasSplitter = (pos <> 0)
+        End If
+        If bHasSplitter Then
+            If expandEnvVars Then
+                sValue = EnvironExtendedW(Left$(aLines(i), pos - 1))
+            Else
+                sValue = Left$(aLines(i), pos - 1)
+            End If
+            If Not dict.Exists(sValue) Then
+                dict.Add sValue, mid$(aLines(i), pos + 1)
+            End If
+        Else
+            If expandEnvVars Then
+                sValue = EnvironExtendedW(aLines(i))
+            Else
+                sValue = aLines(i)
+            End If
+            If Not dict.Exists(sValue) Then
+                dict.Add sValue, vbNullString
+            End If
+        End If
+    Next
+    Set LoadEncryptedResFileAsDictionary = dict
 End Function
 
 Public Function GetHelpText(Optional Section As String) As String
@@ -471,14 +685,9 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                         .mnuHelp.Caption = Translation 'to update length
                         SetMenuCaptionByMenu .mnuHelp, Translation
                     Case "1216": SetMenuCaptionByMenu .mnuHelpManual, Translation
-'                    Case "1217":
-'                        SetMenuCaptionByMenu .mnuHelpManualEnglish, Translation
-'                    Case "1218": SetMenuCaptionByMenu .mnuHelpManualRussian, Translation
-'                    Case "1219": SetMenuCaptionByMenu .mnuHelpManualFrench, Translation
-'                    Case "1220": SetMenuCaptionByMenu .mnuHelpManualGerman, Translation
-'                    Case "1221": SetMenuCaptionByMenu .mnuHelpManualSpanish, Translation
-'                    Case "1222": SetMenuCaptionByMenu .mnuHelpManualPortuguese, Translation
-'                    Case "1223": SetMenuCaptionByMenu .mnuHelpManualDutch, Translation
+                    '// TODO: unicode
+                    'Dynamically created (do not use SetMenuCaptionByMenu!)
+                    'Menu item text has reset to default text as soon as .Visible property = false (!!!)
                     Case "1217": .mnuHelpManualEnglish.Caption = Translation
                     Case "1218": .mnuHelpManualRussian.Caption = Translation
                     Case "1219": .mnuHelpManualFrench.Caption = Translation
@@ -676,7 +885,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                         If IsFormInit(frmSearch) Then
                             With frmSearch
                                 Select Case id
-                                    Case "2300": .Caption = Translation
+                                    Case "2300": SetWindowTitleText .hWnd, Translation
                                     Case "2301": .lblWhat.Caption = Translation
                                     Case "2302": .chkMatchCase.Caption = Translation
                                     Case "2303": .chkWholeWord.Caption = Translation
@@ -703,7 +912,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                             With frmUninstMan
                                 
                                 Select Case id
-                                    Case "0210": .Caption = Translation & " v." & UninstManVer
+                                    Case "0210": SetWindowTitleText .hWnd, Translation & " v." & UninstManVer
                                     Case "0211": .lblAbout.Caption = Translation
                                     Case "0212": .lblName.Caption = Translation
                                     Case "0213": .lblUninstCmd.Caption = Translation
@@ -745,7 +954,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                                     Case "2230": .mnuPopupShowFile.Caption = Translation
                                     ' Main window
                                     Case "2236": .cmdSave.Caption = Translation
-                                    Case "0190": .Caption = Replace$(Translation, "[]", ADSspyVer)
+                                    Case "0190": SetWindowTitleText .hWnd, Replace$(Translation, "[]", ADSspyVer)
                                     Case "0191": .optScanLocation(0).Caption = Translation
                                     Case "0197": If .picStatus.Tag = "1" Then .picStatus.Cls: .picStatus.Print Translation
                                     Case "0206": .optScanLocation(1).Caption = Translation
@@ -784,7 +993,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                             With frmCheckDigiSign
                             
                                 Select Case id
-                                    Case "1850": .Caption = Translation
+                                    Case "1850": SetWindowTitleText .hWnd, Translation
                                     Case "1851": .lblThisTool.Caption = Translation
                                     Case "1852": .chkRecur.Caption = Translation
                                     Case "1853": .chkIncludeSys.Caption = Translation
@@ -833,7 +1042,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                             With frmProcMan
                                 Select Case id
                                     ' Context menu (Process manager)
-                                    Case "0170": .Caption = Translation
+                                    Case "0170": SetWindowTitleText .hWnd, Translation
                                     Case "0160": .fraProcessManager.Caption = Translation
                                     Case "0161": .mnuProcManKill.Caption = Translation
                                     Case "0162": .mnuProcManCopy.Caption = Translation
@@ -997,7 +1206,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                         If IsFormInit(frmUnlockRegKey) Then
                             With frmUnlockRegKey
                                 Select Case id
-                                    Case "1900": .Caption = Translation
+                                    Case "1900": SetWindowTitleText .hWnd, Translation
                                     Case "1901": .lblWhatToDo.Caption = Translation
                                     Case "1902": .chkRecur.Caption = Translation
                                     Case "1903": .cmdGo.Caption = Translation
@@ -1017,7 +1226,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                                     Case "1856": .OptCSV.Caption = Translation
                                     Case "2302": .chkMatchCase.Caption = Translation
                                     Case "2304": .chkRegExp.Caption = Translation
-                                    Case "2450": .Caption = Translation
+                                    Case "2450": SetWindowTitleText .hWnd, Translation
                                     Case "2451": .lblThisTool.Caption = Translation
                                     Case "2452": .chkRecurse.Caption = Translation
                                     Case "2453": .cmdGo.Caption = Translation
@@ -1058,7 +1267,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                         If IsFormInit(frmUnlockFile) Then
                             With frmUnlockFile
                                 Select Case id
-                                    Case "2400": .Caption = Translation
+                                    Case "2400": SetWindowTitleText .hWnd, Translation
                                     Case "2401": .lblWhatToDo.Caption = Translation
                                     Case "2402": .chkRecur.Caption = Translation
                                     Case "2403": .cmdGo.Caption = Translation
@@ -1102,7 +1311,7 @@ ErrorHandler:
     If MsgBoxW( _
       Translation & vbCrLf & vbCrLf & "[ #" & Err.Number & ", " & Err.Description & ", ID: " & id & " ]", _
       vbYesNo Or vbExclamation) = vbYes Then
-        LoadDefaultLanguage UseResource:=True
+        LoadDefaultLanguage True, True
         ReloadLanguage
     Else
         Resume Next
@@ -1357,7 +1566,7 @@ Public Function GetHelpStartupList$(sNodeName$)
             sHelp = Translate(670)
         Case "SafeBootAlt"
             sHelp = Translate(671)
-        Case "WindowsDefender", "WindowsDefenderDisabled"
+        Case Replace$(STR_CONST.WINDOWS_DEFENDER, " ", ""), Replace$(STR_CONST.WINDOWS_DEFENDER, " ", "") & "Disabled"
             sHelp = Translate(672)
         Case "LsaPackages", "LsaPackagesAuth", "LsaPackagesNoti", "LsaPackagesSecu"
             sHelp = Translate(673)

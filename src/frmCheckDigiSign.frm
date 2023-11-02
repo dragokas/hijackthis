@@ -1,13 +1,14 @@
 VERSION 5.00
+Object = "{317589D1-37C8-47D9-B5B0-1C995741F353}#1.0#0"; "VBCCR17.OCX"
 Begin VB.Form frmCheckDigiSign 
    Caption         =   "Digital signature checker"
-   ClientHeight    =   6588
+   ClientHeight    =   6585
    ClientLeft      =   120
-   ClientTop       =   468
-   ClientWidth     =   9252
+   ClientTop       =   465
+   ClientWidth     =   9255
    BeginProperty Font 
       Name            =   "Tahoma"
-      Size            =   8.4
+      Size            =   8.25
       Charset         =   204
       Weight          =   400
       Underline       =   0   'False
@@ -17,246 +18,296 @@ Begin VB.Form frmCheckDigiSign
    Icon            =   "frmCheckDigiSign.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   ScaleHeight     =   6588
-   ScaleWidth      =   9252
-   Begin VB.Frame fraMode 
-      Caption         =   "Mode (for experts)"
-      BeginProperty Font 
-         Name            =   "Tahoma"
-         Size            =   7.8
-         Charset         =   204
-         Weight          =   700
-         Underline       =   0   'False
-         Italic          =   0   'False
-         Strikethrough   =   0   'False
-      EndProperty
+   ScaleHeight     =   6585
+   ScaleWidth      =   9255
+   Begin VBCCR17.FrameW fraMode 
       Height          =   3252
       Left            =   5400
       TabIndex        =   17
       Top             =   2640
       Width           =   3732
-      Begin VB.CheckBox chkSkipCheckSameCatalogue 
-         Caption         =   "Skip files of already verified security catalogs"
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
+         Name            =   "Tahoma"
+         Size            =   7.5
+         Charset         =   204
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Caption         =   "Mode (for experts)"
+      Begin VBCCR17.CheckBoxW chkSkipCheckSameCatalogue 
          Height          =   492
          Left            =   120
          TabIndex        =   24
          Top             =   2520
          Width           =   3492
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Skip files of already verified security catalogs"
       End
-      Begin VB.CheckBox chkPreferEmbedded 
-         Caption         =   "Prefer embedded signature"
+      Begin VBCCR17.CheckBoxW chkPreferEmbedded 
          Height          =   252
          Left            =   120
          TabIndex        =   23
          Top             =   1440
-         Value           =   1  'Checked
          Width           =   3492
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   1
+         Caption         =   "Prefer embedded signature"
       End
-      Begin VB.CheckBox chkNoSizeLimit 
-         Caption         =   "No file size limit"
+      Begin VBCCR17.CheckBoxW chkNoSizeLimit 
          Height          =   204
          Left            =   120
          TabIndex        =   22
          Top             =   1100
-         Value           =   1  'Checked
          Width           =   3492
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   1
+         Caption         =   "No file size limit"
       End
-      Begin VB.CheckBox chkAllowExpired 
-         Caption         =   "Allow expired"
+      Begin VBCCR17.CheckBoxW chkAllowExpired 
          Height          =   252
          Left            =   120
          TabIndex        =   21
          Top             =   720
-         Value           =   1  'Checked
          Width           =   3492
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   1
+         Caption         =   "Allow expired"
       End
-      Begin VB.CheckBox chkDisableCatalogue 
-         Caption         =   "Disable verify by catalog"
+      Begin VBCCR17.CheckBoxW chkDisableCatalogue 
          Height          =   204
          Left            =   120
          TabIndex        =   20
          Top             =   1800
          Width           =   3492
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Disable verify by catalog"
       End
-      Begin VB.CheckBox chkRevocation 
-         Caption         =   "Check for revocation (internet required)"
+      Begin VBCCR17.CheckBoxW chkRevocation 
          Height          =   444
          Left            =   120
          TabIndex        =   19
          Top             =   240
          Width           =   3492
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Check for revocation (internet required)"
       End
-      Begin VB.CheckBox chkPrecacheAllCatalogues 
-         Caption         =   "Precache tags of all catalogs"
+      Begin VBCCR17.CheckBoxW chkPrecacheAllCatalogues 
          Height          =   204
          Left            =   120
          TabIndex        =   18
          Top             =   2160
-         Value           =   1  'Checked
          Width           =   3492
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   1
+         Caption         =   "Precache tags of all catalogs"
       End
    End
-   Begin VB.CommandButton cmdClear 
-      Caption         =   "Clear list"
+   Begin VBCCR17.CommandButtonW cmdClear 
       Height          =   492
       Left            =   7320
       TabIndex        =   16
       Top             =   1800
       Width           =   1815
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Caption         =   "Clear list"
    End
-   Begin VB.CommandButton cmdSelectFolder 
-      Caption         =   "Add folder(s) ..."
+   Begin VBCCR17.CommandButtonW cmdSelectFolder 
       Height          =   492
       Left            =   7320
       TabIndex        =   15
       Top             =   1200
       Width           =   1815
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Caption         =   "Add folder(s) ..."
    End
-   Begin VB.CommandButton cmdExit 
-      Caption         =   "Exit"
+   Begin VBCCR17.CommandButtonW cmdExit 
       Height          =   492
       Left            =   2400
       TabIndex        =   14
       Top             =   6000
       Width           =   1452
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Caption         =   "Exit"
    End
-   Begin VB.CommandButton cmdSelectFile 
-      Caption         =   "Add file(s) ..."
+   Begin VBCCR17.CommandButtonW cmdSelectFile 
       Height          =   492
       Left            =   7320
       TabIndex        =   13
       Top             =   600
       Width           =   1815
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Caption         =   "Add file(s) ..."
    End
-   Begin VB.Frame fraReportFormat 
-      Caption         =   "Report format:"
-      BeginProperty Font 
-         Name            =   "Tahoma"
-         Size            =   7.8
-         Charset         =   204
-         Weight          =   700
-         Underline       =   0   'False
-         Italic          =   0   'False
-         Strikethrough   =   0   'False
-      EndProperty
+   Begin VBCCR17.FrameW fraReportFormat 
       Height          =   1572
       Left            =   240
       TabIndex        =   8
       Top             =   4320
       Width           =   5052
-      Begin VB.OptionButton OptCSV 
-         Caption         =   "CSV (Full log in ANSI)"
-         Height          =   432
-         Left            =   120
-         TabIndex        =   10
-         Top             =   840
-         Value           =   -1  'True
-         Width           =   2895
-      End
-      Begin VB.OptionButton optPlainText 
-         Caption         =   "Plain Text (Short log in Unicode)"
-         Height          =   492
-         Left            =   120
-         TabIndex        =   9
-         Top             =   240
-         Width           =   3495
-      End
-   End
-   Begin VB.Frame fraFilter 
-      Caption         =   "Filter"
-      BeginProperty Font 
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
          Name            =   "Tahoma"
-         Size            =   7.8
+         Size            =   7.5
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
+      Caption         =   "Report format:"
+      Begin VBCCR17.OptionButtonW OptCSV 
+         Height          =   432
+         Left            =   120
+         TabIndex        =   10
+         Top             =   840
+         Width           =   2895
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   -1  'True
+         Caption         =   "CSV (Full log in ANSI)"
+      End
+      Begin VBCCR17.OptionButtonW optPlainText 
+         Height          =   492
+         Left            =   120
+         TabIndex        =   9
+         Top             =   240
+         Width           =   3495
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Plain Text (Short log in Unicode)"
+      End
+   End
+   Begin VBCCR17.FrameW fraFilter 
       Height          =   1572
       Left            =   240
       TabIndex        =   4
       Top             =   2640
       Width           =   5055
-      Begin VB.CheckBox chkPeExe 
-         Caption         =   "PE EXE"
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
+         Name            =   "Tahoma"
+         Size            =   7.5
+         Charset         =   204
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Caption         =   "Filter"
+      Begin VBCCR17.CheckBoxW chkPeExe 
          Height          =   204
          Left            =   4080
          TabIndex        =   25
          Top             =   520
          Width           =   852
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "PE EXE"
       End
-      Begin VB.OptionButton OptExtension 
-         Caption         =   "by extension"
+      Begin VBCCR17.OptionButtonW OptExtension 
          Height          =   255
          Left            =   120
          TabIndex        =   12
          Top             =   480
-         Value           =   -1  'True
          Width           =   2052
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   -1  'True
+         Caption         =   "by extension"
       End
-      Begin VB.OptionButton OptAllFiles 
-         Caption         =   "All Files"
+      Begin VBCCR17.OptionButtonW OptAllFiles 
          Height          =   255
          Left            =   120
          TabIndex        =   11
          Top             =   240
          Width           =   2052
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "All Files"
       End
-      Begin VB.CheckBox chkIncludeSys 
-         Caption         =   "Include files in Windows\System32 (SysWOW64) folder"
+      Begin VBCCR17.CheckBoxW chkIncludeSys 
          Height          =   255
          Left            =   120
          TabIndex        =   7
          Top             =   1200
          Width           =   4812
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Include files in Windows\System32 (SysWOW64) folder"
       End
-      Begin VB.CheckBox chkRecur 
-         Caption         =   "Recursively (include subfolders)"
+      Begin VBCCR17.CheckBoxW chkRecur 
          Height          =   255
          Left            =   120
          TabIndex        =   6
          Top             =   840
-         Value           =   1  'Checked
          Width           =   4815
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Value           =   1
+         Caption         =   "Recursively (include subfolders)"
       End
-      Begin VB.TextBox txtExtensions 
+      Begin VBCCR17.TextBoxW txtExtensions 
          Height          =   285
          Left            =   2280
          TabIndex        =   5
-         Text            =   "exe;dll;sys"
          Top             =   480
          Width           =   1572
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Text            =   "frmCheckDigiSign.frx":4072
       End
    End
-   Begin VB.CommandButton cmdGo 
-      Caption         =   "Go"
+   Begin VBCCR17.CommandButtonW cmdGo 
       Height          =   480
       Left            =   480
       TabIndex        =   2
       Top             =   6000
       Width           =   1575
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Caption         =   "Go"
    End
-   Begin VB.TextBox txtPaths 
+   Begin VBCCR17.TextBoxW txtPaths 
       Height          =   2055
       Left            =   240
-      MultiLine       =   -1  'True
-      ScrollBars      =   3  'Both
       TabIndex        =   0
       Top             =   600
       Width           =   6972
+      _ExtentX        =   0
+      _ExtentY        =   0
+      MultiLine       =   -1  'True
+      ScrollBars      =   3
    End
-   Begin VB.Label lblStatus 
-      AutoSize        =   -1  'True
-      BackStyle       =   0  'Transparent
-      Caption         =   "1 / 1 - File - (in folder)"
-      ForeColor       =   &H0000FFFF&
+   Begin VBCCR17.LabelW lblStatus 
       Height          =   192
       Left            =   4680
       TabIndex        =   3
       Top             =   6200
       Visible         =   0   'False
       Width           =   4452
+      _ExtentX        =   0
+      _ExtentY        =   0
+      ForeColor       =   65535
+      BackStyle       =   0
+      Caption         =   "1 / 1 - File - (in folder)"
+      AutoSize        =   -1  'True
    End
    Begin VB.Shape shpFore 
       BackColor       =   &H00C00000&
@@ -276,15 +327,17 @@ Begin VB.Form frmCheckDigiSign
       Visible         =   0   'False
       Width           =   4812
    End
-   Begin VB.Label lblThisTool 
-      AutoSize        =   -1  'True
-      BackStyle       =   0  'Transparent
-      Caption         =   "This tool will create a detail report about digital signature of files/folders you specify below:"
+   Begin VBCCR17.LabelW lblThisTool 
       Height          =   192
       Left            =   240
       TabIndex        =   1
       Top             =   200
       Width           =   8832
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BackStyle       =   0
+      Caption         =   "This tool will create a detail report about digital signature of files/folders you specify below:"
+      AutoSize        =   -1  'True
       WordWrap        =   -1  'True
    End
 End
@@ -303,7 +356,6 @@ Option Explicit
 
 Private Declare Function DeleteFileW Lib "kernel32.dll" (ByVal lpFileName As Long) As Long
 Private Declare Function SfcIsFileProtected Lib "Sfc.dll" (ByVal RpcHandle As Long, ByVal ProtFileName As Long) As Long
-Private Declare Function SetWindowTheme Lib "UxTheme.dll" (ByVal hwnd As Long, ByVal pszSubAppName As Long, ByVal pszSubIdList As Long) As Long
 
 Private Const CERT_E_UNTRUSTEDROOT          As Long = &H800B0109
 Private Const TRUST_E_NOSIGNATURE           As Long = &H800B0100
@@ -515,7 +567,7 @@ Private Sub cmdGo_Click()
     End If
     
     DoEvents
-    SetForegroundWindow Me.hwnd
+    SetForegroundWindow Me.hWnd
     
     lblStatus.Caption = vbNullString
     lblStatus.Visible = True
@@ -765,7 +817,7 @@ Private Sub cmdSelectFile_Click()
     Dim sExt As String
     sExt = "*.exe;*.msi;*.dll;*.sys;*.ocx"
     'PE; All files
-    For i = 1 To OpenFileDialog_Multi(aFile, Translate(122), Desktop, "PE (" & sExt & ")|" & sExt & "|" & Translate(1003) & " (*.*)|*.*", Me.hwnd)
+    For i = 1 To OpenFileDialog_Multi(aFile, Translate(122), Desktop, "PE (" & sExt & ")|" & sExt & "|" & Translate(1003) & " (*.*)|*.*", Me.hWnd)
         txtPaths.Text = txtPaths.Text & IIf(Len(txtPaths.Text) = 0, vbNullString, vbCrLf) & aFile(i)
     Next
 End Sub
@@ -773,7 +825,7 @@ End Sub
 Private Sub cmdSelectFolder_Click()
     Dim aFolder() As String
     Dim i As Long
-    For i = 1 To OpenFolderDialog_Multi(aFolder, , Desktop, Me.hwnd)
+    For i = 1 To OpenFolderDialog_Multi(aFolder, , Desktop, Me.hWnd)
         txtPaths.Text = txtPaths.Text & IIf(Len(txtPaths.Text) = 0, vbNullString, vbCrLf) & aFolder(i)
     Next
 End Sub
@@ -784,26 +836,12 @@ Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
 End Sub
 
 Private Sub Form_Load()
-    Dim OptB As OptionButton
-    Dim Ctl As Control
-    
     LoadWindowPos Me, SETTINGS_SECTION_SIGNCHECKER
     
     SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold
     Call ReloadLanguage(True)
-    
-    ' if Win XP -> disable all window styles from option buttons
-    If bIsWinXP Then
-        For Each Ctl In Me.Controls
-            If TypeName(Ctl) = "OptionButton" Then
-                Set OptB = Ctl
-                SetWindowTheme OptB.hwnd, StrPtr(" "), StrPtr(" ")
-            End If
-        Next
-        Set OptB = Nothing
-    End If
-    
-    SubClassTextbox Me.txtPaths.hwnd, True
+
+    SubClassTextbox Me.txtPaths.hWnd, True
 End Sub
 
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
@@ -821,7 +859,7 @@ Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
             Me.Hide
         End If
     Else
-        SubClassTextbox Me.txtPaths.hwnd, False
+        SubClassTextbox Me.txtPaths.hWnd, False
     End If
 End Sub
 
@@ -863,7 +901,7 @@ Private Sub txtPaths_KeyDown(KeyCode As Integer, Shift As Integer)
     If KeyCode = 27 Then cmdExit_Click
 End Sub
 
-Private Sub txtPaths_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub txtPaths_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
     AddObjToList Data
 End Sub
 

@@ -9,8 +9,6 @@ Option Explicit
 ''
 
 Private Const MAX_HASH_FILE_SIZE As Currency = 314572800@ '300 MB. (maximum file size to calculate hash)
-Private Const CAESAR_SEED = 1
-Private Const CAESAR_STEP = 2
 
 'Private Const poly As Long = &HEDB88320
 
@@ -1066,9 +1064,9 @@ End Sub
 'Base64 encoder/decoder by Comintern (vbforums.com)
 
 'Fork by Dragokas
-'fixed bug: Encode64 incorrectly handle 2-bytes strings.
+'fixed bug: Encode_B64 incorrectly handle 2-bytes strings.
 
-Public Sub Base64_Init()
+Public Sub B64_Init()
 
     On Error GoTo ErrorHandler:
 
@@ -1117,11 +1115,11 @@ Public Sub Base64_Init()
 
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "Base64_Init"
+    ErrorMsg Err, "B64_Init"
     If inIDE Then Stop: Resume Next
 End Sub
 
-Public Function Encode64(sString As String) As String
+Public Function Encode_B64(sString As String) As String
 
     On Error GoTo ErrorHandler:
 
@@ -1174,15 +1172,15 @@ Public Function Encode64(sString As String) As String
         bOut(lOutSize - 1) = 61
     End If
     
-    Encode64 = StrConv(bOut, vbUnicode)                   'Convert back to a string and return it.
+    Encode_B64 = StrConv(bOut, vbUnicode)                   'Convert back to a string and return it.
 
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "Encode64"
+    ErrorMsg Err, "Encode_B64"
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function Decode64(sString As String) As String
+Public Function Decode_B64(sString As String) As String
 
     On Error GoTo ErrorHandler:
 
@@ -1220,20 +1218,21 @@ Public Function Decode64(sString As String) As String
     'sOut = StrConv(bOut, vbUnicode)                     'Convert back to a string.
     sOut = bOut
     If iPad Then sOut = Left$(sOut, Len(sOut) - iPad)   'Chop off any extra bytes.
-    Decode64 = sOut
+    Decode_B64 = sOut
 
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "Decode64"
+    ErrorMsg Err, "Decode_B64"
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function Caesar_Encode(original As String) As String
+'Useless for large text
+Public Function Caes_Encode(original As String, Optional initial_seed As Long = 1, Optional stepping As Long = 2) As String
     On Error GoTo ErrorHandler:
     Dim seed As Long
-    Dim encoded As String
     Dim i As Long, Code As Long
-    seed = CAESAR_SEED
+    seed = initial_seed
+    Caes_Encode = String$(Len(original), 0&)
     For i = 1 To Len(original)
         Code = Asc(mid(original, i, 1))
         If Code >= Asc("0") And Code <= Asc("9") Then
@@ -1243,22 +1242,22 @@ Public Function Caesar_Encode(original As String) As String
             Code = Code + seed
             Do While Code > Asc("z"): Code = Code - Asc("z") + Asc("A") - 1: Loop
         End If
-        encoded = encoded & Chr$(Code)
-        seed = seed + CAESAR_STEP
+        Mid$(Caes_Encode, i) = Chr$(Code)
+        seed = seed + stepping
     Next
-    Caesar_Encode = encoded
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "Caesar_Encode"
+    ErrorMsg Err, "Caes_Encode"
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function Caesar_Decode(encoded As String) As String
+'Useless for large text
+Public Function Caes_Decode(encoded As String, Optional initial_seed As Long = 1, Optional stepping As Long = 2) As String
     On Error GoTo ErrorHandler:
     Dim seed As Long
     Dim i As Long, Code As Long
-    seed = CAESAR_SEED
-    Dim decoded As String
+    seed = initial_seed
+    Caes_Decode = String$(Len(encoded), 0&)
     For i = 1 To Len(encoded)
         Code = Asc(mid(encoded, i, 1))
         If Code >= Asc("0") And Code <= Asc("9") Then
@@ -1268,13 +1267,51 @@ Public Function Caesar_Decode(encoded As String) As String
             Code = Code - seed
             Do While Code < Asc("A"): Code = Code + Asc("z") - Asc("A") + 1: Loop
         End If
-        decoded = decoded & Chr$(Code)
-        seed = seed + CAESAR_STEP
+        Mid$(Caes_Decode, i) = Chr$(Code)
+        seed = seed + stepping
     Next
-    Caesar_Decode = decoded
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "Caesar_Decode"
+    ErrorMsg Err, "Caes_Decode"
     If inIDE Then Stop: Resume Next
 End Function
 
+Public Sub Caes_EncodeBin(original() As Byte, Optional initial_seed As Long = 1, Optional stepping As Long = 2, Optional skip As Long = 3)
+    On Error GoTo ErrorHandler:
+    Dim seed As Long
+    Dim encoded As String
+    Dim i As Long, Code As Long
+    seed = initial_seed
+    For i = 0 To UBound(original) Step skip
+        Code = original(i)
+        Code = Code + seed
+        If Code >= 256 Then Code = Code Mod 256
+        original(i) = Code
+        seed = seed + stepping
+        If seed >= 256 Then seed = seed Mod 256
+    Next
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "Caes_EncodeBin"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Public Sub Caes_DecodeBin(original() As Byte, Optional initial_seed As Long = 1, Optional stepping As Long = 2, Optional skip As Long = 3)
+    On Error GoTo ErrorHandler:
+    Dim seed As Long
+    Dim i As Long, Code As Long
+    seed = initial_seed
+    Dim decoded As String
+    For i = 0 To UBound(original) Step skip
+        Code = original(i)
+        Code = Code - seed
+        If Code < 0 Then Code = (Code Mod 256) + 256
+        original(i) = Code
+        seed = seed + stepping
+        If seed >= 256 Then seed = seed Mod 256
+    Next
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "Caes_DecodeBin"
+    If inIDE Then Stop: Resume Next
+End Sub

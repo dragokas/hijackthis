@@ -1,0 +1,16 @@
+cmd.exe
+rundll32.exe
+wmic.exe
+cscript.exe
+wscript.exe
+powershell.exe
+sc.exe
+schtasks.exe
+svchost.exe
+mshta.exe
+pcalua.exe
+msiexec.exe
+MpCmdRun.exe
+certutil.exe
+bitsadmin.exe
+wuauclt.exe

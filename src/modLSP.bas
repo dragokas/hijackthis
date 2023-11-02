@@ -85,10 +85,6 @@ Option Explicit
 'Private Const SOCKET_ERROR As Long = -1
 'Private Const REG_OPTION_NON_VOLATILE As Long = 0
 
-Private sKeyNameSpace As String
-Private sKeyProtocol As String
-
-
 ' ---------------------------------------------------------------------------------------------------
 ' StartupList2 routine
 ' ---------------------------------------------------------------------------------------------------
@@ -216,27 +212,27 @@ End Function
 ' HJT main routine
 ' ---------------------------------------------------------------------------------------------------
 
-Public Sub GetLSPCatalogNames()
-    sKeyNameSpace = "System\CurrentControlSet\Services\WinSock2\Parameters"
-    sKeyProtocol = "System\CurrentControlSet\Services\WinSock2\Parameters"
-    
-    sKeyNameSpace = sKeyNameSpace & "\" & Reg.GetString(HKEY_LOCAL_MACHINE, sKeyNameSpace, "Current_NameSpace_Catalog")
-    sKeyProtocol = sKeyProtocol & "\" & Reg.GetString(HKEY_LOCAL_MACHINE, sKeyProtocol, "Current_Protocol_Catalog")
-End Sub
-
 Public Sub CheckLSP()
     On Error GoTo ErrorHandler:
     
     AppendErrorLogCustom "CheckLSP - Begin"
     
     Dim lNumNameSpace&, lNumProtocol&, i&
-    Dim sFile$, hKey&, sHit$, sDummy$, sFindFile$
+    Dim sFile$, hKey&, sHit$, sFindFile$
     Dim oUnknFile As clsTrickHashTable
     Dim oMissingFile As clsTrickHashTable
     Dim bSafe As Boolean, result As SCAN_RESULT
+    Dim sKeyNameSpace As String
+    Dim sKeyProtocol As String
     
     Set oUnknFile = New clsTrickHashTable    'for removing duplicate records
     Set oMissingFile = New clsTrickHashTable
+    
+    sKeyNameSpace = "System\CurrentControlSet\Services\WinSock2\Parameters"
+    sKeyProtocol = "System\CurrentControlSet\Services\WinSock2\Parameters"
+    
+    sKeyNameSpace = sKeyNameSpace & "\" & Reg.GetString(HKEY_LOCAL_MACHINE, sKeyNameSpace, "Current_NameSpace_Catalog")
+    sKeyProtocol = sKeyProtocol & "\" & Reg.GetString(HKEY_LOCAL_MACHINE, sKeyProtocol, "Current_Protocol_Catalog")
     
     lNumNameSpace = Reg.GetDword(HKEY_LOCAL_MACHINE, sKeyNameSpace, "Num_Catalog_Entries")
     lNumProtocol = Reg.GetDword(HKEY_LOCAL_MACHINE, sKeyProtocol, "Num_Catalog_Entries")
@@ -281,12 +277,7 @@ Public Sub CheckLSP()
                     sHit = "O10 - Hijacked Internet access by CommonName"
                     If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O10", sHit
                 Else
-                    sDummy = mid$(sFile, InStrRev(sFile, "\") + 1)
-                    
-                    bSafe = False
-                    If InStr(1, sSafeLSPFiles, "*" & sDummy & "*", vbTextCompare) <> 0 Then
-                        If IsMicrosoftFile(sFile) Then bSafe = True
-                    End If
+                    bSafe = IsMicrosoftFile(sFile)
                     
                     If Not bSafe Or Not bHideMicrosoft Then
                         If Not oUnknFile.Exists(sFile) Then
@@ -339,12 +330,7 @@ Public Sub CheckLSP()
                     sHit = "O10 - Hijacked Internet access by CommonName"
                     If Not IsOnIgnoreList(sHit) Then AddToScanResultsSimple "O10", sHit
                 Else
-                    sDummy = LCase$(mid$(sFile, InStrRev(sFile, "\") + 1))
-                    
-                    bSafe = False
-                    If InStr(1, sSafeLSPFiles, "*" & sDummy & "*", vbTextCompare) <> 0 Then
-                        If IsMicrosoftFile(sFile) Then bSafe = True
-                    End If
+                    bSafe = IsMicrosoftFile(sFile)
                     
                     If Not bSafe Or Not bHideMicrosoft Then
                         If Not oUnknFile.Exists(sFile) Then
@@ -406,7 +392,7 @@ Public Sub FixLSP() 'FixO10
             Exit Sub
         Else
             sTool = "WinsockReset"
-            sSite = "https://www.d7xtech.com/vb6-projects/winsockreset/"
+            sSite = Caes_Decode("iwywB://NPR.C4[YLLS.R``") & "/vb6-projects/winsockreset/" 'https://www.d7xtech.com
         End If
         sMsg = Replace$(Translate(580), "{1}", sTool)
         sMsg = Replace$(sMsg, "{2}", sSite)

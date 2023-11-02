@@ -859,7 +859,7 @@ Private Sub Class_Initialize()
     Last.hash = -1
     Last.Index = -1
     mCount = 0
-    lcid = OSver.LCID_UserDefault
+    lcid = GetUserDefaultLCID()
     decMin = CDec(-9999999)
     decMax = CDec(9999999)
     

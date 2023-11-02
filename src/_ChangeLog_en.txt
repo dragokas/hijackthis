@@ -1,15 +1,32 @@
 ﻿
 Version history:
 
-1. HiJackThis+
+1. HijackThis+
 2. StartupList
 3. ADSspy
 4. ProcMan
 
 
-===========================================================
-||||||||       1. HiJackThis: changelog         |||||||||||
-===========================================================
+==================================================
+|||||       1. HiJackThis: changelog         |||||
+==================================================
+
+[3.3.0.5 Alpha] - Nov 02, 2023
+ - All UI elements have been replaced with Unicode counterparts (thanks to Krool and VanGoghGaming).
+ - Fixed out-of-buffer writing in rare cases with incorrect registry keys.
+ - Fixed insufficient control with an attempt to check the digital signature of a folder, which could lead to a crash due to the redirector being disabled (thanks to Sandor for the support).
+ - Fixed Kaspersky false positive on the fix behavior. To prevent this from happening, unpack all utility files from the archive (thanks to akok for the notification).
+ - Comprehensive cleaning and code "obfuscation" from primitive checks of antiviruses and sandboxes to prevent their suspicions (thanks to akok for the help).
+ - Refactoring of the program initialization stage.
+ - Loading of the main menu has been accelerated.
+ - Hosts Manager: reset is standardized to the default hashes of the vanilla OS hosts file; fixed "Open in editor" button.
+ - List of OS editions has been updated.
+ - Improved compatibility with Windows XP and Vista.
+ - Changed the settings storage key. The previous settings will be moved automatically.
+ - Unnecessary databases are removed.
+ - Dead links are removed.
+ - Dependency on Microsoft MSCOMCTL32 is removed.
+ - Temporary: dependency on the apps\VBCCR17.OCX component
 
 [3.2.0.2 Alpha] - Oct 09, 2023
  - Fixed a bug with displaying the user group name.

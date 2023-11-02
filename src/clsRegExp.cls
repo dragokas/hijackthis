@@ -57,7 +57,7 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Private Const PCRE_LIB_RESOURCE_ID = 301
-Private Const PCRE2_LIB_HASH = "B243F7F6B0A1C3D0213BD926279BD9D525FD4521"
+'Private Const PCRE2_LIB_HASH = "B243F7F6B0A1C3D0213BD926279BD9D525FD4521"
 
 Implements IRegExp
 Implements IRegExpMatch
@@ -1636,7 +1636,7 @@ Private Function UnpackLibPCRE() As Boolean
     Dim sLibPath As String
     sLibPath = AppPathW() & "\" & "pcre2-16.dll"
     If Not FileExists(sLibPath) Then
-        UnpackLibPCRE = UnpackResource(PCRE_LIB_RESOURCE_ID, sLibPath)
+        UnpackLibPCRE = UnpackCryptedFile(PCRE_LIB_RESOURCE_ID, sLibPath)
     End If
     AppendErrorLogCustom "UnpackLibPCRE - Unpacked"
     If CheckConsistency(sLibPath) Then
@@ -1650,7 +1650,7 @@ End Function
 Private Function CheckConsistency(sLibPath As String) As Boolean
     Dim hLib As Long
     If FileExists(sLibPath) Then
-        If GetFileSHA1(sLibPath, , True) = PCRE2_LIB_HASH Then
+        If StrComp(GetFileSHA1(sLibPath, , True), STR_CONST.SHA1_PCRE2, vbTextCompare) = 0 Then
             hLib = LoadLibrary(StrPtr(sLibPath))
             If hLib <> 0 Then
                 FreeLibrary hLib
@@ -1665,11 +1665,11 @@ Private Function UnpackResource(ResourceID As Long, DestinationPath As String) A
     Dim b()     As Byte
     Dim hFile   As Long
     Dim lBytesWrote As Long
-    
+
     b = LoadResData(ResourceID, "CUSTOM")
-    
+
     hFile = CreateFile(StrPtr(DestinationPath), GENERIC_WRITE, FILE_SHARE_READ, ByVal 0&, CREATE_ALWAYS, FILE_ATTRIBUTE_ARCHIVE, ByVal 0&)
-    
+
     If hFile <> INVALID_HANDLE_VALUE Then
         If WriteFile(hFile, VarPtr(b(0)), UBound(b) + 1, lBytesWrote, 0&) Then UnpackResource = True
         CloseHandle hFile
@@ -1748,9 +1748,9 @@ End Function
 '
 '    #If Pcre2Test Then
 '        If isFileExists(sPathLibPCRE) Then
-'            If Not IsPcre2LibValid() Then Call UnpackResource(301, sPathLibPCRE)
+'            If Not IsPcre2LibValid() Then Call UnpackCryptedFile(301, sPathLibPCRE)
 '        Else
-'            Call UnpackResource(301, sPathLibPCRE)
+'            Call UnpackCryptedFile(301, sPathLibPCRE)
 '        End If
 '        If IsPcre2LibValid() Then
 '            hLibPcre2 = LoadLibrary(StrPtr(sPathLibPCRE))
@@ -1760,7 +1760,7 @@ End Function
 '            Set NewRegExpClass = oRegExpProxy
 '            Exit Function
 '        Else
-'            MsgBoxW "UnpackResource: pcre2-16.dll is failed!"
+'            MsgBoxW "UnpackCryptedFile: pcre2-16.dll is failed!"
 '            Unload frmMain
 '            End
 '        End If
@@ -1804,7 +1804,7 @@ End Function
 '                    End If
 '                End If
 '
-'                If UnpackResource(301, sPathLibPCRE) And IsPcre2LibValid() Then
+'                If UnpackCryptedFile(301, sPathLibPCRE) And IsPcre2LibValid() Then
 '                    hLibPcre2 = LoadLibrary(StrPtr(sPathLibPCRE))
 '                    If hLibPcre2 <> 0 Then
 '                        Pcre2Mode = True

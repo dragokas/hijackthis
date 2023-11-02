@@ -622,7 +622,11 @@ Public Function GetW(hFile As Long, Optional vPos As Variant, Optional vOut As V
         End Select
     End If
     GetW = (0 <> lr)
-    If 0 = lr And Not UnknType Then ErrorMsg Err, "Cannot read file. LastDllErr = " & Err.LastDllError: Err.Raise 52
+    If 0 = lr And Not UnknType Then
+        Dim sErrMsg As String: sErrMsg = "Cannot read file: " & GetFilenameFromHandle(hFile)
+        ErrorMsg Err, sErrMsg & " LastDllErr=" & Err.LastDllError
+        Err.Raise 5, , sErrMsg
+    End If
     
     AppendErrorLogCustom "GetW - End", "BytesRead: " & lBytesRead
 '    Exit Function
@@ -704,7 +708,7 @@ Public Function LOFW(hFile As Long) As Currency
                 LOFW = FileSize * 10000&
             Else
                 Err.Clear
-                ErrorMsg Now, "File is too big. Size: " & FileSize
+                ErrorMsg Err, "File is too big. Size: " & FileSize
             End If
         End If
     End If
@@ -2006,8 +2010,11 @@ Public Function ReadFileContents(sFile As String, isUnicode As Boolean) As Strin
     Dim b()     As Byte
     Dim lSize   As Currency
     Dim Redirect As Boolean, bOldStatus As Boolean
-    If Not FileExists(sFile) Then Exit Function
     Redirect = ToggleWow64FSRedirection(False, sFile, bOldStatus)
+    If Not FileExists(sFile) Then
+        Call ToggleWow64FSRedirection(bOldStatus)
+        Exit Function
+    End If
     OpenW sFile, FOR_READ, hFile, g_FileBackupFlag
     If hFile <= 0 Then
         If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
@@ -2044,6 +2051,40 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
+Public Function ReadFileAsBinary(sFile As String, out_b() As Byte) As Boolean
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "ReadFileAsBinary - Begin", "File: " & sFile
+    Dim hFile   As Long
+    Dim b()     As Byte
+    Dim lSize   As Currency
+    Dim Redirect As Boolean, bOldStatus As Boolean
+    If Not FileExists(sFile) Then Exit Function
+    Redirect = ToggleWow64FSRedirection(False, sFile, bOldStatus)
+    OpenW sFile, FOR_READ, hFile, g_FileBackupFlag
+    If hFile <= 0 Then
+        If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
+        out_b = EmptyByteArray(vbByte)
+        Exit Function
+    End If
+    lSize = LOFW(hFile)
+    If lSize = 0 Then
+        CloseW hFile
+        If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
+        out_b = EmptyByteArray(vbByte)
+        Exit Function
+    End If
+    ReDim out_b(lSize - 1)
+    GetW hFile, 1, , VarPtr(out_b(0)), UBound(out_b) + 1
+    CloseW hFile
+    If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
+    AppendErrorLogCustom "ReadFileAsBinary - End"
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "ReadFileAsBinary"
+    out_b = EmptyByteArray(vbByte)
+    If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
+    If inIDE Then Stop: Resume Next
+End Function
 
 Public Function IniGetString( _
     sFile As String, _
@@ -3257,21 +3298,17 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function GetFileSymlinkTarget(sPath As String) As String
+Public Function GetFilenameFromHandle(hFile As Long) As String
     On Error GoTo ErrorHandler
     'also see:
     'https://msdn.microsoft.com/en-us/library/windows/desktop/aa366789(v=vs.85).aspx
     'https://blez.wordpress.com/2012/09/17/enumerating-opened-handles-from-a-process/
     'https://stackoverflow.com/questions/65170/how-to-get-name-associated-with-open-handle/
     
-    Dim hFile           As Long
     Dim returnedLength  As Long
     Dim status          As Long
     Dim DeviceObjName   As String
     Dim objName(1000)   As Integer
-    
-    hFile = CreateFile(StrPtr(sPath), GENERIC_READ, FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, ByVal 0&, _
-        OPEN_EXISTING, g_FileBackupFlag, 0&)
     
     If hFile <> INVALID_HANDLE_VALUE Then
         
@@ -3284,14 +3321,29 @@ Public Function GetFileSymlinkTarget(sPath As String) As String
         
         If NT_SUCCESS(status) And objName(0) > 0 Then
             DeviceObjName = StringFromPtrW(VarPtr(objName(4)))
-            GetFileSymlinkTarget = GetDOSFilename(ConvertDosDeviceToDriveName(DeviceObjName), True)
+            GetFilenameFromHandle = GetDOSFilename(ConvertDosDeviceToDriveName(DeviceObjName), True)
         End If
-        
+    End If
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetFilenameFromHandle"
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function GetFileSymlinkTarget(sPath As String) As String
+    On Error GoTo ErrorHandler
+    
+    Dim hFile As Long
+    hFile = CreateFile(StrPtr(sPath), GENERIC_READ, FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, ByVal 0&, _
+        OPEN_EXISTING, g_FileBackupFlag, 0&)
+    
+    If hFile <> INVALID_HANDLE_VALUE Then
+        GetFileSymlinkTarget = GetFilenameFromHandle(hFile)
         CloseHandle hFile
     End If
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "modFile.GetFileSymlinkTarget", "Path:", sPath
+    ErrorMsg Err, "GetFileSymlinkTarget", "Path:", sPath
     If inIDE Then Stop: Resume Next
 End Function
 

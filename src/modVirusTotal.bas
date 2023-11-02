@@ -9,11 +9,12 @@ Attribute VB_Name = "modVirusTotal"
 '
 Option Explicit
 
-Public Function DownloadAutoruns() As Boolean
+Public Function DownloadAuto_runs() As Boolean
     
     On Error GoTo ErrorHandler:
     
-    Const sURL As String = "https://download.sysinternals.com/files/Autoruns.zip"
+    'https://download.sysinternals.com
+    Dim sURL As String: sURL = Caes_Decode("iwywB://uHRKKPDI.\d`X_gZig\ir.ftt") & "/files/" & STR_CONST.AUTORUNS & ".zip"
     
     Dim bHasFile As Boolean
     Dim ToolsDir As String
@@ -25,8 +26,8 @@ Public Function DownloadAutoruns() As Boolean
     
     ToolsDir = GetToolsDir()
     sAutorunsExePath = GetAutorunsPath()
-    ArcPath = BuildPath(TempCU, "Autoruns.zip")
-    UnpackPath = BuildPath(TempCU, "Autoruns")
+    ArcPath = BuildPath(TempCU, STR_CONST.AUTORUNS & ".zip")
+    UnpackPath = BuildPath(TempCU, STR_CONST.AUTORUNS)
     
     If Not FileExists(sAutorunsExePath) Then
         bRequireDL = True
@@ -48,7 +49,7 @@ Public Function DownloadAutoruns() As Boolean
     End If
     
     If Not bRequireDL Then
-        DownloadAutoruns = True
+        DownloadAuto_runs = True
         Exit Function
     End If
     
@@ -94,7 +95,7 @@ Public Function DownloadAutoruns() As Boolean
             Exit Function
         End If
         
-        sAutorunsInZip = BuildPath(UnpackPath, IIf(OSver.IsWin64, "autorunsc64.exe", "autorunsc.exe"))
+        sAutorunsInZip = BuildPath(UnpackPath, IIf(OSver.IsWin64, STR_CONST.AUTORUNS & "c64.exe", STR_CONST.AUTORUNS & "c.exe"))
         
         If Not FileExists(sAutorunsInZip) Then
             MsgBoxW "Cannot find the file:" & vbCrLf & sAutorunsInZip, vbCritical
@@ -121,11 +122,11 @@ Public Function DownloadAutoruns() As Boolean
     DeleteFolder UnpackPath
     DeleteFilePtr StrPtr(ArcPath)
     
-    DownloadAutoruns = True
+    DownloadAuto_runs = True
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "DownloadAutoruns"
+    ErrorMsg Err, "DownloadAuto-runs"
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -174,14 +175,14 @@ Public Function AR_CheckFile(sFile As String, Optional bSilent As Boolean) As Bo
     Reg.SetStringVal HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Windows", "AppInit_DLLs", sFile
     
     Set Proc = New clsProcess
-    If Proc.ProcessRun(sAutorunsExePath, "-accepteula -a d -vs -vt -nobanner -x", , vbHide, True) Then
+    If Proc.ProcessRun(sAutorunsExePath, Caes_Decode("-dhjnAGtLEv -B I -a` -ii -ilabqslA -M"), , vbHide, True) Then '-accepteula -a d -vs -vt -nobanner -x
         g_bVTScanInProgress = True
         g_bCalcHashInProgress = True
         If Not g_bScanInProgress Then
             frmMain.lblStatus.Visible = True
             frmMain.lblStatus.ForeColor = vbDarkRed
             frmMain.lblStatus.Font.Bold = True
-            frmMain.lblStatus.Caption = "Virustotal: " & GetFileNameAndExt(sFile) & " - " & GetParentDir(sFile) & "\"
+            frmMain.lblStatus.Caption = STR_CONST.VIRUSTOTAL & ": " & GetFileNameAndExt(sFile) & " - " & GetParentDir(sFile) & "\"
         End If
         ResumeHashProgressbar
         UpdateVTProgressbar False
@@ -197,13 +198,13 @@ Public Function AR_CheckFile(sFile As String, Optional bSilent As Boolean) As Bo
     
     If Proc.pid = 0 Then
         If Not bSilent Then
-            MsgBoxW "Error while submitting the file with 'AutoRuns':" & vbCrLf & sFile & vbCrLf & vbCrLf & "Code: " & Err.LastDllError
+            MsgBoxW "Error while submitting the file with 'Auto-Runs':" & vbCrLf & sFile & vbCrLf & vbCrLf & "Code: " & Err.LastDllError
         End If
         Exit Function
     End If
     
     sSha256 = GetFileSHA256(sFile, , True)
-    frmMain.lblMD5.Tag = "https://www.virustotal.com/gui/file/" & sSha256 & "/detection"
+    frmMain.lblMD5.Tag = Caes_Decode("iwywB://NPR.UJUZZ]ZaP].Xff") & "/gui/file/" & sSha256 & "/detection" 'https://www.virustotal.com
     
     Exit Function
 ErrorHandler:

@@ -514,7 +514,7 @@ ErrorHandler:
     GetEncoding = GetEncoding_UTF8(aBytes(), Percent)
 End Function
 
-Function GetEncoding_UTF8(aBytes() As Byte, Optional Percent As Long) As Long
+Function GetEncoding_UTF8(aBytes() As Byte, Optional Percent As Long) As idCodePage
     On Error GoTo ErrorHandler
     AppendErrorLogCustom "Parser.GetEncoding_UTF8 - Begin"
     
@@ -583,7 +583,7 @@ Public Function CreateHJTShortcuts(HJT_Location As String) As Boolean
     Dim bSuccess As Boolean
     Dim hFile As Long
     bSuccess = True
-    bSuccess = bSuccess And MkDirW(BuildPath(StartMenuPrograms, "HiJackThis+"))
+    bSuccess = bSuccess And MkDirW(BuildPath(StartMenuPrograms, "HijackThis+"))
     bSuccess = bSuccess And MkDirW(BuildPath(StartMenuPrograms, "HiJackThis+\Tools"))
     bSuccess = bSuccess And MkDirW(BuildPath(StartMenuPrograms, "HiJackThis+\Plugins"))
     
@@ -625,14 +625,14 @@ Public Function CreateHJTShortcuts(HJT_Location As String) As Boolean
 End Function
 
 Public Function CreateHJTShortcutDesktop(HJT_Location As String) As Boolean
-    CreateHJTShortcutDesktop = CreateShortcut(BuildPath(Desktop, "HiJackThis+.lnk"), HJT_Location)
+    CreateHJTShortcutDesktop = CreateShortcut(BuildPath(Desktop, "HijackThis+.lnk"), HJT_Location)
 End Function
 
 Public Sub RemoveHJTShortcuts()
     Call DeleteFolderForce(BuildPath(StartMenuPrograms, "HiJackThis Fork"))
-    Call DeleteFolderForce(BuildPath(StartMenuPrograms, "HiJackThis+"))
+    Call DeleteFolderForce(BuildPath(StartMenuPrograms, "HijackThis+"))
     Call DeleteFileW(StrPtr(BuildPath(Desktop, "HiJackThis Fork.lnk")))
-    Call DeleteFileW(StrPtr(BuildPath(Desktop, "HiJackThis+.lnk")))
+    Call DeleteFileW(StrPtr(BuildPath(Desktop, "HijackThis+.lnk")))
 End Sub
 
 Public Function CreateShortcut( _
