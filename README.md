@@ -69,7 +69,7 @@ HijackThis+ also comes with several modules useful for specific analysis and rem
  * Batch Digital Signature Checker **(\*new\*)**
  * Registry Key Type Analyzer **(\*new\*)**
  * Registry Key Unlocker **(\*new\*)**
- * Files Unlocker **(\*new\*)**
+ * Files DACL Unlocker **(\*new\*)**
  * Check Browsers' LNK & ClearLNK (as downloadable components) **(\*new\*)**
 
 ## Log analysis
@@ -122,11 +122,10 @@ HijackThis+ is distributed under the initial [GPLv2 license](https://github.com/
 **Note:** These mirrors belong to other companies. They are non-official.
 
 ### More references:
-[Wikipedia (EN)](https://en.wikipedia.org/wiki/HijackThis)
-[Wikipedia (RU)](https://ru.wikipedia.org/wiki/HijackThis)
-[LabRats - Intro to HijackThis (Video)](https://www.youtube.com/watch?v=oZU6mTkGgGY)
-
-// TODO... Please, report more if you know :)
+ * [Wikipedia (EN)](https://en.wikipedia.org/wiki/HijackThis)
+ * [Wikipedia (RU)](https://ru.wikipedia.org/wiki/HijackThis)
+ * [LabRats - Intro to HijackThis (Video)](https://www.youtube.com/watch?v=oZU6mTkGgGY)
+ * Please, report more links if you know :)
 
 ## Other projects
 

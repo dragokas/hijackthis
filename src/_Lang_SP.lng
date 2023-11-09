@@ -268,7 +268,7 @@
          O19 - Hijack de hoja de estilo de usuario
          O20 - AppInit_DLLs, notificación de Winlogon
          O21 - Carga de retardo del objeto de servicio de Shell (SSODL), Superposición de iconos de Shell (SIOI), ShellExecuteHooks (SEH)
-         O22 - Trabajos del programador de tareas compartidas
+         O22 - Tareas del Programador de trabajos y del Servicio de actualización (BITS)
          O23 - Servicios y controladores de Windows, dependencias
          O24 - Componentes de escritorio ActiveX
          O25 - Consumidores de eventos permanentes de WMI

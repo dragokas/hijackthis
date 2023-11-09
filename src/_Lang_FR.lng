@@ -268,7 +268,7 @@ et enregistrer un rapport
          O19 - Détournement d'utilisateur
          O20 - Notifications AppInit_DLLs, Winlogon
          O21 - Clé de Registre ShellServiceObjectDelayLoad en démarrage automatique (SSODL), superposition d'icônes shell (SIOI), ShellExecuteHooks (SEH)
-         O22 - Démarrage du planificateur de tâches partagées
+         O22 - Tâches du planificateur de travaux et du service de mise à jour (BITS)
          O23 - Services et pilotes Windows, dépendances
          O24 - Composants ActiveX Desktop
          O25 - Consommateurs d'événements permanents WMI

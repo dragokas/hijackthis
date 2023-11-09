@@ -808,10 +808,10 @@ End Sub
 
 Private Sub cmdRemove_Click()
     If lstADSFound.ListCount = 0 Then Exit Sub
-    If lstADSFound.SelCount = 0 Then lstADSFound.Clear: Exit Sub
+    If lstADSFound.CheckedIndices.Count = 0 Then lstADSFound.Clear: Exit Sub
     
     Dim i&, j&, k&, sStream$, sLockedStreams$
-    k = lstADSFound.SelCount
+    k = lstADSFound.CheckedIndices.Count
     'Are you sure you want to remove the selected [] ADS's from your system? They will be deleted permanently!
     If MsgBoxW(Replace$(Translate(2215), "[]", k), vbQuestion + vbYesNo) = vbNo Then Exit Sub
     'go from bottom of list to prevent .RemoveItem messing up the For loop
@@ -821,7 +821,7 @@ Private Sub cmdRemove_Click()
     ToggleWow64FSRedirection False
     
     For i = lstADSFound.ListCount - 1 To 0 Step -1
-        If lstADSFound.Selected(i) Then
+        If lstADSFound.ItemChecked(i) Then
             sStream = lstADSFound.List(i)
             sStream = Replace$(sStream, " : ", ":")
             sStream = Left$(sStream, InStr(sStream, "  (") - 1)
@@ -1070,9 +1070,9 @@ End Sub
 
 Private Sub mnuPopupSelAll_Click()
     Dim i%
-    If lstADSFound.SelCount = lstADSFound.ListCount Then Exit Sub
+    If lstADSFound.CheckedIndices.Count = lstADSFound.ListCount Then Exit Sub
     For i = 0 To lstADSFound.ListCount - 1
-        lstADSFound.Selected(i) = True
+        lstADSFound.ItemChecked(i) = True
     Next i
     lstADSFound.ListIndex = 0
 End Sub
@@ -1080,16 +1080,16 @@ End Sub
 Private Sub mnuPopupSelInvert_Click()
     Dim i%
     For i = 0 To lstADSFound.ListCount - 1
-        lstADSFound.Selected(i) = Not lstADSFound.Selected(i)
+        lstADSFound.ItemChecked(i) = Not lstADSFound.ItemChecked(i)
     Next i
     lstADSFound.ListIndex = 0
 End Sub
 
 Private Sub mnuPopupSelNone_Click()
     Dim i%
-    If lstADSFound.SelCount = 0 Then Exit Sub
+    If lstADSFound.CheckedIndices.Count = 0 Then Exit Sub
     For i = 0 To lstADSFound.ListCount - 1
-        lstADSFound.Selected(i) = False
+        lstADSFound.ItemChecked(i) = False
     Next i
     lstADSFound.ListIndex = 0
 End Sub

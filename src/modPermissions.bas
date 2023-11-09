@@ -314,6 +314,7 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
     Static bufSidCreator()      As Byte
     Static bufSidTI()           As Byte
     Static bufSidAppX()         As Byte
+    Static bufSidAppXRestrict() As Byte
     
     If Not isInit Then
         isInit = True
@@ -325,8 +326,10 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
         bufSidCreator = CreateBufferedSID("S-1-3-0")
         bufSidTI = CreateBufferedSID("S-1-5-80-956008885-3418522649-1831038044-1853292631-2271478464")  '(Win Vista+)
         bufSidAppX = CreateBufferedSID("S-1-15-2-1")
+        bufSidAppXRestrict = CreateBufferedSID("S-1-15-2-2")
         
         'ÖÅÍÒÐ ÏÀÊÅÒÎÂ ÏÐÈËÎÆÅÍÈÉ\ÂÑÅ ÏÀÊÅÒÛ ÏÐÈËÎÆÅÍÈÉ (AppX) - S-1-15-2-1 (Win 8.0+)
+        'ÖÅÍÒÐ ÏÀÊÅÒÎÂ ÏÐÈËÎÆÅÍÈÉ\ÂÑÅ ÎÃÐÀÍÈ×ÅÍÍÛÅ ÏÀÊÅÒÛ ÏÐÈËÎÆÅÍÈÉ (AppX) - S-1-15-2-2 (Win 10+)
         
         'TrustedInstaller - details on:
         '(EN) https://technet.microsoft.com/en-us/magazine/2007.06.acl.aspx
@@ -355,11 +358,12 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
         'Secure Process Mandatory Level - S-1-16-28672
         'Authenticated Users (Ïðîøåäøèå ïðîâåðêó) - S-1-5-11
         
+        'Obtain more: PsGetSid64.exe [name]
     End If
     
     'array should be consistent
     Dim Ace_Explicit() As EXPLICIT_ACCESS
-    ReDim Ace_Explicit(10) As EXPLICIT_ACCESS   '// now used 5-8/10
+    ReDim Ace_Explicit(10) As EXPLICIT_ACCESS   '// increase it if you're adding more Sids
     
     '1. Local System:F (OI)(CI)
     idx = 0
@@ -444,6 +448,24 @@ Function Make_Default_Ace_Explicit(lHive As Long, KeyName As String) As EXPLICIT
     '5. AppX:R (OI)(CI) (optional) (Win 8.0+)
     If MajorMinor >= 6.2 Then
       pSid = VarPtr(bufSidAppX(0))
+      If IsValidSid(pSid) Then
+        With Ace_Explicit(idx)
+          .grfAccessPermissions = GENERIC_READ
+          .grfAccessMode = SET_ACCESS
+          .grfInheritance = OBJECT_INHERIT_ACE Or CONTAINER_INHERIT_ACE
+          With .tTrustee
+            .TrusteeForm = TRUSTEE_IS_SID
+            .TrusteeType = TRUSTEE_IS_UNKNOWN
+            .ptstrName = pSid
+          End With
+        End With
+        idx = idx + 1
+      End If
+    End If
+    
+    '6. AppX-restricted:R (OI)(CI) (optional) (Win 10+)
+    If MajorMinor >= 10 Then
+      pSid = VarPtr(bufSidAppXRestrict(0))
       If IsValidSid(pSid) Then
         With Ace_Explicit(idx)
           .grfAccessPermissions = GENERIC_READ

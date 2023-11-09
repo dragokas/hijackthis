@@ -553,7 +553,7 @@ Private Sub ScanResults_UpdateFilter()
         With frmMain.lstResults
             For i = 0 To UBoundSafe(result)
                 .AddItem Scan(result(i)).HitLineW
-                If m_bInstantMark Then .Selected(.ListCount - 1) = True
+                If m_bInstantMark Then .ItemChecked(.ListCount - 1) = True
             Next
         End With
     End If
@@ -720,7 +720,7 @@ Private Sub CmdFind_Click()
                         lst.ListIndex = i
                     Else
                         UnselAllListIndex lst
-                        lst.Selected(i) = True
+                        lst.ItemChecked(i) = True
                     End If
                     
                     '// TODO: change color of font and row (required subclassing)
@@ -932,7 +932,7 @@ End Function
 Private Sub UnselAllListIndex(lst As VBCCR17.ListBoxW)
     Dim i As Long
     For i = 0 To lst.ListCount - 1
-        lst.Selected(i) = False
+        lst.ItemChecked(i) = False
     Next
 End Sub
 
@@ -940,7 +940,7 @@ Private Function GetListSelectedItem(lst As VBCCR17.ListBoxW) As Long
     Dim i As Long
     GetListSelectedItem = -1
     For i = 0 To lst.ListCount - 1
-        If lst.Selected(i) Then
+        If lst.ItemChecked(i) Then
             GetListSelectedItem = i
             Exit For
         End If

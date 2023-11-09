@@ -269,7 +269,7 @@
          O19 - User stylesheet hijack
          O20 - AppInit_DLLs, Winlogon Notify
          O21 - Shell Service Object Delay Load (SSODL), Shell Icon Overlay (SIOI), ShellExecuteHooks (SEH)
-         O22 - Shared Task Scheduler jobs
+         O22 - Task Scheduler and update service (BITS) jobs
          O23 - Windows Services and Drivers, Dependencies
          O24 - ActiveX Desktop Components
          O25 - WMI permanent event consumers

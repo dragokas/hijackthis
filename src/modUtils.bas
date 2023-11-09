@@ -694,6 +694,9 @@ Function TryUnlock(ByVal FS_Object As String, Optional bRecursive As Boolean) As
     If OSver.IsWindows8OrGreater Then
         SDDL = SDDL & "(A;OICIID;FA;;;S-1-15-2-1)" 'AppX
     End If
+    If OSver.IsWindows10OrGreater Then
+        SDDL = SDDL & "(A;OICIID;FA;;;S-1-15-2-2)" 'AppX restricted
+    End If
     
     TryUnlock = SetFileStringSD(FS_Object, SDDL, bRecursive)
     
@@ -2502,9 +2505,15 @@ Sub ControlSelectAll(Optional frmExplicit As Form)
     If bCanSearch Then
         If TypeOf out_Control Is VBCCR17.ListBoxW Then
             Set lst = out_Control
-            For i = 0 To lst.ListCount - 1
-                lst.Selected(i) = True
-            Next
+            If lst.Style = LstStyleCheckbox Then
+                For i = 0 To lst.ListCount - 1
+                    lst.ItemChecked(i) = True
+                Next
+            Else
+                For i = 0 To lst.ListCount - 1
+                    lst.Selected(i) = True
+                Next
+            End If
         ElseIf TypeOf out_Control Is VBCCR17.TextBoxW Then
             Set txb = out_Control
             txb.SelStart = 0

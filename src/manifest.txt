@@ -3,10 +3,10 @@
     <assemblyIdentity
         version="3.0.0.0"
         processorArchitecture="*"
-        name="AlexDragokas.HiJackThis+"
+        name="AlexDragokas.HijackThis+"
         type="win32">
     </assemblyIdentity>
-    <description>HiJackThis+ creates a report of non-standard parameters of registry and file system for selectively removal of items related to the activities of malware and security risks</description>
+    <description>HijackThis+ creates a report of non-standard parameters of registry and file system for selectively removal of items related to the activities of malware and security risks</description>
     <dependency>
         <dependentAssembly>
             <assemblyIdentity

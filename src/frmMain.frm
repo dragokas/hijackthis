@@ -19,156 +19,6 @@ Begin VB.Form frmMain
    LinkTopic       =   "Form1"
    ScaleHeight     =   7380
    ScaleWidth      =   8835
-   Begin VBCCR17.FrameW fraN00b 
-      Height          =   6255
-      Left            =   120
-      TabIndex        =   55
-      Top             =   960
-      Visible         =   0   'False
-      Width           =   8655
-      _ExtentX        =   0
-      _ExtentY        =   0
-      BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
-         Name            =   "Tahoma"
-         Size            =   8.25
-         Charset         =   204
-         Weight          =   700
-         Underline       =   0   'False
-         Italic          =   0   'False
-         Strikethrough   =   0   'False
-      EndProperty
-      ForeColor       =   -2147483640
-      Caption         =   "Main menu"
-      Begin VBCCR17.CommandButtonW cmdN00bHJTQuickStart 
-         Height          =   495
-         Left            =   480
-         TabIndex        =   147
-         Top             =   4200
-         Width           =   3735
-         _ExtentX        =   6588
-         _ExtentY        =   873
-         Caption         =   "Tutorial && Support"
-      End
-      Begin VBCCR17.CommandButtonW cmdSettings 
-         Height          =   495
-         Left            =   480
-         TabIndex        =   146
-         Top             =   3480
-         Width           =   3735
-         _ExtentX        =   6588
-         _ExtentY        =   873
-         Caption         =   "Settings"
-      End
-      Begin VBCCR17.CommandButtonW cmdN00bBackups 
-         Height          =   495
-         Left            =   480
-         TabIndex        =   145
-         Top             =   2880
-         Width           =   3735
-         _ExtentX        =   6588
-         _ExtentY        =   873
-         Caption         =   "Backups"
-      End
-      Begin VBCCR17.CommandButtonW cmdFixing 
-         Height          =   495
-         Left            =   480
-         TabIndex        =   144
-         Top             =   2160
-         Width           =   3735
-         _ExtentX        =   6588
-         _ExtentY        =   873
-         Caption         =   "Fixing"
-      End
-      Begin VBCCR17.CommandButtonW cmdN00bScan 
-         Height          =   495
-         Left            =   480
-         TabIndex        =   143
-         Top             =   1440
-         Width           =   3735
-         _ExtentX        =   6588
-         _ExtentY        =   873
-         Caption         =   "Do a system scan only"
-      End
-      Begin VBCCR17.CommandButtonW cmdN00bLog 
-         Height          =   495
-         Left            =   480
-         TabIndex        =   142
-         Top             =   840
-         Width           =   3735
-         _ExtentX        =   6588
-         _ExtentY        =   873
-         Caption         =   "Do a system scan and save a logfile"
-      End
-      Begin VBCCR17.ComboBoxW cboN00bLanguage 
-         Height          =   315
-         Left            =   6120
-         TabIndex        =   74
-         Top             =   720
-         Width           =   1695
-         _ExtentX        =   0
-         _ExtentY        =   0
-         Style           =   2
-      End
-      Begin VBCCR17.CheckBoxW chkSkipIntroFrame 
-         Height          =   255
-         Left            =   360
-         TabIndex        =   57
-         Top             =   5520
-         Visible         =   0   'False
-         Width           =   5535
-         _ExtentX        =   0
-         _ExtentY        =   0
-         Caption         =   "Do not show this menu after starting the program"
-      End
-      Begin VB.Line linSeperator 
-         BorderColor     =   &H80000010&
-         Index           =   0
-         X1              =   480
-         X2              =   4560
-         Y1              =   2040
-         Y2              =   2040
-      End
-      Begin VBCCR17.LabelW lblInfo 
-         Height          =   195
-         Index           =   9
-         Left            =   6480
-         TabIndex        =   73
-         Top             =   360
-         Width           =   1320
-         _ExtentX        =   0
-         _ExtentY        =   0
-         Caption         =   "Change language:"
-         AutoSize        =   -1  'True
-      End
-      Begin VB.Line linSeperator 
-         BorderColor     =   &H80000010&
-         Index           =   10
-         X1              =   480
-         X2              =   4200
-         Y1              =   4080
-         Y2              =   4080
-      End
-      Begin VB.Line linSeperator 
-         BorderColor     =   &H80000010&
-         Index           =   8
-         X1              =   480
-         X2              =   4560
-         Y1              =   2760
-         Y2              =   2760
-      End
-      Begin VBCCR17.LabelW lblInfo 
-         Height          =   195
-         Index           =   4
-         Left            =   480
-         TabIndex        =   56
-         Top             =   480
-         Width           =   1935
-         _ExtentX        =   0
-         _ExtentY        =   0
-         Caption         =   "What would you like to do?"
-         AutoSize        =   -1  'True
-      End
-   End
    Begin VB.Timer tmrVTProgress 
       Enabled         =   0   'False
       Interval        =   1000
@@ -1909,6 +1759,156 @@ Begin VB.Form frmMain
          Caption         =   "Help"
       End
    End
+   Begin VBCCR17.FrameW fraN00b 
+      Height          =   6255
+      Left            =   120
+      TabIndex        =   55
+      Top             =   960
+      Visible         =   0   'False
+      Width           =   8655
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
+         Name            =   "Tahoma"
+         Size            =   8.25
+         Charset         =   204
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      ForeColor       =   -2147483640
+      Caption         =   "Main menu"
+      Begin VBCCR17.CommandButtonW cmdN00bHJTQuickStart 
+         Height          =   495
+         Left            =   480
+         TabIndex        =   147
+         Top             =   4200
+         Width           =   3735
+         _ExtentX        =   6588
+         _ExtentY        =   873
+         Caption         =   "Tutorial && Support"
+      End
+      Begin VBCCR17.CommandButtonW cmdSettings 
+         Height          =   495
+         Left            =   480
+         TabIndex        =   146
+         Top             =   3480
+         Width           =   3735
+         _ExtentX        =   6588
+         _ExtentY        =   873
+         Caption         =   "Settings"
+      End
+      Begin VBCCR17.CommandButtonW cmdN00bBackups 
+         Height          =   495
+         Left            =   480
+         TabIndex        =   145
+         Top             =   2880
+         Width           =   3735
+         _ExtentX        =   6588
+         _ExtentY        =   873
+         Caption         =   "Backups"
+      End
+      Begin VBCCR17.CommandButtonW cmdFixing 
+         Height          =   495
+         Left            =   480
+         TabIndex        =   144
+         Top             =   2160
+         Width           =   3735
+         _ExtentX        =   6588
+         _ExtentY        =   873
+         Caption         =   "Fixing"
+      End
+      Begin VBCCR17.CommandButtonW cmdN00bScan 
+         Height          =   495
+         Left            =   480
+         TabIndex        =   143
+         Top             =   1440
+         Width           =   3735
+         _ExtentX        =   6588
+         _ExtentY        =   873
+         Caption         =   "Do a system scan only"
+      End
+      Begin VBCCR17.CommandButtonW cmdN00bLog 
+         Height          =   495
+         Left            =   480
+         TabIndex        =   142
+         Top             =   840
+         Width           =   3735
+         _ExtentX        =   6588
+         _ExtentY        =   873
+         Caption         =   "Do a system scan and save a logfile"
+      End
+      Begin VBCCR17.ComboBoxW cboN00bLanguage 
+         Height          =   315
+         Left            =   6120
+         TabIndex        =   74
+         Top             =   720
+         Width           =   1695
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Style           =   2
+      End
+      Begin VBCCR17.CheckBoxW chkSkipIntroFrame 
+         Height          =   255
+         Left            =   360
+         TabIndex        =   57
+         Top             =   5520
+         Visible         =   0   'False
+         Width           =   5535
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Do not show this menu after starting the program"
+      End
+      Begin VB.Line linSeperator 
+         BorderColor     =   &H80000010&
+         Index           =   0
+         X1              =   480
+         X2              =   4560
+         Y1              =   2040
+         Y2              =   2040
+      End
+      Begin VBCCR17.LabelW lblInfo 
+         Height          =   195
+         Index           =   9
+         Left            =   6480
+         TabIndex        =   73
+         Top             =   360
+         Width           =   1320
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "Change language:"
+         AutoSize        =   -1  'True
+      End
+      Begin VB.Line linSeperator 
+         BorderColor     =   &H80000010&
+         Index           =   10
+         X1              =   480
+         X2              =   4200
+         Y1              =   4080
+         Y2              =   4080
+      End
+      Begin VB.Line linSeperator 
+         BorderColor     =   &H80000010&
+         Index           =   8
+         X1              =   480
+         X2              =   4560
+         Y1              =   2760
+         Y2              =   2760
+      End
+      Begin VBCCR17.LabelW lblInfo 
+         Height          =   195
+         Index           =   4
+         Left            =   480
+         TabIndex        =   56
+         Top             =   480
+         Width           =   1935
+         _ExtentX        =   0
+         _ExtentY        =   0
+         Caption         =   "What would you like to do?"
+         AutoSize        =   -1  'True
+      End
+   End
    Begin VBCCR17.LabelW lblInfo 
       Height          =   852
       Index           =   0
@@ -2491,7 +2491,7 @@ End Sub
 
 Private Sub lstResults_ItemCheck(ByVal Item As Long)
     If bScanMode Then
-        lstResults.Selected(Item) = False 'forbid marking item during the scan
+        lstResults.ItemChecked(Item) = False 'forbid marking item during the scan
     End If
 End Sub
 
@@ -3107,7 +3107,7 @@ Sub DoHotFixes()
     
     If lstResults.ListCount <> 0 And Not inIDE Then
         For i = 0 To lstResults.ListCount - 1
-            lstResults.Selected(i) = True
+            lstResults.ItemChecked(i) = True
         Next
         cmdFix_Click
         
@@ -3118,7 +3118,7 @@ Sub DoHotFixes()
         Call Kill_LOLBIN
         
         For i = 0 To lstResults.ListCount - 1
-            lstResults.Selected(i) = True
+            lstResults.ItemChecked(i) = True
         Next
         cmdFix_Click
     End If
@@ -4759,20 +4759,20 @@ Private Sub cmdConfigBackupDelete_Click()
     On Error GoTo ErrorHandler:
     Dim i&
     If lstBackups.ListIndex = -1 Then Exit Sub
-    If lstBackups.SelCount = 0 Then
+    If lstBackups.CheckedIndices.Count = 0 Then
         'First you have to mark a checkbox next to at least one item!
         MsgBox Translate(554), vbInformation
         Exit Sub
     End If
-    If lstBackups.SelCount = 1 Then
+    If lstBackups.CheckedIndices.Count = 1 Then
         If MsgBoxW(Translate(84), vbQuestion + vbYesNo) = vbNo Then Exit Sub
     '    If msgboxW("Are you sure you want to delete this backup?", vbQuestion + vbYesNo) = vbNo Then Exit Sub
     Else
-        If MsgBoxW(Replace$(Translate(85), "[]", lstBackups.SelCount), vbQuestion + vbYesNo) = vbNo Then Exit Sub
-        'If msgboxW("Are you sure you want to delete these " & lstBackups.SelCount & " backups?", vbQuestion + vbYesNo) = vbNo Then Exit Sub
+        If MsgBoxW(Replace$(Translate(85), "[]", lstBackups.CheckedIndices.Count), vbQuestion + vbYesNo) = vbNo Then Exit Sub
+        'If msgboxW("Are you sure you want to delete these " & lstBackups.CheckedIndices.Count & " backups?", vbQuestion + vbYesNo) = vbNo Then Exit Sub
     End If
     For i = lstBackups.ListCount - 1 To 0 Step -1
-        If lstBackups.Selected(i) Then
+        If lstBackups.ItemChecked(i) Then
             DeleteBackup lstBackups.List(i)
             lstBackups.RemoveItem i
         End If
@@ -4799,7 +4799,7 @@ Private Sub cmdConfigBackupRestore_Click()
     Dim aLines() As String
     
     If lstBackups.ListIndex = -1 Then Exit Sub
-    If lstBackups.SelCount = 0 Then
+    If lstBackups.CheckedIndices.Count = 0 Then
         'First you have to mark a checkbox next to at least one item!
         MsgBox Translate(554), vbInformation
         Exit Sub
@@ -4812,7 +4812,7 @@ Private Sub cmdConfigBackupRestore_Click()
         Exit Sub
     End If
     
-    If lstBackups.SelCount = 1 Then
+    If lstBackups.CheckedIndices.Count = 1 Then
         'exclude question for ABR / SRP backups (it has inividual message)
         BackupSplitLine lstBackups.List(GetListBoxSelectedItemID(lstBackups)), , , , sDecription
         If sDecription <> ABR_BACKUP_TITLE _
@@ -4821,8 +4821,8 @@ Private Sub cmdConfigBackupRestore_Click()
             'If msgboxW("Restore this item?", vbQuestion + vbYesNo) = vbNo Then Exit Sub
         End If
     Else
-        If MsgBoxW(Replace$(Translate(87), "[]", lstBackups.SelCount), vbQuestion + vbYesNo) = vbNo Then Exit Sub
-        'If msgboxW("Restore these " & lstBackups.SelCount & " items?", vbQuestion + vbYesNo) = vbNo Then Exit Sub
+        If MsgBoxW(Replace$(Translate(87), "[]", lstBackups.CheckedIndices.Count), vbQuestion + vbYesNo) = vbNo Then Exit Sub
+        'If msgboxW("Restore these " & lstBackups.CheckedIndices.Count & " items?", vbQuestion + vbYesNo) = vbNo Then Exit Sub
     End If
     
     'cache selected lines (to account for the shifting of elements in the list)
@@ -4830,7 +4830,7 @@ Private Sub cmdConfigBackupRestore_Click()
     j = 0
     For i = 0 To lstBackups.ListCount - 1   'vice versa order (list is already grouped vice versa)
         'only marked with checkbox
-        If lstBackups.Selected(i) Then
+        If lstBackups.ItemChecked(i) Then
             aLines(j) = lstBackups.List(i)
             j = j + 1
         End If
@@ -4874,7 +4874,7 @@ End Sub
 Private Function GetListBoxSelectedItemID(lst As ListBox) As Long
     Dim i&
     For i = 0 To lst.ListCount - 1
-        If lstBackups.Selected(i) Then
+        If lstBackups.ItemChecked(i) Then
             GetListBoxSelectedItemID = i
         End If
     Next i
@@ -4925,7 +4925,7 @@ Private Sub cmdConfigIgnoreDelSel_Click()
     On Error GoTo ErrorHandler:
     Dim i&
     If lstIgnore.ListIndex = -1 Then Exit Sub
-    If lstIgnore.SelCount = 0 Then
+    If lstIgnore.CheckedIndices.Count = 0 Then
         'First you have to mark a checkbox next to at least one item!
         MsgBox Translate(554), vbInformation
         Exit Sub
@@ -4934,7 +4934,7 @@ Private Sub cmdConfigIgnoreDelSel_Click()
         RegDelHJT "Ignore" & CStr(i + 1)
     Next i
     For i = lstIgnore.ListCount - 1 To 0 Step -1
-        If lstIgnore.Selected(i) Then lstIgnore.RemoveItem i
+        If lstIgnore.ItemChecked(i) Then lstIgnore.RemoveItem i
     Next i
     RegSaveHJT "IgnoreNum", lstIgnore.ListCount
     For i = 0 To lstIgnore.ListCount - 1
@@ -5003,7 +5003,7 @@ Private Sub cmdFix_Click()
 
     Dim result As SCAN_RESULT
     
-    If lstResults.SelCount = 0 Then
+    If lstResults.CheckedIndices.Count = 0 Then
 '        If MsgBoxW(Translate(344), vbQuestion + vbYesNo) = vbNo Then
 '        'If msgboxW("Nothing selected! Continue?", vbQuestion + vbYesNo) = vbNo Then
 '            Exit Sub
@@ -5026,7 +5026,7 @@ Private Sub cmdFix_Click()
     
     '/startupscan
     '/noGUI
-    If (lstResults.ListCount = lstResults.SelCount) And (Not HasCommandLineKey("StartupScan")) And (lstResults.SelCount > 5) And _
+    If (lstResults.ListCount = lstResults.CheckedIndices.Count) And (Not HasCommandLineKey("StartupScan")) And (lstResults.CheckedIndices.Count > 5) And _
         (Not g_bNoGUI) Then
         
         If MsgBoxW(Translate(345), vbExclamation Or vbYesNo) = vbNo Then Exit Sub
@@ -5043,9 +5043,9 @@ Private Sub cmdFix_Click()
     
     If bConfirm And Not HasCommandLineKey("noGUI") Then
         'lstResults.ListIndex = -1
-        If MsgBoxW(Replace$(Translate(346), "[]", lstResults.SelCount) & _
+        If MsgBoxW(Replace$(Translate(346), "[]", lstResults.CheckedIndices.Count) & _
            IIf(bMakeBackup, ".", ", " & Translate(347)), vbQuestion + vbYesNo, g_AppName) = vbNo Then Exit Sub
-'        If msgboxW("Fix " & lstResults.SelCount & _
+'        If msgboxW("Fix " & lstResults.CheckedIndices.Count & _
 '         " selected items? This will permanently " & _
 '         "delete and/or repair what you selected" & _
 '         IIf(bMakeBackup, ".", ", unless you enable backups."), vbQuestion + vbYesNo) = vbNo Then Exit Sub
@@ -5060,7 +5060,7 @@ Private Sub cmdFix_Click()
     IncreaseFixID 'to track same items
     
     If Not g_bNoGUI Then
-        SetProgressBar lstResults.SelCount + 1
+        SetProgressBar lstResults.CheckedIndices.Count + 1
         UpdateProgressBar "Backup"
     End If
     
@@ -5069,7 +5069,7 @@ Private Sub cmdFix_Click()
         ABR_CreateBackup False
     End If
     
-    'shpBackground.Tag = lstResults.SelCount
+    'shpBackground.Tag = lstResults.CheckedIndices.Count
     'shpProgress.Tag = "0"
     
     'shpProgress.Width = 15
@@ -5089,7 +5089,7 @@ Private Sub cmdFix_Click()
       If j = 1 Then BackupFlush
     
       For i = 0 To lstResults.ListCount - 1
-        If lstResults.Selected(i) = True Then
+        If lstResults.ItemChecked(i) = True Then
             lstResults.ListIndex = i
             
             sPrefix = vbNullString
@@ -5294,7 +5294,7 @@ End Sub
 
 Private Sub cmdInfo_Click()
     If lstResults.Visible Then
-        If lstResults.SelCount = 0 And lstResults.ListIndex = -1 Then
+        If lstResults.CheckedIndices.Count = 0 And lstResults.ListIndex = -1 Then
             'First you have to mark a checkbox next to at least one item!
             MsgBox Translate(554), vbInformation
             Exit Sub
@@ -5307,7 +5307,7 @@ End Sub
 
 Private Sub cmdSaveDef_Click()
     On Error GoTo ErrorHandler:
-    If lstResults.SelCount = 0 Then
+    If lstResults.CheckedIndices.Count = 0 Then
         'First you have to mark a checkbox next to at least one item!
         MsgBox Translate(554), vbInformation
         Exit Sub
@@ -5321,10 +5321,10 @@ Private Sub cmdSaveDef_Click()
     
     Dim i&, j&
     i = CInt(RegReadHJT("IgnoreNum", "0"))
-    RegSaveHJT "IgnoreNum", CStr(i + lstResults.SelCount)
+    RegSaveHJT "IgnoreNum", CStr(i + lstResults.CheckedIndices.Count)
     j = i + 1
     For i = 0 To lstResults.ListCount - 1
-        If lstResults.Selected(i) Then
+        If lstResults.ItemChecked(i) Then
             RegSaveHJT "Ignore" & CStr(j), Crypt(lstResults.List(i))
             j = j + 1
             'sync listbox records with the RAM
@@ -5334,7 +5334,7 @@ Private Sub cmdSaveDef_Click()
     IsOnIgnoreList vbNullString, UpdateList:=True
     
     For i = lstResults.ListCount - 1 To 0 Step -1
-        If lstResults.Selected(i) Then lstResults.RemoveItem i
+        If lstResults.ItemChecked(i) Then lstResults.RemoveItem i
     Next i
     If lstResults.ListCount = 0 Then
         txtNothing.Visible = True
@@ -5392,6 +5392,13 @@ Private Sub cmdScan_Click()
             Call SystemPriorityDowngrade(True)
         End If
         
+        If bAutoLog Then
+            If Len(g_sLogFile) = 0 Then
+                g_sLogFile = BuildPath(AppPath(), "HiJackThis.log")
+            End If
+            DeleteFileForce g_sLogFile, True
+        End If
+        
         'first scan after rebooting ?
         bFirstRebootScan = ScanAfterReboot()
         
@@ -5439,7 +5446,7 @@ Private Sub cmdScan_Click()
         If frmMain.lstResults.ListCount > 0 And Not bAutoLogSilent Then
             If bAutoSelect Then
                 For i = 0 To frmMain.lstResults.ListCount - 1
-                    frmMain.lstResults.Selected(i) = True
+                    frmMain.lstResults.ItemChecked(i) = True
                 Next i
             End If
         End If
@@ -5495,11 +5502,6 @@ Private Sub cmdScan_Click()
         
     Else    'Caption = Save...
 
-        If bAutoLogSilent Then
-            'LockInterface bAllowInfoButtons:=True, bDoUnlock:=True
-            'LockMenu bDoUnlock:=True
-        End If
-        
         Call HJT_SaveReport
         
         UpdateProgressBar "Finish"
@@ -6342,7 +6344,7 @@ Private Sub lstResults_MouseUp(Button As Integer, Shift As Integer, x As Single,
             If Abs(iMax - iMin) > 0 Then 'don't double mark the same single item
 
                 For i = iMin To iMax Step iStep
-                    lstResults.Selected(i) = Not lstResults.Selected(i)
+                    lstResults.ItemChecked(i) = Not lstResults.ItemChecked(i)
                 Next
             End If
             
@@ -6364,7 +6366,7 @@ Private Sub lstResults_MouseUp(Button As Integer, Shift As Integer, x As Single,
     End If
     
     If Button = 2 And Not (isRanHJT_Scan And bAutoLogSilent) Then
-        If lstResults.SelCount = 0 Then     'items not checked ?
+        If lstResults.CheckedIndices.Count = 0 Then     'items not checked ?
             mnuResultFix.Enabled = False
             mnuResultAddToIgnore.Enabled = False
         Else
@@ -6631,9 +6633,9 @@ Private Function GetSelected_OrCheckedItem() As String
     Dim i As Long
     If (lstResults.ListIndex <> -1) Then  'selection
         GetSelected_OrCheckedItem = lstResults.List(lstResults.ListIndex)
-    ElseIf (lstResults.SelCount = 1) Or (lstResults.SelCount > 1 And lstResults.ListIndex = -1) Then 'checkbox
+    ElseIf (lstResults.CheckedIndices.Count >= 1) Then  'checkbox
         For i = 0 To lstResults.ListCount - 1
-            If lstResults.Selected(i) = True Then
+            If lstResults.ItemChecked(i) = True Then
                 GetSelected_OrCheckedItem = lstResults.List(i)
                 Exit For
             End If
@@ -6646,9 +6648,9 @@ Private Function GetSelected_OrCheckedItemIndex() As Long
     GetSelected_OrCheckedItemIndex = -1
     If (lstResults.ListIndex <> -1) Then  'selection
         GetSelected_OrCheckedItemIndex = lstResults.ListIndex
-    ElseIf (lstResults.SelCount = 1) Or (lstResults.SelCount > 1 And lstResults.ListIndex = -1) Then 'checkbox
+    ElseIf (lstResults.CheckedIndices.Count >= 1) Then 'checkbox
         For i = 0 To lstResults.ListCount - 1
-            If lstResults.Selected(i) = True Then
+            If lstResults.ItemChecked(i) = True Then
                 GetSelected_OrCheckedItemIndex = i
                 Exit For
             End If
@@ -6681,12 +6683,12 @@ End Sub
 Private Sub mnuResultAddALLToIgnore_Click()  'Context menu => Add ALL to ignore list
     Dim i As Long
     For i = 0 To lstResults.ListCount - 1
-        lstResults.Selected(i) = True
+        lstResults.ItemChecked(i) = True
     Next
     cmdSaveDef_Click
     If lstResults.ListCount > 0 Then
         For i = 0 To lstResults.ListCount - 1
-            lstResults.Selected(i) = False
+            lstResults.ItemChecked(i) = False
         Next
     End If
 End Sub
