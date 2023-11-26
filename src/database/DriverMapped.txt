@@ -18,3 +18,5 @@
 %SystemRoot%\System32\Drivers\dump_dumpstorport.sys
 %SystemRoot%\System32\Drivers\dump_stornvme.sys
 %SystemRoot%\System32\Drivers\dump_iaStorVD.sys
+%SystemRoot%\System32\Drivers\dump_iaStor.sys
+%SystemRoot%\System32\Drivers\dump_nvstor.sys

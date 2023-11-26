@@ -337,6 +337,9 @@ if not defined signed if exist "%SignScript_2%" (
   if errorlevel 1 (echo Failed to Sign! & echo. & pause)
 )
 
+:: Restore modify time
+copy /b "%cd%\%AppName%"+,, "%cd%\%AppName%"
+
 :: Ensure it is correctly signed
 :: DISABLED: for some reason Sysinternals SigCheck causing freeze when piped
 ::if "%OSBitness%"=="x32" (

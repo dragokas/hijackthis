@@ -586,6 +586,8 @@ Public Sub AddToScanResults( _
     
     Const SelLastAdded As Boolean = False
     
+    result.HitLineW = ScreenLogLine(result.HitLineW)
+    
     If DoNotDuplicate Then
         If UBound(Scan) > 0 Then
             Dim idx As Long

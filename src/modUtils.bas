@@ -673,32 +673,11 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Function TryUnlock(ByVal FS_Object As String, Optional bRecursive As Boolean) As Boolean
+Public Function TryUnlock(ByVal FS_Object As String, Optional bRecursive As Boolean) As Boolean
 
     AppendErrorLogCustom "TryUnlock - Begin", "File: " & FS_Object
     
-    ' DACL for LocalSystem, Administrators, Users, TrustedInstaller, All Packages (AppX)
-    ' Full Access
-    ' Container Inherited, Object Inherited, Propagated to Children
-    ' Disabled inheritance from parent
-    '
-    
-    Dim SDDL As String
-    
-    SDDL = "O:BAG:BAD:PAI" ' Owner - Administrators / Group - Administrators / Disabled inheritance from parent
-    SDDL = SDDL & "(A;OICIID;FA;;;SY)" ' LocalSystem
-    SDDL = SDDL & "(A;OICIID;FA;;;BA)" ' Administrators
-    SDDL = SDDL & "(A;OICIID;FA;;;BU)" ' Users
-    SDDL = SDDL & "(A;OICIID;FA;;;S-1-5-80-956008885-3418522649-1831038044-1853292631-2271478464)" ' TrustedInstaller
-    
-    If OSver.IsWindows8OrGreater Then
-        SDDL = SDDL & "(A;OICIID;FA;;;S-1-15-2-1)" 'AppX
-    End If
-    If OSver.IsWindows10OrGreater Then
-        SDDL = SDDL & "(A;OICIID;FA;;;S-1-15-2-2)" 'AppX restricted
-    End If
-    
-    TryUnlock = SetFileStringSD(FS_Object, SDDL, bRecursive)
+    TryUnlock = SetFileStringSD(FS_Object, GetDefaultFileSDDL(), bRecursive)
     
     AppendErrorLogCustom "TryUnlock - End"
 End Function
@@ -1187,20 +1166,18 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function GetTimeZone(out_UTC As String) As Boolean
+Public Function GetTimeZoneOffset(out_Offset As Long) As Boolean
     Dim tzi As TIME_ZONE_INFORMATION
     Dim dt As Date
     Dim lret As Long
-    Dim hh As Long
-    Dim mm As Long
     Dim dwShift As Long
     
-    GetTimeZone = True
+    GetTimeZoneOffset = True
     
     'to measure shift, relative to Greenwich Mean Time: https://time.is/ru/GMT
     Select Case GetTimeZoneInformation(VarPtr(tzi))
     Case TIME_ZONE_ID_INVALID
-        GetTimeZone = False
+        GetTimeZoneOffset = False
         Exit Function
     Case TIME_ZONE_ID_DAYLIGHT
         dwShift = tzi.Bias + tzi.DaylightBias
@@ -1210,23 +1187,25 @@ Public Function GetTimeZone(out_UTC As String) As Boolean
         dwShift = tzi.Bias
     End Select
     
-'    'to measure shift, relative to London time: https://www.timeanddate.com/worldclock/uk/london
-'    'without count the daylight shift (as it displayed in Windows clock timezone settings).
-'
-'    Select Case GetTimeZoneInformation(VarPtr(tzi))
-'    Case TIME_ZONE_ID_INVALID
-'        GetTimeZone = False
-'        Exit Function
-'    Case Else
-'        dwShift = tzi.Bias
-'    End Select
+'    to measure shift, relative to London time: https://www.timeanddate.com/worldclock/uk/london
+'    without count the daylight shift (as it displayed in Windows clock timezone settings).
     
+    out_Offset = dwShift
+    
+End Function
+
+Public Function GetTimeZone(out_UTC As String) As Boolean
+    Dim hh As Long
+    Dim mm As Long
+    Dim dwShift As Long
+    
+    GetTimeZone = GetTimeZoneOffset(dwShift)
     dwShift = dwShift * -1
     hh = dwShift \ 60
     mm = dwShift - (hh * 60)
     
     out_UTC = IIf(hh < 0 Or mm < 0, "-", "+") & Right$("0" & Abs(hh), 2) & ":" & Right$("0" & Abs(mm), 2)
-    
+
 End Function
 
 Public Function ScanAfterReboot(Optional bSaveState As Boolean = True) As Boolean
@@ -2907,4 +2886,21 @@ Public Function ConvertCollectionToArray(col As Collection) As String()
         a(i - 1) = col.Item(i)
     Next
     ConvertCollectionToArray = a
+End Function
+
+Public Function ScreenLogLine(ByVal sLine As String) As String
+    Dim i As Long
+    Dim Code As Long
+    Dim nStart As Long
+    nStart = 1
+begin:
+    For i = 1 To Len(sLine)
+        Code = Asc(mid$(sLine, i, 1))
+        If Code >= 0 And Code < 32 Then
+            sLine = Replace$(sLine, Chr$(Code), "\x" & Right$("0" & Hex(Code), 2))
+            nStart = i + 3
+            GoTo begin
+        End If
+    Next
+    ScreenLogLine = sLine
 End Function

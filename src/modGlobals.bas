@@ -1689,7 +1689,7 @@ Public Type MY_PROC_ENTRY
     pid         As Long
     Threads     As Long
     Priority    As Long
-    SessionID   As Long
+    SessionId   As Long
     CreationTime As Date
 End Type
 
@@ -1868,7 +1868,7 @@ Public Type SYSTEM_PROCESS_INFORMATION
     ProcessID               As Long
     InheritedFromProcessId  As Long
     HandleCount             As Long
-    SessionID               As Long
+    SessionId               As Long
     pPageDirectoryBase      As Long '_PTR
     VirtualMemoryCounters   As VM_COUNTERS
     PrivatePageCount        As Long

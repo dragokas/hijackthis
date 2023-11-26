@@ -444,7 +444,7 @@ End Function
 'End Sub
 
 
-Function FileLenW(Optional Path As String, Optional hFileHandle As Long) As Currency ', Optional DoNotUseCache As Boolean
+Public Function FileLenW(Optional Path As String, Optional hFileHandle As Long) As Currency ', Optional DoNotUseCache As Boolean
     On Error GoTo ErrorHandler
     
     AppendErrorLogCustom "FileLenW - Begin", "Path: " & Path, "Handle: " & hFileHandle

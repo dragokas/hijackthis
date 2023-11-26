@@ -11,6 +11,13 @@ Version history:
 |||||       1. HiJackThis: changelog         |||||
 ==================================================
 
+[3.3.0.8 Alpha] - Nov 27, 2023
+ - Added escaping of line breaks and non-printable characters. Format: \x1F, where 1F is the ASCII code of the character in Hex.
+ - Added remembering of the last opened folder in various tools.
+ - Fixed file modification time during assembly.
+ - Added build date to the log header.
+ - Workaround for problems in Windows that prevent HijackThis from running.
+
 [3.3.0.7 Alpha] - Nov 09, 2023
  - Fixed broken checkboxes of lists after the latest update.
 

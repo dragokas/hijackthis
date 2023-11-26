@@ -1104,7 +1104,7 @@ Private Function tNtQueryInformationProcess( _
     tNtQueryInformationProcess = 16
 End Function
 Private Function tMessageBox( _
-                 ByVal hwnd As Long, _
+                 ByVal hWnd As Long, _
                  ByVal lpText As Long, _
                  ByVal lpCaption As Long, _
                  ByVal uType As MESSAGEBOXCONSTANTS) As MESSAGEBOXRETURN

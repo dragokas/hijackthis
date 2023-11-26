@@ -1508,7 +1508,13 @@ Public Sub CheckO27Item_Firewall()
     Stage = 1
     Set pFwRules = pFwNetFwPolicy2.Rules
     
+    If GetServiceRunState("MpsSvc") <> SERVICE_RUNNING Then
+        AddWarning "Firewall service (MpsSvc) is not running. O27 port check is skipped."
+        Exit Sub
+    End If
+    
     Stage = 2
+    'When MpsSvc not running, pFwRules throw an error: "There are no more endpoints available from the endpoint mapper"
     For Each pFwRule In pFwRules
         Stage = 3
         If pFwRule.Enabled Then

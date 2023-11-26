@@ -2396,14 +2396,8 @@ Public Sub Test()
     'DownloadAndUpdateSelf "https://dragokas.com/tools/HiJackThis.zip", False
     '// TODO
     'UnpackZIP = make recursive
-        
+    
     'LoadDatabase
-    
-    
-    
-    
-    
-    
     
     chkHelp(4).Visible = False
     cmdFixing.Visible = False
@@ -2570,9 +2564,9 @@ Private Sub FormStart_Stage1()
     If (Not DisableSubclassing) And (Not bAutoLogSilent) Then
         SubClassScroll True
     End If
-          
-    AppVerPlusName = g_AppName & " " & IIf(bIsAlpha, "(Alpha version) ", IIf(bIsBeta, "(Beta version) ", vbNullString)) & _
-        "by Alex Dragokas v." & AppVerString
+    
+    AppVerPlusName = g_AppName & " " & "by Alex Dragokas, build " & GetOwnCompilationDate() & " " & _
+        IIf(bIsAlpha, "Alpha", IIf(bIsBeta, "Beta", "Stable")) & " v." & AppVerString
     
     If Not bPolymorph Then
         SetWindowTitleText Me.hWnd, AppVerPlusName
@@ -3026,7 +3020,7 @@ Private Sub FormStart_Stage2()
         mnuToolsShortcutsFixer_Click
         Unload Me: Exit Sub
     End If
-
+    
     FormStart_Stage3
     
     If HasCommandLineKey("Area:None") Then

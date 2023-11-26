@@ -510,11 +510,13 @@ Private Sub cmdSave_Click()
 End Sub
 
 Private Sub cmdScanFolder_Click()
+    Static LastLocation As String
     Dim sPath$, sNTFSDrives$(), i&
     'Select a folder to scan:
     'sPath = BrowseForFolder(Translate(194))
-    sPath = OpenFolderDialog(Translate(194), Desktop, Me.hWnd)
+    sPath = OpenFolderDialog(Translate(194), IIf(FolderExists(LastLocation), LastLocation, Desktop), Me.hWnd)
     If sPath <> vbNullString Then
+        LastLocation = GetParentDir(sPath)
         sNTFSDrives = Split(GetNTFSDrives(), "|")
         For i = 0 To UBound(sNTFSDrives)
             If InStr(1, sPath, sNTFSDrives(i), vbTextCompare) = 1 Then

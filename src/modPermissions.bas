@@ -1709,3 +1709,31 @@ ErrorHandler:
     ErrorMsg Err, "LockAutorunPoints"
     If inIDE Then Stop: Resume Next
 End Sub
+
+Public Function GetDefaultFileSDDL() As String
+    ' DACL for LocalSystem, Administrators, Users, TrustedInstaller, All Packages (AppX)
+    ' Full Access
+    ' Container Inherited, Object Inherited, Propagated to Children
+    ' Disabled inheritance from parent
+    '
+    
+    Dim SDDL As String
+    
+    SDDL = "O:BAG:BAD:PAI" ' Owner - Administrators / Group - Administrators / Disabled inheritance from parent
+    SDDL = SDDL & "(A;OICIID;FA;;;SY)" ' LocalSystem
+    SDDL = SDDL & "(A;OICIID;FA;;;BA)" ' Administrators
+    SDDL = SDDL & "(A;OICIID;FA;;;BU)" ' Users
+    SDDL = SDDL & "(A;OICIID;FA;;;S-1-5-80-956008885-3418522649-1831038044-1853292631-2271478464)" ' TrustedInstaller
+    
+    If Not (OSver Is Nothing) Then
+        If OSver.IsWindows8OrGreater Then
+            SDDL = SDDL & "(A;OICIID;FA;;;S-1-15-2-1)" 'AppX
+        End If
+        If OSver.IsWindows10OrGreater Then
+            SDDL = SDDL & "(A;OICIID;FA;;;S-1-15-2-2)" 'AppX restricted
+        End If
+    End If
+    
+    GetDefaultFileSDDL = SDDL
+    
+End Function

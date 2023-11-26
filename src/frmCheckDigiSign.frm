@@ -815,17 +815,25 @@ Private Sub cmdSelectFile_Click()
     Dim aFile() As String
     Dim i As Long
     Dim sExt As String
+    Static LastLocation As String
     sExt = "*.exe;*.msi;*.dll;*.sys;*.ocx"
     'PE; All files
-    For i = 1 To OpenFileDialog_Multi(aFile, Translate(122), Desktop, "PE (" & sExt & ")|" & sExt & "|" & Translate(1003) & " (*.*)|*.*", Me.hWnd)
+    For i = 1 To OpenFileDialog_Multi(aFile, Translate(122), IIf(FolderExists(LastLocation), LastLocation, Desktop), "PE (" & sExt & ")|" & sExt & "|" & Translate(1003) & " (*.*)|*.*", Me.hWnd)
+        If i = 1 Then
+            LastLocation = GetParentDir(aFile(i))
+        End If
         txtPaths.Text = txtPaths.Text & IIf(Len(txtPaths.Text) = 0, vbNullString, vbCrLf) & aFile(i)
     Next
 End Sub
 
 Private Sub cmdSelectFolder_Click()
     Dim aFolder() As String
+    Static LastLocation As String
     Dim i As Long
-    For i = 1 To OpenFolderDialog_Multi(aFolder, , Desktop, Me.hWnd)
+    For i = 1 To OpenFolderDialog_Multi(aFolder, , IIf(FolderExists(LastLocation), LastLocation, Desktop), Me.hWnd)
+        If i = 1 Then
+            LastLocation = GetParentDir(aFolder(i))
+        End If
         txtPaths.Text = txtPaths.Text & IIf(Len(txtPaths.Text) = 0, vbNullString, vbCrLf) & aFolder(i)
     Next
 End Sub

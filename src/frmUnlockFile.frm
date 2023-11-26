@@ -4,71 +4,85 @@ Begin VB.Form frmUnlockFile
    Caption         =   "Files Unlocker"
    ClientHeight    =   3240
    ClientLeft      =   120
-   ClientTop       =   456
-   ClientWidth     =   8448
+   ClientTop       =   450
+   ClientWidth     =   8445
    Icon            =   "frmUnlockFile.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    ScaleHeight     =   3240
-   ScaleWidth      =   8448
+   ScaleWidth      =   8445
    Begin VBCCR17.CommandButtonW cmdAddFile 
-      Caption         =   "Add File(s)..."
       Height          =   492
       Left            =   6720
       TabIndex        =   6
       Top             =   600
       Width           =   1572
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Caption         =   "Add File(s)..."
    End
    Begin VBCCR17.CommandButtonW cmdAddFolder 
-      Caption         =   "Add Folder(s)..."
       Height          =   492
       Left            =   6720
       TabIndex        =   5
       Top             =   1200
       Width           =   1572
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Caption         =   "Add Folder(s)..."
    End
    Begin VBCCR17.CommandButtonW cmdJump 
-      Caption         =   "Open in Explorer"
       Height          =   456
       Left            =   6720
       TabIndex        =   4
       Top             =   1920
       Width           =   1572
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Caption         =   "Open in Explorer"
    End
    Begin VBCCR17.CommandButtonW cmdGo 
-      BackColor       =   &H00C0FFC0&
-      Caption         =   "Go"
       Height          =   495
       Left            =   3960
       TabIndex        =   3
       Top             =   2520
       Width           =   1575
+      _ExtentX        =   0
+      _ExtentY        =   0
+      BackColor       =   12648384
+      Caption         =   "Go"
    End
    Begin VBCCR17.CheckBoxW chkRecur 
-      Caption         =   "Recursively (process files and all subfolders)"
       Height          =   495
       Left            =   240
       TabIndex        =   2
       Top             =   2520
-      Value           =   1  'Checked
       Width           =   3615
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Value           =   1
+      Caption         =   "Recursively (process files and all subfolders)"
    End
    Begin VBCCR17.TextBoxW txtInput 
       Height          =   1815
       Left            =   240
-      MultiLine       =   -1  'True
-      ScrollBars      =   3  'Both
       TabIndex        =   1
       Top             =   600
       Width           =   6372
+      _ExtentX        =   0
+      _ExtentY        =   0
+      MultiLine       =   -1  'True
+      ScrollBars      =   3
    End
    Begin VBCCR17.LabelW lblWhatToDo 
-      Caption         =   "Enter file(s) and folder(s) to unlock and reset access:"
       Height          =   252
       Left            =   240
       TabIndex        =   0
       Top             =   240
       Width           =   6132
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Caption         =   "Enter file(s) and folder(s) to unlock and reset access:"
    End
 End
 Attribute VB_Name = "frmUnlockFile"
@@ -88,16 +102,24 @@ Private sList As clsStringBuilder
 
 Private Sub cmdAddFile_Click()
     Dim aFile() As String
+    Static LastLocation As String
     Dim i As Long
-    For i = 1 To OpenFileDialog_Multi(aFile, Translate(1003), Desktop, Translate(1003) & " (*.*)|*.*", Me.hwnd)
+    For i = 1 To OpenFileDialog_Multi(aFile, Translate(1003), IIf(FolderExists(LastLocation), LastLocation, Desktop), Translate(1003) & " (*.*)|*.*", Me.hWnd)
+        If i = 1 Then
+            LastLocation = GetParentDir(aFile(i))
+        End If
         txtInput.Text = txtInput.Text & IIf(Len(txtInput.Text) = 0, "", vbCrLf) & aFile(i)
     Next
 End Sub
 
 Private Sub cmdAddFolder_Click()
     Dim aFolder() As String
+    Static LastLocation As String
     Dim i As Long
-    For i = 1 To OpenFolderDialog_Multi(aFolder, , Desktop, Me.hwnd)
+    For i = 1 To OpenFolderDialog_Multi(aFolder, , IIf(FolderExists(LastLocation), LastLocation, Desktop), Me.hWnd)
+        If i = 1 Then
+            LastLocation = GetParentDir(aFolder(i))
+        End If
         txtInput.Text = txtInput.Text & IIf(Len(txtInput.Text) = 0, "", vbCrLf) & aFolder(i)
     Next
 End Sub
@@ -301,7 +323,7 @@ Private Sub Form_Load()
     SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold
     ReloadLanguage True
     LoadWindowPos Me, SETTINGS_SECTION_FILEUNLOCKER
-    SubClassTextbox Me.txtInput.hwnd, True
+    SubClassTextbox Me.txtInput.hWnd, True
 End Sub
 
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
@@ -312,7 +334,7 @@ Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
         Cancel = True
         Me.Hide
     Else
-        SubClassTextbox Me.txtInput.hwnd, False
+        SubClassTextbox Me.txtInput.hWnd, False
     End If
 End Sub
 

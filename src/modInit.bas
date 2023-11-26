@@ -19,7 +19,9 @@ Option Explicit
 
 
 Private Declare Function GetProcAddress Lib "kernel32.dll" (ByVal hModule As Long, ByVal lpProcName As String) As Long
-
+Private Declare Function SetEnvironmentVariable Lib "kernel32" Alias "SetEnvironmentVariableW" (ByVal lpName As Long, ByVal lpValue As Long) As Long
+Private Declare Function GetTempPath Lib "kernel32.dll" Alias "GetTempPathW" (ByVal nBufferLength As Long, ByVal lpBuffer As Long) As Long
+Private Declare Function CreateDirectory Lib "kernel32" Alias "CreateDirectoryW" (ByVal lpPathName As Long, lpSecurityAttributes As Any) As Long
 
 Public Sub Main()
     On Error GoTo ErrorHandler:
@@ -37,7 +39,12 @@ Public Sub Main()
     PostInit
     
     If FileExists(BuildPath(AppPath, "apps\VBCCR17.OCX")) Then
-        frmMain.Show vbModeless
+        If FixTempFolder() Then
+            frmMain.Show vbModeless
+        Else
+            MsgBox "Cannot run HijackThis" & vbNewLine & _
+            "Please, check that you have write access to the temp folder: " & Environ("Temp")
+        End If
     Else
         MsgBox "Cannot run HijackThis" & vbNewLine & _
             "Required file is missing: apps\VBCCR17.OCX" & vbNewLine & _
@@ -119,6 +126,67 @@ ErrorHandler:
     ErrorMsg Err, "PreInit"
     If inIDE Then Stop: Resume Next
 End Sub
+
+Private Function FolderExistsNAC(sFolder As String) As Boolean
+    Dim status As Long
+    status = GetFileAttributes(StrPtr(sFolder))
+    If (CBool(status And vbDirectory) And (status <> INVALID_FILE_ATTRIBUTES)) Then
+        FolderExistsNAC = True
+    End If
+End Function
+
+Public Function FixTempFolder() As Boolean
+    
+    'Fix against Error 481 - Invalid picture
+    
+    Dim sTempF      As String
+    Dim bUnlockDone As Boolean
+    Dim bSuccess    As Boolean
+    
+    sTempF = String$(MAX_PATH, 0)
+    
+    If GetTempPath(Len(sTempF), StrPtr(sTempF)) = 0 Then
+        sTempF = Environ("Temp")
+    End If
+    
+    If Len(sTempF) = 0 Then
+        sTempF = Environ("USERPROFILE") & "\AppData\Local\Temp"
+        SetEnvironmentVariable StrPtr("Temp"), StrPtr(sTempF)
+    End If
+    
+    If Not FolderExistsNAC(sTempF) Then
+        If CreateDirectory(StrPtr(sTempF), ByVal 0&) = 0 Then
+            If Err.LastDllError = ERROR_PATH_NOT_FOUND Then
+                'create folder hierarchy
+                MkDirW sTempF
+                'refresh error code
+                Call CreateDirectory(StrPtr(sTempF), ByVal 0&)
+            End If
+            If Err.LastDllError = ERROR_ACCESS_DENIED Then
+                If TryUnlock(sTempF, False) Then
+                    MkDirW sTempF
+                End If
+                bUnlockDone = True
+            End If
+        End If
+    End If
+    
+    If FolderExistsNAC(sTempF) Then
+        'doing AccessCheck() without direct I/O
+        If Not CheckFileAccess(sTempF, GENERIC_READ Or GENERIC_WRITE) Then
+            If Not bUnlockDone Then
+                Call TryUnlock(sTempF, False)
+            End If
+        End If
+        
+        'need to do CheckFileAccess once more, but we'll not going to:
+        'because, CheckFileAccess may returned incorrect result in case some functions were intercepted
+        bSuccess = True
+    End If
+    
+    FixTempFolder = bSuccess
+    
+End Function
 
 Public Sub EULA_Accept()
     Reg_CreateKey HKEY_LOCAL_MACHINE, g_SettingsRegKey

@@ -5,6 +5,7 @@ OSver;Dir\Name;RunObj;Args;Note
 11; \Microsoft\Windows\Security\Pwdless\IntelligentPwdlessTask; {8702A841-D5CA-47C3-812D-9CEDC304C200}; %SystemRoot%\system32\IntelligentPwdlessTask.dll
 11; \Microsoft\Windows\SoftwareProtectionPlatform\SvcTrigger; {B1AEBB5D-EAD9-4476-B375-9C3ED9F32AFC},logon; %SystemRoot%\System32\sppcext.dll
 11; \Microsoft\Windows\UpdateOrchestrator\StartOobeAppsScan_LicenseAccepted; %SystemRoot%\system32\usoclient.exe; StartOobeAppsScan
+11; \Microsoft\Windows\UpdateOrchestrator\Schedule Wake To Work; %SystemRoot%\system32\usoclient.exe; StartWork
 11; \Microsoft\Windows\WlanSvc\MoProfileManagement; {085EDA12-CF4A-4944-8222-8ADCADE137CB}; %SystemRoot%\System32\WlanMediaManager.dll
 10; \Microsoft\Office\Office Automatic Updates 2.0; %ProgramFiles%\Common Files\Microsoft Shared\ClickToRun\OfficeC2RClient.exe; /frequentupdate SCHEDULEDTASK displaylevel=False
 10; \Microsoft\Office\Office Automatic Updates; %ProgramFiles%\Common Files\Microsoft Shared\ClickToRun\OfficeC2RClient.exe; /update SCHEDULEDTASK displaylevel=False
