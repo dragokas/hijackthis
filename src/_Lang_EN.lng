@@ -1844,7 +1844,13 @@
 2317=This will display only found items in the list
 2318=Instantly mark items found
 ;
+; ========= Fixing script form =========
+;
+; (2500 - 2999)
+;
+2500=Execute fix from clipboard?
+;
 ; ========= Empty ========
 ;
-; (2500 - ...)
+; (3000 - ...)
 ;

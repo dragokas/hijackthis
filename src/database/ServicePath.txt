@@ -9,7 +9,7 @@
 <PF32>\Microsoft Visual Studio\Shared\Common\DiagnosticsHub.Collection.Service\StandardCollector.Service.exe
 <PF32>\Windows Kits\8.1\App Certification Kit\fussvc.exe
 <PF32>\Skype\Updater\Updater.exe
-<PF32>\Microsoft\EdgeUpdate\MicrosoftEdgeUpdate.exe
+<PF32>\Microsoft\EdgeUpdate\MicrosoftEdgeUpdate.exe,/svc|/medsvc
 <PF64>\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe
 <PF64>\Common Files\Microsoft Shared\OFFICE12\ODSERV.EXE
 <PF64>\Common Files\Microsoft Shared\OfficeSoftwareProtectionPlatform\OSPPSVC.exe

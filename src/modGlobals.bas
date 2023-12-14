@@ -30,6 +30,7 @@ Public Const STR_ACCESS_DENIED  As String = "(access denied)"
 Public Const STR_NOT_SIGNED     As String = "(not signed)"
 Public Const STR_INVALID_SIGN   As String = "(invalid sign)"
 Public Const STR_NO_FIX         As String = "(no fix)"
+Public Const STR_NO_COMPANY     As String = "no company"
 
 #If False Then 'for common var. names character case fixation
     Public x, y, Length, Index, sFilename, i, j, k, N, State, frm, ret, VT, isInit, hWnd, pv, Reg, pid, File, msg, VT, InArray, Self, status, FileName
@@ -158,6 +159,16 @@ Public Enum KEY_INFORMATION_CLASS
     MaxKeyInfoClass
 End Enum
 
+Public Enum KEY_VALUE_INFORMATION_CLASS
+    KeyValueBasicInformation = 0
+    KeyValueFullInformation
+    KeyValuePartialInformation
+    KeyValueFullInformationAlign64
+    KeyValuePartialInformationAlign64
+    KeyValueLayerInformation
+    MaxKeyValueInfoClass
+End Enum
+
 Public Type SCROLLINFO
     cbSize As Long
     fMask As Long
@@ -167,8 +178,6 @@ Public Type SCROLLINFO
     nPos As Long
     nTrackPos As Long
 End Type
-
-'frmEULA
 
 Public Type tagINITCOMMONCONTROLSEX
     dwSize  As Long
@@ -1292,13 +1301,13 @@ End Enum
 Public Declare Function GetSaveFileName Lib "comdlg32.dll" Alias "GetSaveFileNameW" (pOpenfilename As OPENFILENAME) As Long
 Public Declare Function GetUserName Lib "Advapi32.dll" Alias "GetUserNameW" (ByVal lpBuffer As Long, nSize As Long) As Long
 Public Declare Function GetComputerName Lib "kernel32.dll" Alias "GetComputerNameW" (ByVal lpBuffer As Long, nSize As Long) As Long
-Public Declare Function NetUserEnum Lib "netapi32.dll" (ByVal servername As Long, ByVal level As Long, ByVal Filter As Long, bufptr As Long, ByVal prefmaxlen As Long, entriesread As Long, totalentries As Long, resume_handle As Long) As Long
-Public Declare Function NetLocalGroupEnum Lib "netapi32.dll" (ByVal servername As Long, ByVal level As Long, bufptr As Long, ByVal prefmaxlen As Long, entriesread As Long, totalentries As Long, resume_handle As Long) As Long
-Public Declare Function NetUserGetGroups Lib "netapi32.dll" (ByVal servername As Long, ByVal UserName As Long, ByVal level As Long, bufptr As Long, ByVal prefmaxlen As Long, entriesread As Long, totalentries As Long) As Long
-Public Declare Function NetUserGetLocalGroups Lib "netapi32.dll" (ByVal servername As Long, ByVal UserName As Long, ByVal level As Long, ByVal Flags As Long, bufptr As Long, ByVal prefmaxlen As Long, entriesread As Long, totalentries As Long) As Long
+Public Declare Function NetUserEnum Lib "netapi32.dll" (ByVal servername As Long, ByVal Level As Long, ByVal Filter As Long, bufptr As Long, ByVal prefmaxlen As Long, entriesread As Long, totalentries As Long, resume_handle As Long) As Long
+Public Declare Function NetLocalGroupEnum Lib "netapi32.dll" (ByVal servername As Long, ByVal Level As Long, bufptr As Long, ByVal prefmaxlen As Long, entriesread As Long, totalentries As Long, resume_handle As Long) As Long
+Public Declare Function NetUserGetGroups Lib "netapi32.dll" (ByVal servername As Long, ByVal UserName As Long, ByVal Level As Long, bufptr As Long, ByVal prefmaxlen As Long, entriesread As Long, totalentries As Long) As Long
+Public Declare Function NetUserGetLocalGroups Lib "netapi32.dll" (ByVal servername As Long, ByVal UserName As Long, ByVal Level As Long, ByVal Flags As Long, bufptr As Long, ByVal prefmaxlen As Long, entriesread As Long, totalentries As Long) As Long
 Public Declare Function NetGroupDelUser Lib "netapi32.dll" (ByVal servername As Long, ByVal groupname As Long, ByVal UserName As Long) As Long
-Public Declare Function NetLocalGroupDelMembers Lib "netapi32.dll" (ByVal servername As Long, ByVal groupname As Long, ByVal level As Long, ByVal bufptr As Long, ByVal totalentries As Long) As Long
-Public Declare Function NetLocalGroupAddMembers Lib "netapi32.dll" (ByVal servername As Long, ByVal groupname As Long, ByVal level As Long, ByVal bufptr As Long, ByVal totalentries As Long) As Long
+Public Declare Function NetLocalGroupDelMembers Lib "netapi32.dll" (ByVal servername As Long, ByVal groupname As Long, ByVal Level As Long, ByVal bufptr As Long, ByVal totalentries As Long) As Long
+Public Declare Function NetLocalGroupAddMembers Lib "netapi32.dll" (ByVal servername As Long, ByVal groupname As Long, ByVal Level As Long, ByVal bufptr As Long, ByVal totalentries As Long) As Long
 Public Declare Function NetApiBufferFree Lib "netapi32.dll" (ByVal Buffer As Long) As Long
 Public Declare Function GetDateFormat Lib "kernel32.dll" Alias "GetDateFormatW" (ByVal Locale As Long, ByVal dwFlags As Long, lpDate As SYSTEMTIME, ByVal lpFormat As Long, ByVal lpDateStr As Long, ByVal cchDate As Long) As Long
 Public Declare Function QueryPerformanceFrequency Lib "kernel32.dll" (lpFrequency As Any) As Long
@@ -1955,6 +1964,11 @@ Public Enum IO_PRIORITY_INFORMATION
     IO_PRIORITY_CRITICAL        'kernel mode?
 End Enum
 
+Public Type SYSTEM_PROCESS_ID_INFORMATION
+    ProcessID As LongPtr
+    ImageName As UNICODE_STRING
+End Type
+
 Public Declare Function NtQuerySystemInformation Lib "ntdll.dll" (ByVal infoClass As Long, Buffer As Any, ByVal BufferSize As Long, ret As Long) As Long
 Public Declare Function GetModuleFileNameEx Lib "psapi.dll" Alias "GetModuleFileNameExW" (ByVal hProcess As Long, ByVal hModule As Long, ByVal lpFileName As Long, ByVal nSize As Long) As Long
 Public Declare Function GetProcessImageFileName Lib "psapi.dll" Alias "GetProcessImageFileNameW" (ByVal hProcess As Long, ByVal lpImageFileName As Long, ByVal nSize As Long) As Long
@@ -1998,6 +2012,7 @@ Public Declare Function NtSetInformationProcess Lib "ntdll.dll" (ByVal ProcessHa
 Public Declare Function NtQueryInformationProcess Lib "ntdll.dll" (ByVal ProcessHandle As Long, ByVal ProcessInformationClass As PROCESSINFOCLASS, ByVal ProcessInformation As Long, ByVal ProcessInformationLength As Long, ByVal ReturnLength As Long) As Long
 Public Declare Function VirtualQuery Lib "kernel32.dll" (ByVal lpAddress As Long, lpBuffer As Any, ByVal dwLength As Long) As Long
 Public Declare Function VirtualQueryEx Lib "kernel32.dll" (ByVal hProcess As Long, ByVal lpAddress As Long, lpBuffer As Any, ByVal dwLength As Long) As Long
+Public Declare Function IsProcessCritical Lib "kernel32.dll" (ByVal hProcess As Long, Critical As Long) As Long
 
 Public Const TH32CS_SNAPPROCESS = &H2
 Public Const TH32CS_SNAPMODULE = &H8
@@ -2010,6 +2025,8 @@ Public Const THREAD_SUSPEND_RESUME = &H2
 Public Const PROCESS_SUSPEND_RESUME As Long = &H800&
 
 Public Const SystemProcessInformation      As Long = &H5&
+Public Const SystemProcessIdInformation As Long = &H58&
+
 Public Const STATUS_INFO_LENGTH_MISMATCH   As Long = &HC0000004
 Public Const STATUS_SUCCESS                As Long = 0&
 Public Const STATUS_UNSUCCESSFUL           As Long = &HC0000001
@@ -2129,7 +2146,7 @@ End Enum
 'http://mygreenpaste.blogspot.com/2008/07/in-vista-how-does-flags-switch-of.html
 'https://github.com/rbmm/NtRegView/blob/master/registry.cpp
 Public Type KEY_FLAGS_INFORMATION
-    Unknown As Long
+    UNKNOWN As Long
     ControlFlags1 As KEY_CTRL_FL_W7_01
     ControlFlags2 As KEY_CTRL_FL_W7_02
 End Type
@@ -2307,6 +2324,7 @@ Public Declare Function SystemTimeToTzSpecificLocalTime Lib "kernel32.dll" (ByVa
 Public Declare Function SystemTimeToFileTime Lib "kernel32.dll" (lpSystemTime As SYSTEMTIME, lpFileTime As FILETIME) As Long
 Public Declare Function LocalFileTimeToFileTime Lib "kernel32.dll" (lpLocalFileTime As FILETIME, lpFileTime As FILETIME) As Long
 Public Declare Function GetTimeZoneInformation Lib "kernel32.dll" (ByVal lpTimeZoneInformation As Long) As Long
+Public Declare Sub GetLocalTime Lib "kernel32.dll" (lpSystemTime As SYSTEMTIME)
 Public Declare Function IsWow64Process Lib "kernel32.dll" (ByVal hProcess As Long, ByRef Wow64Process As Long) As Long
 Public Declare Function DeleteObject Lib "gdi32.dll" (ByVal hObject As Long) As Long
 Public Declare Function GetPixel Lib "gdi32.dll" (ByVal hdc As Long, ByVal x As Long, ByVal y As Long) As Long

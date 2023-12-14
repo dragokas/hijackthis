@@ -873,6 +873,7 @@ Private Sub cmdSave_Click()
     sList.AppendLine "Logfile of Uninstall manager v." & UninstManVer & " (HijackThis+ v." & AppVerString & ")"
     sList.AppendLine
     sList.Append MakeLogHeader()
+    sList.AppendLine
     
     'Log filters used
     If chkFilterCommon.Value = vbChecked And _

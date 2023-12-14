@@ -74,7 +74,7 @@ End Function
 Private Function WriteHostsFileContents(sContents As String) As Boolean
     Dim hFile As Long
     If OpenW(g_HostsFile, FOR_OVERWRITE_CREATE, hFile) Then
-        WriteHostsFileContents = PutStringW(hFile, 1, sContents, False)
+        WriteHostsFileContents = PutString(hFile, 1, sContents, False)
         CloseW hFile
     End If
 End Function

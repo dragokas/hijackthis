@@ -1,0 +1,348 @@
+<AllUsersProfile>\Microsoft\Windows Defender\Platform\4.18.2008.4-0\MpCmdRun.exe
+<AllUsersProfile>\Microsoft\Windows Defender\Platform\4.18.2008.7-0\MpCmdRun.exe
+<AllUsersProfile>\Microsoft\Windows Defender\Platform\4.18.2008.9-0\ConfigSecurityPolicy.exe
+<AllUsersProfile>\Microsoft\Windows Defender\Platform\4.18.2008.9-0\MpCmdRun.exe
+<LocalAppData>\Microsoft\WindowsApps\winget.exe
+<PF32>\IIS\Microsoft Web Deploy V3\msdeploy.exe
+<PF32>\Internet Explorer\Extexport.exe
+<PF32>\Microsoft Office 14\ClientX86\Root\Office14\Excel.exe
+<PF32>\Microsoft Office 14\ClientX86\Root\Office14\MSOHTMED.exe
+<PF32>\Microsoft Office 14\ClientX86\Root\Office14\MSPUB.exe
+<PF32>\Microsoft Office 14\ClientX86\Root\Office14\Powerpnt.exe
+<PF32>\Microsoft Office 14\ClientX86\Root\Office14\winword.exe
+<PF32>\Microsoft Office 15\ClientX86\Root\Office15\Excel.exe
+<PF32>\Microsoft Office 15\ClientX86\Root\Office15\MSOHTMED.exe
+<PF32>\Microsoft Office 15\ClientX86\Root\Office15\MSPUB.exe
+<PF32>\Microsoft Office 15\ClientX86\Root\Office15\Powerpnt.exe
+<PF32>\Microsoft Office 15\ClientX86\Root\Office15\ProtocolHandler.exe
+<PF32>\Microsoft Office 15\ClientX86\Root\Office15\winword.exe
+<PF32>\Microsoft Office 16\ClientX86\Root\Office16\Excel.exe
+<PF32>\Microsoft Office 16\ClientX86\Root\Office16\MSOHTMED.exe
+<PF32>\Microsoft Office 16\ClientX86\Root\Office16\MSPUB.exe
+<PF32>\Microsoft Office 16\ClientX86\Root\Office16\Powerpnt.exe
+<PF32>\Microsoft Office 16\ClientX86\Root\Office16\ProtocolHandler.exe
+<PF32>\Microsoft Office 16\ClientX86\Root\Office16\winword.exe
+<PF32>\Microsoft Office\Office12\Excel.exe
+<PF32>\Microsoft Office\Office12\MSOHTMED.exe
+<PF32>\Microsoft Office\Office12\Powerpnt.exe
+<PF32>\Microsoft Office\Office12\winword.exe
+<PF32>\Microsoft Office\Office14\Excel.exe
+<PF32>\Microsoft Office\Office14\MSOHTMED.exe
+<PF32>\Microsoft Office\Office14\MSPUB.exe
+<PF32>\Microsoft Office\Office14\Powerpnt.exe
+<PF32>\Microsoft Office\Office14\winword.exe
+<PF32>\Microsoft Office\Office15\Excel.exe
+<PF32>\Microsoft Office\Office15\MSOHTMED.exe
+<PF32>\Microsoft Office\Office15\MSPUB.exe
+<PF32>\Microsoft Office\Office15\Powerpnt.exe
+<PF32>\Microsoft Office\Office15\ProtocolHandler.exe
+<PF32>\Microsoft Office\Office15\winword.exe
+<PF32>\Microsoft Office\Office16\Excel.exe
+<PF32>\Microsoft Office\Office16\MSOHTMED.exe
+<PF32>\Microsoft Office\Office16\MSPUB.exe
+<PF32>\Microsoft Office\Office16\Powerpnt.exe
+<PF32>\Microsoft Office\Office16\ProtocolHandler.exe
+<PF32>\Microsoft Office\Office16\winword.exe
+<PF32>\Microsoft Office\root\client\appvlp.exe
+<PF32>\Microsoft Office\root\vfs\ProgramFilesX86\Microsoft Analysis\AS OLEDB\140\SQLDumper.exe
+<PF32>\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools\wfc.exe
+<PF32>\Microsoft Silverlight\5.1.50918.0\coregen.exe
+<PF32>\Microsoft SQL Server\100\Tools\Binn\sqlps.exe
+<PF32>\Microsoft SQL Server\110\Tools\Binn\sqlps.exe
+<PF32>\Microsoft SQL Server\120\Tools\Binn\sqlps.exe
+<PF32>\Microsoft SQL Server\130\Tools\Binn\sqlps.exe
+<PF32>\Microsoft SQL Server\130\Tools\Binn\sqlps.exe
+<PF32>\Microsoft SQL Server\150\Tools\Binn\SQLPS.exe
+<PF32>\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\Roslyn\csi.exe
+<PF32>\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\Terminal\ServiceHub\os64\OpenConsole.exe
+<PF32>\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\Terminal\ServiceHub\os86\OpenConsole.exe
+<PF32>\Microsoft Visual Studio\2019\Community\Common7\IDE\Extensions\Microsoft\Web Tools\ProjectSystem\VSIISExeLauncher.exe
+<PF32>\Microsoft Visual Studio\2019\Professional\Common7\IDE\CommonExtensions\Microsoft\FSharp\fsi.exe
+<PF32>\Microsoft Visual Studio\2019\Professional\Common7\IDE\CommonExtensions\Microsoft\FSharp\fsianycpu.exe
+<PF32>\Microsoft Visual Studio\2019\Professional\Common7\IDE\Extensions\Microsoft\LiveShare\Agent\vsls-agent.exe
+<PF32>\Microsoft Visual Studio\2022\TestAgent\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe
+<PF32>\Microsoft Visual Studio\Installer\Feedback\dump64.exe
+<PF32>\Microsoft VS Code\Code.exe
+<PF32>\Microsoft Web Tools\Packages\Microsoft.Net.Compilers.X.Y.Z\tools\csi.exe
+<PF32>\Microsoft\Edge\Application\114.0.1823.43\msedgewebview2.exe
+<PF32>\Microsoft\Edge\Application\msedge.exe
+<PF32>\Microsoft\Edge\Application\msedge_proxy.exe
+<PF32>\MSBuild\14.0\bin\MSBuild.exe
+<PF32>\Windows Kits\10\bin\10.0.22000.0\arm64\AccChecker\AccCheckConsole.exe
+<PF32>\Windows Kits\10\bin\10.0.22000.0\arm\AccChecker\AccCheckConsole.exe
+<PF32>\Windows Kits\10\bin\10.0.22000.0\x64\AccChecker\AccCheckConsole.exe
+<PF32>\Windows Kits\10\bin\10.0.22000.0\x86\AccChecker\AccCheckConsole.exe
+<PF32>\Windows Kits\10\Debuggers\x64\adplus.exe
+<PF32>\Windows Kits\10\Debuggers\x64\cdb.exe
+<PF32>\Windows Kits\10\Debuggers\x64\remote.exe
+<PF32>\Windows Kits\10\Debuggers\x86\adplus.exe
+<PF32>\Windows Kits\10\Debuggers\x86\cdb.exe
+<PF32>\Windows Kits\10\Debuggers\x86\remote.exe
+<PF32>\Windows Mail\wab.exe
+<PF64>\dotnet\dotnet.exe
+<PF64>\Internet Explorer\Extexport.exe
+<PF64>\Internet Explorer\iediagcmd.exe
+<PF64>\Microsoft Office 14\ClientX64\Root\Office14\Excel.exe
+<PF64>\Microsoft Office 14\ClientX64\Root\Office14\MSOHTMED.exe
+<PF64>\Microsoft Office 14\ClientX64\Root\Office14\MSPUB.exe
+<PF64>\Microsoft Office 14\ClientX64\Root\Office14\Powerpnt.exe
+<PF64>\Microsoft Office 14\ClientX64\Root\Office14\winword.exe
+<PF64>\Microsoft Office 15\ClientX64\Root\Office15\Excel.exe
+<PF64>\Microsoft Office 15\ClientX64\Root\Office15\MSOHTMED.exe
+<PF64>\Microsoft Office 15\ClientX64\Root\Office15\MSPUB.exe
+<PF64>\Microsoft Office 15\ClientX64\Root\Office15\Powerpnt.exe
+<PF64>\Microsoft Office 15\ClientX64\Root\Office15\ProtocolHandler.exe
+<PF64>\Microsoft Office 15\ClientX64\Root\Office15\winword.exe
+<PF64>\Microsoft Office 16\ClientX64\Root\Office16\Excel.exe
+<PF64>\Microsoft Office 16\ClientX64\Root\Office16\MSOHTMED.exe
+<PF64>\Microsoft Office 16\ClientX64\Root\Office16\MSPUB.exe
+<PF64>\Microsoft Office 16\ClientX64\Root\Office16\Powerpnt.exe
+<PF64>\Microsoft Office 16\ClientX64\Root\Office16\ProtocolHandler.exe
+<PF64>\Microsoft Office 16\ClientX64\Root\Office16\winword.exe
+<PF64>\Microsoft Office\Office12\Excel.exe
+<PF64>\Microsoft Office\Office12\Excel.exe
+<PF64>\Microsoft Office\Office12\MSOHTMED.exe
+<PF64>\Microsoft Office\Office12\MSOHTMED.exe
+<PF64>\Microsoft Office\Office12\Powerpnt.exe
+<PF64>\Microsoft Office\Office12\Powerpnt.exe
+<PF64>\Microsoft Office\Office12\winword.exe
+<PF64>\Microsoft Office\Office12\winword.exe
+<PF64>\Microsoft Office\Office14\Excel.exe
+<PF64>\Microsoft Office\Office14\MSOHTMED.exe
+<PF64>\Microsoft Office\Office14\MSPUB.exe
+<PF64>\Microsoft Office\Office14\Powerpnt.exe
+<PF64>\Microsoft Office\Office14\winword.exe
+<PF64>\Microsoft Office\Office15\Excel.exe
+<PF64>\Microsoft Office\Office15\MSOHTMED.exe
+<PF64>\Microsoft Office\Office15\MSPUB.exe
+<PF64>\Microsoft Office\Office15\Powerpnt.exe
+<PF64>\Microsoft Office\Office15\ProtocolHandler.exe
+<PF64>\Microsoft Office\Office15\winword.exe
+<PF64>\Microsoft Office\Office16\Excel.exe
+<PF64>\Microsoft Office\Office16\MSOHTMED.exe
+<PF64>\Microsoft Office\Office16\MSPUB.exe
+<PF64>\Microsoft Office\Office16\Powerpnt.exe
+<PF64>\Microsoft Office\Office16\ProtocolHandler.exe
+<PF64>\Microsoft Office\Office16\winword.exe
+<PF64>\Microsoft Office\root\client\appvlp.exe
+<PF64>\Microsoft Office\root\Office16\winword.exe
+<PF64>\Microsoft Silverlight\5.1.50918.0\coregen.exe
+<PF64>\Microsoft SQL Server\90\Shared\SQLDumper.exe
+<PF64>\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\Terminal\ServiceHub\os64\OpenConsole.exe
+<PF64>\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\TestWindow\RemoteAgent\TestWindowRemoteAgent.exe
+<PF64>\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe
+<PF64>\Microsoft Visual Studio\2022\Community\Team Tools\DiagnosticsHub\Collector\VSDiagnostics.exe
+<PF64>\Microsoft VS Code\Code.exe
+<PF64>\Microsoft\Edge\Application\msedge.exe
+<PF64>\Windows Defender\ConfigSecurityPolicy.exe
+<PF64>\Windows Defender\MpCmdRun.exe
+<PF64>\Windows Defender\Offline\OfflineScannerShell.exe
+<PF64>\Windows Mail\wab.exe
+<PF64>\WindowsApps\Microsoft.DesktopAppInstaller_1.11.2521.0_x64__8wekyb3d8bbwe\AppInstaller.exe
+<PF64>\WindowsApps\Microsoft.WindowsTerminal_<version_packageid>\wt.exe
+<SysRoot>\explorer.exe
+<SysRoot>\hh.exe
+<SysRoot>\Microsoft.NET\Framework64\v2.0.50727\Dfsvc.exe
+<SysRoot>\Microsoft.NET\Framework64\v2.0.50727\Dfsvc.exe
+<SysRoot>\Microsoft.NET\Framework64\v2.0.50727\ieexec.exe
+<SysRoot>\Microsoft.NET\Framework64\v2.0.50727\InstallUtil.exe
+<SysRoot>\Microsoft.NET\Framework64\v2.0.50727\Jsc.exe
+<SysRoot>\Microsoft.NET\Framework64\v2.0.50727\Msbuild.exe
+<SysRoot>\Microsoft.NET\Framework64\v2.0.50727\regasm.exe
+<SysRoot>\Microsoft.NET\Framework64\v3.5\DataSvcUtil.exe
+<SysRoot>\Microsoft.NET\Framework64\v3.5\Msbuild.exe
+<SysRoot>\Microsoft.NET\Framework64\v3.5\vbc.exe
+<SysRoot>\Microsoft.NET\Framework64\v4.0.30319\AddinUtil.exe
+<SysRoot>\Microsoft.NET\Framework64\v4.0.30319\aspnet_compiler.exe
+<SysRoot>\Microsoft.NET\Framework64\v4.0.30319\Csc.exe
+<SysRoot>\Microsoft.NET\Framework64\v4.0.30319\Dfsvc.exe
+<SysRoot>\Microsoft.NET\Framework64\v4.0.30319\Dfsvc.exe
+<SysRoot>\Microsoft.NET\Framework64\v4.0.30319\ilasm.exe
+<SysRoot>\Microsoft.NET\Framework64\v4.0.30319\InstallUtil.exe
+<SysRoot>\Microsoft.NET\Framework64\v4.0.30319\Jsc.exe
+<SysRoot>\Microsoft.Net\Framework64\v4.0.30319\Microsoft.Workflow.Compiler.exe
+<SysRoot>\Microsoft.NET\Framework64\v4.0.30319\Msbuild.exe
+<SysRoot>\Microsoft.NET\Framework64\v4.0.30319\regasm.exe
+<SysRoot>\Microsoft.NET\Framework64\v4.0.30319\vbc.exe
+<SysRoot>\Microsoft.NET\Framework\v2.0.50727\Dfsvc.exe
+<SysRoot>\Microsoft.NET\Framework\v2.0.50727\Dfsvc.exe
+<SysRoot>\Microsoft.NET\Framework\v2.0.50727\ieexec.exe
+<SysRoot>\Microsoft.NET\Framework\v2.0.50727\InstallUtil.exe
+<SysRoot>\Microsoft.NET\Framework\v2.0.50727\Jsc.exe
+<SysRoot>\Microsoft.NET\Framework\v2.0.50727\Msbuild.exe
+<SysRoot>\Microsoft.NET\Framework\v2.0.50727\regasm.exe
+<SysRoot>\Microsoft.NET\Framework\v3.5\Msbuild.exe
+<SysRoot>\Microsoft.NET\Framework\v4.0.30319\AddinUtil.exe
+<SysRoot>\Microsoft.NET\Framework\v4.0.30319\aspnet_compiler.exe
+<SysRoot>\Microsoft.NET\Framework\v4.0.30319\Csc.exe
+<SysRoot>\Microsoft.NET\Framework\v4.0.30319\Dfsvc.exe
+<SysRoot>\Microsoft.NET\Framework\v4.0.30319\Dfsvc.exe
+<SysRoot>\Microsoft.NET\Framework\v4.0.30319\ilasm.exe
+<SysRoot>\Microsoft.NET\Framework\v4.0.30319\InstallUtil.exe
+<SysRoot>\Microsoft.NET\Framework\v4.0.30319\Jsc.exe
+<SysRoot>\Microsoft.NET\Framework\v4.0.30319\Msbuild.exe
+<SysRoot>\Microsoft.NET\Framework\v4.0.30319\regasm.exe
+<SysRoot>\regedit.exe
+<SysRoot>\System32\At.exe
+<SysRoot>\System32\Atbroker.exe
+<SysRoot>\System32\bash.exe
+<SysRoot>\System32\bitsadmin.exe
+<SysRoot>\system32\certoc.exe
+<SysRoot>\System32\certreq.exe
+<SysRoot>\System32\certutil.exe
+<SysRoot>\System32\cmd.exe
+<SysRoot>\System32\cmdkey.exe
+<SysRoot>\System32\cmdl32.exe
+<SysRoot>\System32\cmstp.exe
+<SysRoot>\System32\colorcpl.exe
+<SysRoot>\system32\conhost.exe
+<SysRoot>\System32\control.exe
+<SysRoot>\System32\cscript.exe
+<SysRoot>\System32\CustomShellHost.exe
+<SysRoot>\system32\desktopimgdownldr.exe
+<SysRoot>\System32\DeviceCredentialDeployment.exe
+<SysRoot>\system32\devtoolslauncher.exe
+<SysRoot>\system32\diantz.exe
+<SysRoot>\System32\diskshadow.exe
+<SysRoot>\System32\Dnscmd.exe
+<SysRoot>\System32\dsdbutil.exe
+<SysRoot>\System32\dxcap.exe
+<SysRoot>\System32\esentutl.exe
+<SysRoot>\System32\eventvwr.exe
+<SysRoot>\System32\Expand.exe
+<SysRoot>\System32\extrac32.exe
+<SysRoot>\System32\findstr.exe
+<SysRoot>\system32\finger.exe
+<SysRoot>\System32\fltMC.exe
+<SysRoot>\System32\forfiles.exe
+<SysRoot>\System32\fsutil.exe
+<SysRoot>\System32\ftp.exe
+<SysRoot>\System32\gpscript.exe
+<SysRoot>\system32\ie4uinit.exe
+<SysRoot>\System32\IME\SHARED\IMEWDBLD.exe
+<SysRoot>\System32\Infdefaultinstall.exe
+<SysRoot>\system32\ldifde.exe
+<SysRoot>\System32\makecab.exe
+<SysRoot>\System32\mavinject.exe
+<SysRoot>\System32\mmc.exe
+<SysRoot>\System32\msconfig.exe
+<SysRoot>\System32\Msdt.exe
+<SysRoot>\System32\mshta.exe
+<SysRoot>\System32\msiexec.exe
+<SysRoot>\System32\Netsh.exe
+<SysRoot>\System32\ntdsutil.exe
+<SysRoot>\System32\odbcconf.exe
+<SysRoot>\system32\OpenSSH\ssh.exe
+<SysRoot>\System32\pcalua.exe
+<SysRoot>\System32\pcwrun.exe
+<SysRoot>\system32\pktmon.exe
+<SysRoot>\system32\pnputil.exe
+<SysRoot>\System32\Presentationhost.exe
+<SysRoot>\System32\print.exe
+<SysRoot>\system32\provlaunch.exe
+<SysRoot>\system32\psr.exe
+<SysRoot>\System32\rasautou.exe
+<SysRoot>\system32\rdrleakdiag.exe
+<SysRoot>\System32\reg.exe
+<SysRoot>\System32\regini.exe
+<SysRoot>\System32\Register-cimprovider.exe
+<SysRoot>\System32\regsvr32.exe
+<SysRoot>\System32\replace.exe
+<SysRoot>\System32\rpcping.exe
+<SysRoot>\System32\rundll32.exe
+<SysRoot>\system32\runexehelper.exe
+<SysRoot>\System32\runonce.exe
+<SysRoot>\System32\sc.exe
+<SysRoot>\system32\schtasks.exe
+<SysRoot>\System32\scriptrunner.exe
+<SysRoot>\system32\setres.exe
+<SysRoot>\System32\SettingSyncHost.exe
+<SysRoot>\System32\spool\tools\PrintBrm.exe
+<SysRoot>\system32\stordiag.exe
+<SysRoot>\system32\svchost.exe
+<SysRoot>\System32\SyncAppvPublishingServer.exe
+<SysRoot>\System32\tar.exe
+<SysRoot>\System32\ttdinject.exe
+<SysRoot>\System32\tttracer.exe
+<SysRoot>\System32\unregmp2.exe
+<SysRoot>\System32\verclsid.exe
+<SysRoot>\system32\vsjitdebugger.exe
+<SysRoot>\System32\wbem\wmic.exe
+<SysRoot>\System32\windowspowershell\v1.0\powershell.exe
+<SysRoot>\system32\wlrmdr.exe
+<SysRoot>\System32\WorkFolders.exe
+<SysRoot>\System32\wscript.exe
+<SysRoot>\System32\wsl.exe
+<SysRoot>\System32\wsreset.exe
+<SysRoot>\System32\wuauclt.exe
+<SysRoot>\System32\xwizard.exe
+<SysRoot>\SysWOW64\At.exe
+<SysRoot>\SysWOW64\Atbroker.exe
+<SysRoot>\SysWOW64\bash.exe
+<SysRoot>\SysWOW64\bitsadmin.exe
+<SysRoot>\syswow64\certoc.exe
+<SysRoot>\SysWOW64\certreq.exe
+<SysRoot>\SysWOW64\certutil.exe
+<SysRoot>\SysWOW64\cmd.exe
+<SysRoot>\SysWOW64\cmdkey.exe
+<SysRoot>\SysWOW64\cmdl32.exe
+<SysRoot>\SysWOW64\cmstp.exe
+<SysRoot>\SysWOW64\colorcpl.exe
+<SysRoot>\SysWOW64\control.exe
+<SysRoot>\SysWOW64\cscript.exe
+<SysRoot>\syswow64\diantz.exe
+<SysRoot>\SysWOW64\diskshadow.exe
+<SysRoot>\SysWOW64\Dnscmd.exe
+<SysRoot>\SysWOW64\dsdbutil.exe
+<SysRoot>\SysWOW64\dxcap.exe
+<SysRoot>\SysWOW64\esentutl.exe
+<SysRoot>\SysWOW64\eventvwr.exe
+<SysRoot>\SysWOW64\Expand.exe
+<SysRoot>\SysWOW64\explorer.exe
+<SysRoot>\SysWOW64\extrac32.exe
+<SysRoot>\SysWOW64\findstr.exe
+<SysRoot>\syswow64\finger.exe
+<SysRoot>\SysWOW64\forfiles.exe
+<SysRoot>\SysWOW64\fsutil.exe
+<SysRoot>\SysWOW64\ftp.exe
+<SysRoot>\SysWOW64\gpscript.exe
+<SysRoot>\SysWOW64\hh.exe
+<SysRoot>\sysWOW64\ie4uinit.exe
+<SysRoot>\SysWOW64\Infdefaultinstall.exe
+<SysRoot>\syswow64\ldifde.exe
+<SysRoot>\SysWOW64\makecab.exe
+<SysRoot>\SysWOW64\mavinject.exe
+<SysRoot>\SysWOW64\mmc.exe
+<SysRoot>\SysWOW64\Msdt.exe
+<SysRoot>\SysWOW64\mshta.exe
+<SysRoot>\SysWOW64\msiexec.exe
+<SysRoot>\SysWOW64\Netsh.exe
+<SysRoot>\SysWOW64\odbcconf.exe
+<SysRoot>\syswow64\pktmon.exe
+<SysRoot>\SysWOW64\Presentationhost.exe
+<SysRoot>\SysWOW64\print.exe
+<SysRoot>\syswow64\psr.exe
+<SysRoot>\SysWOW64\rdrleakdiag.exe
+<SysRoot>\SysWOW64\reg.exe
+<SysRoot>\SysWOW64\regini.exe
+<SysRoot>\SysWOW64\Register-cimprovider.exe
+<SysRoot>\SysWOW64\regsvr32.exe
+<SysRoot>\SysWOW64\replace.exe
+<SysRoot>\SysWOW64\rpcping.exe
+<SysRoot>\SysWOW64\rundll32.exe
+<SysRoot>\SysWOW64\runonce.exe
+<SysRoot>\SysWOW64\sc.exe
+<SysRoot>\syswow64\schtasks.exe
+<SysRoot>\SysWOW64\scriptrunner.exe
+<SysRoot>\SysWOW64\SettingSyncHost.exe
+<SysRoot>\syswow64\stordiag.exe
+<SysRoot>\SysWOW64\SyncAppvPublishingServer.exe
+<SysRoot>\Syswow64\ttdinject.exe
+<SysRoot>\SysWOW64\tttracer.exe
+<SysRoot>\SysWOW64\unregmp2.exe
+<SysRoot>\SysWOW64\verclsid.exe
+<SysRoot>\SysWOW64\wbem\wmic.exe
+<SysRoot>\SysWOW64\wscript.exe
+<SysRoot>\SysWOW64\xwizard.exe
+<SysRoot>\WinSxS\amd64_microsoft-windows-u..ed-telemetry-client_31bf3856ad364e35_10.0.16299.15_none_c2df1bba78111118\Runscripthelper.exe
+<SysRoot>\WinSxS\amd64_microsoft-windows-u..ed-telemetry-client_31bf3856ad364e35_10.0.16299.192_none_ad4699b571e00c4a\Runscripthelper.exe

@@ -1114,12 +1114,14 @@ Function IsWin64() As Boolean
     If si(0) And PROCESSOR_ARCHITECTURE_AMD64 Then IsWin64 = True
 End Function
 
-Public Function CheckAccessWrite(sFilePath As String, Optional bDeleteFile As Boolean) As Boolean
+'Check access through physical write
+'
+Public Function CheckFileAccessWrite_Physically(sFilePath As String, Optional bDeleteFile As Boolean) As Boolean
     On Error GoTo ErrorHandler:
     Dim hFile As Long
     Dim bRedirect As Boolean
     Dim bOldStatus As Boolean
-
+    
     bRedirect = ToggleWow64FSRedirection(False, sFilePath, bOldStatus)
 
     If FileExists(sFilePath, , True) Then
@@ -1130,16 +1132,16 @@ Public Function CheckAccessWrite(sFilePath As String, Optional bDeleteFile As Bo
 
     If hFile > 0 Then
         CloseHandle hFile
-        CheckAccessWrite = True
+        CheckFileAccessWrite_Physically = True
     End If
-
-    If bRedirect Then Call ToggleWow64FSRedirection(bOldStatus)
-
+    
     If bDeleteFile Then
-        If FileExists(sFilePath, , True) Then
+        If hFile > 0 Then
             DeleteFilePtr StrPtr(sFilePath), , True
         End If
     End If
+    
+    If bRedirect Then Call ToggleWow64FSRedirection(bOldStatus)
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "CheckAccessWrite"
@@ -1192,7 +1194,7 @@ Public Function CheckFileAccess(sFileOrFolder As String, AccessMask As Long) As 
     End If
 End Function
 
-Public Function CheckAccess(hObject As Long, ObjType As SE_OBJECT_TYPE, AccessMask As Long) As Boolean
+Public Function CheckAccess(hObject As Long, ObjType As SE_OBJECT_TYPE, in_out_AccessMask As Long) As Boolean
     
     Dim SD() As Byte
     Dim hToken As Long
@@ -1220,7 +1222,7 @@ Public Function CheckAccess(hObject As Long, ObjType As SE_OBJECT_TYPE, AccessMa
     End If
 
     'map generic rights to user-defined specific rights
-    MapGenericMask AccessMask, mapping
+    MapGenericMask in_out_AccessMask, mapping
     
     If GetObjectSD(hObject, OWNER_SECURITY_INFORMATION Or DACL_SECURITY_INFORMATION Or GROUP_SECURITY_INFORMATION, SD) Then
     
@@ -1235,11 +1237,11 @@ Public Function CheckAccess(hObject As Long, ObjType As SE_OBJECT_TYPE, AccessMa
                 
                 PrivSetLength = LenB(PrivSet)
                 
-                If AccessCheck(SD(0), hImpersonatedToken, AccessMask, mapping, PrivSet, PrivSetLength, GrantedAccess, result) Then
+                If AccessCheck(SD(0), hImpersonatedToken, in_out_AccessMask, mapping, PrivSet, PrivSetLength, GrantedAccess, result) Then
                     If result Then
                         CheckAccess = True
                     End If
-                    AccessMask = GrantedAccess
+                    in_out_AccessMask = GrantedAccess
                 End If
                 
                 CloseHandle hImpersonatedToken
@@ -1606,7 +1608,7 @@ Public Function RegGetKeyFlags(hHive As ENUM_REG_HIVE, ByVal sKey As String, Opt
     
     lret = Reg.WrapNtOpenKeyEx(hHive, sKey, WRITE_OWNER, hKey, , bUseWow64)
     
-    If STATUS_SUCCESS = lret Then
+    If NT_SUCCESS(lret) Then
 
         Dim reqSize As Long
         lret = NtQueryKey(hKey, KeyFlagsInformation, ByVal VarPtr(RegGetKeyFlags), LenB(RegGetKeyFlags), reqSize)
@@ -1629,7 +1631,7 @@ Public Function RegGetKeyVirtualizationInfo(hHive As ENUM_REG_HIVE, ByVal sKey A
     
     lret = Reg.WrapNtOpenKeyEx(hHive, sKey, WRITE_OWNER, hKey, , bUseWow64)
     
-    If STATUS_SUCCESS = lret Then
+    If NT_SUCCESS(lret) Then
 
         Dim reqSize As Long
         lret = NtQueryKey(hKey, KeyVirtualizationInformation, ByVal VarPtr(RegGetKeyVirtualizationInfo), LenB(RegGetKeyVirtualizationInfo), reqSize)
@@ -1720,17 +1722,17 @@ Public Function GetDefaultFileSDDL() As String
     Dim SDDL As String
     
     SDDL = "O:BAG:BAD:PAI" ' Owner - Administrators / Group - Administrators / Disabled inheritance from parent
-    SDDL = SDDL & "(A;OICIID;FA;;;SY)" ' LocalSystem
-    SDDL = SDDL & "(A;OICIID;FA;;;BA)" ' Administrators
-    SDDL = SDDL & "(A;OICIID;FA;;;BU)" ' Users
-    SDDL = SDDL & "(A;OICIID;FA;;;S-1-5-80-956008885-3418522649-1831038044-1853292631-2271478464)" ' TrustedInstaller
+    SDDL = SDDL & "(A;OICI;FA;;;SY)" ' LocalSystem
+    SDDL = SDDL & "(A;OICI;FA;;;BA)" ' Administrators
+    SDDL = SDDL & "(A;OICI;FA;;;BU)" ' Users
+    SDDL = SDDL & "(A;OICI;FA;;;S-1-5-80-956008885-3418522649-1831038044-1853292631-2271478464)" ' TrustedInstaller
     
     If Not (OSver Is Nothing) Then
         If OSver.IsWindows8OrGreater Then
-            SDDL = SDDL & "(A;OICIID;FA;;;S-1-15-2-1)" 'AppX
+            SDDL = SDDL & "(A;OICI;FA;;;S-1-15-2-1)" 'AppX
         End If
         If OSver.IsWindows10OrGreater Then
-            SDDL = SDDL & "(A;OICIID;FA;;;S-1-15-2-2)" 'AppX restricted
+            SDDL = SDDL & "(A;OICI;FA;;;S-1-15-2-2)" 'AppX restricted
         End If
     End If
     

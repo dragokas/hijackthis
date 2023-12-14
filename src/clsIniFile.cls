@@ -131,7 +131,7 @@ Private Sub LoadFile()
             
             If Left$(aContents(i), 1) = "[" Then
                 'begin new section
-                sSection = Mid$(aContents(i), 2, Len(aContents(i)) - 2)
+                sSection = mid$(aContents(i), 2, Len(aContents(i)) - 2)
                 
                 If Not mo_Sect.Exists(sSection) Then
                     #If UseHashtable Then
@@ -147,7 +147,7 @@ Private Sub LoadFile()
                             pos = InStr(aContents(j), "=")
                             If pos <> 0 And Not (Left$(aContents(j), 1) = ";") Then
                                 sParam = Trim$(Left$(aContents(j), pos - 1))
-                                sData = Trim$(Mid$(aContents(j), pos + 1))
+                                sData = Trim$(mid$(aContents(j), pos + 1))
                                 If Not .Exists(sParam) Then .Add sParam, sData
                             End If
                         Next
@@ -238,9 +238,9 @@ Public Function Flush() As Boolean
             End If
         End If
         
-        If Not CheckAccessWrite(sIniFile) Then
+        If Not CheckFileAccessWrite_Physically(sIniFile) Then
             TryUnlock sIniFile
-            If Not CheckAccessWrite(sIniFile) Then
+            If Not CheckFileAccessWrite_Physically(sIniFile) Then
                 If Not bAutoLogSilent Then
                     'The value '[*]' could not be written to the settings file '[**]'. Please verify that write access is allowed to that file.
                     MsgBoxW Replace$(Replace$(Translate(1008), "'[*]' ", vbNullString), "[**]", sIniFile), vbCritical

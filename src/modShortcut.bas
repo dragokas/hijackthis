@@ -55,19 +55,19 @@ Dim CLSID_InternetShortcut  As UUID
 Private LnkHeader(19)        As Byte
 
 
-Public Function GetFileFromShortcut(Path As String, Optional out_Args As String, Optional ForceLNK As Boolean) As String
+Public Function GetFileFromShortcut(Path As String, Optional out_Args As String, Optional IsTypeLnk As Boolean) As String
     On Error GoTo ErrorHandler
 
     Dim Target  As String
     Dim ObjPath As String
     Dim sExt    As String
-
-    If ForceLNK Then
+    
+    If IsTypeLnk Then
         sExt = ".LNK"
     Else
         sExt = UCase$(GetExtensionName(Path))
     End If
-
+    
     Select Case sExt
     
         Case ".LNK"
@@ -208,9 +208,16 @@ Public Sub GetTargetShellLinkW(LNK_file As String, Optional Target As String, Op
     End If
     
     If 0 = Len(Target) Then
-        Target = String$(MAX_PATH_W, vbNullChar)
     
-        oSLink.GetPath Target, MAX_PATH_W, fd, SLGP_UNCPRIORITY
+        Target = String$(MAX_PATH, vbNullChar)
+        oSLink.getPath Target, MAX_PATH, fd, SLGP_UNCPRIORITY
+        Target = Left$(Target, lstrlen(StrPtr(Target)))
+        
+        If Len(Target) > 255 Then
+            Target = String$(MAX_PATH_W, vbNullChar)
+            oSLink.getPath Target, MAX_PATH_W, fd, SLGP_UNCPRIORITY
+            Target = Left$(Target, lstrlen(StrPtr(Target)))
+        End If
         
         If bTerminalServerEmulation Then
         
@@ -219,25 +226,30 @@ Public Sub GetTargetShellLinkW(LNK_file As String, Optional Target As String, Op
             End If
         End If
         
-        If OSver.IsLocalSystemContext Then
-            Target = PathSubstituteProfile(Target, LNK_file)
-        End If
-        
+        'If OSver.IsLocalSystemContext Then
+        '    Target = PathSubstituteProfile(Target, LNK_file)
+        'End If
         'temporarily hack - substitute profile in any case
         'to do it normally, I need make manual parsing of LNK (already done) and return 'Special Folder' ID,
         'or just check if first token in IDList represent link to 'Special folder ID'. In such case call PathSubstituteProfile
         
-        Target = PathSubstituteProfile(Target, LNK_file)
+        Target = PathSubstituteProfile(Target, ExtractProfilePath(LNK_file))
+        
+        Target = GetFullPath(Target)
+    Else
+        Target = GetFullPath(Left$(Target, lstrlen(StrPtr(Target))))
     End If
     
-    Target = GetFullPath(Left$(Target, lstrlen(StrPtr(Target))))
-
-    Argument = String$(MAX_PATH_W, 0)
-    
-    oSLink.GetArguments Argument, MAX_PATH_W
-
+    Argument = String$(MAX_PATH, 0)
+    oSLink.GetArguments Argument, MAX_PATH
     Argument = Left$(Argument, lstrlen(StrPtr(Argument)))
-
+    
+    If Len(Argument) > 255 Then
+        Argument = String$(MAX_PATH_W, 0)
+        oSLink.GetArguments Argument, MAX_PATH_W
+        Argument = Left$(Argument, lstrlen(StrPtr(Argument)))
+    End If
+    
     'добавил trim пробелов (приём игры в прятки вирмейкеров :)
     If 0 <> Len(Argument) Then Argument = Trim$(Argument)
 
@@ -252,6 +264,15 @@ Private Function DerefDataBlock(ByRef ESL As EXP_SZ_LINK, ByRef StrOut As String
     SysReAllocString VarPtr(StrOut), StrPtr(ESL.swzTarget)
 End Function
 
+Private Function ExtractProfilePath(sPath As String) As String
+    Dim pos As Long
+    pos = InStr(Len(ProfilesDir) + 2, sPath, "\")
+    If pos <> 0 Then
+        ExtractProfilePath = Left$(sPath, pos - 1)
+    Else
+        ExtractProfilePath = sPath
+    End If
+End Function
 
 
 ' Возвращает заголовок файла

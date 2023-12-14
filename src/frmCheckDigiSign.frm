@@ -454,6 +454,7 @@ Private Sub cmdGo_Click()
             End If
         End If
         vPath = Replace$(vPath, "\\", "\")
+        If Left$(vPath, 1) = "<" Then vPath = EnvironExtendedW(CStr(vPath))
         If mid$(vPath, 2, 1) <> ":" Then
             'try to remove some remnants from beginning of line
             pos = InStr(vPath, ":\")
@@ -741,7 +742,7 @@ Private Sub cmdGo_Click()
         sLogLine = sb.ToString & sLogLine
     Else
         sLogLine = ChrW$(-257) & "Logfile of Digital Signature Checker (HJT+ v." & AppVerString & ")" & vbCrLf & vbCrLf & _
-            MakeLogHeader() & vbCrLf & _
+            MakeLogHeader() & vbCrLf & vbCrLf & _
             "Is legitimate | FileName | Is Microsoft | Is WFP (Windows Protected File / SFC)" & vbCrLf & _
             "------------------------------------------------" & vbCrLf & _
             sLogLine & vbCrLf & vbCrLf & _

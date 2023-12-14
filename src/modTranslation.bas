@@ -477,7 +477,7 @@ Public Function LoadEncryptedResFileAsCollection(sFilename As String, ResID As L
     Set LoadEncryptedResFileAsCollection = col
 End Function
 
-Private Function EnvironExtendedW(sPath As String) As String
+Public Function EnvironExtendedW(sPath As String) As String
     If Left$(sPath, 1) = "<" Then
         Dim prefix As String
         Dim pos As Long
@@ -495,6 +495,10 @@ Private Function EnvironExtendedW(sPath As String) As String
                 EnvironExtendedW = PF_64 & mid$(sPath, pos)
             Case "<PF32>"
                 EnvironExtendedW = PF_32 & mid$(sPath, pos)
+            Case "<LocalAppData>"
+                EnvironExtendedW = LocalAppData & mid$(sPath, pos)
+            Case "<AllUsersProfile>"
+                EnvironExtendedW = AllUsersProfile & mid$(sPath, pos)
             Case Else
                 ErrorMsg Err, "Invalid prefix in database: " & sPath
         End Select

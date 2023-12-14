@@ -4,54 +4,64 @@ Begin VB.Form frmUnlockRegKey
    Caption         =   "Registry Key Unlocker"
    ClientHeight    =   3240
    ClientLeft      =   120
-   ClientTop       =   456
-   ClientWidth     =   8448
+   ClientTop       =   450
+   ClientWidth     =   8445
    Icon            =   "frmUnlockRegKey.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    ScaleHeight     =   3240
-   ScaleWidth      =   8448
+   ScaleWidth      =   8445
    Begin VBCCR17.CommandButtonW cmdJump 
-      Caption         =   "Open in Regedit"
       Height          =   450
       Left            =   6600
       TabIndex        =   4
       Top             =   60
       Width           =   1692
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Caption         =   "Open in Regedit"
    End
    Begin VBCCR17.CommandButtonW cmdGo 
-      Caption         =   "Go"
       Height          =   495
       Left            =   3960
       TabIndex        =   3
       Top             =   2520
       Width           =   1575
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Caption         =   "Go"
    End
    Begin VBCCR17.CheckBoxW chkRecur 
-      Caption         =   "Recursively (process keys and all subkeys)"
       Height          =   495
       Left            =   240
       TabIndex        =   2
       Top             =   2520
-      Value           =   1  'Checked
       Width           =   3615
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Value           =   1
+      Caption         =   "Recursively (process keys and all subkeys)"
    End
    Begin VBCCR17.TextBoxW txtKeys 
       Height          =   1815
       Left            =   240
-      MultiLine       =   -1  'True
-      ScrollBars      =   3  'Both
       TabIndex        =   1
       Top             =   600
       Width           =   8055
+      _ExtentX        =   0
+      _ExtentY        =   0
+      MultiLine       =   -1  'True
+      ScrollBars      =   3
    End
    Begin VBCCR17.LabelW lblWhatToDo 
-      Caption         =   "Enter Registry Key(s) to unlock and reset access:"
       Height          =   252
       Left            =   240
       TabIndex        =   0
       Top             =   240
       Width           =   6132
+      _ExtentX        =   0
+      _ExtentY        =   0
+      Caption         =   "Enter Registry Key(s) to unlock and reset access:"
    End
 End
 Attribute VB_Name = "frmUnlockRegKey"
@@ -97,6 +107,7 @@ Private Sub cmdGo_Click()
     sList.AppendLine "Logfile of Registry Key Unlocker (HJT+ v." & AppVerString & ")"
     sList.AppendLine
     sList.AppendLine MakeLogHeader()
+    sList.AppendLine
     sList.AppendLine "Logging started at:      " & TimeStarted
     sList.AppendLine
     
@@ -177,7 +188,7 @@ Private Sub Form_Load()
     SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold
     ReloadLanguage True
     LoadWindowPos Me, SETTINGS_SECTION_REGUNLOCKER
-    SubClassTextbox Me.txtKeys.hwnd, True
+    SubClassTextbox Me.txtKeys.hWnd, True
 End Sub
 
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
@@ -188,7 +199,7 @@ Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
         Cancel = True
         Me.Hide
     Else
-        SubClassTextbox Me.txtKeys.hwnd, False
+        SubClassTextbox Me.txtKeys.hWnd, False
     End If
 End Sub
 

@@ -156,10 +156,9 @@ Private Sub cmdGo_Click()
     sList.AppendLine "Logfile of Files Permission Unlocker (HJT+ v." & AppVerString & ")"
     sList.AppendLine
     sList.AppendLine MakeLogHeader()
+    sList.AppendLine
     sList.AppendLine "Logging started at:      " & TimeStarted
     sList.AppendLine
-    
-    TimeStarted = GetTime()
     
     Recursively = (chkRecur.Value = 1)
     

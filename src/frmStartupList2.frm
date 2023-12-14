@@ -1691,7 +1691,7 @@ Private Sub cmdSaveOK_Click()
     
     If OpenW(sFile, FOR_OVERWRITE_CREATE, hFile) Then
         PrintBOM hFile
-        PutStringW hFile, , sLog
+        PutString hFile, , sLog
         CloseW hFile
     End If
     
@@ -1904,7 +1904,7 @@ Private Sub Form_Load()
     If bAutoSave Then
         If OpenW(BuildPath(IIf(Len(sAutoSavePath) <> 0, sAutoSavePath, AppPath()), "startuplist.txt"), FOR_OVERWRITE_CREATE, hFile) Then
             PrintBOM hFile
-            PutStringW hFile, , GetStartupListReport
+            PutString hFile, , GetStartupListReport
             CloseW hFile
         End If
         '//TODO: check this

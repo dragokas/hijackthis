@@ -41,4 +41,6 @@ del _Extracted_lang.txt
 del _Func.txt
 del _Dll.txt
 del Tasks.csv
+del HJ-Fixlog*.log
+del FixFile.log
 ) 2>NUL

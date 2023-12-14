@@ -11,6 +11,20 @@ Version history:
 |||||       1. HiJackThis: changelog         |||||
 ==================================================
 
+[3.3.0.9 Alpha] - Dec 15, 2023
+ - Added detection of autorun Null-values.
+ - Added the database of LolBin files with updates from lolbas-project.github.io service (thanks to @oddvarmoe, @bohops, @xenosCR, @ConsciousHacker, @liamsomerville, @Wietze, @_josehelps)
+ - HijackThis fix is protected against accidental deletion of LolBin files that didn't pass digital signature verification for some reason.
+ - Escaping http => hxxp.
+ - Additional information is displayed for unsigned files: company from the file properties and SHA1 hash.
+ - The way of obtaining paths to processes has been changed - it doesn't require opening the process (thanks to @fafalone).
+ - O7 - TroubleShooting: improved checking of %Temp% system profiles.
+ - Auto-removal of DACL locks of HJT settings keys.
+ - More reliable handling the clipboard (thanks to @wqweto).
+ - MS certificates list has been updated (thanks to Sandor).
+ - Whitelists have been updated.
+ - Other fixes.
+
 [3.3.0.8 Alpha] - Nov 27, 2023
  - Added escaping of line breaks and non-printable characters. Format: \x1F, where 1F is the ASCII code of the character in Hex.
  - Added remembering of the last opened folder in various tools.

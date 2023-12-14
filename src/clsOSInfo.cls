@@ -797,7 +797,7 @@ Private Sub Class_Initialize()
     If osi.wSuiteMask And VER_SUITE_TERMINAL Then SuiteMask_ = SuiteMask_ & " + " & "Terminal"
     If osi.wSuiteMask And VER_SUITE_WH_SERVER Then SuiteMask_ = SuiteMask_ & " + " & "WH Server"
     
-    If 0 <> Len(SuiteMask_) Then SuiteMask_ = mid$(SuiteMask_, 4)
+    If 0 <> Len(SuiteMask_) Then SuiteMask_ = Mid$(SuiteMask_, 4)
     
     ' wProductType
     Select Case osi.wProductType
@@ -1719,7 +1719,7 @@ Private Function GetSecureBootState(out_Supported As Boolean, out_State As Boole
     Dim secboot As SECURE_BOOT_STATUS
     Dim dwRetSize As Long
     iStatus = NtQuerySystemInformation(SystemSecureBootInformation, ByVal VarPtr(secboot), LenB(secboot), dwRetSize)
-    If iStatus = STATUS_SUCCESS Then
+    If NT_SUCCESS(iStatus) Then
         out_Supported = secboot.fCapable
         out_State = secboot.fEnabled
     ElseIf iStatus = STATUS_INVALID_INFO_CLASS Then
@@ -1735,7 +1735,7 @@ Private Function GetCodeIntegrityFlags() As Long
     Dim dwRetSize As Long
     CodeIntegrity.Length = LenB(CodeIntegrity)
     iStatus = NtQuerySystemInformation(SystemCodeIntegrityInformation, ByVal VarPtr(CodeIntegrity), LenB(CodeIntegrity), dwRetSize)
-    If iStatus = STATUS_SUCCESS Then
+    If NT_SUCCESS(iStatus) Then
         GetCodeIntegrityFlags = CodeIntegrity.CodeIntegrityOptions
     End If
 End Function
@@ -2079,6 +2079,10 @@ End Property
 Private Function MakeTrue(ByRef bValue As Boolean) As Boolean
     MakeTrue = True
     bValue = True
+End Function
+
+Private Function NT_SUCCESS(NT_Code As Long) As Boolean
+    NT_SUCCESS = (NT_Code >= 0)
 End Function
 
 'Private Sub ErrorMsg(Err As ErrObject, ErrMessage As String)

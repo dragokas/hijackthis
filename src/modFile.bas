@@ -495,8 +495,7 @@ ErrorHandler:
 End Function
 
 
-
-Public Function OpenW(FileName As String, Access As VB_FILE_ACCESS_MODE, retHandle As Long, Optional Flags As Long) As Boolean
+Public Function OpenW(FileName As String, Access As VB_FILE_ACCESS_MODE, retHandle As Long, Optional Flags As Long, Optional bLockFile As Boolean) As Boolean
     
     AppendErrorLogCustom "OpenW - Begin", "File: " & FileName, "Access: " & Access
     
@@ -543,11 +542,20 @@ Public Function OpenW(FileName As String, Access As VB_FILE_ACCESS_MODE, retHand
                 Err.Clear: AppendErrorLogNoErr Err, "modFile.OpenW", "Trying to open too big file" & ": (" & (FSize \ 1024 \ 1024) & " MB.) " & FileName
             End If
         End If
+        If bLockFile And OpenW Then
+            Dim ov As OVERLAPPED
+            ov.offset = 0
+            ov.InternalHigh = 0
+            ov.hEvent = 0
+            If (0 = LockFileEx(retHandle, LOCKFILE_EXCLUSIVE_LOCK Or LOCKFILE_FAIL_IMMEDIATELY, 0&, 1& * 1024 * 1024, 0&, VarPtr(ov))) Then
+                AppendErrorLogCustom "Can't lock file. Err = " & Err.LastDllError
+            End If
+        End If
     Else
         AppendErrorLogNoErr Err, "modFile.OpenW", "Cannot open file: " & FileName
         'Err.Raise 75 ' Path/File Access error
     End If
-
+    
     AppendErrorLogCustom "OpenW - End", "Handle: " & retHandle
 End Function
 
@@ -635,19 +643,23 @@ Public Function GetW(hFile As Long, Optional vPos As Variant, Optional vOut As V
 '    Resume Next
 End Function
 
-Public Function PutStringW(hFile As Long, Optional pos As Long, Optional sStr As String, Optional bUnicode As Boolean = True) As Boolean
+Public Function PutStringUnicode(hFile As Long, Optional pos As Long, Optional sStr As String) As Boolean
+    PutStringUnicode = PutString(hFile, pos, sStr, True)
+End Function
+
+Public Function PutString(hFile As Long, Optional pos As Long, Optional sStr As String, Optional bUnicode As Boolean = True) As Boolean
     Dim doAppend As Boolean
     If Len(sStr) <> 0 Then
         If pos = 0 Then doAppend = True
         If bUnicode Then
-            PutStringW = PutW(hFile, pos, StrPtr(sStr), LenB(sStr), doAppend)
+            PutString = PutW(hFile, pos, StrPtr(sStr), LenB(sStr), doAppend)
         Else
             Dim ansi As String
             ansi = StrConv(sStr, vbFromUnicode)
-            PutStringW = PutW(hFile, pos, StrPtr(ansi), LenB(ansi), doAppend)
+            PutString = PutW(hFile, pos, StrPtr(ansi), LenB(ansi), doAppend)
         End If
     Else
-        PutStringW = True
+        PutString = True
     End If
 End Function
 
@@ -706,9 +718,6 @@ Public Function LOFW(hFile As Long) As Currency
         If lr Then
             If FileSize < 10000000000@ Then
                 LOFW = FileSize * 10000&
-            Else
-                Err.Clear
-                ErrorMsg Err, "File is too big. Size: " & FileSize
             End If
         End If
     End If
@@ -744,9 +753,29 @@ Public Function PrintBOM(hFile As Long) As Boolean
     PrintBOM = PutW(hFile, 0, StrPtr(BOM), 2, True)
 End Function
 
+Public Sub CloseLockedFileW(hFile As Long)
+
+    Dim lret As Long
+    Dim ov As OVERLAPPED
+    ov.offset = 0
+    ov.InternalHigh = 0
+    ov.hEvent = 0
+    
+    If g_LogLocked Then
+        lret = UnlockFileEx(hFile, 0&, 1& * 1024 * 1024, 0&, VarPtr(ov))
+        If lret = 0 Then
+            AppendErrorLogCustom "UnlockFileEx is failed with err = " & Err.LastDllError
+        End If
+    End If
+    
+    FlushFileBuffers hFile
+    CloseW hFile
+End Sub
+
 Public Function CloseW(hFile As Long, Optional bFlushBuffers As Boolean) As Long
     AppendErrorLogCustom "CloseW", "Handle: " & hFile
     If hFile = 0 Then Exit Function
+    If hFile = INVALID_HANDLE_VALUE Then Exit Function
     
 '    Dim AccessMode As Long
 '    Dim IO As IO_STATUS_BLOCK
@@ -763,7 +792,6 @@ Public Function CloseW(hFile As Long, Optional bFlushBuffers As Boolean) As Long
     End If
 
     CloseW = CloseHandle(hFile)
-    If CloseW Then hFile = INVALID_HANDLE_VALUE
 End Function
 
 '// TODO. I don't like it. Re-check it !!!
@@ -1381,7 +1409,7 @@ Public Function GetFilePropCompany(sFilename As String) As String
             lstrcpy ByVal StrPtr(sCompanyName), ByVal hData
         End If
         
-        GetFilePropCompany = RTrimNull(sCompanyName)
+        GetFilePropCompany = RTrimNull(LTrim(sCompanyName))
     End If
 Finalize:
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
@@ -1534,16 +1562,17 @@ Public Function GetEmptyName(ByVal sFullPath As String) As String
     Dim sPath As String
     Dim i As Long
 
-    If Not FileExists(sFullPath) Then
+    If Not FileExists(sFullPath, , True) Then
         GetEmptyName = sFullPath
     Else
         sExt = GetExtensionName(sFullPath)
         sPath = GetPathName(sFullPath)
         sName = GetFileName(sFullPath)
+        i = 1
         Do
             i = i + 1
             sFullPath = BuildPath(sPath, sName & "(" & i & ")" & sExt)
-        Loop While FileExists(sFullPath)
+        Loop While FileExists(sFullPath, , True)
         
         GetEmptyName = sFullPath
     End If
@@ -2212,9 +2241,9 @@ Public Function IniSetString( _
         End If
     End If
     
-    If Not CheckAccessWrite(sIniFile) Then
+    If Not CheckFileAccessWrite_Physically(sIniFile) Then
         TryUnlock sIniFile
-        If Not CheckAccessWrite(sIniFile) Then
+        If Not CheckFileAccessWrite_Physically(sIniFile) Then
             If Not bAutoLogSilent Then
                 'The value '[*]' could not be written to the settings file '[**]'. Please verify that write access is allowed to that file.
                 MsgBoxW Replace$(Replace$(Translate(1008), "[*]", vData), "[**]", sIniFile), vbCritical
@@ -2317,9 +2346,9 @@ Public Function IniRemoveString( _
         End If
     End If
 
-    If Not CheckAccessWrite(sIniFile) Then
+    If Not CheckFileAccessWrite_Physically(sIniFile) Then
         TryUnlock sIniFile
-        If Not CheckAccessWrite(sIniFile) Then
+        If Not CheckFileAccessWrite_Physically(sIniFile) Then
             If Not bAutoLogSilent Then
                 'The parameter '[*]' could not be removed from the settings file '[**]'. Please verify that write access is allowed for that file.
                 MsgBoxW Replace$(Replace$(Translate(1009), "[*]", sParameter), "[**]", sIniFile), vbCritical
@@ -2540,7 +2569,7 @@ Public Function FileCopyW(FileSource As String, FileDestination As String, Optio
         TryUnlock FileDestination
         FileCopyW = CopyFile(StrPtr(FileSource), StrPtr(FileDestination), Not bOverwrite)
         If Not FileCopyW Then
-            If DeleteFilePtr(StrPtr(FileDestination), , True) Then
+            If DeleteFilePtr(StrPtr(FileDestination), True, True) Then
                 FileCopyW = CopyFile(StrPtr(FileSource), StrPtr(FileDestination), Not bOverwrite)
             End If
         End If
@@ -3491,11 +3520,11 @@ Public Function CreateFileStream(sPath As String, sStreamName As String, binData
         0&, _
         0&)
     
-    If status = STATUS_SUCCESS And hFile <> -1 Then
+    If NT_SUCCESS(status) And hFile <> -1 Then
 
         status = NtWriteFile(hFile, ByVal 0, ByVal 0, ByVal 0, iosb, VarPtr(binData(0)), UBound(binData) + 1, ByVal 0, ByVal 0)
         
-        If status = STATUS_SUCCESS Then
+        If NT_SUCCESS(status) Then
             CreateFileStream = True
         End If
         

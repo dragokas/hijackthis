@@ -280,8 +280,7 @@ Public Sub RefreshProcessListNT(objList As VBCCR17.ListBoxW)
                 sProcessName = Process(i).Path
                 
                 If Len(Process(i).Path) = 0 Then
-                
-                    If Not IsDefaultSystemProcess(Process(i).pid, Process(i).Name, Process(i).Path) Then
+                    If Not IsMinimalProcess(Process(i).pid, Process(i).Name) Then
                         sProcessName = Process(i).Name '& " (cannot get Process Path)"
                     End If
                 End If
@@ -387,7 +386,7 @@ Public Sub CopyProcessList(objProcess As VBCCR17.ListBoxW, objDLL As VBCCR17.Lis
     '[file version]
     '[company name]
     
-    sList = "Logfile of Itty Bitty Process Manager v." & ProcManVer & " (HijackThis+ v." & AppVerString & ")" & vbCrLf & vbCrLf & MakeLogHeader() & vbCrLf & _
+    sList = "Logfile of Itty Bitty Process Manager v." & ProcManVer & " (HijackThis+ v." & AppVerString & ")" & vbCrLf & vbCrLf & MakeLogHeader() & vbCrLf & vbCrLf & _
             "[pid]" & vbTab & Translate(186) & vbTab & vbTab & Translate(187) & vbTab & Translate(188) & vbCrLf
     For i = 0 To objProcess.ListCount - 1
         sProcess = objProcess.List(i)

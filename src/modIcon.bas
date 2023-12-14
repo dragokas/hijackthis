@@ -380,6 +380,9 @@ Public Function SetMenuCaptionByMenu(mMenu As Menu, sNewText As String) As Boole
     
     If mid.hMenu <> 0 Then
         SetMenuCaptionByMenu = SetMenuCaption(mid.hMenu, mid.nid, sNewText, True)
+    Else
+        '// TODO: Unicode for context menus
+        mMenu.Caption = sNewText
     End If
     
     Exit Function

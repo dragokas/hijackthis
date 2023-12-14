@@ -264,7 +264,7 @@ Private Function Callback_WndTextbox(ByVal hWnd As Long, ByVal uMsg As Long, ByV
     
     Case WM_COPY
         Callback_WndTextbox = DefSubclassProc(hWnd, uMsg, wParam, lParam)
-        If OpenClipboard(hWnd) Then
+        If OpenClipboardEx(hWnd) Then
             Dim hMem As Long
             Dim ptr As Long
             hMem = GlobalAlloc(GMEM_MOVEABLE, 4)
@@ -273,9 +273,10 @@ Private Function Callback_WndTextbox(ByVal hWnd As Long, ByVal uMsg As Long, ByV
                 If ptr <> 0 Then
                     GetMem4 OSver.LangNonUnicodeCode, ByVal ptr
                     GlobalUnlock hMem
-                    SetClipboardData CF_LOCALE, hMem
+                    If SetClipboardData(CF_LOCALE, hMem) = 0 Then
+                        GlobalFree hMem
+                    End If
                 End If
-                'GlobalFree hMem
             End If
             CloseClipboard
         End If
@@ -414,13 +415,13 @@ Public Function GetBrowsersInfo() As BROWSERS_VERSION_INFO
     
     Dim Cmd As String
     Dim FriendlyName As String
-    Dim Path As String
+    Dim path As String
     Dim Arguments As String
     Cmd = GetDefaultApp("http", FriendlyName)
     If Len(Cmd) = 0 Then
         Cmd = "Program is not associated"
     Else
-        SplitIntoPathAndArgs Cmd, Path, Arguments
+        SplitIntoPathAndArgs Cmd, path, Arguments
     End If
     
     With GetBrowsersInfo
@@ -429,7 +430,7 @@ Public Function GetBrowsersInfo() As BROWSERS_VERSION_INFO
         .Chrome.Version = GetChromeVersion()
         .Firefox.Version = GetFirefoxVersion()
         .Opera.Version = GetOperaVersion()
-        .Default = Cmd & IIf(Path = "(AppID)", " " & FriendlyName, IIf(Len(FriendlyName) <> 0, " (" & FriendlyName & ")", vbNullString))
+        .Default = Cmd & IIf(path = "(AppID)", " " & FriendlyName, IIf(Len(FriendlyName) <> 0, " (" & FriendlyName & ")", vbNullString))
     End With
     AppendErrorLogCustom "GetBrowsersInfo - End"
 End Function
@@ -612,65 +613,8 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-' Особая процедура удаления файла (с разблокировкой NTFS привилегий)
-Public Function DeleteFileForce(File As String, Optional bForceMicrosoft As Boolean) As Long
-    On Error GoTo ErrorHandler:
-    AppendErrorLogCustom "DeleteFileForce - Begin", "File: " & File
-    
-    Const FILE_ATTRIBUTE_NORMAL     As Long = &H80&
-    Const FILE_ATTRIBUTE_READONLY   As Long = 1&
-    
-    Dim lr          As Long
-    Dim Attrib      As Long
-    Dim isDeleted   As Boolean
-    Dim Redirect As Boolean, bOldStatus As Boolean
-
-    If Not bForceMicrosoft Then
-        If IsMicrosoftFile(File, True) Then Exit Function
-    End If
-
-    Redirect = ToggleWow64FSRedirection(False, File, bOldStatus)
-
-    Attrib = GetFileAttributes(StrPtr(File))
-    
-    If Attrib <> INVALID_FILE_ATTRIBUTES Then
-        If Attrib And FILE_ATTRIBUTE_READONLY Then
-            SetFileAttributes StrPtr(File), Attrib And Not FILE_ATTRIBUTE_READONLY
-        End If
-    End If
-    
-    lr = DeleteFileW(StrPtr(File))  'not 0 - success
-    If lr = 0 Then
-        If inIDE Then Debug.Print "Error " & Err.LastDllError & " when deleting file: " & File
-    End If
-
-    ' -> в случае неудачи, попытка получения прав NTFS + смена владельца на локальную группу "Администраторы"
-    ' цель и аргументы передаются только для включение в отчет
-
-    isDeleted = Not FileExists(File)
-    
-    If Not isDeleted Then
-        TryUnlock File
-        SetFileAttributes StrPtr(File), FILE_ATTRIBUTE_NORMAL
-        
-        Call DeleteFileW(StrPtr(File))
-        'lr = Err.LastDllError
-        
-        isDeleted = Not FileExists(File)
-    End If
-    
-    If isDeleted Then SHChangeNotify SHCNE_DELETE, SHCNF_PATH Or SHCNF_FLUSHNOWAIT, StrPtr(File), ByVal 0&
-
-    DeleteFileForce = isDeleted 'lr
-
-    If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
-    
-    AppendErrorLogCustom "DeleteFileForce - End"
-    Exit Function
-ErrorHandler:
-    ErrorMsg Err, "DeleteFileEx", "File:", File
-    If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
-    If inIDE Then Stop: Resume Next
+Public Function DeleteFileForce(File As String, Optional bForceMicrosoft As Boolean, Optional DisallowRemoveOnReboot As Boolean) As Long
+    DeleteFilePtr StrPtr(File), bForceMicrosoft, DisallowRemoveOnReboot
 End Function
 
 Public Function TryUnlock(ByVal FS_Object As String, Optional bRecursive As Boolean) As Boolean
@@ -707,10 +651,10 @@ Public Function AppPath(Optional bGetFullPath As Boolean) As String
     
     If inIDE Then
         If bGetFullPath Then
-            AppPath = GetDOSFilename(App.Path, bReverse:=True) & "\" & GetValueFromVBP(BuildPath(App.Path, App.ExeName & ".vbp"), "ExeName32")
+            AppPath = GetDOSFilename(App.path, bReverse:=True) & "\" & GetValueFromVBP(BuildPath(App.path, App.ExeName & ".vbp"), "ExeName32")
             ProcPathFull = AppPath
         Else
-            AppPath = GetDOSFilename(App.Path, bReverse:=True)
+            AppPath = GetDOSFilename(App.path, bReverse:=True)
             ProcPathShort = AppPath
         End If
         Exit Function
@@ -728,7 +672,7 @@ Public Function AppPath(Optional bGetFullPath As Boolean) As String
     End If
     
     If cnt = 0 Then                          'clear path
-        ProcPath = App.Path
+        ProcPath = App.path
     Else
         ProcPath = Left$(ProcPath, cnt)
         If StrComp("\SystemRoot\", Left$(ProcPath, 12), 1) = 0 Then ProcPath = sWinDir & mid$(ProcPath, 12)
@@ -832,7 +776,9 @@ Public Function ParseCommandLine(Line As String, argc As Long, argv() As String,
   If Len(St) > 0 Then ParseCommandLine = True
   Lex = Split(St) 'Разбиваем по пробелам на лексемы для анализа знаков
   ReDim argv(0 To UBound(Lex) + 1) As String 'Определяем выходной массив до максимально возможного числа параметров
-  argv(0) = AppPath(True)
+  If Not bFirstArgIncomedAsAppExe Then
+    argv(0) = AppPath(True)
+  End If
   If Len(St) <> 0 Then
     Do While nL <= UBound(Lex)
       Unit = Lex(nL) 'Записысаем текущую лексему как начало нового аргумента
@@ -851,6 +797,8 @@ Public Function ParseCommandLine(Line As String, argc As Long, argv() As String,
         If bFirstArgIncomedAsAppExe Then
           If nA > 1 Then
             argv(nA - 1) = Unit
+          Else
+            argv(0) = Unit
           End If
         Else
           argv(nA) = Unit
@@ -891,47 +839,45 @@ Function ExtractFilesFromCommandLine(sCmdLine As String) As String()
 End Function
 
 'Delete File with unlock access rights on failure. Return non 0 on success.
+'
 Public Function DeleteFilePtr(lpSTR As Long, Optional ForceDeleteMicrosoft As Boolean, Optional DisallowRemoveOnReboot As Boolean) As Long
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "DeleteFilePtr - Begin"
-
-    Dim iAttr As Long, lr As Long, sExt As String, sNewName As String
-    Dim Redirect As Boolean, bOldStatus As Boolean
-
-    Dim FileName$
-    FileName = String$(lstrlen(lpSTR), vbNullChar)
-    If Len(FileName) <> 0 Then
-        lstrcpy StrPtr(FileName), lpSTR
+    
+    Dim iAttr As Long, lr As Long, sExt As String, sNewPath As String, sPath As String
+    Dim Redirect As Boolean, bOldStatus As Boolean, bMicrosoft As Boolean
+    
+    sPath = String$(lstrlen(lpSTR), vbNullChar)
+    If Len(sPath) <> 0 Then
+        lstrcpy StrPtr(sPath), lpSTR
     Else
         Exit Function
     End If
     
-    ' prevent removing parent process
-    If StrComp(FileName, MyParentProc.Path, vbTextCompare) = 0 Then
-        DeleteFilePtr = True
-        Exit Function
-    End If
-    
-    sExt = GetExtensionName(FileName)
+    sExt = GetExtensionName(sPath)
     
     If Not ForceDeleteMicrosoft Then
         If Not StrInParamArray(sExt, ".txt", ".log", ".tmp", ".ini") Then
-            If IsMicrosoftFile(FileName, True) Then
-                SFC_RestoreFile FileName
-                Exit Function
-            ElseIf IsFileSFC(FileName) Then
-                SFC_RestoreFile FileName
+            bMicrosoft = IsLolBin_ProtectedList(sPath)
+            If Not bMicrosoft Then
+                bMicrosoft = IsMicrosoftFile(sPath, True)
+            End If
+            If Not bMicrosoft Then
+                bMicrosoft = IsFileSFC(sPath)
+            End If
+            If bMicrosoft Then
+                SFC_RestoreFile sPath
                 Exit Function
             End If
         End If
     End If
     
     If g_bDelModePending Then
-        DeleteFileOnReboot FileName, bNoReboot:=True
+        DeleteFileOnReboot sPath, bNoReboot:=True
         Exit Function
     End If
     
-    Redirect = ToggleWow64FSRedirection(False, FileName, bOldStatus)
+    Redirect = ToggleWow64FSRedirection(False, sPath, bOldStatus)
     
     iAttr = GetFileAttributes(lpSTR)
     If iAttr <> INVALID_FILE_ATTRIBUTES Then
@@ -952,19 +898,19 @@ Public Function DeleteFilePtr(lpSTR As Long, Optional ForceDeleteMicrosoft As Bo
     End If
     
     If Err.LastDllError = ERROR_ACCESS_DENIED Then
-        TryUnlock FileName
+        TryUnlock sPath
         SetFileAttributes lpSTR, FILE_ATTRIBUTE_NORMAL
         lr = DeleteFileW(lpSTR)
     End If
     
     If lr = 0 Then 'if process still run, try rename file
-        sNewName = GetEmptyName(FileName & ".bak")
+        sNewPath = GetEmptyName(sPath & ".bak")
         
         'if failed
-        If 0 = MoveFile(StrPtr(FileName), StrPtr(sNewName)) Then
+        If 0 = MoveFile(StrPtr(sPath), StrPtr(sNewPath)) Then
             'plan to delete on reboot
             If Not DisallowRemoveOnReboot Then
-                DeleteFileOnReboot FileName, bNoReboot:=True
+                DeleteFileOnReboot sPath, bNoReboot:=True
                 bRebootRequired = True
             End If
         End If
@@ -976,7 +922,7 @@ Finalize:
     AppendErrorLogCustom "DeleteFilePtr - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "Parser.DeleteFilePtr", "File:", FileName
+    ErrorMsg Err, "Parser.DeleteFilePtr", "File:", sPath
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -2817,13 +2763,13 @@ Public Function HexStringToNumber(str As String) As Long
     End If
 End Function
 
-Public Function PathRemoveLastSlash(Path As String) As String
+Public Function PathRemoveLastSlash(path As String) As String
     Dim ch As String
-    ch = Right$(Path, 1)
+    ch = Right$(path, 1)
     If ch = "\" Or ch = "/" Then
-        PathRemoveLastSlash = Left$(Path, Len(Path) - 1)
+        PathRemoveLastSlash = Left$(path, Len(path) - 1)
     Else
-        PathRemoveLastSlash = Path
+        PathRemoveLastSlash = path
     End If
 End Function
 
@@ -2835,14 +2781,14 @@ Public Sub PathRemoveLastSlashInArray(arr() As String)
 End Sub
 
 Public Function GetDefaultTextEditorPath() As String
-    Dim Cmd As String, Path As String
+    Dim Cmd As String, path As String
     Cmd = GetDefaultApp(".txt")
-    SplitIntoPathAndArgs Cmd, Path
-    Path = EnvironW(Path)
-    If Not FileExists(Path) Then
-        Path = "rundll32.exe shell32,ShellExec_RunDLL"
+    SplitIntoPathAndArgs Cmd, path
+    path = EnvironW(path)
+    If Not FileExists(path) Then
+        path = "rundll32.exe shell32,ShellExec_RunDLL"
     End If
-    GetDefaultTextEditorPath = Path
+    GetDefaultTextEditorPath = path
 End Function
 
 Public Sub OpenInTextEditor(sTextFile As String)
@@ -2902,5 +2848,5 @@ begin:
             GoTo begin
         End If
     Next
-    ScreenLogLine = sLine
+    ScreenLogLine = Replace$(sLine, "http", "hxxp", vbTextCompare)
 End Function

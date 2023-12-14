@@ -1,4 +1,10 @@
 Attribute VB_Name = "modPeParser"
+' [modPeParser.bas]
+'
+' Pe Parser by The Trick & Dragokas
+'
+' Thanks to fafalone for improvements
+'
 Option Explicit
 
 #If VBA7 = 0 Then

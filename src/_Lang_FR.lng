@@ -1843,7 +1843,13 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
 2317=Cela n'affichera que les éléments trouvés dans la liste
 2318=Marquer instantanément les éléments trouvés
 ;
+; ========= Fixing script form =========
+;
+; (2500 - 2999)
+;
+2500=Exécuter le correctif à partir du presse-papiers?
+;
 ; ========= Empty ========
 ;
-; (2500 - ...)
+; (3000 - ...)
 ;

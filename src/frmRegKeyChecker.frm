@@ -681,7 +681,7 @@ Private Sub GetKeyInfo(KeyInfo As REG_KEY_INFO, ByVal sKey As String, bView32 As
     KeyInfo.SecurityDescriptor = GetKeyStringSD(hHive, sKey, bView32)
     
     lret = Reg.WrapNtOpenKeyEx(hHive, sKey, WRITE_OWNER, hKey, , bView32)
-    If STATUS_SUCCESS = lret Then
+    If NT_SUCCESS(lret) Then
         Dim reqSize As Long
     
         KeyInfo.NativeKeyName = Reg.RegGetKeyInfoNameEx(hKey)
@@ -799,7 +799,7 @@ Private Sub AddLogHeader(sb As clsStringBuilder, bCSV As Boolean)
         sb.AppendLine s
     Else
         sb.AppendLine ChrW$(-257) & "Logfile of Registry Key Type Analyzer (HJT+ v." & AppVerString & ")" & vbCrLf & vbCrLf & _
-            MakeLogHeader() & vbCrLf & _
+            MakeLogHeader() & vbCrLf & vbCrLf & _
             s & vbCrLf
     End If
 End Sub

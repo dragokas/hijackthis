@@ -2352,6 +2352,8 @@ Attribute VB_Exposed = False
 
 Option Explicit
 
+#Const SCRIPT_FIX = False
+
 Private Const HJT_ALPHA             As Boolean = True
 Private Const HJT_BETA              As Boolean = False
 
@@ -2401,6 +2403,10 @@ Public Sub Test()
     
     chkHelp(4).Visible = False
     cmdFixing.Visible = False
+    
+    #If SCRIPT_FIX Then
+        Script.ExecuteFixFromFile "C:\Users\Alex\Desktop\script.txt"
+    #End If
     
     Exit Sub
 ErrorHandler:
@@ -2565,7 +2571,7 @@ Private Sub FormStart_Stage1()
         SubClassScroll True
     End If
     
-    AppVerPlusName = g_AppName & " " & "by Alex Dragokas, build " & GetOwnCompilationDate() & " " & _
+    AppVerPlusName = g_AppName & " build " & GetOwnCompilationDate() & " " & _
         IIf(bIsAlpha, "Alpha", IIf(bIsBeta, "Beta", "Stable")) & " v." & AppVerString
     
     If Not bPolymorph Then
@@ -2647,7 +2653,7 @@ Private Sub FormStart_Stage1()
     
     'header of tracing log
     AppendErrorLogCustom vbCrLf & vbCrLf & "Logfile ( tracing ) of HijackThis+ v." & AppVerString & vbCrLf & vbCrLf & _
-        "Command line: " & AppPath(True) & " " & g_sCommandLine & vbCrLf & vbCrLf & MakeLogHeader()
+        "Command line: " & AppPath(True) & " " & g_sCommandLine & vbCrLf & vbCrLf & MakeLogHeader() & vbCrLf
     
     LoadLoLBinList
     LoadSettings
@@ -3021,13 +3027,24 @@ Private Sub FormStart_Stage2()
         Unload Me: Exit Sub
     End If
     
-    FormStart_Stage3
+    FormStart_Stage3 'private switches
     
     If HasCommandLineKey("Area:None") Then
         DeleteFile StrPtr(g_sLogFile)
     Else
-        CheckAutoLog
+        CheckAutoLog 'UI & Autolog stuff if required
     End If
+    
+    #If SCRIPT_FIX Then
+    If Not bAutoLog Then
+        If Script.HasFixInClipboard() Then
+            'Execute fix from clipboard?
+            If MsgBox(Translate(2500), vbYesNo Or vbQuestion, g_AppName) = vbYes Then
+                Script.ExecuteFixFromClipboard False
+            End If
+        End If
+    End If
+    #End If
     
     AppendErrorLogCustom "FormStart_Stage2 - End"
     Exit Sub

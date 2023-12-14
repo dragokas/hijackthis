@@ -1,0 +1,7 @@
+<SysRoot>\System32\csrss.exe
+<SysRoot>\System32\smss.exe
+<SysRoot>\System32\lsass.exe
+<SysRoot>\System32\wininit.exe
+<SysRoot>\System32\logonui.exe
+<SysRoot>\System32\services.exe
+<SysRoot>\System32\winlogon.exe

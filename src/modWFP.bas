@@ -282,7 +282,7 @@ End Function
 Public Function IsFileSFC(sFile As String) As Boolean
     IsFileSFC = SfcIsFileProtected(0&, StrPtr(sFile)) <> 0
 End Function
- 
+
 ' Пропатчивание функции
 Private Sub PatchFunc(FuncName As String, ByVal Addr As Long)
     Dim lpAddr As Long, hProj As Long, SID As Long

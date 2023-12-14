@@ -17,6 +17,7 @@ Option Explicit
 'by default = true
 #Const AUTOLOGGER_DEBUG_TO_FILE = True 'auto-activate /DebugToFile if app ran within Autologger
 
+Public Script As clsScript
 
 Private Declare Function GetProcAddress Lib "kernel32.dll" (ByVal hModule As Long, ByVal lpProcName As String) As Long
 Private Declare Function SetEnvironmentVariable Lib "kernel32" Alias "SetEnvironmentVariableW" (ByVal lpName As Long, ByVal lpValue As Long) As Long
@@ -37,6 +38,16 @@ Public Sub Main()
     If Not bAcceptEula Then Exit Sub
     
     PostInit
+    
+    Set Script = New clsScript
+    
+    If bPolymorph And Not bAutoLog Then
+        '// TODO
+        'If Script.HasFixInClipboard() Then
+        '    Script.ExecuteFixFromClipboard false
+        '    Exit Sub
+        'end if
+    End If
     
     If FileExists(BuildPath(AppPath, "apps\VBCCR17.OCX")) Then
         If FixTempFolder() Then
@@ -146,12 +157,12 @@ Public Function FixTempFolder() As Boolean
     sTempF = String$(MAX_PATH, 0)
     
     If GetTempPath(Len(sTempF), StrPtr(sTempF)) = 0 Then
-        sTempF = Environ("Temp")
+        sTempF = Environ("TMP")
     End If
     
     If Len(sTempF) = 0 Then
         sTempF = Environ("USERPROFILE") & "\AppData\Local\Temp"
-        SetEnvironmentVariable StrPtr("Temp"), StrPtr(sTempF)
+        SetEnvironmentVariable StrPtr("TMP"), StrPtr(sTempF)
     End If
     
     If Not FolderExistsNAC(sTempF) Then
@@ -212,6 +223,8 @@ Private Sub PostInit()
     
     ProcessCommandLine
     
+    FixPermissions
+    
     If inIDE Then
         AppVerString = GetVersionFromVBP(BuildPath(AppPath(), App.ExeName & ".vbp"))
     Else
@@ -219,11 +232,31 @@ Private Sub PostInit()
     End If
     
     AppendErrorLogCustom "Logfile ( tracing ) of HijackThis+ v." & AppVerString & vbCrLf & vbCrLf & _
-        "Command line: " & AppPath(True) & " " & g_sCommandLine & vbCrLf & vbCrLf & MakeLogHeader()
-
+        "Command line: " & AppPath(True) & " " & g_sCommandLine & vbCrLf & vbCrLf & MakeLogHeader() & vbCrLf
+    
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "PostInit"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Private Sub FixPermissions()
+    On Error GoTo ErrorHandler:
+    Dim Blocked As Boolean
+    
+    If Not CheckKeyAccess(HKLM, g_SettingsRegKey, KEY_READ Or IIf(OSver.IsElevated, KEY_WRITE, 0)) Then
+        Blocked = True
+    ElseIf Reg.HasDenyACL(HKLM, g_SettingsRegKey) Then
+        Blocked = True
+    End If
+    
+    If Blocked Then
+        Call modPermissions.RegKeyResetDACL(HKLM, g_SettingsRegKey, False, True)
+    End If
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "FixPermissions"
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -239,8 +272,9 @@ Private Sub ProcessCommandLine()
     Dim pos         As Long
     Dim sTime       As String
     Dim sCmdLine    As String
-    Dim sPath       As String
+    Dim sCustomPath As String
     Dim ExeName     As String
+    Dim bLogBusy    As Boolean
     
     If HasCommandLineKey("StartupScan") Then '/StartupScan
         bStartupScan = True
@@ -345,44 +379,47 @@ Private Sub ProcessCommandLine()
     '/saveLog "c:\LogPath\LogName.log"
     If InStr(1, Command$, "saveLog", vbTextCompare) > 0 Then
         'path to save logfile to
-        sPath = mid$(Command$, InStr(1, Command$, "saveLog", 1) + 8)
-        If Left$(sPath, 1) = """" Then
+        sCustomPath = mid$(Command$, InStr(1, Command$, "saveLog", 1) + 8)
+        If Left$(sCustomPath, 1) = """" Then
             'path enclosed in quotes, get what's between
-            sPath = mid$(sPath, 2)
-            If InStr(sPath, """") > 0 Then
-                sPath = Left$(sPath, InStr(sPath, """") - 1)
+            sCustomPath = mid$(sCustomPath, 2)
+            If InStr(sCustomPath, """") > 0 Then
+                sCustomPath = Left$(sCustomPath, InStr(sCustomPath, """") - 1)
             Else
                 'no closing quote
-                sPath = vbNullString
+                sCustomPath = vbNullString
             End If
         Else
             'path has no quotes, stop at first space
-            If InStr(sPath, " ") > 0 Then
-                sPath = Left$(sPath, InStr(sPath, " ") - 1)
+            If InStr(sCustomPath, " ") > 0 Then
+                sCustomPath = Left$(sCustomPath, InStr(sCustomPath, " ") - 1)
             End If
         End If
     End If
-    
-    'Prepare debugging
-    If Len(sPath) <> 0 Then
-        If Not FolderExists(sPath, , True) Then
-            If Not MkDirW(sPath, StrEndWith(sPath, ".log")) Then
-                sPath = vbNullString
+    If Len(sCustomPath) <> 0 Then
+        If Not FolderExists(sCustomPath, , True) Then
+            If Not MkDirW(sCustomPath, StrEndWith(sCustomPath, ".log")) Then
+                sCustomPath = vbNullString
             End If
         End If
     End If
-    If Len(sPath) <> 0 Then
-        If StrEndWith(sPath, ".log") Then
-            g_sLogFile = sPath
-            g_sDebugLogFile = BuildPath(GetParentDir(sPath), "HiJackThis_debug.log")
+    If StrEndWith(sCustomPath, ".log") Then
+        g_sLogFile = sCustomPath
+        g_sDebugLogFile = BuildPath(GetParentDir(sCustomPath), "HiJackThis_debug.log")
+        
+        If FileExists(g_sLogFile, , True) Then
+            If CheckFileAccessWrite_Physically(g_sLogFile, False) Then
+                DeleteFileForce g_sLogFile, , True
+            Else
+                bLogBusy = True
+            End If
         Else
-            g_sLogFile = BuildPath(sPath, "HiJackThis_.log")
-            g_sDebugLogFile = BuildPath(sPath, "HiJackThis_debug.log")
+            If Not CheckFileAccess(GetParentDir(g_sLogFile), GENERIC_WRITE) Then
+                bLogBusy = True
+            End If
         End If
-        'check write access
-        If Not CheckAccessWrite(g_sLogFile, True) Then sPath = vbNullString
     End If
-    If Len(sPath) = 0 Then
+    If Len(sCustomPath) = 0 Or bLogBusy Then
         g_sLogFile = BuildPath(AppPath(), "HiJackThis_.log")
         g_sDebugLogFile = BuildPath(AppPath(), "HiJackThis_debug.log")
     End If

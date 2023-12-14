@@ -54,7 +54,7 @@ Private clPowers18(63) As Long
 
 Public Function GetFileCheckSum( _
     sFilename As String, _
-    Optional lFileSize As Long, _
+    Optional lFileSize As Currency, _
     Optional PlainCheckSum As Boolean, _
     Optional UseProgressBar As Boolean = True) As String
     
@@ -70,9 +70,10 @@ End Function
 
 Public Function GetFileMD5( _
     sFilename As String, _
-    Optional lFileSize As Long, _
+    Optional lFileSize As Currency, _
     Optional Plain As Boolean, _
-    Optional UseProgressBar As Boolean = False) As String
+    Optional UseProgressBar As Boolean = False, _
+    Optional ByVal LimitMaxSize As Currency) As String
     
     On Error GoTo ErrorHandler:
     
@@ -107,7 +108,8 @@ Public Function GetFileMD5( _
         End If
         GoTo Finalize
     End If
-    If lFileSize > MAX_HASH_FILE_SIZE Then
+    If LimitMaxSize = 0@ Then LimitMaxSize = MAX_HASH_FILE_SIZE
+    If lFileSize > LimitMaxSize Then
         If Not Plain Then
             GetFileMD5 = " (size: " & lFileSize & " bytes)"
         End If
@@ -179,9 +181,10 @@ End Function
 
 Public Function GetFileSHA1( _
     sFilename As String, _
-    Optional lFileSize As Long, _
+    Optional lFileSize As Currency, _
     Optional Plain As Boolean, _
-    Optional UseProgressBar As Boolean = False) As String
+    Optional UseProgressBar As Boolean = False, _
+    Optional ByVal LimitMaxSize As Currency) As String
     
     On Error GoTo ErrorHandler:
     
@@ -216,7 +219,8 @@ Public Function GetFileSHA1( _
         End If
         GoTo Finalize
     End If
-    If lFileSize > MAX_HASH_FILE_SIZE Then
+    If LimitMaxSize = 0@ Then LimitMaxSize = MAX_HASH_FILE_SIZE
+    If lFileSize > LimitMaxSize Then
         If Not Plain Then
             GetFileSHA1 = " (size: " & lFileSize & " bytes)"
         End If
@@ -286,9 +290,10 @@ End Function
 
 Public Function GetFileSHA256( _
     sFilename As String, _
-    Optional lFileSize As Long, _
+    Optional lFileSize As Currency, _
     Optional Plain As Boolean, _
-    Optional UseProgressBar As Boolean = False) As String
+    Optional UseProgressBar As Boolean = False, _
+    Optional ByVal LimitMaxSize As Currency) As String
     
     On Error GoTo ErrorHandler:
     
@@ -323,7 +328,8 @@ Public Function GetFileSHA256( _
         End If
         GoTo Finalize
     End If
-    If lFileSize > MAX_HASH_FILE_SIZE Then
+    If LimitMaxSize = 0@ Then LimitMaxSize = MAX_HASH_FILE_SIZE
+    If lFileSize > LimitMaxSize Then
         If Not Plain Then
             GetFileSHA256 = " (size: " & lFileSize & " bytes)"
         End If

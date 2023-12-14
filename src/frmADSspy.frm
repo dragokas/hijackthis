@@ -979,7 +979,7 @@ Private Sub EnumADSInFile(sFilePath$, Optional bIsFolder As Boolean = False)
                 sStreamName = mid$(sStreamName, 2)
                 sStreamName = Left$(sStreamName, InStr(sStreamName, ":") - 1)
                 If bCalcHash Then
-                    lstADSFound.AddItem sFilePath & " : " & sStreamName & "  (" & uFSI.StreamSize & " bytes, CheckSum: " & GetFileCheckSum(sFilePath & ":" & sStreamName, uFSI.StreamSize, True) & ")"
+                    lstADSFound.AddItem sFilePath & " : " & sStreamName & "  (" & uFSI.StreamSize & " bytes, CheckSum: " & GetFileCheckSum(sFilePath & ":" & sStreamName, , True) & ")"
                 Else
                     lstADSFound.AddItem sFilePath & " : " & sStreamName & "  (" & uFSI.StreamSize & " bytes)"
                 End If

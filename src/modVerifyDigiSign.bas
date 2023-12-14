@@ -746,6 +746,8 @@ Public Function FormatSign(SignResult As SignResult_TYPE) As String
     
     If Not m_bEDS_Work Then Exit Function
     
+    Dim sCompany As String
+    
     With SignResult
         If (.ApiErrorCode = ERROR_FILE_NOT_FOUND) Or (.ApiErrorCode = ERROR_PATH_NOT_FOUND) Then Exit Function
         If Len(.FilePathVerified) = 0 Then Exit Function
@@ -756,7 +758,8 @@ Public Function FormatSign(SignResult As SignResult_TYPE) As String
             
                 If .isMicrosoftSign Then
                     If .isThirdPartyDriver Then
-                        FormatSign = "(sign: 'Microsoft' - " & GetFilePropCompany(SignResult.FilePathVerified) & ")"
+                        sCompany = GetFilePropCompany(SignResult.FilePathVerified)
+                        FormatSign = "(sign: 'Microsoft' - " & IIf(Len(sCompany) = 0, STR_NO_COMPANY, sCompany) & ")"
                     Else
                         FormatSign = "(sign: 'Microsoft')"
                     End If
@@ -775,7 +778,11 @@ Public Function FormatSign(SignResult As SignResult_TYPE) As String
                 End Select
             End If
         Else
-            FormatSign = STR_NOT_SIGNED
+            'STR_NOT_SIGNED
+            sCompany = GetFilePropCompany(SignResult.FilePathVerified)
+            
+            FormatSign = "(not signed - " & IIf(Len(sCompany) = 0, STR_NO_COMPANY, sCompany) & " - " & _
+                GetFileSHA1(SignResult.FilePathVerified, , True, , 104857600) & ")" 'Max 100 MiB
         End If
     End With
     FormatSign = " " & FormatSign
@@ -2484,20 +2491,20 @@ Public Function ExtractPropertyFromCertificateByID(pCertContext As Long, id As L
     Dim bufSize As Long
     Dim buf()   As Byte
     Dim i       As Long
-    Dim hash    As String
+    Dim Hash    As String
 
     CertGetCertificateContextProperty pCertContext, id, 0&, bufSize
     If bufSize Then
         ReDim buf(bufSize - 1)
-        hash = String$(bufSize * 2, 0&)
+        Hash = String$(bufSize * 2, 0&)
         If CertGetCertificateContextProperty(pCertContext, id, buf(0), bufSize) Then
             For i = 0 To bufSize - 1
-                Mid$(hash, i * 2 + 1) = Right$("0" & Hex$(buf(i)), 2&)
+                Mid$(Hash, i * 2 + 1) = Right$("0" & Hex$(buf(i)), 2&)
             Next
         End If
     End If
     
-    ExtractPropertyFromCertificateByID = hash
+    ExtractPropertyFromCertificateByID = Hash
     
     Exit Function
 ErrorHandler:
@@ -2513,7 +2520,7 @@ Public Function ExtractPropertyStrFromCertificateByID(pCertContext As Long, id A
     Dim bufSize As Long
     Dim buf     As String
     Dim i       As Long
-    Dim hash    As String
+    Dim Hash    As String
 
     CertGetCertificateContextProperty pCertContext, id, 0&, bufSize
     If bufSize Then
@@ -2745,14 +2752,16 @@ Private Sub LoadMicrosoftHashes()
     oMsHash.Add "F40042E2E5F7E8EF8189FED15519AECE42C3BFA2", 0
     'Microsoft Intune Root Certification Authority; 12ECCCE41034DB56EC978443531DB185327E70F5; 6AAB6CC62ED96438F2E4CEB96A9DE488E9D6061C0D11250018CEBCC54407E823; 5B4342A039A7B238E44E6A5A0B1DD1F7
     oMsHash.Add "12ECCCE41034DB56EC978443531DB185327E70F5", 0
+    'Microsoft Windows Production PCA 2011;580A6F4CC4E4B669B9EBDC1B2B3E087B80D0678D;4E80BE107C860DE896384B3EFF50504DC2D76AC7151DF3102A4450637A032146;4448CDF199C6AD814E4A0B59F94EB246
+    oMsHash.Add "580A6F4CC4E4B669B9EBDC1B2B3E087B80D0678D", 0
     
     'Root Agency (MD5 digest); FEE449EE0E3965A5246F000E87FDE2A065FD89D4
     'Microsoft Development PCA 2014;98725873611882C17A9D478FDC46F9C172552D63 ? (same as Microsoft Testing Root Certificate Authority 2010)
 End Sub
 
-Public Function IsMicrosoftCertHash(hash As String) As Boolean
-    If Len(hash) = 0 Then Exit Function
-    If oMsHash.Exists(hash) Then IsMicrosoftCertHash = True
+Public Function IsMicrosoftCertHash(Hash As String) As Boolean
+    If Len(Hash) = 0 Then Exit Function
+    If oMsHash.Exists(Hash) Then IsMicrosoftCertHash = True
 End Function
 
 Public Sub FindNewMicrosoftCodeSignCert()

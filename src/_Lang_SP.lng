@@ -1850,7 +1850,13 @@
 2317=Esto mostrará solo los elementos encontrados en la lista
 2318=Marcar instantáneamente los elementos encontrados
 ;
+; ========= Fixing script form =========
+;
+; (2500 - 2999)
+;
+2500=¿Ejecutar corrección desde el portapapeles?
+;
 ; ========= Empty ========
 ;
-; (2500 - ...)
+; (3000 - ...)
 ;
