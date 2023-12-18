@@ -955,7 +955,7 @@ Private Sub cmdSave_Click()
     
     sList.Append "--" & vbCrLf & "End of file"
     
-    If FileExists(sFile) Then DeleteFilePtr (StrPtr(sFile))
+    If FileExists(sFile) Then DeleteFileEx sFile
     
     If OpenW(sFile, FOR_OVERWRITE_CREATE, hFile, g_FileBackupFlag) Then
         PutW hFile, 1, StrPtr(sList.ToString), sList.Length * 2

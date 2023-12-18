@@ -2414,7 +2414,7 @@ Public Function ExportKeyToVariable( _
                     End If
                 End If
 
-                DeleteFilePtr (StrPtr(sTempFile))
+                DeleteFileEx sTempFile
             End If
         End If
         m_StatusCode = Proc.StatusCode
@@ -2467,7 +2467,7 @@ Public Function KeyExportToBinary(hHive As ENUM_REG_HIVE, ByVal KeyName$, destFi
     lret = RegOpenKeyEx(hHive, StrPtr(KeyName), 0&, KEY_QUERY_VALUE Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey)
     If ERROR_SUCCESS = lret Then
         
-        If FileExists(destFile) Then DeleteFilePtr (StrPtr(destFile))
+        If FileExists(destFile) Then DeleteFileEx destFile
         
         'Required privilege "SeBackupPrivilege"
         lret = RegSaveKeyEx(hKey, StrPtr(destFile), ByVal 0&, IIf(OSver.MajorMinor < 5.1, REG_STANDARD_FORMAT, REG_LATEST_FORMAT))

@@ -691,6 +691,8 @@ Public Sub InitVerifyDigiSign()
         SV_LightCheckMS Or _
         SV_LightCheckOther
     
+    m_eJackFlags = m_eJackFlags Or SV_isDriver 'to check secondary signature when 'Microsoft' found
+    
     'Disabled:
     'C:\Windows\System32\spool\drivers\x64\3\CNAB4LAD.EXE - reported as Microsoft
     'Need a way to separate 3rd-party files signed via catalogue from real Microsoft files, without losing time efficiency
@@ -746,7 +748,8 @@ Public Function FormatSign(SignResult As SignResult_TYPE) As String
     
     If Not m_bEDS_Work Then Exit Function
     
-    Dim sCompany As String
+    Dim bShouldAddCompany As Boolean
+    Dim bShouldAddHash As Boolean
     
     With SignResult
         If (.ApiErrorCode = ERROR_FILE_NOT_FOUND) Or (.ApiErrorCode = ERROR_PATH_NOT_FOUND) Then Exit Function
@@ -758,8 +761,9 @@ Public Function FormatSign(SignResult As SignResult_TYPE) As String
             
                 If .isMicrosoftSign Then
                     If .isThirdPartyDriver Then
-                        sCompany = GetFilePropCompany(SignResult.FilePathVerified)
-                        FormatSign = "(sign: 'Microsoft' - " & IIf(Len(sCompany) = 0, STR_NO_COMPANY, sCompany) & ")"
+                        
+                        FormatSign = "(sign: 'Microsoft' - "
+                        bShouldAddCompany = True
                     Else
                         FormatSign = "(sign: 'Microsoft')"
                     End If
@@ -772,19 +776,44 @@ Public Function FormatSign(SignResult As SignResult_TYPE) As String
                         FormatSign = "(sign: '" & .SubjectName & "', but untrusted root: '" & _
                             .IssuerRoot & "' with fingerprint: " & .HashRootCert & ")"
                     Case TRUST_E_NOSIGNATURE
-                        FormatSign = STR_INVALID_SIGN
+                        FormatSign = "(" & STR_INVALID_SIGN & " - "
+                        bShouldAddCompany = True
+                        bShouldAddHash = True
                     Case Else
-                        FormatSign = "(invalid sign: " & .ShortMessage & ")"
+                        FormatSign = "(" & STR_INVALID_SIGN & ": " & .ShortMessage & " - "
+                        bShouldAddCompany = True
+                        bShouldAddHash = True
                 End Select
             End If
         Else
-            'STR_NOT_SIGNED
-            sCompany = GetFilePropCompany(SignResult.FilePathVerified)
-            
-            FormatSign = "(not signed - " & IIf(Len(sCompany) = 0, STR_NO_COMPANY, sCompany) & " - " & _
-                GetFileSHA1(SignResult.FilePathVerified, , True, , 104857600) & ")" 'Max 100 MiB
+            FormatSign = "(not signed - " 'STR_NOT_SIGNED
+            bShouldAddCompany = True
+            bShouldAddHash = True
         End If
     End With
+    
+    If bShouldAddCompany Then
+        Dim sCompany As String
+        sCompany = GetFilePropCompany(SignResult.FilePathVerified)
+        FormatSign = FormatSign & IIf(Len(sCompany) = 0, STR_NO_COMPANY, sCompany)
+        
+        If bShouldAddHash Then
+            Dim cFileSize As Currency
+            Dim sHash As String
+            sHash = GetFileSHA1(SignResult.FilePathVerified, cFileSize, True)
+            If Len(sHash) = 0 Then
+                If cFileSize > MAX_HASH_FILE_SIZE Then
+                    sHash = "size:" & CStr(cFileSize \ 1024 \ 1024) & " MiB"
+                Else
+                    sHash = "error getting hash"
+                End If
+            End If
+            FormatSign = FormatSign & " - " & sHash & ")"
+        Else
+            FormatSign = FormatSign & ")"
+        End If
+    End If
+    
     FormatSign = " " & FormatSign
 End Function
 
@@ -1454,7 +1483,7 @@ SkipCatCheck:
                 GetSignerInfo WintrustData.hWVTStateData, SignResult, Flags
                 
                 'if it's a Microsoft signature => restart context with secondary signature
-                'XP is not support partial restarting context. CryptCATAdminReleaseCatalogContext cause crash.
+                'XP doesn't support partial restarting context. CryptCATAdminReleaseCatalogContext cause crash.
                 If OSver.MajorMinor > 5.2 Then
 
                     If IsMicrosoftCertHash(SignResult.HashRootCert) Then

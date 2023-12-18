@@ -304,6 +304,7 @@ Private Type FIX_SERVICE
     DllPath         As String
     serviceName     As String
     ServiceDisplay  As String
+    ForceMicrosoft  As Boolean
     RunState        As SERVICE_STATE
     ActionType      As ENUM_SERVICE_ACTION_BASED
 End Type
@@ -977,8 +978,10 @@ Public Function InArrayResultService(ServiceArray() As FIX_SERVICE, Item As FIX_
                             If Item.DllPath = .DllPath Then
                                 If Item.ServiceDisplay = .ServiceDisplay Then
                                     If Item.serviceName = .serviceName Then
-                                        InArrayResultService = True
-                                        Exit For
+                                        If Item.ForceMicrosoft = .ForceMicrosoft Then
+                                            InArrayResultService = True
+                                            Exit For
+                                        End If
                                     End If
                                 End If
                             End If
@@ -3275,7 +3278,7 @@ Public Sub FixO1Item(sItem$, result As SCAN_RESULT)
     End If
     
     If FileExists(sHostsTemp) Then
-        DeleteFilePtr StrPtr(sHostsTemp)
+        DeleteFileForce sHostsTemp
     End If
     
     If StrComp(GetParentDir(sHosts), sWinDir & "\System32\drivers\etc\hosts", 1) <> 0 Then
@@ -9298,7 +9301,7 @@ Public Sub FixO14Item(sItem$, result As SCAN_RESULT)
     Next
     sFixedIeResetInf = Left$(sFixedIeResetInf, Len(sFixedIeResetInf) - 2)   '-CrLf
     
-    DeleteFilePtr (StrPtr(sFile))
+    DeleteFileForce sFile
     
     ff = FreeFile()
     
@@ -11200,17 +11203,14 @@ Public Sub CheckO23Item()
                             .Name = sName 'used in "Disable" stuff
                             .State = IIf(lStart <> 4, ITEM_STATE_ENABLED, ITEM_STATE_DISABLED)
                             
-                            AddServiceToFix .Service, DELETE_SERVICE Or USE_FEATURE_DISABLE, sName, , , , ServState
+                            AddServiceToFix .Service, DELETE_SERVICE Or USE_FEATURE_DISABLE, sName, , , , ServState, True
                         
                             If Len(sServiceDll) = 0 Then
-                                'AddJumpFile .Jump, JUMP_FILE, sFile
                                 AddFileToFix .File, BACKUP_FILE, sFile, sArgument
                             Else
-                                'AddJumpFile .Jump, JUMP_FILE, sServiceDll
                                 AddFileToFix .File, BACKUP_FILE, sServiceDll
                             End If
                             
-                            'AddJumpRegistry .Jump, JUMP_KEY, HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\" & sName
                             AddRegToFix .Reg, BACKUP_KEY, HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\" & sName
                             .Reboot = True
                             .CureType = SERVICE_BASED Or FILE_BASED Or REGISTRY_BASED
@@ -11629,7 +11629,7 @@ Public Sub CheckO23Item_Drivers(sServices() As String, dLegitService As clsTrick
                 With result
                     .Section = "O23"
                     .HitLineW = sHit
-                    AddServiceToFix .Service, DELETE_SERVICE Or USE_FEATURE_DISABLE, sName, , , , ServState
+                    AddServiceToFix .Service, DELETE_SERVICE Or USE_FEATURE_DISABLE, sName, , , , ServState, True
                     AddFileToFix .File, BACKUP_FILE, sFile
                     AddRegToFix .Reg, BACKUP_KEY, HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\" & sName
                     .Reboot = True
@@ -11653,8 +11653,10 @@ Continue2:
             bSafe = False
             'skip Microsoft drivers mapped to non-existent filename
             If Not FileExists(sFile) Then
-                If oDict.DriverMapped.Exists(sFile) Then
-                    bSafe = True
+                If Not bIgnoreAllWhitelists Then
+                    If oDict.DriverMapped.Exists(sFile) Then
+                        bSafe = True
+                    End If
                 End If
             End If
             
@@ -12353,54 +12355,20 @@ Public Function HasSpecialCharacters(sName$) As Boolean
 End Function
 
 Public Function CheckForReadOnlyMedia() As Boolean
-    Dim sMsg$
-    
-    AppendErrorLogCustom "CheckForReadOnlyMedia - Begin"
-    
-'    Dim hFile As Long, sTempFile$, hTransaction&
-'
-'    sTempFile = BuildPath(AppPath(), "~dummy.tmp")
-'
-''    If OSver.IsWindowsVistaOrGreater Then
-''
-''        hTransaction = CreateTransaction(0, 0, 0, 0, 0, 0, StrPtr("HiJackThis_dummy"))
-''
-''        If hTransaction <> INVALID_HANDLE_VALUE Then
-''            hFile = CreateFileTransacted(StrPtr(sTempFile), GENERIC_WRITE, FILE_SHARE_READ, ByVal 0&, CREATE_ALWAYS, FILE_ATTRIBUTE_ARCHIVE, ByVal 0&, hTransaction, 0&, 0&)
-''
-''            'ERROR_TRANSACTIONAL_CONFLICT Why ???
-''
-''            CloseHandle hTransaction
-''        End If
-''    Else
-''
-''    End If
-'
-'    hFile = CreateFile(StrPtr(sTempFile), GENERIC_WRITE, FILE_SHARE_READ, ByVal 0&, CREATE_ALWAYS, FILE_ATTRIBUTE_ARCHIVE, ByVal 0&)
-'
-'    If hFile <= 0 Then
 
     If Not CheckFileAccess(AppPath(), GENERIC_WRITE) Then
     
-    'If Err.Number Then     'Some strange error happens here, if we delete .Number property
-        'damn, got no write access
         bNoWriteAccess = True
-        sMsg = Translate(7)
-'        sMsg = "It looks like you're running HiJackThis from " & _
-'               "a read-only device like a CD or locked floppy disk." & _
-'               "If you want to make backups of items you fix, " & _
-'               "you must copy HiJackThis.exe to your hard disk " & _
-'               "first, and run it from there." & vbCrLf & vbCrLf & _
-'               "If you continue, you might get 'Path/File Access' "
-        MsgBoxW sMsg, vbExclamation
+        'It looks like you're running HijackThis from
+        'a read-only device like a CD-ROM.
+        'If you want to make backups of items you fix,
+        'you must copy HiJackThis.exe to your hard disk
+        'first, and run it from there.
+        MsgBoxW Translate(7), vbExclamation
     Else
-'        CloseW hFile
         CheckForReadOnlyMedia = True
     End If
     
-'    DeleteFilePtr (StrPtr(sTempFile))
-    
-    AppendErrorLogCustom "CheckForReadOnlyMedia - End"
 End Function
 
 Public Sub SetAllFontCharset(frm As Form, Optional sFontName As String, Optional sFontSize As String, Optional bFontBold As Boolean)
@@ -12754,7 +12722,7 @@ Public Function CheckForStartedFromTempDir() As Boolean
                 MkDirW NewFile, True
                 If FileExists(NewFile) Then     ', Cache:=NO_CACHE
                     SetFileAttributes StrPtr(NewFile), GetFileAttributes(StrPtr(NewFile)) And Not FILE_ATTRIBUTE_READONLY
-                    DeleteFilePtr StrPtr(NewFile)
+                    DeleteFileEx NewFile
                 End If
                 CopyFile StrPtr(AppPath(True)), StrPtr(NewFile), ByVal 0&
                 If FileExists(NewFile) Then     ', Cache:=NO_CACHE
@@ -14179,6 +14147,7 @@ Public Sub AddHorizontalScrollBarToResults(lstControl As VBCCR17.ListBoxW)
             End If
         Next
         If x <> 0 Then
+            x = x * 1.1
             If frmMain.ScaleMode = vbTwips Then x = x / Screen.TwipsPerPixelX + 50  ' if twips change to pixels (+50 to account for the width of the vertical scrollbar
         End If
         SendMessage .hWnd, LB_SETHORIZONTALEXTENT, x, ByVal 0&
@@ -14284,7 +14253,7 @@ Public Sub OpenDebugLogHandle()
         g_sDebugLogFile = BuildPath(AppPath(), "HiJackThis_debug.log")
     End If
     
-    If FileExists(g_sDebugLogFile) Then DeleteFilePtr StrPtr(g_sDebugLogFile), , True
+    If FileExists(g_sDebugLogFile) Then DeleteFileEx g_sDebugLogFile
     
     On Error Resume Next
     OpenW g_sDebugLogFile, FOR_OVERWRITE_CREATE, g_hDebugLog, g_FileBackupFlag
@@ -14309,7 +14278,7 @@ Public Sub OpenLogHandle()
         g_sLogFile = BuildPath(AppPath(), "HiJackThis_.log")
     End If
     
-    If FileExists(g_sLogFile, , True) Then DeleteFilePtr StrPtr(g_sLogFile), , True
+    If FileExists(g_sLogFile, , True) Then DeleteFileEx g_sLogFile
     
     On Error Resume Next
     OpenW g_sLogFile, FOR_OVERWRITE_CREATE, g_hLog, g_FileBackupFlag
@@ -16006,7 +15975,8 @@ Public Sub AddServiceToFix( _
     Optional sServiceDisplay As String = vbNullString, _
     Optional sImagePath As String = vbNullString, _
     Optional sDllPath As String = vbNullString, _
-    Optional RunState As SERVICE_STATE)
+    Optional RunState As SERVICE_STATE, _
+    Optional ForceMicrosoft As Boolean)
     
     On Error GoTo ErrorHandler
     
@@ -16028,6 +15998,7 @@ Public Sub AddServiceToFix( _
         .serviceName = sServiceName
         .ServiceDisplay = sServiceDisplay
         .RunState = RunState
+        .ForceMicrosoft = ForceMicrosoft
     End With
     
     Exit Sub
@@ -16589,7 +16560,7 @@ Public Sub FixFileHandler(result As SCAN_RESULT)
                     
                     If .ActionType And REMOVE_FILE Then
                         If FileExists(.Path) Then
-                            DeleteFilePtr StrPtr(.Path), result.ForceMicrosoft
+                            DeleteFileEx .Path, result.ForceMicrosoft
                         End If
                     End If
                     
@@ -16602,7 +16573,7 @@ Public Sub FixFileHandler(result As SCAN_RESULT)
                     If .ActionType And RESTORE_FILE Then
                         If FileExists(.GoodFile) Then
                             '// TODO: PendingFileOperation with replacing
-                            If DeleteFilePtr(StrPtr(.Path), True, True) Then
+                            If DeleteFileEx(.Path, True, True) Then
                                 FileCopyW .GoodFile, .Path, True
                             End If
                         End If
@@ -16691,10 +16662,7 @@ Public Sub FixServiceHandler(result As SCAN_RESULT)
                 
                     If .ActionType And DELETE_SERVICE Then
                     
-                        SetServiceStartMode .serviceName, SERVICE_MODE_DISABLED
-                        StopService .serviceName
-                        SetServiceStartMode .serviceName, SERVICE_MODE_DISABLED
-                        DeleteNTService .serviceName, , result.ForceMicrosoft
+                        DeleteNTService .serviceName, , .ForceMicrosoft
                         
                         'Remove dependency
                         For j = 1 To Reg.EnumSubKeysToArray(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services", aService())
@@ -17227,7 +17195,7 @@ Public Sub HJT_SaveReport(Optional nTry As Long)
         If 0 = FileLenW(g_sLogFile) Then
             If nTry <> 2 Then
                 SleepNoLock 100
-                DeleteFilePtr StrPtr(g_sLogFile), , True
+                DeleteFileEx g_sLogFile
                 SleepNoLock 400
                 HJT_SaveReport 2
                 Exit Sub

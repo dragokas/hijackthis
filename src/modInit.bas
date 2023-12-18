@@ -409,7 +409,7 @@ Private Sub ProcessCommandLine()
         
         If FileExists(g_sLogFile, , True) Then
             If CheckFileAccessWrite_Physically(g_sLogFile, False) Then
-                DeleteFileForce g_sLogFile, , True
+                DeleteFileEx g_sLogFile
             Else
                 bLogBusy = True
             End If

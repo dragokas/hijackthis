@@ -415,13 +415,13 @@ Public Function GetBrowsersInfo() As BROWSERS_VERSION_INFO
     
     Dim Cmd As String
     Dim FriendlyName As String
-    Dim path As String
+    Dim Path As String
     Dim Arguments As String
     Cmd = GetDefaultApp("http", FriendlyName)
     If Len(Cmd) = 0 Then
         Cmd = "Program is not associated"
     Else
-        SplitIntoPathAndArgs Cmd, path, Arguments
+        SplitIntoPathAndArgs Cmd, Path, Arguments
     End If
     
     With GetBrowsersInfo
@@ -430,7 +430,7 @@ Public Function GetBrowsersInfo() As BROWSERS_VERSION_INFO
         .Chrome.Version = GetChromeVersion()
         .Firefox.Version = GetFirefoxVersion()
         .Opera.Version = GetOperaVersion()
-        .Default = Cmd & IIf(path = "(AppID)", " " & FriendlyName, IIf(Len(FriendlyName) <> 0, " (" & FriendlyName & ")", vbNullString))
+        .Default = Cmd & IIf(Path = "(AppID)", " " & FriendlyName, IIf(Len(FriendlyName) <> 0, " (" & FriendlyName & ")", vbNullString))
     End With
     AppendErrorLogCustom "GetBrowsersInfo - End"
 End Function
@@ -613,10 +613,6 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function DeleteFileForce(File As String, Optional bForceMicrosoft As Boolean, Optional DisallowRemoveOnReboot As Boolean) As Long
-    DeleteFilePtr StrPtr(File), bForceMicrosoft, DisallowRemoveOnReboot
-End Function
-
 Public Function TryUnlock(ByVal FS_Object As String, Optional bRecursive As Boolean) As Boolean
 
     AppendErrorLogCustom "TryUnlock - Begin", "File: " & FS_Object
@@ -651,10 +647,10 @@ Public Function AppPath(Optional bGetFullPath As Boolean) As String
     
     If inIDE Then
         If bGetFullPath Then
-            AppPath = GetDOSFilename(App.path, bReverse:=True) & "\" & GetValueFromVBP(BuildPath(App.path, App.ExeName & ".vbp"), "ExeName32")
+            AppPath = GetDOSFilename(App.Path, bReverse:=True) & "\" & GetValueFromVBP(BuildPath(App.Path, App.ExeName & ".vbp"), "ExeName32")
             ProcPathFull = AppPath
         Else
-            AppPath = GetDOSFilename(App.path, bReverse:=True)
+            AppPath = GetDOSFilename(App.Path, bReverse:=True)
             ProcPathShort = AppPath
         End If
         Exit Function
@@ -672,7 +668,7 @@ Public Function AppPath(Optional bGetFullPath As Boolean) As String
     End If
     
     If cnt = 0 Then                          'clear path
-        ProcPath = App.path
+        ProcPath = App.Path
     Else
         ProcPath = Left$(ProcPath, cnt)
         If StrComp("\SystemRoot\", Left$(ProcPath, 12), 1) = 0 Then ProcPath = sWinDir & mid$(ProcPath, 12)
@@ -838,21 +834,24 @@ Function ExtractFilesFromCommandLine(sCmdLine As String) As String()
     ExtractFilesFromCommandLine = aPath
 End Function
 
-'Delete File with unlock access rights on failure. Return non 0 on success.
+'By default allowing remove file on reboot
 '
-Public Function DeleteFilePtr(lpSTR As Long, Optional ForceDeleteMicrosoft As Boolean, Optional DisallowRemoveOnReboot As Boolean) As Long
+Public Function DeleteFileForce(sPath As String, Optional bForceMicrosoft As Boolean, Optional DisallowRemoveOnReboot As Boolean = False) As Boolean
+    DeleteFileForce = DeleteFileEx(sPath, bForceMicrosoft, DisallowRemoveOnReboot)
+End Function
+
+'Delete File with unlocking DACL on failure
+'
+Public Function DeleteFileEx(sPath As String, Optional ForceDeleteMicrosoft As Boolean, Optional DisallowRemoveOnReboot As Boolean = True) As Boolean
     On Error GoTo ErrorHandler:
-    AppendErrorLogCustom "DeleteFilePtr - Begin"
+    AppendErrorLogCustom "DeleteFileEx - Begin"
     
-    Dim iAttr As Long, lr As Long, sExt As String, sNewPath As String, sPath As String
+    Dim iAttr As Long, lr As Long, sExt As String, sNewPath As String, lpSTR As Long
     Dim Redirect As Boolean, bOldStatus As Boolean, bMicrosoft As Boolean
     
-    sPath = String$(lstrlen(lpSTR), vbNullChar)
-    If Len(sPath) <> 0 Then
-        lstrcpy StrPtr(sPath), lpSTR
-    Else
-        Exit Function
-    End If
+    If Len(sPath) = 0 Then Exit Function
+    
+    lpSTR = StrPtr(sPath)
     
     sExt = GetExtensionName(sPath)
     
@@ -881,19 +880,21 @@ Public Function DeleteFilePtr(lpSTR As Long, Optional ForceDeleteMicrosoft As Bo
     
     iAttr = GetFileAttributes(lpSTR)
     If iAttr <> INVALID_FILE_ATTRIBUTES Then
-        If (iAttr And FILE_ATTRIBUTE_COMPRESSED) Then iAttr = iAttr - FILE_ATTRIBUTE_COMPRESSED
-        If iAttr And FILE_ATTRIBUTE_READONLY Then SetFileAttributes lpSTR, iAttr And Not FILE_ATTRIBUTE_READONLY
+        If (iAttr And (FILE_ATTRIBUTE_COMPRESSED Or FILE_ATTRIBUTE_READONLY)) Then
+            iAttr = iAttr And Not (FILE_ATTRIBUTE_COMPRESSED Or FILE_ATTRIBUTE_READONLY)
+            SetFileAttributes lpSTR, iAttr
+        End If
     End If
     
     lr = DeleteFileW(lpSTR)
     
     If lr <> 0 Then 'success
-        DeleteFilePtr = lr
+        DeleteFileEx = True
         GoTo Finalize
     End If
     
     If Err.LastDllError = ERROR_FILE_NOT_FOUND Then
-        DeleteFilePtr = 1
+        DeleteFileEx = True
         GoTo Finalize
     End If
     
@@ -913,16 +914,20 @@ Public Function DeleteFilePtr(lpSTR As Long, Optional ForceDeleteMicrosoft As Bo
                 DeleteFileOnReboot sPath, bNoReboot:=True
                 bRebootRequired = True
             End If
+        Else
+            DeleteFileEx = True
         End If
+    Else
+        DeleteFileEx = True
     End If
     
 Finalize:
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     
-    AppendErrorLogCustom "DeleteFilePtr - End"
+    AppendErrorLogCustom "DeleteFileEx - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "Parser.DeleteFilePtr", "File:", sPath
+    ErrorMsg Err, "DeleteFileEx", "File:", sPath
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -2763,13 +2768,13 @@ Public Function HexStringToNumber(str As String) As Long
     End If
 End Function
 
-Public Function PathRemoveLastSlash(path As String) As String
+Public Function PathRemoveLastSlash(Path As String) As String
     Dim ch As String
-    ch = Right$(path, 1)
+    ch = Right$(Path, 1)
     If ch = "\" Or ch = "/" Then
-        PathRemoveLastSlash = Left$(path, Len(path) - 1)
+        PathRemoveLastSlash = Left$(Path, Len(Path) - 1)
     Else
-        PathRemoveLastSlash = path
+        PathRemoveLastSlash = Path
     End If
 End Function
 
@@ -2781,14 +2786,14 @@ Public Sub PathRemoveLastSlashInArray(arr() As String)
 End Sub
 
 Public Function GetDefaultTextEditorPath() As String
-    Dim Cmd As String, path As String
+    Dim Cmd As String, Path As String
     Cmd = GetDefaultApp(".txt")
-    SplitIntoPathAndArgs Cmd, path
-    path = EnvironW(path)
-    If Not FileExists(path) Then
-        path = "rundll32.exe shell32,ShellExec_RunDLL"
+    SplitIntoPathAndArgs Cmd, Path
+    Path = EnvironW(Path)
+    If Not FileExists(Path) Then
+        Path = "rundll32.exe shell32,ShellExec_RunDLL"
     End If
-    GetDefaultTextEditorPath = path
+    GetDefaultTextEditorPath = Path
 End Function
 
 Public Sub OpenInTextEditor(sTextFile As String)

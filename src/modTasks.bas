@@ -160,7 +160,7 @@ End Type
 
 Private Type JOB_FILE
     head As JOB_HEADER
-    prop As JOB_PROPERTY
+    Prop As JOB_PROPERTY
 End Type
 
 ' Task state
@@ -1457,7 +1457,7 @@ Public Function KillTask2(TaskFullPath As String) As Boolean
     
     sWinTasksFolder = BuildPath(sWinSysDir, "Tasks")
     
-    KillTask2 = DeleteFilePtr(StrPtr(BuildPath(sWinTasksFolder, TaskFullPath)))
+    KillTask2 = DeleteFileForce(BuildPath(sWinTasksFolder, TaskFullPath))
     
     id = Reg.GetString(HKEY_LOCAL_MACHINE, BuildPath("SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree", TaskFullPath), "Id")
     
@@ -1507,11 +1507,11 @@ Public Sub EnumJobs()
             
             sJobName = GetFileName(aFiles(i), True)
             
-            sFile = EnvironW(PathNormalize(Job.prop.AppName.Data))
+            sFile = EnvironW(PathNormalize(Job.Prop.AppName.Data))
             
             If mid$(sFile, 2, 1) <> ":" Then
-                If Len(Job.prop.WorkDir.Data) <> 0 Then
-                    sTmp = BuildPath(Job.prop.WorkDir.Data, sFile)
+                If Len(Job.Prop.WorkDir.Data) <> 0 Then
+                    sTmp = BuildPath(Job.Prop.WorkDir.Data, sFile)
                     If FileExists(sTmp) Then sFile = sTmp 'if only file exists in this work. folder
                 End If
             End If
@@ -1519,8 +1519,8 @@ Public Sub EnumJobs()
             bEnabled = False
             
             'task is enabled if there are at least 1 trigger without TASK_TRIGGER_FLAG_DISABLED flag
-            For j = 0 To Job.prop.Triggers.ccTriggers - 1
-                bEnabled = bEnabled Or Not CBool(Job.prop.Triggers.aTrigger(j).Flags And TASK_TRIGGER_FLAG_DISABLED)
+            For j = 0 To Job.Prop.Triggers.ccTriggers - 1
+                bEnabled = bEnabled Or Not CBool(Job.Prop.Triggers.aTrigger(j).Flags And TASK_TRIGGER_FLAG_DISABLED)
             Next
             
             sRunState = vbNullString
@@ -1542,7 +1542,7 @@ Public Sub EnumJobs()
                 If IsMicrosoftFile(sFile) Then bActivation = True
             End If
             
-            sFile = FormatFileMissing(sFile, Job.prop.Parameters.Data)
+            sFile = FormatFileMissing(sFile, Job.Prop.Parameters.Data)
             
             SignVerifyJack sFile, result.SignResult
             
@@ -1598,30 +1598,30 @@ Private Function ParseJob(sFile As String, Job As JOB_FILE) As Boolean
     Else
         cStream.BufferPointer = 0
         cStream.ReadData VarPtr(Job.head), LenB(Job.head)
-        cStream.ReadData VarPtr(Job.prop.ccRunInstance), 2
-        Read_Job_String cStream, Job.prop.AppName
-        Read_Job_String cStream, Job.prop.Parameters
-        Read_Job_String cStream, Job.prop.WorkDir
-        Read_Job_String cStream, Job.prop.Author
-        Read_Job_String cStream, Job.prop.Comment
-        cStream.ReadData VarPtr(Job.prop.UserData.Size), 2
-        If Job.prop.UserData.Size > 0 Then
-            ReDim Job.prop.UserData.Data(Job.prop.UserData.Size - 1)
-            cStream.ReadData VarPtr(Job.prop.UserData.Data(0)), Job.prop.UserData.Size
+        cStream.ReadData VarPtr(Job.Prop.ccRunInstance), 2
+        Read_Job_String cStream, Job.Prop.AppName
+        Read_Job_String cStream, Job.Prop.Parameters
+        Read_Job_String cStream, Job.Prop.WorkDir
+        Read_Job_String cStream, Job.Prop.Author
+        Read_Job_String cStream, Job.Prop.Comment
+        cStream.ReadData VarPtr(Job.Prop.UserData.Size), 2
+        If Job.Prop.UserData.Size > 0 Then
+            ReDim Job.Prop.UserData.Data(Job.Prop.UserData.Size - 1)
+            cStream.ReadData VarPtr(Job.Prop.UserData.Data(0)), Job.Prop.UserData.Size
         End If
-        cStream.ReadData VarPtr(Job.prop.ReservedData.Size), 2
-        If Job.prop.ReservedData.Size = 8 Then
-            cStream.ReadData VarPtr(Job.prop.ReservedData.StartError), 4
-            cStream.ReadData VarPtr(Job.prop.ReservedData.TaskFlags), 4
+        cStream.ReadData VarPtr(Job.Prop.ReservedData.Size), 2
+        If Job.Prop.ReservedData.Size = 8 Then
+            cStream.ReadData VarPtr(Job.Prop.ReservedData.StartError), 4
+            cStream.ReadData VarPtr(Job.Prop.ReservedData.TaskFlags), 4
         End If
-        cStream.ReadData VarPtr(Job.prop.Triggers.ccTriggers), 2
-        If Job.prop.Triggers.ccTriggers > 0 Then
-            ReDim Job.prop.Triggers.aTrigger(Job.prop.Triggers.ccTriggers - 1)
-            For i = 0 To Job.prop.Triggers.ccTriggers - 1
-                cStream.ReadData VarPtr(Job.prop.Triggers.aTrigger(i)), LenB(Job.prop.Triggers.aTrigger(i))
+        cStream.ReadData VarPtr(Job.Prop.Triggers.ccTriggers), 2
+        If Job.Prop.Triggers.ccTriggers > 0 Then
+            ReDim Job.Prop.Triggers.aTrigger(Job.Prop.Triggers.ccTriggers - 1)
+            For i = 0 To Job.Prop.Triggers.ccTriggers - 1
+                cStream.ReadData VarPtr(Job.Prop.Triggers.aTrigger(i)), LenB(Job.Prop.Triggers.aTrigger(i))
             Next
         End If
-        cStream.ReadData VarPtr(Job.prop.JobSignature), LenB(Job.prop.JobSignature)
+        cStream.ReadData VarPtr(Job.Prop.JobSignature), LenB(Job.Prop.JobSignature)
     End If
     
     ParseJob = True

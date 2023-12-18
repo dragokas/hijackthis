@@ -15,7 +15,7 @@ _(this is alpha-version - major changes are in progress; some functions may work
 
 At the moment, it is a step-by-step 100% rewritten source code of the original engine, aimed to provide a full compatiblity with the most recent Windows OS and a balance beetween compiling very fast results in logfile and combatting with the most popular malware, inluding the one not known to other antiviruses.
 
-It is made by Alex Dragokas - a lawyer, security observer and malware researcher from Ukraine ([Chernobyl](https://en.wikipedia.org/wiki/Chernobyl_disaster), [Na'Vi](https://en.wikipedia.org/wiki/Natus_Vincere), [Щедрик](https://www.youtube.com/watch?v=ZZEMvVcf5-Q), Male slavery, nazism, fascism, [concentration camp](https://www.youtube.com/watch?v=3ASp9tr_-DQ), War of money, authority and blackmail, USA Bio-labs, [radioactive contamination from British](https://www.youtube.com/watch?v=ajY4qcc4OWc), Bombs, drones, whores and crazy people, Colony of USA). Yankee go home! F\*ck Russia, F\*ck Ukraine, F\*ck USA, F\*ck all the world giving weapon for killing the people, imposing sanctions against Ukrainian people in Crimea. F\*cking ukrainophobs, rusophobs and castrated negrophobes, provoking genocide of Ukrainian people with hundred tons of "free" cluster and nuclear weapon, exploding at our land like your own polygon.
+It is made by Alex Dragokas - a lawyer, security observer and malware researcher from Ukraine.
 
 ## Overview
 

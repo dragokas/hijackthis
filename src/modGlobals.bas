@@ -28,7 +28,7 @@ Public Const STR_FOLDER_MISSING As String = "(folder missing)"
 Public Const STR_MISSING        As String = "(missing)"
 Public Const STR_ACCESS_DENIED  As String = "(access denied)"
 Public Const STR_NOT_SIGNED     As String = "(not signed)"
-Public Const STR_INVALID_SIGN   As String = "(invalid sign)"
+Public Const STR_INVALID_SIGN   As String = "invalid sign"
 Public Const STR_NO_FIX         As String = "(no fix)"
 Public Const STR_NO_COMPANY     As String = "no company"
 

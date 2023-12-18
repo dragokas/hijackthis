@@ -59,9 +59,6 @@ Public Function Unexpand(ByVal sPath) As String
     sPath = Replace$(sPath, "C:\Program Files", "<PF64>", , , vbTextCompare)
     sPath = Replace$(sPath, "C:\Users\user\AppData\Local", "<LocalAppData>", , , vbTextCompare)
     sPath = Replace$(sPath, "C:\ProgramData", "<AllUsersProfile>", , , vbTextCompare)
-    sPath = Replace$(sPath, "", "", vbTextCompare)
-    sPath = Replace$(sPath, "", "", vbTextCompare)
-    sPath = Replace$(sPath, "", "", vbTextCompare)
     
     Unexpand = sPath
 End Function

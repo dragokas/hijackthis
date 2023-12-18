@@ -8,7 +8,7 @@ Option Explicit
 '' Base64 encoder/decoder by Comintern (vbforums.com) (Fork by Dragokas)
 ''
 
-Private Const MAX_HASH_FILE_SIZE As Currency = 314572800@ '300 MB. (maximum file size to calculate hash)
+Public Const MAX_HASH_FILE_SIZE As Currency = 314572800@ '300 MB. (maximum file size to calculate hash)
 
 'Private Const poly As Long = &HEDB88320
 

@@ -1409,7 +1409,7 @@ Public Function GetFilePropCompany(sFilename As String) As String
             lstrcpy ByVal StrPtr(sCompanyName), ByVal hData
         End If
         
-        GetFilePropCompany = RTrimNull(LTrim(sCompanyName))
+        GetFilePropCompany = RTrim$(RTrimNull(LTrim$(sCompanyName)))
     End If
 Finalize:
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
@@ -2436,7 +2436,7 @@ Public Function WriteDataToFile(sFile As String, sContents As String, Optional i
     
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     
-    If 0 = DeleteFilePtr(StrPtr(sFile)) Then
+    If Not DeleteFileEx(sFile) Then
         If (Not bAutoLogSilent) And bShowWarning Then
             'The value '[*]' could not be written to the settings file '[**]'. Please verify that write access is allowed to that file.
             MsgBoxW Replace$(Replace$(Translate(1008), "[*]", sContents), "[**]", sFile), vbCritical
@@ -2569,7 +2569,7 @@ Public Function FileCopyW(FileSource As String, FileDestination As String, Optio
         TryUnlock FileDestination
         FileCopyW = CopyFile(StrPtr(FileSource), StrPtr(FileDestination), Not bOverwrite)
         If Not FileCopyW Then
-            If DeleteFilePtr(StrPtr(FileDestination), True, True) Then
+            If DeleteFileEx(FileDestination, True, True) Then
                 FileCopyW = CopyFile(StrPtr(FileSource), StrPtr(FileDestination), Not bOverwrite)
             End If
         End If
@@ -2953,7 +2953,7 @@ Public Function DeleteFolderForce(sFolder As String, Optional bForceDeleteMicros
                     aFiles = ListFiles(sFolder)
                     If AryItems(aFiles) Then
                         For i = 0 To UBound(aFiles)
-                            DeleteFilePtr StrPtr(aFiles(i)), bForceDeleteMicrosoft
+                            DeleteFileForce aFiles(i), bForceDeleteMicrosoft
                         Next
                     End If
                 End If

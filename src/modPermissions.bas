@@ -1137,7 +1137,7 @@ Public Function CheckFileAccessWrite_Physically(sFilePath As String, Optional bD
     
     If bDeleteFile Then
         If hFile > 0 Then
-            DeleteFilePtr StrPtr(sFilePath), , True
+            DeleteFileEx sFilePath
         End If
     End If
     

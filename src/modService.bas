@@ -312,15 +312,31 @@ Public Function DeleteNTService(sServiceName As String, Optional AllowReboot As 
     If IsMicrosoftService(sServiceName) Then
     
         If ForceDeleteMicrosoft Then
+        
+            '// TODO: Check system services by hardcoded list ?
+            '// => redirect to recovery
+            
+            'The service [] is system-critical! It can't be deleted.
+            'MsgBoxW Replace(Translate(504), "[]", sServiceName), vbCritical
+            'Exit Function
+        Else
+        
             'The service [] belongs to Microsoft! Are you really sure you want to delete it?
             If MsgBoxW(Replace(Translate(513), "[]", sServiceName), vbYesNo Or vbDefaultButton2 Or vbExclamation) = vbNo Then Exit Function
-        Else
-            'The service [] is system-critical! It can't be deleted.
-            MsgBoxW Replace(Translate(504), "[]", sServiceName), vbCritical
-        
-            Exit Function
+            
         End If
     End If
+    
+    Dim sImagePath As String
+    sImagePath = CleanServiceFileName(GetServiceImagePath(sServiceName), sServiceName)
+    If StrEndWith(sImagePath, ".exe") Then
+        'check if self-hosted
+        '// TODO: Anti-bsod
+    End If
+    
+    SetServiceStartMode sServiceName, SERVICE_MODE_DISABLED
+    StopService sServiceName
+    SetServiceStartMode sServiceName, SERVICE_MODE_DISABLED
     
     Dim hSCManager&, hService&
     hSCManager = OpenSCManager(0&, 0&, SC_MANAGER_CREATE_SERVICE)

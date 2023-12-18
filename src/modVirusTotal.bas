@@ -88,7 +88,7 @@ Public Function DownloadAuto_runs() As Boolean
             End If
         End If
         
-        DeleteFilePtr StrPtr(sAutorunsExePath), True, True
+        DeleteFileEx sAutorunsExePath, True
         
         If FileExists(sAutorunsExePath) Then
             MsgBoxW "Cannot remove the old file:" & vbCrLf & sAutorunsExePath, vbCritical
@@ -120,7 +120,7 @@ Public Function DownloadAuto_runs() As Boolean
     
     'Clear
     DeleteFolder UnpackPath
-    DeleteFilePtr StrPtr(ArcPath)
+    DeleteFileEx ArcPath
     
     DownloadAuto_runs = True
     

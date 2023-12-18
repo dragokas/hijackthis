@@ -201,7 +201,7 @@ End Sub
 
 Public Function HasFixInClipboard() As Boolean
     m_FixInfo.Raw = ClipboardGetText() 'precache
-    HasFixInClipboard = (0 <> InStr(1, Left$(m_FixInfo.Raw, 300), "Start::", vbTextCompare))
+    HasFixInClipboard = (0 <> InStr(1, Left$(m_FixInfo.Raw, 300), "Start>>", vbTextCompare))
     If Not HasFixInClipboard Then
         m_FixInfo.Raw = vbNullString
     End If

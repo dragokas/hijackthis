@@ -3,22 +3,28 @@
 <PF32>\Common Files\Microsoft Shared\Phone Tools\CoreCon\11.0\bin\IpOverUsbSvc.exe
 <PF32>\Common Files\Microsoft Shared\Source Engine\OSE.exe
 <PF32>\Common Files\Microsoft Shared\VS7DEBUG\MDM.exe
+<PF32>\Microsoft Application Virtualization Client\sftvsa.exe
 <PF32>\Microsoft Office\Office12\GrooveAuditService.exe
 <PF32>\Microsoft Office\Office14\GROOVE.EXE
-<PF32>\Microsoft Application Virtualization Client\sftvsa.exe
 <PF32>\Microsoft Visual Studio\Shared\Common\DiagnosticsHub.Collection.Service\StandardCollector.Service.exe
-<PF32>\Windows Kits\8.1\App Certification Kit\fussvc.exe
-<PF32>\Skype\Updater\Updater.exe
 <PF32>\Microsoft\EdgeUpdate\MicrosoftEdgeUpdate.exe,/svc|/medsvc
+<PF32>\Skype\Updater\Updater.exe
+<PF32>\Windows Kits\8.1\App Certification Kit\fussvc.exe
 <PF64>\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe
 <PF64>\Common Files\Microsoft Shared\OFFICE12\ODSERV.EXE
 <PF64>\Common Files\Microsoft Shared\OfficeSoftwareProtectionPlatform\OSPPSVC.exe
 <PF64>\Common Files\Microsoft Shared\Windows Live\WLIDSVC.EXE
 <PF64>\Microsoft Office\Office12\GrooveAuditService.exe
 <PF64>\Microsoft Office\Office14\GROOVE.EXE
+<PF64>\Microsoft Security Client\MsMpEng.exe
+<PF64>\Microsoft Security Client\NisSrv.exe
 <PF64>\Microsoft SQL Server\90\Shared\sqlwriter.exe
 <PF64>\Microsoft Update Health Tools\uhssvc.exe
 <PF64>\rempl\sedsvc.exe
+<PF64>\Windows Defender Advanced Threat Protection\MsSense.exe
+<PF64>\Windows Defender\mpsvc.dll
+<PF64>\Windows Defender\MsMpEng.exe
+<PF64>\Windows Defender\NisSrv.exe
 <PF64>\Windows Live\Mesh\wlcrasvc.exe
 <PF64>\Windows Media Player\wmpnetwk.exe
 <SysRoot>\ehome\ehRecvr.exe
@@ -26,9 +32,11 @@
 <SysRoot>\ehome\ehstart.dll
 <SysRoot>\Microsoft.NET\Framework64\v3.0\Windows Communication Foundation\infocard.exe
 <SysRoot>\Microsoft.Net\Framework64\v3.0\WPF\PresentationFontCache.exe
+<SysRoot>\Microsoft.NET\Framework64\v4.0.30319\SMSvcHost.exe
+<SysRoot>\Microsoft.NET\Framework\v3.0\Windows Communication Foundation\infocard.exe
+<SysRoot>\Microsoft.Net\Framework\v3.0\WPF\PresentationFontCache.exe
 <SysRoot>\PCHealth\HelpCtr\Binaries\pchsvc.dll
 <SysRoot>\servicing\TrustedInstaller.exe
-<SysRoot>\system32\spool\drivers\W32X86\3\PrintConfig.dll
 <SysRoot>\System32\advapi32.dll
 <SysRoot>\System32\aelupsvc.dll
 <SysRoot>\System32\AJRouter.dll
@@ -39,6 +47,7 @@
 <SysRoot>\System32\appmgmts.dll
 <SysRoot>\System32\AppReadiness.dll
 <SysRoot>\System32\appxdeploymentserver.dll
+<SysRoot>\System32\assignedaccessmanagersvc.dll
 <SysRoot>\System32\AudioEndpointBuilder.dll
 <SysRoot>\System32\Audiosrv.dll
 <SysRoot>\System32\AxInstSV.dll
@@ -48,32 +57,41 @@
 <SysRoot>\System32\browser.dll
 <SysRoot>\System32\BthHFSrv.dll
 <SysRoot>\System32\bthserv.dll
+<SysRoot>\system32\CapabilityAccessManager.dll
 <SysRoot>\System32\CDPSvc.dll
 <SysRoot>\System32\CDPUserSvc.dll
 <SysRoot>\System32\certprop.dll
 <SysRoot>\System32\cisvc.exe
+<SysRoot>\system32\clipsrv.exe
 <SysRoot>\System32\ClipSVC.dll
 <SysRoot>\System32\coremessaging.dll
 <SysRoot>\System32\cryptsvc.dll
 <SysRoot>\System32\cscsvc.dll
 <SysRoot>\System32\das.dll
 <SysRoot>\System32\dcpsvc.dll
+<SysRoot>\System32\debugregsvc.dll
 <SysRoot>\System32\defragsvc.dll
+<SysRoot>\System32\DeveloperToolsSvc.exe
 <SysRoot>\System32\DeviceSetupManager.dll
+<SysRoot>\System32\DevicesFlowBroker.dll
 <SysRoot>\System32\DevQueryBroker.dll
 <SysRoot>\System32\DFSR.exe
+<SysRoot>\system32\Dfssvc.exe
 <SysRoot>\System32\dhcpcore.dll
 <SysRoot>\System32\dhcpcsvc.dll
+<SysRoot>\system32\DiagSvc.dll
 <SysRoot>\System32\DiagSvcs\DiagnosticsHub.StandardCollector.Service.exe
 <SysRoot>\System32\diagtrack.dll
 <SysRoot>\System32\dllhost.exe
 <SysRoot>\System32\dmadmin.exe
 <SysRoot>\System32\dmserver.dll
 <SysRoot>\System32\dmwappushsvc.dll
+<SysRoot>\System32\dns.exe
 <SysRoot>\System32\dnsrslvr.dll
 <SysRoot>\System32\dot3svc.dll
 <SysRoot>\System32\dps.dll
 <SysRoot>\System32\DsSvc.dll
+<SysRoot>\System32\dusmsvc.dll
 <SysRoot>\System32\eapsvc.dll
 <SysRoot>\System32\efssvc.dll
 <SysRoot>\System32\embeddedmodesvc.dll
@@ -81,6 +99,7 @@
 <SysRoot>\System32\EnterpriseAppMgmtSvc.dll
 <SysRoot>\System32\ersvc.dll
 <SysRoot>\System32\es.dll
+<SysRoot>\system32\faxsvc.exe
 <SysRoot>\System32\fdPHost.dll
 <SysRoot>\System32\fdrespub.dll
 <SysRoot>\System32\fhsvc.dll
@@ -88,19 +107,26 @@
 <SysRoot>\System32\FntCache.dll
 <SysRoot>\System32\FrameServer.dll
 <SysRoot>\System32\fxssvc.exe
+<SysRoot>\System32\GameInputSvc.exe
 <SysRoot>\System32\GeofenceMonitorService.dll
 <SysRoot>\System32\gpsvc.dll
+<SysRoot>\System32\GraphicsPerfSvc.dll
+<SysRoot>\system32\grovel.exe
 <SysRoot>\System32\hidserv.dll
 <SysRoot>\System32\hvhostsvc.dll
+<SysRoot>\System32\ias.dll
 <SysRoot>\System32\icsvc.dll
 <SysRoot>\System32\icsvcext.dll
 <SysRoot>\System32\IEEtwCollector.exe
 <SysRoot>\System32\ikeext.dll
 <SysRoot>\System32\imapi.exe
+<SysRoot>\system32\inetsrv\inetinfo.exe
+<SysRoot>\system32\InstallService.dll
 <SysRoot>\System32\ipbusenum.dll
 <SysRoot>\System32\iphlpsvc.dll
 <SysRoot>\System32\ipnathlp.dll
 <SysRoot>\System32\ipsecsvc.dll
+<SysRoot>\System32\IpxlatCfg.dll
 <SysRoot>\System32\irmon.dll
 <SysRoot>\System32\iscsiexe.dll
 <SysRoot>\System32\keyiso.dll
@@ -108,24 +134,31 @@
 <SysRoot>\System32\lfsvc.dll
 <SysRoot>\System32\LicenseManagerSvc.dll
 <SysRoot>\System32\ListSvc.dll
+<SysRoot>\System32\llssrv.exe
 <SysRoot>\System32\lltdsvc.dll
 <SysRoot>\System32\lmhsvc.dll
 <SysRoot>\System32\locator.exe
+<SysRoot>\System32\lpasvc.dll
 <SysRoot>\System32\lsass.exe
+<SysRoot>\system32\lserver.exe
 <SysRoot>\System32\lsm.dll
 <SysRoot>\System32\MessagingService.dll
 <SysRoot>\System32\mmcss.dll
 <SysRoot>\System32\mnmsrvc.exe
 <SysRoot>\System32\moshost.dll
+<SysRoot>\system32\mprdim.dll
 <SysRoot>\System32\mpssvc.dll
 <SysRoot>\System32\msdtc.exe
 <SysRoot>\System32\msdtckrm.dll
 <SysRoot>\System32\msiexec.exe,/V
 <SysRoot>\System32\mspmsnsv.dll
+<SysRoot>\system32\MSTask.exe
 <SysRoot>\System32\mswsock.dll
+<SysRoot>\System32\NaturalAuth.dll
 <SysRoot>\System32\ncasvc.dll
 <SysRoot>\System32\ncbservice.dll
 <SysRoot>\System32\NcdAutoSetup.dll
+<SysRoot>\system32\netdde.exe
 <SysRoot>\System32\netlogon.dll
 <SysRoot>\System32\netman.dll
 <SysRoot>\System32\netprofm.dll
@@ -135,6 +168,7 @@
 <SysRoot>\System32\ngcsvc.dll
 <SysRoot>\System32\nlasvc.dll
 <SysRoot>\System32\nsisvc.dll
+<SysRoot>\system32\ntfrs.exe
 <SysRoot>\System32\ntmssvc.dll
 <SysRoot>\System32\osrss.dll
 <SysRoot>\System32\p2psvc.dll
@@ -145,8 +179,10 @@
 <SysRoot>\System32\pla.dll
 <SysRoot>\System32\pnrpauto.dll
 <SysRoot>\System32\pnrpsvc.dll
+<SysRoot>\System32\PrintWorkflowService.dll
 <SysRoot>\System32\profsvc.dll
 <SysRoot>\System32\provsvc.dll
+<SysRoot>\system32\PushToInstall.dll
 <SysRoot>\System32\qagentRT.dll
 <SysRoot>\System32\qmgr.dll
 <SysRoot>\System32\qwave.dll
@@ -154,10 +190,17 @@
 <SysRoot>\System32\rasmans.dll
 <SysRoot>\System32\RDXService.dll
 <SysRoot>\System32\regsvc.dll
+<SysRoot>\system32\regsvc.exe
 <SysRoot>\System32\RMapi.dll
 <SysRoot>\System32\RpcEpMap.dll
+<SysRoot>\System32\RpcProxy\LBService.dll
 <SysRoot>\System32\rpcss.dll
+<SysRoot>\system32\RsEng.exe
+<SysRoot>\system32\RsFsa.exe
+<SysRoot>\system32\RSoPProv.exe
+<SysRoot>\system32\RsSub.exe
 <SysRoot>\System32\rsvp.exe
+<SysRoot>\system32\sacsvr.dll
 <SysRoot>\System32\SCardSvr.dll
 <SysRoot>\System32\SCardSvr.exe
 <SysRoot>\System32\ScDeviceEnum.dll
@@ -165,6 +208,7 @@
 <SysRoot>\System32\SDRSVC.dll
 <SysRoot>\System32\SearchIndexer.exe
 <SysRoot>\System32\seclogon.dll
+<SysRoot>\system32\SEMgrSvc.dll
 <SysRoot>\System32\sens.dll
 <SysRoot>\System32\SensorDataService.exe
 <SysRoot>\System32\SensorService.dll
@@ -172,14 +216,20 @@
 <SysRoot>\System32\services.exe
 <SysRoot>\System32\sessenv.dll
 <SysRoot>\System32\sessmgr.exe
+<SysRoot>\system32\sfmprint.exe
+<SysRoot>\system32\sfmsvc.exe
 <SysRoot>\System32\SgrmBroker.exe
+<SysRoot>\System32\SharedRealitySvc.dll
 <SysRoot>\System32\shsvcs.dll
 <SysRoot>\System32\SLsvc.exe
 <SysRoot>\System32\SLUINotify.dll
 <SysRoot>\System32\smlogsvc.exe
 <SysRoot>\System32\smphost.dll
 <SysRoot>\System32\SmsRouterSvc.dll
+<SysRoot>\System32\snmp.exe
 <SysRoot>\System32\snmptrap.exe
+<SysRoot>\system32\spectrum.exe
+<SysRoot>\system32\spool\drivers\W32X86\3\PrintConfig.dll
 <SysRoot>\System32\spool\drivers\x64\3\PrintConfig.dll
 <SysRoot>\System32\spoolsv.exe
 <SysRoot>\System32\sppsvc.exe
@@ -187,6 +237,8 @@
 <SysRoot>\System32\srsvc.dll
 <SysRoot>\System32\srvsvc.dll
 <SysRoot>\System32\ssdpsrv.dll
+<SysRoot>\System32\SshBroker.dll
+<SysRoot>\System32\SshProxy.dll
 <SysRoot>\System32\sstpsvc.dll
 <SysRoot>\System32\storsvc.dll
 <SysRoot>\System32\svchost.exe
@@ -197,12 +249,17 @@
 <SysRoot>\System32\TabSvc.dll
 <SysRoot>\System32\tapisrv.dll
 <SysRoot>\System32\tbssvc.dll
+<SysRoot>\system32\tcpsvcs.exe
 <SysRoot>\System32\termsrv.dll
+<SysRoot>\System32\termsrv.exe
 <SysRoot>\System32\tetheringservice.dll
+<SysRoot>\system32\tftpd.exe
 <SysRoot>\System32\themeservice.dll
 <SysRoot>\System32\TieringEngineService.exe
 <SysRoot>\System32\tileobjserver.dll
 <SysRoot>\System32\TimeBrokerServer.dll
+<SysRoot>\system32\tlntsvr.exe
+<SysRoot>\System32\TokenBroker.dll
 <SysRoot>\System32\trkwks.dll
 <SysRoot>\System32\UI0Detect.exe
 <SysRoot>\System32\umpnpmgr.dll
@@ -214,14 +271,17 @@
 <SysRoot>\System32\userdataservice.dll
 <SysRoot>\System32\usermgr.dll
 <SysRoot>\System32\usocore.dll
+<SysRoot>\System32\UtilMan.exe
 <SysRoot>\System32\uxsms.dll
 <SysRoot>\System32\vaultsvc.dll
 <SysRoot>\System32\vds.exe
+<SysRoot>\system32\vmicsvc.exe
 <SysRoot>\System32\vssvc.exe
 <SysRoot>\System32\w32time.dll
 <SysRoot>\System32\w3ssl.dll
 <SysRoot>\System32\WalletService.dll
 <SysRoot>\System32\Wat\WatAdminSvc.exe
+<SysRoot>\System32\WBEM\WinMgmt.exe
 <SysRoot>\System32\wbem\WmiApSrv.exe
 <SysRoot>\System32\wbem\WMIsvc.dll
 <SysRoot>\System32\wbengine.exe
@@ -229,17 +289,26 @@
 <SysRoot>\System32\wcmsvc.dll
 <SysRoot>\System32\wcncsvc.dll
 <SysRoot>\System32\WcsPlugInService.dll
+<SysRoot>\system32\wdfmgr.exe
 <SysRoot>\System32\wdi.dll
 <SysRoot>\System32\webclnt.dll
 <SysRoot>\System32\wecsvc.dll
 <SysRoot>\System32\wephostsvc.dll
 <SysRoot>\System32\wercplsupport.dll
 <SysRoot>\System32\WerSvc.dll
+<SysRoot>\System32\wfdsconmgrsvc.dll
 <SysRoot>\System32\wiarpc.dll
 <SysRoot>\System32\wiaservc.dll
+<SysRoot>\system32\Windows Media\NSLite\nslservice.exe
+<SysRoot>\system32\Windows Media\Server\nscm.exe
+<SysRoot>\system32\Windows Media\Server\nspm.exe
+<SysRoot>\system32\Windows Media\Server\nspmon.exe
+<SysRoot>\system32\Windows Media\Server\nsum.exe
 <SysRoot>\System32\Windows.Internal.Management.dll
 <SysRoot>\System32\windows.staterepository.dll
+<SysRoot>\System32\Windows.WARP.JITService.dll
 <SysRoot>\System32\winhttp.dll
+<SysRoot>\System32\wins.exe
 <SysRoot>\System32\wkssvc.dll
 <SysRoot>\System32\wlansvc.dll
 <SysRoot>\System32\wlidsvc.dll
@@ -257,82 +326,14 @@
 <SysRoot>\System32\WUDFSvc.dll
 <SysRoot>\System32\wwansvc.dll
 <SysRoot>\System32\wzcsvc.dll
+<SysRoot>\system32\xbgmsvc.exe
 <SysRoot>\System32\XblAuthManager.dll
 <SysRoot>\System32\XblGameSave.dll
+<SysRoot>\System32\XboxGipSvc.dll
 <SysRoot>\System32\XboxNetApiSvc.dll
 <SysRoot>\System32\xmlprov.dll
+<SysRoot>\SysWow64\mnmsrvc.exe
 <SysRoot>\SysWow64\perfhost.exe
 <SysRoot>\SysWow64\svchost.exe
-<SysRoot>\Microsoft.NET\Framework\v3.0\Windows Communication Foundation\infocard.exe
-<SysRoot>\Microsoft.Net\Framework\v3.0\WPF\PresentationFontCache.exe
-<SysRoot>\Microsoft.NET\Framework64\v4.0.30319\SMSvcHost.exe
-<SysRoot>\system32\lserver.exe
-<SysRoot>\system32\mprdim.dll
-<SysRoot>\system32\wdfmgr.exe
-<SysRoot>\system32\sacsvr.dll
-<SysRoot>\system32\RSoPProv.exe
-<SysRoot>\system32\Dfssvc.exe
-<SysRoot>\system32\ntfrs.exe
-<SysRoot>\System32\dusmsvc.dll
-<SysRoot>\system32\SEMgrSvc.dll
-<SysRoot>\System32\SshBroker.dll
-<SysRoot>\System32\SshProxy.dll
-<SysRoot>\System32\TokenBroker.dll
-<SysRoot>\System32\debugregsvc.dll
-<SysRoot>\System32\assignedaccessmanagersvc.dll
-<SysRoot>\system32\CapabilityAccessManager.dll
-<SysRoot>\System32\DeveloperToolsSvc.exe
-<SysRoot>\System32\DevicesFlowBroker.dll
-<SysRoot>\system32\DiagSvc.dll
-<SysRoot>\System32\GraphicsPerfSvc.dll
-<SysRoot>\System32\IpxlatCfg.dll
-<SysRoot>\System32\lpasvc.dll
-<SysRoot>\System32\NaturalAuth.dll
-<SysRoot>\System32\PrintWorkflowService.dll
-<SysRoot>\System32\SharedRealitySvc.dll
-<SysRoot>\System32\Windows.WARP.JITService.dll
-<SysRoot>\System32\wfdsconmgrsvc.dll
-<SysRoot>\system32\spectrum.exe
-<SysRoot>\system32\PushToInstall.dll
-<SysRoot>\system32\InstallService.dll
-<SysRoot>\System32\XboxGipSvc.dll
-<SysRoot>\system32\xbgmsvc.exe
-<SysRoot>\System32\dns.exe
-<SysRoot>\System32\wins.exe
-<SysRoot>\System32\WBEM\WinMgmt.exe
-<SysRoot>\system32\RsSub.exe
-<SysRoot>\system32\RsEng.exe
-<SysRoot>\system32\Windows Media\Server\nsum.exe
-<SysRoot>\system32\MSTask.exe
-<SysRoot>\system32\tcpsvcs.exe
-<SysRoot>\system32\inetsrv\inetinfo.exe
-<SysRoot>\system32\sfmprint.exe
-<SysRoot>\System32\snmp.exe
-<SysRoot>\System32\ias.dll
-<SysRoot>\system32\Windows Media\Server\nspm.exe
-<SysRoot>\system32\Windows Media\Server\nspmon.exe
-<SysRoot>\system32\Windows Media\Server\nscm.exe
-<SysRoot>\system32\regsvc.exe
-<SysRoot>\System32\llssrv.exe
-<SysRoot>\System32\termsrv.exe
-<SysRoot>\system32\RsFsa.exe
-<SysRoot>\system32\sfmsvc.exe
-<SysRoot>\system32\tlntsvr.exe
-<SysRoot>\system32\grovel.exe
-<SysRoot>\system32\netdde.exe
-<SysRoot>\System32\UtilMan.exe
-<SysRoot>\system32\clipsrv.exe
-<SysRoot>\system32\Windows Media\NSLite\nslservice.exe
-<SysRoot>\system32\faxsvc.exe
-<SysRoot>\system32\tftpd.exe
-<SysRoot>\system32\vmicsvc.exe
-<SysRoot>\SysWow64\mnmsrvc.exe
-<SysRoot>\WindowsMobile\wcescomm.dll
 <SysRoot>\WindowsMobile\rapimgr.dll
-<SysRoot>\System32\RpcProxy\LBService.dll
-<PF64>\Windows Defender\mpsvc.dll
-<PF64>\Windows Defender\NisSrv.exe
-<PF64>\Windows Defender\MsMpEng.exe
-<PF64>\Microsoft Security Client\MsMpEng.exe
-<PF64>\Microsoft Security Client\NisSrv.exe
-<PF64>\Windows Defender Advanced Threat Protection\MsSense.exe
+<SysRoot>\WindowsMobile\wcescomm.dll

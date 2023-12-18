@@ -2571,7 +2571,7 @@ Private Sub FormStart_Stage1()
         SubClassScroll True
     End If
     
-    AppVerPlusName = g_AppName & " build " & GetOwnCompilationDate() & " " & _
+    AppVerPlusName = g_AppName & " (Plus) build " & GetOwnCompilationDate() & " " & _
         IIf(bIsAlpha, "Alpha", IIf(bIsBeta, "Beta", "Stable")) & " v." & AppVerString
     
     If Not bPolymorph Then
@@ -3705,7 +3705,7 @@ Private Sub FormStart_Stage3()
         For i = 0 To dSuspFiles.Count - 1
 
             sFile = dSuspFiles.Keys(i)
-            DeleteFilePtr StrPtr(sFile), True
+            DeleteFileForce sFile, True
 
         Next
 
@@ -5407,7 +5407,7 @@ Private Sub cmdScan_Click()
             If Len(g_sLogFile) = 0 Then
                 g_sLogFile = BuildPath(AppPath(), "HiJackThis.log")
             End If
-            DeleteFileForce g_sLogFile, True
+            DeleteFileEx g_sLogFile
         End If
         
         'first scan after rebooting ?
@@ -6610,6 +6610,7 @@ Private Sub mnuResultJumpFile_Click(Index As Integer)   'Context => Jump to ... 
         If AryPtr(JumpFileCache) Then
             If UBound(JumpFileCache) >= Index Then
                 sFile = JumpFileCache(Index).Path
+                sFile = GetFullPath(sFile)
                 sFolder = GetParentDir(sFile)
                 If FileExists(sFile) Then
                     OpenAndSelectFile sFile

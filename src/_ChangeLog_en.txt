@@ -11,6 +11,13 @@ Version history:
 |||||       1. HiJackThis: changelog         |||||
 ==================================================
 
+[3.3.0.10 Alpha] - Dec 18, 2023
+ - Unlocked the ability to remove services with Microsoft-signed executable.
+ - Added company and SHA1 hash output for files with damaged digital signature, marked as "(invalid sign)".
+ - The allowed file size for hash verification has been increased to 300 MiB. If the check exceeds or fails, this will be indicated in the log.
+ - Improved digital signature verification: for Win 8+, the secondary signature (of the manufacturer) is displayed, if the primary signature by Microsoft.
+ - Bugs of the previous build have been fixed.
+
 [3.3.0.9 Alpha] - Dec 15, 2023
  - Added detection of autorun Null-values.
  - Added the database of LolBin files with updates from lolbas-project.github.io service (thanks to @oddvarmoe, @bohops, @xenosCR, @ConsciousHacker, @liamsomerville, @Wietze, @_josehelps)
