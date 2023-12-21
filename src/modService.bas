@@ -34,18 +34,20 @@ End Enum
     Dim SERVICE_CONTINUE_PENDING, SERVICE_PAUSE_PENDING, SERVICE_PAUSED, SERVICE_RUNNING, SERVICE_START_PENDING, SERVICE_STOP_PENDING, SERVICE_STOPPED
 #End If
 
-Private Enum SERVICE_TYPE
+Public Enum SERVICE_TYPE
     SERVICE_FILE_SYSTEM_DRIVER = &H2&
     SERVICE_KERNEL_DRIVER = &H1&
     SERVICE_WIN32_OWN_PROCESS = &H10&    'The service runs in its own process
     SERVICE_WIN32_SHARE_PROCESS = &H20&  'The service shares a process with other services
+    SERVICE_USER_OWN_PROCESS = &H50&
+    SERVICE_USER_SHARE_PROCESS = &H60&
     SERVICE_INTERACTIVE_PROCESS = &H100& 'this constant can be defined with OR bitmask
 End Enum
 #If False Then
     Dim SERVICE_FILE_SYSTEM_DRIVER, SERVICE_KERNEL_DRIVER, SERVICE_WIN32_OWN_PROCESS, SERVICE_WIN32_SHARE_PROCESS, SERVICE_INTERACTIVE_PROCESS
 #End If
 
-Private Enum SERVICE_CONTROLS_ACCEPTED
+Public Enum SERVICE_CONTROLS_ACCEPTED
     SERVICE_ACCEPT_NETBINDCHANGE = &H10&
     SERVICE_ACCEPT_PARAMCHANGE = &H8&
     SERVICE_ACCEPT_PAUSE_CONTINUE = &H2&
@@ -71,9 +73,9 @@ Private Enum SERVICE_SAFEMODE_TYPE
     SERVICE_SAFEMODE_NETWORK
 End Enum
 
-Private Type SERVICE_STATUS
-    ServiceType             As Long
-    CurrentState            As Long
+Public Type SERVICE_STATUS
+    ServiceType             As SERVICE_TYPE
+    CurrentState            As SERVICE_STATE
     ControlsAccepted        As Long
     Win32ExitCode           As Long
     ServiceSpecificExitCode As Long
@@ -81,11 +83,24 @@ Private Type SERVICE_STATUS
     WaitHint                As Long
 End Type
 
+Public Type SERVICE_STATUS_PROCESS
+    dwServiceType As SERVICE_TYPE
+    dwCurrentState As SERVICE_STATE
+    dwControlsAccepted As Long
+    dwWin32ExitCode As Long
+    dwServiceSpecificExitCode As Long
+    dwCheckPoint As Long
+    dwWaitHint As Long
+    dwProcessId As Long
+    dwServiceFlags As Long
+End Type
+
 Private Declare Function OpenSCManager Lib "Advapi32.dll" Alias "OpenSCManagerW" (ByVal lpMachineName As Long, ByVal lpDatabaseName As Long, ByVal dwDesiredAccess As Long) As Long
 Private Declare Function OpenService Lib "Advapi32.dll" Alias "OpenServiceW" (ByVal hSCManager As Long, ByVal lpServiceName As Long, ByVal dwDesiredAccess As Long) As Long
 Private Declare Function DeleteService Lib "Advapi32.dll" (ByVal hService As Long) As Long
 Private Declare Function CloseServiceHandle Lib "Advapi32.dll" (ByVal hSCObject As Long) As Long
-Private Declare Function QueryServiceStatus Lib "Advapi32.dll" (ByVal hService As Long, lpServiceStatus As Any) As Long
+Private Declare Function QueryServiceStatus Lib "Advapi32.dll" (ByVal hService As Long, lpServiceStatus As SERVICE_STATUS) As Long
+Private Declare Function QueryServiceStatusEx Lib "Advapi32.dll" (ByVal hService As Long, ByVal InfoLevel As Long, lpBuffer As SERVICE_STATUS_PROCESS, ByVal cbBufSize As Long, pcbBytesNeeded As Long) As Long
 Private Declare Function RegOpenKeyEx Lib "Advapi32.dll" Alias "RegOpenKeyExW" (ByVal hKey As Long, ByVal lpSubKey As Long, ByVal ulOptions As Long, ByVal samDesired As Long, phkResult As Long) As Long
 Private Declare Function RegQueryValueExLong Lib "Advapi32.dll" Alias "RegQueryValueExW" (ByVal hKey As Long, ByVal lpValueName As Long, ByVal lpReserved As Long, ByRef lpType As Long, szData As Long, ByRef lpcbData As Long) As Long
 
@@ -103,6 +118,7 @@ Private Const SERVICE_USER_DEFINED_CONTROL  As Long = &H100&
 Private Const STANDARD_RIGHTS_REQUIRED      As Long = &HF0000
 Private Const SERVICE_ALL_ACCESS = (STANDARD_RIGHTS_REQUIRED Or SERVICE_QUERY_CONFIG Or SERVICE_CHANGE_CONFIG Or SERVICE_QUERY_STATUS Or SERVICE_ENUMERATE_DEPENDENTS Or SERVICE_START Or SERVICE_STOP Or SERVICE_PAUSE_CONTINUE Or SERVICE_INTERROGATE Or SERVICE_USER_DEFINED_CONTROL)
 Private Const SERVICE_ACCESS_DELETE         As Long = &H10000
+Private Const SC_STATUS_PROCESS_INFO        As Long = 0&
 
 'Win32ExitCode
 Private Const ERROR_SERVICE_SPECIFIC_ERROR  As Long = 1066&
@@ -129,6 +145,24 @@ Public Function GetServiceRunState(sServiceName As String) As SERVICE_STATE
     Exit Function
 ErrorHandler:
     ErrorMsg Err, "GetServiceRunState", sServiceName
+    If inIDE Then Stop: Resume Next
+End Function
+
+Public Function GetServiceStatus(sServiceName As String, SSP As SERVICE_STATUS_PROCESS) As Boolean
+    On Error GoTo ErrorHandler:
+    Dim hSCManager&, hService&, dwSizeReq&
+    hSCManager = OpenSCManager(0&, 0&, SC_MANAGER_ENUMERATE_SERVICE)
+    If hSCManager <> 0 Then
+        hService = OpenService(hSCManager, StrPtr(sServiceName), SERVICE_QUERY_STATUS)
+        If hService <> 0 Then
+            If QueryServiceStatusEx(hService, SC_STATUS_PROCESS_INFO, SSP, LenB(SSP), dwSizeReq) Then GetServiceStatus = True
+            CloseServiceHandle hService
+        End If
+        CloseServiceHandle hSCManager
+    End If
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetServiceStatus", sServiceName
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -171,6 +205,19 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
+Public Function GetServiceType(sServiceName As String) As SERVICE_TYPE
+    On Error GoTo ErrorHandler:
+
+    If IsServiceExists(sServiceName) Then
+        GetServiceType = Reg.GetDword(HKEY_LOCAL_MACHINE, "System\CurrentControlSet\Services\" & sServiceName, "Type")
+    End If
+    
+    Exit Function
+ErrorHandler:
+    ErrorMsg Err, "GetServiceType", sServiceName
+    If inIDE Then Stop: Resume Next
+End Function
+
 Public Function SetServiceStartMode(sServiceName As String, eNewServiceMode As SERVICE_START_MODE) As Boolean
     On Error GoTo ErrorHandler:
     
@@ -190,6 +237,29 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
+Public Function SetServiceBsodState(sServiceName As String, bEnable As Boolean) As Boolean
+    
+    SetServiceBsodState = True
+    
+    Dim SSP As SERVICE_STATUS_PROCESS
+    
+    If GetServiceStatus(sServiceName, SSP) Then
+        If SSP.dwServiceType And SERVICE_WIN32_OWN_PROCESS Then
+            If SSP.dwProcessId <> 0 Then
+                If bEnable Then
+                    If Not IsCriticalProcess(SSP.dwProcessId) Then
+                        SetServiceBsodState = SetProcessCriticalFlag(SSP.dwProcessId, True)
+                    End If
+                Else
+                    If IsCriticalProcess(SSP.dwProcessId) Then
+                        SetServiceBsodState = SetProcessCriticalFlag(SSP.dwProcessId, False)
+                    End If
+                End If
+            End If
+        End If
+    End If
+End Function
+
 Public Function StopService(sServiceName As String) As Boolean
     On Error GoTo ErrorHandler:
     
@@ -202,6 +272,8 @@ Public Function StopService(sServiceName As String) As Boolean
     
     If Not IsServiceExists(sServiceName) Then StopService = True: Exit Function
     
+    If Not SetServiceBsodState(sServiceName, False) Then Exit Function
+ 
     If bIsWin64 And FolderExists(sWinDir & "\sysnative") And OSver.MajorMinor >= 6 Then
         'net.exe
         NetPath = sWinDir & "\sysnative\" & Caes_Decode("ohy.nIr")
@@ -325,13 +397,6 @@ Public Function DeleteNTService(sServiceName As String, Optional AllowReboot As 
             If MsgBoxW(Replace(Translate(513), "[]", sServiceName), vbYesNo Or vbDefaultButton2 Or vbExclamation) = vbNo Then Exit Function
             
         End If
-    End If
-    
-    Dim sImagePath As String
-    sImagePath = CleanServiceFileName(GetServiceImagePath(sServiceName), sServiceName)
-    If StrEndWith(sImagePath, ".exe") Then
-        'check if self-hosted
-        '// TODO: Anti-bsod
     End If
     
     SetServiceStartMode sServiceName, SERVICE_MODE_DISABLED

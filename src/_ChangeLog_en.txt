@@ -11,6 +11,15 @@ Version history:
 |||||       1. HiJackThis: changelog         |||||
 ==================================================
 
+[3.3.0.11 Beta] - Dec 21, 2023
+ - O7 - KnownFolder: added checking for physically missing folders.
+ - Fixed HijackThis installation error.
+ - The Hosts File Manager tool is presented as a separate window.
+ - Added Anti-BSOD when deleting services.
+ - Fixed a bug where the standard font wasn't applied by some forms.
+ - Added the ability to change the standard UI font separately from the list font.
+ - Fixed errors in compatibility with XP/Vista, checking minimal processes on Win 8+.
+
 [3.3.0.10 Alpha] - Dec 18, 2023
  - Unlocked the ability to remove services with Microsoft-signed executable.
  - Added company and SHA1 hash output for files with damaged digital signature, marked as "(invalid sign)".

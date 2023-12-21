@@ -456,7 +456,7 @@
 0044=Misc Tools
 0045=Font of lists:
 0046=Size:
-0047=Apply font to whole interface
+0047=Standard font:
 0048=This applies to all tools (like list in ADS Spy, Startuplist tree, etc)
 0050=Mark everything found for fixing after scan (DANGEROUS !!!)
 0051=Make backups before fixing items

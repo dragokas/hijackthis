@@ -1135,10 +1135,6 @@ Function SearchAllowed(Optional frmExplicit As Form, Optional out_Control As Con
             bCanSearch = True
             Set out_Control = frmMain.lstBackups
             
-        Case FRAME_ALIAS_HOSTS
-            bCanSearch = True
-            Set out_Control = frmMain.lstHostsMan
-            
         Case FRAME_ALIAS_HELP_SECTIONS, FRAME_ALIAS_HELP_KEYS, FRAME_ALIAS_HELP_PURPOSE, FRAME_ALIAS_HELP_HISTORY
             bCanSearch = True
             Set out_Control = frmMain.txtHelp
@@ -1165,6 +1161,10 @@ Function SearchAllowed(Optional frmExplicit As Form, Optional out_Control As Con
         Else
             Set out_Control = frmProcMan.lstProcessManager
         End If
+    
+    Case "frmHostsMan"
+        bCanSearch = True
+        Set out_Control = frmHostsMan.lstHostsMan
     
 '    Case "frmStartupList2"
 '        If Not frmStartupList2.fraSave.Visible Then

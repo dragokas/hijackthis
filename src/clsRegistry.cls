@@ -2762,15 +2762,15 @@ ErrorHandler:
 End Function
 
 
-Public Function RegisterDll(Path As String, Optional Unload As Boolean = True) As Boolean
+Public Function RegisterDll(path As String, Optional Unload As Boolean = True) As Boolean
     Dim hLib    As Long
     Dim pAddr   As Long
     Dim lret    As Variant
     Dim bOldRedir As Boolean
     
-    ToggleWow64FSRedirection False, Path, bOldRedir
+    ToggleWow64FSRedirection False, path, bOldRedir
     
-    hLib = LoadLibrary(StrPtr(Path))
+    hLib = LoadLibrary(StrPtr(path))
     
     ToggleWow64FSRedirection bOldRedir
     
@@ -2794,15 +2794,15 @@ Public Function RegisterDll(Path As String, Optional Unload As Boolean = True) A
 End Function
 
 
-Public Function UnRegisterDll(Path As String) As Boolean
+Public Function UnRegisterDll(path As String) As Boolean
     Dim hLib    As Long
     Dim pAddr   As Long
     Dim lret    As Variant
     Dim bOldRedir As Boolean
     
-    ToggleWow64FSRedirection False, Path, bOldRedir
+    ToggleWow64FSRedirection False, path, bOldRedir
     
-    hLib = LoadLibrary(StrPtr(Path))
+    hLib = LoadLibrary(StrPtr(path))
    
     ToggleWow64FSRedirection bOldRedir
    
@@ -3159,7 +3159,7 @@ Public Function WrapNtOpenKeyEx( _
     End With
     
     '// require SeBackupPrivilege privilages
-    If Not OSver.IsWindows7OrGreater Then
+    If OSver.IsWindows7OrGreater Then
         lret = NtOpenKeyEx(retHandle, dwAccess, OA, REG_OPTION_BACKUP_RESTORE)
     Else
         lret = NtOpenKey(retHandle, dwAccess, OA)

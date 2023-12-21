@@ -1780,7 +1780,9 @@ End Sub
 Private Sub Form_Load()
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "Form_Load - Begin"
-
+    
+    If bSL_Terminate Then Exit Sub
+    
     Dim hFile As Long, sPath As String
     
     If bSL_Abort Then Exit Sub

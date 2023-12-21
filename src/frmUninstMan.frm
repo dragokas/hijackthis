@@ -265,6 +265,7 @@ Begin VB.Form frmUninstMan
          Width           =   5775
          _ExtentX        =   0
          _ExtentY        =   0
+         MouseTrack      =   -1  'True
          IntegralHeight  =   0   'False
       End
       Begin VBCCR17.CommandButtonW cmdSave 
@@ -492,7 +493,7 @@ Private Sub cmdDelete_Click()
     
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "frmMain.cmdUninstManDelete_Click"
+    ErrorMsg Err, "cmdUninstManDelete_Click"
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -528,7 +529,7 @@ Private Sub cmdUninstall_Click()
     
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "frmMain.cmdUninstManUninstall_Click"
+    ErrorMsg Err, "cmdUninstManUninstall_Click"
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -578,7 +579,7 @@ Private Sub cmdNameEdit_Click()
     
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "frmMain.cmdUninstManEdit_Click"
+    ErrorMsg Err, "cmdUninstManEdit_Click"
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -618,7 +619,7 @@ Private Sub cmdUninstStrEdit_Click()
     
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "frmMain.cmdUninstManEdit_Click"
+    ErrorMsg Err, "cmdUninstManEdit_Click"
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -801,9 +802,9 @@ Private Sub cmdRefresh_Click()
     If cnt = -1 Then Exit Sub
     
     'Sorting user type array using bufer array of positions (c) Dragokas
-    Dim pos() As Variant, names() As String: ReDim pos(cnt), names(cnt)
-    For i = 0 To cnt: pos(i) = i: names(i) = UninstData(i).DisplayName: Next 'key of sort is DisplayName
-    QuickSortSpecial names, pos, 0, cnt
+    Dim pos() As Variant, Names() As String: ReDim pos(cnt), Names(cnt)
+    For i = 0 To cnt: pos(i) = i: Names(i) = UninstData(i).DisplayName: Next 'key of sort is DisplayName
+    QuickSortSpecial Names, pos, 0, cnt
     
     For i = 0 To cnt
         With UninstData(pos(i))
@@ -823,7 +824,7 @@ Private Sub cmdRefresh_Click()
     
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "frmMain.cmdUninstManRefresh_Click"
+    ErrorMsg Err, "cmdUninstManRefresh_Click"
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -916,10 +917,10 @@ Private Sub cmdSave_Click()
     
     ' Make positions array of sorting by .KeyTime property (registry key date).
     Dim cnt&: cnt = lstUninstMan.ListCount - 1
-    Dim pos() As Variant, names() As String: ReDim pos(cnt), names(cnt)
-    For i = 0 To cnt: pos(i) = i: names(i) = UninstData(i).KeyTime: Next
+    Dim pos() As Variant, Names() As String: ReDim pos(cnt), Names(cnt)
+    For i = 0 To cnt: pos(i) = i: Names(i) = UninstData(i).KeyTime: Next
     
-    QuickSortSpecial names, pos, 0, cnt
+    QuickSortSpecial Names, pos, 0, cnt
     
     For i = cnt To 0 Step -1 'descending order
         sList.AppendLine UninstData(pos(i)).KeyTime & vbTab & FormatLogString(CLng(pos(i)))
@@ -969,9 +970,10 @@ Private Sub cmdSave_Click()
     
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "frmMain.cmdUninstManSave_Click"
+    ErrorMsg Err, "cmdUninstManSave_Click"
     If inIDE Then Stop: Resume Next
 End Sub
 
-
-
+Private Sub lstUninstMan_MouseEnter()
+    lstUninstMan.SetFocus 'to allow scrolling
+End Sub

@@ -277,10 +277,10 @@ Public Sub RefreshProcessListNT(objList As VBCCR17.ListBoxW)
         
             For i = 0 To UBound(Process)
         
-                sProcessName = Process(i).Path
+                sProcessName = Process(i).path
                 
-                If Len(Process(i).Path) = 0 Then
-                    If Not IsMinimalProcess(Process(i).pid, Process(i).Name) Then
+                If Len(Process(i).path) = 0 Then
+                    If Not Process(i).Minimal Then
                         sProcessName = Process(i).Name '& " (cannot get Process Path)"
                     End If
                 End If

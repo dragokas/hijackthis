@@ -846,8 +846,7 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     Case "0041": .chkConfigTabs(0).Caption = Translation
                     
                     Case "0045": .lblFont.Caption = Translation
-                    Case "0046": .lblFontSize.Caption = Translation
-                    Case "0047": .chkFontWholeInterface.Caption = Translation
+                    Case "0047": .lblDefaultFont.Caption = Translation
                     Case "0048": .lblFont.ToolTipText = Translation
 
                     Case "0050": .chkAutoMark.Caption = Translation
@@ -855,24 +854,12 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                     Case "0052": .chkConfirm.Caption = Translation
                     'Case "0053": .chkIgnoreSafeDomains.Caption = Translation
                     Case "0054": .chkAutoMark.ToolTipText = Translation
-                    Case "0055": .chkSkipIntroFrameSettings.Caption = Translation
                     
                     Case "0058": .chkSkipErrorMsg.Caption = Translation
                     Case "0059": .chkConfigMinimizeToTray.Caption = Translation
                     
                     Case "1400": .chkConfigStartupScan.Caption = Translation
                     Case "1401": .chkConfigStartupScan.ToolTipText = Translation
-                    
-                    '; ================ Hosts manager ==================
-                    
-                    Case "0270": .fraHostsMan.Caption = Translation
-                    Case "0271": .lblHostsTip1.Caption = Translation
-                    Case "0272": .cmdHostsManDel.Caption = Translation
-                    Case "0273": .cmdHostsManToggle.Caption = Translation
-                    Case "0274": .cmdHostsManOpen.Caption = Translation
-                    Case "0276": .lblHostsTip2.Caption = Translation
-                    Case "0300": .cmdHostsManReset.Caption = Translation
-                    Case "0302": .cmdHostsManRefreshList.Caption = Translation
                     
                     '; === Other ===
                     'Case "9999": SetCharSet CInt(Translation)
@@ -884,6 +871,23 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                 If bAnotherForm Then
                     If True Then
                     
+                        '; =============== Hosts Manager ===============
+                        
+                        If IsFormInit(frmHostsMan) Then
+                            With frmHostsMan
+                                Select Case id
+                                    Case "0270": .Caption = Translation
+                                    Case "0271": .lblHostsTip1.Caption = Translation
+                                    Case "0272": .cmdHostsManDel.Caption = Translation
+                                    Case "0273": .cmdHostsManToggle.Caption = Translation
+                                    Case "0274": .cmdHostsManOpen.Caption = Translation
+                                    Case "0276": .lblHostsTip2.Caption = Translation
+                                    Case "0300": .cmdHostsManReset.Caption = Translation
+                                    Case "0302": .cmdHostsManRefreshList.Caption = Translation
+                                End Select
+                            End With
+                        End If
+                        
                         '; =============== Search form ===============
                         
                         If IsFormInit(frmSearch) Then

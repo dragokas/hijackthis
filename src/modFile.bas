@@ -3224,7 +3224,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function MkDirW(ByVal Path As String, Optional ByVal LastComponentIsFile As Boolean = False) As Boolean
+Public Function MkDirW(ByVal Path As String, Optional ByVal LastComponentIsFile As Boolean = False, Optional bNotifyShell As Boolean) As Boolean
     On Error GoTo ErrorHandler
     ' Create folders struct
     ' LastComponentIsFile - true, if you specify filename as a last part of path component
@@ -3261,6 +3261,9 @@ Public Function MkDirW(ByVal Path As String, Optional ByVal LastComponentIsFile 
         End If
     Loop While (pos <> 0) And (lr <> 0)
     MkDirW = lr
+    If MkDirW And bNotifyShell Then
+        SHChangeNotify SHCNE_MKDIR, SHCNF_PATH, StrPtr(Path), 0
+    End If
     If bRedirect Then ToggleWow64FSRedirection bOldStatus
     Exit Function
 ErrorHandler:

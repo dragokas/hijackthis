@@ -31,6 +31,7 @@ Public Enum SETTINGS_SECTION
     SETTINGS_SECTION_REGUNLOCKER
     SETTINGS_SECTION_FILEUNLOCKER
     SETTINGS_SECTION_REGKEYTYPECHECKER
+    SETTINGS_SECTION_HOSTSMAN
 End Enum
 
 Public hLibPcre2        As Long
@@ -2387,10 +2388,6 @@ Sub ControlSelectAll(Optional frmExplicit As Form)
             bCanSearch = True
             Set out_Control = frmMain.lstBackups
             
-        Case FRAME_ALIAS_HOSTS
-            bCanSearch = True
-            Set out_Control = frmMain.lstHostsMan
-            
         Case FRAME_ALIAS_HELP_SECTIONS, FRAME_ALIAS_HELP_KEYS, FRAME_ALIAS_HELP_PURPOSE, FRAME_ALIAS_HELP_HISTORY
             bCanSearch = True
             Set out_Control = frmMain.txtHelp
@@ -2429,7 +2426,11 @@ Sub ControlSelectAll(Optional frmExplicit As Form)
     Case "frmRegTypeChecker"
         bCanSearch = True
         Set out_Control = frmRegTypeChecker.txtKeys
-        
+    
+    Case "frmHostsMan"
+        bCanSearch = True
+        Set out_Control = frmHostsMan.lstHostsMan
+    
     End Select
     
     If bCanSearch Then

@@ -311,6 +311,13 @@ Public Type PROCESS_BASIC_INFORMATION
     InheritedFromUniqueProcessId As Long
 End Type
 
+Public Type WTS_PROCESS_INFOW
+    SessionId As Long
+    ProcessID As Long
+    pProcessName As Long
+    pUserSid As Long
+End Type
+
 'Private Declare Function NtQuerySystemInformation Lib "ntdll.dll" (ByVal infoClass As Long, Buffer As Any, ByVal BufferSize As Long, ret As Long) As Long
 'Private Declare Function GetModuleFileNameEx Lib "psapi.dll" Alias "GetModuleFileNameExW" (ByVal hProcess As Long, ByVal hModule As Long, ByVal lpFileName As Long, ByVal nSize As Long) As Long
 'Private Declare Function GetProcessImageFileName Lib "psapi.dll" Alias "GetProcessImageFileNameW" (ByVal hProcess As Long, ByVal lpImageFileName As Long, ByVal nSize As Long) As Long
@@ -370,6 +377,10 @@ End Type
 Private Declare Function FileTimeToSystemTime Lib "kernel32.dll" (ByVal lpFileTime As Long, lpSystemTime As SYSTEMTIME) As Long
 Private Declare Function SystemTimeToTzSpecificLocalTime Lib "kernel32.dll" (ByVal lpTimeZone As Any, lpUniversalTime As SYSTEMTIME, lpLocalTime As SYSTEMTIME) As Long
 
+Public Declare Function WTSEnumerateProcessesW Lib "Wtsapi32.dll" (ByVal hServer As Long, ByVal Reserved As Long, ByVal Version As Long, ppProcessInfo As Long, pCount As Long) As Long
+Public Declare Sub WTSFreeMemory Lib "Wtsapi32.dll" (ByVal pMemory As Long)
+
+
 Private Declare Function NtWow64QueryInformationProcess64 Lib "ntdll.dll" ( _
     ByVal ProcessHandle As Long, _
     ByVal ProcessInformationClass As PROCESS_INFORMATION_CLASS, _
@@ -418,6 +429,52 @@ Private Declare Function NtWow64ReadVirtualMemory64 Lib "ntdll.dll" ( _
 
 Public Const THREAD_SET_INFORMATION As Long = &H20&
 Public Const THREAD_SET_LIMITED_INFORMATION  As Long = &H400&
+Public Const WTS_CURRENT_SERVER_HANDLE As Long = 0
+
+Public g_PidListWTS As New clsCollectionEx
+Public g_PidListSnap As New clsCollectionEx
+
+Public Sub GetProcessListWTS()
+    Dim lpPi As Long
+    Dim lpItem As Long
+    Dim iCount As Long
+    Dim i As Long
+    Dim wpi As WTS_PROCESS_INFOW
+    
+    g_PidListWTS.RemoveAll
+    
+    If WTSEnumerateProcessesW(WTS_CURRENT_SERVER_HANDLE, 0, 1, lpPi, iCount) Then
+        If lpPi <> 0 Then
+            lpItem = lpPi
+            For i = 1 To iCount
+                memcpy wpi, ByVal lpItem, LenB(wpi)
+                g_PidListWTS.Add wpi.ProcessID
+                lpItem = lpItem + LenB(wpi)
+            Next
+            WTSFreeMemory lpPi
+        End If
+    End If
+End Sub
+
+Public Sub GetProcessListSnap()
+    Dim hSnap As Long
+    Dim cnt As Long
+    Dim uProcess As PROCESSENTRY32W
+    
+    g_PidListSnap.RemoveAll
+    
+    hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
+    
+    If hSnap <> INVALID_HANDLE_VALUE Then
+        uProcess.dwSize = LenB(uProcess)
+        If Process32First(hSnap, uProcess) <> 0 Then
+            Do
+                g_PidListSnap.Add uProcess.th32ProcessID
+            Loop Until Process32Next(hSnap, uProcess) = 0
+        End If
+        CloseHandle hSnap
+    End If
+End Sub
 
 Public Sub AcquirePrivileges()
     'List of privileges: https://msdn.microsoft.com/en-us/library/windows/desktop/bb530716(v=vs.85).aspx
@@ -582,7 +639,7 @@ Public Function KillProcessByFile(ByVal sPath$, Optional bForceMicrosoft As Bool
     
     If IsSystemCriticalProcessPath(sPath) Then Exit Function
     
-    If StrComp(sPath, MyParentProc.Path, 1) = 0 And Not StrEndWith(sPath, "explorer.exe") Then Exit Function
+    If StrComp(sPath, MyParentProc.path, 1) = 0 And Not StrEndWith(sPath, "explorer.exe") Then Exit Function
     
     If Not bIsWinNT Then
         KillProcessByFile = KillProcess9xByFile(sPath)
@@ -604,7 +661,7 @@ Public Function KillProcessByFile(ByVal sPath$, Optional bForceMicrosoft As Bool
         
         For i = 0 To UBound(Process)
         
-            If StrComp(sPath, Process(i).Path, 1) = 0 Then
+            If StrComp(sPath, Process(i).path, 1) = 0 Then
                 KillProcessByFile = False
                 
                 lCriticalFlag = 0
@@ -672,7 +729,7 @@ Public Function PauseProcessByFile(sPath$) As Boolean
         
         For i = 0 To UBound(Process)
         
-            If StrComp(sPath, Process(i).Path, 1) = 0 Then
+            If StrComp(sPath, Process(i).path, 1) = 0 Then
             
                 bSuccess = bSuccess And PauseProcess(Process(i).pid)
             End If
@@ -773,7 +830,7 @@ Public Function GetProcesses_2k(ProcList() As MY_PROC_ENTRY, Optional sRequiredN
                 If ProcList(cnt).Name <> "[System Process]" And ProcList(cnt).Name <> "System" Then
                     ProcList(cnt).pid = uProcess.th32ProcessID
                     If 0 <> uProcess.th32ProcessID Then
-                        ProcList(cnt).Path = TrimNull(GetFilePathByPID(uProcess.th32ProcessID))
+                        ProcList(cnt).path = TrimNull(GetFilePathByPID(uProcess.th32ProcessID))
                     End If
                     cnt = cnt + 1
                     If cnt > UBound(ProcList) Then ReDim Preserve ProcList(UBound(ProcList) + 100)
@@ -923,6 +980,8 @@ Public Function GetProcesses_Zw(ProcList() As MY_PROC_ENTRY, Optional sRequiredN
                     '    memcpy .Threads(i), buf(Offset + SPI_SIZE + i * THREAD_SIZE), THREAD_SIZE
                     'Next
                     
+                    If UBound(ProcList) < cnt Then ReDim Preserve ProcList(UBound(ProcList) + 100)
+                    
                     If .ProcessID = 0 Then
                         ProcName = "System Idle Process"
                     ElseIf .ProcessID = 4 Then
@@ -937,20 +996,18 @@ Public Function GetProcesses_Zw(ProcList() As MY_PROC_ENTRY, Optional sRequiredN
                         
                         ProcPath = GetFilePathByPID(.ProcessID)
                         
-                        If Len(ProcPath) = 0 Then
+                        If InStr(1, ProcPath, ":") = 0 Then
                             If IsMinimalProcess(.ProcessID, ProcName) Then
-                                'ProcPath = ProcName
+                                ProcList(cnt).Minimal = True
                             Else
                                 ProcPath = FindOnPath(ProcName)
                             End If
                         End If
                     End If
                     
-                    If UBound(ProcList) < cnt Then ReDim Preserve ProcList(UBound(ProcList) + 100)
-                    
                     With ProcList(cnt)
                         .Name = ProcName
-                        .Path = ProcPath
+                        .path = ProcPath
                         .pid = Process.ProcessID
                         '.ParentPID = GetParentPID(.pid)
                         .Priority = Process.BasePriority
@@ -1003,6 +1060,8 @@ Public Function NormalizeDevicePath(sPath As String) As String
     End If
 End Function
 
+' Note: for minimal processes this function return true. Example: path "MemCompression" for process with name "Memory Compression"
+'
 Public Function GetFilePathByPID_LowPriv(pid As Long) As String 'thanks to fafalone
     Dim dwRetSize As Long
     Dim spii As SYSTEM_PROCESS_ID_INFORMATION
@@ -1183,7 +1242,7 @@ Public Function ProcessExist(NameOrPath As Variant, bGetNewListOfProcesses As Bo
     If InStr(NameOrPath, "\") <> 0 Then
         'by path
         For i = 0 To UBound(gProcess)
-            If StrComp(NameOrPath, gProcess(i).Path, 1) = 0 Then ProcessExist = True: Exit For
+            If StrComp(NameOrPath, gProcess(i).path, 1) = 0 Then ProcessExist = True: Exit For
         Next
     Else
         'by name
@@ -1206,8 +1265,8 @@ Public Function GetRunningProcesses$()
         For i = 0 To UBound(aProcess)
             ' PID=Full Process Path|...
             With aProcess(i)
-                If Not IsMinimalProcess(.pid, .Name, aProcess(i).Path) Then
-                    sProc = sProc & "|" & .pid & "=" & .Path
+                If Not .Minimal Then
+                    sProc = sProc & "|" & .pid & "=" & .path
                 End If
             End With
         Next
@@ -1394,13 +1453,13 @@ Public Sub SystemPriorityDowngrade(bState As Boolean)
         
             For i = 0 To UBound(gProcess)
                 
-                If Not dPath.Exists(gProcess(i).Path) Then
+                If Not dPath.Exists(gProcess(i).path) Then
                 
                     If gProcess(i).pid <> dwParentPID And _
                         gProcess(i).pid <> dwSelfPID And _
                         gProcess(i).pid <> 0 And _
-                        InStr(1, gProcess(i).Path, STR_CONST.WINDOWS_DEFENDER, 1) = 0 And _
-                        Not IsMinimalProcess(gProcess(i).pid, gProcess(i).Name, gProcess(i).Path) _
+                        InStr(1, gProcess(i).path, STR_CONST.WINDOWS_DEFENDER, 1) = 0 And _
+                        Not gProcess(i).Minimal _
                         Then
                         
                         hProc = OpenProcess(PROCESS_SET_INFORMATION, 0, gProcess(i).pid)
@@ -1414,13 +1473,13 @@ Public Sub SystemPriorityDowngrade(bState As Boolean)
                                 'save old state
                                 dPrior.Add hProc, CLng(Priority)
                             Else
-                                If inIDE Then Debug.Print "Can't set priority: " & gProcess(i).Path
+                                If inIDE Then Debug.Print "Can't set priority: " & gProcess(i).path
                             
                                 'on failure
                                 CloseHandle hProc
                             End If
                         Else
-                            If inIDE Then Debug.Print "Can't open: " & gProcess(i).Path & " (PID = " & gProcess(i).pid & ")"
+                            If inIDE Then Debug.Print "Can't open: " & gProcess(i).path & " (PID = " & gProcess(i).pid & ")"
                         End If
                         
                     End If
@@ -1442,7 +1501,7 @@ Public Sub SystemPriorityDowngrade(bState As Boolean)
             End If
             
             If Not SetPriorityProcess(hProc, Priority) Then
-                If inIDE Then Debug.Print "Can't restore priority: " & gProcess(i).Path
+                If inIDE Then Debug.Print "Can't restore priority: " & gProcess(i).path
             End If
             
             CloseHandle hProc
@@ -1775,20 +1834,20 @@ Public Function IsSystemMinimalProcess(pid As Long, sName As String) As Boolean
     End If
 End Function
 
-Public Function IsMinimalProcess_ForLog(pid As Long, sName As String, Optional sPath As String) As Boolean
-    If IsMinimalProcess(pid, sName, sPath) Then
+Public Function IsMinimalProcess_ForLog(pid As Long, sName As String) As Boolean
+    If IsMinimalProcess(pid, sName) Then
         If sName <> "vmmem" Then 'skip it, because it is useful: https://devblogs.microsoft.com/oldnewthing/20180717-00/?p=99265
             IsMinimalProcess_ForLog = True
         End If
     End If
 End Function
 
-Public Function IsMinimalProcess(pid As Long, sName As String, Optional sPath As String) As Boolean
+Public Function IsMinimalProcess(pid As Long, sName As String) As Boolean
     
     If Len(sName) = 0 Then Exit Function
     
-    'Path should be empty for minimal processes
-    If Len(sPath) <> 0 Then Exit Function
+    'Path should be empty for minimal processes, unless queried with SystemProcessIdInformation
+    'If Len(sPath) <> 0 Then Exit Function
     
     If IsSystemIdleProcess(pid, sName) Then
         IsMinimalProcess = True
@@ -1894,13 +1953,13 @@ Public Sub KillOtherHJTInstances(Optional sAdditionalDir As String)
     lNumProcesses = GetProcesses(Process)
     
     For i = 0 To lNumProcesses - 1
-        If StrComp(Process(i).Path, AppPath(True), 1) = 0 Then
+        If StrComp(Process(i).path, AppPath(True), 1) = 0 Then
             If Process(i).pid <> GetCurrentProcessId() Then
                 KillProcess Process(i).pid
             End If
         End If
         If Len(sAdditionalDir) <> 0 Then
-            If StrComp(Process(i).Path, sAdditionalDir, 1) = 0 Then
+            If StrComp(Process(i).path, sAdditionalDir, 1) = 0 Then
                 If Process(i).pid <> GetCurrentProcessId() Then
                     KillProcess Process(i).pid
                 End If
@@ -1951,8 +2010,8 @@ Public Sub Kill_LOLBIN()
     If GetProcesses(aProcess) Then
         For i = 0 To UBound(aProcess)
             With aProcess(i)
-                If Not IsMinimalProcess(.pid, .Name, .Path) Then
-                    If IsLoLBin(.Path) Then
+                If Not .Minimal Then
+                    If IsLoLBin(.path) Then
                         If Not IsCriticalProcess(.pid) Then
                             KillProcess .pid
                         End If
@@ -1978,10 +2037,10 @@ Public Sub FreezeCustomProcesses()
     If GetProcesses(aProcess) Then
         For i = 0 To UBound(aProcess)
             With aProcess(i)
-                If Not IsMinimalProcess(.pid, .Name, .Path) Then
-                    If Not IsMicrosoftFile(.Path) Then
+                If Not .Minimal Then
+                    If Not IsMicrosoftFile(.path) Then
                         PauseProcess .pid
-                    ElseIf IsLoLBin(.Path) Then
+                    ElseIf IsLoLBin(.path) Then
                         If Not IsCriticalProcess(.pid) Then
                             PauseProcess .pid
                         End If

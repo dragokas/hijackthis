@@ -287,7 +287,7 @@ Public Type FIX_REG_KEY
 End Type
 
 Public Type FIX_FILE
-    Path            As String
+    path            As String
     Arguments       As String
     GoodFile        As String
     ActionType      As ENUM_FILE_ACTION_BASED
@@ -375,7 +375,7 @@ End Enum
 Private Type O25_Consumer_Entry
     Name        As String
     NameSpace   As String
-    Path        As String
+    path        As String
     Type        As O25_CONSUMER_TYPE
     Script      As O25_ActiveScriptConsumer_Entry
     Cmd         As O25_CommandLineConsumer_Entry
@@ -385,7 +385,7 @@ End Type
 Private Type O25_Filter_Entry
     Name      As String
     NameSpace As String
-    Path      As String
+    path      As String
     Query     As String
 End Type
 
@@ -432,7 +432,7 @@ End Type
 
 Private Type TASK_WHITELIST_ENTRY
     OSver       As Single
-    Path        As String
+    path        As String
     RunObj      As String
     Args        As String
 End Type
@@ -907,7 +907,7 @@ Public Function InArrayResultFile(FileArray() As FIX_FILE, Item As FIX_FILE) As 
         For i = 0 To UBound(FileArray)
             With FileArray(i)
                 If .ActionType = Item.ActionType Then
-                    If .Path = Item.Path Then
+                    If .path = Item.path Then
                         If .GoodFile = Item.GoodFile Then
                             InArrayResultFile = True
                             Exit For
@@ -5295,7 +5295,7 @@ Public Sub FixO4Item(sItem$, result As SCAN_RESULT)
     
     If InStr(sItem, "StartupApproved\StartupFolder") <> 0 Then
         
-        sFile = result.File(0).Path
+        sFile = result.File(0).path
         
         If FileExists(sFile) Then
             If DeleteFileForce(sFile) Then
@@ -5651,19 +5651,21 @@ Public Sub CheckKnownFoldersHKLM()
     aParam(20) = "CommonVideo"
     aValue(20) = "%PUBLIC%\Videos"
     
-    Dim sKey As String, sValue As String
+    Dim sKey As String, sValue As String, sDefValue As String
     Dim i As Long
+    Dim dictChecked As clsTrickHashTable
+    Set dictChecked = New clsTrickHashTable
     
     For i = 0 To UBound(aKey)
     
         If Len(aKey(i)) <> 0 Then sKey = aKey(i)
     
         If Len(aParam(i)) <> 0 Then
-    
+            
             sValue = Reg.GetString(0&, sKey, aParam(i), bDoNotExpand:=True)
             
             If (StrComp(sValue, aValue(i), vbTextCompare) <> 0) Or bIgnoreAllWhitelists Then
-            
+                
                 sHit = "O7 - KnownFolder: " & sKey & ", " & aParam(i) & " = " & sValue
                 
                 If Not IsOnIgnoreList(sHit) Then
@@ -5676,6 +5678,28 @@ Public Sub CheckKnownFoldersHKLM()
                     AddToScanResults result
                 End If
             End If
+            
+            sDefValue = EnvironW(aValue(i))
+            
+            If Not dictChecked.Exists(sDefValue) Then
+                dictChecked.Add sDefValue, 0
+            
+                If Not FolderExists(sDefValue) Then
+                    
+                    sHit = "O7 - KnownFolder: " & sDefValue & " " & STR_FOLDER_MISSING
+                    
+                    If Not IsOnIgnoreList(sHit) Then
+                        With result
+                            .Section = "O7"
+                            .HitLineW = sHit
+                            AddFileToFix .File, CREATE_FOLDER, sDefValue
+                            .CureType = FILE_BASED
+                        End With
+                        AddToScanResults result
+                    End If
+                End If
+            End If
+            
         End If
     Next
     
@@ -5883,6 +5907,8 @@ Public Sub CheckKnownFoldersHKCU()
     Dim sKey As String, sValue As String, sDefValue As String, sSid As String
     Dim i As Long, k As Long, pos As Long, sProfile As String
     Dim bSafe As Boolean
+    Dim dictChecked As clsTrickHashTable
+    Set dictChecked = New clsTrickHashTable
     
     For k = 0 To UBound(gHivesUser)
 
@@ -5941,6 +5967,28 @@ Public Sub CheckKnownFoldersHKCU()
                         End If
                     End If
                 End If
+                
+                sDefValue = EnvironW(sDefValue)
+                
+                If Not dictChecked.Exists(sDefValue) Then
+                    dictChecked.Add sDefValue, 0
+                
+                    If Not FolderExists(sDefValue) Then
+                        
+                        sHit = "O7 - KnownFolder: " & sDefValue & " " & STR_FOLDER_MISSING
+                        
+                        If Not IsOnIgnoreList(sHit) Then
+                            With result
+                                .Section = "O7"
+                                .HitLineW = sHit
+                                AddFileToFix .File, CREATE_FOLDER, sDefValue
+                                .CureType = FILE_BASED
+                            End With
+                            AddToScanResults result
+                        End If
+                    End If
+                End If
+                
             End If
         Next
     Next
@@ -6086,7 +6134,7 @@ Public Sub CheckEnvVarTemp()
                 
                 If Len(sHit) = 0 And HE.SID <> "S-1-5-18" Then
                     If Not FolderExists(sData) Then
-                        sHit = "O7 - TroubleShooting: (EV) " & HE.HiveNameAndSID & "\..\Environment: " & "[" & vParam & "]" & " = " & sData & " (folder missing)"
+                        sHit = "O7 - TroubleShooting: (EV) " & HE.HiveNameAndSID & "\..\Environment: " & "[" & vParam & "]" & " = " & sData & " " & STR_FOLDER_MISSING
                     End If
                 End If
             End If
@@ -6107,7 +6155,7 @@ Public Sub CheckEnvVarTemp()
                             End If
                         End If
                         
-                        If StrEndWith(sHit, "(folder missing)") Then
+                        If StrEndWith(sHit, STR_FOLDER_MISSING) Then
                             AddFileToFix .File, CREATE_FOLDER, sData
                             .CureType = FILE_BASED
                         Else
@@ -12425,7 +12473,7 @@ Public Sub SetAllFontCharset(frm As Form, Optional sFontName As String, Optional
                 SetFontCharSet CtlFrame, sFontName, sFontSize, bFontBold
             Case "ComboBoxW"
                 Set CtlCombo = Ctl
-                If CtlCombo.Name <> "cmbFont" And CtlCombo.Name <> "cmbFontSize" Then
+                If Not ((Ctl Is frmMain.cmbFont) Or (Ctl Is frmMain.cmbFontSize) Or (Ctl Is frmMain.cmbDefaultFont) Or (Ctl Is frmMain.cmbDefaultFontSize)) Then
                     SetFontCharSet CtlCombo, sFontName, sFontSize, bFontBold
                 End If
             Case "TreeView"
@@ -12458,8 +12506,10 @@ Public Sub SetFontDefaults(Ctl As Control, Optional bRelease As Boolean)
 
     'Here we are saving default state of control and change the state to defaults before changing font,
     'because previous font can be such that has no some property (like it can be BOLD only).
-    'In such case after changing font will be alsways BOLDed.
-
+    'In such case after changing font will be always BOLDed.
+    
+    Const DEFAULT_FONT_NAME As String = "Tahoma"
+    
     If bRelease Then
         Set dFontDefault = Nothing
         Erase aFontDefProp
@@ -12478,14 +12528,10 @@ Public Sub SetFontDefaults(Ctl As Control, Optional bRelease As Boolean)
     If dFontDefault.Exists(CtlPath) Then
         idx = dFontDefault(CtlPath)
         With Ctl.Font
-            .Name = "Tahoma"
-            .Charset = DEFAULT_CHARSET
-            .Weight = 400
             .Bold = aFontDefProp(idx).Bold
             .Italic = aFontDefProp(idx).Italic
             .Underline = aFontDefProp(idx).Underline
             .Size = aFontDefProp(idx).Size
-            .StrikeThrough = False
         End With
     Else
         idx = UBound(aFontDefProp) + 1
@@ -12498,45 +12544,56 @@ Public Sub SetFontDefaults(Ctl As Control, Optional bRelease As Boolean)
             .Size = Ctl.Font.Size
         End With
     End If
+    With Ctl.Font
+        .Name = DEFAULT_FONT_NAME
+        .Weight = 400
+        .Charset = DEFAULT_CHARSET
+        .StrikeThrough = False
+        'when font name is changed, all properties are resetted automatically => should re-apply
+        idx = dFontDefault(CtlPath)
+        With Ctl.Font
+            .Bold = aFontDefProp(idx).Bold
+            .Italic = aFontDefProp(idx).Italic
+            .Underline = aFontDefProp(idx).Underline
+            .Size = aFontDefProp(idx).Size
+        End With
+    End With
 End Sub
 
-'return BOOL, whether g_FontOnInterface allow to change the font of supplied control
-Private Function IsFontAllowedForControl(Ctl As Control) As Boolean
+'return BOOL, whether control is a list and require to apply separate font setting for it
+Private Function IsControlRepresentList_ForFont(Ctl As Control) As Boolean
     Static CtlList() As String
     Dim CtlPath As String
     
-    If g_FontOnInterface Then
-        IsFontAllowedForControl = True
-    Else
-        CtlPath = Ctl.Parent.Name & "." & Ctl.Name
-        
-        If 0 = AryPtr(CtlList) Then
-            ReDim CtlList(15)
-            CtlList(0) = "frmMain.lstResults"
-            CtlList(1) = "frmMain.lstIgnore"
-            CtlList(2) = "frmMain.lstBackups"
-            CtlList(3) = "frmMain.lstHostsMan"
-            CtlList(4) = "frmStartupList2.tvwMain"
-            CtlList(5) = "frmADSspy.lstADSFound"
-            CtlList(6) = "frmADSspy.txtADSContent"
-            CtlList(7) = "frmADSspy.txtScanFolder"
-            CtlList(8) = "frmCheckDigiSign.txtPaths"
-            CtlList(9) = "frmCheckDigiSign.txtExtensions"
-            CtlList(10) = "frmProcMan.lstProcessManager"
-            CtlList(11) = "frmProcMan.lstProcManDLLs"
-            CtlList(12) = "frmUninstMan.lstUninstMan"
-            CtlList(13) = "frmUninstMan.txtName"
-            CtlList(14) = "frmUnlockRegKey.txtKeys"
-            CtlList(15) = "frmRegTypeChecker.txtKeys"
-        End If
-        
-        If InArray(CtlPath, CtlList, , , 1) Then
-            IsFontAllowedForControl = True
-        End If
+    CtlPath = Ctl.Parent.Name & "." & Ctl.Name
+    
+    If 0 = AryPtr(CtlList) Then
+        ReDim CtlList(16)
+        CtlList(0) = "frmMain.lstResults"
+        CtlList(1) = "frmMain.lstIgnore"
+        CtlList(2) = "frmMain.lstBackups"
+        CtlList(3) = "frmMain.lstHostsMan"
+        CtlList(4) = "frmStartupList2.tvwMain"
+        CtlList(5) = "frmADSspy.lstADSFound"
+        CtlList(6) = "frmADSspy.txtADSContent"
+        CtlList(7) = "frmADSspy.txtScanFolder"
+        CtlList(8) = "frmCheckDigiSign.txtPaths"
+        CtlList(9) = "frmCheckDigiSign.txtExtensions"
+        CtlList(10) = "frmProcMan.lstProcessManager"
+        CtlList(11) = "frmProcMan.lstProcManDLLs"
+        CtlList(12) = "frmUninstMan.lstUninstMan"
+        CtlList(13) = "frmUninstMan.txtName"
+        CtlList(14) = "frmUnlockRegKey.txtKeys"
+        CtlList(15) = "frmRegTypeChecker.txtKeys"
+        CtlList(16) = "frmHostsMan.lstHostsMan"
+    End If
+    
+    If InArray(CtlPath, CtlList, , , 1) Then
+        IsControlRepresentList_ForFont = True
     End If
 End Function
 
-Public Sub SetFontCharSet(Ctl As Control, Optional sFontName As String, Optional sFontSize As String, Optional bFontBold As Boolean)
+Public Sub SetFontCharSet(Ctl As Control, Optional ByVal sFontName As String, Optional ByVal sFontSize As String, Optional ByVal bFontBold As Boolean)
     On Error GoTo ErrorHandler:
     
     'A big thanks to 'Gun' and 'Adult', two Japanese users
@@ -12550,16 +12607,20 @@ Public Sub SetFontCharSet(Ctl As Control, Optional sFontName As String, Optional
     Dim bNonUsCharset As Boolean
     Dim ControlFont As Font
     Dim lFontSize As Long
+    Dim bLists As Boolean
     
     '//TODO:
     'Set default Hewbrew 'Non-Unicode: Hebrew (0x40D)' to Arial Unicode MS (after testing)
     
     SetFontDefaults Ctl
     
-    'check g_FontOnInterface condition
-    If Not IsFontAllowedForControl(Ctl) Then
-        Ctl.Font.Charset = DEFAULT_CHARSET
-        Exit Sub
+    If IsControlRepresentList_ForFont(Ctl) Then
+        bLists = True
+    Else
+        'use font defaults
+        sFontName = g_DefaultFontName
+        sFontSize = g_DefaultFontSize
+        bFontBold = Ctl.Font.Bold
     End If
     
     Set ControlFont = Ctl.Font
@@ -12623,7 +12684,7 @@ Public Sub SetFontCharSet(Ctl As Control, Optional sFontName As String, Optional
     End Select
     
     If sFontSize = "Auto" Or Len(sFontSize) = 0 Then
-        If bNonUsCharset Then
+        If bNonUsCharset And bLists Then
             lFontSize = 9
         Else
             lFontSize = 8
@@ -13101,7 +13162,7 @@ Public Sub InitVariables()
     oDictFileExist.CompareMode = 1
     
     Dim lr As Long, i As Long, nChars As Long
-    Dim Path As String, dwBufSize As Long
+    Dim path As String, dwBufSize As Long
     
     g_bIsReflectionSupported = IsProcedureAvail("RegQueryReflectionKey", "Advapi32.dll")
     
@@ -13171,28 +13232,28 @@ Public Sub InitVariables()
     
     If OSver.IsLocalSystemContext Then
         If OSver.IsWindowsVistaOrGreater Then
-            Path = SysDisk & "\Users"
+            path = SysDisk & "\Users"
         Else
-            Path = SysDisk & "\Documents and Settings"
+            path = SysDisk & "\Documents and Settings"
         End If
     Else
-        Call GetProfilesDirectory(StrPtr(Path), dwBufSize)
+        Call GetProfilesDirectory(StrPtr(path), dwBufSize)
         If dwBufSize > 0 Then
-            Path = String(dwBufSize, 0)
-            dwBufSize = Len(Path)
+            path = String(dwBufSize, 0)
+            dwBufSize = Len(path)
             
-            If GetProfilesDirectory(StrPtr(Path), dwBufSize) Then
-                Path = Left$(Path, lstrlen(StrPtr(Path)))
+            If GetProfilesDirectory(StrPtr(path), dwBufSize) Then
+                path = Left$(path, lstrlen(StrPtr(path)))
             Else
-                Path = vbNullString
+                path = vbNullString
             End If
         End If
     End If
-    If Len(Path) = 0 Then
-        Path = GetParentDir(UserProfile)
+    If Len(path) = 0 Then
+        path = GetParentDir(UserProfile)
     End If
     
-    ProfilesDir = Path
+    ProfilesDir = path
     
     nChars = MAX_PATH
     AllUsersProfile = String$(nChars, 0)
@@ -13331,17 +13392,17 @@ Public Sub InitVariables()
                         If Len(TempCU) = 0 Then TempCU = LocalAppData & "\Temp"
                         
                         If Len(Desktop) = 0 Then
-                            Path = Reg.GetString(HKLM, "Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders", "Common Desktop")
+                            path = Reg.GetString(HKLM, "Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders", "Common Desktop")
                             
-                            If Len(Path) = 0 Then
+                            If Len(path) = 0 Then
                                 If IsSlavianCultureCode(OSver.LangSystemCode) Then
                                     Desktop = UserProfile & "\" & LoadResString(606) 'Рабочий стол
                                 Else
                                     Desktop = UserProfile & "\Desktop"
                                 End If
                             Else
-                                Path = GetFileNameAndExt(Path)
-                                Desktop = UserProfile & "\" & Path
+                                path = GetFileNameAndExt(path)
+                                Desktop = UserProfile & "\" & path
                             End If
                         End If
                     End If
@@ -13399,7 +13460,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Public Function PathSubstituteProfile(Path As String, Optional ByVal sUserProfileDir As String) As String
+Public Function PathSubstituteProfile(path As String, Optional ByVal sUserProfileDir As String) As String
     'Substitute 'sUserProfileDir' to 'Path' if 'Path' goes through %UserProfile%.s
     'Note: sUserProfileDir can be not a profile at all. In such case substitution is not performed.
     
@@ -13409,16 +13470,16 @@ Public Function PathSubstituteProfile(Path As String, Optional ByVal sUserProfil
     'expanded path contains current profile's dir?
     bComply = False
     
-    If StrBeginWith(Path, UserProfile & "\") Then bComply = True
-    If Not bComply Then If StrComp(Path, UserProfile, 1) = 0 Then bComply = True
+    If StrBeginWith(path, UserProfile & "\") Then bComply = True
+    If Not bComply Then If StrComp(path, UserProfile, 1) = 0 Then bComply = True
     
     If bComply Then
         'substitute
-        PathSubstituteProfile = BuildPath(sUserProfileDir, mid$(Path, Len(UserProfile) + 2))
+        PathSubstituteProfile = BuildPath(sUserProfileDir, mid$(path, Len(UserProfile) + 2))
         Exit Function
     End If
     
-    PathSubstituteProfile = Path
+    PathSubstituteProfile = path
 End Function
 
 Public Function EnvironW(ByVal SrcEnv As String, Optional UseRedir As Boolean, Optional ByVal sUserProfileDir As String) As String
@@ -14039,7 +14100,7 @@ Public Sub GetProfiles()    'result -> in global variable 'colProfiles' (collect
     Dim SubFolders()        As String
     Dim i                   As Long
     Dim lr                  As Long
-    Dim Path                As String
+    Dim path                As String
     Dim objFolder           As Variant
     Dim sSid                As String
     
@@ -14074,11 +14135,11 @@ Public Sub GetProfiles()    'result -> in global variable 'colProfiles' (collect
     
     If Len(UserProfile) <> 0 Then
         If FolderExists(UserProfile) Then
-            Path = UserProfile
-            lr = PathRemoveFileSpec(StrPtr(Path))   ' get Parent directory
-            If lr Then Path = Left$(Path, lstrlen(StrPtr(Path)))
+            path = UserProfile
+            lr = PathRemoveFileSpec(StrPtr(path))   ' get Parent directory
+            If lr Then path = Left$(path, lstrlen(StrPtr(path)))
 
-            SubFolders() = ListSubfolders(Path)
+            SubFolders() = ListSubfolders(path)
 
             If AryItems(SubFolders) Then
                 For Each objFolder In SubFolders()
@@ -14147,7 +14208,7 @@ Public Sub AddHorizontalScrollBarToResults(lstControl As VBCCR17.ListBoxW)
             End If
         Next
         If x <> 0 Then
-            x = x * 1.1
+            x = x * 1.2
             If frmMain.ScaleMode = vbTwips Then x = x / Screen.TwipsPerPixelX + 50  ' if twips change to pixels (+50 to account for the width of the vertical scrollbar
         End If
         SendMessage .hWnd, LB_SETHORIZONTALEXTENT, x, ByVal 0&
@@ -14703,11 +14764,13 @@ Public Function CreateLogFile() As String
     
         For i = 0 To UBound(gProcess)
             
-            sProcessName = gProcess(i).Path
+            sProcessName = gProcess(i).path
             
-            If Len(gProcess(i).Path) = 0 Then
+            If Len(gProcess(i).path) = 0 Or gProcess(i).Minimal Then
                 If bIgnoreAllWhitelists Or Not IsMinimalProcess_ForLog(gProcess(i).pid, gProcess(i).Name) Then
                     sProcessName = gProcess(i).Name
+                Else
+                    sProcessName = vbNullString
                 End If
             End If
             
@@ -14740,10 +14803,10 @@ Public Function CreateLogFile() As String
         
         For i = 0 To UBound(gProcess)
             aPos(i) = i
-            If Len(gProcess(i).Path) = 0 Then
-                gProcess(i).Path = gProcess(i).Name
+            If Len(gProcess(i).path) = 0 Then
+                gProcess(i).path = gProcess(i).Name
             End If
-            aNames(i) = gProcess(i).Path
+            aNames(i) = gProcess(i).path
         Next
         
         QuickSortSpecial aNames, aPos, 0, UBound(gProcess)
@@ -14751,7 +14814,7 @@ Public Function CreateLogFile() As String
         For i = 0 To UBound(aPos)
             With gProcess(aPos(i))
                 '// TODO: add 'is microsoft' check and mark
-                sProcessList = sProcessList & Right$("     " & .pid & "  ", 8) & .Path & vbCrLf
+                sProcessList = sProcessList & Right$("     " & .pid & "  ", 8) & .path & vbCrLf
             End With
         Next
         
@@ -14803,7 +14866,7 @@ Public Function CreateLogFile() As String
         If lNumProcesses Then
             sTmp = vbNullString
             For i = 0 To UBound(gProcess)
-                sTmp = sTmp & gProcess(i).pid & " | " & IIf(Len(gProcess(i).Path) <> 0, gProcess(i).Path, gProcess(i).Name) & vbCrLf
+                sTmp = sTmp & gProcess(i).pid & " | " & IIf(Len(gProcess(i).path) <> 0, gProcess(i).path, gProcess(i).Name) & vbCrLf
             Next
             AppendErrorLogCustom sTmp
             sTmp = vbNullString
@@ -15800,7 +15863,7 @@ Public Sub AddFileToFix( _
     If AryPtr(FileArray) <> 0 Then
         If Len(sArguments) = 0 And Len(sExpanded) = 0 And Len(sAutorun) = 0 And Len(sGoodFile) = 0 Then
             For i = 0 To UBound(FileArray)
-                If StrComp(sFilePath, FileArray(i).Path, 1) = 0 Then
+                If StrComp(sFilePath, FileArray(i).path, 1) = 0 Then
                     If ActionType = FileArray(i).ActionType Then Exit Sub
                 End If
             Next
@@ -15857,7 +15920,7 @@ Public Sub AddFileToFix( _
     
     With FileArray(UBound(FileArray))
         .ActionType = ActionType
-        .Path = sFilePath
+        .path = sFilePath
         .Arguments = sArguments
         .GoodFile = sGoodFile
     End With
@@ -16161,7 +16224,7 @@ Public Sub FixProcessHandler(result As SCAN_RESULT)
                 Else
                     lNumProcesses = 1
                     ReDim Process(0)
-                    Process(0).Path = result.Process(i).PathOrName
+                    Process(0).path = result.Process(i).PathOrName
                 End If
                 
                 For k = 0 To lNumProcesses - 1
@@ -16171,9 +16234,9 @@ Public Sub FixProcessHandler(result As SCAN_RESULT)
                     'Dim bParentProtected As Boolean
                     'bParentProtected = StrComp(.Path, MyParentProc.Path, 1) = 0 And Not StrEndWith(.Path, "explorer.exe")
                     
-                    If Not IsSystemCriticalProcessPath(.Path) Then 'And Not bParentProtected Then
+                    If Not IsSystemCriticalProcessPath(.path) Then 'And Not bParentProtected Then
                         
-                        If bByPID Or bByName Then .Path = "" 'should operate by PID
+                        If bByPID Or bByName Then .path = "" 'should operate by PID
                         
                         If (ActionType And USE_FEATURE_DISABLE) And g_bDelmodeDisabling Then
                             Exit Sub
@@ -16181,33 +16244,33 @@ Public Sub FixProcessHandler(result As SCAN_RESULT)
                         
                         If ActionType And FREEZE_PROCESS Then
                             
-                            PauseProcessByFileOrPID .Path, .pid
+                            PauseProcessByFileOrPID .path, .pid
                             
                         End If
                     
                         If ActionType And KILL_PROCESS Then
                             
-                            KillProcessByFileOrPID .Path, .pid, bForceMicrosoft:=True
+                            KillProcessByFileOrPID .path, .pid, bForceMicrosoft:=True
                             
                         End If
                         
                         If ActionType And FREEZE_OR_KILL_PROCESS Then
                         
-                            If Not PauseProcessByFileOrPID(.Path, .pid) Then
-                                KillProcessByFileOrPID .Path, .pid, bForceMicrosoft:=True
+                            If Not PauseProcessByFileOrPID(.path, .pid) Then
+                                KillProcessByFileOrPID .path, .pid, bForceMicrosoft:=True
                             End If
                         End If
                         
                         If ActionType And CLOSE_PROCESS Then
                         
-                            ProcessCloseWindowByFileOrPID .Path, .pid, bForce:=False, bWait:=True, TimeoutMs:=5000
+                            ProcessCloseWindowByFileOrPID .path, .pid, bForce:=False, bWait:=True, TimeoutMs:=5000
                         
                         End If
                         
                         If ActionType And CLOSE_OR_KILL_PROCESS Then
                         
-                            If Not ProcessCloseWindowByFileOrPID(.Path, .pid, bForce:=False, bWait:=True, TimeoutMs:=5000) Then
-                                KillProcessByFileOrPID .Path, .pid, bForceMicrosoft:=True
+                            If Not ProcessCloseWindowByFileOrPID(.path, .pid, bForce:=False, bWait:=True, TimeoutMs:=5000) Then
+                                KillProcessByFileOrPID .path, .pid, bForceMicrosoft:=True
                             End If
                         
                         End If
@@ -16553,38 +16616,38 @@ Public Sub FixFileHandler(result As SCAN_RESULT)
                     End If
                 
                     If .ActionType And UNREG_DLL Then
-                        If Not IsMicrosoftFile(.Path, True) Or result.ForceMicrosoft Then
-                            Reg.UnRegisterDll .Path
+                        If Not IsMicrosoftFile(.path, True) Or result.ForceMicrosoft Then
+                            Reg.UnRegisterDll .path
                         End If
                     End If
                     
                     If .ActionType And REMOVE_FILE Then
-                        If FileExists(.Path) Then
-                            DeleteFileEx .Path, result.ForceMicrosoft
+                        If FileExists(.path) Then
+                            DeleteFileEx .path, result.ForceMicrosoft
                         End If
                     End If
                     
                     If .ActionType And REMOVE_FOLDER Then
-                        If FolderExists(.Path) Then
-                            DeleteFolderForce .Path, result.ForceMicrosoft
+                        If FolderExists(.path) Then
+                            DeleteFolderForce .path, result.ForceMicrosoft
                         End If
                     End If
                     
                     If .ActionType And RESTORE_FILE Then
                         If FileExists(.GoodFile) Then
                             '// TODO: PendingFileOperation with replacing
-                            If DeleteFileEx(.Path, True, True) Then
-                                FileCopyW .GoodFile, .Path, True
+                            If DeleteFileEx(.path, True, True) Then
+                                FileCopyW .GoodFile, .path, True
                             End If
                         End If
                     End If
                     
                     If .ActionType And RESTORE_FILE_SFC Then
-                        SFC_RestoreFile .Path
+                        SFC_RestoreFile .path
                     End If
                     
                     If .ActionType And CREATE_FOLDER Then
-                        MkDirW .Path
+                        MkDirW .path
                     End If
                 End With
             Next
@@ -16856,6 +16919,8 @@ Public Function InstallHJT( _
     Dim HJT_LocationDir As String
     Dim sScanToolsDir As String
     Dim sScanToolsDirDest As String
+    Dim sHelperAppsDir As String
+    Dim sHelperAppsDirDest As String
     Dim bInstInPlace As Boolean
     Dim hFile As Long
     Dim aEXE() As String
@@ -16868,6 +16933,9 @@ Public Function InstallHJT( _
     
     sScanToolsDir = BuildPath(AppPath(), "tools\Scan")
     sScanToolsDirDest = BuildPath(HJT_LocationDir, "tools\Scan")
+    
+    sHelperAppsDir = BuildPath(AppPath(), "apps")
+    sHelperAppsDirDest = BuildPath(HJT_LocationDir, "apps")
     
     If StrComp(HJT_LocationDir, AppPath(), 1) = 0 Then
         bInstInPlace = True
@@ -16895,6 +16963,11 @@ Public Function InstallHJT( _
             FileCopyW BuildPath(sScanToolsDir, "lastactivity.exe"), BuildPath(sScanToolsDirDest, "lastactivity.exe")
             FileCopyW BuildPath(sScanToolsDir, "serwin.exe"), BuildPath(sScanToolsDirDest, "serwin.exe")
             FileCopyW BuildPath(sScanToolsDir, "sheduler.exe"), BuildPath(sScanToolsDirDest, "sheduler.exe")
+        End If
+        
+        If FolderExists(sHelperAppsDir) Then
+            MkDirW sHelperAppsDirDest
+            CopyFolderContents sHelperAppsDir, sHelperAppsDirDest
         End If
     End If
     

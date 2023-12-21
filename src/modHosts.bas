@@ -15,13 +15,11 @@ Public Sub ListHostsFile(objList As VBCCR17.ListBoxW)
     objList.Clear
     
     Dim objInfo As VBCCR17.LabelW
-    Set objInfo = frmMain.lblHostsTip1
+    Set objInfo = frmHostsMan.lblHostsTip1
     
     'objInfo.Caption = "Loading hosts file, please wait..."
     objInfo.Caption = Translate(279)
-    frmMain.cmdHostsManDel.Enabled = False
-    frmMain.cmdHostsManToggle.Enabled = False
-    
+
     If Not FileExists(g_HostsFile) Then
         'If MsgBoxW("Cannot find the hosts file." & vbCrLf & "Do you want to create a new, default hosts file?", vbExclamation + vbYesNo) = vbNo Then
         If MsgBoxW(Translate(280), vbExclamation Or vbYesNo) = vbNo Then
@@ -35,8 +33,6 @@ Public Sub ListHostsFile(objList As VBCCR17.ListBoxW)
     
     'Loading hosts file, please wait...
     objInfo.Caption = Translate(279)
-    frmMain.cmdHostsManDel.Enabled = False
-    frmMain.cmdHostsManToggle.Enabled = False
     DoEvents
     iAttr = GetFileAttributes(StrPtr(g_HostsFile))
     If (iAttr And FILE_ATTRIBUTE_READONLY) Then sAttr = sAttr & "R"
@@ -55,8 +51,6 @@ Public Sub ListHostsFile(objList As VBCCR17.ListBoxW)
     objInfo.Caption = Translate(271) & " " & g_HostsFile & _
                       " (" & Translate(278) & " " & objList.ListCount & ", " & Translate(277) & " " & _
                       sAttr & ")"
-    frmMain.cmdHostsManDel.Enabled = True
-    frmMain.cmdHostsManToggle.Enabled = True
     
     Exit Sub
 ErrorHandler:

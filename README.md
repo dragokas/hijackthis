@@ -7,7 +7,7 @@
 
 ![](https://dragokas.com/tools/img/hjt/main_menu2.png)
 
-_(this is alpha-version - major changes are in progress; some functions may work unstable; the plus+ means smooth introduction of detection of modern malware and step-by-step moving to replace some modules on C++ to access 64-bit processes in normal way and multi-threading; it is also a differentiation among other possible forks around)_
+_(this is alpha-version - major changes are in progress; although it is definitely safe to use)_
 
 # HijackThis+
 

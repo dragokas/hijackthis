@@ -98,7 +98,6 @@ Public Enum FRAME_ALIAS
     FRAME_ALIAS_MISC_TOOLS
     FRAME_ALIAS_IGNORE_LIST
     FRAME_ALIAS_BACKUPS
-    FRAME_ALIAS_HOSTS
     FRAME_ALIAS_HELP_SECTIONS
     FRAME_ALIAS_HELP_KEYS
     FRAME_ALIAS_HELP_PURPOSE
@@ -300,9 +299,10 @@ Public h_HwndScanResults As Long
 Public g_NeedTerminate  As Boolean
 Public g_FileBackupFlag As Long
 Public g_FontName       As String
+Public g_DefaultFontName As String
 Public g_FontSize       As String
+Public g_DefaultFontSize As String
 Public g_bFontBold      As Boolean
-Public g_FontOnInterface As Boolean
 Public g_sLogFile       As String
 Public g_sDebugLogFile  As String
 Public g_hMutex         As Long
@@ -1694,12 +1694,13 @@ End Enum
 
 Public Type MY_PROC_ENTRY
     Name        As String
-    Path        As String
+    path        As String
     pid         As Long
     Threads     As Long
     Priority    As Long
     SessionId   As Long
     CreationTime As Date
+    Minimal     As Boolean
 End Type
 
 Public Enum PROCESS_PRIORITY

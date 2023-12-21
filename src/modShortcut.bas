@@ -604,9 +604,9 @@ Public Function CreateHJTShortcuts(HJT_Location As String) As Boolean
     Dim bSuccess As Boolean
     Dim hFile As Long
     bSuccess = True
-    bSuccess = bSuccess And MkDirW(BuildPath(StartMenuPrograms, "HijackThis+"))
-    bSuccess = bSuccess And MkDirW(BuildPath(StartMenuPrograms, "HiJackThis+\Tools"))
-    bSuccess = bSuccess And MkDirW(BuildPath(StartMenuPrograms, "HiJackThis+\Plugins"))
+    bSuccess = bSuccess And MkDirW(BuildPath(StartMenuPrograms, "HijackThis+"), , True)
+    bSuccess = bSuccess And MkDirW(BuildPath(StartMenuPrograms, "HiJackThis+\Tools"), , True)
+    bSuccess = bSuccess And MkDirW(BuildPath(StartMenuPrograms, "HiJackThis+\Plugins"), , True)
     
     bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis+\HiJackThis.lnk"), HJT_Location)
     bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis+\Uninstall HJT.lnk"), HJT_Location, "/uninstall")
