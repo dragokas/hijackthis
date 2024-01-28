@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
-    <version>3.4.0.1</version>
+    <version>3.4.0.2</version>
     <id>hijackthis</id>
     <title>HiJackThis+</title>
     <authors>Alex Dragokas &amp; Trend Micro</authors>

@@ -11,6 +11,9 @@ Version history:
 |||||       1. HiJackThis: changelog         |||||
 ==================================================
 
+[3.4.0.2 Alpha] - Jan 01, 2024
+ - Fix of previous build.
+
 [3.4.0.1 Alpha] - Jan 01, 2024
  - Fixed a vulnerability in the buffer overflow of the scan results list.
  - Fixed a critical error in the HiJackThis backup restoration function:

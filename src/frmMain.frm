@@ -6358,13 +6358,6 @@ Private Sub lstResults_MouseUp(Button As Integer, Shift As Integer, x As Single,
                         Next
                     End If
                     
-                    For j = 0 + 1 To MAX_JUMP_LIST_ITEMS
-                            mnuResultJumpFile(j - 1).Visible = False
-                        Next
-                        For j = 0 + 1 To MAX_JUMP_LIST_ITEMS
-                            mnuResultJumpReg(j - 1).Visible = False
-                        Next
-                    
                     'Fix for: 'Visible' property can't be set on this control
                     'Menu should contain at least 1 visible item!
                     If FileItems = 0 And RegItems = 0 Then
