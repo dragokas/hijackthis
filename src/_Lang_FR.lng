@@ -16,18 +16,18 @@
 ;
 ; (1-29, 1000-1089)
 ;
-0001=Bienvenue dans HijackThis+
+0001=Bienvenue dans HiJackThis+
      Ce programme va générer un rapport d'éléments non usuels (modifications du registre,
      de fichiers, etc...) des zones les plus vulnérables du Système d'exploitation, souvent modifiées par des logiciels officiels ou malveillants
 
-0002=HijackThis est déja en cours d'exécution.
+0002=HiJackThis est déja en cours d'exécution.
      Voulez-vous vraiment lancer une autre copie?
-0004=Voici les résultats du scan de HijackThis.
+0004=Voici les résultats du scan de HiJackThis.
      Attention à ce que vous allez supprimer en cliquant sur le bouton 'Corriger'. Les résultats du scan ne déterminent pas si un élément est bon ou mauvais. Si vous pensez que votre machine est infectée, cliquez sur le bouton 'Analyser ceci', inscrivez-vous, lisez les instructions, créez le rapport requis et montrez-le à nos consultants (en Anglais).
-0007=Il semblerait que vous utilisez HijackThis à partir d'un périphérique en lecture seule tel qu'un CD-ROM. Si vous souhaitez faire des sauvegardes des éléments que vous allez corrigés, vous devez d'abord copier HiJackThis.exe sur votre disque dur, puis l'exécuter.
+0007=Il semblerait que vous utilisez HiJackThis à partir d'un périphérique en lecture seule tel qu'un CD-ROM. Si vous souhaitez faire des sauvegardes des éléments que vous allez corrigés, vous devez d'abord copier HiJackThis.exe sur votre disque dur, puis l'exécuter.
      
-     Si vous continuez, vous risquez de rencontrer des erreurs d'"Accès chemin/fichier".
-0008=Il est déconseillé de le lancer HijackThis depuis une archive!
+     Si vous continuez, vous risquez de rencontrer des erreurs d'accès "chemin/fichier".
+0008=Il est déconseillé de le lancer HiJackThis depuis une archive!
      
      Voulez-vous le décompresser sur votre bureau?
 0009=Menu principal
@@ -42,7 +42,7 @@
 0019=Rapport
 0020=Ajouter les éléments cochés à la liste 'Ignorer'
 0021=Modules chargés
-0025=Ceci configurera HijackThis pour qu'il ignore les éléments cochés, à moins qu'ils ne soit modifiés ultérieurement. Continuer?
+0025=Ceci configurera HiJackThis pour qu'il ignore les éléments cochés, à moins qu'ils ne soit modifiés ultérieurement. Continuer?
 0026=L'accès en écriture a été refusé dans le dossier que vous avez indiqué. Veuillez en essayer un autre, merci!
 0027=Le rapport a été enregistré dans [].
       Vous pouvez l'ouvrir avec un éditeur de texte tel que Notepad.
@@ -69,14 +69,14 @@
 1020=Nombre
 1021=Chemin
 1022=Impossible de créer le dossier '[]'. Veuillez vérifier que l'accès en écriture soit activé pour cet emplacement.
-1023=Avertissement! L'intégrité de cette instance de HijackThis est corrompue.
+1023=Avertissement! L'intégrité de cette instance de HiJackThis est corrompue.
      Il se pourrait que le fichier ait été modifié ou infecté par un virus.
      Il est recommandé de retélécharger le programme à partir de la source officielle: https://github.com/dragokas/hijackthis
      Si cette erreur se répète, vérifiez votre ordinateur à l'aide d'une disquette de démarrage ou d'un LiveCD, par exemple: 
 1024=Télécharger le programme via Internet?
 1025=Une erreur s'est produite lors du téléchargement!
 1026=Téléchargement terminé. Lancer le programme?
-1027=!!! HijackThis a été arrêté en raison du dépassement du délai maximal autorisé: [] sec. !!! Le rapport sera incomplet!
+1027=!!! HiJackThis a été arrêté en raison du dépassement du délai maximal autorisé: [] sec. !!! Le rapport sera incomplet!
      Veuillez redémarrer le programme manuellement (et non pas automatiquement).
 1028=Voulez-vous fermer le programme et le mettre à jour?
 1030=Processus
@@ -108,10 +108,10 @@
 ;
 ; (1090-1099)
 ;
-1090=Bienvenue dans HijackThis+
-1091=     HijackThis+ est un outil gratuit et Open source conçu pour lutter contre les logiciels malveillants et les logiciels publicitaires indésirables.
+1090=Bienvenue dans HiJackThis+
+1091=     HiJackThis+ est un outil gratuit et Open source conçu pour lutter contre les logiciels malveillants et les logiciels publicitaires indésirables.
           Vous devez lire et accepter le contrat de licence pour continuer:
-1092=HijackThis - Contrat de licence
+1092=HiJackThis - Contrat de licence
 1093=J'accepte
 1094=Je n'accepte pas
 1095=Le programme est fourni "TEL QUEL" sans garantie d'aucune sorte. Vous pouvez utiliser ce logiciel à vos risques et périls.
@@ -184,7 +184,7 @@ et enregistrer un rapport
 ;
 1200=Fichier
 1201=Paramètres
-1202=Désinstaller HijackThis+
+1202=Désinstaller HiJackThis+
 1203=Quitter
 1204=Outils
 1205=Gestionnaire de processus
@@ -199,9 +199,9 @@ et enregistrer un rapport
 1214=Outils de désinstallation
 1215=Aide
 1216=Manuel de l'utilisateur
-1217=Anglais (court)
-1218=Russe (parachever)
-1219=Français [obsolète]
+1217=Anglais (en cours)
+1218=Russe
+1219=Français
 1220=Allemand [obsolète]
 1221=Espagnol [obsolète]
 1222=Portugais [obsolète]
@@ -216,7 +216,7 @@ et enregistrer un rapport
 1231=Services
 1232=Liste de démarrage
 1233=Manuel de base
-1235=Installer HijackThis+
+1235=Installer HiJackThis+
 1236=Raccourcis
 1237=Vérifier les raccourcis via Check Browsers' LNK
 1238=Corriger les raccourcis via ClearLNK
@@ -253,7 +253,7 @@ et enregistrer un rapport
          O4 - Chargement automatique des entrées du registre et du dossier 'Démarrage automatique' / éléments désactivés (MSConfig, StartupApproved)
          O5 - Masquer les éléments du panneau de configuration
          O6 - Politique IE: Désactivation de l'onglet principal "Options Internet"
-         O7 - Stratégies: Dépannage Regedit, Explorer, TaskMgr/Sécurité IP/Certificats/Système d'exploitation
+         O7 - Stratégies: Dépannage Regedit, Explorer, TaskMgr / Sécurité IP / Certificats / Système d'exploitation / KnownFolder
          O8 - Internet Explorer: Eléments du menu contextuel supplémentaires
          O9 - Internet Explorer: Services supplémentaires et boutons
          O10 - Interruption de l'accès à Internet en raison d'un dommage ou d'une infection survenue dans LSP Winsock
@@ -278,13 +278,13 @@ et enregistrer un rapport
      Clés de ligne de commande:
      --------------------------------
 
-     1. HijackThis+
+     1. HiJackThis+
      2. StartupList
      3. Comment l'utiliser?
 
      
      
-     1. HijackThis+
+     1. HiJackThis+
      ---------------
      
        /accepteula 	- accepte le contrat. Il ne sera pas affiché au démarrage du programme.
@@ -305,15 +305,15 @@ et enregistrer un rapport
        /md5 		- calcule le hash MD5 des fichiers.
        /sha1 		- calcule le hash SHA1 des fichiers.
        /sha256 		- calcule le hash SHA256 des fichiers.
-       /timeout:sec 	- total de secondes autorisées pour l'exécution de HijackThis en mode silencieux (180 par défaut; 0 - pour désactiver).
-       /install 		- installe HijackThis dans le dossier 'Program Files' et crée des raccourcis.
+       /timeout:sec 	- total de secondes autorisées pour l'exécution de HiJackThis en mode silencieux (180 par défaut; 0 - pour désactiver).
+       /install 		- installe HiJackThis dans le dossier 'Program Files' et crée des raccourcis.
        /instDir:"PATH" 	- chemin d'installation alternatif pour HJT (by default: "%ProgramFiles(x86)%\HiJackThis Fork").
        /noShortcuts 	- désactiver la création de raccourcis lors de l'installation de HJT via /install
        /autostart 	- configure Windows pour qu'il exécute automatiquement un scan de HJT après le démarrage du système (à utiliser avec la clé/installation).
        /install /autostart d:X - installez HJT dans le planificateur de tâches pour exécuter automatiquement avec un retard de X sec.
        /! 		- arrêter l'analyse des clés de ligne de commande. Tout ce qui se trouve après cette clé est considéré comme clé pour l'exécution automatique (au lieu de default /startupscan).
-       /uninstall 	- supprime toutes les entrées et sauvegardes du registre HijackThis, puis quitte le programme.
-       /silentuninstall 	- /désinstallation analogue, sauf si désactivation des demandes de confirmation.
+       /uninstall 	- supprime toutes les entrées et sauvegardes du registre HiJackThis, puis quitte le programme.
+       /silentuninstall 	- /désinstallation silencieuse, sauf si désactivation des demandes de confirmation.
        /deleteonreboot "c:\fichier.sys" - supprime le fichier spécifié après le redémarrage du système à l'aide du mécanisme PendingFileRenameOperations.
        /noBackup 	- désactiver la création de sauvegarde pendant le correctif.
        /LangEN 	- force la langue anglaise pour l'interface utilisateur.
@@ -362,12 +362,12 @@ et enregistrer un rapport
      Description
      -------------
      
-          HijackThis+ analyse votre ordinateur à la recherche de paramètres modifiés par les logiciels publicitaires, espions, malveillants ou autres programmes indésirables.
+          HiJackThis+ analyse votre ordinateur à la recherche de paramètres modifiés par les logiciels publicitaires, espions, malveillants ou autres programmes indésirables.
 
-          Les résultats de HijackThis+ ne sont pas basés sur des listes noires, des programmes spécifiques ou des URL. En fait, ils sont basés sur des méthodes et techniques couramment utilisées par les pirates.
+          Les résultats de HiJackThis+ ne sont pas basés sur des listes noires, des programmes spécifiques ou des URL. En fait, ils sont basés sur des méthodes et techniques couramment utilisées par les pirates.
           Se SONT donc probablement de FAUX POSITIFS. En cas de doute, consultez un expert AVANT de supprimer quoi que ce soit.
      
-          HijackThis est livré avec plusieurs outils, disponibles sous le bouton "Outils divers" et la nouvelle barre du menu "Outils":
+          HiJackThis est livré avec plusieurs outils, disponibles sous le bouton "Outils divers" et la nouvelle barre du menu "Outils":
      
         - StartupList 2
         - Gestionnaire de processus
@@ -414,7 +414,7 @@ et enregistrer un rapport
      Russe: Dragokas, ScriptMakeR, Boris, fseto (SafeZone.cc), wylek.ru team
      Ukrainien: Dragokas
      Anglais: Dragokas, Tanner Helland
-     Français: Colok du site Colok-Traductions.com
+     Français: Colok du site Colok-Traductions.com, Mitrowig
      Espagnol: Andago
 	 
      Développement tiers:
@@ -435,7 +435,7 @@ et enregistrer un rapport
 
      Licence
      -------------
-HijackThis+ est une modification du programme HijackThis original de Trend Micro. Il a été développé par Alex Dragokas et l'équipe de SafeZone.cc. Il est distribué en open source sous sa licence GPLv2 originale. Il inclut également plusieurs plugins disponibles sous forme d'outils gratuits.
+HiJackThis+ est une modification du programme HiJackThis original de Trend Micro. Il a été développé par Alex Dragokas et l'équipe de SafeZone.cc. Il est distribué en open source sous sa licence GPLv2 originale. Il inclut également plusieurs plugins disponibles sous forme d'outils gratuits.
 0035=Sections
 0036=Clés
 0037=Objectif
@@ -460,16 +460,16 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
 0051=Faire une sauvegarde avant de corriger les éléments.
 0052=Confirmer la correction ou l'omission d'éléments (mode sécurisé) 
 0053=Ignorer les domaines non standards mais sécurisés dans IE (ex. msn.com, microsoft.com)
-0054=Ceci peut être utile lors de l'ajout de HijackThis au démarrage.
+0054=Ceci peut être utile lors de l'ajout de HiJackThis au démarrage.
 0055=Ne pas afficher le menu principal au démarrage
 0057=Etes-vous sûr de vouloir activer cette option ?
-     HijackThis n'est pas un programme 'clic & corriger'. Car il cible les méthodes de détournement *générales*, les faux positifs sont fréquents.
+     HiJackThis n'est pas un programme 'clic & corriger'. Car il cible les méthodes de détournement *générales*, les faux positifs sont fréquents.
      Si vous activez cette option, vous pouvez désactiver des programmes ou des pilotes dont vous avez besoin. Cependant, il est très peu probable que vous endommagiez votre système après la réparation. Vous ne devriez donc activer cette option que si vous savez ce que vous faites !
 0058=Ne pas afficher les messages d'erreur
 0059=Minimiser le programme dans la zone de notification en cliquant sur le bouton_ 
 0063=Assistant de recherche par défaut:
 0065=Désolé ! Non encore implémentée.
-0066=Ceci installera HijackThis dans le dossier 'Program Files' et configurera Windows pour qu'il lance automatiquement un scan après le démarrage du système.
+0066=Ceci installera HiJackThis dans le dossier 'Program Files' et configurera Windows pour qu'il lance automatiquement un scan après le démarrage du système.
  
      Continuer?
 
@@ -478,11 +478,11 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
 0067=Un service de planification de tâches est requis pour cette action. Voulez-vous l'exécuter maintenant et le configurer pour qu'il démarre automatiquement au démarrage du système ?
 0068=Erreur ! Impossible de lancer le service de Planification de tâches.
 0069=Installation terminée. Voulez-vous créer un raccouri sur le bureau?
-1400=Ajouter HijackThis au démarrage
-1401=Lancer le scan de HijackThis en mode silencieux au démarrage de Windows et afficher les résultats seulement si quelque chose est trouvé.
-1402=Cette version de HijackThis est plus récente que celle installée.
+1400=Ajouter HiJackThis au démarrage
+1401=Lancer le scan de HiJackThis en mode silencieux au démarrage de Windows et afficher les résultats seulement si quelque chose est trouvé.
+1402=Cette version de HiJackThis est plus récente que celle installée.
      La mettre à jour ?
-1403=Pour améliorer la vitesse de chargement du système, nous recommandons de régler un délai avant de lancer HijackThis après l'authentification de l'utilisateur.
+1403=Pour améliorer la vitesse de chargement du système, nous recommandons de régler un délai avant de lancer HiJackThis après l'authentification de l'utilisateur.
      Préciser le délai (en secondes):
 ;
 ; ============= IgnoreList ============
@@ -499,7 +499,7 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
 ;
 ; (80-89, 1550 - 1599)
 ;
-0080=Voici la liste de vos éléments sauvegardés. Vous pouvez les restaurer, mais HijackThis les redétectera lors d'une prochaine exécution, sauf si vous les placez dans la liste des éléments à Ignorer ou si vous les supprimez. Les programmes antivirus peuvent détecter les sauvegardes de HijackThis!
+0080=Voici la liste de vos éléments sauvegardés. Vous pouvez les restaurer, mais HiJackThis les redétectera lors d'une prochaine exécution, sauf si vous les placez dans la liste des éléments à Ignorer ou si vous les supprimez. Les programmes antivirus peuvent détecter les sauvegardes de HiJackThis!
 0081=Restaurer
 0082=Supprimer
 0083=Tout supprimer
@@ -587,12 +587,12 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
 0148=Login
 0149=Mot de passe
 0150=Suppression de HJT
-0151=Désinstaller HijackThis
+0151=Désinstaller HiJackThis
 0152=Supprimera tous vos paramètres et vos sauvegardes, puis quitte
-0153=Cela supprimera les paramètres et les sauvegardes de HijackThis. Notez que vous devrez supprimer manuellement le fichier HiJackThis.exe.
+0153=Cela supprimera les paramètres et les sauvegardes de HiJackThis. Notez que vous devrez supprimer manuellement le fichier HiJackThis.exe.
      
      Continuer avec la désinstallation?
-0154=Cela supprimera complètement HijackThis, y compris les paramètres et les sauvegardes. Continuer?
+0154=Cela supprimera complètement HiJackThis, y compris les paramètres et les sauvegardes. Continuer?
 0155=Connexion directe
 0156=Proxy système
 0157=Autre proxy 
@@ -930,7 +930,7 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
 ;
 ; (310 - 399)
 ;
-0310=HijackThis est sur le point de supprimer un BHO et le fichier correspondant de votre système. Fermer toutes les fenêtres d'Internet Explorer ET toutes les fenêtres de Windows Explorer avant de continuer pour avoir de toutes chances de réussite.
+0310=HiJackThis est sur le point de supprimer un BHO et le fichier correspondant de votre système. Fermer toutes les fenêtres d'Internet Explorer ET toutes les fenêtres de Windows Explorer avant de continuer pour avoir de toutes chances de réussite.
 0311=Internet Explorer fonctionne toujours. Souhaitez-vous que HJT force la fermeture de IE?
      ATTENTION: la session actuelle du navigateur sera perdue!
 0320=Impossible de supprimer le fichier:
@@ -939,14 +939,14 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
      Le fichier peut être en cours d'utilisation.
 0321=Utiliser le Gestionnaire des tâches pour arrêter le programme
 0322=Utiliser un logiciel de traitement comme Sysinternals ProcMon pour arrêter le programme
-0323=et relancer HijackThis pour supprimer le fichier.
-0330=HijackThis est sur le point de supprimer un plugin de votre système. Fermer toutes les fenêtres d'Internet Explorer avant de continuer pour les meilleures chances de succès.
+0323=et relancer HiJackThis pour supprimer le fichier.
+0330=HiJackThis est sur le point de supprimer un plugin de votre système. Fermer toutes les fenêtres d'Internet Explorer avant de continuer pour les meilleures chances de succès.
 0342=Le fichier '[]' sera supprimé par Windows lorsque le système redémarrera.
 0343=Le service '[]' a été coché pour être supprimé.
 0344=Rien n'a été sélectionné! Continuer ?
-0345=Vous avez choisi de corriger tout ce qui a été trouvé par HijackThis. Des éléments importants du système peuvent être supprimés et la fonctionnalité du système peut être altérée.
+0345=Vous avez choisi de corriger tout ce qui a été trouvé par HiJackThis. Des éléments importants du système peuvent être supprimés et la fonctionnalité du système peut être altérée.
      
-     Si vous n'êtes pas sûr de savoir comment utiliser HijackThis, vous devriez demander de l'aide et ne pas corriger aveuglément les choses. De nombreuses ressources tierces sont disponibles sur le Web qui se feront un plaisir de vous aider avec votre rapport.
+     Si vous n'êtes pas sûr de savoir comment utiliser HiJackThis, vous devriez demander de l'aide et ne pas corriger aveuglément les choses. De nombreuses ressources tierces sont disponibles sur le Web qui se feront un plaisir de vous aider avec votre rapport.
      
      Etes-vous sûr de vouloir corriger tous les éléments résultants du scan?
 0346=[] élément(s) sélectionné(s): lancer la réparation? Ceci supprimera et/ou réparera définitivement tous les éléments sélectionnés.
@@ -955,7 +955,7 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
 0349=Le traitement pour cet objet n'est pas disponible: []
 
      Vous devez régler manuellement l'adresse DNS du routeur qui se trouve dans le contrat de votre fournisseur d'accès Internet.
-0350=HijackThis doit redémarrer le système pour appliquer les modifications.
+0350=HiJackThis doit redémarrer le système pour appliquer les modifications.
      Veuillez enregistrer votre travail, puis appuyez sur 'OUI' si vous acceptez de redémarrer maintenant.
 0351=Attendez que le gestionnaire de nettoyage de disque de Microsoft termine son travail, puis appuyez sur OK.
 0352=Le serveur doit être redémarré pour terminer les opérations requises. Veuillez le redémarrer manuellement.
@@ -970,22 +970,22 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
 ; [R0]
 0401= Une valeur de Registre a changé par rapport au paramètre par défaut, résultant en une page d'accueil IE, une page de recherche, une page de barre de recherche ou un assistant de recherche différents.     
 
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - la valeur de registre sera réinitialisée à l'URL par défaut
 ; [R1]
 0402= Une valeur de Registre non présente dans une installation de Windows par défaut, ce qui peut entraîner une modification des paramètres de recherche Internet ou d'autres paramètres IE (IE Window Title, ProxyServer, ProxyOverride, Internet Connection Wizard, ShellNext, etc...)
      
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - La valeur de registre sera supprimée.
 ; [R2]
 0403=        La clé de Registre n'est pas présente dans une installation Windows par défaut. Actuellement, cette section n'est pas utilisée (aucune entrée dans la base de données).     
     
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - La clé de Registre sera supprimée, avec tout ce qu'elle contient
 ; [R3]
 0404=        Plus d'une valeur détectée dans URLSearchHooks regkey. Si vous spécifiez une adresse URL sans préfixes http:// ou ftp://, le navigateur tentera de trouver le bon protocole en utilisant la liste dans UrlSearchHook.
      
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - La valeur de registre sera supprimée
       - la valeur par défaut de URLSearchHook sera restaurée
 ; [F0]
@@ -995,7 +995,7 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
      
      Par défaut: Shell=explorer.exe
      
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - la valeur par défaut du fichier ini sera restaurée
       - le fichier correspondant ne sera PAS supprimé
 ; [F1]
@@ -1007,7 +1007,7 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
      exécuter=
      charger=
      
-     >>> Action prise par HijackThis: 
+     >>> Action prise par HiJackThis: 
       - la valeur de ini-file sera supprimée
       - le fichier correspondant ne sera PAS supprimé
 ; [F2]
@@ -1024,7 +1024,7 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
      Shell=explorer.exe
      Shell=%WINDIR%\explorer.exe
      
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - la valeur par défaut du registre sera restaurée
       - le fichier correspondant ne sera PAS supprimé
 ; [F3]
@@ -1036,7 +1036,7 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
      Par défaut: run=
      Par défaut: load=
      
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - La valeur du registre sera supprimée
       - le fichier correspondant ne sera PAS supprimé
 ; [O1]
@@ -1048,7 +1048,7 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
 
              4) Le fichier Hosts.ics est créé automatiquement lorsque vous partagez un accès Internet. Il contient un mappage entre l'IP et le domaine réseau domestique (local) et peut être piraté de la même manière qu'un fichier Hosts.
      
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - Pour les entrées - ligne hosts et hosts.ics seront supprimées du fichier
       - Pour le fichier DNSApi - la dll sera récupéré si disponible en utilisant le sous-système SFC
       - Pour les emplacements hosts altérés - la valeur par défaut du registre sera restaurée
@@ -1056,13 +1056,13 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
 ; [O2]
 0410=        Un BHO (Browser Helper Object) est un programme spécialement conçu qui s'intègre dans IE, et a des droits d'accès pratiquement illimités. Bien que les BHO puissent être utiles (comme la barre d'outils Google), les pirates les utilisent souvent à des fins malveillantes telles que le suivi de votre comportement en ligne, l'affichage de popups publicitaires, etc...
      
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - Supprimer la clé de Registre BHO et toutes les clés correspondantes (comme CLSID et les polices IE BHO spéciales)
       - Supprimer le fichier dll BHO
 ; [O3]
 0411=        Les barres d'outils IE font partie des BHO (Browser Helper Objects) comme la barre d'outils Google qui peut être utile, mais qui peut aussi être gênante ou malveillante en suivant votre comportement et en affichant des popups publicitaires.
      
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - Supprimer la valeur de registre et toutes les clés correspondantes (comme les paramètres et les politiques spéciales d'IE BHO)
       - La dll sera supprimée
 ; [O4]
@@ -1072,7 +1072,7 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
 
      Zone à vérifier : clés de registre et dossier de démarrage automatique.
      
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - Démarrage automatique des entrées du registre - la valeur du registre sera supprimée
       - également, le processus correspondant sera arrêté ou gèlé
       - Dossier 'Démarrage automatique' - le fichier de chargement automatique sera supprimé
@@ -1082,18 +1082,18 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
      
      Zone à vérifier: le fichier control.ini et les emplacements équivalents dans le registre.
      
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - selon l'emplacement, la ligne sera supprimée du fichier Control.ini ou la valeur du registre sera supprimée
 ; [O6]
 0414=        La désactivation de l'entrée du menu 'Options Internet' dans le menu 'Outils' d'IE se fait en utilisant les stratégies Windows. Normalement utilisé par les administrateurs pour restreindre l'accès des utilisateurs. Il peut également être utilisé par les pirates pour empêcher l'accès à la fenêtre "Options Internet".
      
              StartPage Guard utilise également des politiques pour restreindre les modifications de la page d'accueil, effectuées par des pirates.
      
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - les informations correspondantes seront supprimées du registre.
 ; [O7]
 0415=
-     O7 - Politiques : Regedit, TaskMgr, Explorer et menu "Démarrer
+     O7 - Policy: Regedit, TaskMgr, Explorer et menu "Démarrer"
 
              Regedit est désactivé à l'aide des stratégies Windows. Normalement utilisé par les administrateurs pour restreindre les utilisateurs, il peut également être utilisé par les pirates pour empêcher l'accès à l'éditeur du Registre. Il en résulte un message indiquant que votre administrateur ne vous permet pas d'accéder à Regedit.
              Les programmes malveillants désactivent également l'accès au Gestionnaire des tâches pour se protéger contre la désinstallation.
@@ -1103,72 +1103,77 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
 
             Politiques Sécurité IP permettent ou bloquent les paquets de données réseau et affinent les filtres de paquets source et la destination comme l'adresse IP (y compris le sous-réseau), le type, le numéro de port etc...
 
-     O7 - Certificat non fiable
+     O7 - Untrusted Certificate
 
              Les programmes malveillants peuvent ajouter des hachages de signatures numériques antivirus à la liste des certificats non fiables, bloquant ainsi le lancement de fichiers exécutables.
 
-     O7 - Dépannage
+     O7 - KnownFolder
+     
+             Dans la sous-section KnownFolder, les redirections de tous les dossiers Shell et dossiers Shell utilisateur connus, y compris le dossier "Démarrage", sont affichées. De plus, il vérifie si le dossier existe sur le disque.
+
+     O7 - TroubleShoot
 
              Ici, des paramètres incorrects de l'OS sont affichés, ce qui peut entraîner des dysfonctionnements du système et des dysfonctionnements logiciels :
      1.  [EV] Valeur et/ou type de variables d'environnement incorrects. Vérifiez les chemins importants dans la variable %PATH%.
      2.  [Disk] Manque d'espace libre sur le disque système (moins de 1 Go.)
      3.  [Network] Mauvais réglages réseau, par ex. nom de l'ordinateur vide.
 \\p
-     >>> Action prise par HijackThis:
-      - pour O7 - Politiques: la valeur du registre sera supprimée.
-      - pour O7 - IPSec : toutes les clés de registre associées à la politique sélectionnée seront supprimées, y compris tous les filtres qui s'y rapportent.
-      - pour O7 - Untrust Certificate: la clé de Registre sera  supprimée.
-      - pour O7 - Dépannage: [EV] Les variables seront réinitialisées aux valeurs par défaut. Pour %PATH% - le chemin manquant sera ajouté.
-      - pour O7 - Dépannage: [Disk] le gestionnaire de nettoyage de disques de Microsoft, CleanMgr, sera lancé en mode automatique.
-      - pour O7 - Dépannage: [Network] les réglages standard seront appliqués.
+     >>> Action prise par HiJackThis:
+      - pour O7 - Policy: la valeur du registre sera supprimée.
+      - pour O7 - IPSec: toutes les clés de registre associées à la politique sélectionnée seront supprimées, y compris tous les filtres qui s'y rapportent.
+      - pour O7 - Untrusted Certificate: la clé de Registre sera  supprimée.
+      - pour O7 - KnownFolder: le paramètre de registre du dossier connu sera réinitialisé à sa valeur par défaut. Le dossier sera créé sur le disque s'il est manquant.
+      - pour O7 - TroubleShoot: [EV] Les variables seront réinitialisées aux valeurs par défaut. Pour %PATH% - le chemin manquant sera ajouté.
+      - pour O7 - TroubleShoot: [Disk] le gestionnaire de nettoyage de disques de Microsoft, CleanMgr, sera lancé en mode automatique.
+      - pour O7 - TroubleShoot: [Network] les réglages standard seront appliqués.
 ; [O8]
 0416=        Des éléments supplémentaires dans le menu contextuel (clic droit) peuvent s'avérer utiles ou ennuyeux. Certains pirates ajoutent des éléments au menu contextuel. L'Accessoire Web d'Internet Explorer PowerTweaks ajoute plusieurs éléments utiles, notamment "Surligner", "Zoom +/-", "Liste de liens", "Liste d'images" et "Recherche Web".
      
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - La clé de Registre sera supprimée
 ; [O9]
 0417=        Des éléments dans le menu 'Outils' d'Internet Explorer et des boutons supplémentaires dans la barre d'outils principale sont généralement présents sous forme de vignettes (boutonAccueil de Dell) ou ajoutés après des mises à jour système (bouton MSN Messenger) et rarement par des pirates. L'Accessoire Web d'Internet Explorer PowerTweaks ajoute deux éléments au menu, "Ajouter le site à la Zone de confiance" et "Ajouter le site à la Zone de restriction".
      
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - La clé de Registre sera supprimée
 ; [O10]
 0418=        Le système Windows Socket (Winsock) utilise une liste de prestataires pour résoudre les noms DNS (c'est-à-dire pour traduire www.microsoft.com en adresse IP). C'est ce qu'on appelle le fournisseur de services multicouches (FSL). Certains programmes sont capables d'injecter leurs propres prestataires (spyware) dans le FSL. Si les fichiers référencés par le FSL sont manquants ou si la "série" des fournisseurs est endommagée, aucun des programmes sur votre système ne pourra accéder à l'Internet. En supprimant les références des fichiers manquants et en réparant la série, vous rétablirez généralement l'accès à Internet.
 \\p
              Note: La réparation des LSP est une procédure risquée. Vous pouvez obtenir WinSockReset pour réparer la pile Winsock.
      
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - Non prévu. Vous serez invité à télécharger le programme WinSockReset.
 ; [O11]
 0419=        Les options de l'onglet 'Avancé' des options d'Internet Explorer sont stockées dans le Registre, et des options supplémentaires peuvent être ajoutées en créant des clés de Registre supplémentaires. Très rarement, les spywares et pirates ajoutent leurs propres options qui sont difficiles à supprimer. (par exemple, CommonName ajoute une section 'CommonName' avec quelques options).
      
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - La clé du Registre sera supprimée.
 ; [O12]
 0420=        Les plugins gèrent les types de fichiers qui ne sont pas supportés nativement par Internet Explorer. Les plugins courants gèrent les formats Macromedia Flash, Acrobat PDF et Windows Media, ce qui permet au navigateur de les ouvrir au lieu de lancer un programme spécifique. Lorsque des pirates ou des logiciels espions ajoutent des plugins pour ces types de fichiers, les logiciels malveillants - même s'ils ont été supprimés - peuvent être réinstallés si le navigateur ouvre un fichier traité par ce plugin.
      
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - La clé de Registre et le fichier plugin seront supprimés
 ; [O13]
 0421=        Lorsque vous tapez une URL dans la barre d'adresse d'Internet Explorer sans le préfixe (http://), un préfixe est automatiquement ajouté lorsque vous appuyez sur Entrée. Ce préfixe est stocké dans le Registre, avec les préfixes par défaut pour FTP, Gopher et autres protocoles. Lorsqu'un pirate modifie ces URL vers son serveur, vous serez toujours redirigé lorsque vous n'entrez pas de préfixe. Par exemple, Prolivation utilise ce détournement.
      
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - La valeur du registre sera restaurée aux données par défaut
 ; [O14]
 0422=        Lorsque vous cliquez sur 'Réinitialiser les paramètres Web' dans l'onglet 'Programmes' de la boîte de dialogue des options d'Internet Explorer, votre page d'accueil, votre page de recherche et quelques autres sites seront réinitialisés aux valeurs par défaut. Ces valeurs par défaut sont enregistrées dans C:\Windows\Inf\Iereset.inf. Lorsqu'un pirate modifie ces URL vers ses propres URL, 'Réinitialiser les paramètres Web' vous infectera de nouveau. Par exemple, SearchALot utilise ce détournement.
      
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - La valeur du fichier Inf sera restaurée avec les données par défaut.
 ; [O15]
 0423=        Les sites Web de la Zone de confiance (voir Outils => Options Internet => Sécurité => Sites de confiance => Sites) sont autorisés à utiliser des scripts et objets ActiveX potentiellement dangereux. Certains programmes ajoutent automatiquement des sites à la Zone de confiance à votre insu. Seul un très petit nombre de programmes légitimes sont connus pour faire cela. 
      
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - La clé de Registre sera supprimée
       - Les valeurs par défaut du protocole de mappage de la zone seront restaurées
 ; [O16]
 0424=        Le dossier Download Program Files (DPF) de votre dossier de base de Windows contient divers programmes qui ont été téléchargés depuis Internet. Ces programmes sont chargés lorsque Internet Explorer est actif. Parmi les exemples légitimes, citons Java VM, Microsoft XML Parser et Google Toolbar. Une fois supprimés, ces objets sont téléchargés et réinstallés (à la demande).
              Malheureusement, IE permet aussi aux sites malveillants de télécharger automatiquement des fichiers tels que des Numéroteurs pornographiques, de faux plugins et des objets ActiveX dans ce dossier, qui vous harcèleront avec des popups, des factures téléphoniques élevées, des crashs aléatoires et autres piratages du navigateur.
 \\p
-      >>> Action prise par HijackThis:
+      >>> Action prise par HiJackThis:
       - L'enregistrement du DPF CLSID sera annulé
       - La dll et le fichier téléchargé seront supprimés
 ; [O17]
@@ -1177,23 +1182,23 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
 
              DHCP DNS dans cette section affiche l'adresse DNS émise par le routeur par DHCP, c'est-à-dire lorsque la case "Recevoir automatiquement l'adresse DNS" est cochée dans les paramètres de connexion réseau.
 \\p
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - La valeur du registre sera supprimée
-      - Lors de la réparation d'un DNS DHCP, la mémoire cache de la résolution DNS sera vidée. L'utilisateur devra configurer manuellement le routeur en entrant l'adresse spécifiée par son fournisseur de contrat AVANT de corriger cet élément avec HijackThis
+      - Lors de la réparation d'un DNS DHCP, la mémoire cache de la résolution DNS sera vidée. L'utilisateur devra configurer manuellement le routeur en entrant l'adresse spécifiée par son fournisseur de contrat AVANT de corriger cet élément avec HiJackThis
 ; [O18]
 0426=        Un protocole est un 'langage' que Windows utilise pour 'parler' aux programmes, aux serveurs ou à lui-même. Les serveurs Web utilisent le protocole 'http:', les serveurs FTP utilisent le protocole 'ftp:', Windows Explorer utilise le protocole `fichier'. L'introduction d'un nouveau protocole dans Windows ou la modification d'un protocole existant peut modifier la façon dont Windows gère les fichiers.
              CommonName et Lop.com enregistrent tous deux, de nouveaux protocoles lorsqu'ils sont installés (cn : et ayb :).
 \\p
              Les filtres sont des types de contenu acceptés par Internet Explorer (et en interne par Windows). S'il existe un filtre pour un type de contenu, les données passeront d'abord par le gestionnaire de fichiers de type contenu. Plusieurs variantes du cheval de Troie CWS ajoutent des filtres texte/html et texte/plain, ce qui leur permet de détourner tout le contenu des pages Web transmises par Internet Explorer.
      
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - La valeur CLSID sera restaurée (si possible), sinon la clé sera effacée
       - Le fichier sera supprimé (s'il n'appartient pas à Microsoft)
 ; [O19]
 0427=        IE a la possibilité d'utiliser une feuille de style définie par l'utilisateur pour toutes les pages, au lieu de la feuille de style par défaut, pour permettre aux utilisateurs handicapés de mieux visualiser les pages Web.
              Une méthode de détournement particulièrement vile faite par Datanotary a fait son apparition, qui écrase toute feuille de style configurée par l'utilisateur et la remplace par une autre qui provoque des popups, ainsi qu'un ralentissement du système lorsque l'on saisit ou charge plusieurs pages ayant plusieurs images.
      
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - La valeur du registre sera supprimée
       - L'utilisation du style sera désactivée
 ; [O20]
@@ -1202,7 +1207,7 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
 \\p
              Puisque les deux méthodes assurent que le fichier dll reste chargé en mémoire, la correction de ce problème n'aidera pas si la dll restaure les valeurs de Registre ou les clés après que vous les ayez corrigées. Dans ce cas, il est recommandé d'utiliser la fonction 'Supprimer le fichier au redémarrage' ou KillBox pour supprimer le fichier en premier.
      
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - pour AppInit_DLL: la valeur de registre concrète sera effacée; les paramètres ne seront PAS supprimés
       - pour Winlogon Notify : la clé de Registre sera supprimée
 ; [O21]
@@ -1211,7 +1216,7 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
              ShellIconOverlayIdentifiers fonctionne de la même manière. Cette clé de Registre contient plusieurs sous-clés avec les identifiants des fichiers chargés dans Explorer.exe. Habituellement, un programme enregistre plusieurs modules de ce type à la fois. Ces bibliothèques sont responsables de la gestion du rendu des icônes de fichiers dans l'explorateur de Windows, en fonction de certaines conditions (types de fichiers ou autres facteurs).
              Un exemple de programme légitime peut être un client de stockage dans le Cloud, comme DropBox ou Yandex.Disk, qui modifie l'apparence de l'icône en fonction de l'état de synchronisation des fichiers. Les programmes malveillants peuvent installer des modules de gestion qui exécutent également du code arbitraire.
      
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - La valeur ou la clé de registre sera supprimée avec la clé d'identification CLSID
       - La dll sera supprimée
       - L'explorateur redémarrera
@@ -1219,7 +1224,7 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
 0430=        Le Planificateur de tâches est un service qui peut être configuré pour exécuter un processus à un moment précis ou selon une certaine horaire. L'un de ces réglages s'appelle une tache. Les tâches peuvent être exécutées avec des privilèges élevés sans demander d'UAC, être liées à des utilisateurs spécifiques, contenir des chemins vers des processus, des arguments, des états, etc... Les logiciels malveillants utilisent souvent certaines tâches pour assurer l'exécution automatique tout en survivant après le redémarrage d'un processus.
              Les tâches peuvent être gérées via les Déclencheurs du planificateur de tâches (taskschd.msc).
 \\p
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - La tâche sera désactivée
       - Le processus de la tâche sera arrêté
       - Le fichier de la tâche, le fichier exécutable et toutes les clés de registre associées seront supprimés
@@ -1230,18 +1235,16 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
              Les logiciels malveillants qui s'enregistrent en tant que service sont donc plus difficiles à éradiquer.
 \\p
      O23 - Driver
-             (la sous-section n'est disponible qu'en mode "Scan additionnel")
 
              Le Driver est une sorte de service lancé avant le démarrage du système et fonctionne avec les privilèges du noyau. Les programmes malveillants peuvent également installer leurs drivers. Par exemple, ceci est utilisé pour empêcher la suppression (les programmes en cours d'exécution avec les droits Administrateur ou Système local ne peuvent pas arrêter les processus de niveau noyau), ainsi que pour masquer leur présence, les fichiers ou les processus (appelés rootkits).
              Note : les éléments "Driver R" sans caractère numérique dans le rapport- sont des drivers chargés dynamiquement (pas par le registre).
 \\p
      O23 - Dépendance
-             (la sous-section n'est disponible qu'en mode "Scan additionnel")
 
              Les programmes malveillants peuvent s'inscrire dans la liste des dépendances du service système pour se protéger contre la suppression. Après avoir supprimé un tel service, un service Microsoft légitime ne pourra plus démarrer. Certains services Windows sont essentiels au fonctionnement normal du système d'exploitation. Leur non-lancement peut avoir des conséquences négatives sur le fonctionnement d'autres programmes, jusqu'à ce que le démarrage complet de l'OS échoue.
-             Certains services sont également regroupés au sein d'un groupe de services, qui porte son nom. Si Le service dépend du groupe de services, il ne démarrera pas tant que tous les services appartenant au groupe de services n'auront pas démarré. HijackThis vérifie également les services tiers qui ont été ajoutés dans le groupe de services Microsoft.
+             Certains services sont également regroupés au sein d'un groupe de services, qui porte son nom. Si Le service dépend du groupe de services, il ne démarrera pas tant que tous les services appartenant au groupe de services n'auront pas démarré. HiJackThis vérifie également les services tiers qui ont été ajoutés dans le groupe de services Microsoft.
 \\p
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - Le Service (ou le  driver) sera désactivé, arrêté et supprimé
       - Un redémarrage sera demandé
       - Pour O23 - Dépendance : la dépendance sera supprimée du registre
@@ -1249,21 +1252,21 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
 0432=        Les composants de bureau sont des objets ActiveX qui peuvent faire partie du bureau lorsque Active Desktop est activé. Ils fonctionnent comme de (petits) widgets de site Web.
              Les logiciels malveillants exploitent cette fonction de façon malveillante en paramétrant l'arrière-plan du bureau sur un fichier HTML local avec un grand avertissement bidon, par exemple, pour un Ransomware, il peut afficher le texte des exigences de demande de rançon.
      
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - La clé de Registre et le fichier seront supprimés
       - L'explorateur sera redémarré et l'arrière-plan du bureau sera mis à jour
 ; [O25]
 0433=        Windows Management Instrumentation est un service Windows par défaut. Il peut créer des événements permanents à des fins légitimes et malveillantes. Ces événements peuvent collecter des données matérielles et logicielles pour automatiser des activités malveillantes telles que l'espionnage. Ils peuvent créer des liens entre des machines, exécuter des fichiers de script externes ou du code de script stocké à l'intérieur (sans fichier). Les événements peuvent être déclenchés par le sous-système WMI à des intervalles déterminés (comme planificateur de tâches) ou manuellement lorsque les applications exécutent des requêtes WMI spéciales.
 \\p
-             Note : seul le client testé. S'il n'y a qu'un filtre, une reliure et/ou une temporisation (sans client), l'élément n'e seras pas affiché dans le rapport.
+             Note : seul le client testé. S'il n'y a qu'un filtre, une reliure et/ou une temporisation (sans client), l'élément ne sera pas affiché dans le rapport.
 
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - évènements client, filtre, temporisation et engagement seront supprimés de la base de données WMI
      - le fichier associé sera également supprimé
 ; [R4]
 0434=        Internet Explorer utilise le service de recherche (DefaultScope) pour afficher une liste de conseils dans la barre de recherche lorsque vous saisissez des requêtes de recherche dans la barre d'adresse. IE vous permet de remplacer son prestataire par défaut par un autre de la liste (SearchScopes).
 
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - la clé du prestataire sera supprimée
       - la valeur par défaut de DefaultScope (Microsoft Bing) et les paramètres du prestataire seront rétablis
 ; [O26]
@@ -1271,7 +1274,7 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
              Note: lorsqu'un fichier de débogage est effacé mais toujours actif, le programme Hosts ne démarre pas !
              Le pirate peut aussi configurer le débogueur pour qu'il fonctionne avec les applications UWP par défaut, comme 'Cortana' ou 'People' (Win 10 uniquement). Comme ces applications démarrent généralement automatiquement au démarrage du système, le pirate assure l'exécution automatique (un peu comme O4) de ses programmes malveillants en utilisant cette méthode.
 
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - La valeur du registre sera supprimée
 ; [O27]
 0436=        Remarques O27 - Account:
@@ -1286,7 +1289,7 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
              (Port) signale que le port entrant 3389 (TCP/UDP) est ouvert dans le pare-feu.
              (Other) d'autres paramètres du protocole de connexion à distance.
              
-     >>> Action prise par HijackThis :
+     >>> Action prise par HiJackThis :
       - pour (AutoLogon): la connexion automatique est désactivée. L'utilisateur sera invité à entrer le mot de passe.
       - pour (Bad profile): le dossier est supprimé.
       - pour (Hidden): affiche le compte d'utilisateur à partir de l'écran de connexion.
@@ -1303,7 +1306,7 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
 ; [B]
 0441=        La section du navigateur représente les extensions et les politiques suspectes. C'est en construction en ce moment. Peu de définitions et de navigateurs sont pris en charge.
 
-     >>> Action prise par HijackThis:
+     >>> Action prise par HiJackThis:
       - le navigateur est fermé
       - les fichiers et les valeurs de registre sont modifiés ou supprimés
 0490=Informations détaillées sur les sections:
@@ -1346,14 +1349,14 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
 0554=Il n'y a pas de correction à faire. Vous devez cocher une case pour sélectionner, au moins, un élément!
 0570=Le fichier de langue '[]' n'est pas valide (numéros d'identification ambigus).
 0572=Le fichier de langue n'est pas valide. Réinitialiser aux valeurs par défaut (Anglais) ?
-0580=HijackThis ne peut réparer les entrées O10 Winsock LSP.
+0580=HiJackThis ne peut réparer les entrées O10 Winsock LSP.
      Utiliser le programme {1} de {2}
      
      Voulez-vous visiter ce site ?
-0581=HijackThis ne peut réparer les entrées O10 Winsock LSP.
+0581=HiJackThis ne peut réparer les entrées O10 Winsock LSP.
 0590=Une erreur inattendue s'est produite !
 
-     Aidez-nous à améliorer HijackThis en signalant cette erreur.
+     Aidez-nous à améliorer HiJackThis en signalant cette erreur.
      
      Le message d'erreur a été copié dans le presse-papiers.
      Cliquez sur 'Oui' pour nous le soumettre.
@@ -1362,7 +1365,7 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
      Erreur de fonction :
 0591=Erreur
 0592=Il n'est pas possible de trouver une routine de traitement appropriée pour les noms de domaine en:
-0593=Erreur lors de l'installation de HijackThis dans le dossier 'Program files'. Copie impossible. Erreur =
+0593=Erreur lors de l'installation de HiJackThis dans le dossier 'Program files'. Copie impossible. Erreur =
 0594=Erreur lors de la création de la tâche.
 ;
 ; ==================== StatupList ===================
@@ -1391,7 +1394,7 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
      [Windows 95/98/NT4/2000/XP/2003]
 0614=Windows peut exécuter des scripts lorsque le système démarre ou s'arrête ou lorsqu'un utilisateur ouvre ou ferme une session.
      [Windows 2000/XP/2003/Vista/7/8/8.1/10].
-0615=Windows utilise des fichiers *.bat pour démarrer certains composants du système. Tout ce qui se trouve dans ces fichiers est exécuté au démarrage du système.
+0615=Windows utilise des fichiers *.bat pour démarrer certains composants du système. Tout ce qui se trouve dans ces fichiers seront exécutés au démarrage du système.
      [winstart.bat,dosstart.bat : Windows 95/98/98SE]
      [autoexec.bat,config.sys : Windows 9x/ME]
      [autoexec.nt,config.nt : Windows NT4/2000/XP/2003/Vista]
@@ -1654,7 +1657,7 @@ HijackThis+ est une modification du programme HijackThis original de Trend Micro
 0905=Le journal StartupList a été écrit sur le disque
 0906=vérification de [] groupes du démarrage automatique!
 0907=Utiliser ces Options
-0908=Utiliser le menu Options pour passer outre les éléments ignorés.
+0908=Utiliser le menu Options pour passer outre les éléments exclus.
      Cliquer sur Aide > Afficher les avertissements pour Fermer ce message.
 0909=Chargement...
 0910=Chargement... noms d'utilisateurs

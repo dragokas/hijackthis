@@ -357,8 +357,10 @@ Private Type UnintallManagerData
 End Type
 
 Private UninstData() As UnintallManagerData
+Private m_hotkey As clsHotkey
 
 Private Sub Form_Load()
+    Set m_hotkey = New clsHotkey
     SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold
     ReloadLanguage True
     LoadWindowPos Me, SETTINGS_SECTION_UNINSTMAN
@@ -382,7 +384,15 @@ End Sub
 
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
     If KeyCode = 27 Then Me.Hide
-    ProcessHotkey KeyCode, Me
+    m_hotkey.SaveHotkey
+    'Call ProcessHotkey(KeyCode, Me)
+End Sub
+
+Private Sub Form_KeyPress(KeyAscii As Integer)
+    'This event doesn't get called when KeyDown event loaded other form => we've using delayed hotkey processing here as a walkaround
+    If ProcessDelayedHotkey(m_hotkey, Me) Then
+        KeyAscii = 0
+    End If
 End Sub
 
 Private Sub Form_Resize()
@@ -871,7 +881,7 @@ Private Sub cmdSave_Click()
     If Len(sFile) = 0 Then Exit Sub
     
     sList.Append ChrW$(-257)
-    sList.AppendLine "Logfile of Uninstall manager v." & UninstManVer & " (HijackThis+ v." & AppVerString & ")"
+    sList.AppendLine "Logfile of Uninstall manager v." & UninstManVer & " (HiJackThis+ v." & AppVerString & ")"
     sList.AppendLine
     sList.Append MakeLogHeader()
     sList.AppendLine

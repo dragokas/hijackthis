@@ -785,7 +785,8 @@ Public Function ProcessRunUnelevated2( _
                             ByVal FileName As String, _
                             Optional ByVal CommandLine As String, _
                             Optional ByVal CurrentDirectory As String = vbNullString, _
-                            Optional WindowStyle As SHOWWINDOW_FLAGS = SW_SHOWNORMAL) As Boolean
+                            Optional WindowStyle As SHOWWINDOW_FLAGS = SW_SHOWNORMAL, _
+                            Optional Verb As String = vbNullString) As Boolean
     
     On Error GoTo ErrorHandler:
     'This code launch program via filtered token context; parent process handle is 'explorer.exe' process
@@ -806,14 +807,14 @@ Public Function ProcessRunUnelevated2( _
     Dim IID_IDispatch(3&) As Long, IID_IShellBrowser(3&) As Long, SID_STopLevelBrowser(3&) As Long
     Dim hWnd As Long, RV As Variant, v(2&) As Variant, VT(2&) As Integer, pv(2&) As Long
     
-    Dim vOperation As Variant:          vOperation = vbNullString 'by default - open
+    Dim vOperation As Variant:          vOperation = Verb 'by default - open
     Dim vCommandLine As Variant:        vCommandLine = CommandLine
     Dim vCurrentDirectory As Variant:   vCurrentDirectory = CurrentDirectory
     Dim vWindowStyle As Variant:        vWindowStyle = WindowStyle
     
     On Error Resume Next
     Set Obj = CreateObject("Shell.Application").Windows.FindWindowSW(Empty, Empty, SWC_DESKTOP, hWnd, SWFO_NEEDDISPATCH)
-    On Error GoTo 0
+    On Error GoTo ErrorHandler
     If Not (Obj Is Nothing) Then
       If CLSIDFromString(StrPtr("{4C96BE40-915C-11CF-99D3-00AA004AE837}"), SID_STopLevelBrowser(0&)) = NOERROR Then
         If CLSIDFromString(StrPtr("{000214E2-0000-0000-C000-000000000046}"), IID_IShellBrowser(0&)) = NOERROR Then
@@ -847,6 +848,14 @@ Public Function ProcessRunUnelevated2( _
 ErrorHandler:
     ErrorMsg Err, "ProcessRunUnelevated2", "FileName:", FileName, "CommandLine:", CommandLine
     If inIDE Then Stop: Resume Next
+End Function
+
+'true - to switch thread content to a filtered token
+'false - to revert thread to original context
+'@return: true - on success
+Public Function Unelevate() As Boolean
+    '// TODO
+
 End Function
 
 Public Function ConsoleWrite(ByVal sData As String) As Boolean
@@ -902,7 +911,7 @@ Private Sub ParseCommandLine(Line As String, argc As Long, argv() As String)
     
     ptr = CommandLineToArgvW(StrPtr(Line), argc)
     ReDim argv(argc)
-    argv(0) = App.Path & "\" & App.ExeName & ".exe"
+    argv(0) = App.path & "\" & App.ExeName & ".exe"
     If argc = 0 Then Exit Sub
     
     For Index = 1 To argc

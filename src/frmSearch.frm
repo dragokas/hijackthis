@@ -385,6 +385,7 @@ End Sub
 
 Private Sub Form_Load()
     'CenterForm Me
+    
     SetWindowHeight
     SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold
     Call ReloadLanguage(True)
@@ -716,12 +717,13 @@ Private Sub CmdFind_Click()
                 
                 'select the item found
                 If iPos <> 0 Then
-                    If lst.Style = 1 Then 'checkbox
+                    If lst.Style = LstStyleCheckbox Then
                         lst.ListIndex = i
                     Else
                         UnselAllListIndex lst
                         lst.ItemChecked(i) = True
                     End If
+                    lst.ListIndex = i
                     
                     '// TODO: change color of font and row (required subclassing)
                     'http://forums.codeguru.com/showthread.php?497590-VB6-How-Can-I-Make-A-ListBox-Display-Colours

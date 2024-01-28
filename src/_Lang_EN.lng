@@ -16,17 +16,17 @@
 ;
 ; (1-29, 1000-1089)
 ;
-0001=Welcome to HijackThis+
+0001=Welcome to HiJackThis+
      This program will generate a report of unusual items
      (files, registry modifications etc.) in the most vulnerable areas of the operating system,
      commonly manipulated by malware as well as good software
-0002=HijackThis is already running.
+0002=HiJackThis is already running.
      Are you sure you want to launch another copy?
-0004=Below are the results of the HijackThis scan.
+0004=Below are the results of the HiJackThis scan.
      Be careful what you delete with 'Fix checked' button. Scan results do not determine
      whether an item is good or bad. If you think  your machine is infected, press the 'AnalyzeThis' button,
      sign up, read instructions, make required logs, and show them to our consultants by creating a new thread.
-0007=It looks like you're running HijackThis from a read-only device like a CD-ROM. If you want to make backups of items you fix, you must copy HiJackThis.exe to your hard disk first, and run it from there.
+0007=It looks like you're running HiJackThis from a read-only device like a CD-ROM. If you want to make backups of items you fix, you must copy HiJackThis.exe to your hard disk first, and run it from there.
      
      If you continue, you might encounter 'Path/File Access' errors.
 0008=Launching from an archive is forbidden!
@@ -44,7 +44,7 @@
 0019=Report
 0020=Add checked to ignore list
 0021=Loaded modules
-0025=This will set HijackThis to ignore the checked items, unless they change. Continue?
+0025=This will set HiJackThis to ignore the checked items, unless they change. Continue?
 0026=Write access was denied to the location you specified. Please try a different location.
 0027=The logfile has been saved to [].
      You can open it in a text editor like Notepad.
@@ -78,7 +78,7 @@
 1024=Download the program via Internet?
 1025=Error occurred while downloading!
 1026=Downloading complete. Run the program?
-1027=!!! HijackThis was shut down due to exceeding the maximum allowed timeout: [] sec. !!! Report file will be incomplete!
+1027=!!! HiJackThis was shut down due to exceeding the maximum allowed timeout: [] sec. !!! Report file will be incomplete!
      Please restart the program manually (not via Autologger).
 1028=Do you want to close the program and update it?
 1030=Processes
@@ -110,10 +110,10 @@
 ;
 ; (1090-1099)
 ;
-1090=Welcome to HijackThis+
-1091=    HijackThis+ is a free and open source tool designed to combat malware and unwanted adware. 
+1090=Welcome to HiJackThis+
+1091=    HiJackThis+ is a free and open source tool designed to combat malware and unwanted adware. 
          You must read and accept the license agreement to continue:
-1092=HijackThis - License Agreement
+1092=HiJackThis - License Agreement
 1093=I Accept
 1094=I DO NOT Accept
 1095=The software is provided "AS IS" without warranty of any kind. You may use this software at your own risk.
@@ -185,7 +185,7 @@
 ;
 1200=File
 1201=Settings
-1202=Uninstall HijackThis+
+1202=Uninstall HiJackThis+
 1203=Exit
 1204=Tools
 1205=Process Manager
@@ -201,8 +201,8 @@
 1215=Help
 1216=User's Manual
 1217=English (short)
-1218=Russian (complete)
-1219=French [outdated]
+1218=Russian
+1219=French
 1220=German [outdated]
 1221=Spanish [outdated]
 1222=Portuguese [outdated]
@@ -217,7 +217,7 @@
 1231=Services
 1232=StartupList
 1233=Basic manual
-1235=Install HijackThis+
+1235=Install HiJackThis+
 1236=Shortcuts
 1237=Verify shortcuts via Check Browsers' LNK
 1238=Fix shortcuts via ClearLNK
@@ -254,7 +254,7 @@
          O4 - Autoloading Registry entries and 'Autostart' folder / disabled items (MSConfig, StartupApproved)
          O5 - Hiding Control Panel items
          O6 - IE Policy: Disabling of 'Internet Options' main tab
-         O7 - Policies: Regedit, Explorer, TaskMgr / IP Security / Certificates / OS troubleshooting
+         O7 - Policies: Regedit, Explorer, TaskMgr / IP Security / Certificates / OS troubleshooting / KnownFolder
          O8 - Internet Explorer: Extra context menu items
          O9 - Internet Explorer: Extra services and buttons
          O10 - Breaking of Internet access due to the damage or infection in Winsock LSP
@@ -279,13 +279,13 @@
      Command-line keys:
      --------------------------------
 
-     1. HijackThis+
+     1. HiJackThis+
      2. StartupList
      3. How to use?
 
      
      
-     1. HijackThis+
+     1. HiJackThis+
      ---------------
      
        /accepteula 	- accept the agreement. It will not be displayed when program start.
@@ -306,14 +306,14 @@
        /md5		- calculate MD5 hash of files.
        /sha1		- calculate SHA1 hash of files.
        /sha256		- calculate SHA256 hash of files.
-       /timeout:sec	- number of seconds allowed for HijackThis to be run in /silentautolog mode (180 by default; 0 - to disable).
-       /install     	- install HijackThis to 'Program Files' folder and create shortcuts.
+       /timeout:sec	- number of seconds allowed for HiJackThis to be run in /silentautolog mode (180 by default; 0 - to disable).
+       /install     	- install HiJackThis to 'Program Files' folder and create shortcuts.
        /instDir:"PATH" 	- alternate installation path for HJT (by default: "%ProgramFiles(x86)%\HiJackThis Fork").
        /noShortcuts 	- disable creation of shortcuts during HJT installation via /install
-       /autostart   	- set Windows to automatically run a HijackThis scan after system boot up (use with /install key).
+       /autostart   	- set Windows to automatically run a HiJackThis scan after system boot up (use with /install key).
        /install /autostart d:X - install HJT in task scheduler to autorun with X sec. delay.
        /! 		- stop command line keys parsing. Everything found after this key considers as keys for HJT autorun (instead of default /startupscan).
-       /uninstall	- remove all HijackThis Registry entries and backups, then quit.
+       /uninstall	- remove all HiJackThis Registry entries and backups, then quit.
        /silentuninstall 	- /uninstall analogue, except it disables confirmation requests.
        /deleteonreboot "c:\file.sys" - delete the specified file after system rebooting using PendingFileRenameOperations mechanism.
        /noBackup 	- disable backup creation during the fix.
@@ -364,12 +364,12 @@
      Description
      -------------
      
-          HijackThis+ scans your computer for settings changed by adware, spyware, malware and other unwanted programs.
+          HiJackThis+ scans your computer for settings changed by adware, spyware, malware and other unwanted programs.
           
-          HijackThis+ results are not based on blacklists, specific programs or URLs. Instead, they are based on common methods and techniques used by hijackers.
+          HiJackThis+ results are not based on blacklists, specific programs or URLs. Instead, they are based on common methods and techniques used by hijackers.
           Therefore, FALSE POSITIVES ARE LIKELY. If you are ever unsure, you should consult with a knowledgeable expert BEFORE deleting anything.
      
-          HijackThis comes with several useful tools available under the button 'Misc Tools', and the new bar in menu 'Tools':
+          HiJackThis comes with several useful tools available under the button 'Misc Tools', and the new bar in menu 'Tools':
      
        - StartupList 2
        - Process Manager
@@ -421,7 +421,7 @@
      
      Third-party development:
 
-     HijackThis uses code snippets and third-party developments written by:
+     HiJackThis uses code snippets and third-party developments written by:
      
      - Anatolii Krivous { The Trick } - 'HashTable', 'Binary Stream' classes, 'UnregCOM', 'EXE loader' modules, bitwise shift math, TrickControls
      - Boris Fayfel { Catstail } - 'Process' and 'CRC32' classes
@@ -437,7 +437,7 @@
 
      License
      -------------
-     HijackThis+ is a modification of Trend Micro's original HijackThis program. It is made by Alex Dragokas and the SafeZone.cc team, and distributed as open source under its original GPLv2 license. It also includes several plugins available as freeware tools.
+     HiJackThis+ is a modification of Trend Micro's original HiJackThis program. It is made by Alex Dragokas and the SafeZone.cc team, and distributed as open source under its original GPLv2 license. It also includes several plugins available as freeware tools.
 0035=Sections
 0036=Keys
 0037=Purpose
@@ -462,16 +462,16 @@
 0051=Make backups before fixing items
 0052=Confirm fixing && ignoring of items (safe mode)
 0053=Ignore non-standard but safe domains in IE (e.g. msn.com, microsoft.com)
-0054=This can be useful when adding HijackThis to startup
+0054=This can be useful when adding HiJackThis to startup
 0055=Do not show main menu at startup
 0057=Are you sure you want to enable this option?
-     HijackThis is not a 'click & fix' program. Because it targets *general* hijacking methods, false positives are a frequent occurrence.
+     HiJackThis is not a 'click & fix' program. Because it targets *general* hijacking methods, false positives are a frequent occurrence.
      If you enable this option, you might disable programs or drivers you need. However, it is highly unlikely you will break your system beyond repair. So you should only enable this option if you know what you're doing!
 0058=Do not show error messages
 0059=Minimize program to system tray by clicking _ button
 0063=Default Search Assistant:
 0065=Sorry! Not implemented yet.
-0066=This will install HijackThis+ to 'Program Files' folder and set Windows to automatically run a scan after system startup.
+0066=This will install HiJackThis+ to 'Program Files' folder and set Windows to automatically run a scan after system startup.
 
      Continue?
 
@@ -480,11 +480,11 @@
 0067=Task scheduler service is required for this action. Do you want to run it now and set it to automatically start at system boot up?
 0068=Error! Could not launch Task scheduler service.
 0069=Installation complete. Do you want to create a shortcut on the Desktop?
-1400=Add HijackThis to startup
-1401=Run silent mode HijackThis scan at Windows startup, and show results only if something is found
-1402=This version of HijackThis is newer than the installed one.
+1400=Add HiJackThis to startup
+1401=Run silent mode HiJackThis scan at Windows startup, and show results only if something is found
+1402=This version of HiJackThis is newer than the installed one.
      Update it?
-1403=To improve system loading speed, we recommend setting a delay before launching HijackThis after user logon.
+1403=To improve system loading speed, we recommend setting a delay before launching HiJackThis after user logon.
      Specify the delay (in seconds):
 ;
 ; ============= IgnoreList ============
@@ -501,7 +501,7 @@
 ;
 ; (80-89, 1550 - 1599)
 ;
-0080=This is your list of items that were backed up. You can restore them (causing HijackThis to re-detect them unless you place them on the ignore list) or delete them from here. (Antivirus programs may detect HijackThis backups!)
+0080=This is your list of items that were backed up. You can restore them (causing HiJackThis to re-detect them unless you place them on the ignore list) or delete them from here. (Antivirus programs may detect HiJackThis backups!)
 0081=Restore
 0082=Delete
 0083=Delete all
@@ -589,12 +589,12 @@
 0148=Login
 0149=Password
 0150=Removing HJT
-0151=Uninstall HijackThis+
+0151=Uninstall HiJackThis+
 0152=Removes all settings and backups, then quits
-0153=This will remove HijackThis settings and backups. Note that you will have to delete the HiJackThis.exe file manually.
+0153=This will remove HiJackThis settings and backups. Note that you will have to delete the HiJackThis.exe file manually.
      
      Continue with uninstall?
-0154=This will completely remove HijackThis, including settings and backups. Continue?
+0154=This will completely remove HiJackThis, including settings and backups. Continue?
 0155=Direct connection
 0156=System proxy
 0157=Custom proxy
@@ -932,8 +932,8 @@
 ;
 ; (310 - 399)
 ;
-0310=HijackThis is about to remove a BHO and the corresponding file from your system. Close all Internet Explorer windows AND all Windows Explorer windows before continuing for the best chance of success.
-0311=Internet Explorer is still running. Would you like HijackThis to forcibly close IE?
+0310=HiJackThis is about to remove a BHO and the corresponding file from your system. Close all Internet Explorer windows AND all Windows Explorer windows before continuing for the best chance of success.
+0311=Internet Explorer is still running. Would you like HiJackThis to forcibly close IE?
      WARNING: the current browser session will be lost!
 0320=Unable to delete file:
      []
@@ -941,14 +941,14 @@
      The file may be in use.
 0321=Use Task Manager to shut down the program
 0322=Use a process killer like Sysinternals ProcMon to shut down the program
-0323=and run HijackThis+ again to delete the file.
-0330=HijackThis is about to remove a plugin from your system. Close all Internet Explorer windows before continuing for the best chance of success.
+0323=and run HiJackThis+ again to delete the file.
+0330=HiJackThis is about to remove a plugin from your system. Close all Internet Explorer windows before continuing for the best chance of success.
 0342=The file '[]' will be deleted by Windows when the system restarts.
 0343=The service '[]'  has been marked for deletion.
 0344=Nothing selected! Continue?
-0345=You selected to fix everything found by HijackThis. Important system items may be deleted and system functionality may degrade.
+0345=You selected to fix everything found by HiJackThis. Important system items may be deleted and system functionality may degrade.
      
-     If you aren't sure how to use HijackThis+, you should ask for help, not blindly fix things. Many 3rd-party resources are available on the web that will gladly help you with your log.
+     If you aren't sure how to use HiJackThis+, you should ask for help, not blindly fix things. Many 3rd-party resources are available on the web that will gladly help you with your log.
      
      Are you sure you want to fix all items in your scan results?
 0346=Fix [] selected items? This will permanently delete and/or repair all selected items
@@ -957,7 +957,7 @@
 0349=Cure for this object is not provided: []
 
      You need to manually set the DNS address on the router specified in the contract with your internet provider.
-0350=HijackThis needs to restart the system to apply the changes.
+0350=HiJackThis needs to restart the system to apply the changes.
      Please save your work, then press 'YES' if you agree to reboot now.
 0351=Please wait until Microsoft disk cleanup manager finishes its work, then press OK.
 0352=The server needs to be rebooted to complete required operations. Please reboot it manually.
@@ -972,22 +972,22 @@
 ; [R0]
 0401=        A Registry value changed from the default setting, resulting in a different IE Home page, Search Page, Search Bar Page or Search Assistant.
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - registry value is restored to default URL.
 ; [R1]
 0402=        A Registry value not present in a default Windows install, possibly resulting in changed settings for Internet searches or other IE settings (IE Window Title, ProxyServer, ProxyOverride, Internet Connection Wizard, ShellNext, etc.)
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - Registry value is deleted.
 ; [R2]
 0403=        A Registry key not present in a default Windows install. Currently, this section is not used (no database entries).
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - Registry key is deleted, with everything in it.
 ; [R3]
 0404=        Detected more than one value inside URLSearchHooks regkey. If you specify a URL address without http:// or ftp:// prefixes, the browser will attempt to figure out the correct protocol using the list in UrlSearchHook.
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - Registry value is deleted;
       - default URLSearchHook value is restored.
 ; [F0]
@@ -997,7 +997,7 @@
      
      Default: Shell=explorer.exe
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - default ini-file value is restored;
       - corresponding file is NOT deleted.
 ; [F1]
@@ -1009,7 +1009,7 @@
      run=
      load=
      
-     >>> Action taken by HijackThis: 
+     >>> Action taken by HiJackThis: 
       - ini-file value is deleted;
       - corresponding file is NOT deleted.
 ; [F2]
@@ -1026,7 +1026,7 @@
      Shell=explorer.exe
      Shell=%WINDIR%\explorer.exe
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - default registry value is restored;
       - corresponding file is NOT deleted.
 ; [F3]
@@ -1038,7 +1038,7 @@
      Default: run=
      Default: load=
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - registry value is deleted;
       - corresponding file is NOT deleted.
 ; [O1]
@@ -1050,7 +1050,7 @@
 \\p
              4) Hosts.ics file is created automatically when you share internet access. It contains a mapping between IP and home (local) network domain and can be hijacked in the same way as a hosts file.
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - For hosts and hosts.ics entries - Line is deleted from file.
       - For DNSApi - dll file is recovered if available using SFC subsystem.
       - For altered hosts location - default registry value is restored.
@@ -1058,13 +1058,13 @@
 ; [O2]
 0410=        A BHO (Browser Helper Object) is a specially crafted program that integrates into IE, and has virtually unlimited access rights. Though BHO's can be helpful (like the Google Toolbar), hijackers often use them for malicious purposes such as tracking your online behavior, displaying popup ads, etc.
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - Delete BHO registry key and all corresponding keys (like CLSID and special IE BHO policies);
       - Delete BHO dll file.
 ; [O3]
 0411=        IE Toolbars are part of BHO's (Browser Helper Objects) like the Google Toolbar that may be helpful, but can also be annoying or malicious by tracking your behavior and displaying popup ads.
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - Delete registry value and all corresponding keys (like settings and special IE BHO policies).
       - dll file is deleted.
 ; [O4]
@@ -1073,7 +1073,7 @@
 \\p     
      Area to be checked: registry keys and 'Autostart' folder.
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - Autostarting registry entries - registry value is deleted.
       - also, corresponding process will be killed or freezed.
       - 'AutoStart' folder - autoloading file is deleted.
@@ -1083,14 +1083,14 @@
      
      Area to be checked: control.ini file and equivalent locations in the registry.
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - depending on location, line is deleted from Control.ini file or registry value is deleted.
 ; [O6]
 0414=        Disabling the 'Internet Options' menu entry in the 'Tools' menu of IE is done using Windows Policies. Normally used by administrators to restrict user access, it can also be used by hijackers to prevent access to the 'Internet Options' window.
      
              StartPage Guard also uses Policies to restrict homepage changes, done by hijackers.
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - corresponding information is deleted from the registry.
 ; [O7] // do not translate [EV], [Disk] and [Network] !!!
 0415=
@@ -1108,6 +1108,10 @@
 
              Malicious programs can add antivirus digital signature hashes to the list of untrusted certificates, thereby blocking the launch of executable files.
 
+     O7 - KnownFolder
+     
+             In the KnownFolder subsection, the redirects of all well-known Shell Folders and User Shell Folders, including the "Startup" folder, are displayed. Additionally, it checks if the folder exists on the disk.
+
      O7 - TroubleShoot
 
              Here, incorrect OS settings are displayed, which potentially lead to system and software malfunctions. These include:
@@ -1115,61 +1119,62 @@
      2. [Disk] Lack of free space on the system disk (less than 1 GB.)
      3. [Network] Wrong network settings, e.g. empty computer name.
 \\p
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - for O7 - Policies: registry value is deleted.
       - for O7 - IPSec: all registry keys associated with the marked policy are deleted, including all the filters that apply to it.
       - for O7 - Untrusted Certificate: registry key is deleted.
+      - for O7 - KnownFolder: the registry parameter of the well-known folder will be reset to its default value. The folder will be created on the disk if it is missing.
       - for O7 - TroubleShoot: [EV] variables will be reset to defaults. For %PATH% - the missing path will be added.
       - for O7 - TroubleShoot: [Disk] Microsoft disk cleanup manager CleanMgr will be launched in automatic mode.
       - for O7 - TroubleShoot: [Network] standard settings will be applied.
 ; [O8]
 0416=        Extra items in the context (right-click) menu can prove helpful or annoying. Some recent hijackers add items to the context menu. The Internet Explorer PowerTweaks Web Accessory adds several useful items, including "Highlight", "Zoom In/Out", "Links list", "Images list" and "Web Search".
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - Registry key is deleted.
 ; [O9]
 0417=        Extra items in the Internet Explorer 'Tools' menu and extra buttons in the main toolbar are usually present as branding (Dell Home button) or added after system updates (MSN Messenger button) and rarely by hijackers. The Internet Explorer PowerTweaks Web Accessory adds two menu items, "Add site to Trusted Zone" and "Add site to Restricted Zone".
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - Registry key is deleted.
 ; [O10]
 0418=        The Windows Socket system (Winsock) uses a list of providers for resolving DNS names (i.e. translating www.microsoft.com into an IP address). This is called the Layered Service Provider (LSP). Some programs are capable of injecting their own (spyware) providers in the LSP. If files referenced by the LSP are missing or the 'chain' of providers is broken, none of the programs on your system can access the Internet. Removing references to missing files and repairing the chain will generally restore Internet access.
 \\p
              Note: LSP fixing is a risky procedure. You can get WinSockReset to repair the Winsock stack.
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - Not provided. You will be asked to download the WinSockReset program.
 ; [O11]
 0419=        Options in the 'Advanced' tab of Internet Explorer options are stored in the Registry, and extra options can be added by creating extra Registry keys. Very rarely, spyware/hijackers add their own options which are hard to remove. (e.g. CommonName adds a section 'CommonName' with a few options.)
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - Registry key is deleted.
 ; [O12]
 0420=        Plugins handle filetypes that aren't supported natively by Internet Explorer. Common plugins handle Macromedia Flash, Acrobat PDF documents, and Windows Media formats, enabling the browser to open these itself instead of launching a separate program. When hijackers or spyware add plugins for their filetypes, malware - even if it's been removed - may be reinstalled if the browser opens a file handled by that plugin.
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - Registry key and plugin file are deleted.
 ; [O13]
 0421=        When you type a URL into Internet Explorer's Address bar without the prefix (http://), a prefix is automatically added when you hit Enter. This prefix is stored in the Registry, together with the default prefixes for FTP, Gopher and other protocols. When a hijacker changes these to the URL of their server, you are always redirected there when you do not enter a prefix. For example, Prolivation uses this hijack.
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - Registry value is restored to default data.
 ; [O14]
 0422=        When you hit 'Reset Web Settings' on the 'Programs' tab of the Internet Explorer Options dialog, your homepage, search page and a few other sites are reset to default values. These defaults are stored in C:\Windows\Inf\Iereset.inf. When a hijacker changes these to his own URLs, 'Reset Web Settings' causes you to be (re)infected. For example, SearchALot uses this hijack.
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - Value in the Inf file is restored to default data.
 ; [O15]
 0423=        Websites in the Trusted Zone (see Tools => Internet Options => Security => Trusted sites => Sites) are allowed to use potentially dangerous scripts and ActiveX objects. Some programs automatically add sites to the Trusted Zone without you knowing. Only a very few legitimate programs are known to do this. 
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - Registry key is deleted.
       - Protocol to Zone mapping defaults is restored.
 ; [O16]
 0424=        The Download Program Files (DPF) folder in your Windows base folder holds various programs that were downloaded from the Internet. These programs are loaded whenever Internet Explorer is active. Legitimate examples include the Java VM, Microsoft XML Parser and Google Toolbar. When deleted, these objects are downloaded and installed again (after prompting).
              Unfortunately, IE also lets malicious sites automatically download things like porn dialers, bogus plugins, and ActiveX Objects to this folder, which haunt you with popups, large phone bills, random crashes, and other browser hijackings.
      
-      >>> Action taken by HijackThis:
+      >>> Action taken by HiJackThis:
       - registration of DPF CLSID is cancelled.
       - dll file and downloaded file are deleted.
 ; [O17]
@@ -1178,23 +1183,23 @@
 
              DHCP DNS in this section displays the DNS address issued by the router by DHCP, i.e. when the "Automatically receive DNS address" checkbox is selected in network connection settings.
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - Registry value is deleted.
-      - When fixing DHCP DNS, DNS Resolver Cache is flushed. The user must manually configure the router by entering the address specified by their contract provider BEFORE fixing this item in HijackThis. 
+      - When fixing DHCP DNS, DNS Resolver Cache is flushed. The user must manually configure the router by entering the address specified by their contract provider BEFORE fixing this item in HiJackThis. 
 ; [O18]
 0426=        A protocol is a 'language' Windows uses to 'talk' to programs, servers or itself. Webservers use the 'http:' protocol, FTP servers use the 'ftp:' protocol, Windows Explorer uses the 'file:' protocol. Introducing a new protocol to Windows or changing an existing one can change how Windows handles files.
              CommonName and Lop.com both register new protocols when installed (cn: and ayb:).
 \\p
              Filters are content types accepted by Internet Explorer (and internally by Windows). If a filter exists for a content type, data will pass through the content-type file handler first. Several variants of the CWS trojan add a text/html and text/plain filters, allowing them to hook all webpage content passed through Internet Explorer.
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - CLSID value is restored (if possible), otherwise the key is deleted.
       - File is deleted (if it's not belong to Microsoft).
 ; [O19]
 0427=        IE has an option to use a user-defined stylesheet for all pages instead of the default one, to enable handicapped users to better view webpages.
              An especially vile hijacking method made by Datanotary has surfaced, which overwrites any stylesheet the user has configured and replaces it with one that causes popups, as well a system slowdown when typing or loading pages with many pictures.
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - Registry value is deleted.
       - Style using is disabled.
 ; [O20]
@@ -1203,7 +1208,7 @@
 \\p
              Since both methods ensure the dll file stays loaded in memory, fixing this won't help if the dll restores Registry values or keys after you fix them. In such cases, it is recommended to use the 'Delete file on reboot' function or KillBox to first delete the file.
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - for AppInit_DLLs: Concrete registry value is cleared; parameter is NOT deleted.
       - for Winlogon Notify: Registry key is deleted.
 ; [O21]
@@ -1212,7 +1217,7 @@
              ShellIconOverlayIdentifiers works similarly. This registry key contains several subkeys with identifiers of the files loaded to Explorer.exe. Usually, one program registers several such handlers at once. Key names often start with a few spaces. These libraries are responsible for handling file icon rendering in Windows Explorer, depending on certain conditions (file types or other factors).
              An example of a legitimate program can be a client for cloud storage like DropBox or Yandex.Disk, which changes the appearance of the icon depending on the state of file synchronization. Malicious programs may install handlers that also execute arbitrary code.
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - Registry value or key is deleted together with CLSID identifier key.
       - dll file is deleted.
       - Explorer is restarted.
@@ -1220,7 +1225,7 @@
 0430=        Task Scheduler is a service that can be configured to run an arbitrary process at a specified time or on a certain schedule. One such setting is called a Job. Jobs (tasks) can be run with elevated privileges without requesting UAC, be bound to specific users, contain paths to processes, arguments, states, and so on. Malware often uses tasks to provide autorun and still survive after a process is restarted.
              Tasks can be managed through the Task Scheduler snap-in (taskschd.msc).
 
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - The task is disabled.
       - The task's process is killed.
       - The task file, executable file and all associated registry keys are deleted.
@@ -1231,18 +1236,16 @@
              Malware that registers itself as a service is therefore harder to kill.
 \\p
      O23 - Driver
-             (the subsection is only available in the "Additional scan" mode)
 
              The driver is a kind of service that is launched at an earlier stage of the system boot and runs with kernel privileges. Malicious programs can also install their drivers. For instance, this is used to prevent the deletion (programs running with Administrator or Local System rights can not kill kernel-level processes), as well as to mask their presence, files and processes (so-called rootkits).
              Note: the "Driver R" items without a digit character in log - is a dynamically loaded driver (not through the registry).
 \\p
      O23 - Dependency
-             (the subsection is only available in the "Additional scan" mode)
 
              Malicious programs can write themselves into the list of dependencies of the system service to protect themselves from deletion. After removing such a service, a legitimate Microsoft service will no longer be able to start. Some Windows services are critical for the normal operation of OS. Their non-launching can negatively affect the operation of other programs up to the whole OS boot up fails.
-             Some services are also combined into a service group, which has its name. If the service depends on the service group, it will not start until all services that belong to service group is start. HijackThis also checks for third-party services that have been included in the Microsoft service group.
+             Some services are also combined into a service group, which has its name. If the service depends on the service group, it will not start until all services that belong to service group is start. HiJackThis also checks for third-party services that have been included in the Microsoft service group.
 \\p
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - Service (or driver) is disabled, stopped and removed.
       - Reboot will be prompted.
       - For O23 - Dependency: the dependency will be deleted from the registry.
@@ -1250,7 +1253,7 @@
 0432=        Desktop Components are ActiveX objects that can be made part of the desktop whenever Active Desktop is enabled. They run as (small) website widgets.
              Malware abuses this feature by setting the desktop background to a local HTML file with a large, bogus warning, e.g. for Ransomware it may show text of ransom requirements.
      
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - Registry key and file are deleted.
       - Explorer is restarted and desktop background is updated.
 ; [O25]
@@ -1258,13 +1261,13 @@
 \\p
              Note: only the consumer is tested. If there are only a filter, binding and/or a timer (without consumer), the item is not displayed in the log.
 
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - event consumer, filter, timer and binding are deleted in WMI database;
       - associated file is also deleted.
 ; [R4]
 0434=        Internet Explorer uses search provider (DefaultScope) to show a list of tips in the search bar while you type search queries into the address bar. IE allows you to replace its default provider with any from the list (SearchScopes).
 
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - provider key is deleted;
       - default value of DefaultScope (Microsoft Bing) and provider parameters are recovered.
 ; [O26]
@@ -1272,7 +1275,7 @@
              Note: when a debugger file deleted but still set, the host program will not start!
              Also attacker can configure debugger to run together with default UWP applications, like 'Cortana' or 'People' (Win 10 only). Since these applications usually start automatically when the system boot, the attacker provides autorun (much like O4) for his malware using this method.
 
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - registry value is deleted.
 ; [O27]
 0436=        O27 - Account marks:
@@ -1287,7 +1290,7 @@
              (Port) informs about 3389 (TCP/UDP) inbound port opened in firewall.
              (Other) other remote desktop protocol settings.
 
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - for (AutoLogon): automatic logon is disabled. User will we prompted to enter the password.
       - for (Bad profile): the folder is removed.
       - for (Hidden): unhides user account from the logon screen.
@@ -1304,7 +1307,7 @@
 ; [B]
 0441=        Browser section represents suspicious extensions and policies. It's under construction at the moment. Not many definitions and browsers are supported.
 
-     >>> Action taken by HijackThis:
+     >>> Action taken by HiJackThis:
       - browser is closed.
       - files and registry values are modified or deleted.
 0490=Detailed information on sections:
@@ -1347,14 +1350,14 @@
 0554=First you have to mark a checkbox next to at least one item!
 0570=The language file '[]' is invalid (ambiguous id numbers).
 0572=Invalid language file. Reset to default (English)?
-0580=HijackThis cannot repair O10 Winsock LSP entries.
+0580=HiJackThis cannot repair O10 Winsock LSP entries.
      Use the program {1} from {2}
      
      Would you like to visit that site?
-0581=HijackThis cannot repair O10 Winsock LSP entries.
+0581=HiJackThis cannot repair O10 Winsock LSP entries.
 0590=An unexpected error has occurred !
 
-     Please help us improve HijackThis+ by reporting this error.
+     Please help us improve HiJackThis+ by reporting this error.
      
      Error message has been copied to clipboard.
      Click 'Yes' to submit.
@@ -1363,7 +1366,7 @@
      Error at function:
 0591=Error
 0592=Cannot find appropriate cure routine for:
-0593=Error while installing HijackThis+ to 'Program files' folder. Cannot copy. Error =
+0593=Error while installing HiJackThis+ to 'Program files' folder. Cannot copy. Error =
 0594=Error while creating task.
 ;
 ; ==================== StatupList ===================

@@ -416,13 +416,13 @@ Public Function GetBrowsersInfo() As BROWSERS_VERSION_INFO
     
     Dim Cmd As String
     Dim FriendlyName As String
-    Dim Path As String
+    Dim path As String
     Dim Arguments As String
     Cmd = GetDefaultApp("http", FriendlyName)
     If Len(Cmd) = 0 Then
         Cmd = "Program is not associated"
     Else
-        SplitIntoPathAndArgs Cmd, Path, Arguments
+        SplitIntoPathAndArgs Cmd, path, Arguments
     End If
     
     With GetBrowsersInfo
@@ -431,7 +431,7 @@ Public Function GetBrowsersInfo() As BROWSERS_VERSION_INFO
         .Chrome.Version = GetChromeVersion()
         .Firefox.Version = GetFirefoxVersion()
         .Opera.Version = GetOperaVersion()
-        .Default = Cmd & IIf(Path = "(AppID)", " " & FriendlyName, IIf(Len(FriendlyName) <> 0, " (" & FriendlyName & ")", vbNullString))
+        .Default = Cmd & IIf(path = "(AppID)", " " & FriendlyName, IIf(Len(FriendlyName) <> 0, " (" & FriendlyName & ")", vbNullString))
     End With
     AppendErrorLogCustom "GetBrowsersInfo - End"
 End Function
@@ -554,14 +554,14 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function IsSignPresent(FileName As String) As Boolean
+Public Function IsSignPresent(filename As String) As Boolean
     ' &H3C -> PE_Header offset
     ' PE_Header offset + &H18 = Optional_PE_Header
     ' PE_Header offset + &H78 = Data_Directories offset
     ' Data_Directories offset + &H20 = SecurityDir -> Address (dword), Size (dword) for digital signature.
     
     On Error GoTo ErrorHandler:
-    AppendErrorLogCustom "IsSignPresent - Begin", "File: " & FileName
+    AppendErrorLogCustom "IsSignPresent - Begin", "File: " & filename
     
     Const IMAGE_FILE_MACHINE_I386   As Long = &H14C&
     Const IMAGE_FILE_MACHINE_IA64   As Long = &H200&
@@ -576,10 +576,10 @@ Public Function IsSignPresent(FileName As String) As Boolean
     Dim FSize           As Long
     Dim Redirect As Boolean, bOldStatus As Boolean
   
-    Redirect = ToggleWow64FSRedirection(False, FileName, bOldStatus)
+    Redirect = ToggleWow64FSRedirection(False, filename, bOldStatus)
   
     ff = FreeFile()
-    Open FileName For Binary Access Read Shared As #ff
+    Open filename For Binary Access Read Shared As #ff
     FSize = LOF(ff)
     
     If FSize >= &H3C& + 6& Then
@@ -609,7 +609,7 @@ Public Function IsSignPresent(FileName As String) As Boolean
     AppendErrorLogCustom "IsSignPresent - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "modUtils_IsSignPresent", "File:", FileName
+    ErrorMsg Err, "modUtils_IsSignPresent", "File:", filename
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     If inIDE Then Stop: Resume Next
 End Function
@@ -648,10 +648,10 @@ Public Function AppPath(Optional bGetFullPath As Boolean) As String
     
     If inIDE Then
         If bGetFullPath Then
-            AppPath = GetDOSFilename(App.Path, bReverse:=True) & "\" & GetValueFromVBP(BuildPath(App.Path, App.ExeName & ".vbp"), "ExeName32")
+            AppPath = GetDOSFilename(App.path, bReverse:=True) & "\" & GetValueFromVBP(BuildPath(App.path, App.ExeName & ".vbp"), "ExeName32")
             ProcPathFull = AppPath
         Else
-            AppPath = GetDOSFilename(App.Path, bReverse:=True)
+            AppPath = GetDOSFilename(App.path, bReverse:=True)
             ProcPathShort = AppPath
         End If
         Exit Function
@@ -669,7 +669,7 @@ Public Function AppPath(Optional bGetFullPath As Boolean) As String
     End If
     
     If cnt = 0 Then                          'clear path
-        ProcPath = App.Path
+        ProcPath = App.path
     Else
         ProcPath = Left$(ProcPath, cnt)
         If StrComp("\SystemRoot\", Left$(ProcPath, 12), 1) = 0 Then ProcPath = sWinDir & mid$(ProcPath, 12)
@@ -1397,7 +1397,10 @@ End Sub
 
 Public Sub GetFileByAppID(sAppID As String, out_sFile As String, Optional out_sTitle As Variant, Optional bRedirected As Boolean, Optional bShared As Boolean)
     On Error GoTo ErrorHandler:
-
+    
+    'https://learn.microsoft.com/en-us/windows/win32/com/appid-clsid
+    'https://learn.microsoft.com/en-us/windows/win32/com/appid-key
+    
     Dim sBuf As String
     Dim sServiceName As String
     Dim bRedirState As Boolean
@@ -1674,13 +1677,6 @@ Public Sub CreateUninstallKey(bCreate As Boolean, Optional EXE_Location As Strin
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "CreateUninstallKey - Begin"
     Dim Setup_Key$:   Setup_Key = "Software\Microsoft\Windows\CurrentVersion\Uninstall\HiJackThis Fork"
-    Dim sHelpURL$
-    
-    If IsRussianLangCode(OSver.LangSystemCode) Or IsRussianLangCode(OSver.LangDisplayCode) Then
-        sHelpURL = "https://regist.safezone.cc/hijackthis_help/hijackthis.html"
-    Else
-        sHelpURL = "https://github.com/dragokas/hijackthis/wiki/HJT:-Tutorial"
-    End If
     
     If bCreate Then
         If Len(EXE_Location) = 0 Then EXE_Location = AppPath(True)
@@ -1695,12 +1691,12 @@ Public Sub CreateUninstallKey(bCreate As Boolean, Optional EXE_Location As Strin
         'Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "URLInfoAbout", "http://www.spywareinfo.com/~merijn/"
         'Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "URLInfoAbout", "https://sourceforge.net/projects/hjt/"
         Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "URLInfoAbout", "https://github.com/dragokas/hijackthis"
-        Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "HelpLink", sHelpURL
+        Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "HelpLink", "https://github.com/dragokas/hijackthis/wiki/HJT:-Tutorial"
         Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "InstallLocation", GetParentDir(EXE_Location)
         Reg.SetDwordVal HKEY_LOCAL_MACHINE, Setup_Key, "NoModify", 1
         Reg.SetDwordVal HKEY_LOCAL_MACHINE, Setup_Key, "NoRepair", 1
         Reg.SetDwordVal HKEY_LOCAL_MACHINE, Setup_Key, "EstimatedSize", FileLenW(EXE_Location) \ 1024 'KB
-        Reg.SetDwordVal HKEY_LOCAL_MACHINE, Setup_Key, "Language", IIf(g_CurrentLang = "Russian", &H419&, &H409&)
+        Reg.SetDwordVal HKEY_LOCAL_MACHINE, Setup_Key, "Language", IIf(g_CurrentLangEnum = Lang_Russian Or g_CurrentLangEnum = Lang_Ukrainian, &H419&, &H409&)
         Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "InstallDate", Format$(Date, "yyyymmdd", vbMonday)
         Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "Contact", "admin@dragokas.com"
         Reg.SetStringVal HKEY_LOCAL_MACHINE, Setup_Key, "Comments", "Creates a report of non-standard parameters of registry " & _
@@ -2342,18 +2338,27 @@ Public Function BStrFromLPWStr(lpWStr As Long, Optional ByVal CleanupLPWStr As B
     If CleanupLPWStr Then CoTaskMemFree lpWStr
 End Function
 
-Public Sub ProcessHotkey(KeyCode As Integer, frm As Form)
+Public Function ProcessHotkey(KeyCode As Integer, frm As Form) As Boolean
     If KeyCode = Asc("F") Then                    'Ctrl + F
         If Not (cMath Is Nothing) Then
-            If cMath.HIWORD(GetKeyState(VK_CONTROL)) Then LoadSearchEngine frm
+            If cMath.HIWORD(GetKeyState(VK_CONTROL)) Then LoadSearchEngine frm: ProcessHotkey = True
         End If
-    End If
-    If KeyCode = Asc("A") Then                    'Ctrl + A
+    ElseIf KeyCode = Asc("A") Then                    'Ctrl + A
         If Not (cMath Is Nothing) Then
-            If cMath.HIWORD(GetKeyState(VK_CONTROL)) Then ControlSelectAll frm
+            If cMath.HIWORD(GetKeyState(VK_CONTROL)) Then ControlSelectAll frm: ProcessHotkey = True
         End If
     End If
-End Sub
+End Function
+
+Public Function ProcessDelayedHotkey(hotkey As clsHotkey, frm As Form) As Boolean
+    If hotkey.IsControlHotkey(VK_F) Then
+        LoadSearchEngine frm
+        ProcessDelayedHotkey = True
+    ElseIf hotkey.IsControlHotkey(VK_A) Then
+        ControlSelectAll frm
+        ProcessDelayedHotkey = True
+    End If
+End Function
 
 Public Sub LoadSearchEngine(frm As Form)
     If IsFormInit(frmSearch) Then
@@ -2644,16 +2649,16 @@ End Sub
 
 Public Function IsValidBuildInUserName(sUsername As String) As Boolean
     
-    Static names() As String
+    Static Names() As String
     Static bInit As Boolean
     
     If Not bInit Then
         bInit = True
-        ArrayAddStr names, "System" ' OS uses localized name, however, Tasks xml is not
-        ArrayAddStr names, "LocalSystem"
-        ArrayAddStr names, MapSIDToUsername("S-1-5-18")
-        ArrayAddStr names, MapSIDToUsername("S-1-5-19")
-        ArrayAddStr names, MapSIDToUsername("S-1-5-20")
+        ArrayAddStr Names, "System" ' OS uses localized name, however, Tasks xml is not
+        ArrayAddStr Names, "LocalSystem"
+        ArrayAddStr Names, MapSIDToUsername("S-1-5-18")
+        ArrayAddStr Names, MapSIDToUsername("S-1-5-19")
+        ArrayAddStr Names, MapSIDToUsername("S-1-5-20")
     End If
     
     ' TODO: append with everything in Well-Known SIDs:
@@ -2665,7 +2670,7 @@ Public Function IsValidBuildInUserName(sUsername As String) As Boolean
     ' BUILTIN\Administrators
     ' etc.
     
-    IsValidBuildInUserName = InArray(sUsername, names, , , vbTextCompare)
+    IsValidBuildInUserName = InArray(sUsername, Names, , , vbTextCompare)
     
 End Function
 
@@ -2769,13 +2774,13 @@ Public Function HexStringToNumber(str As String) As Long
     End If
 End Function
 
-Public Function PathRemoveLastSlash(Path As String) As String
+Public Function PathRemoveLastSlash(path As String) As String
     Dim ch As String
-    ch = Right$(Path, 1)
+    ch = Right$(path, 1)
     If ch = "\" Or ch = "/" Then
-        PathRemoveLastSlash = Left$(Path, Len(Path) - 1)
+        PathRemoveLastSlash = Left$(path, Len(path) - 1)
     Else
-        PathRemoveLastSlash = Path
+        PathRemoveLastSlash = path
     End If
 End Function
 
@@ -2787,14 +2792,14 @@ Public Sub PathRemoveLastSlashInArray(arr() As String)
 End Sub
 
 Public Function GetDefaultTextEditorPath() As String
-    Dim Cmd As String, Path As String
+    Dim Cmd As String, path As String
     Cmd = GetDefaultApp(".txt")
-    SplitIntoPathAndArgs Cmd, Path
-    Path = EnvironW(Path)
-    If Not FileExists(Path) Then
-        Path = "rundll32.exe shell32,ShellExec_RunDLL"
+    SplitIntoPathAndArgs Cmd, path
+    path = EnvironW(path)
+    If Not FileExists(path) Then
+        path = "rundll32.exe shell32,ShellExec_RunDLL"
     End If
-    GetDefaultTextEditorPath = Path
+    GetDefaultTextEditorPath = path
 End Function
 
 Public Sub OpenInTextEditor(sTextFile As String)
@@ -2840,7 +2845,7 @@ Public Function ConvertCollectionToArray(col As Collection) As String()
     ConvertCollectionToArray = a
 End Function
 
-Public Function ScreenLogLine(ByVal sLine As String) As String
+Public Function ScreenHitLine(ByVal sLine As String) As String
     Dim i As Long
     Dim Code As Long
     Dim nStart As Long
@@ -2854,5 +2859,13 @@ begin:
             GoTo begin
         End If
     Next
-    ScreenLogLine = Replace$(sLine, "http", "hxxp", vbTextCompare)
+    ScreenHitLine = Replace$(Replace$(sLine, "http", "hxxp", vbTextCompare), "www.", "vvv.", vbTextCompare)
+End Function
+
+Public Function LimitHitLineLength(sLine As String) As String
+    If Len(sLine) > 500 Then
+        LimitHitLineLength = Left$(sLine, 500) & "... (" & (Len(sLine) - 500) & " more chars" & ")"
+    Else
+        LimitHitLineLength = sLine
+    End If
 End Function

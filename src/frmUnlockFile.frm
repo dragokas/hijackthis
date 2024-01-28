@@ -212,7 +212,7 @@ ErrorHandler:
 End Sub
 
 
-Private Sub UnlockSubfolders(Path As String, Optional Recursively As Boolean = False)
+Private Sub UnlockSubfolders(path As String, Optional Recursively As Boolean = False)
     On Error GoTo ErrorHandler
     
     Dim SubPathName     As String
@@ -226,7 +226,7 @@ Private Sub UnlockSubfolders(Path As String, Optional Recursively As Boolean = F
         If hFind <> 0& Then
             If FindNextFile(hFind, fd) = 0& Then FindClose hFind: Exit Do
         Else
-            hFind = FindFirstFile(StrPtr(Path & "\*"), fd)
+            hFind = FindFirstFile(StrPtr(path & "\*"), fd)
             If hFind = INVALID_HANDLE_VALUE Then Exit Do
         End If
         
@@ -244,7 +244,7 @@ Private Sub UnlockSubfolders(Path As String, Optional Recursively As Boolean = F
             If fd.dwFileAttributes And vbDirectory Then
                 If PathName <> "." Then
                     If PathName <> ".." Then
-                        SubPathName = Path & "\" & PathName
+                        SubPathName = path & "\" & PathName
                         
                         Call UnlockMe(SubPathName)
                         
@@ -260,7 +260,7 @@ Private Sub UnlockSubfolders(Path As String, Optional Recursively As Boolean = F
     
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "UnlockSubfolders", "Folder:", Path
+    ErrorMsg Err, "UnlockSubfolders", "Folder:", path
     Resume Next
 End Sub
 

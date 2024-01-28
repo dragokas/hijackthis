@@ -276,6 +276,7 @@
 <SysRoot>\System32\wsreset.exe
 <SysRoot>\System32\wuauclt.exe
 <SysRoot>\System32\xwizard.exe
+<SysRoot>\System32\compattelrunner.exe
 <SysRoot>\SysWOW64\At.exe
 <SysRoot>\SysWOW64\Atbroker.exe
 <SysRoot>\SysWOW64\bash.exe

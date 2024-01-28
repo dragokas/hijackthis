@@ -323,7 +323,7 @@ Public Sub SaveProcessList(objProcess As VBCCR17.ListBoxW, objDLL As VBCCR17.Lis
     
     'Header
     sList.Append ChrW$(-257)
-    sList.AppendLine "Logfile of Itty Bitty Process Manager v." & ProcManVer & " (HijackThis+ v." & AppVerString & ")"
+    sList.AppendLine "Logfile of Itty Bitty Process Manager v." & ProcManVer & " (HiJackThis+ v." & AppVerString & ")"
     sList.AppendLine
     sList.Append MakeLogHeader()
     sList.AppendLine
@@ -386,7 +386,7 @@ Public Sub CopyProcessList(objProcess As VBCCR17.ListBoxW, objDLL As VBCCR17.Lis
     '[file version]
     '[company name]
     
-    sList = "Logfile of Itty Bitty Process Manager v." & ProcManVer & " (HijackThis+ v." & AppVerString & ")" & vbCrLf & vbCrLf & MakeLogHeader() & vbCrLf & vbCrLf & _
+    sList = "Logfile of Itty Bitty Process Manager v." & ProcManVer & " (HiJackThis+ v." & AppVerString & ")" & vbCrLf & vbCrLf & MakeLogHeader() & vbCrLf & vbCrLf & _
             "[pid]" & vbTab & Translate(186) & vbTab & vbTab & Translate(187) & vbTab & Translate(188) & vbCrLf
     For i = 0 To objProcess.ListCount - 1
         sProcess = objProcess.List(i)

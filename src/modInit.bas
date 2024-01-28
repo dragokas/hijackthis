@@ -49,16 +49,24 @@ Public Sub Main()
         'end if
     End If
     
-    If FileExists(BuildPath(AppPath, "apps\VBCCR17.OCX")) Then
-        If FixTempFolder() Then
-            frmMain.Show vbModeless
+    Dim sOCX As String
+    sOCX = BuildPath(AppPath, "apps\VBCCR17.OCX")
+    
+    If FileExists(sOCX) Then
+        If CheckConsistencyVBCCR(sOCX) Then
+            If FixTempFolder() Then
+                frmMain.Show vbModeless
+            Else
+                MsgBox "Cannot run HiJackThis" & vbNewLine & _
+                    "Please, check that you have write access to the temp folder: " & Environ("Temp")
+            End If
         Else
-            MsgBox "Cannot run HijackThis" & vbNewLine & _
-            "Please, check that you have write access to the temp folder: " & Environ("Temp")
+            MsgBox "Cannot run HiJackThis" & vbNewLine & _
+                "Checksum mismatch for: " & sOCX
         End If
     Else
-        MsgBox "Cannot run HijackThis" & vbNewLine & _
-            "Required file is missing: apps\VBCCR17.OCX" & vbNewLine & _
+        MsgBox "Cannot run HiJackThis" & vbNewLine & _
+            "Required file is missing: " & sOCX & vbNewLine & _
             "Ensure you unpacked archive completely!"
     End If
     
@@ -95,7 +103,7 @@ Private Sub PreInit()
         bAcceptEula = True
     #End If
     
-    g_SettingsRegKey = "Software\HijackThis+"
+    g_SettingsRegKey = "Software\HiJackThis+"
 
     Dim sExeName As String
     Dim argc As Long
@@ -111,6 +119,10 @@ Private Sub PreInit()
     bForceUA = InStr(1, sExeName, "_UA", 1) Or HasSwitch("langUA", aCmdArgs)  '/langUA
     bForceFR = InStr(1, sExeName, "_FR", 1) Or HasSwitch("langFR", aCmdArgs)  '/langUA
     bForceSP = InStr(1, sExeName, "_SP", 1) Or HasSwitch("langSP", aCmdArgs)  '/langSP
+    
+    If bForceRU Or bForceEN Or bForceUA Or bForceFR Or bForceSP Then
+        bForceLang = True
+    End If
     
     Dim hasEulaKey As Boolean
     
@@ -231,7 +243,7 @@ Private Sub PostInit()
         AppVerString = GetFilePropVersion(AppPath(True))
     End If
     
-    AppendErrorLogCustom "Logfile ( tracing ) of HijackThis+ v." & AppVerString & vbCrLf & vbCrLf & _
+    AppendErrorLogCustom "Logfile ( tracing ) of HiJackThis+ v." & AppVerString & vbCrLf & vbCrLf & _
         "Command line: " & AppPath(True) & " " & g_sCommandLine & vbCrLf & vbCrLf & MakeLogHeader() & vbCrLf
     
     Exit Sub
@@ -600,3 +612,9 @@ Public Sub MigrateSettings()
         Reg.DelKey HKLM, Caes_Decode("TrkAFlEtmgMBMEjNJ[ZIqZwVZdOeht"), False
     End If
 End Sub
+
+Private Function CheckConsistencyVBCCR(sPath As String) As Boolean
+    If StrComp(GetFileSHA1(sPath, , True), STR_CONST.SHA1_OCX, vbTextCompare) = 0 Then
+        CheckConsistencyVBCCR = True
+    End If
+End Function

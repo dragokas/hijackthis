@@ -55,7 +55,7 @@ Dim CLSID_InternetShortcut  As UUID
 Private LnkHeader(19)        As Byte
 
 
-Public Function GetFileFromShortcut(Path As String, Optional out_Args As String, Optional IsTypeLnk As Boolean) As String
+Public Function GetFileFromShortcut(path As String, Optional out_Args As String, Optional IsTypeLnk As Boolean) As String
     On Error GoTo ErrorHandler
 
     Dim Target  As String
@@ -65,14 +65,14 @@ Public Function GetFileFromShortcut(Path As String, Optional out_Args As String,
     If IsTypeLnk Then
         sExt = ".LNK"
     Else
-        sExt = UCase$(GetExtensionName(Path))
+        sExt = UCase$(GetExtensionName(path))
     End If
     
     Select Case sExt
     
         Case ".LNK"
         
-            GetTargetShellLinkW Path, Target, out_Args
+            GetTargetShellLinkW path, Target, out_Args
     
             ' IDL on target ?  -> expand
             If Left$(Target, 3&) = "::{" Or Left$(Target, 4&) = "::\{" Then
@@ -82,11 +82,11 @@ Public Function GetFileFromShortcut(Path As String, Optional out_Args As String,
     
         Case ".URL", ".WEBSITE"
             
-            Target = GetUrlTargetW(Path)
+            Target = GetUrlTargetW(path)
         
         Case ".PIF"
     
-            If GetPIF_target(Path, ObjPath, out_Args) Then Target = ObjPath
+            If GetPIF_target(path, ObjPath, out_Args) Then Target = ObjPath
     
     End Select
     
@@ -94,7 +94,7 @@ Public Function GetFileFromShortcut(Path As String, Optional out_Args As String,
     
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "Parser.GetFileFromShortcut", "Path: " & Path
+    ErrorMsg Err, "Parser.GetFileFromShortcut", "Path: " & path
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -104,7 +104,7 @@ Public Function GetPathFromIDL(sIDL As String) As String
     
     Dim Shl     As Object
     Dim fld     As Object
-    Dim Path    As String
+    Dim path    As String
     Dim itm     As Variant
     
     AppendErrorLogCustom "GetPathFromIDL - Begin", "IDL: " & sIDL
@@ -122,14 +122,14 @@ Public Function GetPathFromIDL(sIDL As String) As String
     If (Err.Number <> 0) Or (fld Is Nothing) Then Exit Function
     
     On Error GoTo ErrorHandler
-    Path = fld.Self.Path
+    path = fld.Self.path
     
-    If Len(Path) <> 0 And StrComp(Path, sIDL, 1) <> 0 Then
-        GetPathFromIDL = Path
+    If Len(path) <> 0 And StrComp(path, sIDL, 1) <> 0 Then
+        GetPathFromIDL = path
     Else
         For Each itm In fld.Items
-            Path = itm.Path
-            GetPathFromIDL = GetPathName(Path)
+            path = itm.path
+            GetPathFromIDL = GetPathName(path)
             Exit For
         Next
     End If
@@ -276,14 +276,14 @@ End Function
 
 
 ' Возвращает заголовок файла
-Public Function GetHeaderFromFile(FileName As String, BytesCnt As Long) As Byte()
+Public Function GetHeaderFromFile(filename As String, BytesCnt As Long) As Byte()
     On Error GoTo ErrorHandler
     
     Dim ff As Long
     Dim Size As Currency
     Dim Data() As Byte
     
-    OpenW FileName, FOR_READ, ff, g_FileBackupFlag
+    OpenW filename, FOR_READ, ff, g_FileBackupFlag
     If ff < 1 Then Exit Function
     
     Size = LOFW(ff)
@@ -297,17 +297,17 @@ Public Function GetHeaderFromFile(FileName As String, BytesCnt As Long) As Byte(
     GetHeaderFromFile = Data
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "Parser.GetHeaderFromFile", "File:", FileName
+    ErrorMsg Err, "Parser.GetHeaderFromFile", "File:", filename
     If ff <> 0 Then CloseW ff: ff = 0
 End Function
 
-Private Function isFileFilledByNUL(FileName As String) As Boolean
+Private Function isFileFilledByNUL(filename As String) As Boolean
     On Error GoTo ErrorHandler
     
     Dim Data As String
     Dim i As Long
     
-    Data = ReadFileContents(FileName, False)
+    Data = ReadFileContents(filename, False)
     
     isFileFilledByNUL = True
     
@@ -316,7 +316,7 @@ Private Function isFileFilledByNUL(FileName As String) As Boolean
     Next
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "Parser.isFileFilledByNUL", "File:", FileName
+    ErrorMsg Err, "Parser.isFileFilledByNUL", "File:", filename
 End Function
 
 ' Инициализация интерфейса IShellLink
@@ -438,7 +438,7 @@ ErrorHandler:
 End Function
 
 ' Раскрытие цели и аргумента ярлыков PIF
-Public Function GetPIF_target(FileName As String, Target As String, Argument As String) As Boolean
+Public Function GetPIF_target(filename As String, Target As String, Argument As String) As Boolean
     'thanks to Sergey Merzlikin  ( http://www.smsoft.ru/ru/pifdoc.htm )
     
     ' offset 0x24 (длина: 63 байта) - цель
@@ -458,7 +458,7 @@ Public Function GetPIF_target(FileName As String, Target As String, Argument As 
     pif_Target = String$(63&, vbNullChar)
     pif_Arg = String$(64&, vbNullChar)
   
-    If Not OpenW(FileName, FOR_READ, ff, g_FileBackupFlag) Then Exit Function
+    If Not OpenW(filename, FOR_READ, ff, g_FileBackupFlag) Then Exit Function
     FLen = LOFW(ff)
     
     If FLen >= &H187& Then    '  NT / 2000
@@ -496,7 +496,7 @@ Public Function GetPIF_target(FileName As String, Target As String, Argument As 
     Argument = pif_Arg
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "Parser.GetPIF_target", "File:", FileName
+    ErrorMsg Err, "Parser.GetPIF_target", "File:", filename
     If inIDE Then Stop: Resume Next
 End Function
 
@@ -604,7 +604,7 @@ Public Function CreateHJTShortcuts(HJT_Location As String) As Boolean
     Dim bSuccess As Boolean
     Dim hFile As Long
     bSuccess = True
-    bSuccess = bSuccess And MkDirW(BuildPath(StartMenuPrograms, "HijackThis+"), , True)
+    bSuccess = bSuccess And MkDirW(BuildPath(StartMenuPrograms, "HiJackThis+"), , True)
     bSuccess = bSuccess And MkDirW(BuildPath(StartMenuPrograms, "HiJackThis+\Tools"), , True)
     bSuccess = bSuccess And MkDirW(BuildPath(StartMenuPrograms, "HiJackThis+\Plugins"), , True)
     
@@ -623,7 +623,7 @@ Public Function CreateHJTShortcuts(HJT_Location As String) As Boolean
     bSuccess = bSuccess And CreateShortcut(BuildPath(StartMenuPrograms, "HiJackThis+\Plugins\ClearLNK.lnk"), HJT_Location, "/tool+ClearLNK", , , "LNK / URL Shortcuts cleaner & restorer")
     
     'Users manual url shortcut
-    If IsRussianLangCode(OSver.LangSystemCode) Or IsRussianLangCode(OSver.LangDisplayCode) Then
+    If IsRussianAreaLangCode(OSver.LangSystemCode) Or IsRussianAreaLangCode(OSver.LangDisplayCode) Then
     
         If OpenW(BuildPath(StartMenuPrograms, "HiJackThis+\" & LoadResString(607) & ".url"), FOR_OVERWRITE_CREATE, hFile) Then
             PrintLineW hFile, "[InternetShortcut]", False
@@ -636,9 +636,9 @@ Public Function CreateHJTShortcuts(HJT_Location As String) As Boolean
             CloseW hFile
         End If
     Else
-        If OpenW(BuildPath(StartMenuPrograms, "HiJackThis+\Users manual (short).url"), FOR_OVERWRITE_CREATE, hFile) Then
+        If OpenW(BuildPath(StartMenuPrograms, "HiJackThis+\Users manual.url"), FOR_OVERWRITE_CREATE, hFile) Then
             PrintLineW hFile, "[InternetShortcut]", False
-            PrintLineW hFile, "URL=https://dragokas.com/tools/help/hjt_tutorial.html", False
+            PrintLineW hFile, "URL=" & GetTutorialURL(), False
             CloseW hFile
         End If
     End If
@@ -646,14 +646,14 @@ Public Function CreateHJTShortcuts(HJT_Location As String) As Boolean
 End Function
 
 Public Function CreateHJTShortcutDesktop(HJT_Location As String) As Boolean
-    CreateHJTShortcutDesktop = CreateShortcut(BuildPath(Desktop, "HijackThis+.lnk"), HJT_Location)
+    CreateHJTShortcutDesktop = CreateShortcut(BuildPath(Desktop, "HiJackThis+.lnk"), HJT_Location)
 End Function
 
 Public Sub RemoveHJTShortcuts()
     Call DeleteFolderForce(BuildPath(StartMenuPrograms, "HiJackThis Fork"))
-    Call DeleteFolderForce(BuildPath(StartMenuPrograms, "HijackThis+"))
+    Call DeleteFolderForce(BuildPath(StartMenuPrograms, "HiJackThis+"))
     Call DeleteFileW(StrPtr(BuildPath(Desktop, "HiJackThis Fork.lnk")))
-    Call DeleteFileW(StrPtr(BuildPath(Desktop, "HijackThis+.lnk")))
+    Call DeleteFileW(StrPtr(BuildPath(Desktop, "HiJackThis+.lnk")))
 End Sub
 
 Public Function CreateShortcut( _

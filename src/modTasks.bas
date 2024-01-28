@@ -236,7 +236,7 @@ Public Function CreateTask(TaskName As String, FullPath As String, Arguments As 
             Set pActionCollection = pTask.Actions
             Set pAction = pActionCollection.Create(TASK_ACTION_EXEC)
             Set pExecAction = pAction
-            pExecAction.Path = FullPath
+            pExecAction.path = FullPath
             pExecAction.Arguments = Arguments
             pExecAction.WorkingDirectory = GetParentDir(FullPath)
             Set pAction = Nothing
@@ -737,13 +737,15 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
                     bTelemetry = True
                 ElseIf StrComp(sRunFilename, "OLicenseHeartbeat.exe", 1) = 0 Then
                     bTelemetry = True
-                ElseIf StrComp(DirXml, "\Microsoft\Windows\IME\SQM data sender", 1) = 0 Then
-                    bTelemetry = True
                 ElseIf StrComp(sRunFilename, "NvTmRep.exe", 1) = 0 Then
                     bTelemetry = True
                 ElseIf StrComp(sRunFilename, "NvTmMon.exe", 1) = 0 Then
                     bTelemetry = True
                 ElseIf StrComp(sRunFilename, "PLUGscheduler.exe", 1) = 0 Then
+                    bTelemetry = True
+                ElseIf StrComp(sRunFilename, "operfmon.exe", 1) = 0 Then
+                    bTelemetry = True
+                ElseIf StrComp(DirXml, "\Microsoft\Windows\IME\SQM data sender", 1) = 0 Then
                     bTelemetry = True
                 End If
                 

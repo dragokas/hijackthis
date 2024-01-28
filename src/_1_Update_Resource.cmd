@@ -115,12 +115,14 @@ For /L %%C in (1 1 %ResCnt%) do (
 :: Adding string table
 call :GetFileSha1 "tools\PCRE2\pcre2-16.dll" ShaPCRE
 call :GetFileSha1 "apps\abr.exe" ShaABR
+call :GetFileSha1 "apps\VBCCR17.OCX" ShaOCX
 set StrN=0
 set Label=STRINGS
 for /f "delims=[]" %%a in ('^< "%~f0" find /n ":%Label%"') do set StrN=%%a
 if "%StrN%" neq "0" more /E +%StrN% < "%~f0" >> 1.RC
 echo 700, 	"%ShaPCRE%">> 1.RC
 echo 701, 	"%ShaABR%">> 1.RC
+echo 702, 	"%ShaOCX%">> 1.RC
 echo END>>1.RC
 
 :: preparing multilingual VerInfo section

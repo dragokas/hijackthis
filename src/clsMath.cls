@@ -123,6 +123,14 @@ Public Function HIWORD(dwNum As Long) As Long
     GetMem2 ByVal VarPtr(dwNum) + 2, HIWORD
 End Function
 
+Public Function LOBIT(byteNum As Byte) As Byte
+    LOBIT = byteNum And 1
+End Function
+ 
+Public Function HIBIT(byteNum As Byte) As Byte
+    HIBIT = byteNum And &H80&
+End Function
+
 Public Function Int64ToInt(Int64 As Currency) As Long
     On Error Resume Next
     Int64ToInt = CLng(Int64 * 10000&)

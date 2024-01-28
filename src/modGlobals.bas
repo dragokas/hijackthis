@@ -11,7 +11,7 @@ Public Const LAST_CHECK_OTHER_SECTION_NUMBER As Long = 27
 
 Public Const MAX_TIMEOUT_DEFAULT As Long = 180 'Standard scan timeout
 
-Public Const g_AppName As String = "HijackThis+"
+Public Const g_AppName As String = "HiJackThis+"
 
 Public Const g_Backup_Do_Every_Days As Long = 7
 Public Const g_Backup_Erase_Every_Days As Long = 28
@@ -31,9 +31,10 @@ Public Const STR_NOT_SIGNED     As String = "(not signed)"
 Public Const STR_INVALID_SIGN   As String = "invalid sign"
 Public Const STR_NO_FIX         As String = "(no fix)"
 Public Const STR_NO_COMPANY     As String = "no company"
+Public Const STR_OBFUSCATED     As String = "(obfuscated)"
 
 #If False Then 'for common var. names character case fixation
-    Public x, y, Length, Index, sFilename, i, j, k, N, State, frm, ret, VT, isInit, hWnd, pv, Reg, pid, File, msg, VT, InArray, Self, status, FileName
+    Public x, y, Length, Index, sFilename, i, j, k, N, State, frm, ret, VT, isInit, hWnd, pv, Reg, pid, File, msg, VT, InArray, Self, status, filename
     Public mid, SID
 #End If
 
@@ -361,6 +362,7 @@ Public bForceEN As Boolean
 Public bForceUA As Boolean
 Public bForceFR As Boolean
 Public bForceSP As Boolean
+Public bForceLang As Boolean
 
 Public SysDisk          As String 'c:
 Public sWinDir          As String 'c:\windows
@@ -441,10 +443,51 @@ Public bGlobalDontFocusListBox As Boolean
 Public g_UninstallState     As Boolean  'HJT is beeing uninstalled
 Public g_ProgressMaxTags    As Long     'last progressbar tag number (count of items)
 Public g_HJT_Items_Count    As Long
-Public g_CurrentLang        As String
+Public g_CurrentLangEnum    As LangEnum
 Public g_CurrentLangID      As Long
 Public CryptVer             As Long
 Public g_sLastSearch        As String
+
+Public Enum ID_SECTION
+    ID_SECTION_B
+    ID_SECTION_R
+    ID_SECTION_F
+    ID_SECTION_O1
+    ID_SECTION_O2
+    ID_SECTION_O3
+    ID_SECTION_O4
+    ID_SECTION_O5
+    ID_SECTION_O6
+    ID_SECTION_O7
+    ID_SECTION_O8
+    ID_SECTION_O9
+    ID_SECTION_O10
+    ID_SECTION_O11
+    ID_SECTION_O12
+    ID_SECTION_O13
+    ID_SECTION_O14
+    ID_SECTION_O15
+    ID_SECTION_O16
+    ID_SECTION_O17
+    ID_SECTION_O18
+    ID_SECTION_O19
+    ID_SECTION_O20
+    ID_SECTION_O21
+    ID_SECTION_O22
+    ID_SECTION_O23
+    ID_SECTION_O24
+    ID_SECTION_O25
+    ID_SECTION_O26
+    ID_SECTION_O27
+    ID_SECTION_MAX
+End Enum
+
+Private Type SCAN_FILTER
+    DoExclude As Boolean
+    DoInclude As Boolean
+    Exclusion(ID_SECTION_MAX) As Boolean
+    Inclusion(ID_SECTION_MAX) As Boolean
+End Type
 
 Public ErrLogCustomText As clsStringBuilder
 Public bDebugMode   As Boolean
@@ -453,6 +496,7 @@ Public bScanMode    As Boolean
 Public g_hDebugLog  As Long
 Public g_hLog       As Long
 Public g_LogLocked  As Boolean
+Public g_ScanFilter As SCAN_FILTER
 
 Public Const SID_TEMPLATE As String = "S-{Template}"
 
@@ -538,7 +582,7 @@ End Type
 
 Public Type FILE_NAME_INFORMATION
     FileNameLength As Long
-    FileName(MAX_PATH) As Integer 'WCHAR FileName[1] 'MAX_PATH + NUL
+    filename(MAX_PATH) As Integer 'WCHAR FileName[1] 'MAX_PATH + NUL
 End Type
 
 Public Type MOUNTMGR_BUFER
@@ -952,7 +996,7 @@ Public Declare Function EmptyArray Lib "oleaut32.dll" Alias "SafeArrayCreateVect
 Public Declare Function EmptyByteArray Lib "oleaut32.dll" Alias "SafeArrayCreateVector" (Optional ByVal VT As VbVarType = vbByte, Optional ByVal lLow As Long = 0, Optional ByVal lCount As Long = 0) As Byte()
 Public Declare Function NtCreateFile Lib "ntdll.dll" (ByRef FileHandle As Long, ByVal DesiredAccess As Long, ObjectAttributes As OBJECT_ATTRIBUTES, IoStatusBlock As IO_STATUS_BLOCK, AllocationSize As Any, ByVal FileAttributes As Long, ByVal ShareAccess As Long, ByVal CreateDisposition As Long, ByVal CreateOptions As Long, EaBuffer As Any, ByVal EaLength As Long) As Long
 Public Declare Function NtWriteFile Lib "ntdll.dll" (ByVal FileHandle As Long, EventArg As Any, APCRoutine As Long, APCContext As Any, IoStatusBlock As IO_STATUS_BLOCK, ByVal Buffer As Long, ByVal Length As Long, ByteOffset As Long, Key As Long) As Long
-Public Declare Function OpenFile Lib "kernel32.dll" (ByVal FileName As String, ByVal OFs As Long, ByVal Flags As Long) As Long
+Public Declare Function OpenFile Lib "kernel32.dll" (ByVal filename As String, ByVal OFs As Long, ByVal Flags As Long) As Long
 Public Declare Function RtlDosPathNameToNtPathName_U Lib "ntdll.dll" (ByVal DosFileName As Long, NtFileName As UNICODE_STRING, FilePart As Long, RelativeName As Any) As Long
 Public Declare Sub RtlInitUnicodeString Lib "ntdll.dll" (DestinationString As Any, ByVal sourceString As Long)
 Public Declare Sub RtlFreeUnicodeString Lib "ntdll.dll" (UnicodeString As UNICODE_STRING)
@@ -2345,6 +2389,7 @@ Public Declare Function CallNextHookEx Lib "user32.dll" (ByVal hhk As Long, ByVa
 Public Declare Function UnhookWindowsHookEx Lib "user32.dll" (ByVal hhk As Long) As Long
 Public Declare Function GetClientRect Lib "user32.dll" (ByVal hWnd As Long, lpRect As RECT) As Long
 Public Declare Function GetAsyncKeyState Lib "user32.dll" (ByVal vKey As Long) As Integer
+Public Declare Function GetKeyboardState Lib "user32.dll" (lpKeyState As Any) As Long
 
 Public Const GWL_STYLE As Long = -16&
 
@@ -2489,6 +2534,7 @@ Private Type STRING_CONSTANTS 'to support DBCS
     RU_PC               As String
     SHA1_PCRE2          As String
     SHA1_ABR            As String
+    SHA1_OCX            As String
     WINDOWS_DEFENDER    As String
     VIRUSTOTAL          As String
     AUTORUNS            As String

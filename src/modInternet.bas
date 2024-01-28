@@ -192,13 +192,12 @@ Public Sub CheckForUpdate(bSilentIfNoUpdates As Boolean, bSilentReplace As Boole
     'bSilentReplace - true, to replace exe file in automatic mode.
     'bUseTestVersion - true, to use test (nightly) build.
     
-    Dim sThisVersion$, sNewVersion$, sUpdateUrl$, bNoConnection As Boolean
+    Dim sThisVersion$, sNewVersion$, sUpdateUrl$, bNoConnection As Boolean, bUsesHttp As Boolean
+    Dim lReturnCode As Long, sErrorMsg As String, bRet As Boolean, sVersionURL As String
     
     RegSaveProxySettings
     
     sThisVersion = AppVerString
-    
-    Dim lReturnCode As Long, sErrorMsg As String, bRet As Boolean, sVersionURL As String
     
     'sNewVersion = GetUrl("https://github.com/dragokas/hijackthis/raw/devel/src/HiJackThis-update.txt")
     'sNewVersion = GetUrl("https://raw.githubusercontent.com/dragokas/hijackthis/devel/src/HiJackThis-update.txt")
@@ -218,18 +217,35 @@ Public Sub CheckForUpdate(bSilentIfNoUpdates As Boolean, bSilentReplace As Boole
     Dbg "Update URL content: " & sNewVersion
     
     If (Not bRet) Or (Not IsVersion(sNewVersion)) Then
-    
-        bNoConnection = True
         
-        If Not bSilentIfNoUpdates Then
-            'Unable to connect to the Internet. Do you want to open download page?
-            If MsgBoxW(Translate(1005) & vbCrLf & _
-                "(Code: " & lReturnCode & ", msg: " & sErrorMsg & ")" & vbCrLf & vbCrLf & _
-                Translate(1015), vbYesNo Or vbExclamation, g_AppName) = vbNo Then
-                    Exit Sub
+        'Retry with http
+        sVersionURL = Replace$(sVersionURL, "https", "http", 1, 1, 1)
+        
+        Dbg "Query update URL: " & sVersionURL
+    
+        bRet = GetUrl2_Str(sVersionURL, sNewVersion, lReturnCode, sErrorMsg)
+    
+        Dbg "Update URL returned: " & bRet & " (Code: " & lReturnCode & " , ErrMsg: " & sErrorMsg & ")"
+        Dbg "Update URL content: " & sNewVersion
+        
+        If (Not bRet) Or (Not IsVersion(sNewVersion)) Then
+        
+            bNoConnection = True
+            
+            If Not bSilentIfNoUpdates Then
+                'Unable to connect to the Internet. Do you want to open download page?
+                If MsgBoxW(Translate(1005) & vbCrLf & _
+                    "(Code: " & lReturnCode & ", msg: " & sErrorMsg & ")" & vbCrLf & vbCrLf & _
+                    Translate(1015), vbYesNo Or vbExclamation, g_AppName) = vbNo Then
+                        Exit Sub
+                End If
             End If
+        Else
+            bUsesHttp = True
         End If
-    Else
+    End If
+    
+    If Not bNoConnection Then
         Dbg "Current version is (Long): " & ConvertVersionToNumber(sThisVersion)
         Dbg " Latest version is (Long): " & ConvertVersionToNumber(sNewVersion)
     
@@ -257,9 +273,9 @@ Public Sub CheckForUpdate(bSilentIfNoUpdates As Boolean, bSilentReplace As Boole
     End If
     
     If bUseTestVersion Then
-        sUpdateUrl = "https://dragokas.com/tools/" & Caes_Decode("IlOhlvawzLtQDTW.aR[") 'HiJackThis_test.zip
+        sUpdateUrl = IIf(bUsesHttp, "http", "https") & "://dragokas.com/tools/" & Caes_Decode("IlOhlvawzLtQDTW.aR[") 'HiJackThis_test.zip
     Else
-        sUpdateUrl = "https://dragokas.com/tools/" & Caes_Decode("IlOhlvawzL.WHQ") 'HiJackThis.zip"
+        sUpdateUrl = IIf(bUsesHttp, "http", "https") & "://dragokas.com/tools/" & Caes_Decode("IlOhlvawzL.WHQ") 'HiJackThis.zip"
     End If
     
     Dbg "Query ZIP update URL: " & sUpdateUrl
@@ -714,26 +730,19 @@ ErrorHandler:
 End Function
 
 Public Function OpenURL(sEnglishURL As String, Optional sRussianURL As String, Optional bCheckLangByCurrentSelected As Boolean = False) As Boolean
-    'by default, language has checked by OS interface
+    
     Dim szUrl As String
-    Dim szDefault As String
     
-    szDefault = sEnglishURL
-    
-    If bCheckLangByCurrentSelected Then
-        If g_CurrentLang = "Russian" Then
+    If Len(sRussianURL) <> 0 Then
+        Dim id As LangEnum
+        id = GetPreferredLangId_ForURL(bCheckLangByCurrentSelected)
+        
+        If id = Lang_Russian Or id = Lang_Ukrainian Then
             szUrl = sRussianURL
-        Else
-            szUrl = sEnglishURL
         End If
-    
-    ElseIf (IsRussianLangCode(OSver.LangSystemCode) Or IsRussianLangCode(OSver.LangDisplayCode)) And Not (bForceEN Or bForceFR) Then
-        szUrl = sRussianURL
-    Else
-        szUrl = sEnglishURL
     End If
     
-    If Len(szUrl) = 0 Then szUrl = szDefault
+    If Len(szUrl) = 0 Then szUrl = sEnglishURL
     
     If StrBeginWith(szUrl, "https") And OSver.MajorMinor <= 5.2 Then
         szUrl = Replace$(szUrl, "https", "http", 1, 1, 1)
@@ -745,7 +754,7 @@ End Function
 
 Public Function DownloadUnzipAndRun( _
     ZipURL As String, _
-    FileName As String, _
+    filename As String, _
     bSilent As Boolean, _
     Optional bCheckDragoSign As Boolean) As Boolean
     
@@ -755,11 +764,11 @@ Public Function DownloadUnzipAndRun( _
     Dim sToolsDir As String
     
     ArcPath = GetEmptyName(BuildPath(TempCU, GetFileName(Replace$(ZipURL, "/", "\"), True)))
-    ExePath = BuildPath(GetToolsDir(), FileName)
+    ExePath = BuildPath(GetToolsDir(), filename)
     
     If Not bSilent Then
         'Download the program via Internet?
-        If MsgBoxW(Translate(1024), vbYesNo Or vbQuestion, GetFileName(FileName)) = vbNo Then Exit Function
+        If MsgBoxW(Translate(1024), vbYesNo Or vbQuestion, GetFileName(filename)) = vbNo Then Exit Function
     End If
     
     If DownloadFile(ZipURL, ArcPath, True) Or FileExists(ArcPath) Then
@@ -769,7 +778,7 @@ Public Function DownloadUnzipAndRun( _
         DeleteFileEx ArcPath
         'Downloading is completed. Run the program?
         If Not bSilent Then
-            bRun = MsgBoxW(Translate(1026), vbYesNo, GetFileName(FileName)) = vbYes
+            bRun = MsgBoxW(Translate(1026), vbYesNo, GetFileName(filename)) = vbYes
         End If
         If bRun Or bSilent Then
             If bCheckDragoSign Then
@@ -846,8 +855,7 @@ Public Function DownloadAndUpdateSelf(ZipURL As String, bSilent As Boolean) As B
                     'if failed, use cmd.exe method
                     
                     'until we have better code ^^
-                    MoveFileEx StrPtr(AppPath & "\VBCCR17.OCX"), StrPtr(AppPath & "\VBCCR17.OCX.bak"), MOVEFILE_REPLACE_EXISTING
-                    MoveFileEx StrPtr(AppPath & "\apps\VBCCR17.OCX"), StrPtr(AppPath & "\apps\VBCCR17.OCX.bak"), MOVEFILE_REPLACE_EXISTING
+                    'MoveFileEx StrPtr(AppPath & "\apps\VBCCR17.OCX"), StrPtr(AppPath & "\apps\VBCCR17.OCX.bak"), MOVEFILE_REPLACE_EXISTING
                     
                     CopyFolderContents sUnpackDir, AppPath
                     
@@ -866,8 +874,7 @@ Public Function DownloadAndUpdateSelf(ZipURL As String, bSilent As Boolean) As B
                     'move new
                     If 0 <> MoveFile(StrPtr(ExePath), StrPtr(AppPath(True))) Then
                         
-                        MoveFileEx StrPtr(AppPath & "\VBCCR17.OCX"), StrPtr(AppPath & "\VBCCR17.OCX.bak"), MOVEFILE_REPLACE_EXISTING
-                        MoveFileEx StrPtr(AppPath & "\apps\VBCCR17.OCX"), StrPtr(AppPath & "\apps\VBCCR17.OCX.bak"), MOVEFILE_REPLACE_EXISTING
+                        'MoveFileEx StrPtr(AppPath & "\apps\VBCCR17.OCX"), StrPtr(AppPath & "\apps\VBCCR17.OCX.bak"), MOVEFILE_REPLACE_EXISTING
                         
                         CopyFolderContents sUnpackDir, AppPath
                         

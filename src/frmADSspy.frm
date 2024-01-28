@@ -1046,7 +1046,7 @@ Private Sub mnuPopupSave_Click()
     
     'Header
     sList.Append ChrW$(-257)
-    sList.AppendLine "Logfile of ADS Spy v." & ADSspyVer & " (HijackThis+ v." & AppVerString & ")"
+    sList.AppendLine "Logfile of ADS Spy v." & ADSspyVer & " (HiJackThis+ v." & AppVerString & ")"
     sList.AppendLine
     sList.Append MakeLogHeader()
     sList.AppendLine

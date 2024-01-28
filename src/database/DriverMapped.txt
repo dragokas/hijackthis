@@ -20,4 +20,5 @@
 %SystemRoot%\System32\Drivers\dump_iaStorAC.sys
 %SystemRoot%\System32\Drivers\dump_iaStorVD.sys
 %SystemRoot%\System32\Drivers\dump_iaStor.sys
+%SystemRoot%\System32\Drivers\dump_iaStorE.sys
 %SystemRoot%\System32\Drivers\dump_nvstor.sys

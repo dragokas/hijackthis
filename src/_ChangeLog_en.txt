@@ -11,6 +11,22 @@ Version history:
 |||||       1. HiJackThis: changelog         |||||
 ==================================================
 
+[3.4.0.1 Alpha] - Jan 01, 2024
+ - Fixed a vulnerability in the buffer overflow of the scan results list.
+ - Fixed a critical error in the HiJackThis backup restoration function:
+	* It is not recommended to use the "Restore" button for backups in versions 3.3.0.5 - 3.3.0.11 without updating to this version, as it may destroy all other backups;
+	* However, it is safe to revert to backups created by previous versions of HiJackThis.
+ - Compatibility improvements and BCD fix when using registry restoration through Autobackup Registry:
+	* ABR updated to v1.12 (thanks to D.Kuznetsov).
+ - Fixed a crash on right-click on certain items in scan results (thanks to de-served for reporting).
+ - O7 - KnownFolder: (folder missing) false triggering on legal redirection fixed. The redirection fix now also includes creating folder structure (thanks to de-served).
+ - UI behavior fixes for Ctrl + F.
+ - Fixed regression: item not being marked on double-click.
+ - Added escaping www. => vvv.
+ - Improved program update procedure for certificate errors (thanks to regist).
+ - O22, O23 whitelists have been updated.
+ - MS certificates have been updated (thanks to Sandor).
+
 [3.3.0.11 Beta] - Dec 21, 2023
  - O7 - KnownFolder: added checking for physically missing folders.
  - Fixed HijackThis installation error.

@@ -4,15 +4,17 @@
 <PF32>\Common Files\Microsoft Shared\Source Engine\OSE.exe
 <PF32>\Common Files\Microsoft Shared\VS7DEBUG\MDM.exe
 <PF32>\Microsoft Application Virtualization Client\sftvsa.exe
+<PF32>\Microsoft GameInput\x64\gameinputsvc.exe
 <PF32>\Microsoft Office\Office12\GrooveAuditService.exe
 <PF32>\Microsoft Office\Office14\GROOVE.EXE
 <PF32>\Microsoft Visual Studio\Shared\Common\DiagnosticsHub.Collection.Service\StandardCollector.Service.exe
 <PF32>\Microsoft\EdgeUpdate\MicrosoftEdgeUpdate.exe,/svc|/medsvc
 <PF32>\Skype\Updater\Updater.exe
 <PF32>\Windows Kits\8.1\App Certification Kit\fussvc.exe
-<PF64>\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe
+<PF64>\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe,|/service
 <PF64>\Common Files\Microsoft Shared\OFFICE12\ODSERV.EXE
 <PF64>\Common Files\Microsoft Shared\OfficeSoftwareProtectionPlatform\OSPPSVC.exe
+<PF64>\Common Files\Microsoft Shared\Source Engine\OSE.EXE
 <PF64>\Common Files\Microsoft Shared\Windows Live\WLIDSVC.EXE
 <PF64>\Microsoft Office\Office12\GrooveAuditService.exe
 <PF64>\Microsoft Office\Office14\GROOVE.EXE

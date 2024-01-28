@@ -16,16 +16,16 @@
 ;
 ; (1-29, 1000-1089)
 ;
-0001=Bienvenido a HijackThis+
+0001=Bienvenido a HiJackThis+
      Este programa generará un reporte de elementos inusuales
      (archivos, modificacones en registros, etc.) en las areas mas vulnerables del sistema operativo, comúnmente manipulado por malware, así como por buen software
-0002=HijackThis ya se está ejecutando.
+0002=HiJackThis ya se está ejecutando.
      ¿Estás seguro de que deseas lanzar otra copia?
-0004=A continuación se muestran los resultados del escaneo HijackThis.
+0004=A continuación se muestran los resultados del escaneo HiJackThis.
      Tenga cuidado con lo que elimina con el botón 'Corrección marcada'. El escaneo de resultados no ha determinado
      si un artículo es bueno o malo. Si cree que su máquina está infectada, presione el botón 'AnalyzeThis',
      Regístrese, lea las instrucciones, cree los registros necesarios y muéstrelos a nuestros consultores creando un nuevo hilo. 
-0007=Parece que está ejecutando HijackThis desde un dispositivo de solo lectura como un CD-ROM. Si desea hacer copias de seguridad de los elementos que corrige, primero debe copiar HiJackThis.exe en su disco duro y ejecutarlo desde allí.
+0007=Parece que está ejecutando HiJackThis desde un dispositivo de solo lectura como un CD-ROM. Si desea hacer copias de seguridad de los elementos que corrige, primero debe copiar HiJackThis.exe en su disco duro y ejecutarlo desde allí.
      
      Si continúa, puede encontrar errores de 'ruta/acceso a archivo'.
 0008=¡Está prohibido iniciar desde un archivo!
@@ -43,7 +43,7 @@
 0019=Reporte
 0020=Agregar marcados a lista ignorados
 0021=Módulos cargados
-0025=Esto configurará HijackThis para ignorar los elementos marcados, a menos que cambien. ¿Continuar?
+0025=Esto configurará HiJackThis para ignorar los elementos marcados, a menos que cambien. ¿Continuar?
 0026=Se denegó el acceso de escritura a la ubicación que especificó. Por favor, intente una ubicación diferente.
 0027=El archivo de registro se ha guardado en [].
      Puede abrirlo en un editor de texto como el Bloc de notas.
@@ -70,14 +70,14 @@
 1020=Número
 1021=Ruta
 1022=No se pudo crear la carpeta '[]'. Por favor verifique que los permisos de escritura estén habilitado para esta ubicación.
-1023=¡Advertencia! La integridad de esta instancia de HijackThis está dañada.
+1023=¡Advertencia! La integridad de esta instancia de HiJackThis está dañada.
      Quizás el archivo haya sido parcheado o infectado por un virus.
      Se recomienda descargar el programa nuevamente desde la fuente oficial: https://github.com/dragokas/hijackthis
      Si este error se repite, verifique su PC usando un disco de arranque o LiveCD, por ejemplo: 
 1024=¿Descargar el programa a través de Internet?
 1025=¡Ocurrió un error durante la descarga!
 1026=Descarga completa. ¿Ejecutar el programa?
-1027=!!! HijackThis se cerró debido a que se superó el tiempo de espera máximo permitido: [] seg. !!! ¡El archivo del informe estará incompleto!
+1027=!!! HiJackThis se cerró debido a que se superó el tiempo de espera máximo permitido: [] seg. !!! ¡El archivo del informe estará incompleto!
      Reinicie el programa manualmente (no a través de Autologger).
 1028=¿Quiere cerrar el programa y actualizarlo?
 1030=Procesos
@@ -109,10 +109,10 @@
 ;
 ; (1090-1099)
 ;
-1090=Bienvenido a HijackThis+
-1091=    HijackThis+ Esta es una herramienta gratuita y de código abierto diseñada para combatir el malware y el adware no deseado. 
+1090=Bienvenido a HiJackThis+
+1091=    HiJackThis+ Esta es una herramienta gratuita y de código abierto diseñada para combatir el malware y el adware no deseado. 
          Debe leer y aceptar el acuerdo de licencia para continuar:
-1092=HijackThis - Acuerdo de licencia
+1092=HiJackThis - Acuerdo de licencia
 1093=Acepto
 1094=NO ACEPTO
 1095=El programa proporciona "COMO ES" sin garantía de ningún tipo. Ustede debe utilizar este software bajo su propia responsabilidad.
@@ -184,7 +184,7 @@
 ;
 1200=Archivo
 1201=Configuraciones
-1202=Desinstalar HijackThis+
+1202=Desinstalar HiJackThis+
 1203=Salir
 1204=Herramientas
 1205=Administrador de procesos
@@ -200,8 +200,8 @@
 1215=Ayuda
 1216=Manual del usuario
 1217=Inglés (corto)
-1218=Ruso (completo)
-1219=Francés [desactualizado]
+1218=Ruso
+1219=Francés
 1220=Alemán [desactualizado]
 1221=Español [desactualizado]
 1222=Portugués [desactualizado]
@@ -216,7 +216,7 @@
 1231=Servicios
 1232=StartupList
 1233=Manual básico
-1235=Instalar HijackThis+
+1235=Instalar HiJackThis+
 1236=Atajos
 1237=Verifique los accesos directos a través de Check Browsers' LNK
 1238=Corregir accesos directos a través de ClearLNK
@@ -253,7 +253,7 @@
          O4 - Entradas de registro de carga automática y carpeta de inicio automático / elementos deshabilitados (MSConfig, StartupApproved)
          O5 - Ocultar elementos del panel de control
          O6 - Políticas de IE: Desactivación de la pestaña principal 'Opciones de Internet'
-         O7 - Políticas: Regedit, Explorer, TaskMgr / Seguridad IP / Certificados / Solución de problemas del sistema operativo
+         O7 - Políticas: Regedit, Explorer, TaskMgr / Seguridad IP / Certificados / Solución de problemas del sistema operativo / KnownFolder
          O8 - Internet Explorer: elementos adicionales del menú contextual
          O9 - Internet Explorer: botones y servicios adicionales
          O10 - Interrupción del acceso a Internet debido al daño o infección en Winsock LSP
@@ -278,13 +278,13 @@
      Teclas de línea de comandos:
      --------------------------------
 
-     1. HijackThis+
+     1. HiJackThis+
      2. StartupList
      3. ¿Cómo usar?
 
      
      
-     1. HijackThis+
+     1. HiJackThis+
      ---------------
      
        /accepteula 	- acepta el acuerdo. No se mostrará cuando se inicie el programa.
@@ -305,14 +305,14 @@
        /md5		- calcular el hash MD5 de archivos.
        /sha1		- calcula el hash SHA1 de los archivos.
        /sha256		- calcula el hash SHA256 de archivos.
-       /timeout:sec	- número de segundos permitidos para que HijackThis se ejecute en modo /silentautolog mode (180 por defecto; 0 - para deshabilitar).
-       /install     	- instala HijackThis en la carpeta 'Archivos de programa' y crea accesos directos.
+       /timeout:sec	- número de segundos permitidos para que HiJackThis se ejecute en modo /silentautolog mode (180 por defecto; 0 - para deshabilitar).
+       /install     	- instala HiJackThis en la carpeta 'Archivos de programa' y crea accesos directos.
        /instDir:"PATH" 	- ruta de instalación alternativa para HJT (por defecto: "%ProgramFiles(x86)%\HiJackThis Fork").
        /noShortcuts 	- deshabilita la creación de accesos directos durante la instalación de HJT a través de /install
-       /autostart   	- configura Windows para que ejecute automáticamente un escaneo HijackThis después del inicio del (usar con clave /install).
+       /autostart   	- configura Windows para que ejecute automáticamente un escaneo HiJackThis después del inicio del (usar con clave /install).
        /install /autostart d:X - instala HJT en el programador de tareas para que se ejecute automáticamente con X seg. demora.
        /! 		- detener el análisis de las teclas de la línea de comandos. Todo lo que se encuentra después de esta clave se considera como claves para la ejecución automática de HJT (en lugar del valor predeterminado /startupscan).
-       /uninstall	- elimine todas las entradas y copias de seguridad del Registro HijackThis, luego salga.
+       /uninstall	- elimine todas las entradas y copias de seguridad del Registro HiJackThis, luego salga.
        /silentuninstall 	- /uninstall analogo, excepto que deshabilita las solicitudes de confirmación.
        /deleteonreboot "c:\file.sys" - elimina el archivo especificado después de reiniciar el sistema mediante el mecanismo PendingFileRenameOperations.
        /noBackup 	- deshabilita la creación de copias de seguridad durante la corrección.
@@ -363,12 +363,12 @@
      Descripcion
      -------------
      
-          HijackThis+ escanea su computadora en busca de configuraciones modificadas por adware, spyware, malware y otros programas no deseados.
+          HiJackThis+ escanea su computadora en busca de configuraciones modificadas por adware, spyware, malware y otros programas no deseados.
           
-          Los resultados de HijackThis+ no se basan en listas negras, programas específicos o URL. En cambio, se basan en métodos y técnicas comunes utilizados por los secuestradores.
+          Los resultados de HiJackThis+ no se basan en listas negras, programas específicos o URL. En cambio, se basan en métodos y técnicas comunes utilizados por los secuestradores.
           Por lo tanto, ES POSIBLE QUE SEAN FALSOS POSITIVOS. Si alguna vez no está seguro, debe consultar con un experto con conocimientos ANTES de eliminar cualquier cosa.
      
-          HijackThis viene con varias herramientas útiles disponibles en el botón 'Herramientas varias', y la nueva barra en el menú 'Herramientas':
+          HiJackThis viene con varias herramientas útiles disponibles en el botón 'Herramientas varias', y la nueva barra en el menú 'Herramientas':
      
        - StartupList 2
        - Gestor de procesos
@@ -420,7 +420,7 @@
      
      Desarrollos de Terceros:
 
-     HijackThis utiliza fragmentos de código y desarrollos de terceros escritos por:
+     HiJackThis utiliza fragmentos de código y desarrollos de terceros escritos por:
      
      - Anatolii Krivous { The Trick } - Clases 'HashTable', 'Binary Stream', Modulos 'UnregCOM', 'EXE loader', matemáticas de desplazamiento bit a bit, TrickControls
      - Boris Fayfel { Catstail } - Clases 'Process' and 'CRC32'
@@ -436,7 +436,7 @@
 
      Licencia
      -------------
-     HijackThis+ es una modificación del programa HijackThis original de Trend Micro. Está hecho por Alex Dragokas y el equipo de SafeZone.cc, y distribuido como código abierto bajo su licencia GPLv2 original. También incluye varios complementos disponibles como herramientas gratuitas.
+     HiJackThis+ es una modificación del programa HiJackThis original de Trend Micro. Está hecho por Alex Dragokas y el equipo de SafeZone.cc, y distribuido como código abierto bajo su licencia GPLv2 original. También incluye varios complementos disponibles como herramientas gratuitas.
 0035=Secciones
 0036=Llaves
 0037=Propósito
@@ -461,16 +461,16 @@
 0051=Hacer copias de seguridad antes de arreglar elementos
 0052=Confirmar reparación && ignorando elementos (modo seguro)
 0053=Ignorar dominios no estándar pero seguros en IE (Ejemplo msn.com, microsoft.com)
-0054=Esto puede ser útil al agregar HijackThis al inicio
+0054=Esto puede ser útil al agregar HiJackThis al inicio
 0055=No muestra el menú principal al inicio
 0057=¿Está seguro de que desea habilitar esta opción?
-     HijackThis no es un programa de "hacer clic y arreglar". Debido a que se dirige a métodos de Hijacking *generales*, los falsos positivos son una ocurrencia frecuente.
+     HiJackThis no es un programa de "hacer clic y arreglar". Debido a que se dirige a métodos de Hijacking *generales*, los falsos positivos son una ocurrencia frecuente.
      Si habilita esta opción, puede deshabilitar los programas o controladores que necesita. Sin embargo, es muy poco probable que rompa su sistema sin posibilidad de reparación. ¡Por lo tanto, solo debe habilitar esta opción si sabe lo que está haciendo!
 0058=No mostrar mensajes de error
 0059=Minimice el programa a la bandeja del sistema haciendo click en el botón _
 0063=Asistente de búsqueda predeterminado:
 0065=¡Lo siento! Aun no implementado.
-0066=Esto instalará HijackThis en la carpeta 'Archivos de programa' y configurará Windows para que ejecute un escaneo automáticamente después del inicio del sistema.
+0066=Esto instalará HiJackThis en la carpeta 'Archivos de programa' y configurará Windows para que ejecute un escaneo automáticamente después del inicio del sistema.
 
      ¿Continuar?
 
@@ -479,11 +479,11 @@
 0067=Se requiere el servicio de programador de tareas para esta acción. ¿Desea ejecutarlo ahora y configurarlo para que se inicie automáticamente al iniciar el sistema?
 0068=¡Error! No se pudo iniciar el servicio del programador de tareas.
 0069=Instalación completa. ¿Quieres crear un acceso directo en el escritorio?
-1400=Agregar HijackThis al inicio
-1401=Ejecuta el modo silencioso HijackThis escanea al inicio de Windows y muestra los resultados solo si se encuentra algo
-1402=Esta versión de HijackThis es más nueva que la instalada.
+1400=Agregar HiJackThis al inicio
+1401=Ejecuta el modo silencioso HiJackThis escanea al inicio de Windows y muestra los resultados solo si se encuentra algo
+1402=Esta versión de HiJackThis es más nueva que la instalada.
      ¿Actualizar?
-1403=Para mejorar la velocidad de carga del sistema, recomendamos establecer un retraso antes de iniciar HijackThis después del inicio de sesión del usuario.
+1403=Para mejorar la velocidad de carga del sistema, recomendamos establecer un retraso antes de iniciar HiJackThis después del inicio de sesión del usuario.
      Especifique el retraso (en segundos):
 ;
 ; ============= IgnoreList ============
@@ -500,7 +500,7 @@
 ;
 ; (80-89, 1550 - 1599)
 ;
-0080=Esta es su lista de elementos de los que se realizó una copia de seguridad. Puede restaurarlos (haciendo que HijackThis los vuelva a detectar a menos que los coloque en la lista de ignorados) o eliminarlos de aquí. (¡Los programas antivirus pueden detectar copias de seguridad de HijackThis!)
+0080=Esta es su lista de elementos de los que se realizó una copia de seguridad. Puede restaurarlos (haciendo que HiJackThis los vuelva a detectar a menos que los coloque en la lista de ignorados) o eliminarlos de aquí. (¡Los programas antivirus pueden detectar copias de seguridad de HiJackThis!)
 0081=Restaurar
 0082=Eliminar
 0083=Eliminar todo
@@ -588,12 +588,12 @@
 0148=Iniciar sesión
 0149=Contraseña
 0150=Remover HJT
-0151=Desinstalar HijackThis
+0151=Desinstalar HiJackThis
 0152=Elimina todas las configuraciones y copias de seguridad, luego de eliminar
-0153=Esto eliminará la configuración y las copias de seguridad de HijackThis. Tenga en cuenta que deberá eliminar el archivo HiJackThis.exe manualmente.
+0153=Esto eliminará la configuración y las copias de seguridad de HiJackThis. Tenga en cuenta que deberá eliminar el archivo HiJackThis.exe manualmente.
      
      ¿Continuar con la desinstalación?
-0154=Esto eliminará completamente HijackThis, incluidas las configuraciones y las copias de seguridad. ¿Continuar?
+0154=Esto eliminará completamente HiJackThis, incluidas las configuraciones y las copias de seguridad. ¿Continuar?
 0155=Conexión directa
 0156=Proxy del sistema
 0157=Otro proxy
@@ -933,8 +933,8 @@
 ;
 ; (310 - 399)
 ;
-0310=HijackThis está a punto de eliminar un BHO y el archivo correspondiente de su sistema. Cierre todas las ventanas de Internet Explorer Y todas las ventanas del Explorador de Windows antes de continuar para tener mejores posibilidades de éxito.
-0311=Internet Explorer todavía se está ejecutando. ¿Le gustaría que HijackThis cierre IE a la fuerza?
+0310=HiJackThis está a punto de eliminar un BHO y el archivo correspondiente de su sistema. Cierre todas las ventanas de Internet Explorer Y todas las ventanas del Explorador de Windows antes de continuar para tener mejores posibilidades de éxito.
+0311=Internet Explorer todavía se está ejecutando. ¿Le gustaría que HiJackThis cierre IE a la fuerza?
      ADVERTENCIA: ¡la sesión actual del navegador se perderá!
 0320=No se puede borrar el archivo:
 
@@ -943,14 +943,14 @@
      El archivo puede estar en uso.
 0321=Use el Administrador de tareas para cerrar el programa
 0322=Utilice un asesino de procesos como Sysinternals ProcMon para cerrar el programa
-0323=y ejecute HijackThis nuevamente para eliminar el archivo.
-0330=HijackThis está a punto de eliminar un complemento de su sistema. Cierre todas las ventanas de Internet Explorer antes de continuar para tener mejores posibilidades de éxito.
+0323=y ejecute HiJackThis nuevamente para eliminar el archivo.
+0330=HiJackThis está a punto de eliminar un complemento de su sistema. Cierre todas las ventanas de Internet Explorer antes de continuar para tener mejores posibilidades de éxito.
 0342=El archivo '[]' será eliminado por Windows cuando el sistema se reinicie.
 0343=El servicio '[]' ha sido marcado para su eliminación.
 0344=¡Nada seleccionado! ¿Continuar?
-0345=Seleccionaste arreglar todo lo encontrado por HijackThis. Es posible que se eliminen elementos importantes del sistema y que la funcionalidad del sistema se degrade.
+0345=Seleccionaste arreglar todo lo encontrado por HiJackThis. Es posible que se eliminen elementos importantes del sistema y que la funcionalidad del sistema se degrade.
      
-     Si no está seguro de cómo usar HijackThis, debe pedir ayuda, no arreglar las cosas a ciegas. Hay muchos recursos de terceros disponibles en la web que con gusto lo ayudarán con su registro.
+     Si no está seguro de cómo usar HiJackThis, debe pedir ayuda, no arreglar las cosas a ciegas. Hay muchos recursos de terceros disponibles en la web que con gusto lo ayudarán con su registro.
      
      ¿Está seguro de que desea corregir todos los elementos de los resultados de su escaneo?
 0346=¿Arreglar [] elementos seleccionados? Esto eliminará y / o reparará permanentemente todos los elementos seleccionados
@@ -959,7 +959,7 @@
 0349=No se proporciona la cura para este objeto: []
 
      Debe configurar manualmente la dirección DNS en el enrutador especificado en el contrato con su proveedor de Internet.
-0350=HijackThis necesita reiniciar el sistema para aplicar los cambios.
+0350=HiJackThis necesita reiniciar el sistema para aplicar los cambios.
      Guarde su trabajo, luego presione 'SÍ' si acepta reiniciar ahora.
 0351=Espere hasta que el administrador de limpieza de disco de Microsoft termine su trabajo, luego presione OK.
 0352=Es necesario reiniciar el servidor para completar las operaciones necesarias. Reinícielo manualmente.
@@ -974,22 +974,22 @@
 ; [R0]
 0401=        Un valor de registro cambió de la configuración predeterminada, lo que resulta en una página de inicio de IE diferente, página de búsqueda, página de barra de búsqueda o asistente de búsqueda.
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - el valor del registro se restaura a la URL predeterminada.
 ; [R1]
 0402=        Un valor de registro que no está presente en una instalación predeterminada de Windows, lo que posiblemente resulte en una configuración modificada para búsquedas en Internet u otras configuraciones de IE (Título de la ventana de IE, ProxyServer, ProxyOverride, Asistente de conexión a Internet, ShellNext, etc.)
      
-      >>> Acción tomada por HijackThis:
+      >>> Acción tomada por HiJackThis:
        - Se elimina el valor del registro.
 ; [R2]
 0403=        Una clave de registro no está presente en una instalación predeterminada de Windows. Actualmente, esta sección no se utiliza (no hay entradas en la base de datos).
      
-      >>> Acción tomada por HijackThis:
+      >>> Acción tomada por HiJackThis:
        - Se elimina la clave de registro, con todo lo que contiene.
 ; [R3]
 0404=        Se detectó más de un valor dentro de la clave de registro de URLSearchHooks. Si especifica una dirección URL sin los prefijos http:// o ftp://, el navegador intentará descubrir el protocolo correcto usando la lista en UrlSearchHook.
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - Se elimina el valor del registro;
       - Se restaura el valor predeterminado de URLSearchHook.
 ; [F0]
@@ -999,7 +999,7 @@
      
      Predeterminado: Shell=explorer.exe
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - se restaura el valor predeterminado del archivo ini;
       - el archivo correspondiente NO se elimina.
 ; [F1]
@@ -1011,7 +1011,7 @@
      run=
      load=
      
-     >>> Acción tomada por HijackThis: 
+     >>> Acción tomada por HiJackThis: 
       - se elimina el valor del archivo ini;
       - el archivo correspondiente NO se elimina.
 ; [F2]
@@ -1028,7 +1028,7 @@
      Shell=explorer.exe
      Shell=%WINDIR%\explorer.exe
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - se restaura el valor de registro predeterminado;
       - el archivo correspondiente NO se elimina.
 ; [F3]
@@ -1040,7 +1040,7 @@
      Default: run=
      Default: load=
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - se elimina el valor del registro;
       - el archivo correspondiente NO se elimina.
 ; [O1]
@@ -1052,7 +1052,7 @@
 \\p
              4) El archivo Hosts.ics se crea automáticamente cuando comparte el acceso a Internet. Contiene una asignación entre la IP y el dominio de la red doméstica (local) y se puede secuestrar de la misma manera que un archivo de hosts.
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
 	  - Para entradas hosts y hosts.ics - La línea se elimina del archivo.
       - Para DNSApi: el archivo dll se recupera si está disponible mediante el subsistema SFC.
       - Para la ubicación alterada de los hosts: se restaura el valor de registro predeterminado.
@@ -1060,13 +1060,13 @@
 ; [O2]
 0410=        Un BHO (Browser Helper Object) es un programa especialmente diseñado que se integra en IE y tiene derechos de acceso prácticamente ilimitados. Aunque los BHO pueden ser útiles (como la barra de herramientas de Google), los secuestradores a menudo los usan con fines maliciosos, como rastrear su comportamiento en línea, mostrar anuncios emergentes, etc..
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
 	  - Eliminar la clave de registro de BHO y todas las claves correspondientes (como CLSID y políticas especiales de IE BHO);
       - Eliminar archivo dll BHO.
 ; [O3]
 0411=        Las barras de herramientas de IE son parte de BHO (Browser Helper Objects) como la barra de herramientas de Google que puede ser útil, pero también puede ser molesta o maliciosa al rastrear su comportamiento y mostrar anuncios emergentes..
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - Eliminar el valor del registro y todas las claves correspondientes (como configuraciones y políticas especiales de IE BHO).
       - Se elimina el archivo dll.
 ; [O4]
@@ -1075,7 +1075,7 @@
 \\p     
      Área a verificar: claves de registro y carpeta 'Autostart'.
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
 	  - Entradas de registro de inicio automático: se elimina el valor de registro.
       - también, el proceso correspondiente será eliminado o congelado.
       - Carpeta 'AutoStart': se elimina el archivo de carga automática.
@@ -1085,18 +1085,18 @@
      
      Área a verificar: archivo control.ini y ubicaciones equivalentes en el registro.
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - según la ubicación, la línea se elimina del archivo Control.ini o el valor del registro se elimina.
 ; [O6]
 0414=        La desactivación de la entrada del menú 'Opciones de Internet' en el menú 'Herramientas' de IE se realiza mediante las Políticas de Windows. Normalmente utilizado por los administradores para restringir el acceso de los usuarios, también puede ser utilizado por los secuestradores para evitar el acceso a la ventana 'Opciones de Internet'.
      
              StartPage Guard también usa Políticas para restringir los cambios en la página de inicio, realizados por secuestradores.
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - la información correspondiente se elimina del registro.
-; [O7] // do not translate [EV], [Disk] and [Network] !!!
+; [O7]
 0415=
-     O7 - Políticas: Regedit, TaskMgr, Explorer y menú "Inicio"
+     O7 - Policy: Regedit, TaskMgr, Explorer y menú "Inicio"
 
              Regedit está deshabilitado mediante las políticas de Windows. Normalmente utilizado por los administradores para restringir a los usuarios, también puede ser utilizado por secuestradores para evitar el acceso al editor del Registro. Esto da como resultado un mensaje que dice que su administrador no le permite acceder a Regedit.
              Los programas maliciosos también deshabilitan el acceso al Administrador de tareas para protegerse de la terminación.
@@ -1106,72 +1106,77 @@
 
              Las políticas de seguridad IP permiten o bloquean los paquetes de datos de red y ajustan los filtros de paquetes de origen y destino, como la dirección IP (incluida la subred), el tipo, el número de puerto y más.
 
-     O7 - Certificado no confiable
+     O7 - Untrusted Certificate
 
              Los programas maliciosos pueden agregar hashes de firmas digitales antivirus a la lista de certificados que no son de confianza, bloqueando así el lanzamiento de archivos ejecutables.
 
-     O7 - Solucionar problemas
+     O7 - KnownFolder
+     
+             En la subsección KnownFolder, se muestran las redirecciones de todas las carpetas Shell conocidas y las carpetas Shell del usuario, incluida la carpeta "Inicio". Además, comprueba si la carpeta existe en el disco.
+
+     O7 - TroubleShoot
 
              Aquí, se muestran configuraciones incorrectas del sistema operativo, lo que puede conducir a un mal funcionamiento del sistema y del software. Éstas incluyen:
      1. [EV] Valor y/o tipo de variable de entorno incorrecto. Verifique las rutas importantes en la variable %PATH%.
      2. [Disk] Falta de espacio libre en el disco del sistema (menos de 1 GB).
      3. [Network] Configuración de red incorrecta, p. nombre de equipo vacío.
 \\p
-     >>> Acción tomada por HijackThis:
-      - for O7 - Políticas: se elimina el valor del registro.
-      - for O7 - IPSec: se eliminan todas las claves de registro asociadas con la política marcada, incluidos todos los filtros que se le aplican.
-      - for O7 - Certificado no confiable: se elimina la clave de registro.
-      - for O7 - Solucionar problemas: [EV] las variables se restablecerán a los valores predeterminados. Para %PATH%: se agregará la ruta faltante.
-      - for O7 - Solucionar problemas: [Disk] El administrador de limpieza de disco de Microsoft, CleanMgr, se iniciará en modo automático.
-      - for O7 - Solucionar problemas: [Network] se aplicará la configuración estándar.
+     >>> Acción tomada por HiJackThis:
+      - para O7 - Policy: se elimina el valor del registro.
+      - para O7 - IPSec: se eliminan todas las claves de registro asociadas con la política marcada, incluidos todos los filtros que se le aplican.
+      - para O7 - Untrusted Certificate: se elimina la clave de registro.
+      - para O7 - KnownFolder: el parámetro de registro de la carpeta conocida se restablecerá a su valor predeterminado. La carpeta se creará en el disco si falta.
+      - para O7 - TroubleShoot: [EV] las variables se restablecerán a los valores predeterminados. Para %PATH%: se agregará la ruta faltante.
+      - para O7 - TroubleShoot: [Disk] El administrador de limpieza de disco de Microsoft, CleanMgr, se iniciará en modo automático.
+      - para O7 - TroubleShoot: [Network] se aplicará la configuración estándar.
 ; [O8]
 0416=        Los elementos adicionales en el menú contextual (clic derecho) pueden resultar útiles o molestos. Algunos secuestradores recientes agregan elementos al menú contextual. El accesorio web Internet Explorer PowerTweaks agrega varios elementos útiles, incluidos "Resaltar", "Acercar/alejar", "Lista de enlaces", "Lista de imágenes" y "Búsqueda web".
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - Se elimina la clave de registro.
 ; [O9]
 0417=        Los elementos adicionales en el menú "Herramientas" de Internet Explorer y los botones adicionales en la barra de herramientas principal generalmente están presentes como marca (botón Dell Home) o se agregan después de las actualizaciones del sistema (botón MSN Messenger) y rara vez por secuestradores. El accesorio web Internet Explorer PowerTweaks agrega dos elementos de menú, "Agregar sitio a la zona de confianza" y "Agregar sitio a la zona restringida"..
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - Se elimina la clave de registro.
 ; [O10]
 0418=        El sistema Windows Socket (Winsock) utiliza una lista de proveedores para resolver nombres DNS (es decir, traducir www.microsoft.com a una dirección IP). Esto se denomina proveedor de servicios en capas (LSP). Algunos programas son capaces de inyectar sus propios proveedores (spyware) en el LSP. Si faltan archivos a los que hace referencia el LSP o la 'cadena' de proveedores está rota, ninguno de los programas en su sistema puede acceder a Internet. Eliminar las referencias a los archivos perdidos y reparar la cadena generalmente restaurará el acceso a Internet.
 \\p
              Nota: La fijación de LSP es un procedimiento arriesgado. Puede obtener WinSockReset para reparar la pila de Winsock.
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - No provisto. Se le pedirá que descargue el programa WinSockReset.
 ; [O11]
 0419=        Las opciones en la pestaña 'Avanzado' de las opciones de Internet Explorer se almacenan en el Registro, y se pueden agregar opciones adicionales creando claves de Registro adicionales. En muy raras ocasiones, los programas espía/secuestradores agregan sus propias opciones que son difíciles de eliminar. (por ejemplo, CommonName agrega una sección 'CommonName' con algunas opciones).
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - Se elimina la clave de registro.
 ; [O12]
 0420=        Los complementos manejan tipos de archivos que Internet Explorer no admite de forma nativa. Los complementos comunes manejan los formatos de Macromedia Flash, Acrobat PDF y Windows Media, lo que permite que el navegador los abra por sí mismo en lugar de iniciar un programa separado. Cuando los secuestradores o spyware agregan complementos para sus tipos de archivo, el malware, incluso si se eliminó, puede volver a instalarse si el navegador abre un archivo administrado por ese complemento.
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - La clave de registro y el archivo del complemento se eliminan.
 ; [O13]
 0421=        Cuando escribe una URL en la barra de direcciones de Internet Explorer sin el prefijo (http://), se agrega automáticamente un prefijo cuando presiona Intro. Este prefijo se almacena en el Registro, junto con los prefijos predeterminados para FTP, Gopher y otros protocolos. Cuando un secuestrador cambia estos a la URL de su servidor, siempre se le redirige allí cuando no ingresa un prefijo. Por ejemplo, Prolivation usa este Hijack.
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - El valor del registro se restaura a los datos predeterminados.
 ; [O14]
 0422=        Cuando presiona 'Restablecer configuración web' en la pestaña 'Programas' del cuadro de diálogo Opciones de Internet Explorer, su página de inicio, página de búsqueda y algunos otros sitios se restablecen a los valores predeterminados. Estos valores predeterminados se almacenan en C:\Windows\Inf\Iereset.inf. Cuando un secuestrador cambia estos a sus propias URL, 'Restablecer configuración web' hace que usted sea (re)infectado. Por ejemplo, SearchALot usa este secuestro.
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - El valor en el archivo Inf se restaura a los datos predeterminados.
 ; [O15]
 0423=        Los sitios web en la Zona de confianza (consulte Herramientas => Opciones de Internet => Seguridad => Sitios de confianza => Sitios) pueden usar scripts y objetos ActiveX potencialmente peligrosos. Algunos programas agregan automáticamente sitios a la Zona de confianza sin que usted lo sepa. Se sabe que solo unos pocos programas legítimos hacen esto.. 
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - Se elimina la clave de registro.
       - Se restauran los valores predeterminados de asignación de protocolo a zona.
 ; [O16]
 0424=        La carpeta Descargar archivos de programa (DPF) en la carpeta base de Windows contiene varios programas que se descargaron de Internet. Estos programas se cargan siempre que Internet Explorer está activo. Los ejemplos legítimos incluyen Java VM, Microsoft XML Parser y Google Toolbar. Cuando se eliminan, estos objetos se descargan y se instalan nuevamente (después de solicitarlo).
              Desafortunadamente, IE también permite que los sitios maliciosos descarguen automáticamente cosas como marcadores pornográficos, complementos falsos y objetos ActiveX en esta carpeta, que lo atormentan con ventanas emergentes, facturas telefónicas elevadas, bloqueos aleatorios y otros secuestros del navegador.
      
-      >>> Acción tomada por HijackThis:
+      >>> Acción tomada por HiJackThis:
       - se cancela el registro de DPF CLSID.
       - el archivo dll y el archivo descargado se eliminan.
 ; [O17]
@@ -1180,23 +1185,23 @@
 
              DHCP DNS en esta sección muestra la dirección DNS emitida por el enrutador por DHCP, es decir, cuando la casilla de verificación "Recibir automáticamente la dirección DNS" está seleccionada en la configuración de conexión de red.
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - Se elimina el valor del registro.
-      - Cuando se repara DHCP DNS, se vacía la caché de resolución de DNS. El usuario debe configurar manualmente el enrutador ingresando la dirección especificada por su proveedor de contrato ANTES de arreglar este elemento en HijackThis. 
+      - Cuando se repara DHCP DNS, se vacía la caché de resolución de DNS. El usuario debe configurar manualmente el enrutador ingresando la dirección especificada por su proveedor de contrato ANTES de arreglar este elemento en HiJackThis. 
 ; [O18]
 0426=        Un protocolo es un 'lenguaje' que usa Windows para 'hablar' con programas, servidores o consigo mismo. Los servidores web usan el protocolo 'http:', los servidores FTP usan el protocolo 'ftp:', Windows Explorer usa el protocolo 'file:'. Introducir un nuevo protocolo en Windows o cambiar uno existente puede cambiar la forma en que Windows maneja los archivos..
              CommonName y Lop.com registran nuevos protocolos cuando se instalan (cn: y ayb :).
 \\p
              Los filtros son tipos de contenido aceptados por Internet Explorer (e internamente por Windows). Si existe un filtro para un tipo de contenido, los datos pasarán primero por el controlador de archivos de tipo de contenido. Varias variantes del troyano CWS agregan filtros de texto/html y texto/sin formato, lo que les permite enganchar todo el contenido de la página web que pasa a través de Internet Explorer.
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - El valor CLSID se restaura (si es posible); de lo contrario, la clave se elimina.
       - El archivo se elimina (si no pertenece a Microsoft).
 ; [O19]
 0427=        IE tiene una opción para usar una hoja de estilo definida por el usuario para todas las páginas en lugar de la predeterminada, para permitir que los usuarios discapacitados vean mejor las páginas web..
              Ha surgido un método de secuestro especialmente vil creado por Datanotary, que sobrescribe cualquier hoja de estilo que el usuario haya configurado y la reemplaza con una que provoca ventanas emergentes, así como una ralentización del sistema al escribir o cargar páginas con muchas imágenes.
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - Se elimina el valor del registro.
       - El uso de estilo está deshabilitado.
 ; [O20]
@@ -1205,7 +1210,7 @@
 \\p
              Dado que ambos métodos aseguran que el archivo dll permanezca cargado en la memoria, corregir esto no ayudará si el dll restaura los valores o las claves del Registro después de corregirlos. En tales casos, se recomienda utilizar la función 'Eliminar archivo al reiniciar' o KillBox para eliminar primero el archivo..
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - para AppInit_DLLs: se borra el valor de registro concreto; el parámetro NO se elimina.
       - para Winlogon Notify: se elimina la clave de registro.
 ; [O21]
@@ -1214,7 +1219,7 @@
              ShellIconOverlayIdentifiers funciona de manera similar. Esta clave de registro contiene varias subclaves con identificadores de los archivos cargados en Explorer.exe. Por lo general, un programa registra varios controladores de este tipo a la vez. Los nombres clave a menudo comienzan con unos pocos espacios. Estas bibliotecas son responsables de manejar la representación de iconos de archivos en el Explorador de Windows, según ciertas condiciones (tipos de archivos u otros factores).
              Un ejemplo de un programa legítimo puede ser un cliente para almacenamiento en la nube como DropBox o Yandex.Disk, que cambia la apariencia del icono según el estado de sincronización de archivos. Los programas maliciosos pueden instalar controladores que también ejecutan código arbitrario.
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - El valor o la clave del registro se elimina junto con la clave del identificador CLSID.
       - se elimina el archivo dll.
       - Se reinicia el explorador.
@@ -1222,7 +1227,7 @@
 0430=        El Programador de tareas es un servicio que se puede configurar para ejecutar un proceso arbitrario en un momento específico o en un horario determinado. Una de estas configuraciones se llama Trabajo. Los trabajos (tareas) se pueden ejecutar con privilegios elevados sin solicitar UAC, vincularse a usuarios específicos, contener rutas a procesos, argumentos, estados, etc. El malware a menudo usa tareas para proporcionar ejecución automática y aún sobrevivir después de que se reinicia un proceso.
              Las tareas se pueden administrar a través del complemento Programador de tareas (taskschd.msc).
 
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - La tarea está deshabilitada.
       - El proceso de la tarea se mata.
       - El archivo de tareas, el archivo ejecutable y todas las claves de registro asociadas se eliminan.
@@ -1233,18 +1238,16 @@
              Por lo tanto, el malware que se registra como un servicio es más difícil de eliminar.
 \\p
      O23 - Controlador
-             (la subsección solo está disponible en el modo "Escaneo adicional")
 
              El controlador es un tipo de servicio que se inicia en una etapa anterior del arranque del sistema y se ejecuta con privilegios de kernel. Los programas maliciosos también pueden instalar sus controladores. Por ejemplo, esto se usa para evitar la eliminación (los programas que se ejecutan con derechos de administrador o sistema local no pueden matar procesos a nivel de kernel), así como para enmascarar su presencia, archivos y procesos (los llamados rootkits).
              Nota: los elementos del "Controlador R" sin un carácter de dígito en el registro son un controlador cargado dinámicamente (no a través del registro).
 \\p
      O23 - Dependencia
-             (la subsección solo está disponible en el modo "Escaneo adicional")
 
              Los programas maliciosos pueden escribirse en la lista de dependencias del servicio del sistema para protegerse de la eliminación. Después de eliminar dicho servicio, un servicio legítimo de Microsoft ya no podrá iniciarse. Algunos servicios de Windows son críticos para el funcionamiento normal del sistema operativo. Su falta de ejecución puede afectar negativamente el funcionamiento de otros programas hasta que falle todo el arranque del sistema operativo..
-             Some services are also combined into a service group, which has its name. If the service depends on the service group, it will not start until all services that belong to service group is start. HijackThis also checks for third-party services that have been included in the Microsoft service group.
+             Some services are also combined into a service group, which has its name. If the service depends on the service group, it will not start until all services that belong to service group is start. HiJackThis also checks for third-party services that have been included in the Microsoft service group.
 \\p
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - El servicio (o el controlador) está deshabilitado, detenido y eliminado.
       - Se le pedirá que reinicie.
       - Para O23 - Dependencia: la dependencia se eliminará del registro.
@@ -1252,7 +1255,7 @@
 0432=        Los componentes de escritorio son objetos ActiveX que pueden formar parte del escritorio siempre que Active Desktop esté habilitado. Se ejecutan como widgets de sitios web (pequeños).
              Malware abuses this feature by setting the desktop background to a local HTML file with a large, bogus warning, e.g. for Ransomware it may show text of ransom requirements.
      
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - La clave de registro y el archivo se eliminan.
       - Explorer se reinicia y el fondo del escritorio se actualiza.
 ; [O25]
@@ -1260,13 +1263,13 @@
 \\p
              Nota: solo se prueba al consumidor. Si solo hay un filtro, un enlace y/o un temporizador (sin consumidor), el elemento no se muestra en el registro.
 
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - el consumidor de eventos, el filtro, el temporizador y el enlace se eliminan en la base de datos WMI;
       - el archivo asociado también se elimina.
 ; [R4]
 0434=        Internet Explorer utiliza un proveedor de búsqueda (DefaultScope) para mostrar una lista de sugerencias en la barra de búsqueda mientras escribe consultas de búsqueda en la barra de direcciones. IE le permite reemplazar su proveedor predeterminado con cualquiera de la lista (SearchScopes).
 
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - se elimina la clave del proveedor;
       - Se recupera el valor predeterminado de DefaultScope (Microsoft Bing) y los parámetros del proveedor.
 ; [O26]
@@ -1274,7 +1277,7 @@
              Nota: cuando se eliminó un archivo del depurador pero aún se configuró, ¡el programa host no se iniciará!
              Además, el atacante puede configurar el depurador para que se ejecute junto con las aplicaciones UWP predeterminadas, como "Cortana" o "Personas" (solo Win 10). Dado que estas aplicaciones generalmente se inician automáticamente cuando se inicia el sistema, el atacante proporciona ejecución automática (muy similar a O4) para su malware utilizando este método..
 
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - se elimina el valor del registro.
 ; [O27]
 0436=        Notas O27 - Account:
@@ -1289,7 +1292,7 @@
              (Port) informa que el puerto entrante 3389 (TCP/UDP) está abierto en el firewall.
              (Other) otras configuraciones del protocolo de conexión remota.
              
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - para (AutoLogon): el inicio de sesión automático está deshabilitado. Se le solicitará al usuario que ingrese la contraseña.
       - para (Bad profile): se elimina la carpeta.
       - para (Hidden): muestra la cuenta de usuario de la pantalla de inicio de sesión.
@@ -1306,7 +1309,7 @@
 ; [B]
 0441=        La sección del navegador representa extensiones y políticas sospechosas. Está en construcción en este momento. No se admiten muchas definiciones y navegadores.
 
-     >>> Acción tomada por HijackThis:
+     >>> Acción tomada por HiJackThis:
       - el navegador está cerrado
       - los archivos y los valores del registro se modifican o eliminan
 0490=Información detallada de las secciones:
@@ -1350,14 +1353,14 @@
 0554=¡Primero tienes que marcar una casilla de verificación al lado de al menos un elemento!
 0570=El archivo de idioma '[]' no es válido (números de identificación ambiguos).
 0572=Archivo de idioma no válido. ¿Restablecer a los valores predeterminados (inglés)?
-0580=HijackThis no puede reparar las entradas de LSP de O10 Winsock.
+0580=HiJackThis no puede reparar las entradas de LSP de O10 Winsock.
      Use el programa {1} de {2}
      
      ¿Te gustaría visitar ese sitio?
-0581=HijackThis no puede reparar las entradas de LSP de O10 Winsock.
+0581=HiJackThis no puede reparar las entradas de LSP de O10 Winsock.
 0590=¡Ha ocurrido un error inesperado!
 
-     Ayúdenos a mejorar HijackThis informando este error.
+     Ayúdenos a mejorar HiJackThis informando este error.
      
      El mensaje de error se ha copiado en el portapapeles.
      Haga clic en 'Sí' para enviar.
@@ -1366,7 +1369,7 @@
      Error en la función:
 0591=Error
 0592=No se puede encontrar la rutina de curado adecuada para:
-0593=Error al instalar HijackThis en la carpeta 'Archivos de programa'. No puede copiar. Error =
+0593=Error al instalar HiJackThis en la carpeta 'Archivos de programa'. No puede copiar. Error =
 0594=Error al crear la tarea.
 ;
 ; ==================== StatupList ===================

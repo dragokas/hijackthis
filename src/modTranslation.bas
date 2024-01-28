@@ -21,6 +21,14 @@ End Enum
     Dim CP_WIN, CP_DOS, CP_KOI, CP_ISO, CP_UTF8, CP_UTF16LE
 #End If
 
+Public Enum LangEnum
+    Lang_English = 0
+    Lang_Russian
+    Lang_Ukrainian
+    Lang_French
+    Lang_Spanish
+End Enum
+
 Private Declare Function GetUserDefaultUILanguage Lib "kernel32.dll" () As Long
 'Private Declare Function GetSystemDefaultUILanguage Lib "kernel32.dll" () As Long
 'Private Declare Function GetSystemDefaultLCID Lib "kernel32.dll" () As Long
@@ -59,10 +67,24 @@ Function IsSlavianCultureCode(CultureCode As Long) As Boolean
 End Function
 
 '// check if Russian area locale code
-Public Function IsRussianLangCode(CultureCode As Long) As Boolean
+Public Function IsRussianAreaLangCode(CultureCode As Long) As Boolean
     Select Case CultureCode
         Case &H419&, &H422&, &H423&
-            IsRussianLangCode = True
+            IsRussianAreaLangCode = True
+    End Select
+End Function
+
+Public Function IsFrenchLangCode(CultureCode As Long) As Boolean
+    Select Case CultureCode
+        Case &H40C&, &H80C&, &HC0C&, &H140C&, &H180C&, &H100C&
+            IsFrenchLangCode = True
+    End Select
+End Function
+
+Public Function IsSpanishLangCode(CultureCode As Long) As Boolean
+    Select Case CultureCode
+        Case &H40A&, &HC0A&
+            IsSpanishLangCode = True
     End Select
 End Function
 
@@ -141,9 +163,9 @@ Public Sub LoadLanguage( _
             LangUA False, LoadChangelog
         Case &H419&, &H423&  'Russian, Belarusian
             LangRU False, LoadChangelog
-        Case &H40C&, &H80C&, &HC0C&, &H140C&, &H180C&, &H100C&  'French
+        Case IsFrenchLangCode(lCode)  'French
             LangFR False, LoadChangelog
-        Case &H40A&, &HC0A&  'Spanish
+        Case IsSpanishLangCode(lCode)  'Spanish
             LangSP False, LoadChangelog
         Case &H409& 'English
             LoadDefaultLanguage False, LoadChangelog
@@ -164,9 +186,9 @@ Public Sub LoadLanguage( _
             LangRU bUseResourcePriority, LoadChangelog
         Case &H422& 'Ukrainian
             LangUA bUseResourcePriority, LoadChangelog
-        Case &H40C&, &H80C&, &HC0C&, &H140C&, &H180C&, &H100C& 'French
+        Case IsFrenchLangCode(LangDisplayCode) 'French
             LangFR bUseResourcePriority, LoadChangelog
-        Case &H40A&, &HC0A&  'Spanish
+        Case IsSpanishLangCode(LangDisplayCode)  'Spanish
             LangSP bUseResourcePriority, LoadChangelog
         Case &H409& 'English
             LoadDefaultLanguage bUseResourcePriority, LoadChangelog
@@ -181,9 +203,9 @@ Public Sub LoadLanguage( _
             LangRU bUseResourcePriority, LoadChangelog
         Case &H422& 'Ukrainian
             LangUA bUseResourcePriority, LoadChangelog
-        Case &H40C&, &H80C&, &HC0C&, &H140C&, &H180C&, &H100C& 'French
+        Case IsFrenchLangCode(lCode) 'French
             LangFR bUseResourcePriority, LoadChangelog
-        Case &H40A&, &HC0A&  'Spanish
+        Case IsSpanishLangCode(lCode)  'Spanish
             LangSP bUseResourcePriority, LoadChangelog
         Case &H409& 'English
             LoadDefaultLanguage bUseResourcePriority, LoadChangelog
@@ -1714,4 +1736,56 @@ Public Function ConvertCodePage(SrcPtr As Long, inPage As idCodePage, Optional o
 ErrorHandler:
     ErrorMsg Err, "ConvertCodePage", "inPage:", inPage, "outPage:", outPage
     If inIDE Then Stop: Resume Next
+End Function
+
+Public Function GetPreferredLangId_ForURL(Optional bCheckLangByCurrentSelected As Boolean = False) As LangEnum
+
+    'by default, language has checked by OS interface
+    Dim id As LangEnum
+
+    If bForceLang Then
+        If bForceEN Then
+            id = Lang_English
+        ElseIf bForceRU Then
+            id = Lang_Russian
+        ElseIf bForceUA Then
+            id = Lang_Ukrainian
+        ElseIf bForceFR Then
+            id = Lang_French
+        ElseIf bForceSP Then
+            id = Lang_Spanish
+        End If
+
+    ElseIf bCheckLangByCurrentSelected Then
+        id = g_CurrentLangEnum
+        
+    ElseIf IsRussianAreaLangCode(OSver.LangSystemCode) Or IsRussianAreaLangCode(OSver.LangDisplayCode) Then
+        id = Lang_Russian
+        
+    ElseIf IsFrenchLangCode(OSver.LangSystemCode) Or IsFrenchLangCode(OSver.LangDisplayCode) Then
+        id = Lang_French
+        
+    ElseIf IsSpanishLangCode(OSver.LangSystemCode) Or IsSpanishLangCode(OSver.LangDisplayCode) Then
+        id = Lang_Spanish
+        
+    End If
+    
+    GetPreferredLangId_ForURL = id
+    
+End Function
+
+Public Function GetTutorialURL_ByLang(lang As LangEnum) As String
+    If lang = Lang_Russian Or lang = Lang_Ukrainian Then
+        GetTutorialURL_ByLang = "https://regist.safezone.cc/hijackthis_help/hijackthis.html"
+    ElseIf lang = Lang_French Then
+        GetTutorialURL_ByLang = "https://regist.safezone.cc/hijackthis_help/hijackthis_fr.html"
+    Else
+        GetTutorialURL_ByLang = "https://dragokas.com/tools/help/hjt_tutorial.html"
+    End If
+End Function
+
+Public Function GetTutorialURL(Optional bCheckLangByCurrentSelected As Boolean = False) As String
+    Dim id As LangEnum
+    id = GetPreferredLangId_ForURL(bCheckLangByCurrentSelected)
+    GetTutorialURL = GetTutorialURL_ByLang(id)
 End Function

@@ -588,7 +588,7 @@ Public Sub AddToScanResults( _
     
     Const SelLastAdded As Boolean = False
     
-    result.HitLineW = ScreenLogLine(result.HitLineW)
+    result.HitLineW = ScreenHitLine(result.HitLineW)
     
     If DoNotDuplicate Then
         If UBound(Scan) > 0 Then
@@ -612,7 +612,7 @@ Public Sub AddToScanResults( _
             bAddedToList = True
             'Commented (no difference)
             'LockWindowUpdate frmMain.lstResults.hwnd
-            frmMain.lstResults.AddItem result.HitLineW
+            frmMain.lstResults.AddItem LimitHitLineLength(result.HitLineW)
             'LockWindowUpdate 0&
             'Unicode to ANSI mapping (dirty hack)
             result.HitLineA = frmMain.lstResults.List(frmMain.lstResults.ListCount - 1)
@@ -1368,6 +1368,24 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
+Private Function IsScanRequired(idSection As ID_SECTION) As Boolean
+    With g_ScanFilter
+        If .DoInclude Then
+            If .Inclusion(idSection) Then
+                IsScanRequired = True
+            Else
+                Exit Function
+            End If
+        End If
+        If .DoExclude Then
+            If .Exclusion(idSection) Then
+                Exit Function
+            End If
+        End If
+        IsScanRequired = True
+    End With
+End Function
+
 Public Sub StartScan()
     On Error GoTo ErrorHandler:
     
@@ -1414,97 +1432,192 @@ Public Sub StartScan()
     'Dim SignResult As SignResult_TYPE
     'SignVerify vbNullString, SV_EnableAllTagsPrecache, SignResult
     
-    EnumBITS_Stage1 ' Speed hack. Run process in advance, get results at the very end.
+    If IsScanRequired(ID_SECTION_O22) Then
+        EnumBITS_Stage1 ' Speed hack. Run process in advance, get results at the very end.
+    End If
     
     'Registry
     
-    UpdateProgressBar "R"
-    For i = 0 To UBound(sRegVals)
-        ProcessRuleReg sRegVals(i)
-    Next i
+    If IsScanRequired(ID_SECTION_R) Then
+        UpdateProgressBar "R"
+        For i = 0 To UBound(sRegVals)
+            ProcessRuleReg sRegVals(i)
+        Next i
+        
+        CheckR3Item
+        CheckR4Item
+    End If
     
-    CheckR3Item
-    CheckR4Item
-    
-    UpdateProgressBar "F"
-    'File
-    For i = 0 To UBound(sFileVals)
-        If Len(sFileVals(i)) <> 0 Then
-            CheckFileItems sFileVals(i)
-        End If
-    Next i
+    If IsScanRequired(ID_SECTION_F) Then
+        UpdateProgressBar "F"
+        'File
+        For i = 0 To UBound(sFileVals)
+            If Len(sFileVals(i)) <> 0 Then
+                CheckFileItems sFileVals(i)
+            End If
+        Next i
+    End If
     
     'Netscape/Mozilla stuff
     'CheckNetscapeMozilla        'N1-4
     
-    Dim sWalletAddr As String
-    Dim sClipPrevText As String
-    sWalletAddr = GenWalletAddressETH()
-    sClipPrevText = ClipboardGetText()
-    ClipboardSetText sWalletAddr
+    If IsScanRequired(ID_SECTION_O7) Then
+        Dim sWalletAddr As String
+        Dim sClipPrevText As String
+        sWalletAddr = GenWalletAddressETH()
+        sClipPrevText = ClipboardGetText()
+        ClipboardSetText sWalletAddr
+    End If
     
-    'Other options
-    UpdateProgressBar "B"
-    CheckBrowsersItem
-    UpdateProgressBar "O1"
-    CheckO1Item 'Hosts
-    CheckO1Item_ICS
-    CheckO1Item_DNSApi
-    UpdateProgressBar "O2"
-    CheckO2Item 'BHO
-    UpdateProgressBar "O3"
-    CheckO3Item 'toolbars
-    UpdateProgressBar "O4"
-    CheckO4Item 'Autorun
-    UpdateProgressBar "O5"
-    CheckO5Item 'Control panel
-    UpdateProgressBar "O6"
-    CheckO6Item 'IE Policy
-    UpdateProgressBar "O7"
-    CheckO7Item 'OS Policy
-    CheckO7Item_Bitcoin sWalletAddr
-    If Len(sClipPrevText) <> 0 Then ClipboardSetText sClipPrevText
-    UpdateProgressBar "O8"
-    CheckO8Item 'IE: Context menu
-    UpdateProgressBar "O9"
-    CheckO9Item 'IE: Services & Buttons
-    UpdateProgressBar "O10"
-    CheckO10Item 'LSP
-    UpdateProgressBar "O11"
-    CheckO11Item 'IE: 'Advanced' tab
-    UpdateProgressBar "O12"
-    CheckO12Item 'IE: plugins of file ext./MIME types
-    UpdateProgressBar "O13"
-    CheckO13Item 'URL Prefixes
-    UpdateProgressBar "O14"
-    CheckO14Item 'IE: IERESET.INF
-    UpdateProgressBar "O15"
-    CheckO15Item 'Trusted Zone
-    UpdateProgressBar "O16"
-    CheckO16Item 'Downloaded Program Files
-    UpdateProgressBar "O17"
-    CheckO17Item 'DNS/DHCP
-    UpdateProgressBar "O18"
-    CheckO18Item 'Protocols, filters
-    UpdateProgressBar "O19"
-    CheckO19Item 'User stylesheet
-    UpdateProgressBar "O20"
-    CheckO20Item 'AppInit_DLLs, Winlogon Notify
-    UpdateProgressBar "O21"
-    CheckO21Item 'Shell Service Object Delay Load (SSODL), Shell Icon Overlay (SIOI), ShellExecuteHooks (SEH)
-    UpdateProgressBar "O22"
-    CheckO22Item 'Tasks, BITS Admin
-    UpdateProgressBar "O23"
-    CheckO23Item 'Services
-    UpdateProgressBar "O24"
-    CheckO24Item 'ActiveX Desktop
-    UpdateProgressBar "O25"
-    CheckO25Item 'WMI
-    UpdateProgressBar "O26"
-    CheckO26Item 'Debuggers, Tools hijack
-    UpdateProgressBar "O27"
-    CheckO27Item 'Account
-    EnumBITS_Stage2
+    If IsScanRequired(ID_SECTION_B) Then
+        UpdateProgressBar "B"
+        CheckBrowsersItem
+    End If
+    
+    'Other scans
+    If IsScanRequired(ID_SECTION_O1) Then
+        UpdateProgressBar "O1"
+        CheckO1Item 'Hosts
+        CheckO1Item_ICS
+        CheckO1Item_DNSApi
+    End If
+    
+    If IsScanRequired(ID_SECTION_O2) Then
+        UpdateProgressBar "O2"
+        CheckO2Item 'BHO
+    End If
+    
+    If IsScanRequired(ID_SECTION_O3) Then
+        UpdateProgressBar "O3"
+        CheckO3Item 'toolbars
+    End If
+    
+    If IsScanRequired(ID_SECTION_O4) Then
+        UpdateProgressBar "O4"
+        CheckO4Item 'Autorun
+    End If
+    
+    If IsScanRequired(ID_SECTION_O5) Then
+        UpdateProgressBar "O5"
+        CheckO5Item 'Control panel
+    End If
+    
+    If IsScanRequired(ID_SECTION_O6) Then
+        UpdateProgressBar "O6"
+        CheckO6Item 'IE Policy
+    End If
+    
+    If IsScanRequired(ID_SECTION_O7) Then
+        UpdateProgressBar "O7"
+        CheckO7Item 'OS Policy
+        CheckO7Item_Bitcoin sWalletAddr
+        If Len(sClipPrevText) <> 0 Then ClipboardSetText sClipPrevText
+    End If
+        
+    If IsScanRequired(ID_SECTION_O8) Then
+        UpdateProgressBar "O8"
+        CheckO8Item 'IE: Context menu
+    End If
+    
+    If IsScanRequired(ID_SECTION_O9) Then
+        UpdateProgressBar "O9"
+        CheckO9Item 'IE: Services & Buttons
+    End If
+        
+    If IsScanRequired(ID_SECTION_O10) Then
+        UpdateProgressBar "O10"
+        CheckO10Item 'LSP
+    End If
+    
+    If IsScanRequired(ID_SECTION_O11) Then
+        UpdateProgressBar "O11"
+        CheckO11Item 'IE: 'Advanced' tab
+    End If
+    
+    If IsScanRequired(ID_SECTION_O12) Then
+        UpdateProgressBar "O12"
+        CheckO12Item 'IE: plugins of file ext./MIME types
+    End If
+    
+    If IsScanRequired(ID_SECTION_O13) Then
+        UpdateProgressBar "O13"
+        CheckO13Item 'URL Prefixes
+    End If
+    
+    If IsScanRequired(ID_SECTION_O14) Then
+        UpdateProgressBar "O14"
+        CheckO14Item 'IE: IERESET.INF
+    End If
+    
+    If IsScanRequired(ID_SECTION_O15) Then
+        UpdateProgressBar "O15"
+        CheckO15Item 'Trusted Zone
+    End If
+    
+    If IsScanRequired(ID_SECTION_O16) Then
+        UpdateProgressBar "O16"
+        CheckO16Item 'Downloaded Program Files
+    End If
+    
+    If IsScanRequired(ID_SECTION_O17) Then
+        UpdateProgressBar "O17"
+        CheckO17Item 'DNS/DHCP
+    End If
+    
+    If IsScanRequired(ID_SECTION_O18) Then
+        UpdateProgressBar "O18"
+        CheckO18Item 'Protocols, filters
+    End If
+    
+    If IsScanRequired(ID_SECTION_O19) Then
+        UpdateProgressBar "O19"
+        CheckO19Item 'User stylesheet
+    End If
+    
+    If IsScanRequired(ID_SECTION_O20) Then
+        UpdateProgressBar "O20"
+        CheckO20Item 'AppInit_DLLs, Winlogon Notify
+    End If
+    
+    If IsScanRequired(ID_SECTION_O21) Then
+        UpdateProgressBar "O21"
+        CheckO21Item 'Shell Service Object Delay Load (SSODL), Shell Icon Overlay (SIOI), ShellExecuteHooks (SEH)
+    End If
+    
+    If IsScanRequired(ID_SECTION_O22) Then
+        UpdateProgressBar "O22"
+        CheckO22Item 'Tasks, BITS Admin
+    End If
+    
+    If IsScanRequired(ID_SECTION_O23) Then
+        UpdateProgressBar "O23"
+        CheckO23Item 'Services & Drivers
+    End If
+    
+    If IsScanRequired(ID_SECTION_O24) Then
+        UpdateProgressBar "O24"
+        CheckO24Item 'ActiveX Desktop
+    End If
+    
+    If IsScanRequired(ID_SECTION_O25) Then
+        UpdateProgressBar "O25"
+        CheckO25Item 'WMI
+    End If
+    
+    If IsScanRequired(ID_SECTION_O26) Then
+        UpdateProgressBar "O26"
+        CheckO26Item 'Debuggers, Tools hijack
+    End If
+    
+    If IsScanRequired(ID_SECTION_O27) Then
+        UpdateProgressBar "O27"
+        CheckO27Item 'Account
+    End If
+    
+    If IsScanRequired(ID_SECTION_O22) Then
+        EnumBITS_Stage2
+    End If
+    
     UpdateProgressBar "ProcList"
     
     With frmMain
@@ -1833,7 +1946,7 @@ Private Sub ProcessRuleReg(ByVal sRule$)
                         bIsNSBSD = False
                         If bHideMicrosoft And Not bIgnoreAllWhitelists Then bIsNSBSD = StrBeginWithArray(sData, aSafeRegDomains)
                         If Not bIsNSBSD Then
-                            If InStr(1, sData, "%2e", 1) > 0 Then sData = UnEscape(sData)
+                            If InStr(1, sData, "%2e", 1) > 0 Then sData = UnEscape(sData) & " " & STR_OBFUSCATED
                             
                             sHit = BitPrefix("R0", HE) & " - " & _
                                 HE.KeyAndHivePhysical & ": " & IIf(Len(sParam) = 0, "(default)", "[" & sParam & "]") & _
@@ -1866,7 +1979,7 @@ Private Sub ProcessRuleReg(ByVal sRule$)
                     If bHideMicrosoft And Not bIgnoreAllWhitelists Then bIsNSBSD = StrBeginWithArray(sData, aSafeRegDomains)
                     'make hit
                     If Not bIsNSBSD Then
-                        If InStr(1, sData, "%2e", 1) > 0 Then sData = UnEscape(sData)
+                        If InStr(1, sData, "%2e", 1) > 0 Then sData = UnEscape(sData) & " " & STR_OBFUSCATED
 
                         If sParam = "ProxyServer" Then
                             bProxyEnabled = (Reg.GetDword(hHive, sKey, "ProxyEnable", Wow6432Redir) = 1)
@@ -5651,7 +5764,7 @@ Public Sub CheckKnownFoldersHKLM()
     aParam(20) = "CommonVideo"
     aValue(20) = "%PUBLIC%\Videos"
     
-    Dim sKey As String, sValue As String, sDefValue As String
+    Dim sKey As String, sValue As String, sDefValue As String, sValueExpanded As String
     Dim i As Long
     Dim dictChecked As clsTrickHashTable
     Set dictChecked = New clsTrickHashTable
@@ -5673,26 +5786,29 @@ Public Sub CheckKnownFoldersHKLM()
                         .Section = "O7"
                         .HitLineW = sHit
                         AddRegToFix .Reg, RESTORE_VALUE, 0, sKey, aParam(i), aValue(i), , REG_RESTORE_EXPAND_SZ
+                        AddFileToFix .File, CREATE_FOLDER, EnvironW(aValue(i))
                         .CureType = REGISTRY_BASED
                     End With
                     AddToScanResults result
                 End If
             End If
             
-            sDefValue = EnvironW(aValue(i))
+            'If the folder is redirected legally we don't need extra "folder missing" records
+            'sDefValue = EnvironW(aValue(i))
+            sValueExpanded = EnvironW(sValue)
             
-            If Not dictChecked.Exists(sDefValue) Then
-                dictChecked.Add sDefValue, 0
+            If Not dictChecked.Exists(sValueExpanded) Then
+                dictChecked.Add sValueExpanded, 0
             
-                If Not FolderExists(sDefValue) Then
+                If Not FolderExists(sValueExpanded) Then
                     
-                    sHit = "O7 - KnownFolder: " & sDefValue & " " & STR_FOLDER_MISSING
+                    sHit = "O7 - KnownFolder: " & sValueExpanded & " " & STR_FOLDER_MISSING
                     
                     If Not IsOnIgnoreList(sHit) Then
                         With result
                             .Section = "O7"
                             .HitLineW = sHit
-                            AddFileToFix .File, CREATE_FOLDER, sDefValue
+                            AddFileToFix .File, CREATE_FOLDER, sValueExpanded
                             .CureType = FILE_BASED
                         End With
                         AddToScanResults result
@@ -5903,8 +6019,7 @@ Public Sub CheckKnownFoldersHKCU()
     aParam(49) = "Templates"
     aValue(49) = "%USERPROFILE%\AppData\Roaming\Microsoft\Windows\Templates"
     
-    
-    Dim sKey As String, sValue As String, sDefValue As String, sSid As String
+    Dim sKey As String, sValue As String, sDefValue As String, sSid As String, sValueExpanded As String
     Dim i As Long, k As Long, pos As Long, sProfile As String
     Dim bSafe As Boolean
     Dim dictChecked As clsTrickHashTable
@@ -5968,20 +6083,22 @@ Public Sub CheckKnownFoldersHKCU()
                     End If
                 End If
                 
-                sDefValue = EnvironW(sDefValue)
+                'If the folder is redirected legally we don't need extra "folder missing" records
+                'sDefValue = EnvironW(sDefValue)
+                sValueExpanded = EnvironW(sValue, , sProfile)
                 
-                If Not dictChecked.Exists(sDefValue) Then
-                    dictChecked.Add sDefValue, 0
+                If Not dictChecked.Exists(sValueExpanded) Then
+                    dictChecked.Add sValueExpanded, 0
                 
-                    If Not FolderExists(sDefValue) Then
+                    If Not FolderExists(sValueExpanded) Then
                         
-                        sHit = "O7 - KnownFolder: " & sDefValue & " " & STR_FOLDER_MISSING
+                        sHit = "O7 - KnownFolder: " & sValueExpanded & " " & STR_FOLDER_MISSING
                         
                         If Not IsOnIgnoreList(sHit) Then
                             With result
                                 .Section = "O7"
                                 .HitLineW = sHit
-                                AddFileToFix .File, CREATE_FOLDER, sDefValue
+                                AddFileToFix .File, CREATE_FOLDER, sValueExpanded
                                 .CureType = FILE_BASED
                             End With
                             AddToScanResults result
@@ -12024,7 +12141,7 @@ Public Sub ErrorMsg(ErrObj As ErrObject, sProcedure$, ParamArray vCodeModule())
     End If
     If 0 = Len(sErrHeader) Then
         ' Emergency mode (if translation module is not initialized yet)
-        sErrHeader = "Please help us improve HijackThis+ by reporting this error." & _
+        sErrHeader = "Please help us improve HiJackThis+ by reporting this error." & _
             vbCrLf & vbCrLf & "Error message has been copied to clipboard." & _
             vbCrLf & "Click 'Yes' to submit." & _
             vbCrLf & vbCrLf & "Error Details: " & _
@@ -12407,7 +12524,7 @@ Public Function CheckForReadOnlyMedia() As Boolean
     If Not CheckFileAccess(AppPath(), GENERIC_WRITE) Then
     
         bNoWriteAccess = True
-        'It looks like you're running HijackThis from
+        'It looks like you're running HiJackThis from
         'a read-only device like a CD-ROM.
         'If you want to make backups of items you fix,
         'you must copy HiJackThis.exe to your hard disk
@@ -12779,7 +12896,7 @@ Public Function CheckForStartedFromTempDir() As Boolean
             'msgboxW "Запуск из архива запрещен !" & vbCrLf & "Распаковать на рабочий стол для Вас ?", vbExclamation, AppName
             If MsgBoxW(sMsg, vbExclamation Or vbYesNo, g_AppName) = vbYes Then
                 Dim NewFile As String
-                NewFile = Desktop & "\HijackThis+\" & AppExeName(True)
+                NewFile = Desktop & "\HiJackThis+\" & AppExeName(True)
                 MkDirW NewFile, True
                 If FileExists(NewFile) Then     ', Cache:=NO_CACHE
                     SetFileAttributes StrPtr(NewFile), GetFileAttributes(StrPtr(NewFile)) And Not FILE_ATTRIBUTE_READONLY
@@ -13448,6 +13565,7 @@ Public Sub InitVariables()
     STR_CONST.RU_PC = LoadResString(605)
     STR_CONST.SHA1_PCRE2 = LoadResString(700)
     STR_CONST.SHA1_ABR = LoadResString(701)
+    STR_CONST.SHA1_OCX = LoadResString(702)
     STR_CONST.WINDOWS_DEFENDER = Caes_Decode("XlskxHF UxABMEHW") 'Windows Defender
     STR_CONST.VIRUSTOTAL = Caes_Decode("WlwBB_BIrE") 'VirusTotal
     STR_CONST.AUTORUNS = Caes_Decode("BxyvAFAH") 'Autoruns
@@ -13798,17 +13916,17 @@ Public Sub CenterForm(myForm As Form) ' Центрирование формы на экране с учетом с
     myForm.Move Left, Top
 End Sub
 
-Public Function LoadWindowPos(frm As Form, IdSection As SETTINGS_SECTION) As Boolean
+Public Function LoadWindowPos(frm As Form, idSection As SETTINGS_SECTION) As Boolean
     
     If frm.WindowState = vbMinimized Or frm.WindowState = vbMaximized Then Exit Function
     
     LoadWindowPos = True
     
-    If IdSection <> SETTINGS_SECTION_MAIN Then
+    If idSection <> SETTINGS_SECTION_MAIN Then
     
         Dim iHeight As Long, iWidth As Long
-        iHeight = CLng(RegReadHJT("WinHeight", "-1", IdSection))
-        iWidth = CLng(RegReadHJT("WinWidth", "-1", IdSection))
+        iHeight = CLng(RegReadHJT("WinHeight", "-1", idSection))
+        iWidth = CLng(RegReadHJT("WinWidth", "-1", idSection))
         
         If iHeight = -1 Or iWidth = -1 Then LoadWindowPos = False
         
@@ -13825,8 +13943,8 @@ Public Function LoadWindowPos(frm As Form, IdSection As SETTINGS_SECTION) As Boo
     End If
     
     Dim iTop As Long, iLeft As Long
-    iTop = CLng(RegReadHJT("WinTop", "-1", IdSection))
-    iLeft = CLng(RegReadHJT("WinLeft", "-1", IdSection))
+    iTop = CLng(RegReadHJT("WinTop", "-1", idSection))
+    iLeft = CLng(RegReadHJT("WinLeft", "-1", idSection))
     
     If iTop = -1 Or iLeft = -1 Then
     
@@ -13842,20 +13960,20 @@ Public Function LoadWindowPos(frm As Form, IdSection As SETTINGS_SECTION) As Boo
         frm.Left = iLeft
     End If
     
-    If CLng(RegReadHJT("WinState", "0", IdSection)) = vbMaximized Then frm.WindowState = vbMaximized
+    If CLng(RegReadHJT("WinState", "0", idSection)) = vbMaximized Then frm.WindowState = vbMaximized
 End Function
 
-Public Sub SaveWindowPos(frm As Form, IdSection As SETTINGS_SECTION)
+Public Sub SaveWindowPos(frm As Form, idSection As SETTINGS_SECTION)
     
     If g_UninstallState Then Exit Sub
     
     If frm.WindowState <> vbMinimized And frm.WindowState <> vbMaximized Then
-        RegSaveHJT "WinTop", CStr(frm.Top), IdSection
-        RegSaveHJT "WinLeft", CStr(frm.Left), IdSection
-        RegSaveHJT "WinHeight", CStr(frm.Height), IdSection
-        RegSaveHJT "WinWidth", CStr(frm.Width), IdSection
+        RegSaveHJT "WinTop", CStr(frm.Top), idSection
+        RegSaveHJT "WinLeft", CStr(frm.Left), idSection
+        RegSaveHJT "WinHeight", CStr(frm.Height), idSection
+        RegSaveHJT "WinWidth", CStr(frm.Width), idSection
     End If
-    RegSaveHJT "WinState", CStr(frm.WindowState), IdSection
+    RegSaveHJT "WinState", CStr(frm.WindowState), idSection
     
 End Sub
 
@@ -17118,6 +17236,10 @@ Public Function RemoveAutorunHJT() As Boolean
         RemoveAutorunHJT = Reg.DelVal(HKLM, "Software\Microsoft\Windows\CurrentVersion\Run", "HiJackThis Autostart Scan")
     End If
 End Function
+
+Public Sub OpenFolder(sFolder As String)
+    Shell sWinDir & "\explorer.exe " & """" & sFolder & """", vbNormalFocus
+End Sub
 
 Public Sub OpenAndSelectFile(sFile As String)
     On Error GoTo ErrorHandler:

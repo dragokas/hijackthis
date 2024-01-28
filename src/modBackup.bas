@@ -281,23 +281,23 @@ Public Function MakeBackup(result As SCAN_RESULT) As Boolean
                     ActionMask = ActionMask And Not USE_FEATURE_DISABLE
                  
                     If (.File(i).ActionType And REMOVE_FILE) Then
-                        MakeBackup = MakeBackup And BackupFile(result, .File(i).Path)
+                        MakeBackup = MakeBackup And BackupFile(result, .File(i).path)
                         ActionMask = ActionMask - REMOVE_FILE
                     End If
                     
                     If (.File(i).ActionType And RESTORE_FILE) Then
-                        MakeBackup = MakeBackup And BackupFile(result, .File(i).Path)
+                        MakeBackup = MakeBackup And BackupFile(result, .File(i).path)
                         ActionMask = ActionMask - RESTORE_FILE
                     End If
                     
                     If (.File(i).ActionType And RESTORE_FILE_SFC) Then
-                        MakeBackup = MakeBackup And BackupFile(result, .File(i).Path)
+                        MakeBackup = MakeBackup And BackupFile(result, .File(i).path)
                         ActionMask = ActionMask - RESTORE_FILE_SFC
                     End If
                     
                     If (.File(i).ActionType And REMOVE_FOLDER) Then
                         'enum all files
-                        aFiles = ListFiles(.File(i).Path, , True)
+                        aFiles = ListFiles(.File(i).path, , True)
                         If AryItems(aFiles) Then
                             For N = 0 To UBound(aFiles)
                                 MakeBackup = MakeBackup And BackupFile(result, aFiles(N))
@@ -307,12 +307,12 @@ Public Function MakeBackup(result As SCAN_RESULT) As Boolean
                     End If
                     
                     If (.File(i).ActionType And UNREG_DLL) Then
-                        MakeBackup = MakeBackup And BackupFile(result, .File(i).Path, VERB_FILE_REGISTER)
+                        MakeBackup = MakeBackup And BackupFile(result, .File(i).path, VERB_FILE_REGISTER)
                         ActionMask = ActionMask - UNREG_DLL
                     End If
                     
                     If (.File(i).ActionType And BACKUP_FILE) Then
-                        MakeBackup = MakeBackup And BackupFile(result, .File(i).Path)
+                        MakeBackup = MakeBackup And BackupFile(result, .File(i).path)
                         ActionMask = ActionMask - BACKUP_FILE
                     End If
                     
@@ -368,7 +368,7 @@ Public Function MakeBackup(result As SCAN_RESULT) As Boolean
                     With .Reg(i)
                         If (.ActionType And REMOVE_KEY) Or (.ActionType And BACKUP_KEY) Then
                             'whole key
-                            BackupKey result, .Hive, .key, , .Redirected, False
+                            BackupKey result, .Hive, .Key, , .Redirected, False
                         ElseIf (.ActionType And RESTORE_KEY_PERMISSIONS) Or (.ActionType And RESTORE_KEY_PERMISSIONS_RECURSE) Then
                             'permissions only
                             MyReg.Hive = .Hive
@@ -376,19 +376,19 @@ Public Function MakeBackup(result As SCAN_RESULT) As Boolean
                             MyReg.ActionType = .ActionType
                             If (.ActionType And RESTORE_KEY_PERMISSIONS_RECURSE) Then
                                 
-                                For j = 1 To Reg.EnumSubKeysToArray(.Hive, .key, aSubKeys(), .Redirected, False, True)
-                                    MyReg.key = aSubKeys(j)
+                                For j = 1 To Reg.EnumSubKeysToArray(.Hive, .Key, aSubKeys(), .Redirected, False, True)
+                                    MyReg.Key = aSubKeys(j)
                                     lRegID = BackupAllocReg(MyReg, True)
                                     BackupAddCommand REGISTRY_BASED, VERB_RESTORE_REG_KEY, OBJ_REG_METADATA, lRegID
                                 Next
                             End If
                             'root key self
-                            MyReg.key = .key
+                            MyReg.Key = .Key
                             lRegID = BackupAllocReg(MyReg, True)
                             BackupAddCommand REGISTRY_BASED, VERB_RESTORE_REG_KEY, OBJ_REG_METADATA, lRegID
                         Else
                             'parameter
-                            BackupKey result, .Hive, .key, .Param, .Redirected, False
+                            BackupKey result, .Hive, .Key, .Param, .Redirected, False
                         End If
                     End With
                 Next
@@ -483,7 +483,7 @@ Function PackO25_Entry(O25 As O25_ENTRY) As String
     With O25
         dp.Push .Consumer.Name
         dp.Push .Consumer.NameSpace
-        dp.Push .Consumer.Path
+        dp.Push .Consumer.path
         dp.Push .Consumer.Type
         dp.Push .Consumer.Script.File
         dp.Push .Consumer.Script.Text
@@ -495,7 +495,7 @@ Function PackO25_Entry(O25 As O25_ENTRY) As String
         dp.Push .Consumer.KillTimeout
         dp.Push .Filter.Name
         dp.Push .Filter.NameSpace
-        dp.Push .Filter.Path
+        dp.Push .Filter.path
         dp.Push .Filter.Query
         dp.Push .Timer.Type
         dp.Push .Timer.className
@@ -523,7 +523,7 @@ Function UnpackO25_Entry(sHexed_o25_Entry As String) As O25_ENTRY
     With UnpackO25_Entry
         .Consumer.Name = dp.Fetch
         .Consumer.NameSpace = dp.Fetch
-        .Consumer.Path = dp.Fetch
+        .Consumer.path = dp.Fetch
         .Consumer.Type = dp.Fetch
         .Consumer.Script.File = dp.Fetch
         .Consumer.Script.Text = dp.Fetch
@@ -535,7 +535,7 @@ Function UnpackO25_Entry(sHexed_o25_Entry As String) As O25_ENTRY
         .Consumer.KillTimeout = dp.Fetch
         .Filter.Name = dp.Fetch
         .Filter.NameSpace = dp.Fetch
-        .Filter.Path = dp.Fetch
+        .Filter.path = dp.Fetch
         .Filter.Query = dp.Fetch
         .Timer.Type = dp.Fetch
         .Timer.className = dp.Fetch
@@ -725,14 +725,14 @@ Private Function BackupAllocReg(FixReg As FIX_REG_KEY, Optional bBackupMetadata 
         If bIni Then
             'ini
             sPath = EnvironUnexpand(.IniFile)
-            sData = IniGetString(.IniFile, .key, .Param)
+            sData = IniGetString(.IniFile, .Key, .Param)
             sDataDec = sData
             sData = HexStringW(sData)
         Else
             'reg
             lHive = .Hive
 
-            sData = CStr(Reg.GetData(.Hive, .key, .Param, .Redirected, True, True, lParamType))
+            sData = CStr(Reg.GetData(.Hive, .Key, .Param, .Redirected, True, True, lParamType))
             sDataDec = sData
             
             'If Reg.Param = "" And lParamType = 0 Then 'if default value and not set
@@ -761,11 +761,11 @@ Private Function BackupAllocReg(FixReg As FIX_REG_KEY, Optional bBackupMetadata 
             tBackupList.cLastCMD.WriteParam lRegID, "redir", CLng(.Redirected)
             tBackupList.cLastCMD.WriteParam lRegID, "empty", CLng(bEmpty)
             If bBackupMetadata Then
-                tBackupList.cLastCMD.WriteParam lRegID, "DateM", ConvertDateToUSFormat(Reg.GetKeyTime(lHive, .key, .Redirected))
-                tBackupList.cLastCMD.WriteParam lRegID, "SD", GetRegKeyStringSD(lHive, .key, .Redirected)
+                tBackupList.cLastCMD.WriteParam lRegID, "DateM", ConvertDateToUSFormat(Reg.GetKeyTime(lHive, .Key, .Redirected))
+                tBackupList.cLastCMD.WriteParam lRegID, "SD", GetRegKeyStringSD(lHive, .Key, .Redirected)
             End If
         End If
-        tBackupList.cLastCMD.WriteParam lRegID, "key", .key
+        tBackupList.cLastCMD.WriteParam lRegID, "key", .Key
         
         If Not bPermOnly Then
             tBackupList.cLastCMD.WriteParam lRegID, "param", .Param
@@ -967,14 +967,14 @@ Public Function BackupKey( _
         For j = 1 To Reg.EnumSubKeysToArray(hHive, sKey, aSubKeys(), bUseWow64, True, True)
             
             For k = 1 To Reg.EnumValuesToArray(hHive, aSubKeys(j), aValues(), bUseWow64)
-                MyReg.key = aSubKeys(j)
+                MyReg.Key = aSubKeys(j)
                 MyReg.Param = aValues(k)
                 lRegID = BackupAllocReg(MyReg)
                 BackupAddCommand REGISTRY_BASED, VERB_RESTORE_REG_VALUE, OBJ_REG_VALUE, lRegID
             Next
             
             'backup default value of the key
-            MyReg.key = aSubKeys(j)
+            MyReg.Key = aSubKeys(j)
             MyReg.Param = vbNullString
             DoBackupMeta = Not HE_Uniq.Uniq_Exists(hHive, aSubKeys(j), , bUseWow64)
             lRegID = BackupAllocReg(MyReg, DoBackupMeta)
@@ -983,7 +983,7 @@ Public Function BackupKey( _
         Next
         
         'backup default value of the root key
-        MyReg.key = sKey
+        MyReg.Key = sKey
         MyReg.Param = vbNullString
         DoBackupMeta = Not HE_Uniq.Uniq_Exists(hHive, sKey, , bUseWow64)
         lRegID = BackupAllocReg(MyReg, DoBackupMeta)
@@ -993,7 +993,7 @@ Public Function BackupKey( _
         'backup values of root key
         
         For k = 1 To Reg.EnumValuesToArray(hHive, sKey, aValues(), bUseWow64)
-            MyReg.key = sKey
+            MyReg.Key = sKey
             MyReg.Param = aValues(k)
             lRegID = BackupAllocReg(MyReg)
             BackupAddCommand REGISTRY_BASED, VERB_RESTORE_REG_VALUE, OBJ_REG_VALUE, lRegID
@@ -1014,7 +1014,7 @@ Public Function BackupKey( _
 '            End If
 '        End If
         
-        MyReg.key = sKey
+        MyReg.Key = sKey
         MyReg.Param = sValue
         DoBackupMeta = Not HE_Uniq.Uniq_Exists(hHive, sKey, , bUseWow64)
         lRegID = BackupAllocReg(MyReg, DoBackupMeta)
@@ -1057,7 +1057,7 @@ Public Function ABR_CreateBackup(bForceIgnoreDays As Boolean) As Boolean
     ' - либо добавить новую секцию с неинициализированнми данными и "добить" ее чтобы SizeOfImage был равен упаковываемому.
     '
     
-    Const sMarker As String = "Backup created via 'HijackThis+' using 'Autobackup registry (ABR)' by D.Kuznetsov"
+    Const sMarker As String = "Backup created via 'HiJackThis+' using 'Autobackup registry (ABR)' by D.Kuznetsov"
     
     If Not OSver.IsElevated Then Exit Function
     
@@ -1626,12 +1626,10 @@ Public Function SRP_Create_API() As Long
         .dwEventType = BEGIN_SYSTEM_CHANGE
         .dwRestorePtType = MODIFY_SETTINGS
         .llSequenceNumber = 0
-        sDescr = "Restore Point by HijackThis+"
+        sDescr = "Restore Point by HiJackThis+"
         sDescr = StrConv(sDescr, vbFromUnicode)
         memcpy .szDescription(0), ByVal StrPtr(sDescr), LenB(sDescr)
     End With
-    
-    '//TODO: add LoadLibrary / DispCallFunc
     
     If (0 = SRSetRestorePoint(rpi, sms)) Then
         If sms.nStatus = ERROR_SERVICE_DISABLED Then
@@ -1695,8 +1693,8 @@ Private Function SRP_Create() As Boolean 'WMI based
     Reg.SetDwordVal HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore", "SystemRestorePointCreationFrequency", 0
     bStateAltered = True
     
-    SRP_Create = (S_OK = oSR.CreateRestorePoint("Restore Point by HijackThis+", MODIFY_SETTINGS, BEGIN_SYSTEM_CHANGE))
-    oSR.CreateRestorePoint "Restore Point by HijackThis+", MODIFY_SETTINGS, END_SYSTEM_CHANGE
+    SRP_Create = (S_OK = oSR.CreateRestorePoint("Restore Point by HiJackThis+", MODIFY_SETTINGS, BEGIN_SYSTEM_CHANGE))
+    oSR.CreateRestorePoint "Restore Point by HiJackThis+", MODIFY_SETTINGS, END_SYSTEM_CHANGE
     
     If SRP_Create Then
         'MsgBoxw "System restore point is successfully created.", vbInformation
@@ -2337,7 +2335,7 @@ Public Function RestoreBackup(sItem As String) As Boolean
                             If IsEmpty(.DefaultData) Then
                                 'it is an empty default value (or value that should not exist)
                                 'to make default value of a key become empty, we have to delete default value
-                                RestoreBackup = RestoreBackup And Reg.DelVal(.Hive, .key, .Param, .Redirected)
+                                RestoreBackup = RestoreBackup And Reg.DelVal(.Hive, .Key, .Param, .Redirected)
                             Else
                                 Select Case .ParamType
         
@@ -2345,7 +2343,7 @@ Public Function RestoreBackup(sItem As String) As Boolean
                                     .DefaultData = UnHexStringW(CStr(.DefaultData))
                                 End Select
                             
-                                RestoreBackup = RestoreBackup And Reg.SetData(.Hive, .key, .Param, .ParamType, .DefaultData, .Redirected)
+                                RestoreBackup = RestoreBackup And Reg.SetData(.Hive, .Key, .Param, .ParamType, .DefaultData, .Redirected)
                             End If
                         Else
                             RestoreBackup = False
@@ -2363,9 +2361,9 @@ Public Function RestoreBackup(sItem As String) As Boolean
                     lRegID = CLng(Cmd.Args)
                     With FixReg
                         If BackupExtractFixRegKeyByRegID(lRegID, REGISTRY_BASED, FixReg) Then
-                            Call SetRegKeyStringSD(.Hive, .key, .SD, .Redirected)
+                            Call SetRegKeyStringSD(.Hive, .Key, .SD, .Redirected)
                             If .DateM <> dDateNull Then
-                                Call Reg.SetKeyTime(.Hive, .key, .DateM, .Redirected)
+                                Call Reg.SetKeyTime(.Hive, .Key, .DateM, .Redirected)
                             End If
                             RestoreBackup = True
                         End If
@@ -2389,7 +2387,7 @@ Public Function RestoreBackup(sItem As String) As Boolean
                      With FixReg
                         If BackupExtractFixRegKeyByRegID(lRegID, INI_BASED, FixReg) Then
                         
-                            RestoreBackup = RestoreBackup And IniSetString(.IniFile, .key, .Param, UnHexStringW(.DefaultData))
+                            RestoreBackup = RestoreBackup And IniSetString(.IniFile, .Key, .Param, UnHexStringW(.DefaultData))
                         End If
                     End With
                 Else
@@ -2561,7 +2559,7 @@ Private Function BackupExtractFixRegKeyByRegID(lRegID As Long, RecovType As ENUM
         
             .IniFile = EnvironW(tBackupList.cLastCMD.ReadParam(lRegID, "path"))
         End If
-        .key = tBackupList.cLastCMD.ReadParam(lRegID, "key")
+        .Key = tBackupList.cLastCMD.ReadParam(lRegID, "key")
         .Param = tBackupList.cLastCMD.ReadParam(lRegID, "param")
         .DefaultData = tBackupList.cLastCMD.ReadParam(lRegID, "data")
         If Len(.Param) = 0 Then
@@ -2606,7 +2604,7 @@ Private Function BackupValidateFileHash(lBackupID As Long, lFileID As Long) As B
         BackupLoadBackupByID lBackupID
     Else
         sCmdFilename = BuildPath(AppPath(), "Backups\" & lBackupID & "\" & BACKUP_COMMAND_FILE_NAME)
-        If StrComp(sCmdFilename, tBackupList.cLastCMD.FileName, 1) <> 0 Then
+        If StrComp(sCmdFilename, tBackupList.cLastCMD.filename, 1) <> 0 Then
             BackupLoadBackupByID lBackupID
         End If
     End If
