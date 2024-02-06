@@ -265,9 +265,10 @@ End Enum
 
 Public Enum ENUM_COMMANDLINE_ACTION_BASED
     COMMANDLINE_RUN = 1
+    COMMANDLINE_POWERSHELL = 2
 End Enum
 #If False Then
-    COMMANDLINE_RUN
+    Dim COMMANDLINE_RUN, COMMANDLINE_POWERSHELL
 #End If
 
 Public Type FIX_REG_KEY
@@ -328,6 +329,8 @@ Public Type FIX_COMMANDLINE
     Executable      As String
     Arguments       As String
     Style           As SHOWWINDOW_FLAGS
+    Wait            As Boolean
+    TimeoutMs       As Long
 End Type
 
 Public Enum JUMP_ENTRY_TYPE
@@ -588,7 +591,8 @@ Public Sub AddToScanResults( _
     
     Const SelLastAdded As Boolean = False
     
-    result.HitLineW = ScreenHitLine(result.HitLineW)
+    'result.HitLineW = ScreenHitLine(result.HitLineW)
+    'moved to => IsOnIgnoreList
     
     If DoNotDuplicate Then
         If UBound(Scan) > 0 Then
@@ -1016,10 +1020,8 @@ Public Function InArrayResultCommandline(CommandlineArray() As FIX_COMMANDLINE, 
                 If Item.ActionType = .ActionType Then
                     If Item.Executable = .Executable Then
                         If Item.Arguments = .Arguments Then
-                            If Item.Style = .Style Then
-                                InArrayResultCommandline = True
-                                Exit For
-                            End If
+                            InArrayResultCommandline = True
+                            Exit For
                         End If
                     End If
                 End If
@@ -7439,15 +7441,7 @@ Public Sub CheckPolicies()
                         .Section = "O7"
                         .HitLineW = sHit
                         AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key, aValue(i)
-                        AddRegToFix .Reg, CREATE_KEY, HKEY_LOCAL_MACHINE, "Software\Microsoft\AMSI\Providers\{2781761E-28E0-4109-99FE-B9D127C57AFE}"
-                        AddRegToFix .Reg, CREATE_KEY, HKEY_LOCAL_MACHINE, "Software\Microsoft\AMSI\Providers2\{2781761E-28E0-4109-99FE-B9D127C57AFE}"
-                        AddRegToFix .Reg, CREATE_KEY, HKEY_LOCAL_MACHINE, "Software\Microsoft\AMSI\UacProviders\{2781761E-28E2-4109-99FE-B9D127C57AFE}"
-                        'SOFTWARE\Microsoft\Windows Defender\Spynet (Cloud-delivered protection)
-                        AddRegToFix .Reg, RESTORE_VALUE, HKEY_LOCAL_MACHINE, Caes_Decode("TRK[`L_Tm`DzQPVTM]GDX_Wdnl AdghsknCibGRIBS"), "SpyNetReporting", 2
-                        AddServiceToFix .Service, ENABLE_SERVICE Or START_SERVICE, "WinDefend"
-                        AddTaskToFix .Task, ENABLE_TASK, "\Microsoft\Windows\ExploitGuard\ExploitGuard MDM policy Refresh"
-                        .CureType = REGISTRY_BASED Or SERVICE_BASED Or TASK_BASED
-                        '// TODO: restore tasks
+                        FixWindowsDefender result
                     End With
                     AddToScanResults result
                 End If
@@ -7469,15 +7463,7 @@ Public Sub CheckPolicies()
                         .Section = "O7"
                         .HitLineW = sHit
                         AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key, aValue(i)
-                        AddRegToFix .Reg, CREATE_KEY, HKEY_LOCAL_MACHINE, "Software\Microsoft\AMSI\Providers\{2781761E-28E0-4109-99FE-B9D127C57AFE}"
-                        AddRegToFix .Reg, CREATE_KEY, HKEY_LOCAL_MACHINE, "Software\Microsoft\AMSI\Providers2\{2781761E-28E0-4109-99FE-B9D127C57AFE}"
-                        AddRegToFix .Reg, CREATE_KEY, HKEY_LOCAL_MACHINE, "Software\Microsoft\AMSI\UacProviders\{2781761E-28E2-4109-99FE-B9D127C57AFE}"
-                        'SOFTWARE\Microsoft\Windows Defender\Spynet (Cloud-delivered protection)
-                        AddRegToFix .Reg, RESTORE_VALUE, HKEY_LOCAL_MACHINE, Caes_Decode("TRK[`L_Tm`DzQPVTM]GDX_Wdnl AdghsknCibGRIBS"), "SpyNetReporting", 2
-                        AddServiceToFix .Service, ENABLE_SERVICE Or START_SERVICE, "WinDefend"
-                        AddTaskToFix .Task, ENABLE_TASK, "\Microsoft\Windows\ExploitGuard\ExploitGuard MDM policy Refresh"
-                        .CureType = REGISTRY_BASED Or SERVICE_BASED Or TASK_BASED
-                        '// TODO: restore tasks
+                        FixWindowsDefender result
                     End With
                     AddToScanResults result
                 End If
@@ -7514,6 +7500,25 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
+Private Sub FixWindowsDefender(result As SCAN_RESULT)
+    With result
+        AddRegToFix .Reg, CREATE_KEY, HKEY_LOCAL_MACHINE, "Software\Microsoft\AMSI\Providers\{2781761E-28E0-4109-99FE-B9D127C57AFE}"
+        AddRegToFix .Reg, CREATE_KEY, HKEY_LOCAL_MACHINE, "Software\Microsoft\AMSI\Providers2\{2781761E-28E0-4109-99FE-B9D127C57AFE}"
+        AddRegToFix .Reg, CREATE_KEY, HKEY_LOCAL_MACHINE, "Software\Microsoft\AMSI\UacProviders\{2781761E-28E2-4109-99FE-B9D127C57AFE}"
+        'SOFTWARE\Microsoft\Windows Defender\Spynet (Cloud-delivered protection)
+        AddRegToFix .Reg, RESTORE_VALUE, HKEY_LOCAL_MACHINE, Caes_Decode("TRK[`L_Tm`DzQPVTM]GDX_Wdnl AdghsknCibGRIBS"), "SpyNetReporting", 2
+        AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Policies\Microsoft\" & STR_CONST.WINDOWS_DEFENDER
+        AddRegToFix .Reg, REMOVE_KEY, HKCU, "SOFTWARE\Policies\Microsoft\" & STR_CONST.WINDOWS_DEFENDER
+        AddServiceToFix .Service, ENABLE_SERVICE Or START_SERVICE, "WinDefend"
+        AddTaskToFix .Task, ENABLE_TASK, "\Microsoft\Windows\ExploitGuard\ExploitGuard MDM policy Refresh"
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -UILockdown 0", , False
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -DisableRealtimeMonitoring $false", , False
+        AddCommandlineToFix .CommandLine, COMMANDLINE_RUN, BuildPath(PF_64, STR_CONST.WINDOWS_DEFENDER, "mpcmdrun.exe"), "-wdenable", SW_MINIMIZE, False
+        .CureType = REGISTRY_BASED Or SERVICE_BASED Or TASK_BASED
+        '// TODO: restore tasks
+        .Reboot = True
+    End With
+End Sub
 
 Public Sub CheckPolicyUAC()
     On Error GoTo ErrorHandler:
@@ -8012,14 +8017,7 @@ Public Sub RestoreApplockerDefaults()
             PrintLineW hFile, "<RuleCollection Type=""ManagedInstaller"" EnforcementMode=""NotConfigured"" />"
             PrintLineW hFile, "</AppLockerPolicy>"
             CloseW hFile
-            
-            If Proc.ProcessRun(BuildPath(sWinSysDir, "WindowsPowerShell\v1.0\powershell.exe"), _
-                  "-ExecutionPolicy UnRestricted -c " & """" & _
-                  "import-module AppLocker; Set-AppLockerPolicy -XMLPolicy '" & strPath & "'""", , vbHide) Then
-                Proc.WaitForTerminate , , , 30000
-                
-            End If
-            
+            Call Proc.RunPowershell("import-module AppLocker; Set-AppLockerPolicy -XMLPolicy '" & strPath & "'", True, 30000)
             DeleteFileW StrPtr(strPath)
         End If
         
@@ -10536,12 +10534,8 @@ Public Sub FixO18Item(sItem$, result As SCAN_RESULT)
         sPort = result.Custom(0).Name
         
         'get-printer / remove-printer are Win 8+ only?
+        Call Proc.RunPowershell("$printer = get-printer * | where {$_.portname -eq '" & sPort & "'}; remove-printer -inputobject $printer", True)
         
-        If Proc.ProcessRun(BuildPath(sWinSysDir, "WindowsPowerShell\v1.0\powershell.exe"), _
-          "-ExecutionPolicy UnRestricted -c " & """" & _
-          "$printer = get-printer * | where {$_.portname -eq '" & sPort & "'}; remove-printer -inputobject $printer" & """", , vbHide) Then
-            Proc.WaitForTerminate , , , 15000
-        End If
     End If
     
     FixIt result
@@ -12053,7 +12047,7 @@ Public Sub ShutdownExplorer()
     KillProcessByFile sWinDir & "\" & "explorer.exe", True, 1
 End Sub
     
-Public Function IsOnIgnoreList(sHit$, Optional UpdateList As Boolean, Optional EraseList As Boolean) As Boolean
+Public Function IsOnIgnoreList(ByRef sHit$, Optional UpdateList As Boolean, Optional EraseList As Boolean) As Boolean
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "IsOnIgnoreList - Begin", "Line: " & sHit
     
@@ -12064,6 +12058,8 @@ Public Function IsOnIgnoreList(sHit$, Optional UpdateList As Boolean, Optional E
         ReDim aIgnoreList(0)
         Exit Function
     End If
+    
+    sHit = ScreenHitLine(sHit)
     
     If isInit And Not UpdateList Then
         If InArray(sHit, aIgnoreList) Then IsOnIgnoreList = True
@@ -15736,7 +15732,7 @@ Public Sub AddRegToFix( _
     On Error GoTo ErrorHandler
     
     'speed hack
-    If bAutoLogSilent Then Exit Sub
+    If bAutoLogSilent And Not g_bFixing Then Exit Sub
     
     Dim vHiveFix As Variant, eHiveFix As ENUM_REG_HIVE_FIX
     Dim vUseWow As Variant, Wow6432Redir As Boolean
@@ -15868,7 +15864,7 @@ Public Sub AddIniToFix( _
     On Error GoTo ErrorHandler
     
     'speed hack
-    If bAutoLogSilent Then Exit Sub
+    If bAutoLogSilent And Not g_bFixing Then Exit Sub
     
     If Len(sIniFile) = 0 Then Exit Sub
     
@@ -15963,7 +15959,7 @@ Public Sub AddFileToFix( _
     Dim bMissing As Boolean
     
     'speed hack
-    If bAutoLogSilent Then Exit Sub
+    If bAutoLogSilent And Not g_bFixing Then Exit Sub
     
     If Len(sFilePath) = 0 Then Exit Sub
     'If FileMissing(sFilePath) Then Exit Sub '!!! disabled because of 'RESTORE_FILE'
@@ -16059,7 +16055,7 @@ Public Sub AddProcessToFix( _
     On Error GoTo ErrorHandler
     
     'speed hack
-    If bAutoLogSilent Then Exit Sub
+    If bAutoLogSilent And Not g_bFixing Then Exit Sub
     
     If Len(PathOrName) = 0 And pid = 0 Then Exit Sub
     
@@ -16094,7 +16090,7 @@ Public Sub AddCustomToFix( _
     On Error GoTo ErrorHandler
     
     'speed hack
-    If bAutoLogSilent Then Exit Sub
+    If bAutoLogSilent And Not g_bFixing Then Exit Sub
     
     If AryPtr(CustomArray) Then
         ReDim Preserve CustomArray(UBound(CustomArray) + 1)
@@ -16123,12 +16119,14 @@ Public Sub AddCommandlineToFix( _
     ActionType As ENUM_COMMANDLINE_ACTION_BASED, _
     Optional Executable As String, _
     Optional Arguments As String, _
-    Optional Style As SHOWWINDOW_FLAGS)
+    Optional Style As SHOWWINDOW_FLAGS, _
+    Optional bWait As Boolean = True, _
+    Optional TimeoutMs As Long = 30000)
     
     On Error GoTo ErrorHandler
     
     'speed hack
-    If bAutoLogSilent Then Exit Sub
+    If bAutoLogSilent And Not g_bFixing Then Exit Sub
     
     If AryPtr(CommandlineArray) Then
         ReDim Preserve CommandlineArray(UBound(CommandlineArray) + 1)
@@ -16137,9 +16135,16 @@ Public Sub AddCommandlineToFix( _
     End If
     
     With CommandlineArray(UBound(CommandlineArray))
+        .ActionType = ActionType
         .Executable = Executable
         .Arguments = Arguments
+        'just in case
+        If .ActionType = COMMANDLINE_POWERSHELL And Len(Arguments) = 0 And Len(Executable) <> 0 Then
+            .Arguments = Executable
+        End If
         .Style = Style
+        .Wait = bWait
+        .TimeoutMs = TimeoutMs
     End With
     
     Exit Sub
@@ -16162,7 +16167,7 @@ Public Sub AddServiceToFix( _
     On Error GoTo ErrorHandler
     
     'speed hack
-    If bAutoLogSilent Then Exit Sub
+    If bAutoLogSilent And Not g_bFixing Then Exit Sub
     
     If Len(sServiceName) = 0 Then Exit Sub
     
@@ -16197,7 +16202,7 @@ Public Sub AddTaskToFix( _
     On Error GoTo ErrorHandler
     
     'speed hack
-    If bAutoLogSilent Then Exit Sub
+    If bAutoLogSilent And Not g_bFixing Then Exit Sub
     
     If Len(sTaskPath) = 0 Then Exit Sub
     
@@ -16296,7 +16301,14 @@ Public Sub FixCommandlineHandler(result As SCAN_RESULT)
                     Select Case .ActionType
                     
                     Case COMMANDLINE_RUN
-                        Proc.ProcessRun .Executable, .Arguments, , .Style
+                        If Proc.ProcessRun(.Executable, .Arguments, , .Style) Then
+                            If .Wait Then
+                                Proc.WaitForTerminate , , , .TimeoutMs
+                            End If
+                        End If
+                    
+                    Case COMMANDLINE_POWERSHELL
+                        Proc.RunPowershell .Arguments, .Wait, .TimeoutMs, .Style
                     
                     End Select
                 End With

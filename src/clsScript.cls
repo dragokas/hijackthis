@@ -363,6 +363,7 @@ Private Sub ExecuteFix(sRawText As String)
 On Error GoTo ErrorHandler:
     Dim i As Long
     
+    g_bFixing = True
     modFix.OpenFixLogHandle
     
     modFix.WriteFixLogLine LogTagId_Raw, vbNewLine & "Script contents:" & vbNewLine & _
@@ -396,6 +397,7 @@ On Error GoTo ErrorHandler:
     Next
     
     modFix.CloseFixLog
+    g_bFixing = False
     
 Exit Sub
 ErrorHandler:
@@ -428,7 +430,10 @@ End Sub
 Private Sub ExecuteLogLine(sLogLine As String)
 On Error GoTo ErrorHandler:
     
-    
+    If Not g_bGeneralScanned Then
+        StartScan
+        '// TODO: cmdScan_Click() move some cmds => StartScan
+    End If
     
 Exit Sub
 ErrorHandler:

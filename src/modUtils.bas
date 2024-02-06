@@ -554,14 +554,14 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function IsSignPresent(filename As String) As Boolean
+Public Function IsSignPresent(FileName As String) As Boolean
     ' &H3C -> PE_Header offset
     ' PE_Header offset + &H18 = Optional_PE_Header
     ' PE_Header offset + &H78 = Data_Directories offset
     ' Data_Directories offset + &H20 = SecurityDir -> Address (dword), Size (dword) for digital signature.
     
     On Error GoTo ErrorHandler:
-    AppendErrorLogCustom "IsSignPresent - Begin", "File: " & filename
+    AppendErrorLogCustom "IsSignPresent - Begin", "File: " & FileName
     
     Const IMAGE_FILE_MACHINE_I386   As Long = &H14C&
     Const IMAGE_FILE_MACHINE_IA64   As Long = &H200&
@@ -576,10 +576,10 @@ Public Function IsSignPresent(filename As String) As Boolean
     Dim FSize           As Long
     Dim Redirect As Boolean, bOldStatus As Boolean
   
-    Redirect = ToggleWow64FSRedirection(False, filename, bOldStatus)
+    Redirect = ToggleWow64FSRedirection(False, FileName, bOldStatus)
   
     ff = FreeFile()
-    Open filename For Binary Access Read Shared As #ff
+    Open FileName For Binary Access Read Shared As #ff
     FSize = LOF(ff)
     
     If FSize >= &H3C& + 6& Then
@@ -609,7 +609,7 @@ Public Function IsSignPresent(filename As String) As Boolean
     AppendErrorLogCustom "IsSignPresent - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "modUtils_IsSignPresent", "File:", filename
+    ErrorMsg Err, "modUtils_IsSignPresent", "File:", FileName
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     If inIDE Then Stop: Resume Next
 End Function
@@ -1713,13 +1713,13 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Public Function RegSaveHJT(sName$, sData$, Optional IdSection As SETTINGS_SECTION) As Boolean
+Public Function RegSaveHJT(sName$, sData$, Optional idSection As SETTINGS_SECTION) As Boolean
     On Error GoTo ErrorHandler:
     
     If Not OSver.IsElevated Then Exit Function
     
     Dim sSubSection As String
-    sSubSection = SectionNameById(IdSection)
+    sSubSection = SectionNameById(idSection)
     
     If Len(sSubSection) <> 0 Then sSubSection = "\" & sSubSection
     
@@ -1742,12 +1742,12 @@ End Function
 Public Function RegReadHJT( _
     sName$, _
     Optional sDefault$, _
-    Optional IdSection As SETTINGS_SECTION) As String
+    Optional idSection As SETTINGS_SECTION) As String
     
     On Error GoTo ErrorHandler:
     
     Dim sSubSection As String
-    sSubSection = SectionNameById(IdSection)
+    sSubSection = SectionNameById(idSection)
     
     If Len(sSubSection) <> 0 Then sSubSection = "\" & sSubSection
     
@@ -1770,12 +1770,12 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function RegDelHJT(sName$, Optional IdSection As SETTINGS_SECTION) As Boolean
+Public Function RegDelHJT(sName$, Optional idSection As SETTINGS_SECTION) As Boolean
 
     If Not OSver.IsElevated Then Exit Function
 
     Dim sSubSection As String
-    sSubSection = SectionNameById(IdSection)
+    sSubSection = SectionNameById(idSection)
     
     If Len(sSubSection) <> 0 Then sSubSection = "\" & sSubSection
     
@@ -2487,11 +2487,11 @@ Public Function HasCommandLineKey(ByVal sKey As String) As Boolean
     End If
 End Function
 
-Public Function SectionNameById(IdSection As SETTINGS_SECTION) As String
+Public Function SectionNameById(idSection As SETTINGS_SECTION) As String
 
     Dim sName As String
 
-    Select Case IdSection
+    Select Case idSection
         Case SETTINGS_SECTION_MAIN:                 sName = vbNullString
         Case SETTINGS_SECTION_ADSSPY:               sName = "Tools\ADSSpy"
         Case SETTINGS_SECTION_SIGNCHECKER:          sName = "Tools\SignChecker"
@@ -2859,7 +2859,7 @@ begin:
             GoTo begin
         End If
     Next
-    ScreenHitLine = Replace$(Replace$(sLine, "http", "hxxp", vbTextCompare), "www.", "vvv.", vbTextCompare)
+    ScreenHitLine = doSafeURLPrefix(sLine)
 End Function
 
 Public Function LimitHitLineLength(sLine As String) As String

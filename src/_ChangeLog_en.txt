@@ -11,10 +11,14 @@ Version history:
 |||||       1. HiJackThis: changelog         |||||
 ==================================================
 
-[3.4.0.2 Alpha] - Jan 01, 2024
+[3.4.0.3 Alpha] - Feb 06, 2024
+ - Improved Windows Defender recovery procedure.
+ - Fixed regression: coudn't add some items to ignore list.
+
+[3.4.0.2 Alpha] - Jan 28, 2024
  - Fix of previous build.
 
-[3.4.0.1 Alpha] - Jan 01, 2024
+[3.4.0.1 Alpha] - Jan 28, 2024
  - Fixed a vulnerability in the buffer overflow of the scan results list.
  - Fixed a critical error in the HiJackThis backup restoration function:
 	* It is not recommended to use the "Restore" button for backups in versions 3.3.0.5 - 3.3.0.11 without updating to this version, as it may destroy all other backups;

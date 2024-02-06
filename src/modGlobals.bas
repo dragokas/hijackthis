@@ -34,7 +34,7 @@ Public Const STR_NO_COMPANY     As String = "no company"
 Public Const STR_OBFUSCATED     As String = "(obfuscated)"
 
 #If False Then 'for common var. names character case fixation
-    Public x, y, Length, Index, sFilename, i, j, k, N, State, frm, ret, VT, isInit, hWnd, pv, Reg, pid, File, msg, VT, InArray, Self, status, filename
+    Public x, y, Length, Index, sFilename, i, j, k, N, State, frm, ret, VT, isInit, hWnd, pv, Reg, pid, File, msg, VT, InArray, Self, status, FileName
     Public mid, SID
 #End If
 
@@ -281,6 +281,7 @@ Public bMinToTray       As Boolean
 Public bStartupListSilent As Boolean
 Public g_bAppShutdown   As Boolean
 Public g_bScanInProgress      As Boolean
+Public g_bFixing              As Boolean
 Public g_bGeneralScanned      As Boolean
 Public g_bCalcHashInProgress  As Boolean
 Public g_bVTScanInProgress    As Boolean
@@ -582,7 +583,7 @@ End Type
 
 Public Type FILE_NAME_INFORMATION
     FileNameLength As Long
-    filename(MAX_PATH) As Integer 'WCHAR FileName[1] 'MAX_PATH + NUL
+    FileName(MAX_PATH) As Integer 'WCHAR FileName[1] 'MAX_PATH + NUL
 End Type
 
 Public Type MOUNTMGR_BUFER
@@ -996,7 +997,7 @@ Public Declare Function EmptyArray Lib "oleaut32.dll" Alias "SafeArrayCreateVect
 Public Declare Function EmptyByteArray Lib "oleaut32.dll" Alias "SafeArrayCreateVector" (Optional ByVal VT As VbVarType = vbByte, Optional ByVal lLow As Long = 0, Optional ByVal lCount As Long = 0) As Byte()
 Public Declare Function NtCreateFile Lib "ntdll.dll" (ByRef FileHandle As Long, ByVal DesiredAccess As Long, ObjectAttributes As OBJECT_ATTRIBUTES, IoStatusBlock As IO_STATUS_BLOCK, AllocationSize As Any, ByVal FileAttributes As Long, ByVal ShareAccess As Long, ByVal CreateDisposition As Long, ByVal CreateOptions As Long, EaBuffer As Any, ByVal EaLength As Long) As Long
 Public Declare Function NtWriteFile Lib "ntdll.dll" (ByVal FileHandle As Long, EventArg As Any, APCRoutine As Long, APCContext As Any, IoStatusBlock As IO_STATUS_BLOCK, ByVal Buffer As Long, ByVal Length As Long, ByteOffset As Long, Key As Long) As Long
-Public Declare Function OpenFile Lib "kernel32.dll" (ByVal filename As String, ByVal OFs As Long, ByVal Flags As Long) As Long
+Public Declare Function OpenFile Lib "kernel32.dll" (ByVal FileName As String, ByVal OFs As Long, ByVal Flags As Long) As Long
 Public Declare Function RtlDosPathNameToNtPathName_U Lib "ntdll.dll" (ByVal DosFileName As Long, NtFileName As UNICODE_STRING, FilePart As Long, RelativeName As Any) As Long
 Public Declare Sub RtlInitUnicodeString Lib "ntdll.dll" (DestinationString As Any, ByVal sourceString As Long)
 Public Declare Sub RtlFreeUnicodeString Lib "ntdll.dll" (UnicodeString As UNICODE_STRING)

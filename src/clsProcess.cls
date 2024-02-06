@@ -542,6 +542,19 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
+Public Function RunPowershell( _
+    ByVal sCmd As String, _
+    Optional bWait As Boolean = False, _
+    Optional iTimeoutMs As Long = 30000, _
+    Optional WindowStyle As SHOWWINDOW_FLAGS = SW_HIDE) As Boolean
+
+    sCmd = "-ExecutionPolicy UnRestricted -c " & """" & sCmd & """"
+    RunPowershell = Proc.ProcessRun(BuildPath(sWinSysDir, "WindowsPowerShell\v1.0\powershell.exe"), sCmd, , WindowStyle)
+    If RunPowershell And bWait Then
+        Me.WaitForTerminate , , , iTimeoutMs
+    End If
+    
+End Function
 
 Public Function ProcessRun( _
                             ByVal FileName As String, _

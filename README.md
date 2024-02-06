@@ -81,7 +81,7 @@ If you are not already an expert, we recommend submitting your case to an online
 - English: [Our GitHub](https://github.com/dragokas/hijackthis/wiki/How-to-make-a-request-for-help-in-the-PC-cure-section%3F) ; [GeeksToGo](http://www.geekstogo.com/forum/topic/2852-malware-and-spyware-cleaning-guide/) ;  [BleepingComputer](https://www.bleepingcomputer.com/forums/t/34773/preparation-guide-for-use-before-using-malware-removal-tools-and-requesting-help/)
 - Russian: [SafeZone](https://safezone.cc/pravila/) ; [CyberForum](https://www.cyberforum.ru/viruses/thread49792.html) ; [OSZone](http://forum.oszone.net/thread-98169.html) ; [SoftBoard](https://softboard.ru/topic/51343-правила-подраздела/) ; [THG](http://www.thg.ru/forum/showthread.php?t=92236) ; [VirusInfo](https://virusinfo.info/showthread.php?t=1235) ; [KasperskyClub](https://forum.kasperskyclub.ru/index.php?showtopic=43640)
 
-> Note: currently, only [VIRUSNET association](https://github.com/VIRUSNET-Association) can provide direct analysis of HijackThis+ logs in [our github 'Issues' section](https://github.com/dragokas/hijackthis/wiki/How-to-make-a-request-for-help-in-the-PC-cure-section%3F). Please feel free to ask help there (English/Russian only).
+> Note: currently, only [VIRUSNET association](https://github.com/VIRUSNET-Association) can provide direct analysis of HiJackThis+ logs in [our github 'Issues' section](https://github.com/dragokas/hijackthis/wiki/How-to-make-a-request-for-help-in-the-PC-cure-section%3F). Please feel free to ask help there (English/Russian only).
 
 ## Technical support
 
@@ -110,7 +110,7 @@ If you are not already an expert, we recommend submitting your case to an online
  * **Fernando Mercês** { [@merces](https://github.com/merces) } (Trend Micro) - coordinator of original HJT, for the tips, suggestions and promotion
  * **Loucif Kharouni** { [@loucifkharouni](https://github.com/loucifkharouni) } (Trend Micro) - coordinator of original HJT, for the tips & suggestions
 
-HiJackThis+ by Alex Dragokas is a continuation of Trend Micro HiJackThis development, based on [v.2.0.6](https://sourceforge.net/p/hjt/code/HEAD/tree/beta/2.0.6/) branch and 100% rewritten at the moment. HijackThis+ was initially supported by Trend Micro, but they have since refused support and closed its GitHub repository.
+HiJackThis+ by Alex Dragokas is a continuation of Trend Micro HiJackThis development, based on [v.2.0.6](https://sourceforge.net/p/hjt/code/HEAD/tree/beta/2.0.6/) branch and 100% rewritten at the moment. HiJackThis+ was initially supported by Trend Micro, but they have since refused support and closed its GitHub repository.
 HiJackThis+ is distributed under the initial [GPLv2 license](https://github.com/dragokas/hijackthis/blob/devel/LICENSE.md). It also includes several tools and plugins available as freeware.
 
 ## Reviews & Mirrors
