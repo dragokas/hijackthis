@@ -11,6 +11,18 @@ Version history:
 |||||       1. HiJackThis: changelog         |||||
 ==================================================
 
+[3.4.0.4 Alpha] - Feb 08, 2024
+ - The maximum length of a log string is limited to 3000 characters.
+ - The maximum length of a result list string has been increased to 600 characters.
+ - Fixed regression: truncating long strings resulted in the removal of special annotations.
+ - Fixed regression: truncated items couldn't be added to the ignore list.
+ - Fixed regression: sometimes incorrect target expansion of shortcuts occurred.
+ - Fixed regression: the "Add Checked to ignore list" button became inactive when saving the log.
+ - O4 - Startup: the "(file missing)" annotation is now applied to the shortcut's target, not to the shortcut's own path.
+ - O4 - Startup: Added expansion of script contents.
+ - Removed duplication of some Jump list items.
+ - Fixed: the program icon wasn't displayed when minimizing to the notification area.
+
 [3.4.0.3 Alpha] - Feb 06, 2024
  - Improved Windows Defender recovery procedure.
  - Fixed regression: coudn't add some items to ignore list.

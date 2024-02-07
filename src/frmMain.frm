@@ -5224,7 +5224,7 @@ Private Sub cmdSaveDef_Click()
     j = i + 1
     For i = 0 To lstResults.ListCount - 1
         If lstResults.ItemChecked(i) Then
-            RegSaveHJT "Ignore" & CStr(j), Crypt(lstResults.List(i))
+            RegSaveHJT "Ignore" & CStr(j), Crypt(MapHitlineAnsiToUnicode(lstResults.List(i)))
             j = j + 1
             'sync listbox records with the RAM
             RemoveFromScanResults lstResults.List(i)
@@ -5411,6 +5411,7 @@ Private Sub cmdScan_Click()
         FraIncludeSections.Enabled = True
         fraScanOpt.Enabled = True
         cmdFix.Enabled = True
+        cmdSaveDef.Enabled = True
     End If
     
     'focus on 1-st element of list
@@ -5549,7 +5550,7 @@ Private Sub Form_Resize()
                 Set FormSys = New frmSysTray
                 Load FormSys
                 Set FormSys.FSys = Me
-                FormSys.TrayIcon = Me
+                'FormSys.TrayIcon = Me
             End If
             frmSysTray.MeResize Me
         End If
@@ -6192,6 +6193,66 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
+Private Sub EraseDuplicatesFromJumpList(result As SCAN_RESULT)
+    On Error GoTo ErrorHandler:
+    With result
+        If AryPtr(.Jump) = 0 Then Exit Sub
+        Dim dict As clsTrickHashTable
+        Dim i As Long, j As Long
+        'File
+        If AryPtr(.File) Then
+            Set dict = New clsTrickHashTable
+            dict.CompareMode = TextCompare
+            For i = 0 To UBound(.File)
+                If Not dict.Exists(.File(i).path) Then
+                    dict.Add .File(i).path, 0
+                End If
+            Next
+            For j = 0 To UBound(.Jump)
+                If AryPtr(.Jump(j).File) Then
+                    For i = 0 To UBound(.Jump(j).File)
+                        With .Jump(j).File(i)
+                            If dict.Exists(.path) Then
+                                .path = vbNullString
+                            End If
+                        End With
+                    Next
+                End If
+            Next
+        End If
+        'Registry
+        Dim sEntry As String
+        If AryPtr(.Reg) Then
+            Set dict = New clsTrickHashTable
+            dict.CompareMode = TextCompare
+            For i = 0 To UBound(.Reg)
+                With .Reg(i)
+                    sEntry = .Hive & .Key & .Param & .Redirected & .IniFile
+                    If Not dict.Exists(sEntry) Then
+                        dict.Add sEntry, 0
+                    End If
+                End With
+            Next
+            For j = 0 To UBound(.Jump)
+                If AryPtr(.Jump(j).Registry) Then
+                    For i = 0 To UBound(.Jump(j).Registry)
+                        With .Jump(j).Registry(i)
+                            sEntry = .Hive & .Key & .Param & .Redirected & .IniFile
+                            If dict.Exists(sEntry) Then
+                                .Key = vbNullString
+                                .IniFile = vbNullString
+                            End If
+                        End With
+                    Next
+                End If
+            Next
+        End If
+    End With
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "EraseDuplicatesFromJumpList"
+    If inIDE Then Stop: Resume Next
+End Sub
 
 'Context menu in result list of scan:
 
@@ -6323,6 +6384,8 @@ Private Sub lstResults_MouseUp(Button As Integer, Shift As Integer, x As Single,
                     mnuResultDisable.Visible = False
                 End If
                 
+                EraseDuplicatesFromJumpList result
+                
                 If AryPtr(result.File) Or AryPtr(result.Reg) Or AryPtr(result.Jump) Then
                     mnuResultJump.Enabled = True
                     
@@ -6344,7 +6407,7 @@ Private Sub lstResults_MouseUp(Button As Integer, Shift As Integer, x As Single,
                     
                     'list of cure reg. entries
                     JumpListExtractRegistry result.Reg, FileItems, RegItems
-
+                    
                     'list of files and reg. entries added just for jumping
                     If AryPtr(result.Jump) Then
                         For j = 0 To UBound(result.Jump)
@@ -6396,25 +6459,26 @@ Private Sub JumpListExtractFiles(aFixFile() As FIX_FILE, in_out_FileItems As Lon
         For j = 0 To UBound(aFixFile)
             If in_out_FileItems >= MAX_JUMP_LIST_ITEMS Then Exit For
             sPath = aFixFile(j).path
-            
-            bExists = FileExists(sPath) Or FolderExists(sPath)
-            If Not bExists Then
-                sPath = GetParentDir(sPath)
+            If Len(sPath) <> 0 Then
                 bExists = FileExists(sPath) Or FolderExists(sPath)
-                sPath = sPath & "\"
-            End If
-            
-            If bExists Then
-                in_out_FileItems = in_out_FileItems + 1
-                mnuResultJumpFile(in_out_FileItems - 1).Caption = sPath
-                
-                If AryPtr(JumpFileCache) Then
-                    ReDim Preserve JumpFileCache(UBound(JumpFileCache) + 1)
-                Else
-                    ReDim JumpFileCache(0)
+                If Not bExists Then
+                    sPath = GetParentDir(sPath)
+                    bExists = FileExists(sPath) Or FolderExists(sPath)
+                    sPath = sPath & "\"
                 End If
                 
-                JumpFileCache(UBound(JumpFileCache)) = aFixFile(j)
+                If bExists Then
+                    in_out_FileItems = in_out_FileItems + 1
+                    mnuResultJumpFile(in_out_FileItems - 1).Caption = sPath
+                    
+                    If AryPtr(JumpFileCache) Then
+                        ReDim Preserve JumpFileCache(UBound(JumpFileCache) + 1)
+                    Else
+                        ReDim JumpFileCache(0)
+                    End If
+                    
+                    JumpFileCache(UBound(JumpFileCache)) = aFixFile(j)
+                End If
             End If
         Next
     End If
@@ -6447,7 +6511,7 @@ Private Sub JumpListExtractRegistry(aFixReg() As FIX_REG_KEY, in_out_FileItems A
                         JumpFileCache(UBound(JumpFileCache)).path = .IniFile
                     End If
                 Else
-                    If in_out_RegItems < MAX_JUMP_LIST_ITEMS Then
+                    If in_out_RegItems < MAX_JUMP_LIST_ITEMS And Len(.Key) <> 0 Then
                         in_out_RegItems = in_out_RegItems + 1
                         bExists = Reg.KeyExists(.Hive, .Key, .Redirected)
                         bNoValue = False

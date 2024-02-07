@@ -8,8 +8,9 @@ Attribute VB_Name = "modGlobals"
 Option Explicit
 
 Public Const LAST_CHECK_OTHER_SECTION_NUMBER As Long = 27
-
 Public Const MAX_TIMEOUT_DEFAULT As Long = 180 'Standard scan timeout
+Public Const LIMIT_CHARS_COUNT_FOR_LOGLINE = 3000
+Public Const LIMIT_CHARS_COUNT_FOR_LISTLINE = 600
 
 Public Const g_AppName As String = "HiJackThis+"
 

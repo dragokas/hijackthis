@@ -547,6 +547,18 @@ Public Function GetScanResults(HitLineA As String, result As SCAN_RESULT, Option
     MsgBoxW Translate(592) & vbCrLf & HitLineA, vbCritical, Translate(591)
 End Function
 
+'.HitLineA => .HitLineW
+Public Function MapHitlineAnsiToUnicode(HitLineA As String, Optional out_idx As Long) As String
+    Dim i As Long
+    For i = 1 To UBound(Scan)
+        If HitLineA = Scan(i).HitLineA Then
+            out_idx = i
+            MapHitlineAnsiToUnicode = Scan(i).HitLineW
+            Exit Function
+        End If
+    Next
+End Function
+
 Public Function RemoveFromScanResults(HitLineA As String) As Boolean
     Dim i As Long, j As Long
     Dim result As SCAN_RESULT
@@ -616,7 +628,7 @@ Public Sub AddToScanResults( _
             bAddedToList = True
             'Commented (no difference)
             'LockWindowUpdate frmMain.lstResults.hwnd
-            frmMain.lstResults.AddItem LimitHitLineLength(result.HitLineW)
+            frmMain.lstResults.AddItem LimitHitLineLength(result.HitLineW, LIMIT_CHARS_COUNT_FOR_LISTLINE)
             'LockWindowUpdate 0&
             'Unicode to ANSI mapping (dirty hack)
             result.HitLineA = frmMain.lstResults.List(frmMain.lstResults.ListCount - 1)
@@ -4929,8 +4941,8 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUserOfHive() As String)
     Const dEpoch As Date = #1/1/1601#
     
     Dim aRegKeys() As String, aParams() As String, aDes() As String, aDesConst() As String, result As SCAN_RESULT
-    Dim sAutostartFolder$(), sShortCut$, i&, k&, Wow6432Redir As Boolean, UseWow, sFolder$, sHit$
-    Dim FldCnt&, sKey$, sSid$, sFile$, sLinkPath$, sLinkExt$, sTarget$, Blink As Boolean, bPE_EXE As Boolean
+    Dim sAutostartFolder$(), sBaseFileName$, i&, k&, Wow6432Redir As Boolean, UseWow, sFolder$, sHit$
+    Dim FldCnt&, sKey$, sSid$, sBasePath$, sBaseExt$, sTarget$, sFinalExecutable As String, bShortcut As Boolean, bPE_EXE As Boolean
     Dim bData() As Byte, isDisabled As Boolean, flagDisabled As Long, sKeyDisable As String, dDate As Date
     Dim StartupCU As String, aFiles() As String, sArguments As String, aUserNames() As String, aUserConst() As String, sUsername$
     Dim aFolders() As String, aHive() As String
@@ -5115,11 +5127,14 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUserOfHive() As String)
             
             For i = 0 To UBoundSafe(aFiles)
             
-                sShortCut = GetFileNameAndExt(aFiles(i))
-
-                If (LCase$(sShortCut) <> "desktop.ini" Or bIgnoreAllWhitelists) Then
-
-                  If Not FolderExists(sFolder & "\" & sShortCut) Then
+                sBasePath = aFiles(i)
+                sBaseFileName = GetFileNameAndExt(sBasePath)
+                sBaseExt = UCase$(GetExtensionName(sBaseFileName))
+                
+                If (LCase$(sBaseFileName) <> "desktop.ini" Or bIgnoreAllWhitelists) Then
+                  
+                  'wtf is this?
+                  'If Not FolderExists(sFolder & "\" & sBaseFileName) Then
                   
                     isDisabled = False
               
@@ -5129,10 +5144,10 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUserOfHive() As String)
 
                             sKeyDisable = aHive(k) & "\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\StartupFolder"
 
-                            If Reg.ValueExists(0&, sKeyDisable, sShortCut) Then
+                            If Reg.ValueExists(0&, sKeyDisable, sBaseFileName) Then
 
                                 ReDim bData(0)
-                                bData() = Reg.GetBinary(0&, sKeyDisable, sShortCut)
+                                bData() = Reg.GetBinary(0&, sKeyDisable, sBaseFileName)
                                 
                                 If UBoundSafe(bData) >= 11 Then
                             
@@ -5148,12 +5163,8 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUserOfHive() As String)
                         End If
                     End If
                   
-                    sFile = vbNullString
-                    Blink = False
+                    bShortcut = False
                     bPE_EXE = False
-                    
-                    sLinkPath = sFolder & "\" & sShortCut
-                    sLinkExt = UCase$(GetExtensionName(sShortCut))
                     
                     'Example:
                     '"O4 - Global User AltStartup: "
@@ -5164,32 +5175,40 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUserOfHive() As String)
                         sHit = "O4 - " & aDes(k) & ": "
                     End If
                     
-                    If StrInParamArray(sLinkExt, ".LNK", ".URL", ".WEBSITE", ".PIF") Then Blink = True
+                    If StrInParamArray(sBaseExt, ".LNK", ".URL", ".WEBSITE", ".PIF") Then bShortcut = True
                     
-                    If Not Blink Or sLinkExt = ".PIF" Then  'not a Shortcut ?
-                        bPE_EXE = isPE(sLinkPath)       'PE EXE ?
+                    If Not bShortcut Or sBaseExt = ".PIF" Then  'not a Shortcut ?
+                        bPE_EXE = isPE(sBasePath)       'PE EXE ?
                     End If
                     
+                    sArguments = vbNullString
                     sTarget = vbNullString
                     sArguments = vbNullString
                     
-                    If Blink Then
-                        sTarget = GetFileFromShortcut(sLinkPath, sArguments)
-                        
-                        sHit = sHit & aFiles(i) & "    ->    " & sTarget & IIf(Len(sArguments) <> 0, " " & sArguments, vbNullString) 'doSafeURLPrefix
+                    If bShortcut Then
+                        sTarget = GetFileFromShortcut(sBasePath, sArguments)
+                        sTarget = FormatFileMissing(sTarget)
+                        sFinalExecutable = sTarget
+                        sHit = sHit & sBasePath & "    ->    " & sTarget & IIf(Len(sArguments) <> 0, " " & sArguments, vbNullString)
                     Else
-                        sHit = sHit & aFiles(i) & IIf(bPE_EXE, "    ->    (PE EXE)", vbNullString)
+                        sFinalExecutable = sBasePath
+                        sHit = sHit & sBasePath & IIf(bPE_EXE, "    ->    (PE EXE)", vbNullString)
                     End If
                     
                     If Len(sUsername) <> 0 Then sHit = sHit & " (User '" & sUsername & "')"
                     
                     If isDisabled Then sHit = sHit & IIf(dDate <> dEpoch, " (" & Format$(dDate, "yyyy\/mm\/dd") & ")", vbNullString)
                     
-                    If Not Blink Or bPE_EXE Then
-                        SignVerifyJack sLinkPath, result.SignResult
+                    If IsScriptExtension(sFinalExecutable) Then
+                        sHit = sHit & "    =>    " & _
+                            ReadFileContents(sFinalExecutable, FileGetTypeBOM(sFinalExecutable) = CP_UTF16LE)
+                    End If
+                    
+                    If Not bShortcut Or bPE_EXE Then
+                        SignVerifyJack sBasePath, result.SignResult
                         sHit = sHit & FormatSign(result.SignResult)
                         If g_bCheckSum Then
-                            sHit = sHit & GetFileCheckSum(sLinkPath)
+                            sHit = sHit & GetFileCheckSum(sBasePath)
                         End If
                     Else
                         If 0 <> Len(sTarget) Then
@@ -5208,28 +5227,28 @@ Sub CheckO4_AutostartFolder(aSID() As String, aUserOfHive() As String)
                           
                           If isDisabled Then
                             .Alias = aHive(k) & "\..\StartupApproved\StartupFolder:"
-                            AddRegToFix .Reg, REMOVE_VALUE, 0&, sKeyDisable, sShortCut, , REG_NOTREDIRECTED
-                            If Blink Then ' should go first (for VT)
+                            AddRegToFix .Reg, REMOVE_VALUE, 0&, sKeyDisable, sBaseFileName, , REG_NOTREDIRECTED
+                            If bShortcut Then ' should go first (for VT)
                                 AddProcessToFix .Process, FREEZE_OR_KILL_PROCESS, sTarget
                             Else
-                                AddProcessToFix .Process, FREEZE_OR_KILL_PROCESS, sLinkPath
+                                AddProcessToFix .Process, FREEZE_OR_KILL_PROCESS, sBasePath
                             End If
-                            AddFileToFix .File, REMOVE_FILE, sLinkPath
+                            AddFileToFix .File, REMOVE_FILE, sBasePath
                             .CureType = FILE_BASED Or REGISTRY_BASED Or PROCESS_BASED
                           Else
                             .Alias = aDes(k)
                             AddProcessToFix .Process, FREEZE_OR_KILL_PROCESS, sTarget
-                            If Blink Then ' should go first (for VT)
+                            If bShortcut Then ' should go first (for VT)
                                 AddFileToFix .File, REMOVE_FILE Or USE_FEATURE_DISABLE, sTarget
                             End If
-                            AddFileToFix .File, REMOVE_FILE, sLinkPath
+                            AddFileToFix .File, REMOVE_FILE, sBasePath
                             AddJumpFile .Jump, JUMP_FILE, sTarget, sArguments
                             .CureType = FILE_BASED Or PROCESS_BASED
                           End If
                         End With
                         AddToScanResults result
                     End If
-                  End If
+                  'End If
                 End If
             Next
           End If
@@ -12059,7 +12078,7 @@ Public Function IsOnIgnoreList(ByRef sHit$, Optional UpdateList As Boolean, Opti
         Exit Function
     End If
     
-    sHit = ScreenHitLine(sHit)
+    sHit = ScreenHitLine(LimitHitLineLength(sHit, LIMIT_CHARS_COUNT_FOR_LOGLINE))
     
     If isInit And Not UpdateList Then
         If InArray(sHit, aIgnoreList) Then IsOnIgnoreList = True
@@ -13587,7 +13606,7 @@ Public Function PathSubstituteProfile(path As String, Optional ByVal sUserProfil
     If StrBeginWith(path, UserProfile & "\") Then bComply = True
     If Not bComply Then If StrComp(path, UserProfile, 1) = 0 Then bComply = True
     
-    If bComply Then
+    If bComply And StrComp(ProfilesDir, GetParentDir(sUserProfileDir), 1) = 0 Then
         'substitute
         PathSubstituteProfile = BuildPath(sUserProfileDir, mid$(path, Len(UserProfile) + 2))
         Exit Function

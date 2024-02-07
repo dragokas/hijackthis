@@ -2862,10 +2862,37 @@ begin:
     ScreenHitLine = doSafeURLPrefix(sLine)
 End Function
 
-Public Function LimitHitLineLength(sLine As String) As String
-    If Len(sLine) > 500 Then
-        LimitHitLineLength = Left$(sLine, 500) & "... (" & (Len(sLine) - 500) & " more chars" & ")"
+Private Function GetLastCharPosWithMaxDistReverse(str As String, ch As String, iMaxDist As Long) As Long
+    Dim pos As Long
+    Dim prevPos As Long
+    prevPos = 0
+    Do
+        pos = InStrRev(str, ch, prevPos - 1)
+        If pos = 0 Or (Len(str) - pos) > iMaxDist Then Exit Do
+        prevPos = pos
+        If pos = 1 Then Exit Do
+    Loop
+    If prevPos > 0 Then GetLastCharPosWithMaxDistReverse = prevPos
+End Function
+
+Public Function LimitHitLineLength(sLine As String, ByVal iLimit As Long) As String
+    If Len(sLine) > iLimit Then
+        Dim posMark As Long
+        'Preserve special marks at the end of the line
+        posMark = GetLastCharPosWithMaxDistReverse(sLine, "(", 150)
+        If posMark <> 0 Then
+            iLimit = iLimit - (Len(sLine) - posMark)
+            If iLimit < 1 Then iLimit = 1
+        End If
+        LimitHitLineLength = Left$(sLine, iLimit) & "... (" & (Len(sLine) - iLimit) & " more chars" & ")" & _
+            IIf(posMark = 0, vbNullString, " " & mid$(sLine, posMark))
     Else
         LimitHitLineLength = sLine
     End If
+End Function
+
+Public Function IsScriptExtension(sPath As String) As Boolean
+    Dim sExt As String
+    sExt = GetExtensionName(sPath)
+    IsScriptExtension = StrInParamArray(sExt, ".BAT", ".CMD", ".VBS", ".JS", ".PY")
 End Function

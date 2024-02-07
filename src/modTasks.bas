@@ -646,6 +646,7 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
             
             bNoFile = False
             If te(j).ActionType = TASK_ACTION_COM_HANDLER Then
+                '// TODO: Check this!
                 If FileMissing(te(j).RunObjCom) Then
                     te(j).RunObj = te(j).RunObj & " - (no file)"
                     bNoFile = True

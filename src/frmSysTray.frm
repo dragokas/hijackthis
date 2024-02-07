@@ -14,6 +14,7 @@ Begin VB.Form frmSysTray
       Italic          =   0   'False
       Strikethrough   =   0   'False
    EndProperty
+   Icon            =   "frmSysTray.frx":0000
    LinkTopic       =   "Form1"
    ScaleHeight     =   3030
    ScaleWidth      =   4560
@@ -92,22 +93,23 @@ Public Property Get Tooltip() As String
    Tooltip = nid.szTip
 End Property
 
-Public Property Let TrayIcon(Value As Variant)
-   'On Error Resume Next
-   ' Value can be a picturebox, image, form or string
-   Select Case TypeName(Value)
-      Case "PictureBox", "Image"
-         Me.Icon = Value.Picture
-      Case "String"
-        Me.Icon = LoadPicture(Value)
-      Case Else
-        If TypeOf Value Is Form Then
-            Me.Icon = Value.Icon
-            'pvSetFormIcon Me
-        End If
-   End Select
-   UpdateIcon NIM_MODIFY
-End Property
+'This routine doesn't work for some reason
+'Public Property Let TrayIcon(Value As Variant)
+'   'On Error Resume Next
+'   'Value can be a picturebox, image, form or string
+'   Select Case TypeName(Value)
+'      Case "PictureBox", "Image"
+'         Me.Icon = Value.Picture
+'      Case "String"
+'        Me.Icon = LoadPicture(Value)
+'      Case Else
+'        If TypeOf Value Is Form Then
+'            Me.Icon = Value.Icon
+'            'pvSetFormIcon Me
+'        End If
+'   End Select
+'   UpdateIcon NIM_MODIFY
+'End Property
 
 Private Sub Form_Load()
     SetAllFontCharset Me, g_FontName, g_FontSize, g_bFontBold

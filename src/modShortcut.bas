@@ -276,14 +276,14 @@ End Function
 
 
 ' Возвращает заголовок файла
-Public Function GetHeaderFromFile(filename As String, BytesCnt As Long) As Byte()
+Public Function GetHeaderFromFile(FileName As String, BytesCnt As Long) As Byte()
     On Error GoTo ErrorHandler
     
     Dim ff As Long
     Dim Size As Currency
     Dim Data() As Byte
     
-    OpenW filename, FOR_READ, ff, g_FileBackupFlag
+    OpenW FileName, FOR_READ, ff, g_FileBackupFlag
     If ff < 1 Then Exit Function
     
     Size = LOFW(ff)
@@ -297,17 +297,17 @@ Public Function GetHeaderFromFile(filename As String, BytesCnt As Long) As Byte(
     GetHeaderFromFile = Data
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "Parser.GetHeaderFromFile", "File:", filename
+    ErrorMsg Err, "Parser.GetHeaderFromFile", "File:", FileName
     If ff <> 0 Then CloseW ff: ff = 0
 End Function
 
-Private Function isFileFilledByNUL(filename As String) As Boolean
+Private Function isFileFilledByNUL(FileName As String) As Boolean
     On Error GoTo ErrorHandler
     
     Dim Data As String
     Dim i As Long
     
-    Data = ReadFileContents(filename, False)
+    Data = ReadFileContents(FileName, False)
     
     isFileFilledByNUL = True
     
@@ -316,7 +316,7 @@ Private Function isFileFilledByNUL(filename As String) As Boolean
     Next
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "Parser.isFileFilledByNUL", "File:", filename
+    ErrorMsg Err, "Parser.isFileFilledByNUL", "File:", FileName
 End Function
 
 ' Инициализация интерфейса IShellLink
@@ -438,7 +438,7 @@ ErrorHandler:
 End Function
 
 ' Раскрытие цели и аргумента ярлыков PIF
-Public Function GetPIF_target(filename As String, Target As String, Argument As String) As Boolean
+Public Function GetPIF_target(FileName As String, Target As String, Argument As String) As Boolean
     'thanks to Sergey Merzlikin  ( http://www.smsoft.ru/ru/pifdoc.htm )
     
     ' offset 0x24 (длина: 63 байта) - цель
@@ -458,7 +458,7 @@ Public Function GetPIF_target(filename As String, Target As String, Argument As 
     pif_Target = String$(63&, vbNullChar)
     pif_Arg = String$(64&, vbNullChar)
   
-    If Not OpenW(filename, FOR_READ, ff, g_FileBackupFlag) Then Exit Function
+    If Not OpenW(FileName, FOR_READ, ff, g_FileBackupFlag) Then Exit Function
     FLen = LOFW(ff)
     
     If FLen >= &H187& Then    '  NT / 2000
@@ -496,7 +496,7 @@ Public Function GetPIF_target(filename As String, Target As String, Argument As 
     Argument = pif_Arg
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "Parser.GetPIF_target", "File:", filename
+    ErrorMsg Err, "Parser.GetPIF_target", "File:", FileName
     If inIDE Then Stop: Resume Next
 End Function
 
