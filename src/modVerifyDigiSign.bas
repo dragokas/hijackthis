@@ -5,10 +5,13 @@ Option Explicit
 
 '
 ' Authenticode digital signature verifier / Driver's WHQL signature verifier
-' revision 3.2
+' revision 3.3
 '
 ' Copyrights: Alex Dragokas
 '
+
+' 19.02.2024
+' Fixed .cat files own signature verification failed
 
 ' 19.06.2023
 ' Added isThirdPartyDriver member
@@ -528,7 +531,7 @@ Private Const WTD_REVOKE_WHOLECHAIN         As Long = 1&    ' check for certific
 Private Const WTD_CHOICE_FILE               As Long = 1&    ' check internal signature
 Private Const WTD_CHOICE_CATALOG            As Long = 2&    ' check by certificate that is stored in local windows security storage
 ' flags
-Private Const WTD_SAFER_FLAG                As Long = 256&   ' ??? (probably, no UI for XP SP2)
+Private Const WTD_SAFER_FLAG                As Long = 256&   ' Undocumented
 Private Const WTD_REVOCATION_CHECK_NONE     As Long = 16&    ' do not execute revocation checking of cert. chain
 Private Const WTD_REVOCATION_CHECK_END_CERT As Long = &H20&  ' check for revocation end cert. only
 Private Const WTD_REVOCATION_CHECK_CHAIN    As Long = &H40&  ' check all cert. chain ( require internet connection to port 53 TCP/UDP )
@@ -917,6 +920,7 @@ Public Function SignVerify( _
     Dim bSignIndexMissing As Boolean
     Dim NumSigners      As Long
     Dim ReturnValPrev   As Long
+    Dim bInternalSignPresenceChecked As Boolean
     
     #If UseSimpleCatCheck Then
         Dim sTag            As String
@@ -1132,6 +1136,8 @@ Public Function SignVerify( _
     If Flags And SV_PreferInternalSign Then
         'sExtension = modFile.GetExtensionName(sFilePath)
         'If StrInParamArray(sExtension, ".exe", ".sys", ".dll", ".ocx") Then
+            bInternalSignPresenceChecked = True
+            
             If IsInternalSignPresent(hFile) Then
                 SignResult.IsEmbedded = True
                 If Flags And SV_SelfTest Then Dbg "SkipCatCheck"
@@ -1274,7 +1280,9 @@ SkipCatCheck:
         'System does not use this flag!
         'By default, OS recognizes timestamped signatures valid even if certificate validity period is elapsed.
         'If Not CBool(Flags And SV_AllowExpired) Then .dwProvFlags = .dwProvFlags Or WTD_LIFETIME_SIGNING_FLAG        ' invalidate expired signatures
-        .dwProvFlags = .dwProvFlags Or WTD_SAFER_FLAG                                                     ' without UI
+        
+        'Do not use! Causes .cat file to fail the verification.
+        '.dwProvFlags = .dwProvFlags Or WTD_SAFER_FLAG
         
         If Flags And SV_DisableOutdatedAlgo Then .dwProvFlags = .dwProvFlags Or WTD_DISABLE_MD2_MD4
     End With
@@ -1612,7 +1620,11 @@ SkipCatCheck:
     
     'Sometimes WinVerifyTrust returns GetErrorCode == TRUST_E_NOSIGNATURE even if the file has signature
     If Not SignResult.isSigned Then
-        SignResult.isSigned = IsInternalSignPresent(hFile)
+        If bInternalSignPresenceChecked Then
+            SignResult.isSigned = SignResult.IsEmbedded
+        Else
+            SignResult.isSigned = IsInternalSignPresent(hFile)
+        End If
     End If
     
     If (ReturnVal = 0 Or _

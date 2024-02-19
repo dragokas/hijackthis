@@ -11,6 +11,9 @@ Version history:
 |||||       1. HiJackThis: changelog         |||||
 ==================================================
 
+[3.4.0.5 Alpha] - Feb 19, 2024
+ - Fixed: .cat file digital signature verification is failed.
+
 [3.4.0.4 Alpha] - Feb 08, 2024
  - The maximum length of a log string is limited to 3000 characters.
  - The maximum length of a result list string has been increased to 600 characters.
