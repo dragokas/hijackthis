@@ -875,6 +875,10 @@ HiJackThis+ est une modification du programme HiJackThis original de Trend Micro
 2410=Sélectionner
 2411=Dossiers
 2412=Sélectionner un dossier
+2413=Autorisations par défaut
+2414=SDDL personnalisé:
+2415=Choisissez dans le dossier...
+2416=SDDL spécifié non valide!
 ;
 ; ============= Registry Key Type Analyzer =========
 ;

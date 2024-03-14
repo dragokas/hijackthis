@@ -22,3 +22,4 @@
 %SystemRoot%\System32\Drivers\dump_iaStor.sys
 %SystemRoot%\System32\Drivers\dump_iaStorE.sys
 %SystemRoot%\System32\Drivers\dump_nvstor.sys
+%SystemRoot%\System32\Drivers\dump_secnvme.sys

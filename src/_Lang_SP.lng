@@ -878,6 +878,10 @@
 2410=Seleccione
 2411=Carpetas
 2412=Selección de carpeta
+2413=Permisos predeterminados
+2414=SDDL personalizado:
+2415=Seleccionar de la carpeta...
+2416=¡SDDL especificado no válido!
 ;
 ; ============= Registry Key Type Analyzer =========
 ;

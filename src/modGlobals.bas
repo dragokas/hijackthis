@@ -1530,7 +1530,7 @@ Public Type SECURITY_DESCRIPTOR
     Owner       As Long 'pSID
     Group       As Long 'pSID
     SACL        As Long 'pACL
-    Dacl        As Long 'pACL
+    dacl        As Long 'pACL
 End Type
 
 Public Type GENERIC_MAPPING 'https://docs.microsoft.com/en-us/windows/desktop/SecAuthZ/access-mask
@@ -1621,6 +1621,14 @@ Public Enum ACL_INFORMATION_CLASS
     AclRevisionInformation = 1
     AclSizeInformation
 End Enum
+
+Public Type ACL
+    AclRevision As Byte
+    Sbz1 As Byte
+    AclSize As Integer
+    AceCount As Integer
+    Sbz2 As Integer
+End Type
 
 'Public Type TOKEN_PRIVILEGES
 '    PrivilegeCount  As Long
@@ -2052,7 +2060,7 @@ Public Declare Function SetThreadPriorityBoost Lib "kernel32.dll" (ByVal hThread
 Public Declare Function GetThreadPriorityBoost Lib "kernel32.dll" (ByVal hThread As Long, pDisablePriorityBoost As Long) As Long
 Public Declare Function SetProcessInformation Lib "kernel32.dll" (ByVal hProcess As Long, ByVal ProcessInformationClass As PROCESS_INFORMATION_CLASS, ByVal lpData As Long, ByVal ProcessInformationSize As Long) As Long
 Public Declare Function GetProcessInformation Lib "kernel32.dll" (ByVal hProcess As Long, ByVal ProcessInformationClass As PROCESS_INFORMATION_CLASS, ByVal lpData As Long, ByVal ProcessInformationSize As Long) As Long
-Public Declare Function GetProcessId Lib "kernel32.dll" (ByVal Process As Long) As Long
+Public Declare Function GetProcessId Lib "kernel32.dll" (ByVal hProcess As Long) As Long
 Public Declare Function CreateProcessWithTokenW Lib "Advapi32.dll" (ByVal hToken As Long, ByVal dwLogonFlags As Long, ByVal lpApplicationName As Long, ByVal lpCommandLine As Long, ByVal dwCreationFlags As Long, ByVal lpEnvironment As Long, ByVal lpCurrentDirectory As Long, lpStartupInfo As STARTUPINFO, lpProcessInfo As PROCESS_INFORMATION) As Long
 'Public Declare Function OpenThreadToken Lib "Advapi32.dll" (ByVal ThreadHandle As Long, ByVal DesiredAccess As Long, ByVal OpenAsSelf As Long, TokenHandle As Long) As Long
 Public Declare Function NtSetInformationProcess Lib "ntdll.dll" (ByVal ProcessHandle As Long, ByVal ProcessInformationClass As PROCESSINFOCLASS, ByVal ProcessInformation As Long, ByVal ProcessInformationLength As Long) As Long

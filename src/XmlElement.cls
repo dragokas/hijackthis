@@ -150,9 +150,9 @@ Function InIntegerArray(Start As Long, bArray() As Integer, stri As String, Opti
         If pos + Len(stri) - 1 > UBound(bArray) Then Exit Do
         For i = 1 To Len(stri)
             If CompareMode = vbTextCompare Then
-                If 0 <> StrComp(ChrW$(bArray(pos + i - 1)), Mid$(stri, i, 1), vbTextCompare) Then Exit For
+                If 0 <> StrComp(ChrW$(bArray(pos + i - 1)), mid$(stri, i, 1), vbTextCompare) Then Exit For
             Else
-                If bArray(pos + i - 1) <> AscW(Mid$(stri, i, 1)) Then Exit For
+                If bArray(pos + i - 1) <> AscW(mid$(stri, i, 1)) Then Exit For
             End If
             If i = Len(stri) Then InIntegerArray = pos: Exit Do
         Next

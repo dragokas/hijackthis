@@ -11,6 +11,13 @@ Version history:
 |||||       1. HiJackThis: changelog         |||||
 ==================================================
 
+[3.4.0.7 Alpha] - Mar 14, 2024
+ - File Unlocker: added the ability to specify SDDL and extract it from the descriptor of the specified folder (the "Pick from folder" button).
+ - File Unlocker and Registry Key Unlocker: the "recursion" checkbox now sets the "inheritance" flag for all objects 2 and below level of hierarchy (previously inheritance was disabled and explicit permissions were set).
+
+[3.4.0.6 Alpha] - Feb 27, 2024
+ - O7 - Policy: Bitcoin wallet address hijacker: Added display of the attacker's crypto wallet address with a link to the blockchain explorer for convenience.
+
 [3.4.0.5 Alpha] - Feb 19, 2024
  - Fixed: .cat file digital signature verification is failed.
 

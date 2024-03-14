@@ -60,17 +60,17 @@ Private Const LVIS_SELECTED = &H2&
 Private Const SWP_NOSIZE = &H1
 Private Const SWP_NOZORDER = &H4
  
-Private Declare Function SetWindowLong Lib "user32.dll" Alias "SetWindowLongA" (ByVal hwnd As Long, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
+Private Declare Function SetWindowLong Lib "user32.dll" Alias "SetWindowLongA" (ByVal hWnd As Long, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
 Private Declare Function GetDlgItem Lib "user32.dll" (ByVal hDlg As Long, ByVal nIDDlgItem As Long) As Long
 Private Declare Function GetOpenFileName Lib "comdlg32.dll" Alias "GetOpenFileNameW" (pOpenfilename As OPENFILENAME) As Long
-Private Declare Function GetParent Lib "user32.dll" (ByVal hwnd As Long) As Long
-Private Declare Function SendMessage Lib "user32.dll" Alias "SendMessageA" (ByVal hwnd As Long, ByVal wMsg As Long, ByVal wParam As Long, lParam As Any) As Long
-Private Declare Function CallWindowProc Lib "user32.dll" Alias "CallWindowProcA" (ByVal lpPrevWndFunc As Long, ByVal hwnd As Long, ByVal msg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Declare Function GetParent Lib "user32.dll" (ByVal hWnd As Long) As Long
+Private Declare Function SendMessage Lib "user32.dll" Alias "SendMessageA" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, lParam As Any) As Long
+Private Declare Function CallWindowProc Lib "user32.dll" Alias "CallWindowProcA" (ByVal lpPrevWndFunc As Long, ByVal hWnd As Long, ByVal msg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
 Private Declare Function FindWindowEx Lib "user32.dll" Alias "FindWindowExA" (ByVal hWnd1 As Long, ByVal hWnd2 As Long, ByVal lpsz1 As String, ByVal lpsz2 As String) As Long
 Private Declare Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (lpvDest As Any, lpvSource As Any, ByVal Count As Long)
-Private Declare Function DestroyWindow Lib "user32.dll" (ByVal hwnd As Long) As Long
+Private Declare Function DestroyWindow Lib "user32.dll" (ByVal hWnd As Long) As Long
 Private Declare Function GetMem2 Lib "msvbvm60.dll" (pSrc As Any, pDst As Any) As Long
-Private Declare Function SetWindowPos Lib "user32.dll" (ByVal hwnd As Long, ByVal hWndInsertAfter As Long, ByVal X As Long, ByVal Y As Long, ByVal cx As Long, ByVal cy As Long, ByVal wFlags As Long) As Long
+Private Declare Function SetWindowPos Lib "user32.dll" (ByVal hWnd As Long, ByVal hWndInsertAfter As Long, ByVal x As Long, ByVal y As Long, ByVal cx As Long, ByVal cy As Long, ByVal wFlags As Long) As Long
 Private Declare Function EndDialog Lib "user32.dll" (ByVal hDlg As Long, ByVal nResult As Long) As Long
 
 Dim OldWndProc  As Long
@@ -115,6 +115,30 @@ Public Function OpenFolderDialog_Multi( _
     End If
 End Function
 
+Public Function OpenFileFolderDialog_Multi( _
+    aPath() As String, _
+    Optional sTitle As String, _
+    Optional InitDir As String, _
+    Optional hOwner As Long) As Long
+    
+    Erase aPath
+    Call PickFileFolder(sTitle, InitDir, hOwner, True)
+    If mFolders.Count <> 0 Then
+        ReDim aPath(mFolders.Count) As String
+        Dim i As Long
+        For i = 1 To mFolders.Count
+            aPath(i) = mFolders.Item(i)
+        Next
+        OpenFileFolderDialog_Multi = mFolders.Count
+    Else
+        If Len(mPath) <> 0 Then
+            ReDim aPath(1) As String
+            aPath(1) = mPath
+            OpenFileFolderDialog_Multi = 1
+        End If
+    End If
+End Function
+
 Private Sub PickFolder(sTitle$, InitDir$, hOwner As Long, bMultiSelect As Boolean)
     
     On Error GoTo ErrorHandler:
@@ -155,7 +179,53 @@ ErrorHandler:
     ErrorMsg Err, "PickFolder"
     If inIDE Then Stop: Resume Next
 End Sub
- 
+
+'// TODO: callback for files selection
+'
+Private Sub PickFileFolder(sTitle$, InitDir$, hOwner As Long, bMultiSelect As Boolean)
+    
+    On Error GoTo ErrorHandler:
+    
+    Dim OFN As OPENFILENAME
+    
+    If mFolders Is Nothing Then Set mFolders = New Collection
+    Do While mFolders.Count: mFolders.Remove (1): Loop
+    
+    Dim out As String
+    Dim sFilter As String
+
+    sFilter = Translate(1003) & " (*.*)" & vbNullChar & "*.*" & vbNullChar & vbNullChar
+
+    OFN.nMaxFile = MAX_PATH_W
+    out = String$(MAX_PATH_W, vbNullChar)
+
+    If Len(sTitle) = 0 Then sTitle = Translate(2412) ' Select Folder
+
+    With OFN
+        .lStructSize = Len(OFN)
+        .hWndOwner = hOwner
+        .hInstance = App.hInstance
+        .lpfnHook = lHookAddress(AddressOf DialogHookFunction)
+        .Flags = OFN_EXPLORER Or OFN_NoChangeDir Or OFN_EnableHook Or OFN_EnableIncludeNotify Or OFN_HIDEREADONLY Or OFN_DONTADDTORECENT Or _
+            OFN_ENABLESIZING Or OFN_FORCESHOWHIDDEN Or OFN_PATHMUSTEXIST Or IIf(bMultiSelect, OFN_ALLOWMULTISELECT, 0)
+        .nMaxFile = MAX_PATH_W
+        .lpstrFile = StrPtr(out)
+        .nMaxFileTitle = MAX_PATH
+        .lpstrFileTitle = StrPtr(String$(MAX_PATH, vbNullChar))
+        .lpstrFilter = StrPtr(sFilter)
+        .lpstrTitle = StrPtr(sTitle)
+        .nFilterIndex = 0
+        .lpstrInitialDir = StrPtr(InitDir)
+    End With
+    mPath = vbNullString
+    GetOpenFileName OFN
+    
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "PickFileFolder"
+    If inIDE Then Stop: Resume Next
+End Sub
+
 Private Function lHookAddress(lPtr As Long) As Long
     lHookAddress = lPtr
 End Function
@@ -176,12 +246,12 @@ Private Function DialogHookFunction(ByVal hDlg As Long, ByVal wMsg As Long, ByVa
                     SendMessageW hwndDlg, CDM_SETCONTROLTEXT, IDFILENAMESTATIC, StrPtr("") 'Надпись "Имя папки"
                     SendMessageW hwndDlg, CDM_HIDECONTROL, IDFILETYPECOMBO, ByVal 0&
                     SendMessageW hwndDlg, CDM_HIDECONTROL, IDFILETYPESTATIC, ByVal 0&
-                    SendMessageW hwndDlg, CDM_SETCONTROLTEXT, IDFILENAMECOMBO, ByVal StrPtr(GetPath)
+                    SendMessageW hwndDlg, CDM_SETCONTROLTEXT, IDFILENAMECOMBO, ByVal StrPtr(getPath)
                     SetWindowPos hwndDlg, 0, 100, 100, 0, 0, SWP_NOSIZE Or SWP_NOZORDER
                 Case CDN_INCLUDEITEM
                     DialogHookFunction = 0
                 Case CDN_SELCHANGE
-                    SendMessageW hwndDlg, CDM_SETCONTROLTEXT, IDFILENAMECOMBO, ByVal StrPtr(GetPath)
+                    SendMessageW hwndDlg, CDM_SETCONTROLTEXT, IDFILENAMECOMBO, ByVal StrPtr(getPath)
             End Select
     End Select
     
@@ -191,7 +261,7 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Private Function DlgWndProc(ByVal hwnd As Long, ByVal msg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Function DlgWndProc(ByVal hWnd As Long, ByVal msg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
 
     On Error GoTo ErrorHandler:
     Dim iStage As Long
@@ -240,7 +310,7 @@ Private Function DlgWndProc(ByVal hwnd As Long, ByVal msg As Long, ByVal wParam 
                         If txtLen > 0 Then
                             mPath = Left$(mPath, txtLen - 1)
                         Else
-                            mPath = GetPath()
+                            mPath = getPath()
                         End If
                     End If
                     
@@ -274,17 +344,17 @@ Private Function DlgWndProc(ByVal hwnd As Long, ByVal msg As Long, ByVal wParam 
                 Else
                     iStage = 13
                 
-                    mPath = GetPath()
+                    mPath = getPath()
                     If Len(mPath) Then
                         If hwndDlg <> 0 Then EndDialog hwndDlg, 0: hwndDlg = 0
                     End If
                 End If
             Else
-                DlgWndProc = CallWindowProc(OldWndProc, hwnd, msg, wParam, lParam)
+                DlgWndProc = CallWindowProc(OldWndProc, hWnd, msg, wParam, lParam)
             End If
         End If
     Case Else
-        DlgWndProc = CallWindowProc(OldWndProc, hwnd, msg, wParam, lParam)
+        DlgWndProc = CallWindowProc(OldWndProc, hWnd, msg, wParam, lParam)
     End Select
     
     Exit Function
@@ -304,7 +374,7 @@ Private Function NormalizeLink(sPath As String, sItem As String) As String
     End If
 End Function
  
-Private Function GetPath() As String
+Private Function getPath() As String
     Dim txtLen As Long, tmp As String
         
     tmp = String$(MAX_PATH_W, 0)
@@ -312,7 +382,7 @@ Private Function GetPath() As String
     
     If txtLen > 0 Then
         tmp = Left(tmp, txtLen - 1)
-        If FolderExists(tmp) Then GetPath = tmp
+        If FolderExists(tmp) Then getPath = tmp
     End If
 End Function
  

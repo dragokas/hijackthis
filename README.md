@@ -89,7 +89,7 @@ If you are not already an expert, we recommend submitting your case to an online
  * [Actual complete User's manual](https://regist.safezone.cc/hijackthis_help/hijackthis.html) (in Russian)
  * [Recent updates by the author](https://safezone.cc/threads/27470/) (in Russian)
  * [Additional instructions on Wiki-pages](https://github.com/dragokas/hijackthis/wiki)
- * Discussion and news are in [this topic](https://safezone.cc/threads/hijackthis-fork-i-voprosy-k-razrabotchikam.28770/) (in Russian) or on [GeeksToGo](https://www.geekstogo.com/forum/topic/361755-hijackthisfork-improvement-development-bug-reports/) (in English; access restricted to experts only) or on our [GitHub page](https://github.com/dragokas/hijackthis/discussions/137) (for everybody).
+ * Discussion and news are in [this topic](https://safezone.cc/threads/hijackthis-fork-i-voprosy-k-razrabotchikam.28770/) (in Russian) or at [BleepingComputer](https://www.bleepingcomputer.com/forums/t/792585/hijackthis-plus-explaining-development/) (in English; access restricted to experts only) or on our [GitHub page](https://github.com/dragokas/hijackthis/discussions/137) (for everybody).
  * You can also freely ask questions, report bugs, or propose improvements by [creating an issue on GitHub](https://github.com/dragokas/hijackthis/issues)
 
 ## System requirements & Compatibility

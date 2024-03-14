@@ -2,15 +2,100 @@ VERSION 5.00
 Object = "{317589D1-37C8-47D9-B5B0-1C995741F353}#1.0#0"; "VBCCR17.OCX"
 Begin VB.Form frmUnlockFile 
    Caption         =   "Files Unlocker"
-   ClientHeight    =   3240
+   ClientHeight    =   4935
    ClientLeft      =   120
    ClientTop       =   450
    ClientWidth     =   8445
    Icon            =   "frmUnlockFile.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   ScaleHeight     =   3240
+   ScaleHeight     =   4935
    ScaleWidth      =   8445
+   Begin VBCCR17.FrameW FrameGo 
+      Height          =   615
+      Left            =   1800
+      TabIndex        =   12
+      Top             =   4200
+      Width           =   6495
+      _ExtentX        =   11456
+      _ExtentY        =   1085
+      BorderStyle     =   0
+      Caption         =   "FrameW2"
+      Begin VBCCR17.CommandButtonW cmdGo 
+         Height          =   495
+         Left            =   4920
+         TabIndex        =   3
+         Top             =   120
+         Width           =   1575
+         _ExtentX        =   0
+         _ExtentY        =   0
+         BackColor       =   12648384
+         Caption         =   "Go"
+      End
+      Begin VBCCR17.CheckBoxW chkRecur 
+         Height          =   495
+         Left            =   120
+         TabIndex        =   2
+         Top             =   120
+         Width           =   4695
+         _ExtentX        =   8281
+         _ExtentY        =   873
+         Value           =   1
+         Caption         =   "Recursively (process files and all subfolders)"
+      End
+   End
+   Begin VBCCR17.FrameW FramePerm 
+      Height          =   1695
+      Left            =   240
+      TabIndex        =   11
+      Top             =   2400
+      Width           =   6375
+      _ExtentX        =   11245
+      _ExtentY        =   2990
+      Begin VBCCR17.OptionButtonW optPermCustom 
+         Height          =   255
+         Left            =   120
+         TabIndex        =   9
+         Top             =   600
+         Width           =   2535
+         _ExtentX        =   4471
+         _ExtentY        =   450
+         Caption         =   "Custom SDDL:"
+      End
+      Begin VBCCR17.OptionButtonW optPermDefault 
+         Height          =   255
+         Left            =   120
+         TabIndex        =   8
+         Top             =   240
+         Width           =   3375
+         _ExtentX        =   5953
+         _ExtentY        =   450
+         Value           =   -1  'True
+         Caption         =   "Default permissions"
+      End
+      Begin VBCCR17.TextBoxW txtSDDL 
+         Height          =   615
+         Left            =   240
+         TabIndex        =   7
+         Top             =   960
+         Width           =   6015
+         _ExtentX        =   10610
+         _ExtentY        =   1085
+         Enabled         =   0   'False
+         MultiLine       =   -1  'True
+         ScrollBars      =   1
+      End
+      Begin VBCCR17.CommandButtonW cmdPickSDDL 
+         Height          =   330
+         Left            =   4080
+         TabIndex        =   10
+         Top             =   600
+         Width           =   2175
+         _ExtentX        =   3836
+         _ExtentY        =   582
+         Caption         =   "Pick from folder..."
+      End
+   End
    Begin VBCCR17.CommandButtonW cmdAddFile 
       Height          =   492
       Left            =   6720
@@ -40,28 +125,6 @@ Begin VB.Form frmUnlockFile
       _ExtentX        =   0
       _ExtentY        =   0
       Caption         =   "Open in Explorer"
-   End
-   Begin VBCCR17.CommandButtonW cmdGo 
-      Height          =   495
-      Left            =   3960
-      TabIndex        =   3
-      Top             =   2520
-      Width           =   1575
-      _ExtentX        =   0
-      _ExtentY        =   0
-      BackColor       =   12648384
-      Caption         =   "Go"
-   End
-   Begin VBCCR17.CheckBoxW chkRecur 
-      Height          =   495
-      Left            =   240
-      TabIndex        =   2
-      Top             =   2520
-      Width           =   3615
-      _ExtentX        =   0
-      _ExtentY        =   0
-      Value           =   1
-      Caption         =   "Recursively (process files and all subfolders)"
    End
    Begin VBCCR17.TextBoxW txtInput 
       Height          =   1815
@@ -138,6 +201,19 @@ Private Sub cmdGo_Click()
     Dim TimeFinished    As String
     Dim bFolder         As Boolean
     Dim i               As Long
+    Dim SDDL            As String
+    
+    If Me.optPermDefault Then
+        SDDL = GetDefaultFileSDDL()
+    Else
+        SDDL = Me.txtSDDL.Text
+        
+        If Not IsValidSDDL(SDDL) Then
+            'Invalid SDDL specified!
+            MsgBox Translate(2416), vbExclamation
+            Exit Sub
+        End If
+    End If
     
     sLogPath = BuildPath(AppPath(), "FixFile.log")
     
@@ -177,13 +253,15 @@ Private Sub cmdGo_Click()
             
             If bFolder Or FileExists(vFile) Then
                 
-                Call UnlockMe(CStr(vFile))
+                Call UnlockMe(CStr(vFile), SDDL, Recursively)
                 
-                If Recursively And bFolder Then
-
-                    UnlockSubfolders CStr(vFile), True
-
-                End If
+' // TODO: log each file separately (only [Failed] events)
+'
+'                If Recursively And bFolder Then
+'
+'                    UnlockSubfolders CStr(vFile), True
+'
+'                End If
             Else
                 sList.AppendLine "(not found)" & " - " & vFile
             End If
@@ -212,60 +290,59 @@ ErrorHandler:
 End Sub
 
 
-Private Sub UnlockSubfolders(path As String, Optional Recursively As Boolean = False)
-    On Error GoTo ErrorHandler
-    
-    Dim SubPathName     As String
-    Dim PathName        As String
-    Dim hFind           As Long
-    Dim L               As Long
-    Dim lpSTR           As Long
-    Dim fd              As WIN32_FIND_DATA
-    
-    Do
-        If hFind <> 0& Then
-            If FindNextFile(hFind, fd) = 0& Then FindClose hFind: Exit Do
-        Else
-            hFind = FindFirstFile(StrPtr(path & "\*"), fd)
-            If hFind = INVALID_HANDLE_VALUE Then Exit Do
-        End If
-        
-        L = fd.dwFileAttributes And FILE_ATTRIBUTE_REPARSE_POINT
-        Do While L <> 0&
-            If FindNextFile(hFind, fd) = 0& Then FindClose hFind: hFind = 0: Exit Do
-            L = fd.dwFileAttributes And FILE_ATTRIBUTE_REPARSE_POINT
-        Loop
-    
-        If hFind <> 0& Then
-            lpSTR = VarPtr(fd.dwReserved1) + 4&
-            PathName = Space$(lstrlen(lpSTR))
-            lstrcpy StrPtr(PathName), lpSTR
-            
-            If fd.dwFileAttributes And vbDirectory Then
-                If PathName <> "." Then
-                    If PathName <> ".." Then
-                        SubPathName = path & "\" & PathName
-                        
-                        Call UnlockMe(SubPathName)
-                        
-                        If Recursively Then
-                            Call UnlockSubfolders(SubPathName, True)
-                        End If
-                    End If
-                End If
-            End If
-        End If
-        
-    Loop While hFind
-    
-    Exit Sub
-ErrorHandler:
-    ErrorMsg Err, "UnlockSubfolders", "Folder:", path
-    Resume Next
-End Sub
+'Private Sub UnlockSubfolders(path As String, Optional Recursively As Boolean = False)
+'    On Error GoTo ErrorHandler
+'
+'    Dim SubPathName     As String
+'    Dim PathName        As String
+'    Dim hFind           As Long
+'    Dim L               As Long
+'    Dim lpSTR           As Long
+'    Dim fd              As WIN32_FIND_DATA
+'
+'    Do
+'        If hFind <> 0& Then
+'            If FindNextFile(hFind, fd) = 0& Then FindClose hFind: Exit Do
+'        Else
+'            hFind = FindFirstFile(StrPtr(path & "\*"), fd)
+'            If hFind = INVALID_HANDLE_VALUE Then Exit Do
+'        End If
+'
+'        L = fd.dwFileAttributes And FILE_ATTRIBUTE_REPARSE_POINT
+'        Do While L <> 0&
+'            If FindNextFile(hFind, fd) = 0& Then FindClose hFind: hFind = 0: Exit Do
+'            L = fd.dwFileAttributes And FILE_ATTRIBUTE_REPARSE_POINT
+'        Loop
+'
+'        If hFind <> 0& Then
+'            lpSTR = VarPtr(fd.dwReserved1) + 4&
+'            PathName = Space$(lstrlen(lpSTR))
+'            lstrcpy StrPtr(PathName), lpSTR
+'
+'            If fd.dwFileAttributes And vbDirectory Then
+'                If PathName <> "." Then
+'                    If PathName <> ".." Then
+'                        SubPathName = path & "\" & PathName
+'
+'                        Call UnlockMe(SubPathName)
+'
+'                        If Recursively Then
+'                            Call UnlockSubfolders(SubPathName, True)
+'                        End If
+'                    End If
+'                End If
+'            End If
+'        End If
+'
+'    Loop While hFind
+'
+'    Exit Sub
+'ErrorHandler:
+'    ErrorMsg Err, "UnlockSubfolders", "Folder:", path
+'    Resume Next
+'End Sub
 
-
-Private Sub UnlockMe(sObject As String)
+Private Sub UnlockMe(sObject As String, SDDL As String, bRecurse As Boolean)
 
     Dim SDDL_Before As String
     Dim SDDL_After As String
@@ -273,7 +350,7 @@ Private Sub UnlockMe(sObject As String)
 
     SDDL_Before = GetFileStringSD(sObject)
     
-    bSuccess = TryUnlock(sObject, False)
+    bSuccess = SetFileStringSD(sObject, SDDL, bRecurse)
     
     SetFileAttributes StrPtr(sObject), FILE_ATTRIBUTE_ARCHIVE
     
@@ -340,19 +417,45 @@ End Sub
 Private Sub Form_Resize()
     If Me.WindowState = vbMinimized Then Exit Sub
     If Me.WindowState <> vbMaximized Then
-        If Me.Width < 7860 Then Me.Width = 7860
-        If Me.Height < 2570 Then Me.Height = 2570
+        If Me.Width < 8655 Then Me.Width = 8655
+        If Me.Height < 5505 Then Me.Height = 5505
     End If
+    
+    txtInput.Height = Me.Height - 3690
     txtInput.Width = Me.Width - 2230
-    txtInput.Height = Me.Height - 2010
-    chkRecur.Top = Me.Height - 1300
-    cmdGo.Top = Me.Height - 1300
+    
+    FramePerm.Top = txtInput.Top + txtInput.Height + 50 'Me.Height - 1290
+    FrameGo.Top = FramePerm.Top + FramePerm.Height + 50
+    
     Me.cmdAddFile.Left = Me.Width - 1900
     Me.cmdAddFolder.Left = Me.Width - 1900
     Me.cmdJump.Left = Me.Width - 1900
-    Me.cmdJump.Visible = Me.ScaleHeight > 2200
 End Sub
 
 Private Sub txtInput_KeyDown(KeyCode As Integer, Shift As Integer)
     If KeyCode = 27 Then Me.Hide
 End Sub
+
+Private Sub cmdPickSDDL_Click()
+    Static LastLocation As String
+    Dim sFolder As String
+    sFolder = OpenFolderDialog("", IIf(FolderExists(LastLocation), LastLocation, Desktop), Me.hWnd)
+    If FolderExists(sFolder) Then
+        txtSDDL.Text = GetFileStringSD(sFolder)
+        If Len(txtSDDL.Text) <> 0 Then
+            optPermCustom.Value = True
+        End If
+    End If
+End Sub
+
+Private Sub optPermCustom_Click()
+    txtSDDL.Enabled = True
+End Sub
+
+Private Sub optPermDefault_Click()
+    txtSDDL.Enabled = False
+End Sub
+
+Private Function IsValidSDDL(SDDL As String) As Boolean
+    If UBoundSafe(ConvertStringSDToSD(SDDL)) > 0 Then IsValidSDDL = True
+End Function

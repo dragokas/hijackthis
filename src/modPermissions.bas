@@ -963,7 +963,10 @@ Public Function RegKeyResetDACL(lHive&, ByVal KeyName$, Optional bUseWow64 As Bo
                                         
                                             sSubKeyName = Left$(sSubKeyName, lstrlen(StrPtr(sSubKeyName)))
                                             
-                                            RegKeyResetDACL lHive, KeyName & IIf(0 <> Len(KeyName), "\", vbNullString) & sSubKeyName, bUseWow64, True
+                                            'RegKeyResetDACL lHive, KeyName & IIf(0 <> Len(KeyName), "\", vbNullString) & sSubKeyName, bUseWow64, True
+                                            
+                                            RegKeyResetDACL = RegKeyResetDACL And _
+                                                RegKeySetInheritedSD(lHive, KeyName & IIf(0 <> Len(KeyName), "\", vbNullString) & sSubKeyName, bUseWow64, True)
                                             
                                             sSubKeyName = String$(MAX_KEYNAME, vbNullChar)
                                             i = i + 1
@@ -1034,6 +1037,13 @@ Function CreateEmptyACL(Ace_Explicit() As EXPLICIT_ACCESS) As Long
         End If
                             
     End If
+End Function
+
+Function CreateNullDacl() As ACL
+    With CreateNullDacl
+        .AclRevision = 2
+        .AclSize = LenB(CreateNullDacl)
+    End With
 End Function
 
 Private Function GetHKey(ByVal HKeyName As String) As Long 'Get handle of main hive
@@ -1369,7 +1379,7 @@ Public Function GetObjectSD(hObject As Long, reqInfoType As SECURITY_INFORMATION
     End If
 End Function
 
-Public Function SetFileStringSD(sObject As String, StrSD As String, Optional bRecursive As Boolean) As Boolean
+Public Function SetFileStringSD(sObject As String, StrSD As String, Optional bRecursive As Boolean, Optional bInherit As Boolean) As Boolean
     
     Dim SD() As Byte
     Dim bOldRedir As Boolean
@@ -1377,19 +1387,74 @@ Public Function SetFileStringSD(sObject As String, StrSD As String, Optional bRe
     Dim i As Long
     Dim iAttr As Long
     
-    SD = ConvertStringSDToSD(StrSD)
+    If bInherit Then
     
-    If AryPtr(SD) Then
-        ToggleWow64FSRedirection False, sObject, bOldRedir
-        
-        hFile = CreateFile(StrPtr(sObject), READ_CONTROL Or WRITE_OWNER Or WRITE_DAC Or ACCESS_SYSTEM_SECURITY, _
-            FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, ByVal 0, OPEN_EXISTING, g_FileBackupFlag, 0)
-        
-        If hFile <> INVALID_HANDLE_VALUE Then
-            SetFileStringSD = SetSecurityDescriptor(hFile, SE_FILE_OBJECT, SD)
-            CloseHandle hFile
+        SetFileStringSD = SetFileInheritedSD(sObject, True)
+    
+    Else
+    
+        SD = ConvertStringSDToSD(StrSD)
+    
+        If AryPtr(SD) Then
+            ToggleWow64FSRedirection False, sObject, bOldRedir
+            
+            hFile = CreateFile(StrPtr(sObject), READ_CONTROL Or WRITE_OWNER Or WRITE_DAC Or ACCESS_SYSTEM_SECURITY, _
+                FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, ByVal 0, OPEN_EXISTING, g_FileBackupFlag, 0)
+            
+            If hFile <> INVALID_HANDLE_VALUE Then
+                SetFileStringSD = SetSecurityDescriptor(hFile, SE_FILE_OBJECT, SD)
+                CloseHandle hFile
+            End If
+            
+            iAttr = GetFileAttributes(StrPtr(sObject))
+            
+            If (iAttr <> INVALID_FILE_ATTRIBUTES) Then
+                If (iAttr And FILE_ATTRIBUTE_READONLY) Then
+                    iAttr = iAttr - FILE_ATTRIBUTE_READONLY
+                    SetFileAttributes StrPtr(sObject), iAttr
+                End If
+            End If
+            
+            ToggleWow64FSRedirection bOldRedir
         End If
+    End If
+    
+    If bRecursive Then
+    
+        If FolderExists(sObject) Then
+            Dim aFiles() As String
+            
+            aFiles = ListFiles(sObject)
+            
+            For i = 0 To UBoundSafe(aFiles)
+                'SetFileStringSD = SetFileStringSD And SetFileStringSD(aFiles(i), StrSD, False)
+                SetFileStringSD = SetFileStringSD And SetFileInheritedSD(aFiles(i), True)
+                
+                iAttr = GetFileAttributes(StrPtr(sObject))
+            Next
         
+            Dim aFolders() As String
+            
+            aFolders = ListSubfolders(sObject)
+            
+            For i = 0 To UBoundSafe(aFolders)
+                SetFileStringSD = SetFileStringSD And SetFileStringSD(aFolders(i), StrSD, True, bInherit:=True)
+            Next
+            
+        End If
+    End If
+    
+End Function
+
+Public Function SetFileInheritedSD(sObject As String, bResetReadOnly As Boolean) As Boolean
+    Dim bOldRedir As Boolean
+    Dim iAttr As Long
+    Dim hFile As Long
+    Dim dacl As ACL
+    
+    ToggleWow64FSRedirection False, sObject, bOldRedir
+    
+    If bResetReadOnly Then
         iAttr = GetFileAttributes(StrPtr(sObject))
         
         If (iAttr <> INVALID_FILE_ATTRIBUTES) Then
@@ -1398,29 +1463,85 @@ Public Function SetFileStringSD(sObject As String, StrSD As String, Optional bRe
                 SetFileAttributes StrPtr(sObject), iAttr
             End If
         End If
+    End If
+    
+    hFile = CreateFile(StrPtr(sObject), READ_CONTROL Or WRITE_OWNER Or WRITE_DAC, _
+            FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, ByVal 0, OPEN_EXISTING, g_FileBackupFlag, 0)
+    
+    If hFile <> INVALID_HANDLE_VALUE Then
         
-        ToggleWow64FSRedirection bOldRedir
+        dacl = CreateNullDacl()
         
-        If FolderExists(sObject) Then
-            Dim aFiles() As String
+        If ERROR_SUCCESS = SetSecurityInfo(hFile, SE_FILE_OBJECT, _
+            DACL_SECURITY_INFORMATION Or UNPROTECTED_DACL_SECURITY_INFORMATION, _
+            0&, 0&, VarPtr(dacl), 0&) Then
             
-            aFiles = ListFiles(sObject)
-            
-            For i = 0 To UBoundSafe(aFiles)
-                SetFileStringSD = SetFileStringSD And SetFileStringSD(aFiles(i), StrSD, False)
-            Next
+            SetFileInheritedSD = True
+        
         End If
         
-        If bRecursive Then
-            Dim aFolders() As String
+        CloseHandle hFile
+    End If
+    
+    ToggleWow64FSRedirection bOldRedir
+
+End Function
+
+Public Function RegKeySetInheritedSD(lHive&, ByVal KeyName$, Optional bUseWow64 As Boolean, Optional Recursive As Boolean = False) As Boolean
+    
+    Dim flagDisposition As Long
+    Dim hKey As Long, hKeyEnum As Long
+    Dim i As Long
+    Dim dacl As ACL
+    Dim sSubKeyName As String
+    
+    Call Reg.NormalizeKeyNameAndHiveHandle(lHive, KeyName)
+    
+    'Note: by using REG_OPTION_BACKUP_RESTORE privilege, unlike "File" object, it is not allowed to bypass privilages for the "Registry key" object
+    'e.g. When the SID of caller token is not the owner, it's not possible to open the Key with WRITE_DAC access directly (however, it's possible for the File).
+    'So, firstly, changing object's owner is required.
+    '
+    RegKeySetOwnerShip lHive, KeyName, "S-1-5-32-544", bUseWow64
+    
+    If ERROR_SUCCESS = RegCreateKeyEx(lHive, StrPtr(KeyName), 0&, 0&, _
+        0, _
+        READ_CONTROL Or WRITE_DAC Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), _
+        ByVal 0&, hKey, flagDisposition) Then
+
+        dacl = CreateNullDacl()
+        
+        If ERROR_SUCCESS = SetSecurityInfo(hKey, SE_REGISTRY_KEY, _
+            DACL_SECURITY_INFORMATION Or UNPROTECTED_DACL_SECURITY_INFORMATION, _
+            0&, 0&, VarPtr(dacl), 0&) Then
             
-            aFolders = ListSubfolders(sObject)
+            RegKeySetInheritedSD = True
+        
+        End If
+
+        RegCloseKey hKey
+    End If
+    
+    If Recursive Then
+    
+        If RegOpenKeyEx(lHive, StrPtr(KeyName), 0&, KEY_ENUMERATE_SUB_KEYS Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKeyEnum) = ERROR_SUCCESS Then
+    
+            sSubKeyName = String$(MAX_KEYNAME, vbNullChar)
             
-            For i = 0 To UBoundSafe(aFolders)
-                SetFileStringSD = SetFileStringSD And SetFileStringSD(aFolders(i), StrSD, True)
-            Next
+            i = 0
+            Do While RegEnumKeyEx(hKeyEnum, i, StrPtr(sSubKeyName), MAX_KEYNAME, 0&, 0&, 0&, ByVal 0&) = ERROR_SUCCESS
+            
+                sSubKeyName = Left$(sSubKeyName, lstrlen(StrPtr(sSubKeyName)))
+                
+                RegKeySetInheritedSD = RegKeySetInheritedSD And _
+                    RegKeySetInheritedSD(lHive, KeyName & IIf(0 <> Len(KeyName), "\", vbNullString) & sSubKeyName, bUseWow64, True)
+                
+                sSubKeyName = String$(MAX_KEYNAME, vbNullChar)
+                i = i + 1
+            Loop
+            RegCloseKey hKeyEnum
         End If
     End If
+    
 End Function
 
 Public Function ConvertStringSDToSD(StrSD As String) As Byte()

@@ -59,6 +59,16 @@ Private Declare Function CreateCompatibleBitmap Lib "gdi32" (ByVal hdc As Long, 
 Private Declare Function SelectObject Lib "gdi32" (ByVal hdc As Long, ByVal hObject As Long) As Long
 Private Declare Function BitBlt Lib "gdi32" (ByVal hDestDC As Long, ByVal x As Long, ByVal y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hSrcDC As Long, ByVal xSrc As Long, ByVal ySrc As Long, ByVal dwRop As Long) As Long
 Private Declare Function DeleteDC Lib "gdi32" (ByVal hdc As Long) As Long
+Private Declare Function GetCurrentProcessId Lib "kernel32.dll" () As Long
+Private Declare Function SetWindowPos Lib "user32.dll" (ByVal hWnd As Long, ByVal hWndInsertAfter As Long, ByVal x As Long, ByVal y As Long, ByVal cx As Long, ByVal cy As Long, ByVal uFlags As Long) As Long
+Private Declare Function PostMessage Lib "user32.dll" Alias "PostMessageA" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Declare Function GetProcessId Lib "kernel32.dll" (ByVal hProcess As Long) As Long
+Private Declare Function WaitForInputIdle Lib "user32.dll" (ByVal hProcess As Long, ByVal dwMilliseconds As Long) As Long
+Private Declare Function AllowSetForegroundWindow Lib "user32.dll" (ByVal dwProcessId As Long) As Long
+Private Declare Function SetForegroundWindow Lib "user32.dll" (ByVal hWnd As Long) As Long
+Private Declare Function SetActiveWindow Lib "user32.dll" (ByVal hWnd As Long) As Long
+Private Declare Function SetFocus2 Lib "user32.dll" Alias "SetFocus" (ByVal hWnd As Long) As Long
+Private Declare Function SendMessage Lib "user32.dll" Alias "SendMessageW" (ByVal hWnd As Long, ByVal uMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
 
 Private Const WS_VISIBLE         As Long = &H10000000
 Private Const GWL_STYLE          As Long = -16
@@ -71,6 +81,15 @@ Private Const SW_SHOWNORMAL      As Long = 1
 Private Const SW_SHOW            As Long = 5
 Private Const WS_EX_TOPMOST      As Long = 8
 Private Const WS_POPUP           As Long = &H80000000
+Private Const HWND_TOPMOST       As Long = -1&
+Private Const HWND_NOTOPMOST     As Long = -2&
+Private Const HWND_TOP           As Long = 0
+Private Const SWP_NOMOVE         As Long = 2&
+Private Const SWP_NOSIZE         As Long = 1&
+Private Const WM_CLOSE           As Long = 16&
+Private Const SW_RESTORE         As Long = 9
+Private Const WM_SETTEXT         As Long = 12
+Private Const BM_CLICK           As Long = &HF5&
 
 Dim m_CountFound      As Long
 Dim m_fndHwnd         As Long
@@ -305,7 +324,7 @@ Public Function ProcessCloseWindowByFile( _
         
         For i = 0 To UBound(Process)
         
-            If StrComp(sPath, Process(i).Path, 1) = 0 Then 'No wait
+            If StrComp(sPath, Process(i).path, 1) = 0 Then 'No wait
             
                 Call ProcessCloseWindow(Process(i).pid, bForce, False)
             End If
@@ -314,7 +333,7 @@ Public Function ProcessCloseWindowByFile( _
         lNumProcesses = GetProcesses(Process)
         For i = 0 To UBound(Process)
         
-            If StrComp(sPath, Process(i).Path, 1) = 0 Then 'Wait
+            If StrComp(sPath, Process(i).path, 1) = 0 Then 'Wait
             
                 bSuccess = bSuccess And ProcessCloseWindow(Process(i).pid, bForce, bWait, TimeoutMs)
                 If Not bSuccess Then Exit For 'Exit on first timeout
@@ -370,7 +389,7 @@ Public Sub ScalePictureDPI(pict As PictureBox)
         stretchMode = SetStretchBltMode(.hdc, HALFTONE)
         StretchBlt .hdc, 0, 0, .ScaleWidth, .ScaleHeight, memDC, 0, 0, bmBitmap.bmWidth, bmBitmap.bmHeight, vbSrcCopy
         SetStretchBltMode .hdc, stretchMode
-        Set .Picture = .image
+        Set .Picture = .Image
     End With
     
     SelectObject memDC, lOldBitmap
@@ -397,4 +416,8 @@ End Sub
 
 Public Sub SetWindowTitleText(hWnd As Long, sText As String)
     SendMessage hWnd, WM_SETTEXT, ByVal 0&, ByVal StrPtr(sText)
+End Sub
+
+Public Sub ClickButton(hButton As Long)
+    SendMessage hButton, BM_CLICK, 0, 0
 End Sub

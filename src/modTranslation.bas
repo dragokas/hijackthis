@@ -1297,14 +1297,17 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                         If IsFormInit(frmUnlockFile) Then
                             With frmUnlockFile
                                 Select Case id
+                                    Case "1870": .cmdAddFile.Caption = Translation
+                                    Case "1872": .cmdAddFolder.Caption = Translation
                                     Case "2400": SetWindowTitleText .hWnd, Translation
                                     Case "2401": .lblWhatToDo.Caption = Translation
                                     Case "2402": .chkRecur.Caption = Translation
                                     Case "2403": .cmdGo.Caption = Translation
                                     'Case "2404": .cmdExit.Caption = Translation
                                     Case "2409": .cmdJump.Caption = Translation
-                                    Case "1870": .cmdAddFile.Caption = Translation
-                                    Case "1872": .cmdAddFolder.Caption = Translation
+                                    Case "2413": .optPermDefault.Caption = Translation
+                                    Case "2414": .optPermCustom.Caption = Translation
+                                    Case "2415": .cmdPickSDDL.Caption = Translation
                                 End Select
                             End With
                         End If
@@ -1774,10 +1777,10 @@ Public Function GetPreferredLangId_ForURL(Optional bCheckLangByCurrentSelected A
     
 End Function
 
-Public Function GetTutorialURL_ByLang(lang As LangEnum) As String
-    If lang = Lang_Russian Or lang = Lang_Ukrainian Then
+Public Function GetTutorialURL_ByLang(Lang As LangEnum) As String
+    If Lang = Lang_Russian Or Lang = Lang_Ukrainian Then
         GetTutorialURL_ByLang = "https://regist.safezone.cc/hijackthis_help/hijackthis.html"
-    ElseIf lang = Lang_French Then
+    ElseIf Lang = Lang_French Then
         GetTutorialURL_ByLang = "https://regist.safezone.cc/hijackthis_help/hijackthis_fr.html"
     Else
         GetTutorialURL_ByLang = "https://dragokas.com/tools/help/hjt_tutorial.html"

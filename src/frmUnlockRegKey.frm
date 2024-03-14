@@ -120,6 +120,8 @@ Private Sub cmdGo_Click()
     
     For Each vKey In aKeys
         If Len(vKey) <> 0 Then
+            ' // TODO: log each reg key separately (only [Failed] events)
+            '
             If True = modPermissions.RegKeyResetDACL(0&, CStr(vKey), False, Recursively) Then
                 '[OK]
                 '(recursively)

@@ -850,7 +850,7 @@
 ; (1900 - 1949)
 ;
 1900=Registry Key Unlocker
-1901=Enter Registry Key(s) to unlock and reset access rights:
+1901=Enter Registry Key(s) to unlock and reset access permissions:
 1902=Recursively (include subkeys)
 1903=Go
 1904=Close
@@ -865,7 +865,7 @@
 ; (2400 - 2449)
 ;
 2400=Files Unlocker
-2401=Enter Files and Folders to unlock and reset access rights:
+2401=Enter Files and Folders to unlock and reset access permissions:
 2402=Recursively (include subfolders)
 2403=Go
 2404=Close
@@ -877,6 +877,10 @@
 2410=Select
 2411=Folders
 2412=Select Folder
+2413=Default permissions
+2414=Custom SDDL:
+2415=Pick from folder...
+2416=Invalid SDDL specified!
 ;
 ; ============= Registry Key Type Analyzer =========
 ;

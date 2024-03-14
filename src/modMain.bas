@@ -5554,12 +5554,11 @@ Public Sub CheckO5Item()
     End If
 
     Set cIni = Nothing
-    'Set HE = Nothing
+    
 SkipControlIni:
     
     Dim aFiles() As String
     Dim vFolder As Variant
-    Dim sSigner As String
     
     For Each vFolder In Array(sWinSysDir, sWinSysDirWow64)
     
@@ -5567,13 +5566,9 @@ SkipControlIni:
         If AryItems(aFiles) Then
             For i = 0 To UBound(aFiles)
                 sPath = aFiles(i)
-                
-                'Debug.Print sPath
-                
                 sPath = FormatFileMissing(sPath)
                 
                 bSafe = True
-                sSigner = vbNullString
                 
                 SignVerifyJack sPath, result.SignResult
                 If Not result.SignResult.isMicrosoftSign Then bSafe = False
@@ -8121,7 +8116,7 @@ Public Sub CheckO7Item_Bitcoin(sWalletAddr As String)
     
     If (InStr(1, sActualClip, "0x", 1) <> 0) And (sWalletAddr <> sActualClip) Then
 
-        sHit = "O7 - Policy: Bitcoin wallet address hijacker is present " & STR_NO_FIX
+        sHit = "O7 - Policy: Bitcoin wallet address hijacker is present: blockchain.com/explorer/search?search=" & sActualClip & " " & STR_NO_FIX
         
         If Not IsOnIgnoreList(sHit) Then
             With result
