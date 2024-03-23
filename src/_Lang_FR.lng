@@ -190,7 +190,7 @@ et enregistrer un rapport
 1205=Gestionnaire de processus
 1206=Gestionnaire de fichiers Hosts
 1207=Suppression de fichier
-1208=Déverrouiller fichier / dossier
+1208=Déverrouiller fichier et dossier
 1209=Planification de suppression d'un fichier au redémarrage...
 1210=Supprimer un service
 1211=Clé de déverrouillage
@@ -414,7 +414,7 @@ et enregistrer un rapport
      Russe: Dragokas, ScriptMakeR, Boris, fseto (SafeZone.cc), wylek.ru team
      Ukrainien: Dragokas
      Anglais: Dragokas, Tanner Helland
-     Français: Colok du site Colok-Traductions.com, Mitrowig
+     Français: Colok du site Colok-Traductions.com, Mitrowig (Mi47)
      Espagnol: Andago
 	 
      Développement tiers:
@@ -857,6 +857,9 @@ HiJackThis+ est une modification du programme HiJackThis original de Trend Micro
 1907=(récursivement)
 1908=[Echec]
 1909=Ouvrir dans le Regedit
+1910=Entrer la Clé
+1911=La clé n'existe pas!
+1912=[Pas trouvé]
 ;
 ; ============= Files Unlocker =========
 ;
@@ -864,7 +867,7 @@ HiJackThis+ est une modification du programme HiJackThis original de Trend Micro
 ;
 2400=Déblocage de la fichier
 2401=Entrer la fichier et des dossiers pour déverrouiller et réinitialiser les droits d'accès:
-2402=Récursivement (inclure les sous-dossiers)
+2402=Récursivement (inclure les fichiers et sous-dossiers)
 2403=Réinitialiser
 2404=Fermer
 2405=Vous devez entrer au moins une fichier ou dossier!
@@ -916,6 +919,9 @@ HiJackThis+ est une modification du programme HiJackThis original de Trend Micro
 2481=Nom du cours
 2482=Clés cachées (Null)
 2483=Créer une clé si elle n'existe pas
+2484=Autorisations par défaut
+2485=SDDL personnalisé:
+2486=Choisissez dans le clé...
 ;
 ; ============ Delete on reboot ========
 ;
@@ -965,6 +971,7 @@ HiJackThis+ est une modification du programme HiJackThis original de Trend Micro
 0352=Le serveur doit être redémarré pour terminer les opérations requises. Veuillez le redémarrer manuellement.
 0353=L'élément '[]' a été désactivé!
 0354=L'élément '[]' a été activé!
+0355=ATTENTION! Une demande destructrice a été détectée. Vous feriez mieux de contacter un spécialiste. Le programme sera désormais fermé.
 ;
 ; ============ Help on selected item (Sections) ================
 ;

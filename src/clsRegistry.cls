@@ -4080,3 +4080,37 @@ Public Function HasSpecialChar(str As String) As Boolean
         End If
     Next
 End Function
+
+
+Public Function RemoveComputerPrefix(sKey As String) As String
+    If StrComp(Left$(sKey, 2), "HK", vbTextCompare) = 0 Then
+        RemoveComputerPrefix = sKey
+    Else
+        Dim pos As Long
+        pos = InStr(1, sKey, "\HK", vbTextCompare)
+        If pos = 0 Then
+            RemoveComputerPrefix = sKey
+        Else
+            RemoveComputerPrefix = mid$(sKey, pos + 1)
+        End If
+    End If
+End Function
+
+
+Public Function Normalize(sPath As String) As String
+    Dim pos As Long
+    sPath = Trim$(sPath)
+    If Left$(sPath, 1) = """" Then
+        pos = InStr(2, sPath, """")
+        If pos <> 0 Then
+            sPath = mid$(sPath, 2, pos - 2)
+        Else
+            sPath = mid$(sPath, 2)
+        End If
+    End If
+    If InStr(sPath, "/") <> 0 Then
+        sPath = Replace$(sPath, "/", "\")
+    End If
+    sPath = Replace$(sPath, "\\", "\")
+    Normalize = RemoveComputerPrefix(sPath)
+End Function

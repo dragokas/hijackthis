@@ -1240,8 +1240,10 @@ Public Sub ReloadLanguage(Optional bDontTouchMainForm As Boolean)
                                     Case "1901": .lblWhatToDo.Caption = Translation
                                     Case "1902": .chkRecur.Caption = Translation
                                     Case "1903": .cmdGo.Caption = Translation
-                                    'Case "1904": .cmdExit.Caption = Translation
                                     Case "1909": .cmdJump.Caption = Translation
+                                    Case "2484": .optPermDefault.Caption = Translation
+                                    Case "2485": .optPermCustom.Caption = Translation
+                                    Case "2486": .cmdPickSDDL.Caption = Translation
                                 End Select
                             End With
                         End If

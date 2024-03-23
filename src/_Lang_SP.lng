@@ -190,7 +190,7 @@
 1205=Administrador de procesos
 1206=Administrador de archivos hosts
 1207=Eliminiar Archivo
-1208=Desbloquear archivo/carpeta...
+1208=Desbloquear archivos y carpetas
 1209=Planear eliminar el archivo al reiniciar...
 1210=Eliminiar servicio
 1211=Desbloquear llaves
@@ -415,7 +415,7 @@
      Ruso: Dragokas, ScriptMakeR, Boris, fseto (SafeZone.cc), wylek.ru team
      Ucraniano: Dragokas
      Ingles: Dragokas, Tanner Helland
-     Frances: Colok (Colok-Traductions.com)
+     Frances: Colok (Colok-Traductions.com), Mitrowig (Mi47)
      Español: Andago
      
      Desarrollos de Terceros:
@@ -860,6 +860,9 @@
 1907=(recursivamente)
 1908=[Fallo]
 1909=Abrir en Regedit
+1910=Ingrese la clave
+1911=La clave no existe!
+1912=[No encontrado]
 ;
 ; ============= Files Unlocker =========
 ;
@@ -867,7 +870,7 @@
 ;
 2400=Desbloqueador de archivos
 2401=Ingrese archivos y carpetas para desbloquear y restablecer los derechos de acceso:
-2402=Recursivamente (incluir subcarpetas)
+2402=Recursivamente (incluir archivos y subcarpetas)
 2403=Ejecutar
 2404=Cerrar
 2405=¡Debe ingresar al menos un archivo o carpeta!
@@ -919,6 +922,9 @@
 2481=Nombre de la clase
 2482=Llaves ocultas (Null)
 2483=Crear clave si no existe
+2484=Permisos predeterminados
+2485=SDDL personalizado:
+2486=Seleccionar de la clave...
 ;
 ; ============ Delete on reboot
 ;
@@ -969,6 +975,7 @@
 0352=Es necesario reiniciar el servidor para completar las operaciones necesarias. Reinícielo manualmente.
 0353=¡El artículo '[]' ha sido deshabilitado!
 0354=¡El elemento '[]' ha sido habilitado!
+0355=¡ATENCIÓN! Se detectó una solicitud destructiva. Será mejor que contactes con un especialista. El programa ahora estará cerrado.
 ;
 ; ============ Help on selected item (Sections) ================
 ;

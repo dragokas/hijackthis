@@ -13,17 +13,17 @@ Begin VB.Form frmUnlockFile
    ScaleWidth      =   8445
    Begin VBCCR17.FrameW FrameGo 
       Height          =   615
-      Left            =   1800
+      Left            =   1080
       TabIndex        =   12
       Top             =   4200
-      Width           =   6495
-      _ExtentX        =   11456
+      Width           =   7335
+      _ExtentX        =   12938
       _ExtentY        =   1085
       BorderStyle     =   0
       Caption         =   "FrameW2"
       Begin VBCCR17.CommandButtonW cmdGo 
          Height          =   495
-         Left            =   4920
+         Left            =   5640
          TabIndex        =   3
          Top             =   120
          Width           =   1575
@@ -37,11 +37,11 @@ Begin VB.Form frmUnlockFile
          Left            =   120
          TabIndex        =   2
          Top             =   120
-         Width           =   4695
-         _ExtentX        =   8281
+         Width           =   5415
+         _ExtentX        =   9551
          _ExtentY        =   873
          Value           =   1
-         Caption         =   "Recursively (process files and all subfolders)"
+         Caption         =   "Recursively (including files and subfolders)"
       End
    End
    Begin VBCCR17.FrameW FramePerm 
@@ -359,7 +359,7 @@ Private Sub UnlockMe(sObject As String, SDDL As String, bRecurse As Boolean)
     
     SDDL_After = GetFileStringSD(sObject)
     
-    sList.AppendLine "." & vbCrLf & SDDL_Before & vbCrLf & "=>" & vbCrLf & SDDL_After & vbCrLf
+    sList.AppendLine "." & vbCrLf & "  " & SDDL_Before & vbCrLf & "=>" & SDDL_After & vbCrLf
 
 End Sub
 
@@ -445,6 +445,7 @@ Private Sub cmdPickSDDL_Click()
         If Len(txtSDDL.Text) <> 0 Then
             optPermCustom.Value = True
         End If
+        LastLocation = sFolder
     End If
 End Sub
 
@@ -456,6 +457,3 @@ Private Sub optPermDefault_Click()
     txtSDDL.Enabled = False
 End Sub
 
-Private Function IsValidSDDL(SDDL As String) As Boolean
-    If UBoundSafe(ConvertStringSDToSD(SDDL)) > 0 Then IsValidSDDL = True
-End Function

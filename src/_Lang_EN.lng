@@ -191,7 +191,7 @@
 1205=Process Manager
 1206=Hosts File Manager
 1207=DeleteFile
-1208=Unlock File / Folder
+1208=Unlock Files and Folders
 1209=Plan to Delete File on Reboot...
 1210=Delete Service
 1211=Key Unlocker
@@ -416,7 +416,7 @@
      Russian: Dragokas, ScriptMakeR, Boris, fseto (SafeZone.cc), wylek.ru team
      Ukrainian: Dragokas
      English: Dragokas, Tanner Helland
-     French: Colok (Colok-Traductions.com)
+     French: Colok (Colok-Traductions.com), Mitrowig (Mi47)
      Spanish: Andago
      
      Third-party development:
@@ -859,6 +859,9 @@
 1907=(recursively)
 1908=[Fail]
 1909=Open in Regedit
+1910=Enter the Key
+1911=Key not exists!
+1912=[Not found]
 ;
 ; ============= Files Unlocker =========
 ;
@@ -866,7 +869,7 @@
 ;
 2400=Files Unlocker
 2401=Enter Files and Folders to unlock and reset access permissions:
-2402=Recursively (include subfolders)
+2402=Recursively (including files and subfolders)
 2403=Go
 2404=Close
 2405=You must enter at least one file or folder!
@@ -918,6 +921,9 @@
 2481=Class name
 2482=Hidden keys (Null)
 2483=Create key if not exists
+2484=Default permissions
+2485=Custom SDDL:
+2486=Pick from key...
 ;
 ; ============ Delete on reboot ========
 ;
@@ -967,6 +973,7 @@
 0352=The server needs to be rebooted to complete required operations. Please reboot it manually.
 0353=Item '[]' has been disabled!
 0354=Item '[]' has been enabled!
+0355=ATTENTION! A destructive request was detected. You'd better contact a specialist. The program will now be closed.
 ;
 ; ============ Help on selected item (Sections) ================
 ;

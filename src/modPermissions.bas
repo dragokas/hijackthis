@@ -1675,42 +1675,69 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function SetRegKeyStringSD(lHive As ENUM_REG_HIVE, ByVal KeyName As String, StringSD As String, Optional bUseWow64 As Boolean) As Boolean
+Public Function SetRegKeyStringSD(lHive As ENUM_REG_HIVE, ByVal KeyName As String, StringSD As String, Optional bUseWow64 As Boolean, _
+    Optional bRecursive As Boolean) As Boolean
+    
     On Error GoTo ErrorHandler:
     
-    Dim hKey As Long
+    Dim hKey As Long, hKeyEnum As Long
     Dim SD() As Byte
     Dim ObjType As SE_OBJECT_TYPE
+    Dim sSubKeyName As String
+    Dim i As Long
+    
+    SD = ConvertStringSDToSD(StringSD)
+    If AryPtr(SD) = 0 Then Exit Function
     
     Call Reg.NormalizeKeyNameAndHiveHandle(lHive, KeyName)
     
-    SD = ConvertStringSDToSD(StringSD)
+    RegKeySetOwnerShip lHive, KeyName, "S-1-5-32-544", bUseWow64
     
-    If AryPtr(SD) Then
-    
-        'Note: Although, READ_CONTROL is not necessary
-    
-        If ERROR_SUCCESS <> RegOpenKeyEx(lHive, StrPtr(KeyName), REG_OPTION_BACKUP_RESTORE, _
-            READ_CONTROL Or WRITE_OWNER Or WRITE_DAC Or ACCESS_SYSTEM_SECURITY Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) Then Exit Function
+    'Note: Although, READ_CONTROL is not necessary
 
-'        If OSver.IsWin32 Then
-'            ObjType = SE_REGISTRY_KEY
+    If ERROR_SUCCESS <> RegOpenKeyEx(lHive, StrPtr(KeyName), REG_OPTION_BACKUP_RESTORE, _
+        READ_CONTROL Or WRITE_OWNER Or WRITE_DAC Or ACCESS_SYSTEM_SECURITY Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKey) Then Exit Function
+        
+    If hKey = 0 Then Exit Function
+    
+'   'Doesn't matter. SE_REGISTRY_KEY work even for x64 reg. keys
+'   'Contrariwise, using SE_REGISTRY_WOW64_64KEY, SetSecurityInfo returns error 87.
+'
+'    If OSver.IsWin32 Then
+'        ObjType = SE_REGISTRY_KEY
+'    Else
+'        If bUseWow64 Then
+'            ObjType = SE_REGISTRY_WOW64_32KEY
 '        Else
-'            If bUseWow64 Then
-'                ObjType = SE_REGISTRY_WOW64_32KEY
-'            Else
-'                ObjType = SE_REGISTRY_WOW64_64KEY
-'            End If
+'            ObjType = SE_REGISTRY_WOW64_64KEY
 '        End If
-        
-        'Doesn't matter. SE_REGISTRY_KEY work even for x64 reg. keys
-        'Contrariwise, using SE_REGISTRY_WOW64_64KEY, SetSecurityInfo returns error 87.
-        
-        ObjType = SE_REGISTRY_KEY
-        
-        SetRegKeyStringSD = SetSecurityDescriptor(hKey, ObjType, SD)
-        
-        RegCloseKey hKey
+'    End If
+    
+    ObjType = SE_REGISTRY_KEY
+    
+    SetRegKeyStringSD = SetSecurityDescriptor(hKey, ObjType, SD)
+    
+    RegCloseKey hKey
+    
+    If bRecursive Then
+
+        If RegOpenKeyEx(lHive, StrPtr(KeyName), 0&, KEY_ENUMERATE_SUB_KEYS Or (bIsWOW64 And KEY_WOW64_64KEY And Not bUseWow64), hKeyEnum) = ERROR_SUCCESS Then
+    
+            sSubKeyName = String$(MAX_KEYNAME, vbNullChar)
+            
+            i = 0
+            Do While RegEnumKeyEx(hKeyEnum, i, StrPtr(sSubKeyName), MAX_KEYNAME, 0&, 0&, 0&, ByVal 0&) = ERROR_SUCCESS
+            
+                sSubKeyName = Left$(sSubKeyName, lstrlen(StrPtr(sSubKeyName)))
+                
+                SetRegKeyStringSD = SetRegKeyStringSD And _
+                    RegKeySetInheritedSD(lHive, KeyName & IIf(0 <> Len(KeyName), "\", vbNullString) & sSubKeyName, bUseWow64, True)
+                
+                sSubKeyName = String$(MAX_KEYNAME, vbNullChar)
+                i = i + 1
+            Loop
+            RegCloseKey hKeyEnum
+        End If
     End If
     
     Exit Function

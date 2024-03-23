@@ -554,14 +554,14 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
-Public Function IsSignPresent(FileName As String) As Boolean
+Public Function IsSignPresent(filename As String) As Boolean
     ' &H3C -> PE_Header offset
     ' PE_Header offset + &H18 = Optional_PE_Header
     ' PE_Header offset + &H78 = Data_Directories offset
     ' Data_Directories offset + &H20 = SecurityDir -> Address (dword), Size (dword) for digital signature.
     
     On Error GoTo ErrorHandler:
-    AppendErrorLogCustom "IsSignPresent - Begin", "File: " & FileName
+    AppendErrorLogCustom "IsSignPresent - Begin", "File: " & filename
     
     Const IMAGE_FILE_MACHINE_I386   As Long = &H14C&
     Const IMAGE_FILE_MACHINE_IA64   As Long = &H200&
@@ -576,10 +576,10 @@ Public Function IsSignPresent(FileName As String) As Boolean
     Dim FSize           As Long
     Dim Redirect As Boolean, bOldStatus As Boolean
   
-    Redirect = ToggleWow64FSRedirection(False, FileName, bOldStatus)
+    Redirect = ToggleWow64FSRedirection(False, filename, bOldStatus)
   
     ff = FreeFile()
-    Open FileName For Binary Access Read Shared As #ff
+    Open filename For Binary Access Read Shared As #ff
     FSize = LOF(ff)
     
     If FSize >= &H3C& + 6& Then
@@ -609,7 +609,7 @@ Public Function IsSignPresent(FileName As String) As Boolean
     AppendErrorLogCustom "IsSignPresent - End"
     Exit Function
 ErrorHandler:
-    ErrorMsg Err, "modUtils_IsSignPresent", "File:", FileName
+    ErrorMsg Err, "modUtils_IsSignPresent", "File:", filename
     If Redirect Then Call ToggleWow64FSRedirection(bOldStatus)
     If inIDE Then Stop: Resume Next
 End Function
@@ -2895,4 +2895,8 @@ Public Function IsScriptExtension(sPath As String) As Boolean
     Dim sExt As String
     sExt = GetExtensionName(sPath)
     IsScriptExtension = StrInParamArray(sExt, ".BAT", ".CMD", ".VBS", ".JS", ".PY")
+End Function
+
+Public Function IsValidSDDL(SDDL As String) As Boolean
+    If UBoundSafe(ConvertStringSDToSD(SDDL)) > 0 Then IsValidSDDL = True
 End Function

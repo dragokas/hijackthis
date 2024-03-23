@@ -2604,7 +2604,7 @@ Private Function BackupValidateFileHash(lBackupID As Long, lFileID As Long) As B
         BackupLoadBackupByID lBackupID
     Else
         sCmdFilename = BuildPath(AppPath(), "Backups\" & lBackupID & "\" & BACKUP_COMMAND_FILE_NAME)
-        If StrComp(sCmdFilename, tBackupList.cLastCMD.filename, 1) <> 0 Then
+        If StrComp(sCmdFilename, tBackupList.cLastCMD.FileName, 1) <> 0 Then
             BackupLoadBackupByID lBackupID
         End If
     End If

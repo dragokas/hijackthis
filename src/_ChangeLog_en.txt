@@ -11,6 +11,12 @@ Version history:
 |||||       1. HiJackThis: changelog         |||||
 ==================================================
 
+[3.4.0.8 Alpha] - 23.03.2024
+ - The "Fix everything" option is blocked to protect inexperienced users.
+ - Registry Key Unlocker: added the ability to specify SDDL and retrieve it from the descriptor of specified key.
+ - Registry Key Unlocker: improved log formatting, added SDDL output before and after the fix.
+ - Added the ability to specify keys in the format Computer\HKEY...
+
 [3.4.0.7 Alpha] - Mar 14, 2024
  - File Unlocker: added the ability to specify SDDL and extract it from the descriptor of the specified folder (the "Pick from folder" button).
  - File Unlocker and Registry Key Unlocker: the "recursion" checkbox now sets the "inheritance" flag for all objects 2 and below level of hierarchy (previously inheritance was disabled and explicit permissions were set).

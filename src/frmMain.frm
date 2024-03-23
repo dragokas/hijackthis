@@ -2311,6 +2311,16 @@ Public Sub Test()
         g_ScanFilter.Inclusion(ID_SECTION_O1) = True
     End If
     
+'    Dim result As SCAN_RESULT
+'    With result
+'        .Section = "O27"
+'        .HitLineW = "123"
+'        AddFileToFix .File, REMOVE_FOLDER, "c:\users\alex"
+'        .CureType = FILE_BASED
+'    End With
+'
+'    MakeBackup result
+    
     Exit Sub
 ErrorHandler:
     ErrorMsg Err, "frmMain.Test"
@@ -4928,7 +4938,7 @@ Private Sub cmdFix_Click()
     If (lstResults.ListCount = lstResults.CheckedIndices.Count) And (Not HasCommandLineKey("StartupScan")) And (lstResults.CheckedIndices.Count > 5) And _
         (Not g_bNoGUI) Then
         
-        If MsgBoxW(Translate(345), vbExclamation Or vbYesNo) = vbNo Then Exit Sub
+        If MsgBoxW(Translate(345), vbExclamation Or vbYesNo, g_AppName) = vbNo Then Exit Sub
 '        If msgboxW("You selected to fix everything HiJackThis has found. " & _
 '                  "This could mean items important to your system " & _
 '                  "will be deleted and the full functionality of your " & _
@@ -4938,6 +4948,20 @@ Private Sub cmdFix_Click()
 '                  "forums will gladly help you with your log." & vbCrLf & vbCrLf & _
 '                  "Are you sure you want to fix all items in your scan " & _
 '                  "results?", vbExclamation + vbYesNo) = vbNo Then Exit Sub
+    End If
+    
+    'Lamer protection
+    If (lstResults.CheckedIndices.Count > 10) Then
+        For i = 0 To lstResults.ListCount - 1
+            If lstResults.ItemChecked(i) = True Then
+                sItem = lstResults.List(i)
+                If InStr(1, sItem, "O23 - Driver", vbTextCompare) <> 0 Then
+                    MsgBox Translate(355), vbOKOnly Or vbCritical, g_AppName
+                    Unload frmMain
+                    Exit Sub
+                End If
+            End If
+        Next
     End If
     
     If bConfirm And Not HasCommandLineKey("noGUI") Then
