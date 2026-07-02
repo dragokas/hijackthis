@@ -386,7 +386,12 @@ Public Function GetStringFromBinary(Optional ByVal sFile As String, Optional ByV
     If bIsInf Then
         nSize = GetPrivateProfileString(StrPtr("Strings"), StrPtr(sResVar), StrPtr(sInitialVar), StrPtr(sBuf), Len(sBuf), StrPtr(sFile))
         If nSize <> 0 Then
-            sBuf = UnQuote(Left$(sBuf, nSize))
+            sBuf = Left$(sBuf, nSize)
+            pos = InStr(1, sBuf, ";")
+            If pos > 1 Then
+                sBuf = Left$(sBuf, pos - 1)
+            End If
+            sBuf = UnQuote(Trim$(sBuf))
         End If
         GetStringFromBinary = sBuf
     Else
@@ -1331,6 +1336,8 @@ Public Sub GetFileByCLSID(ByVal sCLSID As String, out_sFile As String, Optional 
         
         If StrComp(GetFileName(out_sFile, True), "mscoree.dll", vbTextCompare) = 0 Then
             out_sFile = Reg.GetString(HKEY_CLASSES_ROOT, "CLSID\" & sCLSID & "\InProcServer32", "CodeBase", bRedirState)
+            '//TODO:
+            'Search GAC with "Assembly" value -> Assembly.Load -> assembly.Location -> see fuslogvw.exe
         End If
         
         If 0 = Len(out_sFile) Then
@@ -1464,6 +1471,7 @@ Public Function FormatFileMissing(ByVal sFile As String, Optional sArgs As Strin
     On Error GoTo ErrorHandler:
     
     Dim pos As Long
+    Dim sResult As String
     
     sFile = UnQuote(EnvironW(sFile))
     
@@ -1498,10 +1506,10 @@ Public Function FormatFileMissing(ByVal sFile As String, Optional sArgs As Strin
                 
             Else 'relative path?
                 Dim bFound As Boolean
-                sFile = FindOnPath(sFile, True, , bFound)
+                sResult = FindOnPath(sFile, True, , bFound)
                 
                 If bFound Then
-                    FormatFileMissing = sFile
+                    FormatFileMissing = sResult
                 Else
                     FormatFileMissing = sFile & " " & STR_FILE_MISSING
                     out_bMissing = True

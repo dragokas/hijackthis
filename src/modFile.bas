@@ -2676,6 +2676,8 @@ Public Function FindOnPath( _
         End If
     End If
 
+    If Left$(sAppName, 1) = "/" Then Exit Function
+    
     If mid$(sAppName, 2, 1) = ":" Then bFullPath = True
 
     If bFullPath Then

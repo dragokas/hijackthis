@@ -16,7 +16,7 @@ Attribute VB_Ext_KEY = "Top_Level" ,"Yes"
 Option Explicit
 
 ' OSInfo class by Alex Dragokas
-' ver 1.21
+' ver 1.22
 '
 ' Updated to support x64 by Jon Johnson (fafalone)
 '
@@ -77,6 +77,8 @@ Option Explicit
         [_]
     End Enum
 #End If
+
+Private Const MAX_PATH                  As Long = 260&
 
 Private Enum ePlatformID
     Win32S = 0
@@ -167,7 +169,7 @@ End Type
 Private Type PDH_FMT_COUNTERVALUE
     CStatus As Long
     Align(3) As Byte
-    Data(7) As Byte
+    data(7) As Byte
 End Type
 
 Private Type SECURE_BOOT_STATUS
@@ -178,6 +180,18 @@ End Type
 Private Type SYSTEM_CODEINTEGRITY_INFORMATION
     Length As Long
     CodeIntegrityOptions As Long
+End Type
+
+Private Const MAX_DEFAULTCHAR As Long = 2
+Private Const MAX_LEADBYTES As Long = 12
+
+Private Type CPINFOEXW
+    MaxCharSize As Long
+    DefaultChar(MAX_DEFAULTCHAR - 1) As Byte
+    LeadByte(MAX_LEADBYTES - 1) As Byte
+    UnicodeDefaultChar As Integer
+    CodePage As Long
+    CodePageName(MAX_PATH - 1) As Integer
 End Type
 
 #If VBA7 Then
@@ -238,7 +252,7 @@ Private Declare PtrSafe Function PdhCollectQueryData Lib "Pdh.dll" (ByVal hQuery
 Private Declare PtrSafe Function PdhGetFormattedCounterValue Lib "Pdh.dll" (ByVal hCounter As LongPtr, ByVal dwFormat As Long, lpdwType As Long, pValue As PDH_FMT_COUNTERVALUE) As Long
 Private Declare PtrSafe Function GetCurrentProcessId Lib "kernel32" () As Long
 Private Declare PtrSafe Function NtQuerySystemInformation Lib "ntdll" (ByVal SystemInformationClass As Long, SystemInformation As Any, ByVal SystemInformationLength As Long, ReturnLength As Long) As Long
-
+Private Declare PtrSafe Function GetCPInfoExW Lib "kernel32.dll" (ByVal CodePage As Long, ByVal dwFlags As Long, lpCPInfoEx As CPINFOEXW) As Long
 
 #Else
 
@@ -301,9 +315,9 @@ Private Declare Function PdhGetFormattedCounterValue Lib "Pdh.dll" (ByVal hCount
 Private Declare Function GetCurrentProcessId Lib "kernel32.dll" () As Long
 ' Private Declare Function GetMem8 Lib "msvbvm60.dll" (Src As Any, Dst As Any) As Long 'VBA unsupported
 Private Declare Function NtQuerySystemInformation Lib "ntdll.dll" (ByVal infoClass As Long, Buffer As Any, ByVal BufferSize As Long, ret As Long) As Long
+Private Declare Function GetCPInfoExW Lib "kernel32.dll" (ByVal CodePage As Long, ByVal dwFlags As Long, lpCPInfoEx As CPINFOEXW) As Long
 #End If
 
-Private Const MAX_PATH                  As Long = 260&
 Private Const SM_SERVERR2               As Long = 89&
 Private Const SM_MEDIACENTER            As Long = 87&
 Private Const SM_STARTER                As Long = 88&
@@ -880,7 +894,6 @@ ErrorHandler:
     Resume Next
 End Sub
 
-
 Private Sub GetCodePageInfo()
     On Error GoTo ErrorHandler
 
@@ -901,7 +914,42 @@ ErrorHandler:
     ErrorMsg Err, "clsOSver.GetCodePageInfo"
 End Sub
 
-Private Function GetLangNameFullByCultureCode(lcid As Long) As String
+Public Function GetCodepageName(codepageId As Long)
+    'thanks to Ophir LOJKINE
+    'https://github.com/lovasoa/lcid-to-codepage/tree/main
+    Dim cpinfo As CPINFOEXW
+    If GetCPInfoExW(codepageId, 0, cpinfo) <> 0 Then
+        GetCodepageName = RemoveDoubleSpaceFromString(StringFromPtrW(VarPtr(cpinfo.CodePageName(0))))
+    End If
+End Function
+
+Public Function RemoveDoubleSpaceFromString(str As String) As String
+    Dim ch As String, result As String
+    Dim bSecondSpace As Boolean
+    Dim iInsPos As Long, i As Long
+    If (Len(str)) = 0 Then Exit Function
+    result = String(Len(str), 0)
+    iInsPos = 1
+    For i = 1 To Len(str)
+        ch = mid$(str, i, 1)
+        If Asc(ch) <> 32 Then
+            Mid$(result, iInsPos) = ch
+            iInsPos = iInsPos + 1
+            bSecondSpace = False
+        Else
+            If Not bSecondSpace Then
+                Mid$(result, iInsPos) = ch
+                iInsPos = iInsPos + 1
+                bSecondSpace = True
+            End If
+        End If
+    Next
+    If iInsPos > 1 Then
+        RemoveDoubleSpaceFromString = Left$(result, iInsPos - 1)
+    End If
+End Function
+
+Public Function GetLangNameFullByCultureCode(lcid As Long) As String
     Dim buf As String
     Dim lr  As Long
     buf = String$(1000, vbNullChar)
@@ -1412,7 +1460,7 @@ End Function
 
 
 
-Private Function GetLangNameByCultureCode(CultureCode As Long) As String
+Public Function GetLangNameByCultureCode(CultureCode As Long) As String
     Dim Lang$
     Select Case CultureCode
         Case &H419&
@@ -2072,7 +2120,7 @@ Public Property Get CpuUsage() As Double ' in % (Vista+)
             PdhGetFormattedCounterValue m_hCpuCounter, PDH_FMT_DOUBLE, 0, counterVal
             
             'GetMem8 counterVal.Data(0), CpuUsage
-            CopyMemory CpuUsage, counterVal.Data(0), 8
+            CopyMemory CpuUsage, counterVal.data(0), 8
         End If
     End If
 

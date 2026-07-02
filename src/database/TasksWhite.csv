@@ -1,20 +1,43 @@
 OSver;Dir\Name;RunObj;Args;Note
-11; \Microsoft\Windows\AppListBackup\BackupNonMaintenance; {E0DCC2CC-3354-45F2-8914-519E07809082}; %SystemRoot%\system32\AppListBackupLauncher.dll
-11; \Microsoft\Windows\AppxDeploymentClient\UCPD velocity; %SystemRoot%\system32\UCPDMgr.exe
-11; \Microsoft\Windows\CloudRestore\Backup; {722D0F89-B69C-4700-AE8C-4A44350E4876},$(Arg0); %SystemRoot%\System32\CloudRestoreLauncher.dll
-11; \Microsoft\Windows\CloudRestore\Restore; {B4BCFA6F-948D-46B8-BF27-E8B1117E23B3}; %SystemRoot%\system32\CloudRestoreLauncher.dll
-11; \Microsoft\Windows\Input\InputSettingsRestoreDataAvailable; {378EAB97-EFD6-4ED5-9AD9-E64A6AA1E6FA},InputSettingsRestoreDataAvailable; %SystemRoot%\System32\InputCloudStore.dll
-11; \Microsoft\Windows\Input\syncpensettings; {3ECEE215-83F5-4123-A592-74F1FE4C3D59},SYNC_PEN_SETTINGS; %SystemRoot%\System32\SettingsHandlers_Pen.dll
-11; \Microsoft\Windows\InstallService\RestoreDevice; {7F019157-05C8-473F-8664-2BA04A090DC8}; %SystemRoot%\System32\InstallServiceTasks.dll
-11; \Microsoft\Windows\PI\SecureBootEncodeUEFI; %SystemRoot%\system32\SecureBootEncodeUEFI.exe
-11; \Microsoft\Windows\Printing\PrintJobCleanupTask; {8ABCE260-32B6-476C-AE13-B34D0C91292D}; %SystemRoot%\System32\PrinterCleanupTask.dll
-11; \Microsoft\Windows\Security\Pwdless\IntelligentPwdlessTask; {8702A841-D5CA-47C3-812D-9CEDC304C200}; %SystemRoot%\system32\IntelligentPwdlessTask.dll
-11; \Microsoft\Windows\SoftwareProtectionPlatform\SvcTrigger; {B1AEBB5D-EAD9-4476-B375-9C3ED9F32AFC},logon; %SystemRoot%\System32\sppcext.dll
-11; \Microsoft\Windows\UpdateOrchestrator\Schedule Wake To Work; %SystemRoot%\system32\usoclient.exe; StartWork
-11; \Microsoft\Windows\UpdateOrchestrator\StartOobeAppsScan_LicenseAccepted; %SystemRoot%\system32\usoclient.exe; StartOobeAppsScan
-11; \Microsoft\Windows\WindowsUpdate\Refresh Group Policy Cache; {07369A67-07A6-4608-ABEA-379491CB7C46}; %SystemRoot%\system32\UpdatePolicy.dll
-11; \Microsoft\Windows\WlanSvc\MoProfileManagement; {085EDA12-CF4A-4944-8222-8ADCADE137CB}; %SystemRoot%\system32\WlanMediaManager.dll
-11; {root}\OneDrive Per-Machine Standalone Update Task; %ProgramFiles%\Microsoft OneDrive\OneDriveStandaloneUpdater.exe
+10; \Microsoft\Windows\AppListBackup\BackupNonMaintenance; {E0DCC2CC-3354-45F2-8914-519E07809082}; %SystemRoot%\system32\AppListBackupLauncher.dll
+10; \Microsoft\Windows\AppxDeploymentClient\UCPD velocity; %SystemRoot%\system32\UCPDMgr.exe
+10; \Microsoft\Windows\CloudRestore\Backup; {722D0F89-B69C-4700-AE8C-4A44350E4876},$(Arg0); %SystemRoot%\System32\CloudRestoreLauncher.dll
+10; \Microsoft\Windows\CloudRestore\Restore; {B4BCFA6F-948D-46B8-BF27-E8B1117E23B3}; %SystemRoot%\system32\CloudRestoreLauncher.dll
+10; \Microsoft\Windows\Input\InputSettingsRestoreDataAvailable; {378EAB97-EFD6-4ED5-9AD9-E64A6AA1E6FA},InputSettingsRestoreDataAvailable; %SystemRoot%\System32\InputCloudStore.dll
+10; \Microsoft\Windows\Input\syncpensettings; {3ECEE215-83F5-4123-A592-74F1FE4C3D59},SYNC_PEN_SETTINGS; %SystemRoot%\System32\SettingsHandlers_Pen.dll
+10; \Microsoft\Windows\InstallService\RestoreDevice; {7F019157-05C8-473F-8664-2BA04A090DC8}; %SystemRoot%\System32\InstallServiceTasks.dll
+10; \Microsoft\Windows\PI\SecureBootEncodeUEFI; %SystemRoot%\system32\SecureBootEncodeUEFI.exe
+10; \Microsoft\Windows\Printing\PrintJobCleanupTask; {8ABCE260-32B6-476C-AE13-B34D0C91292D}; %SystemRoot%\System32\PrinterCleanupTask.dll
+10; \Microsoft\Windows\Security\Pwdless\IntelligentPwdlessTask; {8702A841-D5CA-47C3-812D-9CEDC304C200}; %SystemRoot%\system32\IntelligentPwdlessTask.dll
+10; \Microsoft\Windows\SoftwareProtectionPlatform\SvcTrigger; {B1AEBB5D-EAD9-4476-B375-9C3ED9F32AFC},logon; %SystemRoot%\System32\sppcext.dll
+10; \Microsoft\Windows\UpdateOrchestrator\Schedule Wake To Work; %SystemRoot%\system32\usoclient.exe; StartWork
+10; \Microsoft\Windows\UpdateOrchestrator\StartOobeAppsScan_LicenseAccepted; %SystemRoot%\system32\usoclient.exe; StartOobeAppsScan
+10; \Microsoft\Windows\WindowsUpdate\Refresh Group Policy Cache; {07369A67-07A6-4608-ABEA-379491CB7C46}; %SystemRoot%\system32\UpdatePolicy.dll
+10; \Microsoft\Windows\WlanSvc\MoProfileManagement; {085EDA12-CF4A-4944-8222-8ADCADE137CB}; %SystemRoot%\system32\WlanMediaManager.dll
+10; \Microsoft\Windows\.NET Framework\.NET Framework NGEN v4.0.30319; {84F0FAE1-C27B-4F6F-807B-28CF6F96287D},/RuntimeWide; %SystemRoot%\Microsoft.NET\Framework64\v4.0.30319\ngentasklauncher.dll
+10; \Microsoft\Windows\.NET Framework\.NET Framework NGEN v4.0.30319 64; {429BC048-379E-45E0-80E4-EB1977941B5C},/RuntimeWide; %SystemRoot%\Microsoft.NET\Framework64\v4.0.30319\ngentasklauncher.dll
+10; \Microsoft\Windows\AccountHealth\RecoverabilityToastTask; {B7F5B442-EBF8-46CD-9F0B-D8E45ED43492},-flow showtoast -checkup recoverability; %SystemRoot%\system32\AccountHealth.dll
+10; \Microsoft\Windows\Containers\CmCleanup; {F50E9363-6BC8-4DC5-8CAB-7D9F8C1B81B4}; %SystemRoot%\System32\cmcleanup.dll
+10; \Microsoft\Windows\Diagnosis\UnexpectedCodepath; %SystemRoot%\system32\UCConfigTask.exe
+10; \Microsoft\Windows\Flighting\FeatureConfig\GovernedFeatureUsageProcessing; {866F38A9-0302-4926-A36F-E4BAABAAE116}; %SystemRoot%\System32\fcon.dll
+10; \Microsoft\Windows\Flighting\FeatureConfig\ReconcileConfigs; {15F5ECE1-4550-4A92-8E26-984FD1DA54FA}; %SystemRoot%\System32\fcon.dll
+10; \Microsoft\Windows\Flighting\FeatureConfig\UsageDataReceiver; {D4C0420F-76BD-4F66-A91F-918A93ABEBEB}; %SystemRoot%\System32\fcon.dll
+10; \Microsoft\Windows\Input\RemoteMouseSyncDataAvailable; {378EAB97-EFD6-4ED5-9AD9-E64A6AA1E6FA},RemoteMouseSyncDataAvailable; %SystemRoot%\System32\InputCloudStore.dll
+10; \Microsoft\Windows\Input\RemotePenSyncDataAvailable; {378EAB97-EFD6-4ED5-9AD9-E64A6AA1E6FA},RemotePenSyncDataAvailable; %SystemRoot%\System32\InputCloudStore.dll
+10; \Microsoft\Windows\Input\RemoteTouchpadSyncDataAvailable; {378EAB97-EFD6-4ED5-9AD9-E64A6AA1E6FA},RemoteTouchpadSyncDataAvailable; %SystemRoot%\System32\InputCloudStore.dll
+10; \Microsoft\Windows\MemoryDiagnostic\AutomaticOfflineMemoryDiagnostic; {44f6c389-604a-4363-b09a-f38da08e6079}; %SystemRoot%\System32\MemoryDiagnostic.dll
+10; \Microsoft\Windows\Network Connectivity Status Indicator\NcsiIdentifyUserProxies; {706B965A-8308-4CD4-9900-87C2D79C121B}; %SystemRoot%\System32\netprofm.dll
+10; \Microsoft\Windows\PCRPF\PCR Prediction Framework Firmware Update Task; %SystemRoot%\system32\rundll32.exe; %SystemRoot%\system32\pcrpf.dll,NotifyFirmwareUpdateStaged
+10; \Microsoft\Windows\PerformanceTrace\RequestTrace; {9efeb182-2ee3-4af9-affa-521410d110d1}; %SystemRoot%\system32\PerformanceTraceHandler.dll
+10; \Microsoft\Windows\PerformanceTrace\WhesvcToast; {c34546ad-2e37-41d9-8e23-277837b7a234}; %SystemRoot%\system32\PerformanceTraceHandler.dll
+10; \Microsoft\Windows\Pluton\Pluton-Ksp-Provisioning; {997e11e1-0eff-40bd-9b25-8da694816600},PlutonKspProvision; %SystemRoot%\system32\PlutonTasks.dll
+10; \Microsoft\Windows\ReFsDedupSvc\Initialization; {DCFF735B-64F7-45F3-B39C-6C66BBE2120F}; %SystemRoot%\System32\ReFsDedupSvc.exe
+10; \Microsoft\Windows\Setup\PITRTask; {093cb270-c282-4c22-b2ea-7d2bf1c30bbf}; %SystemRoot%\system32\oobe\PITRTask.dll
+10; \Microsoft\Windows\Setup\SetupRecoveryDataTask; {717aa9c3-17e5-483b-81cc-8e27ed927763}; %SystemRoot%\system32\oobe\SetupRecoveryDataTask.dll
+10; \Microsoft\Windows\Shell\UpdateUserPictureTaskContained; {09c5dd34-009d-40fa-bcb9-0165ad0c15d4}; %SystemRoot%\System32\Windows.UI.Immersive.dll
+10; \Microsoft\Windows\Sustainability\PowerGridForecastTask; {251E5B1F-E370-4E12-B5BD-B7AD2A8EE810}; %SystemRoot%\system32\PowerGridForecastTask.dll
+10; \Microsoft\Windows\TPM\Tpm-PreAttestationHealthCheck; {5014B7C8-934E-4262-9816-887FA745A6C4},TpmPreAttestationHealthCheck; %SystemRoot%\system32\TpmTasks.dll
+10; {root}\OneDrive Per-Machine Standalone Update Task; %ProgramFiles%\Microsoft OneDrive\OneDriveStandaloneUpdater.exe
 10; \Microsoft\Configuration Manager\Configuration Manager Health Evaluation; %SystemRoot%\CCM\ccmeval.exe
 10; \Microsoft\Office\Office Automatic Updates 2.0; %ProgramFiles%\Common Files\Microsoft Shared\ClickToRun\OfficeC2RClient.exe; /frequentupdate SCHEDULEDTASK displaylevel=False
 10; \Microsoft\Office\Office Automatic Updates; %ProgramFiles%\Common Files\Microsoft Shared\ClickToRun\OfficeC2RClient.exe; /update SCHEDULEDTASK displaylevel=False

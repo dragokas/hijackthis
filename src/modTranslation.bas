@@ -1729,7 +1729,7 @@ Public Function ConvertCodePage(SrcPtr As Long, inPage As idCodePage, Optional o
             cchBuf = MultiByteToWideChar(inPage, 0&, SrcPtr, cchSrc * 2, StrPtr(buf), cchBuf)
             
             If outPage = CP_UTF16LE Then
-                ConvertCodePage = buf
+                ConvertCodePage = Left$(buf, lstrlen(StrPtr(buf)))
             Else
                 cbBuf = WideCharToMultiByte(outPage, 0&, StrPtr(buf), cchBuf, 0&, 0&, 0&, 0&)
                 If cbBuf > 0 Then

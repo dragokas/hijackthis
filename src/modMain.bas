@@ -5357,7 +5357,7 @@ Sub CheckO4_ActiveSetup() 'Thanks to Helge Klein for explanations
                         End If
                     End If
                     
-                    If (Not bSafe) Then
+                    If (Not bSafe) And (Not bIgnoreAllWhitelists) Then
                         'garbage by MS :)
                         If sData = "U " & STR_FILE_MISSING Then
                             bSafe = True
@@ -6119,12 +6119,17 @@ Public Sub CheckKnownFoldersHKCU()
                 'sDefValue = EnvironW(sDefValue)
                 sValueExpanded = EnvironW(sValue, , sProfile)
                 
-                If Not dictChecked.Exists(sValueExpanded) Then
+                If Not dictChecked.Exists(sValueExpanded) _
+                    And Len(sValueExpanded) <> 0 _
+                    And StrComp(sValueExpanded, ProfilesDir & "\.NET v4.5 Classic\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup", vbTextCompare) <> 0 _
+                    And StrComp(sValueExpanded, ProfilesDir & "\.NET v4.5\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup", vbTextCompare) <> 0 _
+                    And StrComp(sValueExpanded, ProfilesDir & "\DefaultAppPool\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup", vbTextCompare) <> 0 Then
+                
                     dictChecked.Add sValueExpanded, 0
                 
                     If Not FolderExists(sValueExpanded) Then
                         
-                        sHit = "O7 - KnownFolder: " & sValueExpanded & " " & STR_FOLDER_MISSING
+                        sHit = "O7 - KnownFolder: " & sKey & ", " & aParam(i) & " = " & sValueExpanded & " " & STR_FOLDER_MISSING
                         
                         If Not IsOnIgnoreList(sHit) Then
                             With result
@@ -6154,6 +6159,132 @@ Public Sub CheckSystemProblemsEnvVars()
     CheckEnvVarPathExt
     CheckEnvVarTemp
     CheckEnvVarOther
+    CheckEnvVarOverflow
+    CheckEnvVarPayload
+End Sub
+
+Public Sub CheckEnvVarPayload()
+
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "CheckEnvVarPayload - Begin"
+    
+    Dim sData As String, sFile As String, sArgs As String, vKey As Variant
+    Dim aParam() As String, aData() As Variant, aTypes() As Long
+    Dim sHit As String, result As SCAN_RESULT
+    Dim bSafe As Boolean
+    Dim i As Long
+    
+    For Each vKey In Reg.GetEnvironmentVariableKeys()
+        
+        For i = 1 To Reg.EnumValuesAndData(HKEY_ANY, vKey, FLAG_REG_ALL, aParam, aData, aTypes, False)
+            
+            bSafe = True
+            
+            sData = aData(i)
+            
+            If aParam(i) = "UserInitMprLogonScript" Then
+                sHit = "O4 - " & vKey & ": [" & aParam(i) & "] "
+                result.Section = "O4"
+                bSafe = False
+            Else
+                If Len(aData(i)) > 18 Then 'timestamp length
+                    If StrComp(aParam(i), "Path", vbTextCompare) = 0 Then GoTo Continue
+                    If StrComp(aParam(i), "PATHEXT", vbTextCompare) = 0 Then GoTo Continue
+                    
+                    If StrBeginWith(CStr(vKey), "HKLM") And Len(aData(i)) < 100 Then
+                        If StrComp(aParam(i), "PROCESSOR_IDENTIFIER", vbTextCompare) = 0 Then GoTo Continue
+                        If StrComp(aParam(i), "PSModulePath", vbTextCompare) = 0 Then GoTo Continue
+                        If StrComp(aParam(i), "POWERSHELL_DISTRIBUTION_CHANNEL", vbTextCompare) = 0 Then GoTo Continue
+                    End If
+                    
+                    Dim sDataExpanded As String: sDataExpanded = EnvironW(CStr(aData(i)))
+                    
+                    If FileExists(sDataExpanded) Then GoTo Continue
+                    If FolderExists(sDataExpanded) Then GoTo Continue
+                    
+                    sHit = "O7 - Suspicious (EV): " & vKey & ": [" & aParam(i) & "] "
+                    result.Section = "O7"
+                    bSafe = False
+                End If
+            End If
+            
+            If Not bSafe Then
+            
+                SplitIntoPathAndArgs sData, sFile, sArgs, True
+                                    
+                sFile = FormatFileMissing(sFile)
+                
+                SignVerifyJack sFile, result.SignResult
+                
+                sHit = sHit & ConcatFileArg(sFile, sArgs) & FormatSign(result.SignResult)
+                
+                If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
+                  
+                If Not IsOnIgnoreList(sHit) Then
+                    With result
+                        .HitLineW = sHit
+                        AddRegToFix .Reg, REMOVE_VALUE, HKEY_ANY, vKey, aParam(i)
+                        .CureType = REGISTRY_BASED
+                    End With
+                    AddToScanResults result
+                End If
+            End If
+Continue:
+        Next
+    Next
+    
+    AppendErrorLogCustom "CheckEnvVarPayload - End"
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "CheckEnvVarPayload"
+    If inIDE Then Stop: Resume Next
+End Sub
+
+Public Sub CheckEnvVarOverflow()
+
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "CheckEnvVarOverflow - Begin"
+    
+    ' PATH len exceed the maximum allowed, see article:
+    ' https://safezone.cc/threads/delo-o-zablokirovannoj-peremennoj-okruzhenija-path.31001/
+    
+    Dim sData As String, vKey As Variant
+    Dim sHit As String, result As SCAN_RESULT
+    Dim bSafe As Boolean
+    
+    For Each vKey In Reg.GetEnvironmentVariableKeys()
+        
+        sData = Reg.GetString(HKEY_ANY, CStr(vKey), "Path", , True)
+        
+        bSafe = (Len(sData) < 2048)
+        
+        If Not bSafe Then
+            sHit = "O7 - TroubleShooting (EV): %PATH% length overflow at " & vKey
+            
+            If Not IsOnIgnoreList(sHit) Then
+                With result
+                    .Section = "O7"
+                    .HitLineW = sHit
+                    
+                    If StrBeginWith(CStr(vKey), "HKLM") Then
+                        sData = "%SystemRoot%\system32;%SystemRoot%;%SystemRoot%\System32\Wbem;%SYSTEMROOT%\System32\WindowsPowerShell\v1.0\"
+                    Else
+                        sData = "%USERPROFILE%\AppData\Local\Microsoft\WindowsApps"
+                    End If
+                    
+                    AddRegToFix .Reg, RESTORE_VALUE, HKEY_ANY, vKey, "Path", sData & ";", , REG_RESTORE_EXPAND_SZ
+                    .CureType = REGISTRY_BASED
+                End With
+                AddToScanResults result
+            End If
+        End If
+    Next
+    
+    AppendErrorLogCustom "CheckEnvVarOverflow - End"
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "CheckEnvVarOverflow"
+    If inIDE Then Stop: Resume Next
 End Sub
 
 Public Sub CheckEnvVarPath()
@@ -6167,10 +6298,6 @@ Public Sub CheckEnvVarPath()
     
     '// TODO:
     ' add checking %PATH% load order
-    
-    '// TODO:
-    ' PATH len exceed the maximum allowed, see article:
-    ' https://safezone.cc/threads/delo-o-zablokirovannoj-peremennoj-okruzhenija-path.31001/
     ' Check essential programs, e.g. scripting hosts, by search path.
     
     sKeyFull = "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment"
@@ -6877,10 +7004,10 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Sub
 
-Sub CheckPolicyScripts()
+Sub CheckPolicyLogonScripts()
     
     On Error GoTo ErrorHandler:
-    AppendErrorLogCustom "CheckPolicyScripts - Begin"
+    AppendErrorLogCustom "CheckPolicyLogonScripts - Begin"
     
     '
     'For quick overview:
@@ -7159,10 +7286,10 @@ Sub CheckPolicyScripts()
     
     Set oFiles = Nothing
     
-    AppendErrorLogCustom "CheckPolicyScripts - End"
+    AppendErrorLogCustom "CheckPolicyLogonScripts - End"
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "CheckPolicyScripts"
+    ErrorMsg Err, "CheckPolicyLogonScripts"
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -7495,6 +7622,23 @@ Public Sub CheckPolicies()
         Next
     Loop
     
+    AppendErrorLogCustom "CheckPolicies - End"
+    Exit Sub
+ErrorHandler:
+    ErrorMsg Err, "CheckPolicies"
+    If inIDE Then Stop: Resume Next
+End Sub
+    
+Public Sub CheckDefenderPolicies()
+    On Error GoTo ErrorHandler:
+    AppendErrorLogCustom "CheckDefenderPolicies - Begin"
+    
+    Dim aValue() As String, i&, lData&
+    Dim sHit$, result As SCAN_RESULT
+    Dim sKey As String, sValue As String
+    
+    Dim HE As clsHiveEnum
+    Set HE = New clsHiveEnum
     
     'Check Windows Defender policies
     HE.Init HE_HIVE_ALL, , HE_REDIR_NO_WOW
@@ -7563,10 +7707,167 @@ Public Sub CheckPolicies()
         End If
     End If
     
-    AppendErrorLogCustom "CheckPolicies - End"
+    Dim sAlias As String, sFile As String, sHash As String
+    Dim aSubKeys() As Variant
+    Dim bPathBased As Boolean, bExtensionBased As Boolean, bIPBased As Boolean, bProcessBased As Boolean
+    Dim k As Long
+    
+    aSubKeys = Array("Paths", "TemporaryPaths", "Extensions", "IpAddresses", "Processes")
+    sAlias = "O7 - " & STR_CONST.WINDOWS_DEFENDER & " Exclusion - "
+    
+    For k = 0 To UBound(aSubKeys)
+        sKey = "SOFTWARE\Microsoft\" & STR_CONST.WINDOWS_DEFENDER & "\Exclusions\" & aSubKeys(k)
+        For i = 1 To Reg.EnumValuesToArray(HKLM, sKey, aValue)
+        
+            bPathBased = (k = 0 Or k = 1)
+            bExtensionBased = (k = 2)
+            bIPBased = (k = 3)
+            bProcessBased = (k = 4)
+            
+            If bPathBased Then
+                sFile = aValue(i)
+                If (FolderExists(sFile)) Then
+                    sHit = sAlias & aSubKeys(k) & ": " & sFile & " (Directory)"
+                Else
+                    sFile = FormatFileMissing(sFile)
+                    SignVerifyJack sFile, result.SignResult
+                    sHit = sAlias & aSubKeys(k) & ": " & sFile & FormatSign(result.SignResult)
+                    If g_bCheckSum Then sHash = GetFileCheckSum(sFile): sHit = sHit & sHash
+                End If
+            Else
+                sHit = sAlias & aSubKeys(k) & ": " & aValue(i)
+            End If
+            
+            If Not IsOnIgnoreList(sHit) Then
+                With result
+                    .Section = "O7"
+                    .HitLineW = sHit
+                    AddRegToFix .Reg, REMOVE_VALUE, HKLM, sKey, aValue(i)
+                    'Windows Defender self-protection doesn't allow to remove such keys directly. Using alternate method:
+                    If bPathBased Then
+                        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Remove-MpPreference -Force -ExclusionPath '" & aValue(i) & "'", , False
+                    ElseIf bExtensionBased Then
+                        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Remove-MpPreference -Force -ExclusionExtension '" & aValue(i) & "'", , False
+                    ElseIf bIPBased Then
+                        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Remove-MpPreference -Force -ExclusionIpAddress '" & aValue(i) & "'", , False
+                    ElseIf bProcessBased Then
+                        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Remove-MpPreference -Force -ExclusionProcess '" & aValue(i) & "'", , False
+                    End If
+                    .CureType = REGISTRY_BASED Or COMMANDLINE_BASED
+                    If bPathBased Then
+                        AddJumpFile .Jump, JUMP_FILE, sFile
+                    End If
+                End With
+                AddToScanResults result
+            End If
+        Next
+    Next
+    
+    Dim iDisabled As Long
+    Dim bEnabled As Boolean
+    Dim sBaseKey As String
+    sAlias = "O7 - " & STR_CONST.WINDOWS_DEFENDER & " Exclusion (Policy) - "
+    sBaseKey = "SOFTWARE\Policies\Microsoft\" & STR_CONST.WINDOWS_DEFENDER & "\Exclusions"
+    
+    'Despite if this option enabled or not, Windows Defender still show all rules as active
+    'iDisabled = Reg.GetDword(HKLM, sBaseKey, "DisableAutoExclusions")
+    'If iDisabled <> 1 Or bIgnoreAllWhitelists Then
+        
+        aSubKeys = Array("Paths", "TemporaryPaths", "Extensions", "IpAddresses", "Processes")
+        
+        For k = 0 To UBound(aSubKeys)
+        
+            bPathBased = (k = 0 Or k = 1)
+            bExtensionBased = (k = 2)
+            bIPBased = (k = 3)
+            bProcessBased = (k = 4)
+            
+            bEnabled = True
+            
+'            If bIgnoreAllWhitelists Then
+'                bEnabled = True
+'            Else
+'                Select Case k
+'                Case 0: bEnabled = (0 <> Reg.GetDword(HKLM, sBaseKey, "Exclusions_Paths"))
+'                Case 1: bEnabled = True 'There is no "TemporaryPaths" in Policy key, however, going to add it anyway
+'                Case 2: bEnabled = (0 <> Reg.GetDword(HKLM, sBaseKey, "Exclusions_Extensions"))
+'                Case 3: bEnabled = (0 <> Reg.GetDword(HKLM, sBaseKey, "Exclusions_IpAddresses"))
+'                Case 4: bEnabled = (0 <> Reg.GetDword(HKLM, sBaseKey, "Exclusions_Processes"))
+'                Case Else: bEnabled = True
+'                End Select
+'            End If
+            
+            If bEnabled Then
+                sKey = sBaseKey & "\" & aSubKeys(k)
+                For i = 1 To Reg.EnumValuesToArray(HKLM, sKey, aValue)
+                    
+                    If bPathBased Then
+                        sFile = aValue(i)
+                        sFile = FormatFileMissing(sFile)
+                        SignVerifyJack sFile, result.SignResult
+                        sHit = sAlias & aSubKeys(k) & ": " & sFile & FormatSign(result.SignResult)
+                        If g_bCheckSum Then sHash = GetFileCheckSum(sFile): sHit = sHit & sHash
+                    Else
+                        sHit = sAlias & aSubKeys(k) & ": " & aValue(i)
+                    End If
+                    
+                    If Not IsOnIgnoreList(sHit) Then
+                        With result
+                            .Section = "O7"
+                            .HitLineW = sHit
+                            AddRegToFix .Reg, REMOVE_VALUE, HKLM, sKey, aValue(i)
+                            'Note: Policy keys cannot be deleted by PS Remove-MpPreference
+                            'TODO:
+                            'HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Group Policy Objects\{C6699C10-BD13-42F7-8D7F-3FA0CC14CB32}Machine\Software\Policies\Microsoft\Windows Defender\...
+                            .CureType = REGISTRY_BASED
+                            If bPathBased Then
+                                AddJumpFile .Jump, JUMP_FILE, sFile
+                            End If
+                        End With
+                        AddToScanResults result
+                    End If
+                Next
+            End If
+        Next
+    'End If
+    
+    'TODO:
+    'GPO policies:
+    'HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Group Policy Objects\{RANDOM-GUID}Machine\Software\Policies\Microsoft\Windows Defender\Exclusions\...
+    
+    'Actions list
+    'Thanks to JosefZ:
+    'https://serverfault.com/a/933828
+    'Import-Module Defender
+    '[Microsoft.PowerShell.Cmdletization.GeneratedTypes.MpPreference.ThreatAction] | Get-EnumValue
+    '0 - UnDefined
+    '1 - Clean
+    '2 - Quarantine
+    '3 - Remove
+    '6 - Allow
+    '8 - UserDefined
+    '9 - NoAction
+    '10 - Block
+    
+    
+    'TODO:
+    'Threats exclusion:
+    'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Threats\ThreatIdDefaultAction
+    'Actions [Microsoft.PowerShell.Cmdletization.GeneratedTypes.MpPreference.ThreatAction]
+    
+    'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Threats\ThreatSeverityDefaultAction
+    'Param = Level
+    'Data = Action [Microsoft.PowerShell.Cmdletization.GeneratedTypes.MpPreference.ThreatAction]
+    'Levels:
+    '1 - Low
+    '2 - Middle
+    '3 - High
+    '5 - Critical
+    
+    AppendErrorLogCustom "CheckDefenderPolicies - End"
     Exit Sub
 ErrorHandler:
-    ErrorMsg Err, "CheckPolicies"
+    ErrorMsg Err, "CheckDefenderPolicies"
     If inIDE Then Stop: Resume Next
 End Sub
 
@@ -7579,12 +7880,50 @@ Private Sub FixWindowsDefender(result As SCAN_RESULT)
         AddRegToFix .Reg, RESTORE_VALUE, HKEY_LOCAL_MACHINE, Caes_Decode("TRK[`L_Tm`DzQPVTM]GDX_Wdnl AdghsknCibGRIBS"), "SpyNetReporting", 2
         AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Policies\Microsoft\" & STR_CONST.WINDOWS_DEFENDER
         AddRegToFix .Reg, REMOVE_KEY, HKCU, "SOFTWARE\Policies\Microsoft\" & STR_CONST.WINDOWS_DEFENDER
+        
         AddServiceToFix .Service, ENABLE_SERVICE Or START_SERVICE, "WinDefend"
+        
         AddTaskToFix .Task, ENABLE_TASK, "\Microsoft\Windows\ExploitGuard\ExploitGuard MDM policy Refresh"
-        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -UILockdown 0", , False
-        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -DisableRealtimeMonitoring $false", , False
+        
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -UILockdown 0", , False
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -DisableRealtimeMonitoring $false", , False
         AddCommandlineToFix .CommandLine, COMMANDLINE_RUN, BuildPath(PF_64, STR_CONST.WINDOWS_DEFENDER, "mpcmdrun.exe"), "-wdenable", SW_MINIMIZE, False
-        .CureType = REGISTRY_BASED Or SERVICE_BASED Or TASK_BASED
+        
+        'Cloud protection
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -MAPSReporting 2", , False
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -SubmitSamplesConsent 1", , False
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -CloudBlockLevel 0", , False
+        
+        'Scan potentially unwanted
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -PUAProtection 1", , False
+        
+        'Actions: [Microsoft.PowerShell.Cmdletization.GeneratedTypes.MpPreference.ThreatAction]
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -HighThreatDefaultAction 2", , False
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -SevereThreatDefaultAction 2", , False
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -UnknownThreatDefaultAction 0", , False
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -LowThreatDefaultAction 0", , False
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -ModerateThreatDefaultAction 0", , False
+        
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -DisableArchiveScanning $false", , False
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -DisableBehaviorMonitoring $false", , False
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -DisableDatagramProcessing $false", , False
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -DisableDnsOverTcpParsing $false", , False
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -DisableDnsParsing $false", , False
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -DisableFtpParsing $false", , False
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -DisableHttpParsing $false", , False
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -DisableIOAVProtection $false", , False
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -DisableRdpParsing $false", , False
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -DisableRealtimeMonitoring $false", , False
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -DisableScanningNetworkFiles $false", , False
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -DisableScriptScanning $false", , False
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -DisableSmtpParsing $false", , False
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -DisableSshParsing $false", , False
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -DisableTamperProtection $false", , False
+        AddCommandlineToFix .CommandLine, COMMANDLINE_POWERSHELL, , "Set-MpPreference -Force -DisableTlsParsing $false", , False
+        
+        'Note: See defaults with: PS Get-MpPreference
+        
+        .CureType = REGISTRY_BASED Or SERVICE_BASED Or TASK_BASED Or COMMANDLINE_BASED
         '// TODO: restore tasks
         .Reboot = True
     End With
@@ -8120,15 +8459,15 @@ Public Function EnableApplocker() As Boolean
 End Function
 
 
-Public Sub CheckO7Item()
+Public Sub CheckO7Item() 'Policies
     On Error GoTo ErrorHandler:
     AppendErrorLogCustom "CheckO7Item - Begin"
-
-    'Policies
+    
     CheckPolicies
     
-    'Policy - Logon scripts
-    CheckPolicyScripts
+    CheckDefenderPolicies
+    
+    CheckPolicyLogonScripts
     
     CheckCredentials
     
@@ -9796,6 +10135,9 @@ Public Sub CheckO15Item()
     Do While HE.MoveNext
         For i = 0 To LastIndex
             bSafe = False
+            
+            If (Not Reg.ValueExists(HE.Hive, HE.Key, sProtVals(i), HE.Redirected)) Then GoTo Continue
+            
             lProtZones(i) = Reg.GetDword(HE.Hive, HE.Key, sProtVals(i), HE.Redirected)
             
             If lProtZones(i) = 0 Then
@@ -9848,6 +10190,7 @@ Public Sub CheckO15Item()
                     End If
                 End If
             End If
+Continue:
         Next
     Loop
     
@@ -11267,7 +11610,7 @@ Public Sub CheckO23Item()
         
         bDllMissing = False
         
-        result.SignResult.isMicrosoftSign = False
+        WipeSignResult result.SignResult
         
         'Checking Service Dll
         If Len(sServiceDll) <> 0 Then
@@ -11372,12 +11715,12 @@ Public Sub CheckO23Item()
                         If Not bSuspicious Then If InStr(1, sBuf, "https:", 1) <> 0 Then bSuspicious = True
                     End If
                 End If
-                
+                                
                 '// TODO: добавить к FindOnPath папку, в которой находится основной запускаемый службой файл
                 
                 'если файл в составе коммандной строки, например: C:\WINDOWS\system32\svchost -k rpcss.exe
                 
-                If argc > 2 Then        ' 1 -> app exe self, 2 -> actual cmd, 3 -> arg
+                If argc > 1 Then        ' 0 -> app exe self, 1 -> actual cmd, 2 -> arg
                 
                   If Not FileExists(argv(1)) Then   ' если запускающий файл не существует -> ищем его
                     FoundFile = FindOnPath(argv(1))
@@ -11422,20 +11765,8 @@ Public Sub CheckO23Item()
             Else
                 If (Not FileExists(sFile)) And (Not IsCompositeCmd) Then
                     sFile = sFile & " " & STR_FILE_MISSING
-                Else
-'                    If IsCompositeCmd Then
-'                        FoundFile = argv(1)
-'                    Else
-'                        FoundFile = sFile
-'                    End If
-                    
-                    'sCompany = GetFilePropCompany(FoundFile)
-                    'If Len(sCompany) = 0 Then sCompany = "Unknown owner"
-                    
                 End If
             End If
-            
-            result.SignResult.isMicrosoftSign = False
             
             If IsCompositeCmd Then
                 If Not isSafeMSCmdLine Then bSuspicious = True
@@ -11443,8 +11774,6 @@ Public Sub CheckO23Item()
                 If sFile <> STR_NO_FILE Then    'иначе, такая проверка уже выполнена ранее
                     If IsWinServiceFileName(sFile, sArgument) Then
                         SignVerifyJack sFile, result.SignResult
-                    Else
-                        'WipeSignResult SignResult
                     End If
                 End If
             End If
@@ -13704,6 +14033,7 @@ Public Sub InitVariables()
     STR_CONST.RU_NO = LoadResString(601)
     STR_CONST.RU_MICROSOFT = LoadResString(604)
     STR_CONST.RU_PC = LoadResString(605)
+    
     STR_CONST.SHA1_PCRE2 = LoadResString(700)
     STR_CONST.SHA1_ABR = LoadResString(701)
     STR_CONST.SHA1_OCX = LoadResString(702)
@@ -15573,9 +15903,10 @@ Public Function MakeLogHeader() As String
     '," & vbTab & "Uptime: " & TrimSeconds(GetSystemUpTime()) & " h/m" & vbCrLf
     
     sText = sText & "Time:      " & TimeCreated & " (" & sUTC & ")" & vbCrLf
-    sText = sText & "Language:  " & "OS: " & OSver.LangSystemNameFull & " (" & "0x" & Hex$(OSver.LangSystemCode) & "). " & _
-            "Display: " & OSver.LangDisplayNameFull & " (" & "0x" & Hex$(OSver.LangDisplayCode) & "). " & _
-            "Non-Unicode: " & OSver.LangNonUnicodeNameFull & " (" & "0x" & Hex$(OSver.LangNonUnicodeCode) & ")" & vbCrLf
+    sText = sText & "Language:  " & "Install: " & OSver.LangSystemNameFull & " (" & "0x" & Hex$(OSver.LangSystemCode) & "), " & _
+            "Display: " & OSver.LangDisplayNameFull & " (" & "0x" & Hex$(OSver.LangDisplayCode) & "), " & _
+            "Non-Unicode: " & OSver.LangNonUnicodeNameFull & " (" & "0x" & Hex$(OSver.LangNonUnicodeCode) & ")" & vbCrLf & _
+            "Codepage:  ANSI: " & OSver.GetCodepageName(OSver.CodepageANSI) & ", OEM: " & OSver.GetCodepageName(OSver.CodepageOEM) & vbCrLf
     
     Dim iFreeSpace As Currency, dblFreeSpace As Double
     Dim iTotalSpace As Currency, dblTotalSpace As Double

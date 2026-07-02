@@ -374,21 +374,21 @@ Public sSysNativeDir    As String 'c:\windows\sysnative
 Public sSysDir          As String 'c:\windows\system32 (same as sWinSysDir)
 Public sWinSysDir       As String 'c:\windows\system32
 Public sWinSysDirWow64  As String 'c:\windows\syswow64
-Public PF_32            As String
-Public PF_64            As String
-Public PF_32_Common     As String
-Public PF_64_Common     As String
-Public StartMenuPrograms As String
-Public AppData          As String
-Public AppDataLocalLow  As String
-Public LocalAppData     As String
-Public Desktop          As String
-Public UserProfile      As String
-Public AllUsersProfile  As String
-Public ProfilesDir      As String
-Public TempCU           As String
-Public envCurUser       As String
-Public ProgramData      As String
+Public PF_32            As String 'C:\Program Files (x86)
+Public PF_64            As String 'C:\Program Files
+Public PF_32_Common     As String 'C:\Program Files (x86)\Common Files
+Public PF_64_Common     As String 'C:\Program Files\Common Files
+Public StartMenuPrograms As String 'C:\ProgramData\Microsoft\Windows\Start Menu\Programs
+Public AppData          As String 'C:\Users\admin\AppData\Roaming
+Public AppDataLocalLow  As String 'C:\Users\admin\AppData\LocalLow
+Public LocalAppData     As String 'C:\Users\admin\AppData\Local
+Public Desktop          As String 'C:\Users\admin\Desktop
+Public UserProfile      As String 'C:\Users\admin
+Public AllUsersProfile  As String 'C:\ProgramData
+Public ProfilesDir      As String 'C:\Users
+Public TempCU           As String 'C:\Users\admin\AppData\Local\Temp
+Public envCurUser       As String 'admin
+Public ProgramData      As String 'C:\ProgramData
 Public colProfiles      As Collection ' profile's path
 Public colProfilesUser  As Collection ' profile's user name
 

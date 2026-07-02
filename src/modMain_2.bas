@@ -840,16 +840,16 @@ Public Sub CheckO26Item()
     Set HE = New clsHiveEnum
     
     If bPerUser Then
-        HE.Init HE_HIVE_ALL
+        HE.init HE_HIVE_ALL
     Else
-        HE.Init HE_HIVE_HKLM
+        HE.init HE_HIVE_HKLM
     End If
     HE.AddKey "Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options"
     'key is redirected (XP-Vista)
     'key is x64-shared (Win 7+)
     
     Do While HE.MoveNext
-            
+        
         sAlias = BitPrefix("O26", HE)
         
         sKeys = Split(Reg.EnumSubKeys(HE.Hive, HE.Key, HE.Redirected), "|")    'for each image
@@ -865,33 +865,6 @@ Public Sub CheckO26Item()
                         .Section = "O26"
                         .HitLineW = sHit
                         AddRegToFix .Reg, REMOVE_VALUE, HE.Hive, HE.Key & "\" & sKeys(i), "MinimumStackCommitInBytes", , HE.Redirected
-                        .CureType = REGISTRY_BASED
-                    End With
-                    AddToScanResults result
-                End If
-            End If
-            
-            iData = Reg.GetDword(HE.Hive, HE.Key & "\" & sKeys(i), "GlobalFlag", HE.Redirected)
-            If (iData And 512) <> 0 Then
-                
-                sData = Reg.GetString(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\SilentProcessExit\" & sKeys(i), "MonitorProcess", False)
-
-                SplitIntoPathAndArgs sData, sFile, sArgs, bIsRegistryData:=True
-                sFile = FormatFileMissing(sFile, sArgs)
-                
-                SignVerifyJack sFile, result.SignResult
-                
-                sHit = sAlias & " - Debugger (SilentProcessExit): " & HE.HiveNameAndSID & "\..\" & sKeys(i) & ": [GlobalFlag] = " & iData & " -> " & _
-                    ConcatFileArg(sFile, sArgs) & FormatSign(result.SignResult)
-                
-                If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
-                
-                If Not IsOnIgnoreList(sHit) Then
-                    With result
-                        .Section = "O26"
-                        .HitLineW = sHit
-                        AddRegToFix .Reg, REMOVE_KEY, HE.Hive, HE.Key & "\" & sKeys(i), "", , HE.Redirected
-                        AddRegToFix .Reg, REMOVE_KEY, HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\SilentProcessExit\" & sKeys(i), "", , False
                         .CureType = REGISTRY_BASED
                     End With
                     AddToScanResults result
@@ -1035,7 +1008,40 @@ Public Sub CheckO26Item()
         End If
     Loop
     
-    'Set HE = Nothing
+    Erase sKeys
+    For i = 1 To Reg.EnumSubKeysToArray(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\SilentProcessExit", sKeys())
+    
+        sData = Reg.GetString(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\SilentProcessExit\" & sKeys(i), "MonitorProcess", False)
+        
+        If Len(sData) <> 0 Or bIgnoreAllWhitelists Then
+            
+            iData = Reg.GetDword(HKLM, "Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\" & sKeys(i), "GlobalFlag", HE.Redirected)
+            bDisabled = ((iData And 512) <> 0)
+            
+            SplitIntoPathAndArgs sData, sFile, sArgs, bIsRegistryData:=True
+            sFile = FormatFileMissing(sFile, sArgs)
+            
+            SignVerifyJack sFile, result.SignResult
+            
+            sHit = sAlias & " - Debugger (SilentProcessExit): " & _
+                IIf(bDisabled, "(disabled) ", vbNullString) & _
+                "HKLM\..\" & sKeys(i) & " [MonitorProcess] = " & _
+                ConcatFileArg(sFile, sArgs) & FormatSign(result.SignResult)
+            
+            If g_bCheckSum Then sHit = sHit & GetFileCheckSum(sFile)
+            
+            If Not IsOnIgnoreList(sHit) Then
+                With result
+                    .Section = "O26"
+                    .HitLineW = sHit
+                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\" & sKeys(i)
+                    AddRegToFix .Reg, REMOVE_KEY, HKLM, "Software\Microsoft\Windows NT\CurrentVersion\SilentProcessExit\" & sKeys(i)
+                    .CureType = REGISTRY_BASED
+                End With
+                AddToScanResults result
+            End If
+        End If
+    Next
     
     'Check for UWP debuggers
     
@@ -1043,6 +1049,7 @@ Public Sub CheckO26Item()
     
         'Win10 only (WinRT apps are not supported)
     
+        Erase sKeys
         For i = 1 To Reg.EnumSubKeysToArray(HKCU, "Software\Microsoft\Windows\CurrentVersion\PackagedAppXDebug", sKeys())
             
             sFile = Reg.GetString(HKCU, "Software\Microsoft\Windows\CurrentVersion\PackagedAppXDebug\" & sKeys(i), vbNullString)
@@ -1067,6 +1074,7 @@ Public Sub CheckO26Item()
             End If
         Next
         
+        Erase sKeys
         For i = 1 To Reg.EnumSubKeysToArray(HKCU, "Software\Classes\ActivatableClasses\Package", sKeys())
             
             For j = 1 To Reg.EnumSubKeysToArray(HKCU, "Software\Classes\ActivatableClasses\Package\" & sKeys(i) & "\DebugInformation", sSubkeys())
@@ -1354,7 +1362,7 @@ Public Sub CheckO26OfficeHiJack()
     Dim sFile$, sHit$, result As SCAN_RESULT
     Dim HE As clsHiveEnum: Set HE = New clsHiveEnum
     
-    HE.Init HE_HIVE_ALL
+    HE.init HE_HIVE_ALL
     HE.AddKey "SOFTWARE\Microsoft\VBA\Monitors"
     
     Do While HE.MoveNext
@@ -1388,7 +1396,7 @@ Public Sub CheckO26OfficeHiJack()
     Dim sName As String
     Dim sParentKey As String
     
-    HE.Init HE_HIVE_ALL
+    HE.init HE_HIVE_ALL
     HE.AddKey "Software\Microsoft\VBA\VBE\6.0\Addins"
     HE.AddKey "Software\Microsoft\VBA\VBE\6.0\Addins64"
     
@@ -1433,7 +1441,7 @@ Public Sub CheckO26OfficeHiJack()
     Dim sManifest As String
     Dim pos As Long
     
-    HE.Init HE_HIVE_ALL
+    HE.init HE_HIVE_ALL
     HE.AddKey "SOFTWARE\Microsoft\Office"
     
     Do While HE.MoveNext
@@ -1550,7 +1558,7 @@ Public Sub CheckO27Item()
     Dim HE As clsHiveEnum:      Set HE = New clsHiveEnum
     Dim DC As clsDataChecker:   Set DC = New clsDataChecker
     
-    HE.Init HE_HIVE_HKLM, , HE_REDIR_NO_WOW
+    HE.init HE_HIVE_HKLM, , HE_REDIR_NO_WOW
     HE.AddKey "SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
     
     DC.AddValueData "dontdisplaylastusername", 0
@@ -1697,7 +1705,7 @@ Public Sub CheckO27Item_RDP()
     Dim HE As clsHiveEnum:      Set HE = New clsHiveEnum
     Dim DC As clsDataChecker:   Set DC = New clsDataChecker
     
-    HE.Init HE_HIVE_HKLM, , HE_REDIR_NO_WOW
+    HE.init HE_HIVE_HKLM, , HE_REDIR_NO_WOW
     HE.AddKey "SYSTEM\CurrentControlSet\Control\Terminal Server"
     
     DC.AddValueData "AllowRemoteRPC", 0

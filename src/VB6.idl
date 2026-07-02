@@ -1,0 +1,436 @@
+/* Copyright © 2017 Dexter Freivald. All Rights Reserved. DEXWERX.COM
+*
+* VB6.idl
+*
+* VBWERX Core Language Extensions
+*   - 64Bit LongLong type as an alias to Currency, CLngLng()
+*   - LongPtr type as an alias to Long
+*   - .NET style Interfaces ISubclass, IEnumerator, IDisposable, ICallback (Early Binding only)
+*   - Standardized Mem Alloc and Free (CoTaskMemAlloc/CoTaskMemFree)
+*   - Standardized Subclassing Interface and related APIs
+*   - Typed (and untyped) Memory Access adapted from Michel Rutten's VBVM6Lib
+*   - AryPtr() for access to an Array's SAFEARRAY struct
+*   - Access to variable pointers via Ref and RefAry (VarPtr/VarPtrArray)
+*   - Read/Write Reference Pointers to VB's Reference Types via StrRef()/AryRef()/ObjRef()
+*   - ObjSet() calls AddRef when setting an Objects Ptr
+*
+*   - COM / OLE Interfaces IStream
+*   - IID/CLSID/UUID type
+*   - Multithreading APIs, threadsafe PostMessage
+*   - .NET style Sized System Types Int16/Int32/Int64/IntPtr
+*   - NOTE: A Typelib'd SAFEARRAY(void)* sidesteps VBs Unicode/ANSI Conversion in MIDL
+*   - TODO: Add User Control Interfaces? or keep in OLE
+**/
+[
+    helpstring("VBWERX Core Language Extensions"),
+    uuid(2DF86ADB-D46C-4496-8F5D-32B46DDCF73E),
+    lcid(0x00000000),
+    version(3.2)
+]
+library VB6 {
+    //importlib("msdatsrc.tlb");
+    importlib("stdole2.tlb");           // IUnknown,IDispatch hidden / restricted
+    importlib("comctl32.oca");
+    //importlib("vb6.olb");
+ 
+    //[public] coclass CheckBoxControlArray;
+ 
+    // VBA7 types
+    typedef [public] VARIANT Decimal;   // VB6.Decimal type as an alias to Variant
+    typedef [public] CY LongLong;       // 64bit Integer Type as an alias to Currency
+    typedef [public] __int3264 LongPtr; // 32bit Pointer type as an alias to Long
+    typedef LongPtr PTR;                //__int3264
+    typedef long BOOL;
+ 
+    // .NET System types
+    // typedef [public] long Int32;
+    // typedef [public] short Int16;
+    // typedef [public] CY Int64;
+    // typedef [public] BSTR Char;
+    // typedef [public] long IntPtr;
+ 
+ 
+ 
+    [helpstring("Windows API Constants that differ from VB"), v1_enum]
+    typedef enum API {
+        FALSE_ = 0,
+        TRUE_ = 1,
+        NULL_ = 0,
+        False = 0,
+        True = 1,
+        Null = 0
+    } API;
+ 
+ 
+    [helpstring("VB6 and Windows Errors"), v1_enum]
+    typedef enum Ern {
+// removed for  posting
+    } Ern;
+    
+    typedef struct EXCEPINFO {
+        WORD wCode;
+        WORD wReserved;
+        BSTR  Source;
+        BSTR  Description;
+        BSTR  HelpFile;
+        DWORD dwHelpContext;
+        PTR pvReserved;
+        PTR pfnDeferredFillIn;
+        DWORD scode;
+    } EXCEPINFO;
+ 
+    //typedef [public] struct UUID IID;
+    //typedef [public] struct UUID CLSID;
+ 
+    interface IStream;                  // Objidlbase.idl
+    interface IEnumVARIANT;             // OAIdl.Idl
+    interface IPicture;                 // OCIdl.Idl / stdole2.tlb
+ 
+    // #include "vbole.idl"
+    #include "interfaces.idl"
+ 
+    [dllname("user32.DLL")]
+    module User {
+        const PTR HWND_BROADCAST = 0xFFFF;
+        [entry("PostMessageW"),helpstring("Thread Safe PostMessage")]
+        BOOL PostMessage([in] PTR hWnd, [in] long Msg, [in] PTR wParam, [in] void* lParam);
+        [entry("SendMessageW")]
+        BOOL SendMessage([in] PTR hWnd,[in] long Msg, [in] PTR wParam, [in] void* lParam);
+    }
+ 
+    [dllname("comctl32.DLL")]
+    module Subclassing {
+        [entry("SetWindowSubclass"),helpstring("Insert a SubclassProc/ISubclass into the message chain.")]
+        BOOL SetWindowSubclass(
+            [in] PTR hWnd,
+            [in] PTR pfnSubclass,
+            [in] PTR uIdSubclass,
+            [in,defaultvalue(0)] PTR dwRefData);
+        [entry("RemoveWindowSubclass"),helpstring("Remove a SubclassProc/ISubclass from the message chain.")]
+        BOOL RemoveWindowSubclass(
+            [in] PTR hWnd,
+            [in] PTR pfnSubclass,
+            [in] PTR uIdSubclass);
+        [entry("DefSubclassProc"),helpstring("Forward the message to next procedure in the message chain.")]
+        PTR DefSubclassProc(
+            [in] PTR hWnd,
+            [in] long uMsg,
+            [in] PTR wParam,
+            [in] PTR lParam);
+    }
+ 
+    [dllname("kernel32.DLL"),helpstring("WIN32 Kernel")]
+    module Kernel {
+        [entry("RtlMoveMemory"),helpstring("Copies Length Bytes from Source to Destination")]
+        void CopyMemory( [in] void* Destination, [in] void* Source, [in] PTR Length);
+        [entry("RtlZeroMemory"),helpstring("Zeroes Length Bytes at Destination")]
+        void ZeroMemory( [in] void* Destination, [in] PTR Length);
+        [entry("RtlFillMemory"),helpstring("Fills Length Bytes with Fill")]
+        void FillMemory( [in] void* Destination, [in] PTR Length, [in] byte Fill);
+        [entry("RtlCompareMemory"),helpstring("Compares Length Bytes between Source1 and Source2. Returns number of equal bytes")]
+        PTR CompareMemory([in] void* Source1, [in] void* Source2, [in] PTR Length);
+        [entry("ExitProcess"),hidden]
+        void ExitProcess([in] long uExitCode);
+ 
+        [entry("OutputDebugStringW"),hidden,helpstring("Thread Safe Unicode OutputDebugString")]
+        void OutputDebugString(LPWSTR lpOutputString);
+        [entry("QueryPerformanceCounter"),hidden]
+        BOOL QueryPerformanceCounter([in] void* lpPerformanceCount);
+        [entry("QueryPerformanceFrequency"),hidden]
+        BOOL QueryPerformanceFrequency([in] void* lpFrequency);
+    }
+ 
+    [hidden] enum CALLCONV;
+ 
+    [dllname("ole32.DLL"),helpstring("Ole/COM Memory Allocation and Threading")]
+    module OLE {
+        [entry("CoTaskMemAlloc"),helpstring("Allocates Length Bytes, and returns a pointer to the allocated memory. (CoTaskMemAlloc)")]
+        PTR Alloc([in] PTR Length);
+        [entry("CoTaskMemRealloc"),helpstring("Reallocates a previously allocated block of memory to Length Bytes, and returns the new pointer. (CoTaskMemRealloc)")]
+        PTR Realloc([in] PTR Ptr, [in] PTR Length);
+        [entry("CoTaskMemFree"),helpstring("Frees previously allocated memory. (CoTaskMemFree)")]
+        void Free([in] PTR Ptr);
+        [entry("CoTaskMemAlloc"),helpstring("Allocates Length Bytes, and returns a pointer to the allocated memory. (CoTaskMemAlloc)")]
+        PTR CoTaskMemAlloc([in] PTR Length);
+        [entry("CoTaskMemRealloc"),helpstring("Reallocates a previously allocated block of memory to Length Bytes, and returns the new pointer. (CoTaskMemRealloc)")]
+        PTR CoTaskMemRealloc([in] PTR Ptr, [in] PTR Length);
+        [entry("CoTaskMemFree"),helpstring("Frees previously allocated memory. (CoTaskMemFree)")]
+        void CoTaskMemFree([in] PTR Ptr);
+        [entry("CLSIDFromString")]
+        HRESULT CLSIDFromString([in] LPWSTR lpszProgID, [out,retval] UUID* lpclsid);
+        [entry("CLSIDFromProgID")]
+        HRESULT CLSIDFromProgID([in] LPWSTR lpszProgID, [out,retval] UUID* lpclsid);    
+        // [entry("CoCreateInstance")]
+        // LONG CoCreateInstance(
+        //     [in] UUID *CLSID,
+        //     [in] IUnknown *pUnkOuter,
+        //     [in] CLSCTX dwClsContext,
+        //     [in] UUID *IID,
+        //     [out] void *ppv);            
+    }
+ 
+    [dllname("oleaut32.DLL"),helpstring("Automation")]
+    module Automation {
+        // Type conversions for (LongLong/Unsigned Long) to Intrinsic types (Currency/Double)
+        [entry("VarUI4FromR8"),helpstring("Convert Double to Unsigned Long. Alias to VarUI4FromCy")]
+        HRESULT CDblToULng(     [in] CY Expr,       [out,retval] long*      Value);
+        [entry("VarUI4FromCy"),helpstring("Convert Currency to Unsigned Long. Alias to VarUI4FromCy")]
+        HRESULT CCurToULng(     [in] CY Expr,       [out,retval] long*      Value);
+        [entry("VarUI4FromI8"),helpstring("Convert LongLong to Unsigned Long. Alias to VarUI4FromI8")]
+        HRESULT CLngLngToULng(  [in] LongLong Expr, [out,retval] long*      Value);
+        [entry("VarCyFromI8"),helpstring("Convert LongLong to Currency. Alias to VarCyFromI8")]
+        HRESULT CLngLngToCur(   [in] LongLong Expr, [out,retval] CY*        Value);
+        [entry("VarR8FromI8"),helpstring("Convert LongLong to Double. Alias to VarR8FromI8")]
+        HRESULT CLngLngToDbl(   [in] LongLong Expr, [out,retval] DOUBLE*    Value);
+        [entry("VarR8FromUI8"),helpstring("Convert ULongLong to Double. Alias to VarR8FromUI8")]
+        HRESULT CULngLngToDbl(  [in] LongLong Expr, [out,retval] DOUBLE*    Value);
+        [entry("VarI8FromCy"),helpstring("Convert Currency to LongLong. Alias to VarI8FromCy")]
+        HRESULT CCurToLngLng(   [in] CY Expr,       [out,retval] LongLong*  Value);
+        [entry("VarI8FromR8"),helpstring("Convert Double to LongLong. Alias to VarI8FromR8")]
+        HRESULT CDblToLngLng(   [in] DOUBLE Expr,   [out,retval] LongLong*  Value);
+        [entry("VarI8FromR8"),helpstring("Convert to LongLong. Alias to VarI8FromR8")]
+        HRESULT CLngLng(        [in] DOUBLE Expr,   [out,retval] LongLong*  Value);
+        [entry("VarI8FromUI4"),helpstring("Convert Unsigned Long to LongLong. Alias to VarI8FromUI4")]
+        HRESULT CULngToLngLng(  [in] long Expr,     [out,retval] LongLong*  Value);
+        [entry("VarCyFromUI4"),helpstring("Convert Unsigned Long to Currency. Alias to VarCyFromUI4")]
+        HRESULT CULngToCur(     [in] long Expr,     [out,retval] CY*        Value);
+        [entry("VarR8FromUI4"),helpstring("Convert Unsigned Long to Double. Alias to VarR8FromUI4")]
+        HRESULT CULngToDbl(     [in] long Expr,     [out,retval] DOUBLE*    Value);
+ 
+ 
+ 
+        // Variant Manipulation [url]https://msdn.microsoft.com/en-us/library/windows/desktop/ms221673(v=vs.85).aspx[/url]
+        [entry("VariantInit"),hidden,helpstring("Initializes a variant.")]
+        void VariantInit(void* pvarg);
+        [entry("VariantClear"),hidden,helpstring("Clears a variant.")]
+        HRESULT VariantClear(void* pvarg);
+        [entry("VariantCopy"),hidden,helpstring("Frees the destination variant and makes a copy of the source variant.")]
+        HRESULT VariantCopy(void* pvargDest, void* pvargSrc);
+        [entry("VariantCopyInd"),hidden,helpstring("Frees the destination variant and makes a copy of the source variant, performing the necessary indirection if the source is specified to be VT_BYREF.")]
+        HRESULT VariantCopyInd(void* pvargDest, void* pvargSrc);
+        [entry("VariantChangeType"),hidden,helpstring("Converts a variant from one type to another")]
+        HRESULT VariantChangeType([out] VARIANT* pvargDest, [in] VARIANT* pvarSrc, [in] short wFlags, [in] short vt);
+        [entry("VariantChangeTypeEx"),hidden,helpstring("Converts a variant from one type to another, using a given LCID")]
+        HRESULT VariantChangeTypeEx([in,out] VARIANT* pvargDest, [in,out] VARIANT* pvarSrc, [in] long lcid, [in] short wFlags, [in] short vt);
+ 
+        // constants for varsiantchangetype wflags
+        [helpstring("Prevent coercian of an object to a fundamental type via its default property")]
+        const long vbNoValueProp        = 0x01;
+        [helpstring("Convert Bool to string value of 'True'/'False' instead of '-1'/'0'")]
+        const long vbAlphaBool          = 0x02;
+        [helpstring("Convert Bool to string value using local language")]
+        const long vbLocalBool          = 0x10;
+        [helpstring("Passes LOCALE_NOUSEROVERRIDE to core coercion routines")]
+        const long vbNoUserOverride     = 0x04;
+        [helpstring("Islamic Calendar Support")]
+        const long vbCalendarHijri      = 0x08;
+        [helpstring("South Asia Calendar support")]
+        const long vbCalendarThai       = 0x20;
+        [helpstring("Western Calendar")]
+        const long vbCalendarGregorian  = 0x40;
+        [helpstring("NLS function call support")]
+        const long vbUseNLS             = 0x80;
+        [helpstring("Locale Invariant LocaleId/LCID")]
+        const long vbLocaleInvariant    = 0x7f;
+ 
+        // useful functions for converting pointers to strings
+        [entry("SysAllocString"),helpstring("Copies characters from an LPWSZ. (SysAllocString)")]
+        BSTR PtrStr([in] PTR lpwsz);
+        [entry("SysAllocStringLen"),helpstring("Copies Length characters from a Wide String (SysAllocStringLen)")]
+        BSTR PtrStrLen([in] PTR lpwsz, [in] long Length);
+        [entry("SysAllocStringByteLen"),helpstring("Copies Length bytes from an ANSI String without conversion. (SysAllocStringByteLen)")]
+        BSTR PtrStrLenB([in] PTR lpsz, [in] long Length);
+        [entry("SysAllocString"),helpstring("Copies characters from an LPWSZ. (SysAllocString)")]
+        BSTR SysAllocString([in] PTR lpwsz);
+        [entry("SysAllocStringLen"),helpstring("Copies Length characters from a Wide String (SysAllocStringLen)")]
+        BSTR SysAllocStringLen([in] PTR lpwsz, [in] long Length);
+        [entry("SysAllocStringByteLen"),helpstring("Copies Length bytes from an ANSI String without conversion. (SysAllocStringByteLen)")]
+        BSTR SysAllocStringByteLen([in] PTR lpsz, [in] long Length);
+ 
+        // calling a function pointer from VB
+        [entry("DispCallFunc"),hidden,helpstring("Function Pointer Calling.")]
+        HRESULT DispCallFunc(
+            [in] PTR pvInstance,
+            [in] PTR oVft,
+            [in] enum CALLCONV cc,
+            [in] short vtReturn,
+            [in] long cActuals,
+            [in] void* prgvt,
+            [in] void* prgpvarg,
+            [out, retval] VARIANT* pvargResult);
+    }
+ 
+    [dllname(""),hidden]
+    module Typelib {
+        [hidden] const LPSTR Version = "3.2";
+        [hidden] const LPSTR Project = "VBWERX";
+        [hidden] const LPSTR Author = "Copyright ? 2017 Dexter Freivald. All Rights Reserved. DEXWERX.COM";
+    }
+ 
+    [dllname("msvbvm60.DLL"),helpstring("VB6 Runtime")]
+    module Runtime {
+        // Constants
+        [helpstring("Ubiquitous NULL value for pointers")]  const long vbNullPtr = 0;
+ 
+        // Runtime Memory Copy
+        [entry("__vbaCopyBytes"),helpstring("Copies Length Bytes from Source to Destination")]
+        HRESULT CopyBytes(  [in] long Length, [in] void* Destination, [in] void* Source);
+        [entry("__vbaCopyBytesZero"),helpstring("Copies Length Bytes From Source to Destination and Zero Source")]
+        HRESULT CopyBytesZero([in] long Length, [in] void* Destination, [in] void* Source);
+ 
+        // VarPtr Aliases
+        [entry("VarPtr"),helpstring("Allows assigning AddressOf Module.Function to a variable")]
+        PTR FncPtr([in] PTR Address);
+        [entry("VarPtr"),helpstring("Convert to LongPtr")]
+        PTR CLngPtr([in] long Expression);
+        [entry("VarPtr"),helpstring("Returns a pointer to a variable. Same as VarPtr or C/C++'s & Operator")]
+        PTR Ref([in] void* Ptr);
+        [entry("VarPtr"),helpstring("Returns a pointer to an Array variable. Avoids Unicode/ANSI Conversion of String Arrays. Same as VarPtrArray/VarPtrStringArray")]
+        PTR RefAry([in] SAFEARRAY(void)* Ptr);
+        // [entry("VarPtr"),hidden,helpstring("Returns a pointer to an Array variable. Typelib sidestep's the runtimes automatic Unicode/ANSI conversion.")]
+        // PTR VarPtrArray([in] SAFEARRAY(void)* Ptr);
+        // [entry("VarPtr"),hidden,helpstring("Returns a pointer to a String Array variable. Redundant, included only for consistency.")]
+        // PTR VarPtrStringArray([in] SAFEARRAY(BSTR)* Ptr);
+        [entry("VarPtr"),hidden,helpstring("Returns an Object from a pointer. Functional Inverse of ObjPtr()")]
+        IUnknown* PtrObj([in] PTR Address);
+        // WARNING: VB Assigns this reference without copying, allowing 2 Strings to point to the same BSTR. Expect the unexpected if runtime frees the same string
+        [entry("VarPtr"),hidden,helpstring("Returns a String from a BSTR. Functional Inverse of StrPtr(), WARNING: Allows multiple Strings to reference the same BSTR. Use PtrStr() to allocate a new string.")]
+        BSTR BstrStr([in] PTR Address);
+        [entry("VarPtr"),hidden,helpstring("Mock an External Error and Initiate runtime error handling")]
+        HRESULT ExtRaise([in] long ErrNum);
+        [entry("__vbaRefVarAry"),helpstring("Returns a pointer to an Array variable extracted from a Variant.")]
+        PTR RefVarAry([in] VARIANT *Ptr);
+ 
+        [entry("__vbaObjAddref"),helpstring("Add a reference."),hidden]
+        void ObjAddRef([in] IUnknown* Obj);
+        [entry("VarPtr"),helpstring("Release an object reference. Call as a sub."),hidden]
+        IUnknown* ObjRelease([in] IUnknown* Obj);
+ 
+        // Often used MemCopy Helpers
+        [entry("GetMem1"),hidden] HRESULT GetMem1([in] void *Src, [in,out] void* Dst);
+        [entry("GetMem2"),hidden] HRESULT GetMem2([in] void *Src, [in,out] void* Dst);
+        [entry("GetMem4"),hidden] HRESULT GetMem4([in] void *Src, [in,out] void* Dst);
+        [entry("GetMem8"),hidden] HRESULT GetMem8([in] void *Src, [in,out] void* Dst);
+        [entry("PutMem1"),hidden] HRESULT PutMem1([in] void *Dst, [in] byte  Src);
+        [entry("PutMem2"),hidden] HRESULT PutMem2([in] void *Dst, [in] short Src);
+        [entry("PutMem4"),hidden] HRESULT PutMem4([in] void *Dst, [in] long  Src);
+        [entry("PutMem8"),hidden] HRESULT PutMem8([in] void *Dst, [in] CY    Src);
+ 
+        // strictly for nostalgia...
+        [entry("GetMem1"),hidden] HRESULT Peek([in] PTR Address, [out,retval] byte* Data);
+        [entry("PutMem1"),hidden] HRESULT Poke([in] PTR Address, [in] byte Data);
+        // [entry("GetMem2"),hidden] HRESULT PeekW([in] PTR Address, [out,retval] short* Data);
+        // [entry("PutMem2"),hidden] HRESULT PokeW([in] PTR Address, [in] short Data);
+        // [entry("GetMem4"),hidden] HRESULT PeekD([in] PTR Address, [out,retval] long* Data);
+        // [entry("PutMem4"),hidden] HRESULT PokeD([in] PTR Address, [in] long Data);
+        // [entry("GetMem8"),hidden] HRESULT PeekQ([in] PTR Address, [out,retval] CY* Data);
+        // [entry("PutMem8"),hidden] HRESULT PokeQ([in] PTR Address, [in] CY Data);
+ 
+        [entry("GetMem4"),hidden,propget,helpstring("Reinterpret cast a LongPtr (SAFEARRAY*) to a Variant Array()")]
+        HRESULT RPtrVarAry([in] PTR Ptr, [out,retval] SAFEARRAY(VARIANT)* Dst);
+ 
+        // Unmasked Access to VARIANT.vt
+        [entry("GetMem2"),propget,helpstring("Unmasked version of VarType(), ie: VARIANT.vt (R/W).")]
+                                    HRESULT VarVT(  [in] VARIANT* Var, [out,retval]     short*  Value);
+        [entry("PutMem2"),propput]  HRESULT VarVT(  [in] VARIANT* Var, [in]             short   Value);
+        // NOTE: vt (19,20,21) are not very useful.
+        //  The runtime throws an error for unsupported type after an API Call
+        //  except for VT_I8 with some APIs that return a long isntead of HRESULT
+        [helpstring("VarVT Constant. VT_UI2")]                  const long vbUInteger       = 0x0012L;
+        [helpstring("VarVT Constant. VT_UI4")]                  const long vbULong          = 0x0013L;
+        [helpstring("VarVT LongLong Constant. VT_I8")]          const long vbLongLong       = 0x0014L;
+        [helpstring("VarVT Constant. VT_UI8")]                  const long vbULongLong      = 0x0015L;
+        [helpstring("VarVT ByRef Constant. VT_BYREF")]          const long vbByRef          = 0x4000L;
+        [helpstring("VarVT TypeMask Constant. VT_TYPEMASK")]    const long vbTypeMask       = 0x0FFFL;
+ 
+        // Dereference a Pointer to Pointer
+        [entry("GetMem4"),propget,helpstring("Dereference a reference pointer (R/W)")]
+                                    HRESULT DeRef(  [in] PTR  Address, [out,retval]     PTR*    Value);
+        [entry("PutMem4"),propput]  HRESULT DeRef(  [in] PTR  Address, [in]             PTR     Value);
+ 
+        // Typed memory access via dereferencing
+        [entry("GetMem1"),propget,helpstring("Dereference a pointer as Byte (R/W)")]
+                                    HRESULT DByte(  [in] PTR  Address, [out,retval]     byte*   Value);
+        [entry("PutMem1"),propput]  HRESULT DByte(  [in] PTR  Address, [in]             byte    Value);
+        [entry("GetMem2"),propget,helpstring("Dereference a pointer as Integer (R/W)")]
+                                    HRESULT DInt(   [in] PTR  Address, [out,retval]     short*  Value);
+        [entry("PutMem2"),propput]  HRESULT DInt(   [in] PTR  Address, [in]             short   Value);
+        [entry("GetMem4"),propget,helpstring("Dereference a pointer as Long (R/W)")]
+                                    HRESULT DLng(   [in] PTR  Address, [out,retval]     long*   Value);
+        [entry("PutMem4"),propput]  HRESULT DLng(   [in] PTR  Address, [in]             long    Value);
+        [entry("GetMem4"),propget,helpstring("Dereference a pointer as LongPtr (R/W)")]
+                                    HRESULT DLngPtr([in] PTR  Address, [out,retval]     PTR*    Value);
+        [entry("PutMem4"),propput]  HRESULT DLngPtr([in] PTR  Address, [in]             PTR     Value);
+        [entry("GetMem4"),propget,helpstring("Dereference a pointer as Single (R/W)")]
+                                    HRESULT DSng(   [in] PTR  Address, [out,retval]     float*  Value);
+        [entry("PutMem4"),propput]  HRESULT DSng(   [in] PTR  Address, [in]             float   Value);
+        [entry("GetMem8"),propget,helpstring("Dereference a pointer as Double (R/W)")]
+                                    HRESULT DDbl(   [in] PTR  Address, [out,retval]     DOUBLE* Value);
+        [entry("PutMem8"),propput]  HRESULT DDbl(   [in] PTR  Address, [in]             DOUBLE  Value);
+        [entry("GetMem8"),propget,helpstring("Dereference a pointer as Currency (R/W)")]
+                                    HRESULT DCur(   [in] PTR  Address, [out,retval]     CY*     Value);
+        [entry("PutMem8"),propput]  HRESULT DCur(   [in] PTR  Address, [in]             CY      Value);
+        [entry("GetMem8"),propget,helpstring("Dereference a pointer as LongLong (R/W)")]
+                                    HRESULT DLngLng([in] PTR  Address,  [out,retval]    LongLong*   Value);
+        [entry("PutMem8"),propput]  HRESULT DLngLng([in] PTR  Address,  [in]            LongLong    Value);
+ 
+        // Reinterpret reference as type
+        [entry("GetMem1"),propget,helpstring("Reinterpret reference as Byte (R/W)"),hidden]
+                                    HRESULT RByte(  [in] void* Ref,     [out,retval]    byte*   Value);
+        [entry("PutMem1"),propput]  HRESULT RByte(  [in] void* Ref,     [in]            byte    Value);
+        [entry("GetMem2"),propget,helpstring("Reinterpret reference as Integer (R/W)"),hidden]
+                                    HRESULT RInt(   [in] void* Ref,     [out,retval]    short*  Value);
+        [entry("PutMem2"),propput]  HRESULT RInt(   [in] void* Ref,     [in]            short   Value);
+        [entry("GetMem4"),propget,helpstring("Reinterpret reference as Long (R/W)"),hidden]
+                                    HRESULT RLng(   [in] void* Ref,     [out,retval]    long*   Value);
+        [entry("PutMem4"),propput]  HRESULT RLng(   [in] void* Ref,     [in]            long    Value);
+        [entry("GetMem4"),propget,helpstring("Reinterpret reference as Single (R/W)"),hidden]
+                                    HRESULT RSng(   [in] void* Ref,     [out,retval]    float*  Value);
+        [entry("PutMem4"),propput]  HRESULT RSng(   [in] void* Ref,     [in]            float   Value);
+        [entry("GetMem8"),propget,helpstring("Reinterpret reference as Double (R/W)"),hidden]
+                                    HRESULT RDbl(   [in] void* Ref,     [out,retval]    DOUBLE* Value);
+        [entry("PutMem8"),propput]  HRESULT RDbl(   [in] void* Ref,     [in]            DOUBLE  Value);
+        [entry("GetMem8"),propget,helpstring("Reinterpret reference as Currency (R/W)"),hidden]
+                                    HRESULT RCur(   [in] void* Ref,     [out,retval]    CY*     Value);
+        [entry("PutMem8"),propput]  HRESULT RCur(   [in] void* Ref,     [in]            CY      Value);
+        [entry("GetMem8"),propget,helpstring("Reinterpret reference as LongLong (R/W)"),hidden]
+                                    HRESULT RLngLng([in] void* Ref,     [out,retval]    LongLong*   Value);
+        [entry("PutMem8"),propput]  HRESULT RLngLng([in] void* Ref,     [in]            LongLong    Value);
+ 
+ 
+        // Read/Write reference pointers to VB's reference types (Objects/Strings/Arrays)
+        // WARNING: Directly setting reference pointers, bypasses the runtime. Clean up after yourself!
+        [entry("GetMem4"),helpstring("Returns a pointer to an Array's SAFEARRAY structure. Use RefAry() to get a pointer to an Array variable.")]
+                                    HRESULT AryPtr( [in] SAFEARRAY(void)* Ptr,  [out,retval]    PTR*    Address);
+        [entry("GetMem4"),helpstring("Returns a pointer to an Array's SAFEARRAY structure. Use RefAry() to get a pointer to an Array variable.")]
+                                    HRESULT AryIsDim([in] SAFEARRAY(void)* Ptr, [out,retval]    long*   Ary);
+ 
+        [entry("GetMem4"),propget,helpstring("Get/Set an Array's SAFEARRAY reference pointer. R/W version of AryPtr()")]
+                                    HRESULT AryRef( [in] SAFEARRAY(void)* Ref,  [out,retval]    PTR*    Address);
+        [entry("PutMem4"),propput]  HRESULT AryRef( [in] SAFEARRAY(void)* Ref,  [in]            PTR     Address);
+        [entry("GetMem4"),propget,helpstring("Get/Set a String's BSTR reference. R/W version of StrPtr().")]
+                                    HRESULT StrRef( [in] BSTR*  Ref,            [out,retval]    PTR*    Address);
+        [entry("PutMem4"),propput]  HRESULT StrRef( [in] BSTR*  Ref,            [in]            PTR     Address);
+        [entry("GetMem4"),propget,helpstring("Get/Set an Object's reference (sidesteps AddRef unlike ObjPtr). R/W version of ObjPtr(). Not to be confused with DCOM's OBJREF'")]
+                                    HRESULT ObjRef( [in] void*  Ref,            [out,retval]    PTR*    Address);
+        [entry("PutMem4"),propput]  HRESULT ObjRef( [in] void*  Ref,            [in]            PTR     Address);
+        [entry("__vbaObjSetAddref"),propput,helpstring("Set a strong reference to an Object, by calling AddRef. (Write Only). ObjSetAddref()")]
+                                    HRESULT ObjSet( [in] void*  Ref,            [in]            PTR     Address);
+ 
+        [entry("__vbaObjSetAddref"),helpstring("Set a strong reference to an Object, by calling AddRef. (Write Only). ObjSetAddref()")]
+        HRESULT ObjSetAddref(
+            [in] void* Ref,
+            [in] PTR Address
+        );
+ 
+        // This should probably be in a threading typelib
+        // [entry("VBDllGetClassObject"),hidden]
+        // long VBDllGetClassObject(
+        //             [in] long lpHinstDLL,
+        //             [in] long Reserved,
+        //             [in] long lpVBHeader,
+        //             [in] void* rclsid,
+        //             [in] void* riid,
+        //             [out] void* ppUnk);
+    }
+}

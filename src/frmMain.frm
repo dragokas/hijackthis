@@ -1,13 +1,13 @@
 VERSION 5.00
 Object = "{317589D1-37C8-47D9-B5B0-1C995741F353}#1.0#0"; "VBCCR17.OCX"
 Begin VB.Form frmMain 
-   ClientHeight    =   7380
-   ClientLeft      =   4365
-   ClientTop       =   1500
-   ClientWidth     =   8835
+   ClientHeight    =   7376
+   ClientLeft      =   4368
+   ClientTop       =   1504
+   ClientWidth     =   8832
    BeginProperty Font 
       Name            =   "Tahoma"
-      Size            =   8.25
+      Size            =   8.14
       Charset         =   204
       Weight          =   400
       Underline       =   0   'False
@@ -17,8 +17,8 @@ Begin VB.Form frmMain
    Icon            =   "frmMain.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   ScaleHeight     =   7380
-   ScaleWidth      =   8835
+   ScaleHeight     =   7376
+   ScaleWidth      =   8832
    Begin VB.Timer tmrVTProgress 
       Enabled         =   0   'False
       Interval        =   1000
@@ -51,9 +51,9 @@ Begin VB.Form frmMain
       Height          =   615
       Left            =   6720
       Picture         =   "frmMain.frx":4B2A
-      ScaleHeight     =   41
+      ScaleHeight     =   77
       ScaleMode       =   3  'Pixel
-      ScaleWidth      =   164
+      ScaleWidth      =   308
       TabIndex        =   75
       TabStop         =   0   'False
       Top             =   240
@@ -80,7 +80,7 @@ Begin VB.Form frmMain
       _ExtentY        =   0
       BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
          Name            =   "Tahoma"
-         Size            =   8.25
+         Size            =   8.1429
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -112,7 +112,7 @@ Begin VB.Form frmMain
          _ExtentY        =   0
          BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.1429
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -142,7 +142,7 @@ Begin VB.Form frmMain
          _ExtentY        =   0
          BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.1429
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -259,7 +259,7 @@ Begin VB.Form frmMain
       _ExtentY        =   0
       BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
          Name            =   "Tahoma"
-         Size            =   8.25
+         Size            =   8.1429
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -278,7 +278,7 @@ Begin VB.Form frmMain
          _ExtentY        =   0
          BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.1429
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -299,7 +299,7 @@ Begin VB.Form frmMain
          _ExtentY        =   0
          BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.1429
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -320,7 +320,7 @@ Begin VB.Form frmMain
          _ExtentY        =   0
          BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.1429
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -341,7 +341,7 @@ Begin VB.Form frmMain
          _ExtentY        =   0
          BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.1429
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -362,7 +362,7 @@ Begin VB.Form frmMain
          _ExtentY        =   0
          BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.1429
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -398,7 +398,7 @@ Begin VB.Form frmMain
       _ExtentY        =   0
       BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
          Name            =   "Tahoma"
-         Size            =   8.25
+         Size            =   8.1429
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -413,8 +413,8 @@ Begin VB.Form frmMain
          TabIndex        =   135
          Top             =   4200
          Width           =   3735
-         _ExtentX        =   6588
-         _ExtentY        =   873
+         _ExtentX        =   6592
+         _ExtentY        =   877
          Caption         =   "Tutorial && Support"
       End
       Begin VBCCR17.CommandButtonW cmdSettings 
@@ -423,8 +423,8 @@ Begin VB.Form frmMain
          TabIndex        =   134
          Top             =   3480
          Width           =   3735
-         _ExtentX        =   6588
-         _ExtentY        =   873
+         _ExtentX        =   6592
+         _ExtentY        =   877
          Caption         =   "Settings"
       End
       Begin VBCCR17.CommandButtonW cmdN00bBackups 
@@ -433,8 +433,8 @@ Begin VB.Form frmMain
          TabIndex        =   133
          Top             =   2880
          Width           =   3735
-         _ExtentX        =   6588
-         _ExtentY        =   873
+         _ExtentX        =   6592
+         _ExtentY        =   877
          Caption         =   "Backups"
       End
       Begin VBCCR17.CommandButtonW cmdFixing 
@@ -443,8 +443,8 @@ Begin VB.Form frmMain
          TabIndex        =   132
          Top             =   2160
          Width           =   3735
-         _ExtentX        =   6588
-         _ExtentY        =   873
+         _ExtentX        =   6592
+         _ExtentY        =   877
          Caption         =   "Fixing"
       End
       Begin VBCCR17.CommandButtonW cmdN00bScan 
@@ -453,8 +453,8 @@ Begin VB.Form frmMain
          TabIndex        =   131
          Top             =   1440
          Width           =   3735
-         _ExtentX        =   6588
-         _ExtentY        =   873
+         _ExtentX        =   6592
+         _ExtentY        =   877
          Caption         =   "Do a system scan only"
       End
       Begin VBCCR17.CommandButtonW cmdN00bLog 
@@ -463,12 +463,12 @@ Begin VB.Form frmMain
          TabIndex        =   130
          Top             =   840
          Width           =   3735
-         _ExtentX        =   6588
-         _ExtentY        =   873
+         _ExtentX        =   6592
+         _ExtentY        =   877
          Caption         =   "Do a system scan and save a logfile"
       End
       Begin VBCCR17.ComboBoxW cboN00bLanguage 
-         Height          =   315
+         Height          =   248
          Left            =   6120
          TabIndex        =   65
          Top             =   720
@@ -548,7 +548,7 @@ Begin VB.Form frmMain
       _ExtentY        =   0
       BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
          Name            =   "Tahoma"
-         Size            =   8.25
+         Size            =   8.1429
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -566,7 +566,7 @@ Begin VB.Form frmMain
          _ExtentY        =   0
          BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.1429
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -587,7 +587,7 @@ Begin VB.Form frmMain
          _ExtentY        =   0
          BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.1429
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -608,7 +608,7 @@ Begin VB.Form frmMain
          _ExtentY        =   0
          BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.1429
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -629,7 +629,7 @@ Begin VB.Form frmMain
          _ExtentY        =   0
          BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.1429
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -653,7 +653,7 @@ Begin VB.Form frmMain
          _ExtentY        =   0
          BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.1429
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -668,8 +668,8 @@ Begin VB.Form frmMain
             TabIndex        =   78
             Top             =   3840
             Width           =   6375
-            _ExtentX        =   11245
-            _ExtentY        =   661
+            _ExtentX        =   11249
+            _ExtentY        =   665
             Caption         =   "Show System Restore Points"
          End
          Begin VBCCR17.CommandButtonW cmdConfigBackupCreateSRP 
@@ -758,7 +758,7 @@ Begin VB.Form frmMain
          _ExtentY        =   0
          BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.1429
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -852,7 +852,7 @@ Begin VB.Form frmMain
                _ExtentY        =   0
                BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
                   Name            =   "Tahoma"
-                  Size            =   8.25
+                  Size            =   8.1429
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -896,7 +896,7 @@ Begin VB.Form frmMain
                _ExtentY        =   0
                BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
                   Name            =   "Tahoma"
-                  Size            =   8.25
+                  Size            =   8.1429
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -962,7 +962,7 @@ Begin VB.Form frmMain
                _ExtentY        =   0
                BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
                   Name            =   "Tahoma"
-                  Size            =   8.25
+                  Size            =   8.1429
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -1165,7 +1165,7 @@ Begin VB.Form frmMain
                _ExtentY        =   0
                BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
                   Name            =   "Tahoma"
-                  Size            =   8.25
+                  Size            =   8.1429
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -1207,7 +1207,7 @@ Begin VB.Form frmMain
                _ExtentY        =   0
                BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
                   Name            =   "Tahoma"
-                  Size            =   8.25
+                  Size            =   8.1429
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -1409,7 +1409,7 @@ Begin VB.Form frmMain
                _ExtentY        =   0
                BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
                   Name            =   "Tahoma"
-                  Size            =   8.25
+                  Size            =   8.1429
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -1441,7 +1441,7 @@ Begin VB.Form frmMain
          _ExtentY        =   0
          BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
             Name            =   "Tahoma"
-            Size            =   8.25
+            Size            =   8.1429
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -1479,7 +1479,7 @@ Begin VB.Form frmMain
                _ExtentY        =   0
                BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
                   Name            =   "Tahoma"
-                  Size            =   8.25
+                  Size            =   8.1429
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -1497,7 +1497,7 @@ Begin VB.Form frmMain
                   _ExtentY        =   0
                   BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
                      Name            =   "Tahoma"
-                     Size            =   7.5
+                     Size            =   7.7143
                      Charset         =   204
                      Weight          =   700
                      Underline       =   0   'False
@@ -1508,7 +1508,7 @@ Begin VB.Form frmMain
                   Style           =   1
                End
                Begin VBCCR17.ComboBoxW cmbFontSize 
-                  Height          =   315
+                  Height          =   248
                   Left            =   4320
                   TabIndex        =   124
                   Top             =   1320
@@ -1518,7 +1518,7 @@ Begin VB.Form frmMain
                   Style           =   2
                End
                Begin VBCCR17.ComboBoxW cmbFont 
-                  Height          =   315
+                  Height          =   248
                   Left            =   2160
                   TabIndex        =   122
                   Top             =   1320
@@ -1548,7 +1548,7 @@ Begin VB.Form frmMain
                   Caption         =   "Do not show error messages"
                End
                Begin VBCCR17.ComboBoxW cmbDefaultFont 
-                  Height          =   315
+                  Height          =   248
                   Left            =   2160
                   TabIndex        =   136
                   Top             =   960
@@ -1558,7 +1558,7 @@ Begin VB.Form frmMain
                   Style           =   2
                End
                Begin VBCCR17.ComboBoxW cmbDefaultFontSize 
-                  Height          =   315
+                  Height          =   248
                   Left            =   4320
                   TabIndex        =   137
                   Top             =   960
@@ -1598,7 +1598,7 @@ Begin VB.Form frmMain
                _ExtentY        =   0
                BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
                   Name            =   "Tahoma"
-                  Size            =   8.25
+                  Size            =   8.1429
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -1651,7 +1651,7 @@ Begin VB.Form frmMain
                _ExtentY        =   0
                BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
                   Name            =   "Tahoma"
-                  Size            =   8.25
+                  Size            =   8.1429
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -1738,7 +1738,7 @@ Begin VB.Form frmMain
                _ExtentY        =   0
                BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
                   Name            =   "Tahoma"
-                  Size            =   8.25
+                  Size            =   8.1429
                   Charset         =   204
                   Weight          =   700
                   Underline       =   0   'False
@@ -1747,7 +1747,7 @@ Begin VB.Form frmMain
                EndProperty
                Caption         =   "Scan options"
                Begin VBCCR17.ComboBoxW cmbHashType 
-                  Height          =   315
+                  Height          =   248
                   Left            =   3120
                   TabIndex        =   38
                   TabStop         =   0   'False
@@ -2252,7 +2252,7 @@ Option Explicit
 #Const SCRIPT_FIX = False
 
 Private Const HJT_ALPHA             As Boolean = False
-Private Const HJT_BETA              As Boolean = True
+Private Const HJT_BETA              As Boolean = False
 
 Private Const ADS_SPY_VERSION       As String = "1.14"
 Private Const STARTUP_LIST_VERSION  As String = "2.13"
@@ -2282,10 +2282,12 @@ Public Sub Test()
     'If you need something to test after program started and initialized all required variables, please use this sub.
     
 '    If inIDE Then
-'        Dim SignResult As SignResult_TYPE, sFile As String: sFile = "C:\Windows\system32\DRIVERS\klgse.sys"
-'        Debug.Print SignVerify(sFile, 0, SignResult)
-'        'Debug.Print SignVerifyJack(sFile, SignResult)
-'        'Debug.Print IsMicrosoftDriverFileEx(sFile, SignResult)
+'        Dim SignResult As SignResult_TYPE, sFile As String: sFile = "C:\Windows\WinSxS\amd64_microsoft-windows-appmanagement-uevagent_31bf3856ad364e35_10.0.26100.1591_none_986ba09695018480\Microsoft.Uev.LocalSyncProvider.dll"
+'        Debug.Print "File: " & sFile
+'        'Debug.Print "Is MS Driver: " & IsMicrosoftDriverFileEx(sFile, SignResult)
+'        'Debug.Print SignVerify(sFile, 0, SignResult)
+'        Debug.Print SignVerifyJack(sFile, SignResult)
+'        Debug.Print "FormatSign: " & FormatSign(SignResult)
 '        Debug.Print "Api err code: 0x" & Hex(SignResult.ApiErrorCode) & " - " & ErrMessageText(SignResult.ApiErrorCode)
 '        Debug.Print "Signer: " & SignResult.SubjectName
 '        Debug.Print "Email: " & SignResult.SubjectEmail
@@ -2306,9 +2308,14 @@ Public Sub Test()
     #End If
     
     If inIDE Then
-        'g_ScanFilter.DoInclude = True
-        g_ScanFilter.Inclusion(ID_SECTION_O7) = True
-        g_ScanFilter.Inclusion(ID_SECTION_O1) = True
+        g_ScanFilter.DoInclude = False
+        'g_ScanFilter.Inclusion(ID_SECTION_O4) = True
+        'g_ScanFilter.Inclusion(ID_SECTION_O7) = True
+        'g_ScanFilter.Inclusion(ID_SECTION_O15) = True
+        g_ScanFilter.Inclusion(ID_SECTION_O18) = True
+        'g_ScanFilter.Inclusion(ID_SECTION_O22) = True
+        'g_ScanFilter.Inclusion(ID_SECTION_O23) = True
+        'g_ScanFilter.Inclusion(ID_SECTION_O26) = True
     End If
     
     Exit Sub
@@ -6590,9 +6597,10 @@ Private Sub mnuResultJumpReg_Click(Index As Integer)   'Context => Jump to ... =
     If GetScanResults(sItem, result) Then
         If AryPtr(JumpRegCache) Then
             If UBound(JumpRegCache) >= Index Then
-                With JumpRegCache(Index)
-                    Reg.Jump .Hive, .Key, .Param, .Redirected
-                End With
+                'Fix: "This array is fixed or temporarily locked" when try to Erase array.
+                'With JumpRegCache(Index)
+                    Reg.Jump JumpRegCache(Index).Hive, JumpRegCache(Index).Key, JumpRegCache(Index).Param, JumpRegCache(Index).Redirected
+                'End With
             End If
         End If
     End If

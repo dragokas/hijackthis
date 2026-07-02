@@ -1999,6 +1999,10 @@ Public Function IsLolBin_ProtectedList(sPath As String) As Boolean
     
     IsLolBin_ProtectedList = oDict.dLoLBin_Protected.Exists(sPath)
     
+    If Not (IsLolBin_ProtectedList) Then
+        IsLolBin_ProtectedList = IsLoLBin(sPath)
+    End If
+    
 End Function
 
 Public Sub Kill_LOLBIN()

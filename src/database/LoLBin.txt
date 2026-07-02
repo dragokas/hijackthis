@@ -14,3 +14,4 @@ MpCmdRun.exe
 certutil.exe
 bitsadmin.exe
 wuauclt.exe
+conhost.exe

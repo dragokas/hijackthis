@@ -18,7 +18,7 @@ Option Explicit
 ' Registry functions class by Alex Dragokas
 '
 
-'Revision 3.13 (16.01.2025)
+'Revision 3.14 (02.07.2026)
 
 'Private Const MAX_PATH       As Long = 260&
 'Private Const MAX_PATH_W     As Long = 32767&
@@ -1017,6 +1017,8 @@ ErrorHandler:
     If inIDE Then Stop: Resume Next
 End Function
 
+'returned arrays is in bounds [1 to count], when [count] is a number returned by function
+'arrays are erased by this function
 Public Function EnumValuesAndData(hHive As ENUM_REG_HIVE, ByVal KeyName As String, _
     uRegTypesToQuery As FLAG_REG_TYPE, _
     aValueNames() As String, _
@@ -2899,7 +2901,7 @@ ErrorHandler:
 End Function
 
 
-Public Sub Jump(hHive As ENUM_REG_HIVE, ByVal sKey As String, Optional sValue As String, Optional bUseWow64 As Boolean)
+Public Sub Jump(ByVal hHive As ENUM_REG_HIVE, ByVal sKey As String, Optional ByVal sValue As String, Optional ByVal bUseWow64 As Boolean)
     On Error GoTo ErrorHandler:
     
     Dim i&, iProcId&, uSEI As SHELLEXECUTEINFO
@@ -3133,7 +3135,7 @@ Public Sub Jump(hHive As ENUM_REG_HIVE, ByVal sKey As String, Optional sValue As
                 SendMessage hwndTreeView, WM_KEYDOWN, VK_RIGHT, ByVal 0
             End If
             'type out the value we want to jump to
-            For i = 1 To Len(sValue)
+            For i = 1 To IIf(Len(sValue) > 60, 60, Len(sValue))
                 SendMessage hwndListView, WM_CHAR, Asc(mid$(sValue, i, 1)), ByVal 0
                 DoEvents
                 Sleep 50
@@ -3350,7 +3352,7 @@ Public Function GetKeyRedirectionType( _
     
     If bFlagCheckForSymlink Then
         If IsKeySymLink(hHive, sKey, out_SymlinkTarget) Then
-        GetKeyRedirectionType = KEY_REDIRECTION_SYMLINK
+            GetKeyRedirectionType = KEY_REDIRECTION_SYMLINK
         End If
     End If
     
@@ -4151,4 +4153,38 @@ Public Function Normalize(sPath As String) As String
     End If
     sPath = Replace$(sPath, "\\", "\")
     Normalize = RemoveComputerPrefix(sPath)
+End Function
+
+' returns HKU subkeys without _Classes
+Public Function GetHKU_Keys() As String()
+    Dim aKeyList() As String
+    Dim aSubKeys() As String
+    Dim iCount As Long
+    Dim i As Long
+    For i = 1 To Reg.EnumSubKeysToArray(HKU, "", aSubKeys, , False, False)
+        If Not StrEndWith(aSubKeys(i), "_Classes") Then
+            ArrayAddStr aKeyList, GetShortHiveName(MapNtNameToWin32Name("\REGISTRY\USER\" & aSubKeys(i)), True)
+            iCount = iCount + 1
+        End If
+    Next
+    If iCount > 0 Then
+        GetHKU_Keys = aKeyList
+    Else
+        GetHKU_Keys = EmptyArray()
+        AddWarning "HKEY_USERS subkeys enumeration failed"
+    End If
+End Function
+
+'returns all HKLM and HKU subkeys of Environment Vatiables storages
+Public Function GetEnvironmentVariableKeys() As String()
+    Dim aKeyList() As String
+    Dim aHKU_Keys() As String
+    ArrayAddStr aKeyList, "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment"
+    Dim Key As Variant
+    For Each Key In GetHKU_Keys()
+        If Reg.KeyExists(HKEY_ANY, Key & "\Environment") Then
+            ArrayAddStr aKeyList, Key & "\Environment"
+        End If
+    Next
+    GetEnvironmentVariableKeys = aKeyList
 End Function

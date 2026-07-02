@@ -11,6 +11,21 @@ Version history:
 |||||       1. HiJackThis: changelog         |||||
 ==================================================
 
+[3.5.0.1] - July 02, 2026
+ - Updated certificates and databases.
+ - Fixed Windows Defender Exclusion log.
+ - Improved O23 - Service check logic.
+ - Improved digital signature verification: Third-party files signed by a Microsoft Root CA will no longer be flagged as "Sign 'Microsoft'" if the trust chain ends with a non-Microsoft certificate.
+ - Added detection for O7 - TroubleShooting (EV): %PATH% length overflow.
+ - Added detection for suspicious environment variable entries.
+ - Enabled display of SilentProcessExit entries, even when they are disabled.
+ - Added a new tag (LolBin) to files frequently used for the fileless loading.
+
+[3.4.0.18 Beta] - Feb 08, 2025
+ - Added definition O7 - Windows Defender Exclusion.
+ - Improved Windows Defender remediation procedure.
+ - Fixed error in RegJump: "This array is fixed or temporarily locked".
+
 [3.4.0.17 Beta] - Jan 16, 2025
  - Updated database of O4.
  - Check if BootExecute is missing or empty.

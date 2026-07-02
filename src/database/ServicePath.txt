@@ -7,6 +7,7 @@
 <PF32>\Microsoft GameInput\x64\gameinputsvc.exe
 <PF32>\Microsoft Office\Office12\GrooveAuditService.exe
 <PF32>\Microsoft Office\Office14\GROOVE.EXE
+<PF32>\Microsoft Visual Studio\Installer\VSInstallerElevationService.exe
 <PF32>\Microsoft Visual Studio\Shared\Common\DiagnosticsHub.Collection.Service\StandardCollector.Service.exe
 <PF32>\Microsoft\EdgeUpdate\MicrosoftEdgeUpdate.exe,/svc|/medsvc
 <PF32>\Skype\Updater\Updater.exe
@@ -29,6 +30,7 @@
 <PF64>\Windows Defender\NisSrv.exe
 <PF64>\Windows Live\Mesh\wlcrasvc.exe
 <PF64>\Windows Media Player\wmpnetwk.exe
+<PF64>\WSL\wslservice.exe
 <SysRoot>\ehome\ehRecvr.exe
 <SysRoot>\ehome\ehsched.exe
 <SysRoot>\ehome\ehstart.dll
@@ -208,7 +210,7 @@
 <SysRoot>\System32\ScDeviceEnum.dll
 <SysRoot>\System32\schedsvc.dll
 <SysRoot>\System32\SDRSVC.dll
-<SysRoot>\System32\SearchIndexer.exe
+<SysRoot>\System32\SearchIndexer.exe,|/Embedding
 <SysRoot>\System32\seclogon.dll
 <SysRoot>\system32\SEMgrSvc.dll
 <SysRoot>\System32\sens.dll

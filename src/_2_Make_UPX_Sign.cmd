@@ -67,7 +67,7 @@ set Manifest=
 ::.\ManifestByTheTrick\manifest_asInvoker.txt
 
 :: Location of script(s) for adding digital signature
-set SignScript_1=h:\_AVZ\Наши разработки\_Dragokas\DigiSign\SignME_TaskRunner.cmd
+set SignScript_1=d:\DigiSign\SignME_TaskRunner.cmd
 set SignScript_2=c:\DigiSign\SignME.cmd
 
 :: Version Patcher EXE (support for 'build' field of PE EXE version)

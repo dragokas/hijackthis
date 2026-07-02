@@ -433,3 +433,92 @@
 <UserProfile>\AppData\Local\Microsoft\Teams\update.exe
 <UserProfile>\AppData\Local\Temp\.net\devtunnel\devtunnel.exe
 <UserProfile>\AppData\Local\Temp\DevTunnels\devtunnel.exe
+<SysRoot>\system32\change.exe
+<SysRoot>\syswow64\change.exe
+<SysRoot>\system32\cipher.exe
+<SysRoot>\syswow64\cipher.exe
+<SysRoot>\system32\eudcedit.exe
+<SysRoot>\syswow64\eudcedit.exe
+<SysRoot>\system32\iscsicpl.exe
+<SysRoot>\syswow64\iscsicpl.exe
+<PF32>\Windows Defender\MpCmdRun.exe
+<AllUsersProfile>\Microsoft\Windows Defender\Platform\4.18.23110.3-0\X86\MpCmdRun.exe
+<PF64>\Microsoft Office\root\vfs\ProgramFilesCommonX64\Microsoft Shared\Office16\msoxmled.exe
+<PF32>\Common Files\Microsoft Shared\OFFICE14\msoxmled.exe
+<PF64>\Microsoft OneDrive\OneDriveStandaloneUpdater.exe
+<PF32>\Microsoft OneDrive\OneDriveStandaloneUpdater.exe
+<SysRoot>\system32\query.exe
+<SysRoot>\syswow64\query.exe
+<SysRoot>\system32\reset.exe
+<SysRoot>\syswow64\reset.exe
+<SysRoot>\System32\OpenSSH\scp.exe
+<SysRoot>\System32\OpenSSH\sftp.exe
+<SysRoot>\System32\sigverif.exe
+<SysRoot>\SysWOW64\sigverif.exe
+<SysRoot>\system32\wbem\wbemtest.exe
+<SysRoot>\UUS\amd64\wuauclt.exe
+<PF32>\Microsoft\EdgeWebView\Application\131.0.2903.70\msedgewebview2.exe
+<SysRoot>\system32\odbcad32.exe
+<SysRoot>\syswow64\odbcad32.exe
+<SysRoot>\System32\setupugc.exe
+<SysRoot>\SysWOW64\setupugc.exe
+<SysRoot>\write.exe
+<SysRoot>\System32\write.exe
+<SysRoot>\SysWOW64\write.exe
+<PF64>\Windows Kits\10\Microsoft User Experience Virtualization\Management\AppLauncher.exe
+<PF32>\Windows Kits\10\Microsoft User Experience Virtualization\Management\AppLauncher.exe
+<PF64>\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\bcp.exe
+<PF64>\Microsoft SQL Server\Client SDK\ODBC\130\Tools\Binn\bcp.exe
+<PF64>\Microsoft SQL Server\Client SDK\ODBC\110\Tools\Binn\bcp.exe
+<PF32>\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\bcp.exe
+<PF32>\Microsoft SQL Server\Client SDK\ODBC\130\Tools\Binn\bcp.exe
+<PF32>\Microsoft SQL Server\Client SDK\ODBC\110\Tools\Binn\bcp.exe
+<PF32>\Microsoft SQL Server\120\Tools\Binn\bcp.exe
+<PF64>\Microsoft\Exchange Server\Bin\ECMangen.exe
+<PF64>\Microsoft\Exchange Server\ClientAccess\Bin\ECMangen.exe
+C:\ExchangeServer\Bin\ECMangen.exe
+<PF64>\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\IntelliTrace\IntelliTrace.exe
+<PF32>\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\IntelliTrace\IntelliTrace.exe
+<PF32>\Windows Kits\10\Debuggers\x86\logger.exe
+<PF32>\Windows Kits\10\Debuggers\x64\logger.exe
+<PF64>\Windows Kits\10\Debuggers\x86\logger.exe
+<PF64>\Windows Kits\10\Debuggers\x64\logger.exe
+<PF64>\Microsoft MPI\Bin\mpiexec.exe
+<PF32>\Microsoft MPI\Bin\mpiexec.exe
+<PF32>\Microsoft\Copilot\Application\mscopilot.exe
+<PF32>\Microsoft\Copilot\Application\mscopilot_proxy.exe
+<PF64>\Microsoft Network Monitor 3\nmcap.exe
+<PF32>\Microsoft Network Monitor 3\nmcap.exe
+<PF32>\Windows Kits\10\Debuggers\x64\ntsd.exe
+<PF32>\Windows Kits\10\Debuggers\x86\ntsd.exe
+<PF32>\Windows Kits\10\Debuggers\arm\ntsd.exe
+<PF32>\Windows Kits\10\Debuggers\arm64\ntsd.exe
+<PF64>\WindowsApps\Microsoft.WindowsTerminal_1.18.10301.0_x64__8wekyb3d8bbwe\OpenConsole.exe
+<PF32>\Microsoft Office 16\ClientX86\Root\Office16\Outlook.exe
+<PF64>\Microsoft Office 16\ClientX64\Root\Office16\Outlook.exe
+<PF32>\Microsoft Office\Office16\Outlook.exe
+<PF64>\Microsoft Office\Office16\Outlook.exe
+<PF32>\Microsoft Office 15\ClientX86\Root\Office15\Outlook.exe
+<PF64>\Microsoft Office 15\ClientX64\Root\Office15\Outlook.exe
+<PF32>\Microsoft Office\Office15\Outlook.exe
+<PF64>\Microsoft Office\Office15\Outlook.exe
+<PF32>\Microsoft Office 14\ClientX86\Root\Office14\Outlook.exe
+<PF64>\Microsoft Office 14\ClientX64\Root\Office14\Outlook.exe
+<PF32>\Microsoft Office\Office14\Outlook.exe
+<PF64>\Microsoft Office\Office14\Outlook.exe
+<PF32>\Microsoft Office\Office12\Outlook.exe
+<PF64>\Microsoft Office\Office12\Outlook.exe
+<PF64>\Microsoft Office\Office12\Outlook.exe
+<PF64>\Microsoft PIX\pixtool.exe
+<PF32>\Microsoft PIX\pixtool.exe
+<PF64>\Microsoft Power BI Desktop\bin\SqlDumper.exe
+C:\there\is\no\default\installation\path\WFMFormat.exe
+<PF32>\Windows Kits\10\Debuggers\x64\windbg.exe
+<PF32>\Windows Kits\10\Debuggers\x86\windbg.exe
+<PF32>\Windows Kits\10\Debuggers\arm\windbg.exe
+<PF32>\Windows Kits\10\Debuggers\arm64\windbg.exe
+C:\Users\<user>\AppData\Local\Microsoft\WindowsApps\wsb.exe
+<PF64>\Windows Kits\10\Windows Performance Toolkit\xbootmgr.exe
+<PF32>\Windows Kits\10\Windows Performance Toolkit\xbootmgr.exe
+<PF64>\Windows Kits\10\Windows Performance Toolkit\xbootmgrsleep.exe
+<PF32>\Windows Kits\10\Windows Performance Toolkit\xbootmgrsleep.exe

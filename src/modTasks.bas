@@ -334,6 +334,14 @@ Public Function isInTasksWhiteList(sPathName As String, sTargetFile As String, O
             If StrComp(sTargetFile, PF_32 & "\Microsoft Visual Studio\Installer\resources\app\ServiceHub\Services\Microsoft.VisualStudio.Setup.Service\VSIXConfigurationUpdater.exe", 1) = 0 And Len(sArguments) = 0 Then
                 isInTasksWhiteList = True
             End If
+        ElseIf sPathName = "\Microsoft\Windows\Hotpatch\Monitoring" Then
+            Dim cmdFile As String: cmdFile = sWinDir & "\system32\hpatchmonTask.cmd"
+            If StrComp(sTargetFile, sWinDir & "\system32\cmd.exe", 1) = 0 And _
+                StrComp(sArguments, "/d /c " & cmdFile, 1) = 0 Then
+                If GetFileSHA256(cmdFile, , True) = "5347AD556FBC6BB1FAF408B466B6BD10180B9299923325794E9E5AFB0118408F" Then
+                    isInTasksWhiteList = True
+                End If
+            End If
         End If
         Exit Function
     End If
@@ -473,7 +481,7 @@ Public Sub EnumTasksVista(Optional MakeCSV As Boolean)
     
     Dim sLogFile        As String
     
-    '// TODO: Add record: "O22 - Task: 'Task scheduler' service is disabled!"
+    '// TODO: Add record: "O22 - Tasks: 'Task scheduler' service is disabled!"
     
     'If GetServiceRunState("Schedule") <> SERVICE_RUNNING Then
         'Err.Raise 33333, , "Task scheduler service is not running!"
@@ -621,7 +629,11 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
                     
                     If Not result.SignResult.isMicrosoftSign Then
                         AppendErrorLogCustom "[Failed] EnumTasksInITaskFolder: File - " & te(j).RunObj & " => is not Microsoft EDS !!! <======"
-                        If inIDE Then Debug.Print "Task MS file has wrong EDS: " & te(j).RunObj
+                        If inIDE Then
+                            If FileExists(te(j).RunObj) Then
+                                Debug.Print "Task MS file has wrong EDS: " & te(j).RunObj
+                            End If
+                        End If
                     End If
                 ElseIf te(j).ActionType = TASK_ACTION_COM_HANDLER And Len(te(j).RunObjCom) <> 0 Then
                 
@@ -732,6 +744,8 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
                     bTelemetry = True
                 ElseIf InStr(1, TaskName, "telemetry", 1) <> 0 Then
                     bTelemetry = True
+                ElseIf InStr(1, TaskName, "UsageAndQuality", 1) <> 0 Then
+                    bTelemetry = True
                 ElseIf StrComp(sRunFilename, "NvTmMon.exe", 1) = 0 Then
                     bTelemetry = True
                 ElseIf StrComp(sRunFilename, "OLicenseHeartbeat.exe", 1) = 0 Then
@@ -745,6 +759,8 @@ Sub EnumTaskFolder(LogHandle As Integer, dXmlPathFromDisk As clsTrickHashTable, 
                 ElseIf StrComp(sRunFilename, "operfmon.exe", 1) = 0 Then
                     bTelemetry = True
                 ElseIf StrComp(DirXml, "\Microsoft\Windows\IME\SQM data sender", 1) = 0 Then
+                    bTelemetry = True
+                ElseIf StrBeginWith(DirXml, "\Microsoft\Windows\WindowsAI") Then
                     bTelemetry = True
                 End If
                 
@@ -1008,7 +1024,7 @@ Sub EnumTaskOther(dXmlPathFromDisk As clsTrickHashTable)
         
         If Not dXmlPathFromDisk.Exists(DirXml) Then
             
-            sHit = "O22 - Task: (damaged) HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\" & aID(i) & _
+            sHit = "O22 - Tasks: (damaged) HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\" & aID(i) & _
                 " - " & DirXml & " (no xml)"
             
             If Not IsOnIgnoreList(sHit) Then
@@ -1064,7 +1080,7 @@ Sub EnumTaskOther(dXmlPathFromDisk As clsTrickHashTable)
                 
                 If Not Reg.KeyExists(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\" & id) Then
                 
-                    sHit = "O22 - Task: (damaged) HKLM\" & aSubKeys(i) & " (key missing)"
+                    sHit = "O22 - Tasks: (damaged) HKLM\" & aSubKeys(i) & " (key missing)"
                     
                     If Not IsOnIgnoreList(sHit) Then
                         With result
@@ -1101,7 +1117,7 @@ Sub EnumTaskOther(dXmlPathFromDisk As clsTrickHashTable)
         
             DirXml = Reg.GetString(HKLM, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\" & id, "Path")
             
-            sHit = "O22 - Task: (damaged) HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\" & id & _
+            sHit = "O22 - Tasks: (damaged) HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\" & id & _
                 " - (no key)"
             
             If Not IsOnIgnoreList(sHit) Then
@@ -1145,7 +1161,7 @@ Sub EnumTaskOther(dXmlPathFromDisk As clsTrickHashTable)
 
                     dTasksEmpty.Add DirXml, 0&
                 
-                    sHit = "O22 - Task: (damaged) HKLM\" & aSubKeys(i) & _
+                    sHit = "O22 - Tasks: (damaged) HKLM\" & aSubKeys(i) & _
                         " (empty)"
                     
                     If Not IsOnIgnoreList(sHit) Then
@@ -1191,7 +1207,7 @@ Sub EnumTaskOther(dXmlPathFromDisk As clsTrickHashTable)
                         
                         If GetFileName(aFolders(i), True) <> "WPD" Then
                         
-                            sHit = "O22 - Task: (damaged) " & aFolders(i) & " (empty)"
+                            sHit = "O22 - Tasks: (damaged) " & aFolders(i) & " (empty)"
                         
                             If Not IsOnIgnoreList(sHit) Then
                                 With result

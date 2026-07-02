@@ -2,13 +2,13 @@ VERSION 5.00
 Object = "{317589D1-37C8-47D9-B5B0-1C995741F353}#1.0#0"; "VBCCR17.OCX"
 Begin VB.Form frmCheckDigiSign 
    Caption         =   "Digital signature checker"
-   ClientHeight    =   6585
+   ClientHeight    =   6584
    ClientLeft      =   120
-   ClientTop       =   465
-   ClientWidth     =   9255
+   ClientTop       =   464
+   ClientWidth     =   9256
    BeginProperty Font 
       Name            =   "Tahoma"
-      Size            =   8.25
+      Size            =   8.14
       Charset         =   204
       Weight          =   400
       Underline       =   0   'False
@@ -18,8 +18,8 @@ Begin VB.Form frmCheckDigiSign
    Icon            =   "frmCheckDigiSign.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   ScaleHeight     =   6585
-   ScaleWidth      =   9255
+   ScaleHeight     =   6584
+   ScaleWidth      =   9256
    Begin VBCCR17.FrameW fraMode 
       Height          =   3252
       Left            =   5400
@@ -30,7 +30,7 @@ Begin VB.Form frmCheckDigiSign
       _ExtentY        =   0
       BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
          Name            =   "Tahoma"
-         Size            =   7.5
+         Size            =   7.7143
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -163,7 +163,7 @@ Begin VB.Form frmCheckDigiSign
       _ExtentY        =   0
       BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
          Name            =   "Tahoma"
-         Size            =   7.5
+         Size            =   7.7143
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -203,7 +203,7 @@ Begin VB.Form frmCheckDigiSign
       _ExtentY        =   0
       BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
          Name            =   "Tahoma"
-         Size            =   7.5
+         Size            =   7.7143
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -419,7 +419,7 @@ Private Sub cmdGo_Click()
     sPathes = Replace$(sPathes, vbCr, vbNullString)
     aPathes = Split(sPathes, vbLf)
     
-    ReportPath = BuildPath(App.Path(), "DigiSign") & IIf(bCSV, ".csv", ".log")
+    ReportPath = BuildPath(App.path(), "DigiSign") & IIf(bCSV, ".csv", ".log")
     
     If FileExists(ReportPath) Then Call DeleteFileW(StrPtr(ReportPath))
     
@@ -681,7 +681,7 @@ Private Sub cmdGo_Click()
                 sb.Append ";" & .SubjectNameFriendly
                 sb.Append ";" & .SubjectName
                 sb.Append ";" & .SubjectEmail
-                sb.Append ";" & IIf(.ReturnCode = TRUST_E_NOSIGNATURE, vbNullString, IIf(.isSignedByCert, "Certificate", "Internal"))  'Embedded Sign?
+                sb.Append ";" & IIf(Not .isSigned, vbNullString, IIf(.isSignedByCert, "Certificate", "Internal")) 'Embedded Sign?
                 sb.Append ";" & IIf(.IsEmbedded, "yes", "no")
                 sb.Append ";" & .CatalogPath
                 sb.Append ";" & .HashRootCert
@@ -910,15 +910,15 @@ Private Sub txtPaths_KeyDown(KeyCode As Integer, Shift As Integer)
     If KeyCode = 27 Then cmdExit_Click
 End Sub
 
-Private Sub txtPaths_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
-    AddObjToList Data
+Private Sub txtPaths_OLEDragDrop(data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
+    AddObjToList data
 End Sub
 
-Private Sub AddObjToList(Data As DataObject)
+Private Sub AddObjToList(data As DataObject)
     Const vbCFFiles As Long = 15&
     Dim vObj
-    If Data.GetFormat(vbCFFiles) Then
-        For Each vObj In Data.Files
+    If data.GetFormat(vbCFFiles) Then
+        For Each vObj In data.Files
             txtPaths.Text = txtPaths.Text & IIf(Right$(txtPaths.Text, 2) <> vbCrLf And Len(txtPaths.Text) > 0, vbCrLf, vbNullString) & CStr(vObj)
         Next
     End If

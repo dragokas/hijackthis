@@ -5,10 +5,14 @@ Option Explicit
 
 '
 ' Authenticode digital signature verifier / Driver's WHQL signature verifier
-' revision 3.3
+' revision 3.4
 '
 ' Copyrights: Alex Dragokas
 '
+
+' 02.07.2026
+' Make isMicrosoftSign false, when the final certificate in trust chain does not belong to Microsoft
+' Deprecate SV_LightCheckMS flag (as not reliable with a newer logic)
 
 ' 19.02.2024
 ' Fixed .cat files own signature verification failed
@@ -153,7 +157,7 @@ Public Enum FLAGS_SignVerify
     SV_CheckSecondarySignature = &H200& ' (this flag automatically set SV_DisableCatalogVerify flag)
     SV_NoFileSizeLimit = &H400&         ' check file with any size ( default limit = 100 MB. )
     SV_LightCheck = &H800&              ' skip filling non-essential fields (speed optimization)
-    SV_LightCheckMS = &H1000&           ' skip filling non-essential fields only if it is Microsoft signature (speed optimization)
+    'SV_LightCheckMS = &H1000&          ' skip filling non-essential fields only if it is Microsoft signature (speed optimization) '// DEPRECATED
     SV_SelfTest = &H2000&               ' more debugging info
     SV_PreferInternalSign = &H4000&     ' check internal signature first, if present (.exe, .sys, .dll, .ocx files only)
     SV_NoCatPrediction = &H8000&        ' do not use catalogue path prediction
@@ -632,9 +636,12 @@ Private Const NO_ERROR                      As Long = 0&
 
 Private Const VER_NT_WORKSTATION            As Long = 1&
 
+Private Const NOT_SIGNED_MSG As String = "TRUST_E_NOSIGNATURE: Not signed"
+
 Private SignCache()      As SignResult_TYPE
 Private SC_pos           As Long
 Private CatIndex         As Long
+
 #If UseHashtable Then
     Private oSignIndex As clsTrickHashTable
     Private oCatHash As clsTrickHashTable
@@ -691,7 +698,6 @@ Public Sub InitVerifyDigiSign()
     
     m_eJackFlags = _
         SV_AllowExpired Or _
-        SV_LightCheckMS Or _
         SV_LightCheckOther
     
     m_eJackFlags = m_eJackFlags Or SV_isDriver 'to check secondary signature when 'Microsoft' found
@@ -716,7 +722,7 @@ Public Sub InitVerifyDigiSign()
     End If
     
     'For drivers
-    m_eJackDriverFlags = (m_eJackFlags Or SV_isDriver Or SV_PreferInternalSign) And Not SV_LightCheckMS
+    m_eJackDriverFlags = (m_eJackFlags Or SV_isDriver Or SV_PreferInternalSign) 'And Not SV_LightCheckMS
     
     Dim i As Long
     ReDim tim(10)
@@ -742,7 +748,7 @@ End Sub
 Public Sub WipeSignResult(SignResult As SignResult_TYPE)
     Dim SR As SignResult_TYPE
     SignResult = SR
-    SignResult.ShortMessage = "TRUST_E_NOSIGNATURE: Not signed"
+    SignResult.ShortMessage = NOT_SIGNED_MSG
 End Sub
 
 'prepare report about file signer to prepend to HiJackThis log
@@ -818,6 +824,10 @@ Public Function FormatSign(SignResult As SignResult_TYPE) As String
     End If
     
     FormatSign = " " & FormatSign
+    
+    If (IsLolBin_ProtectedList(SignResult.FilePathVerified)) Then
+        FormatSign = FormatSign & " (LolBin)"
+    End If
 End Function
 
 'Use special HiJackThis flags, allowing to balance speed and informative log
@@ -838,7 +848,7 @@ Public Function SignVerifyJack( _
     'hack to check secondary signature if the latest certificate was self-signed (seen in avp.exe)
     If SignResult.ReturnCode = CERT_E_UNTRUSTEDROOT Then
     
-        SignVerifyJack = SignVerify(sFilePath, SV_CacheDoNotLoad Or SV_isDriver Or SV_LightCheckMS Or SV_PreferInternalSign Or _
+        SignVerifyJack = SignVerify(sFilePath, SV_CacheDoNotLoad Or SV_isDriver Or SV_PreferInternalSign Or _
             IIf(OSver.IsWindows8OrGreater, SV_DisableOutdatedAlgo, 0) Or SV_LightCheckOther, SignResult)
             
     End If
@@ -2108,7 +2118,7 @@ Private Sub GetSignerInfo(StateData As Long, SignResult As SignResult_TYPE, Flag
                     .isMicrosoftSign = IsMicrosoftCertHash(.HashRootCert)
                     
                     If Flags And SV_LightCheck Then GoTo Continue
-                    If Flags And SV_LightCheckMS And .isMicrosoftSign Then GoTo Continue
+                    'If Flags And SV_LightCheckMS And .isMicrosoftSign Then GoTo Continue
                     
                     .IssuerRoot = ExtractStringFromCertificate(pCertificate, CERT_NAME_SIMPLE_DISPLAY_TYPE, CERT_NAME_ISSUER_FLAG)
                     
@@ -2124,6 +2134,16 @@ Private Sub GetSignerInfo(StateData As Long, SignResult As SignResult_TYPE, Flag
                         '.SubjectName = GetSignerNameFromBLOB(CertInfo.Subject)
                         .Issuer = ExtractStringFromCertificate(pCertificate, CERT_NAME_SIMPLE_DISPLAY_TYPE, CERT_NAME_ISSUER_FLAG)
                         .SubjectName = ExtractStringFromCertificate(pCertificate, CERT_NAME_SIMPLE_DISPLAY_TYPE)
+                        
+'                        'Some 3rd-party signatures can be issued by Microsoft Root CA
+                        If InStr(1, .SubjectName, "Microsoft", 1) = 0 Then
+                            If .SubjectName <> ".NET" And _
+                                .SubjectName <> ".NET DAC" And _
+                                .SubjectName <> "Windows Phone" Then
+
+                                .isMicrosoftSign = False
+                            End If
+                        End If
                         
                         If Flags And SV_LightCheckOther Then GoTo Continue
                         
