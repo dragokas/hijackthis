@@ -163,9 +163,9 @@ Public Sub LoadLanguage( _
             LangUA False, LoadChangelog
         Case &H419&, &H423&  'Russian, Belarusian
             LangRU False, LoadChangelog
-        Case IsFrenchLangCode(lCode)  'French
+        Case &H40C&, &H80C&, &HC0C&, &H140C&, &H180C&, &H100C&  'French
             LangFR False, LoadChangelog
-        Case IsSpanishLangCode(lCode)  'Spanish
+        Case &H40A&, &HC0A&  'Spanish
             LangSP False, LoadChangelog
         Case &H409& 'English
             LoadDefaultLanguage False, LoadChangelog
@@ -186,9 +186,9 @@ Public Sub LoadLanguage( _
             LangRU bUseResourcePriority, LoadChangelog
         Case &H422& 'Ukrainian
             LangUA bUseResourcePriority, LoadChangelog
-        Case IsFrenchLangCode(LangDisplayCode) 'French
+        Case &H40C&, &H80C&, &HC0C&, &H140C&, &H180C&, &H100C& 'French
             LangFR bUseResourcePriority, LoadChangelog
-        Case IsSpanishLangCode(LangDisplayCode)  'Spanish
+        Case &H40A&, &HC0A&  'Spanish
             LangSP bUseResourcePriority, LoadChangelog
         Case &H409& 'English
             LoadDefaultLanguage bUseResourcePriority, LoadChangelog
@@ -203,9 +203,9 @@ Public Sub LoadLanguage( _
             LangRU bUseResourcePriority, LoadChangelog
         Case &H422& 'Ukrainian
             LangUA bUseResourcePriority, LoadChangelog
-        Case IsFrenchLangCode(lCode) 'French
+        Case &H40C&, &H80C&, &HC0C&, &H140C&, &H180C&, &H100C& 'French
             LangFR bUseResourcePriority, LoadChangelog
-        Case IsSpanishLangCode(lCode)  'Spanish
+        Case &H40A&, &HC0A&  'Spanish
             LangSP bUseResourcePriority, LoadChangelog
         Case &H409& 'English
             LoadDefaultLanguage bUseResourcePriority, LoadChangelog
